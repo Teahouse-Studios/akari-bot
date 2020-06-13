@@ -8,7 +8,6 @@ import re
 from userp import Userp
 from pathexist import pathexist,pathexist2
 import urllib
-from usercommand import usercom
 from server import ser
 from wikil import im
 from rc import rc
