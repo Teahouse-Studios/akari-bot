@@ -31,18 +31,13 @@ async def buggc(pagename):
             json_text = requests.get(url_json,timeout=10)
             file = json.loads(json_text.text)
             Versions = file['fields']['versions']
+            name = []
             for item in Versions[:]:
-                name = item['name']+"|"
-                y = open('bug_cache_text.txt',mode='a',encoding='utf-8')
-                y.write(name)
-                y.close()
-            z = open('bug_cache_text.txt',mode='r',encoding='utf-8')
-            j = z.read()
-            m = j.strip(string.punctuation)
-            if m.split('|')[0] == m.split('|')[-1]:
-                Version = "版本："+m.split('|')[0]
-            else: 
-                Version = "版本："+m.split('|')[0]+"~"+m.split('|')[-1]
+                name.append(item['name'])
+            if name[0] == name[-1]:
+                Version = "Version: "+name[0]
+            else:
+                Version = "Versions: "+name[0]+"~"+name[-1]
             try:
                 Priority = "Mojang优先级："+tr.translate(file['fields']['customfield_12200']['value'],dest='zh-cn').text
                 return(Title+'\n'+Titleg+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+"由Google翻译提供支持。")

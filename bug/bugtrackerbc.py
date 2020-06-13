@@ -32,10 +32,10 @@ async def bugcb(pagename):
                     for node in root.iter("item"):
                         Title = node.find("title").text
                         q = node.find("title").text
-                        Type = "Type: " + node.find("type").text
-                        Project = "Project: " + node.find("project").text
-                        TStatus = "Status: " + node.find("status").text
-                        Resolution = "Resolution: " + node.find("resolution").text
+                        Type = "类型：" + node.find("type").text
+                        Project = "项目：" + node.find("project").text
+                        TStatus = "进度：" + node.find("status").text
+                        Resolution = "状态：" + node.find("resolution").text
                         Link = node.find("link").text
                 sign = appid + q + str(salt) + secretKey
                 sign = hashlib.md5(sign.encode()).hexdigest()
@@ -44,14 +44,9 @@ async def bugcb(pagename):
                 json_text = requests.get(url_json,timeout=10)
                 file = json.loads(json_text.text)
                 Versions = file['fields']['versions']
+                name = []
                 for item in Versions[:]:
-                    name = item['name']+"|"
-                    y = open('bug_cache_text.txt',mode='a',encoding='utf-8')
-                    y.write(name)
-                    y.close()
-                z = open('bug_cache_text.txt',mode='r',encoding='utf-8')
-                j = z.read()
-                m = j.strip(string.punctuation)
+                    name.append(item['name'])
                 httpClient = http.client.HTTPConnection('api.fanyi.baidu.com')
                 httpClient.request('GET', myurl)
                 response = httpClient.getresponse()
@@ -59,10 +54,10 @@ async def bugcb(pagename):
                 result = json.loads(result_all)
                 for item in result['trans_result']:
                     dst=item['dst']
-                if m.split('|')[0] == m.split('|')[-1]:
-                    Version = "Version: "+m.split('|')[0]
-                else: 
-                    Version = "Versions: "+m.split('|')[0]+"~"+m.split('|')[-1]
+                if name[0] == name[-1]:
+                    Version = "Version: "+name[0]
+                else:
+                    Version = "Versions: "+name[0]+"~"+name[-1]
                 try:
                     Priority = "Mojang Priority: "+file['fields']['customfield_12200']['value']
                     return(Title+'\n'+dst+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+'由百度翻译提供支持。')
@@ -78,10 +73,10 @@ async def bugcb(pagename):
                         for node in root.iter("item"):
                             Title = node.find("title").text
                             q = node.find("title").text
-                            Type = "Type: " + node.find("type").text
-                            TStatus = "Status: " + node.find("status").text
-                            Resolution = "Resolution: " + node.find("resolution").text
-                            Priority = "Priority: " + node.find("priority").text
+                            Type = "类型：" + node.find("type").text
+                            TStatus = "项目：" + node.find("status").text
+                            Resolution = "进度：" + node.find("resolution").text
+                            Priority = "Mojang优先级：" + node.find("priority").text
                             Link = node.find("link").text
                     sign = appid + q + str(salt) + secretKey
                     sign = hashlib.md5(sign.encode()).hexdigest()
