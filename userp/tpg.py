@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+def tpg(favicon,wikiname,username,gender,registertime,contributionwikis,createcount,editcount,deletecount,patrolcount,sitetop,globaltop,wikipoint):
+    font = ImageFont.truetype('D:/AkariBot/bot/SourceHanSansCN-Normal.ttf', 40)
+    font1 = ImageFont.truetype('D:/AkariBot/bot/SourceHanSansCN-Normal.ttf',70)
+    img = Image.open('D:/AkariBot/bot/111111.png')
+    img2 = Image.open(favicon)
+    img3 = Image.new("RGBA", img.size)
+    w, h = img2.size
+    w = int(w)
+    h = int(h)
+    try:
+        img2 = img2.resize((int(w/(w//100)),int(h/(h//100))))
+    except:
+        pass
+    img3.paste(img,(0,0))
+
+    img21 = Image.new("RGBA",(200,200))
+    W = 200
+    H = 200
+    w,h = img2.size
+    img21.alpha_composite(img2.convert("RGBA"),(int((W-w)/2),int((H-h)/2)))
+
+    img3.alpha_composite(img21,(95,52))
+    draw = ImageDraw.Draw(img3)
+    draw.text((325, 120), str(wikiname), '#ffffff', font=font1)
+    draw.text((230, 295), str(username), '#ffffff', font=font1)
+    draw.text((617,685),'（UTC+8）','#ffffff',font=font)
+
+    img32 = Image.new("RGBA",(120,40))
+    W = 120
+    draww = ImageDraw.Draw(img32)
+    w, h = draww.textsize(gender,font=font)
+    draww.text(((W-w-font.getoffset(gender)[0])/2,0), gender, "#ffffff",font = font)
+    img3.alpha_composite(img32,(194,635))
+
+    img31 = Image.new("RGBA", (1280, 40))
+    W = 1280
+    draww = ImageDraw.Draw(img31)
+    w, h = draww.textsize(registertime, font=font)
+    draww.text(((W - w - font.getoffset(registertime)[0]) / 2, 0), registertime, "#ffffff", font=font)
+    img3.alpha_composite(img31, (80, 635))
+
+    draw.text((800, 785), str(contributionwikis), '#ffffff', font=font)
+
+    img4 = Image.new("RGBA", (280, 40))
+    W = 280
+    H = 40
+    draww = ImageDraw.Draw(img4)
+    w, h = draww.textsize(createcount, font=font)
+    draww.text(((W - w - font.getoffset(createcount)[0]) / 2, 0), createcount, "#ffffff", font=font)
+    img3.alpha_composite(img4, (115, 960))
+
+    img5 = Image.new("RGBA", (280, 40))
+    draww = ImageDraw.Draw(img5)
+    w, h = draww.textsize(editcount, font=font)
+    draww.text(((W - w - font.getoffset(editcount)[0]) / 2, 0), editcount, "#ffffff", font=font)
+    img3.alpha_composite(img5, (295, 960))
+
+    img6 = Image.new("RGBA", (280, 40))
+    draww = ImageDraw.Draw(img6)
+    w, h = draww.textsize(deletecount, font=font)
+    draww.text(((W - w - font.getoffset(deletecount)[0]) / 2, 0), deletecount, "#ffffff", font=font)
+    img3.alpha_composite(img6, (475, 960))
+
+    img7 = Image.new("RGBA", (280, 40))
+    draww = ImageDraw.Draw(img7)
+    w, h = draww.textsize(patrolcount, font=font)
+    draww.text(((W - w - font.getoffset(patrolcount)[0]) / 2, 0), patrolcount, "#ffffff", font=font)
+    img3.alpha_composite(img7, (655, 960))
+
+    draw.text((625,1095),str(wikipoint),'#ffffff',font=font)
+    draw.text((330, 1195), str(sitetop), '#ffffff', font=font)
+    draw.text((690, 1195), str(globaltop), '#ffffff', font=font)
+    img3.save("D:/AkariBot/usercard/"+username+".png")

@@ -1,0 +1,33 @@
+import re
+import string
+def command(str1,member):
+    try:
+        q = re.match(r'\[\[(.*)\|.*\]\]',str1)
+        return ('im '+q.group(1))
+    except Exception:
+        try:
+            q = re.match(r'^(发现新人：).*',str1)
+            print(q.group(1))
+            if str(member) == '2736881328':
+                return  ('xrrrlei '+q.group(1))
+            else:
+                return ('paa')
+        except Exception:
+            try:
+                q = re.match(r'\[\[(.*)\]\]', str1)
+                return ('im ' + q.group(1))
+            except Exception:
+                try:
+                    q = re.match(r'^.*(: ~)(.*)',str1)
+                    return q.group(2)
+                except Exception:
+                    try:
+                        q = re.match(r'^~(.*)',str1)
+                        return q.group(1)
+                    except Exception:
+                        try:
+                            q = re.match(r'^!(.*\-.*)',str1)
+                            q = str.upper(q.group(1))
+                            return ('bug '+q)
+                        except Exception:
+                            pass

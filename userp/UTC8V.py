@@ -1,0 +1,61 @@
+import re
+
+def UTC8V(str1):
+    if str1 == 'infinity':
+        return ('无限期')
+    else:
+        q = re.match(r'(....)(..)(..)(..)(..)(..)', str1)
+        y = int(q.group(1))
+        m = int(q.group(2))
+        d = int(q.group(3))
+        h = int(q.group(4))
+        mi = int(q.group(5))
+        s = int(q.group(6))
+
+        h = h + 8
+        if h > 24 :
+            d = d + 1
+            h = h - 24
+        else:
+            pass
+        if m == 2:
+            if y % 100 == 0:
+                if y % 400 == 0:
+                    pass
+                else:
+                    if d == 29:
+                        m = m + 1
+                        d = d - 28
+                    else:
+                        pass
+            if d == 29:
+                if y % 4 == 0:
+                    pass
+                else:
+                    m = m + 1
+                    d = d - 28
+            if d == 30:
+                m = m + 1
+                d = d - 29
+            else:
+                pass
+        else:
+            pass
+        if d == 31:
+            if m == 4 or m == 6 or m == 9 or m == 11:
+                m = m + 1
+                d = d - 30
+            else:
+                pass
+        else:
+            pass
+        if d == 32:
+            m = m + 1
+            d = d - 31
+        if m == 13:
+            m = m - 12
+            y = y + 1
+        if h == 24:
+            if mi != 0:
+                h = h - 24
+        return (str(y)+'年'+str(m)+'月'+str(d)+'日'+str(h)+'时'+str(mi)+'分'+'（UTC+8）')
