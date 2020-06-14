@@ -1,5 +1,6 @@
 import re
 import string
+import blacklist
 def command(str1,member):
     try:
         q = re.match(r'\[\[(.*)\|.*\]\]',str1)
@@ -15,7 +16,13 @@ def command(str1,member):
         except Exception:
             try:
                 q = re.match(r'\[\[(.*)\]\]', str1)
-                return ('im ' + q.group(1))
+                if q.group(1) == '爬':
+                    if member in blacklist():
+                        return ('paa')
+                    else:
+                        return ('im ' + q.group(1))
+                else:
+                    return ('im ' + q.group(1))
             except Exception:
                 try:
                     q = re.match(r'^.*(: ~)(.*)',str1)
@@ -23,7 +30,13 @@ def command(str1,member):
                 except Exception:
                     try:
                         q = re.match(r'^~(.*)',str1)
-                        return q.group(1)
+                        if q.group(1).find('爬') != -1:
+                            if member in blacklist():
+                                return ('paa')
+                            else:
+                                return q.group(1)
+                        else:
+                            return q.group(1)
                     except Exception:
                         try:
                             q = re.match(r'^!(.*\-.*)',str1)

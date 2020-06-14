@@ -34,7 +34,7 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
             d = c
         print(d)
         if d == 'paa':
-            await app.sendGroupMessage(group, [Plain('爬')])
+            await app.sendGroupMessage(group, [At(member.id),Plain('爬')])
         if d == 'help':
             await app.sendGroupMessage(group, [Plain((await help()))])
         elif d == 'mcv':
