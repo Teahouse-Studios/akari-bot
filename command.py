@@ -1,6 +1,6 @@
 import re
 import string
-import blacklist
+from blacklist import blacklist
 def command(str1,member):
     try:
         q = re.match(r'\[\[(.*)\|.*\]\]',str1)
