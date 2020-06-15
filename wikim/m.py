@@ -7,28 +7,25 @@ import urllib
 async def m(lang,str1):
     if lang =='en':
         metaurl = 'https://minecraft.gamepedia.com/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
+        l = 'https://minecraft.gamepedia.com/'
     else:
         metaurl = 'https://minecraft-'+lang+'.gamepedia.com/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
-    pagename = str1
+        l = 'https://minecraft-'+lang+'.gamepedia.com/'
     try:
+        pagename = str1
         url = metaurl+pagename
         metatext = requests.get(url,timeout=5)
-        file = json.loads(metatext.text)
         try:
+            file = json.loads(metatext.text)
             x = file['query']['pages']
             y = sorted(x.keys())[0]
             if  int(y) == -1:
-                d = x[y]
-                if d.has_key('missing') == False:
-                    return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
-                else:
+                if 'missing' in x['-1']:
                     try:
                         if lang =='en':
-                            h = re.match(r'https://minecraft.gamepedia.com/(.*)', z, re.M | re.I)
-                            searchurl = 'https://minecraft.gamepedia.com/api.php?action=query&generator=search&gsrsearch='+h.group(1)+'&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                            searchurl = 'https://minecraft.gamepedia.com/api.php?action=query&generator=search&gsrsearch='+str1+'&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
                         else:
-                            h = re.match(r'https://minecraft-(.*).gamepedia.com/(.*)', z, re.M | re.I)
-                            searchurl = 'https://minecraft-'+h.group(1)+'.gamepedia.com/api.php?action=query&generator=search&gsrsearch='+h.group(2)+'&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                            searchurl = 'https://minecraft-'+lang+'.gamepedia.com/api.php?action=query&generator=search&gsrsearch='+str1+'&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
                         f = requests.get(searchurl)
                         g = json.loads(f.text)
                         j=g['query']['pages']
@@ -37,6 +34,8 @@ async def m(lang,str1):
                         return ('找不到条目，您是否要找的是：'+m+'？')
                     except Exception:
                         return('找不到条目。')
+                else:
+                    return ('您要的'+pagename+'：'+l+urllib.parse.quote(pagename.encode('UTF-8')))
             else:
                 try:
                     z = x[y]['fullurl']
@@ -53,7 +52,7 @@ async def m(lang,str1):
                     return('您要的'+pagename+"："+xx)
                 except Exception:
                     return('您要的'+pagename+"："+z)
-        except  Exception:
+        except Exception:
             return('发生错误：内容非法。')
-    except  Exception as e:
+    except Exception as e:
         return('发生错误：'+str(e))

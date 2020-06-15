@@ -10,21 +10,19 @@ def Wiki(path1,pagename):
         x = file['query']['pages']
         y = sorted(x.keys())[0]
         if int(y) == -1:
-            try:
-                d = x[y]
-                if d.has_key('missing') == False:
-                    return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
-                else:
-                    h = re.match(path1+r'/(.*)', z, re.M | re.I)
-                    searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + h.group(1) + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+            if 'missing' in x['-1']:
+                try:                
+                    searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
                     f = requests.get(searchurl)
                     g = json.loads(f.text)
                     j = g['query']['pages']
                     b = sorted(j.keys())[0]
                     m = j[b]['title']
                     return ('找不到条目，您是否要找的是：' + m +'？')
-            except Exception:
-                return ('找不到条目。')
+                except Exception:
+                    return ('找不到条目。')
+            else:
+                return ('您要的'+pagename+'：'+'https://'+path1+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
         else:
             try:
                 z = x[y]['fullurl']
