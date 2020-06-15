@@ -22,7 +22,7 @@ def Wiki(path1,pagename):
                 except Exception:
                     return ('找不到条目。')
             else:
-                return ('您要的'+pagename+'：'+path1+urllib.parse.quote(pagename.encode('UTF-8')))
+                return ('您要的'+pagename+'：'+path1+'/'+urllib.parse.quote(pagename.encode('UTF-8')))
         else:
             try:
                 z = x[y]['fullurl']
