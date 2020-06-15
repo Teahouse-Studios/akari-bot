@@ -11,7 +11,7 @@ def Wiki(path1,pagename):
         y = sorted(x.keys())[0]
         if int(y) == -1:
             try:
-                if 'missing' in x[y]:
+                if ('missing' in x[y]):
                     return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
                 else:
                     h = re.match(path1+r'/(.*)', z, re.M | re.I)
