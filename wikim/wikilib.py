@@ -1,7 +1,7 @@
 import json
 import re
 import requests
-
+import urllib
 def Wiki(path1,pagename):
     metaurl = path1 +'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     metatext = requests.get(metaurl, timeout=10)
@@ -12,14 +12,18 @@ def Wiki(path1,pagename):
         z = x[y]['fullurl']
         if int(y) == -1:
             try:
-                h = re.match(path1+r'/(.*)', z, re.M | re.I)
-                searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + h.group(1) + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                f = requests.get(searchurl)
-                g = json.loads(f.text)
-                j = g['query']['pages']
-                b = sorted(j.keys())[0]
-                m = j[b]['title']
-                return ('找不到条目，您是否要找的是：' + m +'？')
+                miss = x[y]['missing']
+                if not miss:
+                    return ('您要的'+pagename+'：'+urllib.parse.quote(pagename.encode('UTF-8')))
+                else:
+                    h = re.match(path1+r'/(.*)', z, re.M | re.I)
+                    searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + h.group(1) + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                    f = requests.get(searchurl)
+                    g = json.loads(f.text)
+                    j = g['query']['pages']
+                    b = sorted(j.keys())[0]
+                    m = j[b]['title']
+                    return ('找不到条目，您是否要找的是：' + m +'？')
             except Exception:
                 return ('找不到条目。')
         else:
