@@ -1,7 +1,7 @@
 import requests
 import json
 import re
-
+import urllib
 async def im(str1):
     str1 = re.sub(r'^im ','',str1)
     try:
@@ -20,6 +20,7 @@ async def im(str1):
         c = 'minecraft-zh'
         pagename = str1
     metaurl = 'https://'+c+'.gamepedia.com/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
+    url1 = 'https://'+c+'.gamepedia.com/'
     try:
         url = metaurl+pagename
         metatext = requests.get(url,timeout=5)
@@ -27,10 +28,13 @@ async def im(str1):
         try:
             x = file['query']['pages']
             y = sorted(x.keys())[0]
-            z = x[y]['fullurl']
             if  int(y) == -1:
-                pass
+                if 'missing' in x['-1']:
+                    pass
+                else:
+                    return (url1+urllib.parse.quote(pagename.encode('UTF-8')))
             else:
+                z = x[y]['fullurl']
                 h = re.match(r'https://(.*).gamepedia.com/(.*)', z, re.M | re.I)
                 texturl = 'https://'+h.group(1)+'.gamepedia.com/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles='+h.group(2)
                 textt = requests.get(texturl,timeout=5)
