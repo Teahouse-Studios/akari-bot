@@ -18,7 +18,8 @@ async def m(lang,str1):
             x = file['query']['pages']
             y = sorted(x.keys())[0]
             if  int(y) == -1:
-                if ['missing'] in x[y]:
+                d = x[y]
+                if d.has_key('missing') == False:
                     return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
                 else:
                     try:
