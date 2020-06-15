@@ -19,9 +19,8 @@ async def m(lang,str1):
             y = sorted(x.keys())[0]
             z = x[y]['fullurl']
             if  int(y) == -1:
-                miss = x[y]['missing']
-                if not miss:
-                    return ('您要的'+pagename+'：'+urllib.parse.quote(pagename.encode('UTF-8')))
+                if 'missing' in x[y]:
+                    return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
                 else:
                     try:
                         if lang =='en':

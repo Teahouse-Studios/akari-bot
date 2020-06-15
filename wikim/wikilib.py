@@ -12,9 +12,8 @@ def Wiki(path1,pagename):
         z = x[y]['fullurl']
         if int(y) == -1:
             try:
-                miss = x[y]['missing']
-                if not miss:
-                    return ('您要的'+pagename+'：'+urllib.parse.quote(pagename.encode('UTF-8')))
+                if 'missing' in x[y]:
+                    return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
                 else:
                     h = re.match(path1+r'/(.*)', z, re.M | re.I)
                     searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + h.group(1) + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
