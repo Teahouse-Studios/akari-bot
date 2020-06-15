@@ -17,7 +17,6 @@ from newbie import new
 from newbee import newnew
 from mcbv import mcbv
 from mcdv import mcdv
-from userp import checkuser
 qq = 2052142661 # 字段 qq 的值
 authKey = '1145141919810' # 字段 authKey 的值
 mirai_api_http_locate = 'localhost:11919/ws' # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
@@ -87,14 +86,11 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
                                     h2 = re.sub('_', ' ', h2)
                                 except Exception as e:
                                     print(str(e))
-                    if checkuser(h,h2) == True:
-                        if pathexist(h):
-                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
-                        else:
-                            await app.sendGroupMessage(group, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
-                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
+                    if pathexist(h):
+                        await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
                     else:
-                        await app.sendGroupMessage(group, [Plain('没有找到此用户。')])
+                        await app.sendGroupMessage(group, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
+                        await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
                 except Exception as e:
                     print(str(e))
 
@@ -166,14 +162,11 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
                                     h2 = re.sub('_', ' ', h2)
                                 except Exception as e:
                                     print(str(e))
-                    if checkuser(h,h2) == True:
-                        if pathexist(h):
-                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
-                        else:
-                            await app.sendFriendMessage(friend, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
-                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
+                    if pathexist(h):
+                        await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
                     else:
-                        await app.sendFriendMessage(group, [Plain('没有找到此用户。')])
+                        await app.sendFriendMessage(friend, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
+                        await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
                 except Exception as e:
                     print(str(e))
 

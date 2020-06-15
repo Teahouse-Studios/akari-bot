@@ -39,6 +39,6 @@ def Userp(path,Username):
                 h = '/Userprofile:' +User
                 return(metaurl+urllib.parse.quote(h.encode('UTF-8')))
             except Exception:
-                return ('N')
+                return ('没有找到此用户。')
     except Exception as e:
         return ('发生错误：'+str(e))
