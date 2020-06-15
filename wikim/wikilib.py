@@ -9,7 +9,6 @@ def Wiki(path1,pagename):
     try:
         x = file['query']['pages']
         y = sorted(x.keys())[0]
-        z = x[y]['fullurl']
         if int(y) == -1:
             try:
                 if 'missing' in x[y]:
@@ -27,6 +26,7 @@ def Wiki(path1,pagename):
                 return ('找不到条目。')
         else:
             try:
+                z = x[y]['fullurl']
                 h = re.match(r'https://.*/(.*)', z, re.M | re.I)
                 texturl = metaurl + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + h.group(1)
                 gettext = requests.get(texturl, timeout=10)

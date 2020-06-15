@@ -87,7 +87,7 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
                                     h2 = re.sub('_', ' ', h2)
                                 except Exception as e:
                                     print(str(e))
-                    if checkuser(h,h2) == True:
+                    if checkuser(h,h2):
                         if pathexist(h):
                             await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
                         else:
@@ -166,7 +166,7 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
                                     h2 = re.sub('_', ' ', h2)
                                 except Exception as e:
                                     print(str(e))
-                    if checkuser(h,h2) == True:
+                    if checkuser(h,h2):
                         if pathexist(h):
                             await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
                         else:

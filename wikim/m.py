@@ -17,7 +17,6 @@ async def m(lang,str1):
         try:
             x = file['query']['pages']
             y = sorted(x.keys())[0]
-            z = x[y]['fullurl']
             if  int(y) == -1:
                 if 'missing' in x[y]:
                     return ('您要的'+pagename+'：'+'https://'+path+'.gamepedia.com/'+urllib.parse.quote(pagename.encode('UTF-8')))
@@ -39,6 +38,7 @@ async def m(lang,str1):
                         return('找不到条目。')
             else:
                 try:
+                    z = x[y]['fullurl']
                     if lang =='en':
                         h = re.match(r'https://minecraft.gamepedia.com/(.*)', z, re.M | re.I)
                         texturl = 'https://minecraft.gamepedia.com/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + h.group(1)
