@@ -17,7 +17,7 @@ from newbie import new
 from newbee import newnew
 from mcbv import mcbv
 from mcdv import mcdv
-from userp import checkuser
+from checkuser import checkuser
 qq = 2052142661 # 字段 qq 的值
 authKey = '1145141919810' # 字段 authKey 的值
 mirai_api_http_locate = 'localhost:11919/ws' # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
