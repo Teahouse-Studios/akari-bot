@@ -24,8 +24,6 @@ def bug(pagename):
                     TStatus = "Status: " + node.find("status").text
                     Resolution = "Resolution: " + node.find("resolution").text
                     Link = node.find("link").text
-            if TStatus == 'Status: Resolved':
-                TStatus = "Status: " + node.find("status").text + ' | Fixed Version: '+ node.find("fixVersion").text
             url_json = 'https://bugs.mojang.com/rest/api/2/issue/'+str.upper(pagename)
             json_text = requests.get(url_json,timeout=10)
             file = json.loads(json_text.text)
@@ -42,6 +40,10 @@ def bug(pagename):
                 if TStatus == 'Status: Open':
                     Type = "Type: " + node.find("type").text + ' | Status: ' + node.find("status").text
                     return(Title+'\n'+Type+'\n'+Project+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link)
+                elif TStatus == 'Status: Resolved':
+                    TStatus = "Status: " + node.find("status").text + ' | Fixed Version: '+ node.find("fixVersion").text
+                    Type = Type+' | '+Resolution
+                    return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Version+'\n'+Link)
                 else:
                     return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link)
             except Exception:
@@ -49,6 +51,10 @@ def bug(pagename):
                     if TStatus == 'Status: Open':
                         Type = "Type: " + node.find("type").text + ' | Status: ' + node.find("status").text
                         return (Title+'\n'+Type+'\n'+Project+'\n'+Resolution+'\n'+Version+'\n'+Link)
+                    elif TStatus == 'Status: Resolved':
+                        TStatus = "Status: " + node.find("status").text + ' | Fixed Version: '+ node.find("fixVersion").text
+                        Type = Type+' | '+Resolution
+                        return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Version+'\n'+Link)
                     else:
                         return (Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Version+'\n'+Link)
                 except Exception:
