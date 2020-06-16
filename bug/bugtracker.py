@@ -25,7 +25,7 @@ def bug(pagename):
                     Resolution = "Resolution: " + node.find("resolution").text
                     Link = node.find("link").text
             if TStatus == 'Status: Resolved':
-                TStatus = "Status: " + node.find("status").text + '| Fixed Version: '+ node.find("fixVersion").text
+                TStatus = "Status: " + node.find("status").text + ' | Fixed Version: '+ node.find("fixVersion").text
             url_json = 'https://bugs.mojang.com/rest/api/2/issue/'+str.upper(pagename)
             json_text = requests.get(url_json,timeout=10)
             file = json.loads(json_text.text)
