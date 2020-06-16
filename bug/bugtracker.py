@@ -41,9 +41,9 @@ def bug(pagename):
                     Type = "Type: " + node.find("type").text + ' | Status: ' + node.find("status").text
                     return(Title+'\n'+Type+'\n'+Project+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link)
                 elif TStatus == 'Status: Resolved':
-                    TStatus = "Status: " + node.find("status").text + ' | Fixed Version: '+ node.find("fixVersion").text
-                    Type = Type+' | '+Resolution
-                    return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Version+'\n'+Link)
+                    Resolution = "Resolution: " + node.find("resolution").text + ' | Fixed Version: '+ node.find("fixVersion").text
+                    Type = Type+' | '+TStatus
+                    return(Title+'\n'+Type+'\n'+Project+'\n'+Resolution+'\n'+Priority+'\n'+Version+'\n'+Link)
                 else:
                     return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link)
             except Exception:
@@ -52,9 +52,9 @@ def bug(pagename):
                         Type = "Type: " + node.find("type").text + ' | Status: ' + node.find("status").text
                         return (Title+'\n'+Type+'\n'+Project+'\n'+Resolution+'\n'+Version+'\n'+Link)
                     elif TStatus == 'Status: Resolved':
-                        TStatus = "Status: " + node.find("status").text + ' | Fixed Version: '+ node.find("fixVersion").text
-                        Type = Type+' | '+Resolution
-                        return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Version+'\n'+Link)
+                        Resolution = "Resolution: " + node.find("resolution").text + ' | Fixed Version: '+ node.find("fixVersion").text
+                        Type = Type+' | '+ TStatus
+                        return(Title+'\n'+Type+'\n'+Project+'\n'+Resolution+'\n'+Version+'\n'+Link)
                     else:
                         return (Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Version+'\n'+Link)
                 except Exception:
