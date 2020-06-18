@@ -2,6 +2,7 @@ import re
 import string
 from blacklist import blacklist
 def command(str1,member):
+    str1 = re.sub(r'^～'，'~',str1)
     try:
         q = re.match(r'\[\[(.*)\|.*\]\]',str1)
         return ('im '+q.group(1))
