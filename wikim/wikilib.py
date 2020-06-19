@@ -32,7 +32,7 @@ def Wiki(path1,pagename):
                 loadtext = json.loads(gettext.text)
                 v = loadtext['query']['pages'][y]['extract']
                 try:
-                    s = re.match(r'.*(\#.*)',str1)
+                    s = re.match(r'.*(\#.*)',pagename)
                     z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
                 except Exception:
                     z = x[y]['fullurl']
@@ -40,7 +40,7 @@ def Wiki(path1,pagename):
                 return('您要的' + pagename + "：" +xx)
             except Exception:
                 try:
-                    s = re.match(r'.*(\#.*)',str1)
+                    s = re.match(r'.*(\#.*)',pagename)
                     z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
                 except Exception:
                     z = x[y]['fullurl']
