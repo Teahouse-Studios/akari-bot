@@ -48,9 +48,19 @@ async def m(lang,str1):
                     textt = requests.get(texturl,timeout=5)
                     e = json.loads(textt.text)
                     r = e['query']['pages'][y]['extract']
+                    try:
+                        s = re.match(r'.*(\#.*)',str1)
+                        z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
+                    except Exception:
+                        z = x[y]['fullurl']
                     xx = re.sub('\n$', '', z + '\n' + r)
                     return('您要的'+pagename+"："+xx)
                 except Exception:
+                    try:
+                        s = re.match(r'.*(\#.*)',str1)
+                        z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
+                    except Exception:
+                        z = x[y]['fullurl']
                     return('您要的'+pagename+"："+z)
         except Exception:
             return('发生错误：内容非法。')

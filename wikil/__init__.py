@@ -40,6 +40,11 @@ async def im(str1):
                 textt = requests.get(texturl,timeout=5)
                 e = json.loads(textt.text)
                 r = e['query']['pages'][y]['extract']
+                try:
+                    b = re.match(r'.*(\#.*)',str1)
+                    z = x[y]['fullurl']+urllib.parse.quote(b.group(1).encode('UTF-8'))
+                except Exception:
+                    z = x[y]['fullurl']
                 xx = re.sub('\n$','',z+'\n'+r)
                 return(xx)
         except  Exception:
