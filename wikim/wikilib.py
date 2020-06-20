@@ -2,7 +2,7 @@ import json
 import re
 import requests
 import urllib
-def Wiki(path1,pagename):
+async def Wiki(path1,pagename):
     metaurl = path1 +'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     metatext = requests.get(metaurl, timeout=10)
     file = json.loads(metatext.text)
@@ -38,10 +38,10 @@ def Wiki(path1,pagename):
                     z = x[y]['fullurl']
                 n = re.match(r'https://.*?/(.*)',z)
                 k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
-                if k == str1:
+                if k == pagename:
                     xx = re.sub('\n$', '', z + '\n' + v)
                 else:
-                    xx = re.sub('\n$', '', str1 +'->'+k+'\n'+z + '\n' + v)
+                    xx = re.sub('\n$', '', pagename +'->'+k+'\n'+z + '\n' + v)
                 return('您要的'+pagename+"："+xx)
             except Exception:
                 try:
@@ -51,10 +51,10 @@ def Wiki(path1,pagename):
                     z = x[y]['fullurl']
                 n = re.match(r'https://.*?/(.*)',z)
                 k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
-                if k == str1:
+                if k == pagename:
                     zz = z
                 else:
-                    zz = str1+'->'+k+'\n'+z
+                    zz = pagename+'->'+k+'\n'+z
                 return('您要的' + pagename + "：" + z)
     except Exception:
         try:

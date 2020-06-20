@@ -25,7 +25,7 @@ async def wikim(str1):
             try:
                 s = re.match(r'~(.*) (.*)',q.group(1))
                 metaurl = 'https://' + s.group(1) + '.gamepedia.com'
-                return (Wiki(metaurl,s.group(2)))
+                return (await Wiki(metaurl,s.group(2)))
             except:
                 try:
                     d = re.sub(r':.*','',q.group(1))
@@ -34,7 +34,7 @@ async def wikim(str1):
                     if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
                         try:
                             metaurl = 'https://minecraft-' + w + '.gamepedia.com'
-                            return (Wiki(metaurl, x))
+                            return (await Wiki(metaurl, x))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
                     elif w == 'Wikipedia' or w == 'wikipedia':
@@ -42,13 +42,13 @@ async def wikim(str1):
                     elif w == 'Moegirl' or w == 'moegirl':
                         try:
                             metaurl = 'https://zh.moegirl.org'
-                            return (Wiki(metaurl, x))
+                            return (await Wiki(metaurl, x))
                         except Exception as e:
                             return ('发生错误：' + str(e))
                     else:
                         try:
                             metaurl = 'https://minecraft.gamepedia.com'
-                            return (Wiki(metaurl, q.group(1)))
+                            return (await Wiki(metaurl, q.group(1)))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
                 except Exception:
