@@ -5,7 +5,7 @@ import urllib
 async def im(str1):
     str1 = re.sub(r'^im ','',str1)
     try:
-        d = re.match(r'(.*):(.*)',str1)
+        d = re.match(r'(.*?):(.*)',str1)
         w = d.group(1)
         if (w == "cs" or w == "de" or w == "el" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
             c = 'minecraft-'+w
