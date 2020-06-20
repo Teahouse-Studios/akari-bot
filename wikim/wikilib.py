@@ -36,14 +36,25 @@ def Wiki(path1,pagename):
                     z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
                 except Exception:
                     z = x[y]['fullurl']
-                xx = re.sub('\n$', '', z + '\n' + v)
-                return('您要的' + pagename + "：" +xx)
+                n = re.match(r'https://.*?/(.*)',z)
+                k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+                if k == str1:
+                    xx = re.sub('\n$', '', z + '\n' + v)
+                else:
+                    xx = re.sub('\n$', '', str1 +'->'+k+'\n'+z + '\n' + v)
+                return('您要的'+pagename+"："+xx)
             except Exception:
                 try:
                     s = re.match(r'.*(\#.*)',pagename)
                     z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
                 except Exception:
                     z = x[y]['fullurl']
+                n = re.match(r'https://.*?/(.*)',z)
+                k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+                if k == str1:
+                    zz = z
+                else:
+                    zz = str1+'->'+k+'\n'+z
                 return('您要的' + pagename + "：" + z)
     except Exception:
         try:

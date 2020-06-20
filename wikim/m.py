@@ -53,7 +53,12 @@ async def m(lang,str1):
                         z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
                     except Exception:
                         z = x[y]['fullurl']
-                    xx = re.sub('\n$', '', z + '\n' + r)
+                    n = re.match(r'https://.*?/(.*)',z)
+                    k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+                    if k == str1:
+                        xx = re.sub('\n$', '', z + '\n' + r)
+                    else:
+                        xx = re.sub('\n$', '', str1 +'->'+k+'\n'+z + '\n' + r)
                     return('您要的'+pagename+"："+xx)
                 except Exception:
                     try:
@@ -61,7 +66,13 @@ async def m(lang,str1):
                         z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
                     except Exception:
                         z = x[y]['fullurl']
-                    return('您要的'+pagename+"："+z)
+                    n = re.match(r'https://.*?/(.*)',z)
+                    k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+                    if k == str1:
+                        zz = z
+                    else:
+                        zz = (str1 +'->'+k+'\n'+z)
+                    return('您要的'+pagename+"："+zz)
         except Exception:
             return('发生错误：内容非法。')
     except Exception as e:
