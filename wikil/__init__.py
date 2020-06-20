@@ -50,7 +50,7 @@ async def im(str1):
                 if k == str1:
                     xx = re.sub('\n$','',z+'\n'+r)
                 else:
-                    xx = re.sub('\n$','','\n('+str1+'->'+k+')\n'+z+'\n'+r)
+                    xx = re.sub('\n$','','('+str1+'->'+k+')\n'+z+'\n'+r)
                 return(xx)
         except  Exception:
             pass
