@@ -46,10 +46,11 @@ async def im(str1):
                 except Exception:
                     z = x[y]['fullurl']
                 k = urllib.parse.unquote(h.group(2),encoding='UTF-8')
+                k = re.sub('_',' ',k)
                 if k == str1:
                     xx = re.sub('\n$','',z+'\n'+r)
                 else:
-                    xx = re.sub('\n$','',str1+'->'+k+'\n'+z+'\n'+r)
+                    xx = re.sub('\n$','','\n('+str1+'->'+k+')\n'+z+'\n'+r)
                 return(xx)
         except  Exception:
             pass

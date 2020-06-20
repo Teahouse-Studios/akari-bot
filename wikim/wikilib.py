@@ -38,10 +38,11 @@ async def Wiki(path1,pagename):
                     z = x[y]['fullurl']
                 n = re.match(r'https://.*?/(.*)',z)
                 k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+                k = re.sub('_',' ',k)
                 if k == pagename:
                     xx = re.sub('\n$', '', z + '\n' + v)
                 else:
-                    xx = re.sub('\n$', '', pagename +'->'+k+'\n'+z + '\n' + v)
+                    xx = re.sub('\n$', '', '\n('+pagename +' -> '+k+')\n'+z + '\n' + v)
                 return('您要的'+pagename+"："+xx)
             except Exception:
                 try:
@@ -51,11 +52,12 @@ async def Wiki(path1,pagename):
                     z = x[y]['fullurl']
                 n = re.match(r'https://.*?/(.*)',z)
                 k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+                k = re.sub('_',' ',k)
                 if k == pagename:
                     zz = z
                 else:
-                    zz = pagename+'->'+k+'\n'+z
-                return('您要的' + pagename + "：" + z)
+                    zz = '\n('+pagename+' -> '+k+')\n'+z
+                return('您要的' + pagename + "：" + zz)
     except Exception:
         try:
             w = re.match(r'https://.*-(.*).gamepedia.com',path1)
