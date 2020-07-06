@@ -69,13 +69,13 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
                         h2 = re.sub('_',' ',h2)
                     except Exception:
                         try:
-                            g = re.match(r'^user-(.*) (.*)',z)
+                            g = re.match(r'^user-(.*?) (.*)',z)
                             h = 'minecraft-'+g.group(1)
                             h2 = g.group(2)
                             h2 = re.sub('_', ' ', h2)
                         except Exception:
                             try:
-                                g = re.match(r'^user (.*):(.*)', z)
+                                g = re.match(r'^user (.*?):(.*)', z)
                                 h = 'minecraft-' + g.group(1)
                                 h2 = g.group(2)
                                 h2 = re.sub('_', ' ', h2)
@@ -148,13 +148,13 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
                         h2 = re.sub('_',' ',h2)
                     except Exception:
                         try:
-                            g = re.match(r'^user-(.*) (.*)',z)
+                            g = re.match(r'^user-(.*?) (.*)',z)
                             h = 'minecraft-'+g.group(1)
                             h2 = g.group(2)
                             h2 = re.sub('_', ' ', h2)
                         except Exception:
                             try:
-                                g = re.match(r'^user (.*):(.*)', z)
+                                g = re.match(r'^user (.*?):(.*)', z)
                                 h = 'minecraft-' + g.group(1)
                                 h2 = g.group(2)
                                 h2 = re.sub('_', ' ', h2)
