@@ -3,9 +3,9 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 def tpg(favicon,wikiname,username,gender,registertime,contributionwikis,createcount,editcount,deletecount,patrolcount,sitetop,globaltop,wikipoint):
-    font = ImageFont.truetype('/home/oasisakari/botassests/SourceHanSansCN-Normal.ttf', 40)
-    font1 = ImageFont.truetype('/home/oasisakari/botassests/SourceHanSansCN-Normal.ttf',70)
-    img = Image.open('/home/oasisakari/botassests/111111.png')
+    font = ImageFont.truetype('/home/wdljt/oasisakari/bot/assests/SourceHanSansCN-Normal.ttf', 40)
+    font1 = ImageFont.truetype('/home/wdljt/oasisakari/bot/assests/SourceHanSansCN-Normal.ttf',70)
+    img = Image.open('/home/wdljt/oasisakari/bot/assests/base.png')
     img2 = Image.open(favicon)
     img3 = Image.new("RGBA", img.size)
     w, h = img2.size
@@ -74,4 +74,4 @@ def tpg(favicon,wikiname,username,gender,registertime,contributionwikis,createco
     draw.text((625,1095),str(wikipoint),'#ffffff',font=font)
     draw.text((330, 1195), str(sitetop), '#ffffff', font=font)
     draw.text((690, 1195), str(globaltop), '#ffffff', font=font)
-    img3.save("/home/oasisakari/botassests/usercard/"+username+".png")
+    img3.save("/home/wdljt/oasisakari/bot/assests/usercard/"+username+".png")

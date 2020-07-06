@@ -89,10 +89,10 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
                                     print(str(e))
                     if checkuser(h,h2):
                         if pathexist(h):
-                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
+                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
                         else:
                             await app.sendGroupMessage(group, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
-                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
+                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
                     else:
                         await app.sendGroupMessage(group, [Plain('没有找到此用户。')])
                 except Exception as e:
@@ -168,10 +168,10 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
                                     print(str(e))
                     if checkuser(h,h2):
                         if pathexist(h):
-                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
+                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
                         else:
                             await app.sendFriendMessage(friend, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
-                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/oasisakari/botassests/usercard/"+h2+".png")])
+                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
                     else:
                         await app.sendFriendMessage(group, [Plain('没有找到此用户。')])
                 except Exception as e:

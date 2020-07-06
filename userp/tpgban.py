@@ -3,9 +3,9 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 def tpgban(favicon,wikiname,username,gender,registertime,contributionwikis,createcount,editcount,deletecount,patrolcount,sitetop,globaltop,wikipoint,blockbyuser,blocktimestamp1,blocktimestamp2,blockreason):
-    font = ImageFont.truetype('/home/oasisakari/botassests/SourceHanSansCN-Normal.ttf', 40)
-    font1 = ImageFont.truetype('/home/oasisakari/botassests/SourceHanSansCN-Normal.ttf',70)
-    img = Image.open('/home/oasisakari/botassests/ban.png')
+    font = ImageFont.truetype('/home/wdljt/oasisakari/bot/assests/SourceHanSansCN-Normal.ttf', 40)
+    font1 = ImageFont.truetype('/home/wdljt/oasisakari/bot/assests/SourceHanSansCN-Normal.ttf',70)
+    img = Image.open('/home/wdljt/oasisakari/bot/assests/ban.png')
     img2 = Image.open(favicon)
     img3 = Image.new("RGBA", img.size)
     w, h = img2.size
@@ -71,7 +71,7 @@ def tpgban(favicon,wikiname,username,gender,registertime,contributionwikis,creat
     draww.text(((W - w - font.getoffset(patrolcount)[0]) / 2, 0), patrolcount, "#ffffff", font=font)
     img3.alpha_composite(img7, (655, 960))
 
-    img8 = Image.open('/home/oasisakari/botassests/Blocked.png')
+    img8 = Image.open('/home/wdljt/oasisakari/bot/assests/Blocked.png')
     w,h = img8.size
     w = int(w)
     h = int(h)
@@ -85,4 +85,4 @@ def tpgban(favicon,wikiname,username,gender,registertime,contributionwikis,creat
     draw.text((200, 1489), '时间从' + str(blocktimestamp1)+'（UTC+8）', '#ffffff', font=font)
     draw.text((200, 1539), '到'+ str(blocktimestamp2), '#ffffff', font=font)
     draw.text((200, 1589), str(blockreason), '#ffffff', font=font)
-    img3.save("/home/oasisakari/botassests/usercard/"+username+".png")
+    img3.save("/home/wdljt/oasisakari/bot/assests/usercard/"+username+".png")

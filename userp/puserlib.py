@@ -16,10 +16,10 @@ def PUser1(url, str3,ss,User,Gender,Registration):
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d='/home/oasisakari/botassests/Favicon/'+ss+'/'
+    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd='/home/oasisakari/botassests/Favicon/'+ss+'/Wiki.png'
+    ddd='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png'
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
@@ -34,7 +34,7 @@ def PUser1(url, str3,ss,User,Gender,Registration):
             pass
         g = re.sub('User:', '', str3)
         from .tpg import tpg
-        tpg('/home/oasisakari/botassests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point)
+        tpg('/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point)
     except Exception:
         return False
 def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry,Blockreason):
@@ -46,10 +46,10 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d='/home/oasisakari/botassests/Favicon/'+ss+'/'
+    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd='/home/oasisakari/botassests/Favicon/'+ss+'/Wiki.png'
+    ddd='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png'
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
@@ -64,7 +64,7 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
             pass
         g = re.sub('User:', '', str3)
         from .tpgban import tpgban
-        tpgban('/home/oasisakari/botassests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry,hh17(Blockreason))
+        tpgban('/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry,hh17(Blockreason))
     except Exception:
         return False
 def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry):
@@ -76,10 +76,10 @@ def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d='/home/oasisakari/botassests/Favicon/'+ss+'/'
+    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd='/home/oasisakari/botassests/Favicon/'+ss+'/Wiki.png'
+    ddd='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png'
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
@@ -94,6 +94,6 @@ def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,
             pass
         g = re.sub('User:', '', str3)
         from .tpgbann import tpgbann
-        tpgbann('/home/oasisakari/botassests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry)
+        tpgbann('/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry)
     except Exception:
         return False
