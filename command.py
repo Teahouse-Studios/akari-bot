@@ -37,12 +37,14 @@ async def command(str1,member):
                     except Exception:
                         try:
                             w = re.findall(r'\[\[(.*?)\]\]',str1)
-                            print(str(w))
-                            z = []
-                            c = '\n'
-                            for x in w:
-                                z.append(await im(x))
-                            v = c.join(z)
-                            return('echo '+v)
+                            if w == None:
+                                pass
+                            else:
+                                z = []
+                                c = '\n'
+                                for x in w:
+                                    z.append(await im(x))
+                                v = c.join(z)
+                                return('echo '+v)
                         except Exception:
                             pass
