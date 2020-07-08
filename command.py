@@ -37,10 +37,10 @@ async def command(str1,member):
                     except Exception:
                         try:
                             w = re.findall(r'\[\[(.*?)\]\]',str1)
+                            print(str(w))
                             z = []
                             c = '\n'
                             for x in w:
-                                print(x)
                                 z.append(await im(x))
                             v = c.join(z)
                             return('echo '+v)
