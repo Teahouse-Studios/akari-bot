@@ -26,14 +26,17 @@ app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}",websock
 @app.receiver("GroupMessage")
 async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
     try:
-        print (command(message.toString(),str(member.id)))
-        c = command(message.toString(),str(member.id))
+        print (await command(message.toString(),str(member.id)))
+        c = await command(message.toString(),str(member.id))
         try:
             d = c.split(' ')
             d = d[0]
         except:
             d = c
         print(d)
+        if d == 'echo':
+            echo = re.sub(r'^echo ','',c)
+            await app.sendGroupMessage(group, [Plain(echo)])
         if d == 'paa':
             await app.sendGroupMessage(group, [At(member.id),Plain('爬')])
         if d == 'help':
@@ -109,14 +112,17 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
 @app.receiver("FriendMessage")
 async def msg(app: Mirai, friend: Friend, message: MessageChain):
     try:
-        print (command(message.toString(),'0'))
-        c = command(message.toString(),'0')
+        print (await command(message.toString(),'0'))
+        c = await command(message.toString(),'0')
         try:
             d = c.split(' ')
             d = d[0]
         except:
             d = c
         print(d)
+        if d == 'echo':
+            echo = re.sub(r'^echo ','',c)
+            await app.sendFriendMessage(friend, [Plain(echo)])
         if d == 'help':
             await app.sendFriendMessage(friend, [Plain((await help()))])
         if d == 'mcv':

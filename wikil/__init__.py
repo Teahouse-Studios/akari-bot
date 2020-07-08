@@ -3,7 +3,6 @@ import json
 import re
 import urllib
 async def im(str1):
-    str1 = re.sub(r'^im ','',str1)
     try:
         d = re.match(r'(.*?):(.*)',str1)
         w = d.group(1)

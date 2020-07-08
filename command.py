@@ -1,7 +1,8 @@
 import re
 import string
 from blacklist import blacklist
-def command(str1,member):
+from wikil import im
+async def command(str1,member):
     str1 = re.sub(r'^～','~',str1)
     try:
         q = re.match(r'\[\[(.*)\|.*\]\]',str1)
@@ -16,32 +17,32 @@ def command(str1,member):
                 return ('paa')
         except Exception:
             try:
-                q = re.match(r'\[\[(.*)\]\]', str1)
-                if q.group(1) == '爬':
-                    if member in blacklist():
-                        return ('paa')
-                    else:
-                        return ('im ' + q.group(1))
-                else:
-                    return ('im ' + q.group(1))
+                q = re.match(r'^.*(: ~)(.*)',str1)
+                return q.group(2)
             except Exception:
                 try:
-                    q = re.match(r'^.*(: ~)(.*)',str1)
-                    return q.group(2)
-                except Exception:
-                    try:
-                        q = re.match(r'^~(.*)',str1)
-                        if q.group(1).find('爬') != -1:
-                            if member in blacklist():
-                                return ('paa')
-                            else:
-                                return q.group(1)
+                    q = re.match(r'^~(.*)',str1)
+                    if q.group(1).find('爬') != -1:
+                        if member in blacklist():
+                            return ('paa')
                         else:
                             return q.group(1)
+                    else:
+                        return q.group(1)
+                except Exception:
+                    try:
+                        q = re.match(r'^!(.*\-.*)',str1)
+                        q = str.upper(q.group(1))
+                        return ('bug '+q)
                     except Exception:
                         try:
-                            q = re.match(r'^!(.*\-.*)',str1)
-                            q = str.upper(q.group(1))
-                            return ('bug '+q)
+                            w = re.findall(r'\[\[(.*?)\]\]',str1)
+                            z = []
+                            c = '\n'
+                            for x in w:
+                                print(x)
+                                z.append(await im(x))
+                            v = c.join(z)
+                            return('echo '+v)
                         except Exception:
                             pass
