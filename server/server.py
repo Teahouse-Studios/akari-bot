@@ -18,7 +18,7 @@ def server(address):
                         text = []
                         qwq = ''
                         for item in extra[:]:
-                            text.append = item['text']
+                            text.append(item['text'])
                         return(qwq.join(text)+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
                     else:
                         return(x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
@@ -28,7 +28,7 @@ def server(address):
                 try:
                     x=re.sub(r'§\w',"",file['data']['description'])
                     return(x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
-                except Exception:
+                except Exception as e:
                     return("发生错误：调用API时发生错误。")
         else:
             url = 'http://motd.wd-api.com/?ip='+address+'&port=25565&mode=info'
@@ -42,7 +42,7 @@ def server(address):
                         text = []
                         qwq = ''
                         for item in extra[:]:
-                            text.append = item['text']
+                            text.append(item['text'])
                         return(qwq.join(text)+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
                     else:
                         return(x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
