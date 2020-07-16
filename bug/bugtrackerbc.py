@@ -66,10 +66,10 @@ async def bugcb(pagename):
                     return(Title+'\n'+dst+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+'由百度翻译提供支持。')
             except Exception:
                 try:
-                    return(Title+'\n'+dst+'\n'+Type+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+'由百度翻译提供支持。')
+                    return(Title+'\n'+dst+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+'由百度翻译提供支持。')
                 except Exception:
                     try:
-                        return(Title+'\n'+dst+'\n'+Type+'\n'+TStatus+'\n'+Resolution+'\n'+Link+'\n'+'由百度翻译提供支持。')
+                        return(Title+'\n'+dst+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Link+'\n'+'由百度翻译提供支持。')
                     except Exception:
                         try:
                             return(Link)

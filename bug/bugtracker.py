@@ -65,7 +65,7 @@ def bug(pagename):
                 return (Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link)
             except Exception:
                 try:
-                    return(Title+'\n'+Type+'\n'+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Link)
+                    return(Title+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Link)
                 except Exception:
                     try:
                         return(Link)

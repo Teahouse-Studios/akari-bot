@@ -46,10 +46,10 @@ async def buggc(pagename):
                 return(Title+'\n'+Titleg+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+"由Google翻译提供支持。")
         except Exception:
             try:
-                return(Title+'\n'+Titleg+'\n'+Type+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
+                return(Title+'\n'+Titleg+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
             except Exception:
                 try:
-                    return(Title+'\n'+Titleg+'\n'+Type+'\n'+TStatus+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
+                    return(Title+'\n'+Titleg+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
                 except Exception:
                     try:
                         return(Link)
