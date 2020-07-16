@@ -43,7 +43,7 @@ async def im(str1):
                         m = j[b]['title']
                         return ('提示：您要找的'+ pagename + '不存在，你要找的页面是' + m + '吗？')
                     except Exception:
-                        return ('提示：找不到条目。')
+                        return ('提示：找不到'+ pagename+'。')
                 else:
                     return (url1+urllib.parse.quote(pagename.encode('UTF-8')))
             else:
