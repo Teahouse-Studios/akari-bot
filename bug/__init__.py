@@ -5,9 +5,7 @@ import re
 async def bugtracker(name):
     try:
         if name.find(" -h") != -1:
-            return('''~bug <JiraID> - 从Mojira中获取此Bug的信息。
-[-b] - 使用百度翻译。
-[-g] - 使用Google翻译。''')
+            return('''~bug <JiraID> - 从Mojira中获取此Bug的信息。''')
         elif name.find(" -g") != -1:
             name = re.sub(' -g','',name)
             q = re.match(r'^bug (.*\-.*)', name)
