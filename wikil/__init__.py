@@ -4,6 +4,11 @@ import re
 import urllib
 async def im(str1):
     try:
+        pipe = re.match(r'(.*?)\|.*',str1)
+        str1 = pipe.group(1)
+    except Exception:
+        str1 = str1
+    try:
         d = re.match(r'(.*?):(.*)',str1)
         w = d.group(1)
         if (w == "cs" or w == "de" or w == "el" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
@@ -29,7 +34,16 @@ async def im(str1):
             y = sorted(x.keys())[0]
             if  int(y) == -1:
                 if 'missing' in x['-1']:
-                    pass
+                    try:                
+                        searchurl = url1+'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                        f = requests.get(searchurl)
+                        g = json.loads(f.text)
+                        j = g['query']['pages']
+                        b = sorted(j.keys())[0]
+                        m = j[b]['title']
+                        return ('提示：您要找的'+ pagename + '不存在，你要找的页面是' + m + '吗？')
+                    except Exception:
+                        return ('提示：找不到条目。')
                 else:
                     return (url1+urllib.parse.quote(pagename.encode('UTF-8')))
             else:
@@ -51,7 +65,7 @@ async def im(str1):
                 else:
                     xx = re.sub('\n$','','('+str1+' -> '+k+')\n'+z+'\n'+r)
                 return(xx)
-        except  Exception:
-            pass
-    except  Exception:
-        pass
+        except  Exception as e:
+            return('发生错误：'+str(e))
+    except  Exception as e:
+        return('发生错误：'+str(e))
