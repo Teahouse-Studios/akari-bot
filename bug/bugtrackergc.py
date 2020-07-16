@@ -15,6 +15,7 @@ async def buggc(pagename):
             pass
         url_str ='https://bugs.mojang.com/si/jira.issueviews:issue-xml/'+ str.upper(pagename) + '/' + str.upper(pagename) + '.xml'
         respose_str =  requests.get(url_str,timeout=10)
+        respose_str =  requests.get(url_str,timeout=10)
         try:
             respose_str.encoding = 'utf-8'
             root = ElementTree.XML(respose_str.text)
@@ -41,33 +42,18 @@ async def buggc(pagename):
             try:
                 Priority = "Mojang优先级："+tr.translate(file['fields']['customfield_12200']['value'],dest='zh-cn').text
                 return(Title+'\n'+Titleg+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+"由Google翻译提供支持。")
-                z.close()
-                os.remove('bug_cache_text.txt')
             except Exception:
                 return(Title+'\n'+Titleg+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+"由Google翻译提供支持。")
         except Exception:
             try:
-                respose_str.encoding = 'utf-8'
-                root = ElementTree.XML(respose_str.text)
-                for node in root.iter("channel"):
-                    for node in root.iter("item"):
-                        Title = node.find("title").text
-                        Titleg = tr.translate(node.find("title").text,dest='zh-cn').text
-                        Type = "类型：" + node.find("type").text
-                        TStatus = "进度：" + tr.translate(node.find("status").text,dest='zh-cn').text
-                        Resolution = "状态：" + tr.translate(node.find("resolution"),dest='zh-cn').text
-                        Priority = "优先级：" + tr.translate(node.find("priority"),dest='zh-cn').text
-                        Link = node.find("link").text
-                        return(Title+'\n'+Titleg+'\n'+Type+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
+                return(Title+'\n'+Titleg+'\n'+Type+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
             except Exception:
                 try:
-                    respose_str.encoding = 'utf-8'
-                    root = ElementTree.XML(respose_str.text)
-                    for node in root.iter("channel"):
-                        for node in root.iter("item"):
-                            Link = node.find("link").text
-                            return(Link)
-                except Exception as e:      
-                    return("发生错误："+str(e)+".")
+                    return(Title+'\n'+Titleg+'\n'+Type+'\n'+TStatus+'\n'+Resolution+'\n'+Link+'\n'+"由Google翻译提供支持。")
+                except Exception:
+                    try:
+                        return(Link)
+                    except Exception as e:      
+                        return("发生错误："+str(e)+".")
     except Exception as e:      
         return("发生错误："+str(e)+".")

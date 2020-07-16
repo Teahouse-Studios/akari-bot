@@ -13,6 +13,7 @@ def bug(pagename):
             pass
         url_str ='https://bugs.mojang.com/si/jira.issueviews:issue-xml/'+ str.upper(pagename) + '/' + str.upper(pagename) + '.xml'
         respose_str =  requests.get(url_str,timeout=10)
+        respose_str =  requests.get(url_str,timeout=10)
         try:
             respose_str.encoding = 'utf-8'
             root = ElementTree.XML(respose_str.text)
@@ -64,8 +65,11 @@ def bug(pagename):
                 return (Title+'\n'+Type+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link)
             except Exception:
                 try:
-                    return(Link)
-                except Exception as e:
-                    return ("发生错误："+str(e)+".")
+                    return(Title+'\n'+Type+'\n'+TStatus+'\n'+Resolution+'\n'+Link)
+                except Exception:
+                    try:
+                        return(Link)
+                    except Exception as e:
+                        return ("发生错误："+str(e)+".")
     except Exception as e:      
         return ("发生错误："+str(e)+".")

@@ -25,6 +25,7 @@ async def bugcb(pagename):
                 pass
             url_str ='https://bugs.mojang.com/si/jira.issueviews:issue-xml/'+ str.upper(pagename) + '/' + str.upper(pagename) + '.xml'
             respose_str =  requests.get(url_str,timeout=10)
+            respose_str =  requests.get(url_str,timeout=10)
             try:
                 respose_str.encoding = 'utf-8'
                 root = ElementTree.XML(respose_str.text)
@@ -61,44 +62,19 @@ async def bugcb(pagename):
                 try:
                     Priority = "Mojang Priority: "+file['fields']['customfield_12200']['value']
                     return(Title+'\n'+dst+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+'由百度翻译提供支持。')
-                    z.close()
-                    os.remove('bug_cache_text.txt')
                 except Exception:
                     return(Title+'\n'+dst+'\n'+Type+'\n'+Project+'\n'+TStatus+'\n'+Resolution+'\n'+Version+'\n'+Link+'\n'+'由百度翻译提供支持。')
             except Exception:
                 try:
-                    respose_str.encoding = 'utf-8'
-                    root = ElementTree.XML(respose_str.text)
-                    for node in root.iter("channel"):
-                        for node in root.iter("item"):
-                            Title = node.find("title").text
-                            q = node.find("title").text
-                            Type = "类型：" + node.find("type").text
-                            TStatus = "项目：" + node.find("status").text
-                            Resolution = "进度：" + node.find("resolution").text
-                            Priority = "Mojang优先级：" + node.find("priority").text
-                            Link = node.find("link").text
-                    sign = appid + q + str(salt) + secretKey
-                    sign = hashlib.md5(sign.encode()).hexdigest()
-                    myurl = myurl + '?appid=' + appid + '&q=' + urllib.parse.quote(q) + '&from=' + fromLang + '&to=' + toLang + '&salt=' + str(salt) + '&sign=' + sign
-                    httpClient = http.client.HTTPConnection('api.fanyi.baidu.com')
-                    httpClient.request('GET', myurl,timeout=10)
-                    response = httpClient.getresponse()
-                    result_all = response.read().decode("utf-8")
-                    result = json.loads(result_all)
-                    for item in result['trans_result']:
-                        dst=item['dst']
                     return(Title+'\n'+dst+'\n'+Type+'\n'+TStatus+'\n'+Priority+'\n'+Resolution+'\n'+Link+'\n'+'由百度翻译提供支持。')
                 except Exception:
                     try:
-                        respose_str.encoding = 'utf-8'
-                        root = ElementTree.XML(respose_str.text)
-                        for node in root.iter("channel"):
-                            for node in root.iter("item"):
-                                Link = node.find("link").text
-                                return(Link)
-                    except Exception as e:      
-                        return("发生错误："+str(e)+".")
+                        return(Title+'\n'+dst+'\n'+Type+'\n'+TStatus+'\n'+Resolution+'\n'+Link+'\n'+'由百度翻译提供支持。')
+                    except Exception:
+                        try:
+                            return(Link)
+                        except Exception as e:      
+                            return("发生错误："+str(e)+".")
         except Exception as e:      
             return("发生错误："+str(e)+".")
     except Exception as e:      
