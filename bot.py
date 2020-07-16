@@ -56,6 +56,7 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
         elif d.find("wiki") != -1 or d.find("Wiki") != -1:
             await app.sendGroupMessage(group, [Plain((await wikim(c)))])
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find("MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find("REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
+            await app.sendGroupMessage(group, [Plain('⏳')])
             await app.sendGroupMessage(group, [Plain((await bugtracker(c)))])
         elif d == 'server' or d == 'Server':
             await app.sendGroupMessage(group, [Plain((await ser(c)))])
