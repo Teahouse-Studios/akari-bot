@@ -70,6 +70,6 @@ def bug(pagename):
                     try:
                         return(Link)
                     except Exception as e:
-                        return ("发生错误："+str(e)+".")
+                        return ("发生错误：此漏洞可能不存在，以下为traceback：\n"+str(e)+".")
     except Exception as e:      
         return ("发生错误："+str(e)+".")
