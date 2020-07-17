@@ -37,9 +37,9 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
         if d == 'echo':
             echo = re.sub(r'^echo ','',c)
             await app.sendGroupMessage(group, [Plain(echo)])
-        if d == 'paa':
+        elif d == 'paa':
             await app.sendGroupMessage(group, [At(member.id),Plain('爬')])
-        if d == 'help':
+        elif d == 'help':
             await app.sendGroupMessage(group, [Plain((await help()))])
         elif d == 'mcv':
             await app.sendGroupMessage(group, [Plain((await mcv()))])
@@ -47,13 +47,12 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
             await app.sendGroupMessage(group, [Plain((await mcbv()))])
         elif d == 'mcdv':
             await app.sendGroupMessage(group, [Plain((await mcdv()))])
-        elif d.find('im') != -1:
-            await app.sendGroupMessage(group, [Plain((await im(c)))])
         elif d.find('新人')!= -1 or d.find('new')!=-1:
             await app.sendGroupMessage(group, [Plain((await new()))])
         elif d.find('xrrrlei')!= -1:
             await app.sendGroupMessage(group, [Plain((await newnew()))])
         elif d.find("wiki") != -1 or d.find("Wiki") != -1:
+            await app.sendGroupMessage(group, [Plain('⏳')])
             await app.sendGroupMessage(group, [Plain((await wikim(c)))])
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find("MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find("REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
             await app.sendGroupMessage(group, [Plain('⏳')])
@@ -108,6 +107,8 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
             await app.sendGroupMessage(group, [Plain((await rc()))])
         elif d == 'ab':
             await app.sendGroupMessage(group, [Plain((await ab()))])
+        else:
+            pass
     except Exception:
         pass
 @app.receiver("FriendMessage")
@@ -140,8 +141,6 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
             await app.sendFriendMessage(friend, [Plain((await bugtracker(c)))])
         elif d == 'server' or d == 'Server':
             await app.sendFriendMessage(friend, [Plain((await ser(c)))])
-        elif d == 'im' !=-1:
-            await app.sendFriendMessage(friend, [Plain((await im(c)))])
         elif d.find("user") != -1 or d.find("User") != -1:
             if c.find("-p") != -1:
                 f = re.sub(' -p', '', c)
@@ -180,7 +179,7 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
                             await app.sendFriendMessage(friend, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
                             await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
                     else:
-                        await app.sendFriendMessage(group, [Plain('没有找到此用户。')])
+                        await app.sendFriendMessage(friend, [Plain('没有找到此用户。')])
                 except Exception as e:
                     print(str(e))
 

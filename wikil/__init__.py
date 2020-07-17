@@ -41,7 +41,7 @@ async def im(str1):
                         j = g['query']['pages']
                         b = sorted(j.keys())[0]
                         m = j[b]['title']
-                        return ('提示：您要找的'+ pagename + '不存在，你要找的页面是' + m + '吗？')
+                        return ('提示：您要找的'+ pagename + '不存在，要找的页面是' + m + '吗？')
                     except Exception:
                         return ('提示：找不到'+ pagename+'。')
                 else:
