@@ -7,7 +7,7 @@ async def command(str1,member,group = '0'):
     try:
         q = re.match(r'^(发现新人：).*',str1)
         print(q.group(1))
-        if str(group) == '657876815':
+        if str(group) == '657876815' or str(group) == '676942198':
             if str(member) == '2736881328':
                 return  ('xrrrlei '+q.group(1))
             else:
