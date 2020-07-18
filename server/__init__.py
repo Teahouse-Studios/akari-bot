@@ -11,7 +11,7 @@ async def ser(str1):
     if str1.find(" -r") != -1:
         str1 = re.sub(' -r','',str1)
         str1 = re.match(r'^server (.*)',str1)
-        return (serverraw(str1.group(1)))
+        return (await serverraw(str1.group(1)))
     else:
         str1 = re.match(r'^server (.*)',str1)
         return (await server(str1.group(1)))

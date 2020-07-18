@@ -1,7 +1,6 @@
 import re
 import requests
 import json
-import os, sys
 from .be import main
 async def server(address):
     matchObj = re.match(r'(.*):(.*).*', address, re.M|re.I)
