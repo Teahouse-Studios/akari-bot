@@ -2,7 +2,7 @@ import re
 import requests
 import json
 from .be import main
-async def server(address):
+async def serverraw(address):
     matchObj = re.match(r'(.*):(.*).*', address, re.M|re.I)
     servers = []
     
