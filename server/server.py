@@ -33,17 +33,20 @@ async def server(address):
                 else:
                     servers.append('[JE]\n'+x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
             else:
-                pass
+                print('获取JE服务器信息失败。')
         except Exception:
             try:
                 x=re.sub(r'§\w',"",file['data']['description'])
                 servers.append('[JE]\n'+x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
             except Exception as e:
+                print('获取JE服务器信息失败。'+str(e))
                 servers.append("[JE]\n发生错误：调用API时发生错误。")
         try:
-            servers.append(await main(serip,port2))
-        except Exception:
-            pass
+            BE = await main(serip,port2)
+            BER = re.sub(r'§\w',"",BE)
+            servers.append(BER)
+        except Exception as e:
+            print('获取BE服务器信息失败。'+str(e))
         if str(servers)=='[]':
             return('连接失败，没有检测到任何服务器。')
         else:
