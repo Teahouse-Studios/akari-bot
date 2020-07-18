@@ -32,7 +32,7 @@ async def main(addr,port):
         remote_addr=(addr, port))
 
     try:
-        data = await asyncio.wait_for(on_con_lost, timeout=1)
+        data = await asyncio.wait_for(on_con_lost, timeout=5)
         # https://wiki.vg/Raknet_Protocol
         # Server ID string format
 
