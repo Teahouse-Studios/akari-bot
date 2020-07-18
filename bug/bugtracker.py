@@ -5,7 +5,7 @@ import json
 import string
 import os, sys
 
-def bug(pagename):
+async def bug(pagename):
     try:
         try:
             os.remove('bug_cache_text.txt')

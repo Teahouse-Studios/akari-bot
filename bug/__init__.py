@@ -17,8 +17,8 @@ async def bugtracker(name):
         else:
             try:
                 q = re.match(r'^bug (.*)\-(.*)', name)
-                return(bug(q.group(1)+'-'+q.group(2)))
+                return(await bug(q.group(1)+'-'+q.group(2)))
             except Exception:
                 return ('未知语法，请使用~bug -h获取帮助。')
-    except Exception:
+    except Exception as e:
         return (str(e))

@@ -2,15 +2,18 @@ import re
 import string
 from blacklist import blacklist
 from wikil import im
-async def command(str1,member):
+async def command(str1,member,group = '0'):
     str1 = re.sub(r'^～','~',str1)
     try:
         q = re.match(r'^(发现新人：).*',str1)
         print(q.group(1))
-        if str(member) == '2736881328':
-            return  ('xrrrlei '+q.group(1))
+        if str(group) == '657876815':
+            if str(member) == '2736881328':
+                return  ('xrrrlei '+q.group(1))
+            else:
+                return ('paa')
         else:
-            return ('paa')
+            pass
     except Exception:
         try:
             q = re.match(r'^.*(: ~)(.*)',str1)

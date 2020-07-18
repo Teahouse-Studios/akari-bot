@@ -26,8 +26,8 @@ app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}",websock
 @app.receiver("GroupMessage")
 async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
     try:
-        print (await command(message.toString(),str(member.id)))
-        c = await command(message.toString(),str(member.id))
+        print (await command(message.toString(),str(member.id),str(group.id)))
+        c = await command(message.toString(),str(member.id),str(group.id))
         try:
             d = c.split(' ')
             d = d[0]
