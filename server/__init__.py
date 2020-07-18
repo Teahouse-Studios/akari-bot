@@ -14,4 +14,4 @@ async def ser(str1):
         return (serverraw(str1.group(1)))
     else:
         str1 = re.match(r'^server (.*)',str1)
-        return (server(str1.group(1)))
+        return (await server(str1.group(1)))
