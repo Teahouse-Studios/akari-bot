@@ -36,6 +36,7 @@ async def command(str1,member,group = '0'):
                 except Exception:
                     try:
                         w = re.findall(r'\[\[(.*?)\]\]',str1)
+                        print(str(w))
                         if str(w) == '[]':
                             pass
                         else:
