@@ -37,7 +37,7 @@ async def command(str1,member,group = '0'):
                     try:
                         w = re.findall(r'\[\[(.*?)\]\]',str1)
                         print(str(w))
-                        if str(w) == '[]':
+                        if str(w) == '[]'or str(w) == "['']":
                             pass
                         else:
                             z = []
