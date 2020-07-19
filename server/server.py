@@ -18,7 +18,7 @@ async def server(address):
             
         try:
             url = 'http://motd.wd-api.com/?ip='+serip+'&port='+port1+'&mode=info'
-            motd = requests.get(url,timeout=10)
+            motd = requests.get(url,timeout=5)
             file = json.loads(motd.text)
             try:
                 if file['code'] == 200:
