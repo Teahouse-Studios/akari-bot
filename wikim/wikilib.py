@@ -10,19 +10,23 @@ async def Wiki(path1,pagename):
         x = file['query']['pages']
         y = sorted(x.keys())[0]
         if int(y) == -1:
-            if 'missing' in x['-1']:
-                try:                
-                    searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                    f = requests.get(searchurl)
-                    g = json.loads(f.text)
-                    j = g['query']['pages']
-                    b = sorted(j.keys())[0]
-                    m = j[b]['title']
-                    return ('找不到条目，您是否要找的是：' + m +'？')
-                except Exception:
-                    return ('找不到条目。')
+            if 'invalid' in x['-1']:
+                rs = re.sub('The requested page title contains invalid characters:','请求的页面标题包含非法字符：',x['-1']['invalidreason'])
+                return('发生错误：“'+rs+'”。')
             else:
-                return ('您要的'+pagename+'：'+path1+'/'+urllib.parse.quote(pagename.encode('UTF-8')))
+                if 'missing' in x['-1']:
+                    try:                
+                        searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                        f = requests.get(searchurl)
+                        g = json.loads(f.text)
+                        j = g['query']['pages']
+                        b = sorted(j.keys())[0]
+                        m = j[b]['title']
+                        return ('找不到条目，您是否要找的是：' + m +'？')
+                    except Exception:
+                        return ('找不到条目。')
+                else:
+                    return ('您要的'+pagename+'：'+path1+'/'+urllib.parse.quote(pagename.encode('UTF-8')))
         else:
             try:
                 z = x[y]['fullurl']
