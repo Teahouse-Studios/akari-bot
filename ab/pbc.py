@@ -49,6 +49,7 @@ async def main(newUsers):
     date = datetime.datetime.utcnow().strftime(GMT_FORMAT)
     nonce = 'i like oa forever {}'.format(time.time())
     contentMd5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
+    print(json.dumps(body))
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -59,6 +60,7 @@ async def main(newUsers):
         'x-acs-signature-version': '1.0',
         'x-acs-signature-method': 'HMAC-SHA1'
     }
+    print(headers)
     tmp = {
         'x-acs-version': '2018-05-09',
         'x-acs-signature-nonce': nonce,
@@ -71,8 +73,10 @@ async def main(newUsers):
     step3 = "POST\napplication/json\n{contentMd5}\napplication/json\n{date}\n{step1}\n{step2}".format(
         contentMd5=contentMd5,
         date=headers['Date'], step1=step1, step2=step2)
+    print(step3)
     sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, sha1))
     headers['Authorization'] = sign
+    print(headers)
     # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
