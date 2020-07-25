@@ -1,9 +1,15 @@
 # -*- coding:utf-8 -*-
 import json
 import requests
-
+from .pbc import main
 async def ab():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=abuselog&aflprop=user|title|action|result|filter&format=json'
-    text1 = requests.get(url)
+    text1 = requests.get(url,timeout=10)
     file = json.loads(text1.text)
-    return(file['query']['abuselog'][0]['title'] + ' - ' + file['query']['abuselog'][0]['user']+'\n处理结果：'+file['query']['abuselog'][0]['result'] +'\n'+file['query']['abuselog'][1]['title'] + ' - ' + file['query']['abuselog'][1]['user']+'\n处理结果：'+file['query']['abuselog'][1]['result'] +'\n'+file['query']['abuselog'][2]['title'] + ' - ' + file['query']['abuselog'][2]['user']+'\n处理结果：'+file['query']['abuselog'][2]['result'] +'\n'+file['query']['abuselog'][3]['title'] + ' - ' + file['query']['abuselog'][3]['user']+'\n处理结果：'+file['query']['abuselog'][3]['result'] +'\n'+file['query']['abuselog'][4]['title'] + ' - ' + file['query']['abuselog'][4]['user']+'\n处理结果：'+file['query']['abuselog'][4]['result'] +'…仅显示前5条内容。')
+    d = []
+    for x in file['query']['abuselog']:
+        d.append(x['title']+' - '+x['user']+'\n处理结果：'+x['result'])
+    y = await main(d)
+    space = '\n'
+    f = re.findall(r'.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*',space.join(y))
+    return(f[0]+'...仅显示前5条内容')

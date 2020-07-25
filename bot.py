@@ -14,7 +14,6 @@ from rc import rc
 from ab import ab
 from help import help
 from newbie import new
-from newbee import newnew
 from mcbv import mcbv
 from mcdv import mcdv
 from checkuser import checkuser
@@ -50,7 +49,7 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
         elif d.find('新人')!= -1 or d.find('new')!=-1:
             await app.sendGroupMessage(group, [Plain((await new()))])
         elif d.find('xrrrlei')!= -1:
-            await app.sendGroupMessage(group, [Plain((await newnew()))])
+            await app.sendGroupMessage(group, [Plain((await new()))])
         elif d.find("wiki") != -1 or d.find("Wiki") != -1:
             await app.sendGroupMessage(group, [Plain('⏳')])
             await app.sendGroupMessage(group, [Plain((await wikim(c)))])
