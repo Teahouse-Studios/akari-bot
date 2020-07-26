@@ -25,8 +25,8 @@ def computeMD5hash(my_string):
 
 load_dotenv(override=True)
 
-accessKeyId=os.getenv("accessKeyId")
-accessKeySecret=os.getenv("accessKeySecret")
+accessKeyId=os.environ.get("accessKeyId")
+accessKeySecret=os.environ.get("accessKeySecret")
 print(accessKeyId)
 print(accessKeySecret)
 async def main(newUsers):
