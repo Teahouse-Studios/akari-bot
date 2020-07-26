@@ -14,6 +14,7 @@ async def new():
         print(str(d))
         y = await main(d)
         space = '\n'
+        print(str(y))
         j = space.join(y)
         f = re.findall(r'.*\n.*\n.*\n.*\n.*',j)
         g = '这是当前的新人列表：\n'+f[0]+'\n...仅显示前5条内容'
