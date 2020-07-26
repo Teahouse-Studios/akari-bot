@@ -15,6 +15,6 @@ async def new():
         y = await main(d)
         space = '\n'
         f = re.findall(r'.*\n.*\n.*\n.*\n.*',space.join(y))
-        return('这是当前的新人列表：\n'+f[0]+'...仅显示前5条内容')
+        return('这是当前的新人列表：\n'+f[0]+'\n...仅显示前5条内容')
     except Exception as e:
         return('发生错误：'+str(e))
