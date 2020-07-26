@@ -27,6 +27,9 @@ load_dotenv(override=True)
 
 accessKeyId=os.getenv("accessKeyId")
 accessKeySecret=os.getenv("accessKeySecret")
+print(accessKeyId)
+print(accessKeySecret)
+
 async def main(newUsers):
     print('hello')
     body = {
