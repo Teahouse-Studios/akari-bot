@@ -13,26 +13,29 @@ async def ver(app: Mirai):
     import json
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     while True:
-        verlist = mcversion()
-        version_manifest = requests.get(url)
-        file = json.loads(version_manifest.text)
-        release = file['latest']['release']
-        snapshot = file['latest']['snapshot']
-        if release in verlist:
-            pass
-        else:
-            await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['release']+'正式版。')])
-            addversion = open('mcversion.txt','a')
-            addversion.write('\n'+release)
-            addversion.close()
-        if snapshot in verlist:
-            pass
-        else:
-            await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['snapshot']+'快照。')])
-            addversion = open('mcversion.txt','a')
-            addversion.write('\n'+snapshot)
-            addversion.close()
-        print('没有')
-        time.sleep(10)
+        try:
+            verlist = mcversion()
+            version_manifest = requests.get(url)
+            file = json.loads(version_manifest.text)
+            release = file['latest']['release']
+            snapshot = file['latest']['snapshot']
+            if release in verlist:
+                pass
+            else:
+                await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['release']+'正式版。')])
+                addversion = open('mcversion.txt','a')
+                addversion.write('\n'+release)
+                addversion.close()
+            if snapshot in verlist:
+                pass
+            else:
+                await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['snapshot']+'快照。')])
+                addversion = open('mcversion.txt','a')
+                addversion.write('\n'+snapshot)
+                addversion.close()
+            print('没有')
+            time.sleep(10)
+        except Exception as e:
+            print(str(e))
 if __name__ == "__main__":
     app.run()
