@@ -195,6 +195,8 @@ async def ver(app: Mirai):
     await app.sendGroupMessage(657876815,[Plain('已开启检测游戏版本。')])
     from mcversion import mcversion
     import time
+    import requests
+    import json
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     verlist = mcversion()
     while True:
