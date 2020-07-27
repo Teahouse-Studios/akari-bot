@@ -12,8 +12,8 @@ async def ver(app: Mirai):
     import requests
     import json
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
-    verlist = mcversion()
     while True:
+        verlist = mcversion()
         version_manifest = requests.get(url)
         file = json.loads(version_manifest.text)
         release = file['latest']['release']
