@@ -37,5 +37,6 @@ async def ver(app: Mirai):
             time.sleep(10)
         except Exception as e:
             print(str(e))
+            time.sleep(5)
 if __name__ == "__main__":
     app.run()
