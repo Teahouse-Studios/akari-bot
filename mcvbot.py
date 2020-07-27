@@ -34,3 +34,5 @@ async def ver(app: Mirai):
             addversion.close()
         print('没有')
         time.sleep(10)
+if __name__ == "__main__":
+    app.run()
