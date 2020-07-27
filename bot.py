@@ -192,7 +192,7 @@ async def msg(app: Mirai, friend: Friend, message: MessageChain):
         pass
 @app.subroutine
 async def ver(app: Mirai):
-    await app.sendGroupMessage('657876815',[Plain('已开启检测游戏版本。')])
+    await app.sendGroupMessage(657876815,[Plain('已开启检测游戏版本。')])
     from mcversion import mcversion
     import time
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
@@ -205,14 +205,14 @@ async def ver(app: Mirai):
         if release in verlist:
             pass
         else:
-            await app.sendGroupMessage('657876815',[Plain('启动器已更新'+file['latest']['release']+'正式版。')])
+            await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['release']+'正式版。')])
             addversion = open('mcversion.txt','a')
             addversion.write('\n'+release)
             addversion.close()
         if snapshot in verlist:
             pass
         else:
-            await app.sendGroupMessage('657876815',[Plain('启动器已更新'+file['latest']['snapshot']+'快照。')])
+            await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['snapshot']+'快照。')])
             addversion = open('mcversion.txt','a')
             addversion.write('\n'+snapshot)
             addversion.close()
