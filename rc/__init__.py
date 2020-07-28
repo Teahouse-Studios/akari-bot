@@ -13,7 +13,7 @@ async def rc():
     y = await main(d)
     space = '\n'
     f = re.findall(r'.*\n.*\n.*\n.*\n.*',space.join(y))
-    if f[0].find('<吃掉了>')!=-1:
+    if f[0].find('<吃掉了>')!=-1 or f[0].find('<全部吃掉了>')!=-1:
         return(f[0]+'\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。Special:最近更改')
     else:
         return(f[0]+'\n...仅显示前5条内容')

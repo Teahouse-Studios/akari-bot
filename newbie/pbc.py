@@ -87,8 +87,11 @@ async def main(newUsers):
                     for itemResult in item['results']:
                         if itemResult['suggestion'] == 'block':
                             for itemDetail in itemResult['details']:
-                                for itemContext in itemDetail["contexts"]:
-                                    content = content.replace(itemContext['context'], '<吃掉了>')
+                                if 'contexts' in itemDetail:
+                                    for itemContext in itemDetail["contexts"]:
+                                        content = content.replace(itemContext['context'], '<吃掉了>')
+                                else:
+                                    content = "<全部吃掉了>"
                     resultUsers.append(content)
                 return(resultUsers)
 
