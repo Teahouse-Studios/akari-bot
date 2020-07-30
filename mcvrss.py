@@ -3,7 +3,8 @@ import re
 def mcvrss():
     w = open('mcvrss.txt','r')
     s = w.read().split('\n')
-    s.remove('')
+    if '' in s:
+        s.remove('')
     return(s)
     w.close()
 def mcvrssa(group):
