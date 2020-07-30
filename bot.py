@@ -17,6 +17,7 @@ from newbie import new
 from mcbv import mcbv
 from mcdv import mcdv
 from checkuser import checkuser
+import mcvrss
 qq = 2052142661 # 字段 qq 的值
 authKey = '1145141919810' # 字段 authKey 的值
 mirai_api_http_locate = 'localhost:11919/ws' # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
@@ -106,6 +107,12 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
             await app.sendGroupMessage(group, [Plain((await rc()))])
         elif d == 'ab':
             await app.sendGroupMessage(group, [Plain((await ab()))])
+        elif d == 'rss':
+            rssre = re.sub(r'^rss ','',c)
+            if rssre == 'add mcv':
+                await app.sendGroupMessage(group, [Plain((mcvrss.mcvrssa(group.id)))])
+            if rssre == 'remove mcv':
+                await app.sendGroupMessage(group, [Plain((mcvrss.mcvrssr(group.id)))])
         else:
             pass
     except Exception:

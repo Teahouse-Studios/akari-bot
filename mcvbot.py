@@ -6,7 +6,13 @@ mirai_api_http_locate = 'localhost:11919/ws' # httpapi所在主机的地址端�
 app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}",websocket=True)
 @app.subroutine
 async def ver(app: Mirai):
-    await app.sendGroupMessage(657876815,[Plain('已开启检测游戏版本。')])
+    from mcvrss import mcvrss
+    for qqgroup in mcvrss():
+        try:
+            await app.sendGroupMessage(int(qqgroup),[Plain('已开启检测游戏版本。')])
+        except Exception as e:
+            print(str(e))
+
     from mcversion import mcversion
     import time
     import requests
@@ -22,18 +28,26 @@ async def ver(app: Mirai):
             if release in verlist:
                 pass
             else:
-                await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['release']+'正式版。')])
+                for qqgroup in mcvrss():
+                    try:
+                        await app.sendGroupMessage(int(qqgroup),[Plain('启动器已更新'+file['latest']['release']+'正式版。')])
+                    except Exception as e:
+                        print(str(e))
                 addversion = open('mcversion.txt','a')
                 addversion.write('\n'+release)
                 addversion.close()
             if snapshot in verlist:
                 pass
             else:
-                await app.sendGroupMessage(657876815,[Plain('启动器已更新'+file['latest']['snapshot']+'快照。')])
+                for qqgroup in mcvrss():
+                    try:
+                        await app.sendGroupMessage(int(qqgroup),[Plain('启动器已更新'+file['latest']['snapshot']+'快照。')])
+                    except Exception as e:
+                        print(str(e))
                 addversion = open('mcversion.txt','a')
                 addversion.write('\n'+snapshot)
                 addversion.close()
-            print('没有')
+            print('ping')
             time.sleep(10)
         except Exception as e:
             print(str(e))
