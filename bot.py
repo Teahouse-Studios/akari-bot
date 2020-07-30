@@ -108,10 +108,9 @@ async def msg(app: Mirai, group: Group,member: Member, message: MessageChain):
         elif d == 'ab':
             await app.sendGroupMessage(group, [Plain((await ab()))])
         elif d == 'rss':
-            rssre = re.sub(r'^rss ','',c)
-            if rssre == 'add mcv':
+            if c == 'rss add mcv':
                 await app.sendGroupMessage(group, [Plain((mcvrss.mcvrssa(group.id)))])
-            if rssre == 'remove mcv':
+            if c == 'rss remove mcv':
                 await app.sendGroupMessage(group, [Plain((mcvrss.mcvrssr(group.id)))])
         else:
             pass
