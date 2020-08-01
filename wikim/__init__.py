@@ -28,7 +28,7 @@ async def wikim(str1):
                 return (await Wiki(metaurl,s.group(2)))
             except:
                 try:
-                    d = re.match(r'(.*?) (.*)',q.group(1))
+                    d = re.match(r'(.*?):(.*)',q.group(1))
                     x = d.group(2)
                     w = str.lower(d.group(1))
                     if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
