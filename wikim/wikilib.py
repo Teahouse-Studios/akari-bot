@@ -17,14 +17,23 @@ async def Wiki(path1,pagename):
                 return('发生错误：“'+rs+'”。')
             else:
                 if 'missing' in x['-1']:
-                    try:                
-                        searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                        f = requests.get(searchurl)
-                        g = json.loads(f.text)
-                        j = g['query']['pages']
-                        b = sorted(j.keys())[0]
-                        m = j[b]['title']
-                        return ('找不到条目，您是否要找的是：' + m +'？')
+                    try:
+                        try:
+                            searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                            f = requests.get(searchurl)
+                            g = json.loads(f.text)
+                            j = g['query']['pages']
+                            b = sorted(j.keys())[0]
+                            m = j[b]['title']
+                            return ('找不到条目，您是否要找的是：' + m +'？')
+                        except Exception:
+                            searchurl = '/api.php?action=query&list=search&srsearch='+pagename+'&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+                            f = requests.get(searchurl)
+                            g = json.loads(f.text)
+                            j = g['query']['pages']
+                            b = sorted(j.keys())[0]
+                            m = j[b]['title']
+                            return ('找不到条目，您是否要找的是：' + m +'？')
                     except Exception:
                         return ('找不到条目。')
                 else:
