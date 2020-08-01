@@ -2,6 +2,7 @@ import re
 from .m import m
 from .wikilib import Wiki
 import asyncio
+import traceback
 async def wikim(str1):
     if str1.find(' -h')!=-1:
         return('''~wiki ~<site> <pagename> - 从指定Gamepedia站点中输出条目链接。
@@ -36,6 +37,7 @@ async def wikim(str1):
                             metaurl = 'https://minecraft-' + w + '.gamepedia.com'
                             return (await Wiki(metaurl, x))
                         except  Exception as e:
+                            traceback.print_exc()
                             return ('发生错误：' + str(e))
                     elif w == 'Wikipedia' or w == 'wikipedia':
                         return('暂不支持Wikipedia查询。')
@@ -56,6 +58,7 @@ async def wikim(str1):
                             metaurl = 'https://minecraft.gamepedia.com'
                             return (await Wiki(metaurl, q.group(1)))
                         except  Exception as e:
+                            traceback.print_exc()
                             return ('发生错误：' + str(e))
                 except Exception:
                     return(await m('en',q.group(1)))

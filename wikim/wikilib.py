@@ -2,6 +2,7 @@ import json
 import re
 import requests
 import urllib
+import traceback
 async def Wiki(path1,pagename):
     metaurl = path1 +'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     metatext = requests.get(metaurl, timeout=10)
@@ -68,4 +69,5 @@ async def Wiki(path1,pagename):
             else:
                 return('发生错误：内容非法。')
         except Exception as e:
+            traceback.print_exc()
             return('发生错误：'+str(e))
