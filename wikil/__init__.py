@@ -37,6 +37,7 @@ async def im(str1):
         c = 'minecraft-zh.gamepedia.com'
         pagename = str1
         itw = 'f'
+    w = d.group(1)
     metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = 'https://'+c+'/'
     try:
@@ -68,7 +69,7 @@ async def im(str1):
                                 searchurl = url1+'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
                                 f = requests.get(searchurl)
                                 g = json.loads(f.text)
-                                j = g['query']['search'][0]['title']
+                                m = g['query']['search'][0]['title']
                                 if itw == 't':
                                     m = w+':'+m
                                     pagename = w+':'+pagename
