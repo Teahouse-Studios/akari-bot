@@ -5,6 +5,7 @@ import urllib
 import traceback
 async def Wiki(path1,pagename):
     metaurl = path1 +'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
+    print(metaurl)
     metatext = requests.get(metaurl, timeout=10)
     file = json.loads(metatext.text)
     try:
