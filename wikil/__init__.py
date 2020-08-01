@@ -28,7 +28,7 @@ async def im(str1):
             c = 'minecraft-zh.gamepedia.com'
             pagename = str1
     except Exception:
-        c = 'minecraft-zh'
+        c = 'minecraft-zh.gamepedia.com'
         pagename = str1
     metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = 'https://'+c+'/'
