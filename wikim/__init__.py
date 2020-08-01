@@ -17,7 +17,7 @@ async def wikim(str1):
             q = re.match(r'^wiki-(.*?) (.*)',b)
             w = q.group(1)
             print(w)
-            if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
+            if (w == "cs" or w == "de" or w == "el" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
                 return(await m(q.group(1),q.group(2)))
             else:
                 return('未知语言，请使用~wiki -h查看帮助。')
@@ -32,7 +32,7 @@ async def wikim(str1):
                     d = re.match(r'(.*?):(.*)',q.group(1))
                     x = d.group(2)
                     w = str.lower(d.group(1))
-                    if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
+                    if (w == "cs" or w == "de" or w == "el" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
                         try:
                             metaurl = 'https://minecraft-' + w + '.gamepedia.com'
                             return (await Wiki(metaurl, x))
