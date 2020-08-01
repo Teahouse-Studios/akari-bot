@@ -21,11 +21,11 @@ async def im(str1):
             c = 'minecraft.gamepedia.com'
             pagename = d.group(2)
             itw = 't'
-        elif w == 'arc' or 'arcaea':
+        elif w == 'arc' or w == 'arcaea':
             c = 'wiki.arcaea.cn'
             pagename = d.group(2)
             itw = 't'
-        elif w == 'moe' or 'moegirl':
+        elif w == 'moe' or w == 'moegirl':
             c = 'zh.moegirl.org.cn'
             pagename = d.group(2)
             itw = 't'
@@ -37,6 +37,8 @@ async def im(str1):
         c = 'minecraft-zh.gamepedia.com'
         pagename = str1
         itw = 'f'
+    print(c)
+    print(pagename)
     w = d.group(1)
     metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = 'https://'+c+'/'
@@ -75,6 +77,7 @@ async def im(str1):
                                     pagename = w+':'+pagename
                                 return ('提示：您要找的'+ pagename + '不存在，要找的页面是' + m + '吗？')
                         except Exception:
+                            traceback.print_exc()
                             if itw == 't':
                                 pagename = w+':'+pagename
                             return ('提示：找不到'+ pagename+'。')
