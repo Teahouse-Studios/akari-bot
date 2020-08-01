@@ -68,7 +68,7 @@ async def im(str1):
                                 searchurl = url1+'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
                                 f = requests.get(searchurl)
                                 g = json.loads(f.text)
-                                j = g['query']['pages']
+                                j = g['query']['search']
                                 b = sorted(j.keys())[0]
                                 m = j[b]['title']
                                 if itw == 't':
