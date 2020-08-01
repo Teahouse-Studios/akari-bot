@@ -27,7 +27,7 @@ async def Wiki(path1,pagename):
                             m = j[b]['title']
                             return ('找不到条目，您是否要找的是：' + m +'？')
                         except Exception:
-                            searchurl = '/api.php?action=query&list=search&srsearch='+pagename+'&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+                            searchurl = path1+'/api.php?action=query&list=search&srsearch='+pagename+'&srwhat=text&srlimit=1&srenablerewrites=&format=json'
                             f = requests.get(searchurl)
                             g = json.loads(f.text)
                             m = g['query']['search'][0]['title']
