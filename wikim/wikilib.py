@@ -28,40 +28,34 @@ async def Wiki(path1,pagename):
                 else:
                     return ('您要的'+pagename+'：'+path1+'/'+urllib.parse.quote(pagename.encode('UTF-8')))
         else:
+            z = x[y]['fullurl']
+            if z.find('index.php') != -1 or z.find('Index.php') !=-1:
+                h = re.match(r'https?://.*/.*/(.*)', z, re.M | re.I)
+            else:
+                h = re.match(r'https?://.*/(.*)', z, re.M | re.I)
             try:
-                z = x[y]['fullurl']
-                h = re.match(r'https://.*/(.*)', z, re.M | re.I)
                 texturl = metaurl + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + h.group(1)
                 gettext = requests.get(texturl, timeout=10)
                 loadtext = json.loads(gettext.text)
                 v = loadtext['query']['pages'][y]['extract']
-                try:
-                    s = re.match(r'.*(\#.*)',pagename)
-                    z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
-                except Exception:
-                    z = x[y]['fullurl']
-                n = re.match(r'https://.*?/(.*)',z)
-                k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
-                k = re.sub('_',' ',k)
-                if k == pagename:
-                    xx = re.sub('\n$', '', z + '\n' + v)
-                else:
-                    xx = re.sub('\n$', '', '\n('+pagename +' -> '+k+')\n'+z + '\n' + v)
-                return('您要的'+pagename+"："+xx)
             except Exception:
-                try:
-                    s = re.match(r'.*(\#.*)',pagename)
-                    z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
-                except Exception:
-                    z = x[y]['fullurl']
-                n = re.match(r'https://.*?/(.*)',z)
-                k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
-                k = re.sub('_',' ',k)
-                if k == pagename:
-                    zz = z
-                else:
-                    zz = '\n('+pagename+' -> '+k+')\n'+z
-                return('您要的' + pagename + "：" + zz)
+                v = ''
+            try:
+                s = re.match(r'.*(\#.*)',pagename)
+                z = x[y]['fullurl'] + urllib.parse.quote(s.group(1).encode('UTF-8'))
+            except Exception:
+                z = x[y]['fullurl']
+            if z.find('index.php') != -1 or z.find('Index.php') !=-1:
+                n = re.match(r'https?://.*?/.*/(.*)',z)
+            else:
+                n = re.match(r'https?://.*?/(.*)',z)
+            k = urllib.parse.unquote(n.group(1),encoding='UTF-8')
+            k = re.sub('_',' ',k)
+            if k == pagename:
+                xx = re.sub('\n$', '', z + '\n' + v)
+            else:
+                xx = re.sub('\n$', '', '\n('+pagename +' -> '+k+')\n'+z + '\n' + v)
+            return('您要的'+pagename+"："+xx)
     except Exception:
         try:
             w = re.match(r'https://.*-(.*).gamepedia.com',path1)
