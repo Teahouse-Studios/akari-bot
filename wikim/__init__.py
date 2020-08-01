@@ -56,7 +56,7 @@ async def wikim(str1):
                     else:
                         try:
                             metaurl = 'https://minecraft.gamepedia.com'
-                            return (await Wiki(metaurl, q.group(1)))
+                            return (await Wiki(metaurl, d.group(1)))
                         except  Exception as e:
                             traceback.print_exc()
                             return ('发生错误：' + str(e))
