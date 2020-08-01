@@ -49,7 +49,7 @@ async def wikim(str1):
                             return ('发生错误：' + str(e))
                     elif w =='arcaea' or w == 'arc':
                         try:
-                            metaurl = 'https://wiki.arcaea.cn/'
+                            metaurl = 'https://wiki.arcaea.cn'
                             return (await Wiki(metaurl, x))
                         except Exception as e:
                             return ('发生错误：' + str(e))
