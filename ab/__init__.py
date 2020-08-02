@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 import requests
-from .pbc import main
+from pbc import main
 import re
 async def ab():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=abuselog&aflprop=user|title|action|result|filter&format=json'

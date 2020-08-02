@@ -36,7 +36,7 @@ async def main(newUsers):
             "antispam"
         ],
         "tasks": list(map(lambda x: {
-            "dataId": "oa nb {}".format(time.time()),
+            "dataId": "LittleC is god {}".format(time.time()),
             "content": x
         }, Users))
     }
@@ -49,7 +49,7 @@ async def main(newUsers):
 
     GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
     date = datetime.datetime.utcnow().strftime(GMT_FORMAT)
-    nonce = 'i like oa forever {}'.format(time.time())
+    nonce = 'LittleC is god forever {}'.format(time.time())
     contentMd5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
     print(json.dumps(body))
     headers = {

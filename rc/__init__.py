@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 import requests
-from .pbc import main
+from pbc import main
 import re
 async def rc():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
