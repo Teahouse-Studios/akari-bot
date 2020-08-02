@@ -42,11 +42,11 @@ async def newbie(app: Mirai):
                                 c = 't'
                     except Exception:
                         pass
-                    time.sleep(10)
                     if c == 't':
                         break
                     else:
                         print('nope')
+                        time.sleep(10)
                         pass
                 time.sleep(5)
             except Exception as e:
