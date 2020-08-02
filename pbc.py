@@ -24,6 +24,8 @@ def computeMD5hash(my_string):
 
 accessKeyId = os.environ.get("accessKeyId")
 accessKeySecret = os.environ.get("accessKeySecret")
+print(accessKeyId)
+print(accessKeySecret)
 
 async def main(newUsers):
     Users = []
