@@ -33,7 +33,9 @@ async def newbie(app: Mirai):
                             if xz['title'] in qq:
                                 pass
                             else:
+                                print(s)
                                 s = await main(UTC8(xz['timestamp']) + '新增新人：' + xz['title'])
+                                print(s)
                                 if s[0].find("<吃掉了>")!=-1 or s[0].find("<全部吃掉了>")!=-1:
                                     await app.sendGroupMessage(731397727,message=s[0]+'\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers')
                                 else:
