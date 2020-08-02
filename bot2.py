@@ -43,8 +43,8 @@ app = GraiaMiraiApplication(
 @bcc.receiver("GroupMessage")
 async def msg(app: GraiaMiraiApplication, group: Group, message: MessageChain):
     try:
-        print (await command(message.toString(),str(member.id),str(group.id)))
-        c = await command(message.toString(),str(member.id),str(group.id))
+        print (await command(message.asDisplay(),str(member.id),str(group.id)))
+        c = await command(message.asDisplay(),str(member.id),str(group.id))
         try:
             d = c.split(' ')
             d = d[0]
@@ -53,29 +53,29 @@ async def msg(app: GraiaMiraiApplication, group: Group, message: MessageChain):
         print(d)
         if d == 'echo':
             echo = re.sub(r'^echo ','',c)
-            await app.sendGroupMessage(group, [Plain(echo)])
+            await app.sendGroupMessage(group, MessageChain.create([Plain(echo)]))
         elif d == 'paa':
-            await app.sendGroupMessage(group, [At(member.id),Plain('爬')])
+            await app.sendGroupMessage(group, MessageChain.create([At(member.id),Plain('爬')]))
         elif d == 'help':
-            await app.sendGroupMessage(group, [Plain((await help()))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await help()))]))
         elif d == 'mcv':
-            await app.sendGroupMessage(group, [Plain((await mcv()))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await mcv()))]))
         elif d == 'mcbv':
-            await app.sendGroupMessage(group, [Plain((await mcbv()))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await mcbv()))]))
         elif d == 'mcdv':
-            await app.sendGroupMessage(group, [Plain((await mcdv()))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await mcdv()))]))
         elif d.find('新人')!= -1 or d.find('new')!=-1:
-            await app.sendGroupMessage(group, [Plain((await new()))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await new()))]))
         elif d.find('xrrrlei')!= -1:
-            await app.sendGroupMessage(group, [Plain((await new()))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await new()))]))
         elif d.find("wiki") != -1 or d.find("Wiki") != -1:
-            await app.sendGroupMessage(group, [Plain('⏳')])
-            await app.sendGroupMessage(group, [Plain((await wikim(c)))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain('⏳')]))
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await wikim(c)))]))
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find("MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find("REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
-            await app.sendGroupMessage(group, [Plain('⏳')])
-            await app.sendGroupMessage(group, [Plain((await bugtracker(c)))])
+            await app.sendGroupMessage(group, MessageChain.create([Plain('⏳')]))
+            await app.sendGroupMessage(group, MessageChain.create([Plain((await bugtracker(c)))]))
         elif d == 'server' or d == 'Server':
-            await app.sendGroupMessage(group, [Plain((await ser(c)))])
+            await app.sendGroupMessage(group,MessageChain.create([plain((await ser(c)))]))
         elif d.find("user") != -1 or d.find("User") != -1:
             if c.find("-p") != -1:
                 f = re.sub(' -p', '', c)
@@ -109,25 +109,25 @@ async def msg(app: GraiaMiraiApplication, group: Group, message: MessageChain):
                                     print(str(e))
                     if checkuser(h,h2):
                         if pathexist(h):
-                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
+                            await app.sendGroupMessage(group,MessageChain.create([plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")]))
                         else:
-                            await app.sendGroupMessage(group, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
-                            await app.sendGroupMessage(group, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
+                            await app.sendGroupMessage(group,MessageChain.create([plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')]))
+                            await app.sendGroupMessage(group,MessageChain.create([plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")]))
                     else:
-                        await app.sendGroupMessage(group, [Plain('没有找到此用户。')])
+                        await app.sendGroupMessage(group,MessageChain.create([plain('没有找到此用户。')]))
                 except Exception as e:
                     print(str(e))
 
             else:
-                await app.sendGroupMessage(group, [Plain((await Username(c)))])
+                await app.sendGroupMessage(group,MessageChain.create([plain((await Username(c)))]))
         elif d == 'rc':
-            await app.sendGroupMessage(group, [Plain((await rc()))])
+            await app.sendGroupMessage(group,MessageChain.create([plain((await rc()))]))
         elif d == 'ab':
-            await app.sendGroupMessage(group, [Plain((await ab()))])
+            await app.sendGroupMessage(group,MessageChain.create([plain((await ab()))]))
         if c == 'rss add mcv':
-            await app.sendGroupMessage(group, [Plain((mcvrss.mcvrssa(str(group.id))))])
+            await app.sendGroupMessage(group,MessageChain.create([plain((mcvrss.mcvrssa(str(group.id))))]))
         if c == 'rss remove mcv':
-            await app.sendGroupMessage(group, [Plain((mcvrss.mcvrssr(str(group.id))))])
+            await app.sendGroupMessage(group,MessageChain.create([plain((mcvrss.mcvrssr(str(group.id))))]))
         else:
             pass
     except Exception:
@@ -135,8 +135,8 @@ async def msg(app: GraiaMiraiApplication, group: Group, message: MessageChain):
 @bcc.receiver("FriendMessage")
 async def msg(app: GraiaMiraiApplication, friend: Friend, message: MessageChain):
     try:
-        print (await command(message.toString(),'0'))
-        c = await command(message.toString(),'0')
+        print (await command(message.asDisplay(),'0'))
+        c = await command(message.asDisplay(),'0')
         try:
             d = c.split(' ')
             d = d[0]
@@ -145,23 +145,23 @@ async def msg(app: GraiaMiraiApplication, friend: Friend, message: MessageChain)
         print(d)
         if d == 'echo':
             echo = re.sub(r'^echo ','',c)
-            await app.sendFriendMessage(friend, [Plain(echo)])
+            await app.sendFriendMessage(friend,MessageChain.create([plain(echo)]))
         if d == 'help':
-            await app.sendFriendMessage(friend, [Plain((await help()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await help()))]))
         if d == 'mcv':
-            await app.sendFriendMessage(friend, [Plain((await mcv()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await mcv()))]))
         elif d == 'mcbv':
-            await app.sendFriendMessage(friend, [Plain((await mcbv()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await mcbv()))]))
         elif d == 'mcdv':
-            await app.sendFriendMessage(friend, [Plain((await mcdv()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await mcdv()))]))
         elif c.find("wiki") !=-1 or c.find("Wiki") !=-1:
-            await app.sendFriendMessage(friend, [Plain((await wikim(c)))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await wikim(c)))]))
         elif d.find('新人')!= -1 or d.find('new')!=-1:
-            await app.sendFriendMessage(friend, [Plain((await new()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await new()))]))
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find("MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find("REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
-            await app.sendFriendMessage(friend, [Plain((await bugtracker(c)))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await bugtracker(c)))]))
         elif d == 'server' or d == 'Server':
-            await app.sendFriendMessage(friend, [Plain((await ser(c)))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await ser(c)))]))
         elif d.find("user") != -1 or d.find("User") != -1:
             if c.find("-p") != -1:
                 f = re.sub(' -p', '', c)
@@ -195,21 +195,21 @@ async def msg(app: GraiaMiraiApplication, friend: Friend, message: MessageChain)
                                     print(str(e))
                     if checkuser(h,h2):
                         if pathexist(h):
-                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
+                            await app.sendFriendMessage(friend,MessageChain.create([plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")]))
                         else:
-                            await app.sendFriendMessage(friend, [Plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')])
-                            await app.sendFriendMessage(friend, [Plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")])
+                            await app.sendFriendMessage(friend,MessageChain.create([plain('检测到此次为第一次访问该Wiki，下载资源可能会耗费一定的时间，请耐心等待。')]))
+                            await app.sendFriendMessage(friend,MessageChain.create([plain(Userp(h,h2)),Image.fromFileSystem("/home/wdljt/oasisakari/bot/assests/usercard/"+h2+".png")]))
                     else:
-                        await app.sendFriendMessage(friend, [Plain('没有找到此用户。')])
+                        await app.sendFriendMessage(friend,MessageChain.create([plain('没有找到此用户。')]))
                 except Exception as e:
                     print(str(e))
 
             else:
-                await app.sendFriendMessage(friend, [Plain((await Username(c)))])
+                await app.sendFriendMessage(friend,MessageChain.create([plain((await Username(c)))]))
         elif d == 'rc':
-            await app.sendFriendMessage(friend, [Plain((await rc()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await rc()))]))
         elif d == 'ab':
-            await app.sendFriendMessage(friend, [Plain((await ab()))])
+            await app.sendFriendMessage(friend,MessageChain.create([plain((await ab()))]))
     except Exception:
         pass
 app.launch_blocking()
