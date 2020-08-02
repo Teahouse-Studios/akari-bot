@@ -110,7 +110,7 @@ async def main2(newUsers):
         "tasks": list(map(lambda x: {
             "dataId": "LittleC is god {}".format(time.time()),
             "content": x
-        }, NewUsers))
+        }, newUsers))
     }
     print(urlencode({
         'test': 123
