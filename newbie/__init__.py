@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json 
 import requests
-from pbc import main
+from pbc import main2
 import re
 async def new():
     try:
@@ -12,7 +12,7 @@ async def new():
         for x in file['query']['logevents']:
             d.append(x['title'])
         print(str(d))
-        y = await main(d)
+        y = await main2(d)
         space = '\n'
         print(str(y))
         j = space.join(y)
