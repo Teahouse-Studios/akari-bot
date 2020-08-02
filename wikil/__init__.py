@@ -39,7 +39,10 @@ async def im(str1):
         itw = 'f'
     print(c)
     print(pagename)
-    w = d.group(1)
+    try:
+        w = d.group(1)
+    except Exception:
+        w = str1
     metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = 'https://'+c+'/'
     try:
