@@ -11,6 +11,7 @@ async def rc():
     for x in file['query']['recentchanges']:
         d.append(x['title']+' - '+x['user']+' '+x['timestamp'])
     y = await main(d)
+    print(y)
     space = '\n'
     f = re.findall(r'.*\n.*\n.*\n.*\n.*',space.join(y))
     if f[0].find('<吃掉了>')!=-1 or f[0].find('<全部吃掉了>')!=-1:
