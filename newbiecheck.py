@@ -5,6 +5,7 @@ from pbc import main
 import json
 import requests
 from mirai import Mirai, Group, MessageChain, Member, Plain, At, Source, Image, Friend
+import traceback
 qq = 2052142661 # 字段 qq 的值
 authKey = '1145141919810' # 字段 authKey 的值
 mirai_api_http_locate = 'localhost:11919/ws' # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
@@ -49,4 +50,8 @@ async def newbie(app: Mirai):
                         pass
                 time.sleep(5)
             except Exception as e:
+                traceback.print_exc()
                 print('xxx' + str(e))
+    except Exception as e:
+        traceback.print_exc()
+        print(str(e)) 
