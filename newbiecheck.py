@@ -55,3 +55,5 @@ async def newbie(app: Mirai):
     except Exception as e:
         traceback.print_exc()
         print(str(e)) 
+if __name__ == "__main__":
+    app.run()
