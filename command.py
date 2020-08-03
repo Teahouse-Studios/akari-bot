@@ -1,7 +1,7 @@
 import re
 import string
 from blacklist import blacklist
-from wikil import im
+from wikil import im,imarc
 async def command(str1,member,group = '0'):
     str1 = re.sub(r'^～','~',str1)
     try:
@@ -24,16 +24,29 @@ async def command(str1,member,group = '0'):
                 return ('bug '+q)
             except Exception:
                 try:
-                    w = re.findall(r'\[\[(.*?)\]\]',str1)
-                    print(str(w))
-                    if str(w) == '[]'or str(w) == "['']":
-                        pass
+                    if group == '250500369':
+                        w = re.findall(r'\[\[(.*?)\]\]',str1)
+                        print(str(w))
+                        if str(w) == '[]'or str(w) == "['']":
+                            pass
+                        else:
+                            z = []
+                            c = '\n'
+                            for x in w:
+                                z.append(await imarc(x))
+                            v = c.join(z)
+                            return('echo '+v)
                     else:
-                        z = []
-                        c = '\n'
-                        for x in w:
-                            z.append(await im(x))
-                        v = c.join(z)
-                        return('echo '+v)
+                        w = re.findall(r'\[\[(.*?)\]\]',str1)
+                        print(str(w))
+                        if str(w) == '[]'or str(w) == "['']":
+                            pass
+                        else:
+                            z = []
+                            c = '\n'
+                            for x in w:
+                                z.append(await im(x))
+                            v = c.join(z)
+                            return('echo '+v)
                 except Exception:
                     pass
