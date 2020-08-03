@@ -62,7 +62,7 @@ async def wi(c,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
                         else:
                             name = re.sub('Template:','',pagename)
                             name = re.sub('template:','',name)
-                            return('提示：模板'+pagename+'不存在，已自动回滚搜索页面。\n'+await wi(c,name,itw,ignoremessage,template='f'))
+                            return('提示：['+pagename+']不存在，已自动回滚搜索页面。\n'+await wi(c,name,itw,ignoremessage,template='f'))
                     else:
                         return (url1+urllib.parse.quote(pagename.encode('UTF-8')))
             else:
