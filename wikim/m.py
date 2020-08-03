@@ -17,8 +17,12 @@ async def m(lang,str1):
         metatext = requests.get(url,timeout=5)
         try:
             file = json.loads(metatext.text)
-            x = file['query']['pages']
-            y = sorted(x.keys())[0]
+            try:
+                x = file['query']['pages']
+                y = sorted(x.keys())[0]
+            except Exception:
+                return('发生错误：请检查您输入的标题是否正确。')
+            
             if  int(y) == -1:
                 if 'invalid' in x['-1']:
                     rs = re.sub('The requested page title contains invalid characters:','请求的页面标题包含非法字符：',x['-1']['invalidreason'])

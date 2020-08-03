@@ -50,8 +50,12 @@ async def im(str1):
         metatext = requests.get(url,timeout=5)
         file = json.loads(metatext.text)
         try:
-            x = file['query']['pages']
-            y = sorted(x.keys())[0]
+            try:
+                x = file['query']['pages']
+                y = sorted(x.keys())[0]
+            except Exception:
+                return('发生错误：请检查您输入的标题是否正确。')
+            
             if  int(y) == -1:
                 if 'invalid' in x['-1']:
                     rs = re.sub('The requested page title contains invalid characters:','请求的页面标题包含非法字符：',x['-1']['invalidreason'])
@@ -181,7 +185,7 @@ async def imarc(str1):
                 return(xx)
         except  Exception as e:
             traceback.print_exc()
-            return('发生错误：'+str(e))
+            pass
     except  Exception as e:
         traceback.print_exc()
-        return('发生错误：'+str(e))
+        pass
