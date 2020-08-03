@@ -30,19 +30,25 @@ async def command(str1,member,group = '0'):
                     z = []
                     c = '\n'
                     try:
-                        for x in w:
-                            if group == '250500369' or group == '676942198':
-                                z.append(await imarc(x))
-                            else:
-                                z.append(await im(x))
+                        if str(w) == '[]':
+                            pass
+                        else:
+                            for x in w:
+                                if group == '250500369' or group == '676942198':
+                                    z.append(await imarc(x))
+                                else:
+                                    z.append(await im(x))
                     except:
                         pass
                     try:
-                        for x in w2:
-                            if group == '250500369' or group == '676942198':
-                                pass
-                            else:
-                                z.append(await imt(x))
+                        if str(w2) == '[]':
+                            pass
+                        else:
+                            for x in w2:
+                                if group == '250500369' or group == '676942198':
+                                    pass
+                                else:
+                                    z.append(await imt(x))
                     except:
                         pass
                     if str(z) =='['']['']' or str(z) == '[][]' or str(z) == '[]':
