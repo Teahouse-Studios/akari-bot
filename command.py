@@ -24,29 +24,33 @@ async def command(str1,member,group = '0'):
                 return ('bug '+q)
             except Exception:
                 try:
-                    if group == '250500369':
-                        w = re.findall(r'\[\[(.*?)\]\]',str1)
-                        print(str(w))
-                        if str(w) == '[]'or str(w) == "['']":
-                            pass
-                        else:
-                            z = []
-                            c = '\n'
-                            for x in w:
-                                z.append(await imarc(x))
-                            v = c.join(z)
-                            return('echo '+v)
+                    w = re.findall(r'\[\[(.*?)\]\]',str1)
+                    print(str(w))
+                    if str(w) == '[]'or str(w) == "['']":
+                        pass
                     else:
-                        w = re.findall(r'\[\[(.*?)\]\]',str1)
-                        print(str(w))
-                        if str(w) == '[]'or str(w) == "['']":
+                        z = []
+                        c = '\n'
+                        for x in w:
+                            if group == '250500369':
+                                z.append(await imarc(x))
+                            else:
+                                z.append(await im(x))
+                        v = c.join(z)
+                        return('echo '+v)
+                except Exception:
+                    try:
+                        if group == '250500369':
                             pass
                         else:
-                            z = []
-                            c = '\n'
-                            for x in w:
-                                z.append(await im(x))
-                            v = c.join(z)
-                            return('echo '+v)
-                except Exception:
-                    pass
+                            w2 = re.findall(r'\{\{(.*?)\}\}',str1)
+                            print(str(w2))
+                            if str(w2) == '[]'or str(w2) == "['']":
+                                pass
+                            else:
+                                z2 = []
+                                c2 = '\n'
+                                for x in w2:
+                                    z2.append(await imt(x))
+                                v2 = c.join(z2)
+                                return('echo '+v)
