@@ -31,7 +31,7 @@ async def command(str1,member,group = '0'):
                     c = '\n'
                     try:
                         for x in w:
-                            if group == '250500369':
+                            if group == '250500369' or group == '676942198':
                                 z.append(await imarc(x))
                             else:
                                 z.append(await im(x))
@@ -39,7 +39,7 @@ async def command(str1,member,group = '0'):
                         pass
                     try:
                         for x in w2:
-                            if group == '250500369':
+                            if group == '250500369' or group == '676942198':
                                 pass
                             else:
                                 z.append(await imt(x))
