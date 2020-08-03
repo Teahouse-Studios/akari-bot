@@ -45,7 +45,7 @@ async def command(str1,member,group = '0'):
                                 z.append(await imt(x))
                     except:
                         pass
-                    if z == '[]' or z == '['']' or z =='['','']':
+                    if str(z) == '[]' or str(z) == '['']' or str(z) =='['','']':
                         pass
                     else:
                         v = c.join(z)
