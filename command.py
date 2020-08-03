@@ -54,3 +54,5 @@ async def command(str1,member,group = '0'):
                                     z2.append(await imt(x))
                                 v2 = c.join(z2)
                                 return('echo '+v2)
+                    except Exception:
+                        pass
