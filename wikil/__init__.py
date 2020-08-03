@@ -38,7 +38,7 @@ async def im(str1):
         c = 'minecraft-zh.gamepedia.com'
         pagename = str1
         itw = 'f'
-    return(await w(c,pagename,itw,'f'))
+    return(await w(c,pagename,itw,ignoremessage='f'))
 
 async def imarc(str1):
     try:
@@ -48,4 +48,4 @@ async def imarc(str1):
         str1 = str1
     c = 'wiki.arcaea.cn'
     itw = 'f'
-    return(await w(c,pagename,itw,'t'))
+    return(await w(c,pagename,itw,ignoremessage='t'))
