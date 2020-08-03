@@ -30,7 +30,7 @@ async def command(str1,member,group = '0'):
                     z = []
                     c = '\n'
                     try:
-                        if str(w) == '[]':
+                        if str(w) == '['']':
                             pass
                         else:
                             for x in w:
@@ -41,7 +41,7 @@ async def command(str1,member,group = '0'):
                     except:
                         pass
                     try:
-                        if str(w2) == '[]':
+                        if str(w2) == '['']':
                             pass
                         else:
                             for x in w2:
