@@ -25,34 +25,30 @@ async def command(str1,member,group = '0'):
             except Exception:
                 try:
                     w = re.findall(r'\[\[(.*?)\]\]',str1)
-                    print(str(w))
-                    if str(w) == '[]'or str(w) == "['']":
-                        pass
-                    else:
-                        z = []
-                        c = '\n'
+                    w2 = re.findall(r'\{\{(.*?)\}\}',str1)
+                    print(str(w),str(w2))
+                    z = []
+                    c = '\n'
+                    try:
                         for x in w:
                             if group == '250500369':
                                 z.append(await imarc(x))
                             else:
                                 z.append(await im(x))
+                    except:
+                        pass
+                    try:
+                        for x in w2:
+                            if group == '250500369':
+                                pass
+                            else:
+                                z.append(await imt(x))
+                    except:
+                        pass
+                    if z == '[]' or z == '['']' or z =='['','']':
+                        pass
+                    else:
                         v = c.join(z)
                         return('echo '+v)
                 except Exception:
-                    try:
-                        if group == '250500369':
-                            pass
-                        else:
-                            w2 = re.findall(r'\{\{(.*?)\}\}',str1)
-                            print(str(w2))
-                            if str(w2) == '[]'or str(w2) == "['']":
-                                pass
-                            else:
-                                z2 = []
-                                c2 = '\n'
-                                for x in w2:
-                                    z2.append(await imt(x))
-                                v2 = c.join(z2)
-                                return('echo '+v2)
-                    except Exception:
-                        pass
+                    pass
