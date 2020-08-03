@@ -1,6 +1,5 @@
 import re
-from .m import m
-from .wikilib import Wiki
+from .wikilib import Wiki,m
 import asyncio
 import traceback
 async def wikim(str1,group = 0):
