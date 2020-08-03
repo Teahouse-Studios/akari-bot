@@ -1,7 +1,7 @@
 import re
 import string
 from blacklist import blacklist
-from wikil import im,imarc
+from wikil import im,imarc,imt
 async def command(str1,member,group = '0'):
     str1 = re.sub(r'^～','~',str1)
     try:
