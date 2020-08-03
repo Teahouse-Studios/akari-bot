@@ -53,4 +53,4 @@ async def command(str1,member,group = '0'):
                                 for x in w2:
                                     z2.append(await imt(x))
                                 v2 = c.join(z2)
-                                return('echo '+v)
+                                return('echo '+v2)
