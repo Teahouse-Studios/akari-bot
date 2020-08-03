@@ -1,9 +1,6 @@
-import requests
-import json
 import re
-import urllib
 import traceback
-from .wikitextlib import w
+from .wikitextlib import wi
 async def im(str1):
     try:
         pipe = re.match(r'(.*?)\|.*',str1)
@@ -38,7 +35,7 @@ async def im(str1):
         c = 'minecraft-zh.gamepedia.com'
         pagename = str1
         itw = 'f'
-    return(await w(c,pagename,itw,ignoremessage='f'))
+    return(await wi(c,pagename,itw,ignoremessage='f'))
 
 async def imarc(str1):
     try:
@@ -48,4 +45,4 @@ async def imarc(str1):
         str1 = str1
     c = 'wiki.arcaea.cn'
     itw = 'f'
-    return(await w(c,pagename,itw,ignoremessage='t'))
+    return(await wi(c,str1,itw,ignoremessage='t'))

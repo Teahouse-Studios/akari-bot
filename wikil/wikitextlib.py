@@ -1,4 +1,10 @@
-async def w(c,pagename,itw = 'f',ignoremessage = 'f'):
+import requests
+import json
+import re
+import urllib
+import traceback
+async def wi(c,pagename,itw = 'f',ignoremessage = 'f'):
+    str1 = pagename
     metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = 'https://'+c+'/'
     try:
@@ -80,7 +86,7 @@ async def w(c,pagename,itw = 'f',ignoremessage = 'f'):
                 if k == str1:
                     xx = re.sub('\n$','',z+'\n'+r)
                 else:
-                    xx = re.sub('\n$','','('+str1+' -> '+k+')\n'+z+'\n'+r)
+                    xx = re.sub('\n$','','（重定向['+str1+']至['+k+']）\n'+z+'\n'+r)
                 return(xx)
         except  Exception as e:
             traceback.print_exc()

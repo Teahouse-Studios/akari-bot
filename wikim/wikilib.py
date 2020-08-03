@@ -66,7 +66,7 @@ async def Wiki(path1,pagename):
             if k == pagename:
                 xx = re.sub('\n$', '', z + '\n' + v)
             else:
-                xx = re.sub('\n$', '', '\n('+pagename +' -> '+k+')\n'+z + '\n' + v)
+                xx = re.sub('\n$', '', '\n（重定向['+pagename +']至['+k+']）\n'+z + '\n' + v)
             return('您要的'+pagename+"："+xx)
     except Exception:
         try:
