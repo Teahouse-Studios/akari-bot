@@ -65,5 +65,5 @@ async def wikim(str1,group = 0):
                             except  Exception as e:
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
-                    except Exception:
-                        return(await m('en',q.group(1)))
+                except Exception:
+                    return(await m('en',q.group(1)))
