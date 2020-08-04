@@ -88,6 +88,7 @@ async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
                 k = re.sub('_',' ',k)
                 if itw == 't':
                     k = w+':'+k
+                    str1 = w+':'+str1
                 if k == str1:
                     xx = re.sub('\n$','',z+'\n'+r)
                 else:
