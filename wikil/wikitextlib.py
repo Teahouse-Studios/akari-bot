@@ -5,8 +5,8 @@ import urllib
 import traceback
 async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
     str1 = pagename
-    metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
-    url1 = 'https://'+c+'/'
+    metaurl = c+'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
+    url1 = c
     try:
         url = metaurl+pagename
         metatext = requests.get(url,timeout=5)
