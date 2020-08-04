@@ -3,7 +3,7 @@ import json
 import re
 import urllib
 import traceback
-async def wi(c,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
+async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
     str1 = pagename
     metaurl = 'https://'+c+'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = 'https://'+c+'/'
