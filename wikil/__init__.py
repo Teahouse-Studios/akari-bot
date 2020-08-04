@@ -64,4 +64,4 @@ async def imt(str1):
         pagename = 'Template:'+str1
         itw = 'f'
         w = '.'
-    return(await wi(c,w,pagename,itw,ignoremessage='f'))
+    return(await wi(c,w,pagename,itw,ignoremessage='f',template = 't'))
