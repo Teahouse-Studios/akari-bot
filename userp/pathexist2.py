@@ -1,8 +1,8 @@
 import os
 import re
-
+from os.path import abspath
 def pathexist(ss):
-    ddd = '/home/wdljt/oasisakari/bot/assests/usercard' + ss + '.png'
+    ddd = abspath('./assests/usercard' + ss + '.png')
     if not os.path.exists(ddd):
         return False
     else:

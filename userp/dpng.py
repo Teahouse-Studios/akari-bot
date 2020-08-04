@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup as bs
 import requests
 import re
 import os
+from os.path import abspath
 def dpng(link,ss):
     q = requests.get(link+'/File:Wiki.png',timeout=10)
     soup = bs(q.text,'html.parser')
@@ -9,7 +10,7 @@ def dpng(link,ss):
     src = aa.find_all('div',class_='fullImageLink')
     z = re.match('.*<a href="(.*)"><.*',str(src),re.S)
     url  =z.group(1)
-    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
+    d= abspath('./assests/Favicon/'+ss+'/')
     if not os.path.exists(d):
         os.makedirs(d)
     path=d+'Wiki.png'

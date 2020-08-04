@@ -7,6 +7,7 @@ import os
 from .killdd import ddk
 from .hh import hh
 from .hh17 import hh17
+from os.path import abspath
 def PUser1(url, str3,ss,User,Gender,Registration):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
@@ -16,10 +17,10 @@ def PUser1(url, str3,ss,User,Gender,Registration):
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
+    d= abspath('./assests/Favicon/'+ss+'/')
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png'
+    ddd = abspath('./assests/Favicon/'+ss+'/Wiki.png')
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
@@ -34,7 +35,7 @@ def PUser1(url, str3,ss,User,Gender,Registration):
             pass
         g = re.sub('User:', '', str3)
         from .tpg import tpg
-        tpg('/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point)
+        tpg(abspath('./assests/Favicon/'+ss+'/Wiki.png'),hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point)
     except Exception:
         return False
 def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry,Blockreason):
@@ -46,10 +47,10 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
+    d=abspath('./assests/Favicon/'+ss+'/')
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png'
+    ddd=abspath('./assests/Favicon/'+ss+'/Wiki.png')
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
@@ -64,7 +65,7 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
             pass
         g = re.sub('User:', '', str3)
         from .tpgban import tpgban
-        tpgban('/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry,hh17(Blockreason))
+        tpgban(abspath('./assests/Favicon/'+ss+'/Wiki.png'),hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry,hh17(Blockreason))
     except Exception:
         return False
 def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry):
@@ -76,10 +77,10 @@ def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/'
+    d=abspath('./assests/Favicon/'+ss+'/')
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd='/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png'
+    ddd = abspath('./assests/Favicon/'+ss+'/Wiki.png')
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
@@ -94,6 +95,6 @@ def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,
             pass
         g = re.sub('User:', '', str3)
         from .tpgbann import tpgbann
-        tpgbann('/home/wdljt/oasisakari/bot/assests/Favicon/'+ss+'/Wiki.png',hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry)
+        tpgbann(abspath('./assests/Favicon/'+ss+'/Wiki.png'),hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry)
     except Exception:
         return False
