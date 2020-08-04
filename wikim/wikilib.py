@@ -70,7 +70,7 @@ async def Wiki(path1,pagename):
             w = re.match(r'(.*?):(.*)',pagename)
             i = w.group(1)
             if (i == "ftb" or i == "aether" or i == "cs" or i == "de" or i == "el" or i == "en" or i == "es" or i == "fr" or i == "hu" or i == "it" or i == "ja" or i == "ko" or i == "nl" or i == "pl" or i == "pt" or i == "ru" or i == "th" or i == "tr" or i == "uk" or i == "zh"):
-                return(await m(i,w.group(2)))
+                return(await wiki2(i,w.group(2)))
             else:
                 return('发生错误：内容非法。')
         except Exception as e:
@@ -78,7 +78,7 @@ async def Wiki(path1,pagename):
             return('发生错误：'+str(e))
 
 
-async def m(lang,str1):
+async def wiki2(lang,str1):
     try:
         if lang =='en':
             metaurl = 'https://minecraft.gamepedia.com'

@@ -1,5 +1,5 @@
 import re
-from .wikilib import Wiki,m
+from .wikilib import Wiki,wiki2
 import asyncio
 import traceback
 async def wikim(str1,group = 0):
@@ -17,7 +17,7 @@ async def wikim(str1,group = 0):
             w = q.group(1)
             print(w)
             if (w == "cs" or w == "de" or w == "el" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
-                return(await m(q.group(1),q.group(2)))
+                return(await wiki2(q.group(1),q.group(2)))
             else:
                 return('未知语言，请使用~wiki -h查看帮助。')
         except:
@@ -65,4 +65,4 @@ async def wikim(str1,group = 0):
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
                 except Exception:
-                    return(await m('en',q.group(1)))
+                    return(await wiki2('en',q.group(1)))
