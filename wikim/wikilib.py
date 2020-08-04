@@ -9,11 +9,8 @@ async def Wiki(path1,pagename):
     metatext = requests.get(metaurl, timeout=10)
     file = json.loads(metatext.text)
     try:
-        try:
-            x = file['query']['pages']
-            y = sorted(x.keys())[0]
-        except Exception:
-            return('发生错误：请检查您输入的标题是否正确。')
+        x = file['query']['pages']
+        y = sorted(x.keys())[0]
         if int(y) == -1:
             if 'invalid' in x['-1']:
                 rs = re.sub('The requested page title contains invalid characters:','请求的页面标题包含非法字符：',x['-1']['invalidreason'])
@@ -70,10 +67,10 @@ async def Wiki(path1,pagename):
             return('您要的'+pagename+"："+xx)
     except Exception:
         try:
-            w = re.match(r'.*?:(.*?):.*',pagename)
+            w = re.match(r'.*?:(.*?):(.*)',pagename)
             i = w.group(1)
             if (i == "ftb" or i == "aether" or i == "cs" or i == "de" or i == "el" or i == "en" or i == "es" or i == "fr" or i == "hu" or i == "it" or i == "ja" or i == "ko" or i == "nl" or i == "pl" or i == "pt" or i == "ru" or i == "th" or i == "tr" or i == "uk" or i == "zh"):
-                return('检测到多重Interwiki，暂不支持多重Interwiki。')
+                return(await m(i,w.group(2)))
             else:
                 return('发生错误：内容非法。')
         except Exception as e:
