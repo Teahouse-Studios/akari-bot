@@ -35,7 +35,8 @@ async def im(str1):
         c = 'minecraft-zh.gamepedia.com'
         pagename = str1
         itw = 'f'
-    return(await wi(c,pagename,itw,ignoremessage='f'))
+        w = '.'
+    return(await wi(c,w,pagename,itw,ignoremessage='f'))
 
 async def imarc(str1):
     try:
@@ -45,7 +46,8 @@ async def imarc(str1):
         str1 = str1
     c = 'wiki.arcaea.cn'
     itw = 'f'
-    return(await wi(c,str1,itw,ignoremessage='t'))
+    w = '.'
+    return(await wi(c,w,str1,itw,ignoremessage='t'))
 
 async def imt(str1):
     try:
@@ -81,4 +83,5 @@ async def imt(str1):
         c = 'minecraft-zh.gamepedia.com'
         pagename = 'Template:'+str1
         itw = 'f'
-    return(await wi(c,pagename,itw,ignoremessage='f',template='t'))
+        w = '.'
+    return(await wi(c,w,pagename,itw,ignoremessage='f',template='t'))
