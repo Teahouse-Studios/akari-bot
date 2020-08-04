@@ -23,7 +23,7 @@ async def im(str1):
             itw = 'f'
     except Exception:
         c = iwlink('zh')
-        pagename = 'Template:'+str1
+        pagename = str1
         itw = 'f'
         w = '.'
     return(await wi(c,w,pagename,itw,ignoremessage='f'))
