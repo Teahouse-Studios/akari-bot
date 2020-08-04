@@ -4,7 +4,6 @@ import requests
 import urllib
 import traceback
 async def Wiki(path1,pagename):
-    print(pagename)
     metaurl = path1 +'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     print(metaurl)
     metatext = requests.get(metaurl, timeout=10)
@@ -68,7 +67,7 @@ async def Wiki(path1,pagename):
             return('您要的'+pagename+"："+xx)
     except Exception:
         try:
-            w = re.match(r'.*:(.*?):(.*)',pagename)
+            w = re.match(r'(.*?):(.*)',pagename)
             i = w.group(1)
             if (i == "ftb" or i == "aether" or i == "cs" or i == "de" or i == "el" or i == "en" or i == "es" or i == "fr" or i == "hu" or i == "it" or i == "ja" or i == "ko" or i == "nl" or i == "pl" or i == "pt" or i == "ru" or i == "th" or i == "tr" or i == "uk" or i == "zh"):
                 return(await m(i,w.group(2)))
