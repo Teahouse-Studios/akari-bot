@@ -3,8 +3,10 @@ import re
 import requests
 import urllib
 import traceback
+from interwikilist import iwlist,iwlink
 async def Wiki(path1,pagename):
-    metaurl = path1 +'/api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
+    print(pagename)
+    metaurl = path1 +'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     print(metaurl)
     metatext = requests.get(metaurl, timeout=10)
     file = json.loads(metatext.text)
@@ -19,7 +21,7 @@ async def Wiki(path1,pagename):
                 if 'missing' in x['-1']:
                     try:
                         try:
-                            searchurl = path1+'/api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                            searchurl = path1+'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
                             f = requests.get(searchurl)
                             g = json.loads(f.text)
                             j = g['query']['pages']
@@ -27,7 +29,7 @@ async def Wiki(path1,pagename):
                             m = j[b]['title']
                             return ('找不到条目，您是否要找的是：' + m +'？')
                         except Exception:
-                            searchurl = path1+'/api.php?action=query&list=search&srsearch='+pagename+'&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+                            searchurl = path1+'api.php?action=query&list=search&srsearch='+pagename+'&srwhat=text&srlimit=1&srenablerewrites=&format=json'
                             f = requests.get(searchurl)
                             g = json.loads(f.text)
                             m = g['query']['search'][0]['title']
@@ -35,7 +37,7 @@ async def Wiki(path1,pagename):
                     except Exception:
                         return ('找不到条目。')
                 else:
-                    return ('您要的'+pagename+'：'+path1+'/'+urllib.parse.quote(pagename.encode('UTF-8')))
+                    return ('您要的'+ pagename +'：'+path1 + urllib.parse.quote(pagename.encode('UTF-8')))
         else:
             z = x[y]['fullurl']
             if z.find('index.php') != -1 or z.find('Index.php') !=-1:
@@ -69,7 +71,7 @@ async def Wiki(path1,pagename):
         try:
             w = re.match(r'(.*?):(.*)',pagename)
             i = w.group(1)
-            if (i == "ftb" or i == "aether" or i == "cs" or i == "de" or i == "el" or i == "en" or i == "es" or i == "fr" or i == "hu" or i == "it" or i == "ja" or i == "ko" or i == "nl" or i == "pl" or i == "pt" or i == "ru" or i == "th" or i == "tr" or i == "uk" or i == "zh"):
+            if i in iwlist():
                 return(await wiki2(i,w.group(2)))
             else:
                 return('发生错误：内容非法。')
@@ -80,10 +82,7 @@ async def Wiki(path1,pagename):
 
 async def wiki2(lang,str1):
     try:
-        if lang =='en':
-            metaurl = 'https://minecraft.gamepedia.com'
-        else:
-            metaurl = 'https://minecraft-'+lang+'.gamepedia.com'
+        metaurl = iwlink(lang)
         return(await Wiki(metaurl,str1))
     except Exception as e:
         traceback.print_exc()
