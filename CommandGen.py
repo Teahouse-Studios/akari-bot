@@ -12,6 +12,7 @@ from userp import Userp
 from wiki import wiki,im,imt,imarc
 from help import help
 from checkuser import checkuser
+from ping import ping
 async def findcommand(str1,group=0):
     print(group)
     str1 = re.sub(r'^～','~',str1)
@@ -143,6 +144,8 @@ async def command(text,group=0):
             return(await rc())
         elif d == 'ab':
             return(await ab())
+        elif d == 'ping':
+            return(await ping())
         else:
             pass
     except:
