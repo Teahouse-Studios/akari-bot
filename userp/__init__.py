@@ -7,7 +7,7 @@ from .gender import gender
 from .UTC8V import UTC8V
 import urllib
 
-def Userp(path,Username):
+async def Userp(path,Username):
     try:
         q = re.sub('User:', '', Username)
         q = re.sub('_', ' ', q)

@@ -1,14 +1,11 @@
 import re
 from .user import User1
 from .ruserlib import rUser1
+from help import userhelp
 async def Username(name):
     name = re.sub(r'^User', 'user', name)
     if name.find(" -h")!= -1:
-        return ('''~user ~<site> <pagename> - 从指定Gamepedia站点中输出用户信息。
-~user <lang>:<pagename>, ~user-<lang> <pagename> - 从指定语言中的Minecraft Wiki中输出用户信息。
-~user <pagename> - 从Minecraft Wiki（英文）中输出用户信息。
-[-r] - 输出详细信息。
-[-p] - 输出一张用户信息的图片（不包含用户组）。''')
+        return (await userhelp())
     elif name.find(" -r")!=-1:
         m = re.sub(r' -r', '', name)
         try:

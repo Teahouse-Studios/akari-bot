@@ -4,7 +4,7 @@ import requests
 import urllib
 import traceback
 from interwikilist import iwlist,iwlink
-async def Wiki(path1,pagename):
+async def wiki1(path1,pagename):
     print(pagename)
     metaurl = path1 +'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     print(metaurl)
@@ -83,7 +83,7 @@ async def Wiki(path1,pagename):
 async def wiki2(lang,str1):
     try:
         metaurl = iwlink(lang)
-        return(await Wiki(metaurl,str1))
+        return(await wiki1(metaurl,str1))
     except Exception as e:
         traceback.print_exc()
         return (str(e))
