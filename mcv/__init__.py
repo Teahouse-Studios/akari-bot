@@ -19,7 +19,7 @@ async def mcv():
     return f"最新版：{data['latest']['release']}，最新快照：{data['latest']['snapshot']}"
 
 
-async def mvdv():
+async def mcdv():
     try:
         data = await get_data('https://bugs.mojang.com/rest/api/2/project/11901/versions', "json")
     except (ConnectionError, OSError):  # Probably...
@@ -39,11 +39,11 @@ async def mcbv():
     release = []
     for v in data:
         if not v['archived']:
-            match = re.match(r"(.*)Beta$", v["name"])
+            match = re.match(r"(.*Beta)$", v["name"])
             if match:
                 beta.append(match.group(1))
             else:
                 release.append(v["name"])
-    prefix = "| "
+    prefix = " | "
     return f'Beta：{prefix.join(beta)}，Release：{prefix.join(release)}\n' \
            f'（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
