@@ -1,11 +1,16 @@
 # -*- coding:utf-8 -*-
 import json
-import requests
+import aiohttp
 from pbc import main2
 import re
 async def rc():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
-    text1 = requests.get(url,timeout=10)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as req:
+            if req.status != 200:
+                return f"请求发生时错误:{req.status}"
+            else:
+                text1 = await req.text()
     file = json.loads(text1.text)
     d = []
     for x in file['query']['recentchanges']:
