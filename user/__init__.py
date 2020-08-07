@@ -60,12 +60,12 @@ async def Username(name):
                 return (User1(metaurl, s.group(2)))
             except:
                 try:
-                    d = re.sub(r':.*', '', q.group(1))
-                    x = re.sub(r'^' + d + ':', '', q.group(1))
-                    w = d
-                    if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
+                    i = re.match(r'(.*?):(.*)',q.group(1))
+                    w = i.group(1)
+                    x = i.group(2)
+                    if w in iwlist():
                         try:
-                            metaurl = 'https://minecraft-' + w + '.gamepedia.com'
+                            metaurl = iwlink(w)
                             return (User1(metaurl, x))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
