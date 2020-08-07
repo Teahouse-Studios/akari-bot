@@ -13,7 +13,7 @@ def dpng(link,ss):
     d= abspath('./assests/Favicon/'+ss+'/')
     if not os.path.exists(d):
         os.makedirs(d)
-    path=d+'Wiki.png'
+    path=d+'/Wiki.png'
 
     try:
         if not os.path.exists(d):

@@ -8,6 +8,7 @@ from .killdd import ddk
 from .hh import hh
 from .hh17 import hh17
 from os.path import abspath
+from .tpg import tpg
 def PUser1(url, str3,ss,User,Gender,Registration):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
@@ -24,20 +25,20 @@ def PUser1(url, str3,ss,User,Gender,Registration):
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
-    try:
-        url2 = url+'/UserProfile:'+q
-        res = requests.get(url2)
-        soup = bs(res.text, 'html.parser')
-        stats = soup.find('div', class_='section stats')
-        point = soup.find('div', class_='score').text
-        dd = stats.find_all('dd')
-        for tag in dd:
-            pass
-        g = re.sub('User:', '', str3)
-        from .tpg import tpg
-        tpg(abspath('./assests/Favicon/'+ss+'/Wiki.png'),hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point)
-    except Exception:
-        return False
+    url2 = url+'/UserProfile:'+q
+    res = requests.get(url2)
+    soup = bs(res.text, 'html.parser')
+    stats = soup.find('div', class_='section stats')
+    point = soup.find('div', class_='score').text
+    dd = stats.find_all('dd')
+    for tag in dd:
+        pass
+    g = re.sub('User:', '', str3)
+    tpg(favicon=abspath('./assests/Favicon/'+ss+'/Wiki.png'),wikiname=hh(Wikiname),\
+        username=User,gender=Gender,registertime=Registration,\
+        contributionwikis=ddk(str(dd[0])),createcount=ddk(str(dd[1])),\
+        editcount=ddk(str(dd[2])),deletecount=ddk(str(dd[3])),patrolcount=ddk(str(dd[4])),\
+        sitetop=ddk(str(dd[5])),globaltop=ddk(str(dd[6])),wikipoint=point)
 def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry,Blockreason):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
@@ -54,20 +55,21 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
-    try:
-        url2 = url+'/UserProfile:'+q
-        res = requests.get(url2)
-        soup = bs(res.text, 'html.parser')
-        stats = soup.find('div', class_='section stats')
-        point = soup.find('div', class_='score').text
-        dd = stats.find_all('dd')
-        for tag in dd:
-            pass
-        g = re.sub('User:', '', str3)
-        from .tpgban import tpgban
-        tpgban(abspath('./assests/Favicon/'+ss+'/Wiki.png'),hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry,hh17(Blockreason))
-    except Exception:
-        return False
+    url2 = url+'/UserProfile:'+q
+    res = requests.get(url2)
+    soup = bs(res.text, 'html.parser')
+    stats = soup.find('div', class_='section stats')
+    point = soup.find('div', class_='score').text
+    dd = stats.find_all('dd')
+    for tag in dd:
+        pass
+    g = re.sub('User:', '', str3)
+    tpg(favicon=abspath('./assests/Favicon/'+ss+'/Wiki.png'),wikiname=hh(Wikiname),username=User,\
+        gender=Gender,registertime=Registration,contributionwikis=ddk(str(dd[0])),\
+        createcount=ddk(str(dd[1])),editcount=ddk(str(dd[2])),deletecount=ddk(str(dd[3])),\
+        patrolcount=ddk(str(dd[4])),sitetop=ddk(str(dd[5])),globaltop=ddk(str(dd[6])),\
+        wikipoint=point,blockbyuser=Blockedby,blocktimestamp1=Blockedtimestamp,blocktimestamp2=Blockexpiry,\
+        blockreason=hh17(Blockreason),bantype='Y')
 def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
@@ -84,17 +86,18 @@ def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url,ss)
-    try:
-        url2 = url+'/UserProfile:'+q
-        res = requests.get(url2)
-        soup = bs(res.text, 'html.parser')
-        stats = soup.find('div', class_='section stats')
-        point = soup.find('div', class_='score').text
-        dd = stats.find_all('dd')
-        for tag in dd:
-            pass
-        g = re.sub('User:', '', str3)
-        from .tpgbann import tpgbann
-        tpgbann(abspath('./assests/Favicon/'+ss+'/Wiki.png'),hh(Wikiname),User,Gender,Registration,ddk(str(dd[0])),ddk(str(dd[1])),ddk(str(dd[2])),ddk(str(dd[3])),ddk(str(dd[4])),ddk(str(dd[5])),ddk(str(dd[6])),point,Blockedby,Blockedtimestamp,Blockexpiry)
-    except Exception:
-        return False
+    url2 = url+'/UserProfile:'+q
+    res = requests.get(url2)
+    soup = bs(res.text, 'html.parser')
+    stats = soup.find('div', class_='section stats')
+    point = soup.find('div', class_='score').text
+    dd = stats.find_all('dd')
+    for tag in dd:
+        pass
+    g = re.sub('User:', '', str3)
+    tpg(favicon=abspath('./assests/Favicon/'+ss+'/Wiki.png'),wikiname=hh(Wikiname),username=User,\
+        gender=Gender,registertime=Registration,contributionwikis=ddk(str(dd[0])),\
+        createcount=ddk(str(dd[1])),editcount=ddk(str(dd[2])),deletecount=ddk(str(dd[3])),\
+        patrolcount=ddk(str(dd[4])),sitetop=ddk(str(dd[5])),globaltop=ddk(str(dd[6])),\
+        wikipoint=point,blockbyuser=Blockedby,blocktimestamp1=Blockedtimestamp,blocktimestamp2=Blockexpiry,\
+        bantype='YN')

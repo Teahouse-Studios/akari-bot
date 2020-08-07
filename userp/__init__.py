@@ -1,3 +1,4 @@
+from wiki import im
 from .puserlib import PUser1, PUser1ban, PUser1bann
 import requests
 import json
@@ -6,7 +7,7 @@ from .UTC8U import UTC8U
 from .gender import gender
 from .UTC8V import UTC8V
 import urllib
-
+import traceback
 async def Userp(path,Username):
     try:
         q = re.sub('User:', '', Username)
@@ -39,6 +40,7 @@ async def Userp(path,Username):
                 h = '/Userprofile:' +User
                 return(metaurl+urllib.parse.quote(h.encode('UTF-8')))
             except Exception:
+                traceback.print_exc()
                 return ('N')
     except Exception as e:
         return ('发生错误：'+str(e))
