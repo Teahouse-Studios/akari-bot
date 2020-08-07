@@ -11,9 +11,9 @@ async def Username(name):
         m = re.sub(r' -r', '', name)
         try:
             q = re.match(r'^user-(.*) (.*)', m)
-            url = 'https://minecraft-' + q.group(1) + '.gamepedia.com'
             w = q.group(1)
-            if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
+            if w in iwlist():
+                url = iwlink(w)
                 return (rUser1(url, q.group(2)))
             else:
                 return('未知语言，请使用~user -h查看帮助。')
