@@ -2,6 +2,7 @@ import re
 from .user import User1
 from .ruserlib import rUser1
 from help import userhelp
+from interwikilist import iwlink,iwlist
 async def Username(name):
     name = re.sub(r'^User', 'user', name)
     if name.find(" -h")!= -1:
