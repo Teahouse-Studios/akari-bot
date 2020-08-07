@@ -1,6 +1,6 @@
 # bot
 
-Based on [python-mirai](https://github.com/NatriumLab/python-mirai).
+Based on [Graia](https://github.com/GraiaProject/Application).
 
 # Introduction
 
