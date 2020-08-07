@@ -1,5 +1,5 @@
 import re
-from .user import User1
+from .userlib import User1
 from .ruserlib import rUser1
 from help import userhelp
 from interwikilist import iwlink,iwlist
