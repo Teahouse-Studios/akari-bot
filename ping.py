@@ -13,7 +13,7 @@ async def ping():
     Net_spkg = psutil.net_io_counters().packets_sent
     Net_rpkg = psutil.net_io_counters().packets_recv
     BFH = r'%'
-    return("Pong!\n"+"系统运行时间：%s\033[1;m" % Boot_Start\
-        +"\n当前CPU使用率：%s%s\033[1;m" % (Cpu_usage,BFH)\
-        +"\n物理内存：%dM 使用率：%s%s\033[1;m" % (RAM,RAM_percent,BFH)\
-        +"\nSwap内存：%dM 使用率：%s%s\033[1;m" % (Swap,Swap_percent,BFH))
+    return("Pong!\n"+"系统运行时间：%s" % Boot_Start\
+        +"\n当前CPU使用率：%s%s" % (Cpu_usage,BFH)\
+        +"\n物理内存：%dM 使用率：%s%s" % (RAM,RAM_percent,BFH)\
+        +"\nSwap内存：%dM 使用率：%s%s" % (Swap,Swap_percent,BFH))
