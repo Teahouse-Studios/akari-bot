@@ -10,11 +10,7 @@ from time import gmtime, strftime
 from urllib.parse import urlencode
 import aiohttp
 import os
-from dotenv import find_dotenv,load_dotenv
-from pathlib import Path
-load_dotenv()
-env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path)
+from config import config
 def hash_hmac(key, code, sha1):
     hmac_code = hmac.new(key.encode(), code.encode(), sha1)
     return base64.b64encode(hmac_code.digest()).decode('utf-8')
@@ -25,8 +21,8 @@ def computeMD5hash(my_string):
     m.update(my_string.encode('gb2312'))
     return m.hexdigest()
 
-accessKeyId = os.environ.get("accessKeyId")
-accessKeySecret = os.environ.get("accessKeySecret")
+accessKeyId = config("accessKeyId")
+accessKeySecret = config("accessKeySecret")
 print(accessKeyId)
 print(accessKeySecret)
 
