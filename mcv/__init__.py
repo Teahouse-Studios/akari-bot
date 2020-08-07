@@ -1,44 +1,49 @@
-import requests
-import json
-import asyncio
 import re
+import aiohttp
+
+
+async def get_data(url: str, fmt: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as req:
+            if hasattr(req, fmt):
+                return await getattr(req, fmt)()
+            else:
+                raise ValueError(f"NoSuchMethod: {fmt}")
+
+
 async def mcv():
-    url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     try:
-        version_manifest = requests.get(url)
-        file = json.loads(version_manifest.text)
-        return("最新版：" + file['latest']['release'] + "，最新快照：" + file['latest']['snapshot'])
-    except Exception:
-        return("发生错误：土豆熟了。")
+        data = await get_data('http://launchermeta.mojang.com/mc/game/version_manifest.json', "json")
+    except (ConnectionError, OSError):  # Probably...
+        return "发生错误：土豆熟了"
+    return f"最新版：{data['latest']['release']}，最新快照：{data['latest']['snapshot']}"
+
+
+async def mvdv():
+    try:
+        data = await get_data('https://bugs.mojang.com/rest/api/2/project/11901/versions', "json")
+    except (ConnectionError, OSError):  # Probably...
+        return "发生错误：土豆熟了"
+    for v in data:
+        if not v['archived']:
+            return f'最新版：{v.get("name")} \n（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
+    return "出了点问题，快去锤develop（"
+
 
 async def mcbv():
-    url = 'https://bugs.mojang.com/rest/api/2/project/10200/versions'
-    q = requests.get(url)
-    w = json.loads(q.text)
-    f = []
-    z = []
-    for x in w[:]:
-        if x['archived'] == False:
-            try:
-                e = re.match(r'(.*)Beta$',x['name'])
-                f.append(e.group(1))
-            except Exception:
-                z.append(x['name'])
-        else:
-            pass
-    h = '| '
-    d = h.join(f)
-    u = h.join(z)
-    return('Beta: '+str(d)+'\nRelease: '+u+'\n（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）')
-
-async def mcdv():
-    url = 'https://bugs.mojang.com/rest/api/2/project/11901/versions'
-    q = requests.get(url)
-    w = json.loads(q.text)
-    f = []
-    for x in w[:]:
-        if x['archived'] == False:
-            s = x['name']
-        else:
-            pass
-    return('最新版：'+s+'\n（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）')
+    try:
+        data = await get_data('https://bugs.mojang.com/rest/api/2/project/10200/versions', "json")
+    except (ConnectionError, OSError):  # Probably...
+        return "发生错误：土豆熟了"
+    beta = []
+    release = []
+    for v in data:
+        if not v['archived']:
+            match = re.match(r"(.*)Beta$", v["name"])
+            if match:
+                beta.append(match.group(1))
+            else:
+                release.append(v["name"])
+    prefix = "| "
+    return f'Beta：{prefix.join(beta)}，Release：{prefix.join(release)}\n' \
+           f'（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
