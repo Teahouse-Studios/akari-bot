@@ -1,12 +1,17 @@
 # -*- coding:utf-8 -*-
 import json
-import requests
+import aiohttp
 from pbc import main2
 import re
 async def ab():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=abuselog&aflprop=user|title|action|result|filter&format=json'
-    text1 = requests.get(url,timeout=10)
-    file = json.loads(text1.text)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as req:
+            if req.status != 200:
+                return f"请求发生时错误:{req.status}"
+            else:
+                text1 = req.text
+    file = json.loads(text1)
     d = []
     for x in file['query']['abuselog']:
         d.append(x['title']+' - '+x['user']+'\n处理结果：'+x['result'])
