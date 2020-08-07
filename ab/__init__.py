@@ -10,7 +10,7 @@ async def ab():
             if req.status != 200:
                 return f"请求发生时错误:{req.status}"
             else:
-                text1 = req.text
+                text1 = await req.text()
     file = json.loads(text1)
     d = []
     for x in file['query']['abuselog']:
