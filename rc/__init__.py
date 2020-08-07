@@ -11,7 +11,7 @@ async def rc():
                 return f"请求发生时错误:{req.status}"
             else:
                 text1 = await req.text()
-    file = json.loads(text1.text)
+    file = json.loads(text1)
     d = []
     for x in file['query']['recentchanges']:
         d.append(x['title']+' - '+x['user']+' '+x['timestamp'])

@@ -11,7 +11,7 @@ async def new():
                 return f"请求发生时错误:{req.status}"
             else:
                 text1 = await req.text()
-    file = json.loads(text1.text)
+    file = json.loads(text1)
     d = []
     for x in file['query']['logevents']:
         d.append(x['title'])
