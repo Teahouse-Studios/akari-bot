@@ -3,7 +3,7 @@ import string
 from blacklist import blacklist
 from mcv import mcv,mcbv,mcdv
 from ab import ab
-from bug import bug
+from bug import bugtracker
 from newbie import new
 from rc import rc
 from server import ser
