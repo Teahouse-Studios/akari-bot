@@ -10,13 +10,13 @@ import urllib
 from bs4 import BeautifulSoup as bs
 def rUser1(url, str3):
     q = str3
-    url1 = url+'/api.php?action=query&list=users&ususers=' + q + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
-    url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
+    url1 = url+'api.php?action=query&list=users&ususers=' + q + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
+    url2 = url+'api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
     s = requests.get(url1, timeout=10)
     file = json.loads(s.text)
     c = requests.get(url2, timeout=10)
     file2 = json.loads(c.text)
-    url3 = url + '/UserProfile:' + q
+    url3 = url + 'UserProfile:' + q
     res = requests.get(url3, timeout=10)
     try:
         Wikiname = file2['query']['allmessages'][0]['*']
@@ -40,9 +40,9 @@ def rUser1(url, str3):
         a = re.sub('</dd>', '', a)
         g = re.sub('User:', '', str3)
         if not Blockreason:
-            return(url+'/UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User + a +' | WikiPoints：'+ point + '\n' + Group + '\n' + Gender + '\n' + Registration + '\n' +file['query']['users'][0]['name'] + '正在被封禁！\n被' + Blockedby + '封禁，时间从' + Blockedtimestamp + '到' + Blockexpiry)
+            return(url+'UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User + a +' | WikiPoints：'+ point + '\n' + Group + '\n' + Gender + '\n' + Registration + '\n' +file['query']['users'][0]['name'] + '正在被封禁！\n被' + Blockedby + '封禁，时间从' + Blockedtimestamp + '到' + Blockexpiry)
         else:
-            return(url+'/UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User + a + ' | WikiPoints：'+ point + '\n' + '\n' + Group + '\n' + Gender + '\n' + Registration + '\n' +file['query']['users'][0]['name'] + '正在被封禁！\n被' + Blockedby + '封禁，时间从' + Blockedtimestamp + '到' + Blockexpiry + '，理由：“' + Blockreason + '”')
+            return(url+'UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User + a + ' | WikiPoints：'+ point + '\n' + '\n' + Group + '\n' + Gender + '\n' + Registration + '\n' +file['query']['users'][0]['name'] + '正在被封禁！\n被' + Blockedby + '封禁，时间从' + Blockedtimestamp + '到' + Blockexpiry + '，理由：“' + Blockreason + '”')
     except Exception:
         try:
             User = '用户：' + file['query']['users'][0]['name']
@@ -57,6 +57,6 @@ def rUser1(url, str3):
             a = re.sub('<dd>', '', a)
             a = re.sub('</dd>', '', a)
             g = re.sub('User:', '', str3)
-            return(url+'/UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User +a + ' | WikiPoints：'+ point + '\n' + Group + '\n' + Gender + '\n' + Registration)
+            return(url+'UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User +a + ' | WikiPoints：'+ point + '\n' + Group + '\n' + Gender + '\n' + Registration)
         except Exception:
             return('没有找到此用户。'+str3)
