@@ -10,7 +10,7 @@ async def Username(name):
     elif name.find(" -r")!=-1:
         m = re.sub(r' -r', '', name)
         try:
-            q = re.match(r'^user-(.*) (.*)', m)
+            q = re.match(r'^user-(.*?) (.*)', m)
             w = q.group(1)
             if w in iwlist():
                 url = iwlink(w)
@@ -20,7 +20,7 @@ async def Username(name):
         except:
             q = re.match(r'^user (.*)', m)
             try:
-                s = re.match(r'~(.*) (.*)', q.group(1))
+                s = re.match(r'~(.*?) (.*)', q.group(1))
                 metaurl = 'https://' + s.group(1) + '.gamepedia.com'
                 return (rUser1(metaurl, s.group(2)))
             except:
@@ -45,7 +45,7 @@ async def Username(name):
                     return (rUser1(metaurl, q.group(1)))
     else:
         try:
-            q = re.match(r'^user-(.*) (.*)', name)
+            q = re.match(r'^user-(.*?) (.*)', name)
             url = 'https://minecraft-' + q.group(1) + '.gamepedia.com'
             w = q.group(1)
             if (w == "cs" or w == "de" or w == "el" or w == "en" or w == "es" or w == "fr" or w == "hu" or w == "it" or w == "ja" or w == "ko" or w == "nl" or w == "pl" or w == "pt" or w == "ru" or w == "th" or w == "tr" or w == "uk" or w == "zh"):
@@ -55,7 +55,7 @@ async def Username(name):
         except:
             q = re.match(r'^user (.*)', name)
             try:
-                s = re.match(r'~(.*) (.*)', q.group(1))
+                s = re.match(r'~(.*?) (.*)', q.group(1))
                 metaurl = 'https://' + s.group(1) + '.gamepedia.com'
                 return (User1(metaurl, s.group(2)))
             except:
