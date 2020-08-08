@@ -3,6 +3,7 @@ import json
 import aiohttp
 from pbc import main2
 import re
+from UTC8 import UTC8
 async def rc():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
     async with aiohttp.ClientSession() as session:
@@ -14,7 +15,7 @@ async def rc():
     file = json.loads(text1)
     d = []
     for x in file['query']['recentchanges']:
-        d.append(x['title']+' - '+x['user']+' '+x['timestamp'])
+        d.append(x['title']+' - '+x['user']+' '+UTC8(x['timestamp'],'onlytime'))
     y = await main2(d)
     print(y)
     space = '\n'

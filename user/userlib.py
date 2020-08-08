@@ -1,10 +1,9 @@
 import json
 import re
 import requests
-from .UTC8 import UTC8
+from UTC8 import UTC8
 from .yhz import yhz
 from .gender import gender
-from .UTC8V import UTC8V
 import re
 import urllib
 def User1(url, str3):
@@ -24,10 +23,10 @@ def User1(url, str3):
         Editcount = ' | 编辑数：' + str(file['query']['users'][0]['editcount'])
         Group = '用户组：' + yhz(str(file['query']['users'][0]['groups']))
         Gender = '性别：' + gender(file['query']['users'][0]['gender'])
-        Registration = '注册时间：' + UTC8(file['query']['users'][0]['registration'])
+        Registration = '注册时间：' + UTC8(file['query']['users'][0]['registration'],'full')
         Blockedby = str(file['query']['users'][0]['blockedby'])
-        Blockedtimestamp = UTC8(file['query']['users'][0]['blockedtimestamp'])
-        Blockexpiry = UTC8V(str(file['query']['users'][0]['blockexpiry']))
+        Blockedtimestamp = UTC8(file['query']['users'][0]['blockedtimestamp'],'full')
+        Blockexpiry = UTC8(str(file['query']['users'][0]['blockexpiry']),'full')
         Blockreason = str(file['query']['users'][0]['blockreason'])
         try:
             g = re.sub('User:', '', str3)
@@ -47,7 +46,7 @@ def User1(url, str3):
             Editcount = ' | 编辑数：' + str(file['query']['users'][0]['editcount'])
             Group = '用户组：' + yhz(str(file['query']['users'][0]['groups']))
             Gender = '性别：' + gender(file['query']['users'][0]['gender'])
-            Registration = '注册时间：' + UTC8(file['query']['users'][0]['registration'])
+            Registration = '注册时间：' + UTC8(file['query']['users'][0]['registration'],'full')
             g = re.sub('User:', '', str3)
             return(url+'UserProfile:' + urllib.parse.quote(g.encode('UTF-8')) + '\n'+Wikiname+'\n' + User + Editcount + '\n' + Group + '\n' + Gender + '\n' + Registration)
         except Exception:
