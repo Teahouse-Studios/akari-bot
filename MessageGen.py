@@ -10,8 +10,7 @@ async def gen(app, message, friend):
     print(run)
     if run != None:
         if run.find('[[usn:') != -1:
-            user = re.sub(r'.*\[\[usn:','',run)
-            user = re.sub(r'\]\]','',user)
+            user = re.sub(r'.*\[\[usn:|\]\]','',run)
             msg = re.sub(r'\[\[.*\]\]','',run)
             await app.sendFriendMessage(friend,MessageChain.create(\
                 [Plain(msg),\
@@ -24,22 +23,20 @@ async def geng(app, message, group, member):
     print(run)
     if run != None:
         if run.find('[[usn:') != -1:
-            user = re.sub(r'.*\[\[usn:','',run)
-            user = re.sub(r'\]\]','',user)
+            user = re.sub(r'.*\[\[usn:|\]\]','',run)
             msg = re.sub(r'\[\[.*\]\]','',run)
             await app.sendGroupMessage(group,MessageChain.create(\
                 [Plain(msg),\
-                Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=UploadMethods.Group)]).asSendable())
+                Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=UploadMethods.Group)]).asSendable(),quote=message.__root__[0].id)
         else:
             await app.sendGroupMessage(group,MessageChain.create(\
-                [Plain(run)]).asSendable())
+                [Plain(run)]).asSendable(),quote=message.__root__[0].id)
 async def gent(app, message, group, member):
     run = await command(message.asDisplay())
     print(run)
     if run != None:
         if run.find('[[usn:') != -1:
-            user = re.sub(r'.*\[\[usn:','',run)
-            user = re.sub(r'\]\]','',user)
+            user = re.sub(r'.*\[\[usn:|\]\]','',run)
             msg = re.sub(r'\[\[.*\]\]','',run)
             await app.sendTempMessage(group=group,target=member,message=MessageChain.create(\
                 [Plain(msg),\
