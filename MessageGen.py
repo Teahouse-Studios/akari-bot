@@ -5,49 +5,123 @@ from graia.application.event.messages import TempMessage
 from os.path import abspath
 from CommandGen import command
 import re
-async def gen(app, message, friend):
+from findimage import findimage
+async def gen(app, message, target1, target2='0',msgtype='None'):
     run = await command(message.asDisplay())
     print(run)
     if run != None:
+        if msgtype == 'friend':
+            mth = UploadMethods.Friend
+        elif msgtype == 'group':
+            mth = UploadMethods.Group
+        elif msgtype == 'temp':
+            mth = UploadMethods.Temp
+        else:
+            mth = None
         if run.find('[[usn:') != -1:
             user = re.sub(r'.*\[\[usn:|\]\]','',run)
             msg = re.sub(r'\[\[.*\]\]','',run)
-            await app.sendFriendMessage(friend,MessageChain.create(\
-                [Plain(msg),\
-                Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=UploadMethods.Friend)]).asSendable())
+            msgchain = MessageChain.create(\
+            [Plain(msg)])
+            msgchain = msgchain.plusWith([Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=mth)])
         else:
-            await app.sendFriendMessage(friend,MessageChain.create(\
-                [Plain(run)]).asSendable())
-async def geng(app, message, group, member):
-    run = await command(message.asDisplay(),group.id)
-    print(run)
-    if run != None:
-        if run.find('[[usn:') != -1:
-            user = re.sub(r'.*\[\[usn:|\]\]','',run)
-            msg = re.sub(r'\[\[.*\]\]','',run)
-            await app.sendGroupMessage(group,MessageChain.create(\
-                [Plain(msg),\
-                Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=UploadMethods.Group)]).asSendable(),quote=message.__root__[0].id)
-        else:
-            await app.sendGroupMessage(group,MessageChain.create(\
-                [Plain(run)]).asSendable(),quote=message.__root__[0].id)
-async def gent(app, message, group, member):
-    run = await command(message.asDisplay())
-    print(run)
-    if run != None:
-        if run.find('[[usn:') != -1:
-            user = re.sub(r'.*\[\[usn:|\]\]','',run)
-            msg = re.sub(r'\[\[.*\]\]','',run)
-            await app.sendTempMessage(group=group,target=member,message=MessageChain.create(\
-                [Plain(msg),\
-                Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=UploadMethods.Temp)]).asSendable())
-        else:
-            await app.sendTempMessage(group=group,target=member,message=MessageChain.create(\
-                [Plain(run)]).asSendable())
+            msgchain = MessageChain.create(\
+            [Plain(run)])
+        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico|svg))',run,re.I)
+        for d in r:
+            d1 = await findimage(d)
+            print(d1)
+            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1,method=mth)])
+        if msgtype == 'friend':
+            friend = target1
+            await app.sendFriendMessage(friend,msgchain.asSendable())
+        elif msgtype == 'group':
+            group = target1
+            member = target2
+            await app.sendGroupMessage(group,msgchain.asSendable(),quote=message.__root__[0].id)
+        elif msgtype == 'temp':
+            group = target1
+            member = target2
+            await app.sendTempMessage(group=group,target=member,message=msgchain.asSendable())
 
-
-"""
-        await app.sendGroupMessage(group,MessageChain.create(\
-                [At(member.id),Plain(msg),\
-                Image.fromLocalFile(filepath=abspath("./assests/usercard/Lightyzhh.png"),method=UploadMethods.Group)]).asSendable())
-"""
+from wiki import im,imt,imarc
+async def findwikitext(app, message, target1, target2='0',msgtype='None'):
+    w = re.findall(r'\[\[(.*?)\]\]',message.asDisplay())
+    w2 = re.findall(r'\{\{(.*?)\}\}',message.asDisplay())
+    print(str(w),str(w2))
+    
+    z = []
+    c = '\n'
+    try:
+        for x in w:
+            if msgtype == 'group':
+                group = target1
+                if group.id == 250500369 or group.id == 676942198:
+                    if x == '':
+                        pass
+                    else:
+                        z.append(await imarc(x))
+                else:
+                    if x == '':
+                        pass
+                    else:
+                        z.append(await im(x))
+            else:
+                if x == '':
+                    pass
+                else:
+                    z.append(await im(x))
+    except:
+        pass
+    try:
+        if str(w2) == '['']' or str(w2) == '[]':
+            pass
+        else:
+            for x in w2:
+                if msgtype == 'group':
+                    group = target1                        
+                    if group.id == 250500369 or group.id == 676942198:
+                        pass
+                    else:
+                        if x == '':
+                            pass
+                        else:
+                            z.append(await imt(x))
+                else:
+                    if x == '':
+                        pass
+                    else:
+                        z.append(await imt(x))
+    except:
+        pass
+    if str(z) =='['']['']' or str(z) == '[][]' or str(z) == '[]':
+        pass
+    else:
+        if msgtype == 'friend':
+            mth = UploadMethods.Friend
+        elif msgtype == 'group':
+            mth = UploadMethods.Group
+        elif msgtype == 'temp':
+            mth = UploadMethods.Temp
+        else:
+            mth = None
+        v = c.join(z)
+        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico|svg))',v,re.I)
+        print(v)
+        print(str(r))
+        msgchain = MessageChain.create([Plain(v)])
+        for d in r:
+            d1 = await findimage(d)
+            print(d1)
+            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1,method=mth)])
+        if msgtype == 'friend':
+            friend = target1
+            await app.sendFriendMessage(friend,msgchain.asSendable())
+        elif msgtype == 'group':
+            group = target1
+            member = target2
+            await app.sendGroupMessage(group,msgchain.asSendable(),quote=message.__root__[0].id)
+        elif msgtype == 'temp':
+            group = target1
+            member = target2
+            await app.sendTempMessage(group=group,target=member,message=msgchain.asSendable())

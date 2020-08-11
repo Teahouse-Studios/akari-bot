@@ -13,7 +13,7 @@ from wiki import wiki,im,imt,imarc
 from help import help
 from checkuser import checkuser
 from ping import ping
-async def findcommand(str1,group=0):
+def findcommand(str1,group=0):
     print(group)
     str1 = re.sub(r'^～','~',str1)
     try:
@@ -29,50 +29,10 @@ async def findcommand(str1,group=0):
                 q = str.upper(q.group(1))
                 return ('bug '+q)
             except Exception:
-                try:
-                    w = re.findall(r'\[\[(.*?)\]\]',str1)
-                    w2 = re.findall(r'\{\{(.*?)\}\}',str1)
-                    print(str(w),str(w2))
-                    z = []
-                    c = '\n'
-                    try:
-                        for x in w:
-                            if group == 250500369 or group == 676942198:
-                                if x == '':
-                                    pass
-                                else:
-                                    z.append(await imarc(x))
-                            else:
-                                if x == '':
-                                    pass
-                                else:
-                                    z.append(await im(x))
-                    except:
-                        pass
-                    try:
-                        if str(w2) == '['']' or str(w2) == '[]':
-                            pass
-                        else:
-                            for x in w2:
-                                if group == 250500369 or group == 676942198:
-                                    pass
-                                else:
-                                    if x == '':
-                                        pass
-                                    else:
-                                        z.append(await imt(x))
-                    except:
-                        pass
-                    if str(z) =='['']['']' or str(z) == '[][]' or str(z) == '[]':
-                        pass
-                    else:
-                        v = c.join(z)
-                        return('echo '+v)
-                except Exception:
-                    pass
+                pass
 async def command(text,group=0):
     try:
-        result = await findcommand(text,group)
+        result = findcommand(text,group)
         c = result
         try:
             d = result.split(' ')
