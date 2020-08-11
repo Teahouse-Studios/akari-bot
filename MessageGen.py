@@ -27,7 +27,7 @@ async def gen(app, message, target1, target2='0',msgtype='None'):
         else:
             msgchain = MessageChain.create(\
             [Plain(run)])
-        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico|svg))',run,re.I)
+        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))',run,re.I)
         for d in r:
             d1 = await findimage(d)
             print(d1)
@@ -106,7 +106,7 @@ async def findwikitext(app, message, target1, target2='0',msgtype='None'):
         else:
             mth = None
         v = c.join(z)
-        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico|svg))',v,re.I)
+        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))',v,re.I)
         print(v)
         print(str(r))
         msgchain = MessageChain.create([Plain(v)])
