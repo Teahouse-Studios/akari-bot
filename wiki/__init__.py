@@ -25,7 +25,7 @@ async def wiki(str1,group = 0):
             try:
                 s = re.match(r'~(.*?) (.*)',q.group(1))
                 metaurl = 'https://' + s.group(1) + '.gamepedia.com'
-                return (await Wiki(metaurl,s.group(2)))
+                return (await wiki1(metaurl,s.group(2)))
             except:
                 try:
                     if group == 250500369 or group == 676942198:
@@ -47,7 +47,7 @@ async def wiki(str1,group = 0):
                             return('暂不支持Wikipedia查询。')
                         else:
                             try:
-                                metaurl = 'https://minecraft.gamepedia.com'
+                                metaurl = 'https://minecraft.gamepedia.com/'
                                 return (await wiki1(metaurl, x))
                             except  Exception as e:
                                 traceback.print_exc()
