@@ -1,6 +1,6 @@
 import json
 import re
-import requests
+import aiohttp
 import re
 from bs4 import BeautifulSoup as bs
 import os
@@ -9,11 +9,19 @@ from .hh import hh
 from .hh17 import hh17
 from os.path import abspath
 from .tpg import tpg
-def PUser1(url, str3,ss,User,Gender,Registration):
+
+async def get_data(url: str, fmt: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
+            if hasattr(req, fmt):
+                return await getattr(req, fmt)()
+            else:
+                raise ValueError(f"NoSuchMethod: {fmt}")
+
+async def PUser1(url, str3,ss,User,Gender,Registration):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
-    c = requests.get(url2, timeout=10)
-    file2 = json.loads(c.text)
+    file2 = await get_data(url2,'json')
     try:
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
@@ -26,8 +34,8 @@ def PUser1(url, str3,ss,User,Gender,Registration):
         from .dpng import dpng
         dpng(url,ss)
     url2 = url+'/UserProfile:'+q
-    res = requests.get(url2)
-    soup = bs(res.text, 'html.parser')
+    res = await get_data(url2,'text')
+    soup = bs(res, 'html.parser')
     stats = soup.find('div', class_='section stats')
     point = soup.find('div', class_='score').text
     dd = stats.find_all('dd')
@@ -39,11 +47,10 @@ def PUser1(url, str3,ss,User,Gender,Registration):
         contributionwikis=ddk(str(dd[0])),createcount=ddk(str(dd[1])),\
         editcount=ddk(str(dd[2])),deletecount=ddk(str(dd[3])),patrolcount=ddk(str(dd[4])),\
         sitetop=ddk(str(dd[5])),globaltop=ddk(str(dd[6])),wikipoint=point)
-def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry,Blockreason):
+async def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry,Blockreason):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
-    c = requests.get(url2, timeout=10)
-    file2 = json.loads(c.text)
+    file2 = await get_data(url2,'json')
     try:
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
@@ -56,8 +63,8 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
         from .dpng import dpng
         dpng(url,ss)
     url2 = url+'/UserProfile:'+q
-    res = requests.get(url2)
-    soup = bs(res.text, 'html.parser')
+    res = await get_data(url2,'text')
+    soup = bs(res, 'html.parser')
     stats = soup.find('div', class_='section stats')
     point = soup.find('div', class_='score').text
     dd = stats.find_all('dd')
@@ -70,11 +77,10 @@ def PUser1ban(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,B
         patrolcount=ddk(str(dd[4])),sitetop=ddk(str(dd[5])),globaltop=ddk(str(dd[6])),\
         wikipoint=point,blockbyuser=Blockedby,blocktimestamp1=Blockedtimestamp,blocktimestamp2=Blockexpiry,\
         blockreason=hh17(Blockreason),bantype='Y')
-def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry):
+async def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,Blockexpiry):
     q = str3
     url2 = url+'/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
-    c = requests.get(url2, timeout=10)
-    file2 = json.loads(c.text)
+    file2 = await get_data(url2,'json')
     try:
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
@@ -87,8 +93,8 @@ def PUser1bann(url, str3,ss,User,Gender,Registration,Blockedby,Blockedtimestamp,
         from .dpng import dpng
         dpng(url,ss)
     url2 = url+'/UserProfile:'+q
-    res = requests.get(url2)
-    soup = bs(res.text, 'html.parser')
+    res = await get_data(url2,'text')
+    soup = bs(res, 'html.parser')
     stats = soup.find('div', class_='section stats')
     point = soup.find('div', class_='score').text
     dd = stats.find_all('dd')

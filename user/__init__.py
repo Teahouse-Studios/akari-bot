@@ -14,7 +14,7 @@ async def Username(name):
             w = q.group(1)
             if w in iwlist():
                 url = iwlink(w)
-                return (rUser1(url, q.group(2)))
+                return (await rUser1(url, q.group(2)))
             else:
                 return('未知语言，请使用~user -h查看帮助。')
         except:
@@ -22,7 +22,7 @@ async def Username(name):
             try:
                 s = re.match(r'~(.*?) (.*)', q.group(1))
                 metaurl = 'https://' + s.group(1) + '.gamepedia.com/'
-                return (rUser1(metaurl, s.group(2)))
+                return (await rUser1(metaurl, s.group(2)))
             except:
                 try:
                     i = re.match(r'(.*?):(.*)',q.group(1))
@@ -31,7 +31,7 @@ async def Username(name):
                     if w in iwlist():
                         try:
                             metaurl = 'https://minecraft-' + w + '.gamepedia.com/'
-                            return (rUser1(metaurl, x))
+                            return (await rUser1(metaurl, x))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
                     else:
@@ -42,14 +42,14 @@ async def Username(name):
                             return ('发生错误：' + str(e))
                 except Exception:
                     metaurl = 'https://minecraft.gamepedia.com/'
-                    return (rUser1(metaurl, q.group(1)))
+                    return (await rUser1(metaurl, q.group(1)))
     else:
         try:
             q = re.match(r'^user-(.*?) (.*)', name)
             w = q.group(1)
             if w in iwlist():
                 url = iwlink(w)
-                return (User1(url, q.group(2)))
+                return (await User1(url, q.group(2)))
             else:
                 return('未知语言，请使用~user -h查看帮助。')
         except:
@@ -57,7 +57,7 @@ async def Username(name):
             try:
                 s = re.match(r'~(.*?) (.*)', q.group(1))
                 metaurl = 'https://' + s.group(1) + '.gamepedia.com/'
-                return (User1(metaurl, s.group(2)))
+                return (await User1(metaurl, s.group(2)))
             except:
                 try:
                     i = re.match(r'(.*?):(.*)',q.group(1))
@@ -66,16 +66,16 @@ async def Username(name):
                     if w in iwlist():
                         try:
                             metaurl = iwlink(w)
-                            return (User1(metaurl, x))
+                            return (await User1(metaurl, x))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
                     else:
                         try:
                             metaurl = 'https://minecraft.gamepedia.com/'
-                            return (User1(metaurl, x))
+                            return (await User1(metaurl, x))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
                 except Exception:
                     metaurl = 'https://minecraft.gamepedia.com/'
-                    return (User1(metaurl, q.group(1)))
+                    return (await User1(metaurl, q.group(1)))
 

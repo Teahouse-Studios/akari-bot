@@ -1,7 +1,7 @@
 path = '~'
 async def help():
     return(f'''{path}ab - 查看Minecraft Wiki过滤器日志。
-{path}bug -h
+{path}bug <JiraID> - 从Mojira中获取此Bug的信息。
 {path}mcv - 获取当前Minecraft Java版最新版本。
 {path}mcbv - 获取当前Minecraft基岩版最新版本。
 {path}mcdv - 获取当前Minecraft Dungeons最新版本。

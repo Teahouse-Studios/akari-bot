@@ -1,22 +1,21 @@
 # -*- coding:utf-8 -*-
-import requests
 from xml.etree import ElementTree
 import json
 import string
 import os, sys
-
+import aiohttp
 async def bug(pagename):
     try:
-        try:
-            os.remove('bug_cache_text.txt')
-        except Exception:
-            pass
         url_str ='https://bugs.mojang.com/si/jira.issueviews:issue-xml/'+ str.upper(pagename) + '/' + str.upper(pagename) + '.xml'
-        respose_str =  requests.get(url_str,timeout=10)
-        respose_str =  requests.get(url_str,timeout=10)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url_str,timeout=aiohttp.ClientTimeout(total=20)) as req:
+                if req.status != 200:
+                    return f"请求发生时错误:{req.status}"
+                else:
+                    respose_str = await req.text()
+                    respose_str = await req.text()
         try:
-            respose_str.encoding = 'utf-8'
-            root = ElementTree.XML(respose_str.text)
+            root = ElementTree.XML(respose_str)
             for node in root.iter("channel"):
                 for node in root.iter("item"):
                     Title = node.find("title").text
@@ -26,8 +25,13 @@ async def bug(pagename):
                     Resolution = "Resolution: " + node.find("resolution").text
                     Link = node.find("link").text
             url_json = 'https://bugs.mojang.com/rest/api/2/issue/'+str.upper(pagename)
-            json_text = requests.get(url_json,timeout=10)
-            file = json.loads(json_text.text)
+            async with aiohttp.ClientSession() as session2:
+                async with session2.get(url_json,timeout=aiohttp.ClientTimeout(total=5)) as reqjson:
+                    if reqjson.status != 200:
+                        return f"请求发生时错误:{reqjson.status}"
+                    else:
+                        json_text = await reqjson.text()
+            file = json.loads(json_text)
             Versions = file['fields']['versions']
             name = []
             for item in Versions[:]:

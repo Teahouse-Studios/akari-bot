@@ -4,7 +4,7 @@ import aiohttp
 
 async def get_data(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as req:
+        async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
             if hasattr(req, fmt):
                 return await getattr(req, fmt)()
             else:

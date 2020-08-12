@@ -1,16 +1,24 @@
-import requests
+import aiohttp
 import json
 import re
 import urllib
 import traceback
+
+async def get_data(url: str, fmt: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
+            if hasattr(req, fmt):
+                return await getattr(req, fmt)()
+            else:
+                raise ValueError(f"NoSuchMethod: {fmt}")
+
 async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
     str1 = pagename
     metaurl = c+'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     url1 = c
     try:
         url = metaurl+pagename
-        metatext = requests.get(url,timeout=5)
-        file = json.loads(metatext.text)
+        file = await get_data(url,"json")
         try:
             try:
                 x = file['query']['pages']
@@ -34,8 +42,7 @@ async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
                                 try:
                                     try:                
                                         searchurl = url1+'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                                        f = requests.get(searchurl)
-                                        g = json.loads(f.text)
+                                        g = await get_data(searchurl,"json")
                                         j = g['query']['pages']
                                         b = sorted(j.keys())[0]
                                         m = j[b]['title']
@@ -45,8 +52,7 @@ async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
                                         return ('提示：您要找的'+ pagename + '不存在，要找的页面是' + m + '吗？')
                                     except Exception:
                                         searchurl = url1+'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                                        f = requests.get(searchurl)
-                                        g = json.loads(f.text)
+                                        g = await get_data(searchurl,"json")
                                         m = g['query']['search'][0]['title']
                                         if itw == 't':
                                             m = w+':'+m
@@ -74,8 +80,7 @@ async def wi(c,w,pagename,itw = 'f',ignoremessage = 'f',template = 'f'):
                     else:
                         h = re.match(r'https?://(.*?)/(.*)', z, re.M | re.I)
                     texturl = 'https://'+h.group(1)+'/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles='+h.group(2)
-                    textt = requests.get(texturl,timeout=5)
-                    e = json.loads(textt.text)
+                    e = await get_data(texturl,"json")
                     r = e['query']['pages'][y]['extract']
                 except:
                     r = ''

@@ -1,5 +1,5 @@
 import re
-import requests
+import aiohttp
 import json
 from .be import main
 async def serverraw(address):
@@ -18,8 +18,13 @@ async def serverraw(address):
 
         try:
             url = 'http://motd.wd-api.com/?ip='+serip+'&port='+port1+'&mode=info'
-            motd = requests.get(url,timeout=5)
-            file = json.loads(motd.text)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
+                    if req.status != 200:
+                        print(f"请求发生时错误:{req.status}")
+                    else:
+                        motd = await req.text()
+            file = json.loads(motd)
             try:
                 if file['code'] == 200:
                     x = file['data']['description']['text']

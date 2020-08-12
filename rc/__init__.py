@@ -7,7 +7,7 @@ from UTC8 import UTC8
 async def rc():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as req:
+        async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
             if req.status != 200:
                 return f"请求发生时错误:{req.status}"
             else:

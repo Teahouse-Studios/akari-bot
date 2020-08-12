@@ -1,15 +1,24 @@
 import json
 import re
-import requests
+import aiohttp
 import urllib
 import traceback
 from interwikilist import iwlist,iwlink
+
+async def get_data(url: str, fmt: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
+            if hasattr(req, fmt):
+                return await getattr(req, fmt)()
+            else:
+                raise ValueError(f"NoSuchMethod: {fmt}")
+
+
 async def wiki1(path1,pagename):
     print(pagename)
     metaurl = path1 +'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     print(metaurl)
-    metatext = requests.get(metaurl, timeout=10)
-    file = json.loads(metatext.text)
+    file = await get_data(metaurl,"json")
     try:
         x = file['query']['pages']
         y = sorted(x.keys())[0]
@@ -22,16 +31,14 @@ async def wiki1(path1,pagename):
                     try:
                         try:
                             searchurl = path1+'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                            f = requests.get(searchurl)
-                            g = json.loads(f.text)
+                            g = await get_data(searchurl,"json")
                             j = g['query']['pages']
                             b = sorted(j.keys())[0]
                             m = j[b]['title']
                             return ('找不到条目，您是否要找的是：' + m +'？')
                         except Exception:
                             searchurl = path1+'api.php?action=query&list=search&srsearch='+pagename+'&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                            f = requests.get(searchurl)
-                            g = json.loads(f.text)
+                            g = await get_data(searchurl,"json")
                             m = g['query']['search'][0]['title']
                             return ('找不到条目，您是否要找的是：' + m +'？')
                     except Exception:
@@ -46,8 +53,7 @@ async def wiki1(path1,pagename):
                 h = re.match(r'https?://.*/(.*)', z, re.M | re.I)
             try:
                 texturl = metaurl + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + h.group(1)
-                gettext = requests.get(texturl, timeout=10)
-                loadtext = json.loads(gettext.text)
+                loadtext = await get_data(texturl,"json")
                 v = loadtext['query']['pages'][y]['extract']
             except Exception:
                 v = ''

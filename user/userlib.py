@@ -1,19 +1,26 @@
 import json
 import re
-import requests
+import aiohttp
 from UTC8 import UTC8
 from .yhz import yhz
 from .gender import gender
 import re
 import urllib
-def User1(url, str3):
+
+async def get_data(url: str, fmt: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
+            if hasattr(req, fmt):
+                return await getattr(req, fmt)()
+            else:
+                raise ValueError(f"NoSuchMethod: {fmt}")
+
+async def User1(url, str3):
     q = str3
     url1 = url+'api.php?action=query&list=users&ususers=' + q + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
     url2 = url+'api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
-    s = requests.get(url1, timeout=10)
-    file = json.loads(s.text)
-    c = requests.get(url2, timeout=10)
-    file2 = json.loads(c.text)
+    file = await get_data(url1,'json')
+    file2 = await get_data(url2,'json')
     try:
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
