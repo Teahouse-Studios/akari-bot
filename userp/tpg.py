@@ -3,9 +3,13 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from os.path import abspath
-def tpg(favicon,wikiname,username,gender,registertime,contributionwikis,createcount,editcount,deletecount,patrolcount,sitetop,globaltop,wikipoint,blockbyuser='0',blocktimestamp1='0',blocktimestamp2='0',blockreason='0',bantype='None'):
+
+
+def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, createcount, editcount, deletecount,
+        patrolcount, sitetop, globaltop, wikipoint, blockbyuser='0', blocktimestamp1='0', blocktimestamp2='0',
+        blockreason='0', bantype='None'):
     font = ImageFont.truetype(abspath('./assests/SourceHanSansCN-Normal.ttf'), 40)
-    font1 = ImageFont.truetype(abspath('./assests/SourceHanSansCN-Normal.ttf'),70)
+    font1 = ImageFont.truetype(abspath('./assests/SourceHanSansCN-Normal.ttf'), 70)
     if bantype == 'None':
         img = Image.open(abspath('./assests/base.png'))
     elif bantype == 'Y' or bantype == 'YN':
@@ -16,29 +20,29 @@ def tpg(favicon,wikiname,username,gender,registertime,contributionwikis,createco
     w = int(w)
     h = int(h)
     try:
-        img2 = img2.resize((int(w/(w//100)),int(h/(h//100))))
+        img2 = img2.resize((int(w / (w // 100)), int(h / (h // 100))))
     except:
         pass
-    img3.paste(img,(0,0))
+    img3.paste(img, (0, 0))
 
-    img21 = Image.new("RGBA",(200,200))
+    img21 = Image.new("RGBA", (200, 200))
     W = 200
     H = 200
-    w,h = img2.size
-    img21.alpha_composite(img2.convert("RGBA"),(int((W-w)/2),int((H-h)/2)))
+    w, h = img2.size
+    img21.alpha_composite(img2.convert("RGBA"), (int((W - w) / 2), int((H - h) / 2)))
 
-    img3.alpha_composite(img21,(95,52))
+    img3.alpha_composite(img21, (95, 52))
     draw = ImageDraw.Draw(img3)
     draw.text((325, 120), str(wikiname), '#ffffff', font=font1)
     draw.text((230, 295), str(username), '#ffffff', font=font1)
-    draw.text((617,685),'（UTC+8）','#ffffff',font=font)
+    draw.text((617, 685), '（UTC+8）', '#ffffff', font=font)
 
-    img32 = Image.new("RGBA",(120,40))
+    img32 = Image.new("RGBA", (120, 40))
     W = 120
     draww = ImageDraw.Draw(img32)
-    w, h = draww.textsize(gender,font=font)
-    draww.text(((W-w-font.getoffset(gender)[0])/2,0), gender, "#ffffff",font = font)
-    img3.alpha_composite(img32,(194,635))
+    w, h = draww.textsize(gender, font=font)
+    draww.text(((W - w - font.getoffset(gender)[0]) / 2, 0), gender, "#ffffff", font=font)
+    img3.alpha_composite(img32, (194, 635))
 
     img31 = Image.new("RGBA", (1280, 40))
     W = 1280
@@ -74,23 +78,23 @@ def tpg(favicon,wikiname,username,gender,registertime,contributionwikis,createco
     w, h = draww.textsize(patrolcount, font=font)
     draww.text(((W - w - font.getoffset(patrolcount)[0]) / 2, 0), patrolcount, "#ffffff", font=font)
     img3.alpha_composite(img7, (655, 960))
-    
+
     if bantype == 'Y' or bantype == 'YN':
         img8 = Image.open(abspath('./assests/Blocked.png'))
-        w,h = img8.size
+        w, h = img8.size
         w = int(w)
         h = int(h)
-        img8 = img8.resize((int(w/1.22),int(h/1.22)))
-        img3.alpha_composite(img8.convert("RGBA"),(1,100))
+        img8 = img8.resize((int(w / 1.22), int(h / 1.22)))
+        img3.alpha_composite(img8.convert("RGBA"), (1, 100))
 
-    draw.text((625,1095),str(wikipoint),'#ffffff',font=font)
+    draw.text((625, 1095), str(wikipoint), '#ffffff', font=font)
     draw.text((330, 1195), str(sitetop), '#ffffff', font=font)
     draw.text((690, 1195), str(globaltop), '#ffffff', font=font)
 
     if bantype == 'Y' or bantype == 'YN':
         draw.text((200, 1439), '被' + str(blockbyuser) + '封禁，', '#ffffff', font=font)
-        draw.text((200, 1489), '时间从' + str(blocktimestamp1)+'（UTC+8）', '#ffffff', font=font)
-        draw.text((200, 1539), '到'+ str(blocktimestamp2), '#ffffff', font=font)
+        draw.text((200, 1489), '时间从' + str(blocktimestamp1) + '（UTC+8）', '#ffffff', font=font)
+        draw.text((200, 1539), '到' + str(blocktimestamp2), '#ffffff', font=font)
     if bantype == 'Y':
         draw.text((200, 1589), str(blockreason), '#ffffff', font=font)
-    img3.save(abspath('./assests/usercard/'+username+'.png'))
+    img3.save(abspath('./assests/usercard/' + username + '.png'))

@@ -1,4 +1,6 @@
 import asyncio
+
+
 class EchoClientProtocol:
     def __init__(self, on_con_lost):
         self.on_con_lost = on_con_lost
@@ -22,7 +24,7 @@ class EchoClientProtocol:
         pass
 
 
-async def main(addr,port):
+async def main(addr, port):
     loop = asyncio.get_running_loop()
 
     on_con_lost = loop.create_future()
@@ -39,8 +41,9 @@ async def main(addr,port):
         # Edition (MCPE or MCEE for Education Edition)
         edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
         game_mode, game_mode_num, port_v4, port_v6, nothing_here = data.split(';')
-        return('[BE]\n'+motd_1+' - '+motd_2 + '\n在线玩家：'+player_count+'/'+max_players+'\n游戏版本：'+edition+version_name+'\n游戏模式：'+game_mode) 
+        return (
+                    '[BE]\n' + motd_1 + ' - ' + motd_2 + '\n在线玩家：' + player_count + '/' + max_players + '\n游戏版本：' + edition + version_name + '\n游戏模式：' + game_mode)
     except Exception:
-        pass  
+        pass
     finally:
         transport.close()

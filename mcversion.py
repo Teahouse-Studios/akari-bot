@@ -1,5 +1,5 @@
 def mcversion():
-    w = open('mcversion.txt','r')
+    w = open('mcversion.txt', 'r')
     s = w.read().split('\n')
-    return(s)
+    return (s)
     w.close()

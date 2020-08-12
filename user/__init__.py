@@ -1,13 +1,16 @@
 import re
-from .userlib import User1
-from .ruserlib import rUser1
+
 from help import userhelp
-from interwikilist import iwlink,iwlist
+from interwikilist import iwlink, iwlist
+from .ruserlib import rUser1
+from .userlib import User1
+
+
 async def Username(name):
     name = re.sub(r'^User', 'user', name)
-    if name.find(" -h")!= -1:
+    if name.find(" -h") != -1:
         return (await userhelp())
-    elif name.find(" -r")!=-1:
+    elif name.find(" -r") != -1:
         m = re.sub(r' -r', '', name)
         try:
             q = re.match(r'^user-(.*?) (.*)', m)
@@ -16,7 +19,7 @@ async def Username(name):
                 url = iwlink(w)
                 return (await rUser1(url, q.group(2)))
             else:
-                return('未知语言，请使用~user -h查看帮助。')
+                return ('未知语言，请使用~user -h查看帮助。')
         except:
             q = re.match(r'^user (.*)', m)
             try:
@@ -25,7 +28,7 @@ async def Username(name):
                 return (await rUser1(metaurl, s.group(2)))
             except:
                 try:
-                    i = re.match(r'(.*?):(.*)',q.group(1))
+                    i = re.match(r'(.*?):(.*)', q.group(1))
                     w = i.group(1)
                     x = i.group(2)
                     if w in iwlist():
@@ -51,7 +54,7 @@ async def Username(name):
                 url = iwlink(w)
                 return (await User1(url, q.group(2)))
             else:
-                return('未知语言，请使用~user -h查看帮助。')
+                return ('未知语言，请使用~user -h查看帮助。')
         except:
             q = re.match(r'^user (.*)', name)
             try:
@@ -60,7 +63,7 @@ async def Username(name):
                 return (await User1(metaurl, s.group(2)))
             except:
                 try:
-                    i = re.match(r'(.*?):(.*)',q.group(1))
+                    i = re.match(r'(.*?):(.*)', q.group(1))
                     w = i.group(1)
                     x = i.group(2)
                     if w in iwlist():
@@ -78,4 +81,3 @@ async def Username(name):
                 except Exception:
                     metaurl = 'https://minecraft.gamepedia.com/'
                     return (await User1(metaurl, q.group(1)))
-

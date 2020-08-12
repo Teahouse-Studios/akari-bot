@@ -1,5 +1,5 @@
 def blacklist():
-    w = open('blacklist.txt','r')
+    w = open('blacklist.txt', 'r')
     s = w.read().split('\n')
-    return(s)
+    return (s)
     w.close()

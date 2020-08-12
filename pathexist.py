@@ -1,8 +1,10 @@
 import os
 import re
 from os.path import abspath
+
+
 def pathexist(ss):
-    ss = re.sub('_','',ss)
+    ss = re.sub('_', '', ss)
     d = abspath('./assests/Favicon/' + ss + '/')
     if not os.path.exists(d):
         os.mkdir(d)
@@ -13,6 +15,8 @@ def pathexist(ss):
         return False
     else:
         return True
+
+
 def pathexist2(ss):
     ddd = abspath('./home/wdljt/oasisakari/bot/assests/usercard/' + ss + '.png')
     if not os.path.exists(ddd):

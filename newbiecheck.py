@@ -1,20 +1,24 @@
-from datetime import datetime
-import time
-from UTC8 import UTC8
-from pbc import main
 import json
 import requests
-from mirai import Mirai, Group, MessageChain, Member, Plain, At, Source, Image, Friend
+import time
 import traceback
-qq = 2052142661 # 字段 qq 的值
-authKey = '1145141919810' # 字段 authKey 的值
-mirai_api_http_locate = 'localhost:11919/ws' # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
+from datetime import datetime
+from mirai import Mirai, Group, MessageChain, Member, Plain, At, Source, Image, Friend
 
-app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}",websocket=True)
+from UTC8 import UTC8
+from pbc import main
+
+qq = 2052142661  # 字段 qq 的值
+authKey = '1145141919810'  # 字段 authKey 的值
+mirai_api_http_locate = 'localhost:11919/ws'  # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
+
+app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}", websocket=True)
+
+
 @app.subroutine
 async def newbie(app: Mirai):
     try:
-        await app.sendGroupMessage(731397727,[Plain('开始检测新人。')])
+        await app.sendGroupMessage(731397727, [Plain('开始检测新人。')])
         url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=logevents&letype=newusers&format=json'
         while True:
             try:
@@ -33,10 +37,11 @@ async def newbie(app: Mirai):
                             if xz['title'] in qq:
                                 pass
                             else:
-                                s = await main(UTC8(xz['timestamp'],'onlytime') + '新增新人：' + xz['title'])
+                                s = await main(UTC8(xz['timestamp'], 'onlytime') + '新增新人：' + xz['title'])
                                 print(s)
-                                if s[0].find("<吃掉了>")!=-1 or s[0].find("<全部吃掉了>")!=-1:
-                                    await app.sendGroupMessage(731397727,message=s[0]+'\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers')
+                                if s[0].find("<吃掉了>") != -1 or s[0].find("<全部吃掉了>") != -1:
+                                    await app.sendGroupMessage(731397727, message=s[
+                                                                                      0] + '\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers')
                                 else:
                                     await app.sendGroupMessage(731397727, message=s[0])
                                 print(s)
@@ -55,6 +60,8 @@ async def newbie(app: Mirai):
                 print('xxx' + str(e))
     except Exception as e:
         traceback.print_exc()
-        print(str(e)) 
+        print(str(e))
+
+
 if __name__ == "__main__":
     app.run()

@@ -1,6 +1,7 @@
 import re
 
-def UTC8(str1,outtype):
+
+def UTC8(str1, outtype):
     if str1 == 'infinity':
         return ('无限期')
     else:
@@ -13,7 +14,7 @@ def UTC8(str1,outtype):
         s = int(q.group(6))
 
         h = h + 8
-        if h > 24 :
+        if h > 24:
             d = d + 1
             h = h - 24
         else:
@@ -59,10 +60,10 @@ def UTC8(str1,outtype):
             if mi != 0:
                 h = h - 24
         if outtype == 'onlytimenoutc':
-            return(str(h)+'时'+str(mi)+'分')
+            return (str(h) + '时' + str(mi) + '分')
         elif outtype == 'onlytime':
-            return(str(h)+'时'+str(mi)+'分'+'（UTC+8）')
+            return (str(h) + '时' + str(mi) + '分' + '（UTC+8）')
         elif outtype == 'full':
-            return(str(y)+'年'+str(m)+'月'+str(d)+'日'+str(h)+'时'+str(mi)+'分'+'（UTC+8）')
+            return (str(y) + '年' + str(m) + '月' + str(d) + '日' + str(h) + '时' + str(mi) + '分' + '（UTC+8）')
         elif outtype == 'notimezone':
-            return (str(y)+'年'+str(m)+'月'+str(d)+'日'+str(h)+'时'+str(mi)+'分')
+            return (str(y) + '年' + str(m) + '月' + str(d) + '日' + str(h) + '时' + str(mi) + '分')

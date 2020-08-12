@@ -1,4 +1,6 @@
 import re
+
+
 def hh(w):
     value = w
 
@@ -8,13 +10,13 @@ def hh(w):
 
     length = (utf8_length - length) / 2 + length
 
-    if int(length)>15:
+    if int(length) > 15:
         w = re.findall('..?.?.?.?.?.?.?.?.?.?.?.?.?.?', w)
         w = str(w)
-        w = re.sub('\[','',w)
-        w = re.sub('\]','',w)
-        w = re.sub(',','-\n',w)
-        w = re.sub('\'','',w)
-        return(w)
+        w = re.sub('\[', '', w)
+        w = re.sub('\]', '', w)
+        w = re.sub(',', '-\n', w)
+        w = re.sub('\'', '', w)
+        return (w)
     else:
-        return(w)
+        return (w)

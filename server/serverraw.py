@@ -1,11 +1,14 @@
-import re
 import aiohttp
 import json
+import re
+
 from .be import main
+
+
 async def serverraw(address):
-    matchObj = re.match(r'(.*):(.*).*', address, re.M|re.I)
+    matchObj = re.match(r'(.*):(.*).*', address, re.M | re.I)
     servers = []
-    
+
     try:
         if matchObj:
             serip = matchObj.group(1)
@@ -17,9 +20,9 @@ async def serverraw(address):
             port2 = '19132'
 
         try:
-            url = 'http://motd.wd-api.com/?ip='+serip+'&port='+port1+'&mode=info'
+            url = 'http://motd.wd-api.com/?ip=' + serip + '&port=' + port1 + '&mode=info'
             async with aiohttp.ClientSession() as session:
-                async with session.get(url,timeout=aiohttp.ClientTimeout(total=20)) as req:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
                         print(f"请求发生时错误:{req.status}")
                     else:
@@ -30,29 +33,34 @@ async def serverraw(address):
                     x = file['data']['description']['text']
                     if not x:
                         extra = file['data']['description']['extra']
-                        servers.append('[JE]\n'+str(extra)+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
+                        servers.append(
+                            '[JE]\n' + str(extra) + "\n" + "在线玩家：" + str(file['data']['players']['online']) + "/" + str(
+                                file['data']['players']['max']) + "\n" + "游戏版本：" + file['data']['version']['name'])
                     else:
-                        servers.append('[JE]\n'+x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
+                        servers.append(
+                            '[JE]\n' + x + "\n" + "在线玩家：" + str(file['data']['players']['online']) + "/" + str(
+                                file['data']['players']['max']) + "\n" + "游戏版本：" + file['data']['version']['name'])
                 else:
                     print('获取JE服务器信息失败。')
             except Exception:
                 try:
-                    x=file['data']['description']
-                    servers.append('[JE]\n'+x+"\n"+"在线玩家："+str(file['data']['players']['online'])+"/"+str(file['data']['players']['max'])+"\n"+"游戏版本："+file['data']['version']['name'])
+                    x = file['data']['description']
+                    servers.append('[JE]\n' + x + "\n" + "在线玩家：" + str(file['data']['players']['online']) + "/" + str(
+                        file['data']['players']['max']) + "\n" + "游戏版本：" + file['data']['version']['name'])
                 except Exception as e:
-                    print('获取JE服务器信息失败。'+str(e))
+                    print('获取JE服务器信息失败。' + str(e))
                     servers.append("[JE]\n发生错误：调用API时发生错误。")
         except Exception as e:
-            print('获取JE服务器信息失败。'+str(e))
+            print('获取JE服务器信息失败。' + str(e))
         try:
-            BE = await main(serip,port2)
+            BE = await main(serip, port2)
             servers.append(BE)
         except Exception as e:
-            print('获取BE服务器信息失败。'+str(e))
-        if str(servers)=='[]':
-            return('连接失败，没有检测到任何服务器。')
+            print('获取BE服务器信息失败。' + str(e))
+        if str(servers) == '[]':
+            return ('连接失败，没有检测到任何服务器。')
         else:
             awa = '\n'
-            return(awa.join(servers))
-    except Exception as e:      
-        return("发生错误："+str(e)+".")
+            return (awa.join(servers))
+    except Exception as e:
+        return ("发生错误：" + str(e) + ".")

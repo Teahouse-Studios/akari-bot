@@ -1,12 +1,15 @@
-from graia.application.message.elements.internal import Plain,At,Image,UploadMethods,Quote
-from graia.application import GraiaMiraiApplication, Session
-from graia.application.message.chain import MessageChain
-from graia.application.event.messages import TempMessage
-from os.path import abspath
-from CommandGen import command
 import re
+from graia.application import GraiaMiraiApplication, Session
+from graia.application.event.messages import TempMessage
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import Plain, At, Image, UploadMethods, Quote
+from os.path import abspath
+
+from CommandGen import command
 from findimage import findimage
-async def gen(app, message, target1, target2='0',msgtype='None'):
+
+
+async def gen(app, message, target1, target2='0', msgtype='None'):
     run = await command(message.asDisplay())
     print(run)
     if run != None:
@@ -19,37 +22,41 @@ async def gen(app, message, target1, target2='0',msgtype='None'):
         else:
             mth = None
         if run.find('[[usn:') != -1:
-            user = re.sub(r'.*\[\[usn:|\]\]','',run)
-            msg = re.sub(r'\[\[.*\]\]','',run)
-            msgchain = MessageChain.create(\
-            [Plain(msg)])
-            msgchain = msgchain.plusWith([Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"),method=mth)])
+            user = re.sub(r'.*\[\[usn:|\]\]', '', run)
+            msg = re.sub(r'\[\[.*\]\]', '', run)
+            msgchain = MessageChain.create( \
+                [Plain(msg)])
+            msgchain = msgchain.plusWith(
+                [Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"), method=mth)])
         else:
-            msgchain = MessageChain.create(\
-            [Plain(run)])
-        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))',run,re.I)
+            msgchain = MessageChain.create( \
+                [Plain(run)])
+        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', run, re.I)
         for d in r:
             d1 = await findimage(d)
             print(d1)
-            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1,method=mth)])
+            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
         if msgtype == 'friend':
             friend = target1
-            await app.sendFriendMessage(friend,msgchain.asSendable())
+            await app.sendFriendMessage(friend, msgchain.asSendable())
         elif msgtype == 'group':
             group = target1
             member = target2
-            await app.sendGroupMessage(group,msgchain.asSendable(),quote=message.__root__[0].id)
+            await app.sendGroupMessage(group, msgchain.asSendable(), quote=message.__root__[0].id)
         elif msgtype == 'temp':
             group = target1
             member = target2
-            await app.sendTempMessage(group=group,target=member,message=msgchain.asSendable())
+            await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
 
-from wiki import im,imt,imarc
-async def findwikitext(app, message, target1, target2='0',msgtype='None'):
-    w = re.findall(r'\[\[(.*?)\]\]',message.asDisplay())
-    w2 = re.findall(r'\{\{(.*?)\}\}',message.asDisplay())
-    print(str(w),str(w2))
-    
+
+from wiki import im, imt, imarc
+
+
+async def findwikitext(app, message, target1, target2='0', msgtype='None'):
+    w = re.findall(r'\[\[(.*?)\]\]', message.asDisplay())
+    w2 = re.findall(r'\{\{(.*?)\}\}', message.asDisplay())
+    print(str(w), str(w2))
+
     z = []
     c = '\n'
     try:
@@ -79,7 +86,7 @@ async def findwikitext(app, message, target1, target2='0',msgtype='None'):
         else:
             for x in w2:
                 if msgtype == 'group':
-                    group = target1                        
+                    group = target1
                     if group.id == 250500369 or group.id == 676942198:
                         pass
                     else:
@@ -94,7 +101,7 @@ async def findwikitext(app, message, target1, target2='0',msgtype='None'):
                         z.append(await imt(x))
     except:
         pass
-    if str(z) =='['']['']' or str(z) == '[][]' or str(z) == '[]':
+    if str(z) == '['']['']' or str(z) == '[][]' or str(z) == '[]':
         pass
     else:
         if msgtype == 'friend':
@@ -106,22 +113,22 @@ async def findwikitext(app, message, target1, target2='0',msgtype='None'):
         else:
             mth = None
         v = c.join(z)
-        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))',v,re.I)
+        r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', v, re.I)
         print(v)
         print(str(r))
         msgchain = MessageChain.create([Plain(v)])
         for d in r:
             d1 = await findimage(d)
             print(d1)
-            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1,method=mth)])
+            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
         if msgtype == 'friend':
             friend = target1
-            await app.sendFriendMessage(friend,msgchain.asSendable())
+            await app.sendFriendMessage(friend, msgchain.asSendable())
         elif msgtype == 'group':
             group = target1
             member = target2
-            await app.sendGroupMessage(group,msgchain.asSendable(),quote=message.__root__[0].id)
+            await app.sendGroupMessage(group, msgchain.asSendable(), quote=message.__root__[0].id)
         elif msgtype == 'temp':
             group = target1
             member = target2
-            await app.sendTempMessage(group=group,target=member,message=msgchain.asSendable())
+            await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())

@@ -1,16 +1,19 @@
+import aiohttp
 import asyncio
 import base64
 import datetime
 import hashlib
 import hmac
 import json
+import os
 import time
 from hashlib import sha1
 from time import gmtime, strftime
 from urllib.parse import urlencode
-import aiohttp
-import os
+
 from config import config
+
+
 def hash_hmac(key, code, sha1):
     hmac_code = hmac.new(key.encode(), code.encode(), sha1)
     return base64.b64encode(hmac_code.digest()).decode('utf-8')
@@ -21,10 +24,12 @@ def computeMD5hash(my_string):
     m.update(my_string.encode('gb2312'))
     return m.hexdigest()
 
+
 accessKeyId = config("accessKeyId")
 accessKeySecret = config("accessKeySecret")
 print(accessKeyId)
 print(accessKeySecret)
+
 
 async def main(newUsers):
     Users = []
@@ -95,10 +100,11 @@ async def main(newUsers):
                                 else:
                                     content = "<全部吃掉了>"
                     resultUsers.append(content)
-                return(resultUsers)
+                return (resultUsers)
 
             else:
-                return(await resp.text())
+                return (await resp.text())
+
 
 async def main2(newUsers):
     print('hello')
@@ -167,10 +173,10 @@ async def main2(newUsers):
                                 else:
                                     content = "<全部吃掉了>"
                     resultUsers.append(content)
-                return(resultUsers)
+                return (resultUsers)
 
             else:
-                return(await resp.text())
+                return (await resp.text())
 
 
 if __name__ == '__main__':
