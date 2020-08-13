@@ -33,7 +33,7 @@ async def Username(name):
                     x = i.group(2)
                     if w in iwlist():
                         try:
-                            metaurl = 'https://minecraft-' + w + '.gamepedia.com/'
+                            metaurl = iwlink(w)
                             return (await rUser1(metaurl, x))
                         except  Exception as e:
                             return ('发生错误：' + str(e))
