@@ -34,16 +34,16 @@ async def wiki1(wikilink, pagename):
                     try:
                         try:
                             searchurl = wikilink + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                            getsrcjson = await get_data(searchurl, "json")
-                            srcpages = getsrcjson['query']['pages']
-                            srcpageid = sorted(srcpages.keys())[0]
-                            srctitle = srcpages[srcpageid]['title']
-                            return ('找不到条目，您是否要找的是：' + srctitle + '？')
+                            getsecjson = await get_data(searchurl, "json")
+                            secpages = getsecjson['query']['pages']
+                            secpageid = sorted(secpages.keys())[0]
+                            sectitle = secpages[secpageid]['title']
+                            return ('找不到条目，您是否要找的是：' + sectitle + '？')
                         except Exception:
                             searchurl = wikilink + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                            getsrcjson = await get_data(searchurl, "json")
-                            srctitle = getsrcjson['query']['search'][0]['title']
-                            return ('找不到条目，您是否要找的是：' + srctitle + '？')
+                            getsecjson = await get_data(searchurl, "json")
+                            sectitle = getsecjson['query']['search'][0]['title']
+                            return ('找不到条目，您是否要找的是：' + sectitle + '？')
                     except Exception:
                         return ('找不到条目。')
                 else:
