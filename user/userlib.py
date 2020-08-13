@@ -5,8 +5,7 @@ import re
 import urllib
 
 from UTC8 import UTC8
-from .gender import gender
-from .yhz import yhz
+from .tool import yhz, gender
 
 
 async def get_data(url: str, fmt: str):

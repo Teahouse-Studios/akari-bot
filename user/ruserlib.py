@@ -4,8 +4,7 @@ import urllib
 from bs4 import BeautifulSoup as bs
 
 from UTC8 import UTC8
-from .gender import gender
-from .yhz import yhz
+from .tool import yhz, gender
 
 
 async def get_data(url: str, fmt: str):
@@ -15,6 +14,8 @@ async def get_data(url: str, fmt: str):
                 return await getattr(req, fmt)()
             else:
                 raise ValueError(f"NoSuchMethod: {fmt}")
+
+
 
 
 async def rUser1(url, username):
