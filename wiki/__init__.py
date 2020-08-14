@@ -7,126 +7,123 @@ from interwikilist import iwlist, iwlink
 from .wikilib import wiki1, wiki2
 
 
-async def wiki(str1, group=0):
-    if str1.find(' -h') != -1:
+async def wiki(message, group=0):
+    if message.find(' -h') != -1:
         return (await wikihelp())
     else:
+        lower = re.sub(r'^Wiki', 'wiki', message)
         try:
-            b = re.sub(r'^Wiki', 'wiki', str1)
-        except:
-            b = str1
-        try:
-            q = re.match(r'^wiki-(.*?) (.*)', b)
-            w = q.group(1)
-            print(w)
-            if w in iwlist():
-                return (await wiki2(q.group(1), q.group(2)))
+            matchmsg = re.match(r'^wiki-(.*?) (.*)', lower)
+            interwiki = matchmsg.group(1)
+            print(interwiki)
+            if interwiki in iwlist():
+                return (await wiki2(matchmsg.group(1), matchmsg.group(2)))
             else:
                 return ('未知语言，请使用~wiki -h查看帮助。')
         except:
-            q = re.match(r'^wiki (.*)', b)
+            matchmsg = re.match(r'^wiki (.*)', lower)
             try:
-                s = re.match(r'~(.*?) (.*)', q.group(1))
-                metaurl = 'https://' + s.group(1) + '.gamepedia.com'
-                return (await wiki1(metaurl, s.group(2)))
+                matchsite = re.match(r'~(.*?) (.*)', matchmsg.group(1))
+                wikiurl = 'https://' + matchsite.group(1) + '.gamepedia.com'
+                return (await wiki1(wikiurl, matchsite.group(2)))
             except:
                 try:
                     if group == 250500369 or group == 676942198:
-                        x = q.group(1)
-                        metaurl = 'https://wiki.arcaea.cn/'
-                        return (await wiki1(metaurl, x))
+                        pagename = matchmsg.group(1)
+                        wikiurl = 'https://wiki.arcaea.cn/'
+                        return (await wiki1(wikiurl, pagename))
                     else:
-                        d = re.match(r'(.*?):(.*)', q.group(1))
-                        x = d.group(2)
-                        w = str.lower(d.group(1))
-                        if w in iwlist():
+                        matchinterwiki = re.match(r'(.*?):(.*)', matchmsg.group(1))
+                        pagename = matchinterwiki.group(2)
+                        interwiki = str.lower(matchinterwiki.group(1))
+                        if interwiki in iwlist():
                             try:
-                                metaurl = iwlink(w)
-                                return (await wiki1(metaurl, x))
+                                wikiurl = iwlink(interwiki)
+                                return (await wiki1(wikiurl, pagename))
                             except  Exception as e:
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
-                        elif w == 'Wikipedia' or w == 'wikipedia':
+                        elif interwiki == 'Wikipedia' or interwiki == 'wikipedia':
                             return ('暂不支持Wikipedia查询。')
                         else:
                             try:
-                                metaurl = 'https://minecraft.gamepedia.com/'
-                                return (await wiki1(metaurl, x))
+                                wikiurl = 'https://minecraft.gamepedia.com/'
+                                return (await wiki1(wikiurl, pagename))
                             except  Exception as e:
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
                 except Exception:
-                    return (await wiki2('en', q.group(1)))
+                    return (await wiki2('en', matchmsg.group(1)))
 
 
 from .wikitextlib import wi
 
 
-async def im(str1):
+async def im(message):
     try:
-        pipe = re.match(r'(.*?)\|.*', str1)
-        str1 = pipe.group(1)
+        pipe = re.match(r'(.*?)\|.*', message)
+        message = pipe.group(1)
     except Exception:
-        str1 = str1
-    str1 = re.sub(r'^:', '', str1)
+        pass
+    message = re.sub(r'^:', '', message)
     try:
-        d = re.match(r'(.*?):(.*)', str1)
-        w = d.group(1)
-        w = str.lower(w)
-        if w in iwlist():
-            c = iwlink(w)
-            pagename = d.group(2)
+        matchinterwiki = re.match(r'(.*?):(.*)', message)
+        interwiki = matchinterwiki.group(1)
+        interwiki = str.lower(interwiki)
+        if interwiki in iwlist():
+            url = iwlink(interwiki)
+            pagename = matchinterwiki.group(2)
             itw = 't'
         else:
-            c = iwlink('zh')
-            pagename = str1
+            url = iwlink('zh')
+            pagename = message
             itw = 'f'
     except Exception:
-        c = iwlink('zh')
-        pagename = str1
+        url = iwlink('zh')
+        pagename = message
         itw = 'f'
-        w = '.'
-    return (await wi(c, w, pagename, itw, ignoremessage='f'))
+        interwiki = '.'
+    return (await wi(url, interwiki, pagename, itw, ignoremessage='f'))
 
 
-async def imarc(str1):
+async def imarc(message):
     try:
-        pipe = re.match(r'(.*?)\|.*', str1)
-        str1 = pipe.group(1)
+        pipe = re.match(r'(.*?)\|.*', message)
+        message = pipe.group(1)
     except Exception:
-        str1 = str1
-    str1 = re.sub(r'^:', '', str1)
-    c = 'https://wiki.arcaea.cn/'
+        pass
+    message = re.sub(r'^:', '', message)
+    url = 'https://wiki.arcaea.cn/'
     itw = 'f'
-    w = '.'
-    return (await wi(c, w, str1, itw, ignoremessage='t'))
+    interwiki = '.'
+    return (await wi(url, interwiki, message, itw, ignoremessage='t'))
 
 
-async def imt(str1):
+async def imt(message):
     try:
-        pipe = re.match(r'(.*?)\|.*', str1)
-        str1 = pipe.group(1)
+        pipe = re.match(r'(.*?)\|.*', message)
+        message = pipe.group(1)
     except Exception:
-        str1 = str1
-    str1 = re.sub(r'^:', '', str1)
+        pass
+    message = re.sub(r'^:', '', message)
     try:
-        d = re.match(r'(.*?):(.*)', str1)
-        w = d.group(1)
-        w = str.lower(w)
-        if w in iwlist():
-            c = iwlink(w)
-            pagename = 'Template:' + d.group(2)
+        matchinterwiki = re.match(r'(.*?):(.*)', message)
+        interwiki = matchinterwiki.group(1)
+        interwiki = str.lower(interwiki)
+        if interwiki in iwlist():
+            url = iwlink(interwiki)
+            pagename = 'Template:' + matchinterwiki.group(2)
             itw = 't'
         else:
-            c = iwlink('zh')
-            pagename = 'Template:' + str1
+            url = iwlink('zh')
+            pagename = 'Template:' + message
             itw = 'f'
     except Exception:
-        c = iwlink('zh')
-        pagename = 'Template:' + str1
+        url = iwlink('zh')
+        pagename = 'Template:' + message
         itw = 'f'
-        w = '.'
-    return (await wi(c, w, pagename, itw, ignoremessage='f', template='t'))
+        interwiki = '.'
+    return (await wi(url, interwiki, pagename, itw, ignoremessage='f', template='t'))
 
 
 if __name__ == '__main__':

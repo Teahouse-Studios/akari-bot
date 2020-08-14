@@ -1,5 +1,4 @@
 import aiohttp
-import json
 import re
 import traceback
 import urllib
@@ -14,106 +13,100 @@ async def get_data(url: str, fmt: str):
                 raise ValueError(f"NoSuchMethod: {fmt}")
 
 
-async def wi(c, w, pagename, itw='f', ignoremessage='f', template='f'):
-    str1 = pagename
-    metaurl = c + 'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
-    url1 = c
+async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template='f'):
+    metaurl = wikiurl + 'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     try:
-        url = metaurl + pagename
-        file = await get_data(url, "json")
+        linkurl = metaurl + pagename
+        file = await get_data(linkurl, "json")
         try:
             try:
-                x = file['query']['pages']
-                y = sorted(x.keys())[0]
+                pages = file['query']['pages']
+                pageid = sorted(pages.keys())[0]
             except Exception:
                 if ignoremessage == 'f':
                     return ('发生错误：请检查您输入的标题是否正确。')
                 else:
                     pass
-            if int(y) == -1:
-                if 'invalid' in x['-1']:
+            if int(pageid) == -1:
+                if 'invalid' in pages['-1']:
                     if ignoremessage == 'f':
                         rs = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
-                                    x['-1']['invalidreason'])
+                                    pages['-1']['invalidreason'])
                         return ('发生错误：“' + rs + '”。')
                     else:
                         pass
                 else:
-                    if 'missing' in x['-1']:
+                    if 'missing' in pages['-1']:
                         if template == 'f':
                             if ignoremessage == 'f':
                                 try:
                                     try:
-                                        searchurl = url1 + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                                        g = await get_data(searchurl, "json")
-                                        j = g['query']['pages']
-                                        b = sorted(j.keys())[0]
-                                        m = j[b]['title']
+                                        searchurl = wikiurl + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                                        getsecjson = await get_data(searchurl, "json")
+                                        secpages = getsecjson['query']['pages']
+                                        secpageid = sorted(secpages.keys())[0]
+                                        sectitle = secpages[secpageid]['title']
                                         if itw == 't':
-                                            m = w + ':' + m
-                                            pagename = w + ':' + pagename
-                                        return ('提示：您要找的' + pagename + '不存在，要找的页面是' + m + '吗？')
+                                            sectitle = interwiki + ':' + sectitle
+                                            pagename = interwiki + ':' + pagename
+                                        return ('提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？')
                                     except Exception:
-                                        searchurl = url1 + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                                        g = await get_data(searchurl, "json")
-                                        m = g['query']['search'][0]['title']
+                                        searchurl = wikiurl + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+                                        getsecjson = await get_data(searchurl, "json")
+                                        sectitle = getsecjson['query']['search'][0]['title']
                                         if itw == 't':
-                                            m = w + ':' + m
-                                            pagename = w + ':' + pagename
-                                        return ('提示：您要找的' + pagename + '不存在，要找的页面是' + m + '吗？')
+                                            sectitle = interwiki + ':' + sectitle
+                                            pagename = interwiki + ':' + pagename
+                                        return ('提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？')
                                 except Exception:
                                     traceback.print_exc()
                                     if itw == 't':
-                                        pagename = w + ':' + pagename
+                                        pagename = interwiki + ':' + pagename
                                     return ('提示：找不到' + pagename + '。')
                             else:
                                 pass
                         else:
-                            name = re.sub('Template:', '', pagename)
-                            name = re.sub('template:', '', name)
-                            return ('提示：[' + pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(c, w, name, itw, ignoremessage,
+                            pagename = re.sub('Template:', '', pagename)
+                            pagename = re.sub('template:', '', pagename)
+                            return ('提示：[' + pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(wikiurl, interwiki, pagename, itw, ignoremessage,
                                                                                        template='f'))
                     else:
-                        return (url1 + urllib.parse.quote(pagename.encode('UTF-8')))
+                        return (wikiurl + urllib.parse.quote(pagename.encode('UTF-8')))
             else:
                 try:
-                    z = x[y]['fullurl']
-                    print(z)
-                    if z.find('index.php') != -1 or z.find('Index.php') != -1:
-                        h = re.match(r'https?://(.*?)/.*?/(.*)', z, re.M | re.I)
-                    else:
-                        h = re.match(r'https?://(.*?)/(.*)', z, re.M | re.I)
-                    texturl = 'https://' + h.group(
-                        1) + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + h.group(
-                        2)
-                    e = await get_data(texturl, "json")
-                    r = e['query']['pages'][y]['extract']
+                    fullurl = pages[pageid]['fullurl']
+                    matchurl = re.match(r'https?://.*?/(?:index.php/|wiki/|)(.*)', fullurl, re.M | re.I)
+                    texturl = wikiurl + 'api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + matchurl.group(
+                        1)
+                    getdesc = await get_data(texturl, "json")
+                    desc = getdesc['query']['pages'][pageid]['extract']
                 except:
-                    r = ''
+                    desc = ''
                 try:
-                    b = re.match(r'.*(\#.*)', str1)
-                    z = x[y]['fullurl'] + urllib.parse.quote(b.group(1).encode('UTF-8'))
+                    section = re.match(r'.*(\#.*)', pagename)
+                    fullurl = pages[pageid]['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
                 except Exception:
-                    z = x[y]['fullurl']
-                k = urllib.parse.unquote(h.group(2), encoding='UTF-8')
-                k = re.sub('_', ' ', k)
+                    fullurl = pages[pageid]['fullurl']
+                matchfinalurl = re.match(r'https?://.*?/(?:index.php/|wiki/|)(.*)', fullurl, re.M | re.I)
+                finalpagename = urllib.parse.unquote(matchfinalurl.group(2), encoding='UTF-8')
+                finalpagename = re.sub('_', ' ', finalpagename)
                 if itw == 't':
-                    k = w + ':' + k
-                    str1 = w + ':' + str1
-                if k == str1:
-                    xx = re.sub('\n$', '', z + '\n' + r)
+                    finalpagename = interwiki + ':' + finalpagename
+                    pagename = interwiki + ':' + pagename
+                if finalpagename == pagename:
+                    rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
                 else:
-                    xx = re.sub('\n$', '', '（重定向[' + str1 + ']至[' + k + ']）\n' + z + '\n' + r)
-                return (xx)
-        except  Exception as e:
+                    rmlstlb = re.sub('\n$', '', '（重定向[' + pagename + ']至[' + finalpagename + ']）\n' + fullurl + '\n' + desc)
+                return (rmlstlb)
+        except  Exception as getdesc:
             traceback.print_exc()
             if ignoremessage == 'f':
-                return ('发生错误：' + str(e))
+                return ('发生错误：' + str(getdesc))
             else:
                 pass
-    except  Exception as e:
+    except  Exception as getdesc:
         traceback.print_exc()
         if ignoremessage == 'f':
-            return ('发生错误：' + str(e))
+            return ('发生错误：' + str(getdesc))
         else:
             pass
