@@ -88,7 +88,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 except Exception:
                     fullurl = pages[pageid]['fullurl']
                 matchfinalurl = re.match(r'https?://.*?/(?:index.php/|wiki/|)(.*)', fullurl, re.M | re.I)
-                finalpagename = urllib.parse.unquote(matchfinalurl.group(2), encoding='UTF-8')
+                finalpagename = urllib.parse.unquote(matchfinalurl.group(1), encoding='UTF-8')
                 finalpagename = re.sub('_', ' ', finalpagename)
                 if itw == 't':
                     finalpagename = interwiki + ':' + finalpagename
