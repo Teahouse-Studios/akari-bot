@@ -2,7 +2,6 @@ import re
 import string
 
 from ab import ab
-from blacklist import blacklist
 from bug import bugtracker
 from checkuser import checkuser
 from help import help
