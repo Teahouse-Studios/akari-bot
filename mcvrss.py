@@ -7,8 +7,8 @@ def mcvrss():
     s = w.read().split('\n')
     if '' in s:
         s.remove('')
-    return (s)
     w.close()
+    return (s)
 
 
 def mcvrssa(group):
