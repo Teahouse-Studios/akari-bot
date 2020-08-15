@@ -24,7 +24,7 @@ async def ab():
     y = await pbc2(d)
     space = '\n'
     f = space.join(y)
-    if f('<吃掉了>') != -1 or f('<全部吃掉了>') != -1:
+    if f.find('<吃掉了>') != -1 or f.find('<全部吃掉了>') != -1:
         return (f + '\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。Special:滥用日志')
     else:
         return (f + '\n...仅显示前5条内容')
