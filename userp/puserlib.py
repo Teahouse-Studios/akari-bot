@@ -18,8 +18,7 @@ async def get_data(url: str, fmt: str):
                 raise ValueError(f"NoSuchMethod: {fmt}")
 
 def ddk(str1):
-    a = re.sub('<dd>', '', str1)
-    a = re.sub('</dd>', '', a)
+    a = re.sub('<dd>|</dd>', '', str1)
     return a
 
 
