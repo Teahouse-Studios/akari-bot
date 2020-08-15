@@ -19,7 +19,7 @@ async def Userp(path, Username):
         async with aiohttp.ClientSession() as session:
             async with session.get(url1, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status != 200:
-                    print(f"请求发生时错误:{req.status}")
+                    print(f"请求时发生错误：{req.status}")
                 else:
                     s = await req.text()
         file = json.loads(s)

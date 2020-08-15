@@ -7,7 +7,7 @@ async def findimage(url):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as req:
             if req.status != 200:
-                return f"请求发生时错误:{req.status}"
+                return f"请求时发生错误：{req.status}"
             else:
                 q = await req.text()
     soup = bs(q, 'html.parser')

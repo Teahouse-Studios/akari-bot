@@ -14,7 +14,7 @@ async def bug(pagename):
         async with aiohttp.ClientSession() as session:
             async with session.get(url_str, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status != 200:
-                    return f"请求发生时错误:{req.status}"
+                    return f"请求时发生错误：{req.status}"
                 else:
                     respose_str = await req.text()
                     respose_str = await req.text()
@@ -32,7 +32,7 @@ async def bug(pagename):
             async with aiohttp.ClientSession() as session2:
                 async with session2.get(url_json, timeout=aiohttp.ClientTimeout(total=5)) as reqjson:
                     if reqjson.status != 200:
-                        return f"请求发生时错误:{reqjson.status}"
+                        return f"请求时发生错误：{reqjson.status}"
                     else:
                         json_text = await reqjson.text()
             file = json.loads(json_text)
