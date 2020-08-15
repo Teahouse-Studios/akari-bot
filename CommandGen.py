@@ -100,6 +100,7 @@ async def command(text, group=0):
                                     print(str(e))
                     if checkuser(h, h2):
                         h2 = re.sub('user:','',h2)
+                        print(h2)
                         return (await Userp(h, h2) + "[[usn:" + h2 + "]]")
                     else:
                         return ('没有找到此用户。')
