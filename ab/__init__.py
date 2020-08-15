@@ -18,7 +18,7 @@ async def ab():
                 text1 = await req.text()
     file = json.loads(text1)
     d = []
-    for x in file['query']['abuselog'][-5:]:
+    for x in file['query']['abuselog'][:5]:
         d.append('•' + x['title'] + ' - ' + x['user'] + '于' + UTC8(x['timestamp'], 'onlytimenoutc') + '\n过滤器名：' + x[
             'filter'] + '\n处理结果：' + x['result'])
     y = await pbc2(d)
