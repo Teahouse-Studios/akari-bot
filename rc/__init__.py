@@ -4,7 +4,7 @@ import json
 import re
 
 from UTC8 import UTC8
-from pbc import pbc
+from pbc import pbc1
 
 
 async def rc():
@@ -19,7 +19,7 @@ async def rc():
     d = []
     for x in file['query']['recentchanges'][5:]:
         d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
-    y = await pbc(d)
+    y = await pbc1(d)
     print(y)
     space = '\n'
     f = space.join(y)
