@@ -99,7 +99,7 @@ async def command(text, group=0):
                                 except Exception as e:
                                     print(str(e))
                     if checkuser(h, h2):
-                        h2 = re.sub('user:','',h2)
+                        h2 = re.sub('User:','',h2)
                         print(h2)
                         return (await Userp(h, h2) + "[[usn:" + h2 + "]]")
                     else:
