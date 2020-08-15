@@ -24,6 +24,6 @@ async def rc():
     space = '\n'
     f = space.join(y)
     if f.find('<吃掉了>') != -1 or f.find('<全部吃掉了>') != -1:
-        return (f[0] + '\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。Special:最近更改')
+        return (f + '\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。Special:最近更改')
     else:
-        return (f[0] + '\n...仅显示前5条内容')
+        return (f + '\n...仅显示前5条内容')
