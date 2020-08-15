@@ -1,14 +1,11 @@
-import aiohttp
-import json
 import os
 import re
-import re
-from bs4 import BeautifulSoup as bs
 from os.path import abspath
 
-from .hh import hh
-from .hh17 import hh17
-from .killdd import ddk
+import aiohttp
+from bs4 import BeautifulSoup as bs
+
+from .hh import hh, hh1
 from .tpg import tpg
 
 
@@ -19,6 +16,11 @@ async def get_data(url: str, fmt: str):
                 return await getattr(req, fmt)()
             else:
                 raise ValueError(f"NoSuchMethod: {fmt}")
+
+def ddk(str1):
+    a = re.sub('<dd>', '', str1)
+    a = re.sub('</dd>', '', a)
+    return a
 
 
 async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Blockedtimestamp='0', Blockexpiry='0', Blockreason='0'):
@@ -46,24 +48,24 @@ async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Block
         pass
     g = re.sub('User:', '', str3)
     if Blockedby == '0':
-        tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), \
-            username=User, gender=Gender, registertime=Registration, \
-            contributionwikis=ddk(str(dd[0])), createcount=ddk(str(dd[1])), \
-            editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])), patrolcount=ddk(str(dd[4])), \
+        tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname),
+            username=User, gender=Gender, registertime=Registration,
+            contributionwikis=ddk(str(dd[0])), createcount=ddk(str(dd[1])),
+            editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])), patrolcount=ddk(str(dd[4])),
             sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])), wikipoint=point)
     else:
         if Blockreason == '0':
-            tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User, \
-                gender=Gender, registertime=Registration, contributionwikis=ddk(str(dd[0])), \
-                createcount=ddk(str(dd[1])), editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])), \
-                patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])), \
-                wikipoint=point, blockbyuser=Blockedby, blocktimestamp1=Blockedtimestamp, blocktimestamp2=Blockexpiry, \
+            tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User,
+                gender=Gender, registertime=Registration, contributionwikis=ddk(str(dd[0])),
+                createcount=ddk(str(dd[1])), editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])),
+                patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])),
+                wikipoint=point, blockbyuser=Blockedby, blocktimestamp1=Blockedtimestamp, blocktimestamp2=Blockexpiry,
                 bantype='YN')
         else:
-            tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User, \
-                gender=Gender, registertime=Registration, contributionwikis=ddk(str(dd[0])), \
-                createcount=ddk(str(dd[1])), editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])), \
-                patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])), \
-                wikipoint=point, blockbyuser=Blockedby, blocktimestamp1=Blockedtimestamp, blocktimestamp2=Blockexpiry, \
-                blockreason=hh17(Blockreason), bantype='Y')
+            tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User,
+                gender=Gender, registertime=Registration, contributionwikis=ddk(str(dd[0])),
+                createcount=ddk(str(dd[1])), editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])),
+                patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])),
+                wikipoint=point, blockbyuser=Blockedby, blocktimestamp1=Blockedtimestamp, blocktimestamp2=Blockexpiry,
+                blockreason=hh1(Blockreason), bantype='Y')
 
