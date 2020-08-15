@@ -2,7 +2,7 @@ import re
 
 
 def hh(w):
-    if int(w) > 15:
+    if len(w) > 15:
         w = re.findall('..?.?.?.?.?.?.?.?.?.?.?.?.?.?', w)
         w = str(w)
         w = re.sub('\[', '', w)
