@@ -31,7 +31,7 @@ print(accessKeyId)
 print(accessKeySecret)
 
 
-async def main(newUsers):
+async def pbc1(newUsers):
     Users = []
     Users.append(newUsers)
     print('hello')
@@ -106,7 +106,7 @@ async def main(newUsers):
                 return (await resp.text())
 
 
-async def main2(newUsers):
+async def pbc2(newUsers):
     print('hello')
     body = {
         "scenes": [
@@ -180,4 +180,4 @@ async def main2(newUsers):
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(pbc1())

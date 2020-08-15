@@ -5,7 +5,7 @@ import re
 import aiohttp
 
 from UTC8 import UTC8
-from pbc import main2
+from pbc import pbc2
 
 
 async def ab():
@@ -21,7 +21,7 @@ async def ab():
     for x in file['query']['abuselog']:
         d.append('•' + x['title'] + ' - ' + x['user'] + '于' + UTC8(x['timestamp'], 'onlytimenoutc') + '\n过滤器名：' + x[
             'filter'] + '\n处理结果：' + x['result'])
-    y = await main2(d)
+    y = await pbc2(d)
     space = '\n'
     f = re.findall(r'.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*\n.*', space.join(y))
     if f[0].find('<吃掉了>') != -1 or f[0].find('<全部吃掉了>') != -1:

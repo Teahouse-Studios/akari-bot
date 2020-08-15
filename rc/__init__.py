@@ -4,7 +4,7 @@ import json
 import re
 
 from UTC8 import UTC8
-from pbc import main2
+from pbc import pbc2
 
 
 async def rc():
@@ -19,7 +19,7 @@ async def rc():
     d = []
     for x in file['query']['recentchanges']:
         d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
-    y = await main2(d)
+    y = await pbc2(d)
     print(y)
     space = '\n'
     f = re.findall(r'.*\n.*\n.*\n.*\n.*', space.join(y))

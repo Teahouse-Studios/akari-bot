@@ -6,7 +6,7 @@ from datetime import datetime
 from mirai import Mirai, Group, MessageChain, Member, Plain, At, Source, Image, Friend
 
 from UTC8 import UTC8
-from pbc import main
+from pbc import pbc1
 
 qq = 2052142661  # 字段 qq 的值
 authKey = '1145141919810'  # 字段 authKey 的值
@@ -37,7 +37,7 @@ async def newbie(app: Mirai):
                             if xz['title'] in qq:
                                 pass
                             else:
-                                s = await main(UTC8(xz['timestamp'], 'onlytime') + '新增新人：' + xz['title'])
+                                s = await pbc1(UTC8(xz['timestamp'], 'onlytime') + '新增新人：' + xz['title'])
                                 print(s)
                                 if s[0].find("<吃掉了>") != -1 or s[0].find("<全部吃掉了>") != -1:
                                     await app.sendGroupMessage(731397727, message=s[
