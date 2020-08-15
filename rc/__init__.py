@@ -17,7 +17,7 @@ async def rc():
                 text1 = await req.text()
     file = json.loads(text1)
     d = []
-    for x in file['query']['recentchanges'][5:]:
+    for x in file['query']['recentchanges'][-5:]:
         d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
     y = await pbc2(d)
     print(y)
