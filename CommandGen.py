@@ -1,18 +1,17 @@
 import re
-import string
 
-from ab import ab
-from bug import bugtracker
-from checkuser import checkuser
-from help import help
-from mcv import mcv, mcbv, mcdv
-from newbie import new
-from ping import ping
-from rc import rc
-from server import ser
-from user import Username
-from userp import Userp
-from wiki import wiki, im, imt, imarc
+from plugins.ab import ab
+from plugins.bug import bugtracker
+from plugins.checkuser import checkuser
+from plugins.help import help
+from plugins.mcv import mcv, mcbv, mcdv
+from plugins.newbie import new
+from plugins.ping import ping
+from plugins.rc import rc
+from plugins.server import ser
+from plugins.user import Username
+from plugins.userp import Userp
+from plugins.wiki import wiki
 
 
 def findcommand(str1, group=0):

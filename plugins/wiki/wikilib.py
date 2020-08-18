@@ -1,10 +1,9 @@
 import aiohttp
-import json
 import re
 import traceback
 import urllib
 
-from interwikilist import iwlist, iwlink
+from plugins.interwikilist import iwlist, iwlink
 
 
 async def get_data(url: str, fmt: str):

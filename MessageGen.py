@@ -1,12 +1,10 @@
 import re
-from graia.application import GraiaMiraiApplication, Session
-from graia.application.event.messages import TempMessage
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, At, Image, UploadMethods, Quote
+from graia.application.message.elements.internal import Plain, Image, UploadMethods
 from os.path import abspath
 
 from CommandGen import command
-from findimage import findimage
+from plugins.findimage import findimage
 
 
 async def gen(app, message, target1, target2='0', msgtype='None'):
@@ -49,7 +47,7 @@ async def gen(app, message, target1, target2='0', msgtype='None'):
             await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
 
 
-from wiki import im, imt, imarc
+from plugins.wiki import im, imt, imarc
 
 
 async def findwikitext(app, message, target1, target2='0', msgtype='None'):

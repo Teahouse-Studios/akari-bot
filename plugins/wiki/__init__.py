@@ -2,8 +2,8 @@ import asyncio
 import re
 import traceback
 
-from help import wikihelp
-from interwikilist import iwlist, iwlink
+from plugins.help import wikihelp
+from plugins.interwikilist import iwlist, iwlink
 from .wikilib import wiki1, wiki2
 
 

@@ -1,4 +1,4 @@
-from mirai import Mirai, Group, MessageChain, Member, Plain, At, Source, Image, Friend
+from mirai import Mirai, Plain
 
 qq = 2052142661  # 字段 qq 的值
 authKey = '1145141919810'  # 字段 authKey 的值
@@ -9,7 +9,7 @@ app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}", websoc
 
 @app.subroutine
 async def ver(app: Mirai):
-    from mcvrss import mcvrss
+    from plugins.mcvrss import mcvrss
     for qqgroup in mcvrss():
         try:
             await app.sendGroupMessage(int(qqgroup), [Plain('已开启检测游戏版本。')])

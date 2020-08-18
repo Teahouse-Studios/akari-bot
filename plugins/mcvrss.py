@@ -3,7 +3,7 @@ import re
 
 
 def mcvrss():
-    w = open('mcvrss.txt', 'r')
+    w = open('../mcvrss.txt', 'r')
     s = w.read().split('\n')
     if '' in s:
         s.remove('')
@@ -16,7 +16,7 @@ def mcvrssa(group):
     if group in q:
         return ('该群已在订阅列表中。')
     else:
-        wr = open('mcvrss.txt', 'a+')
+        wr = open('../mcvrss.txt', 'a+')
         wr.write(re.sub(r'\n$', '', '\n' + group))
         wr.close()
         return ('已订阅。')
@@ -26,8 +26,8 @@ def mcvrssr(group):
     q = mcvrss()
     if group in q:
         q.remove(group)
-        os.remove('mcvrss.txt')
-        wr = open('mcvrss.txt', 'a')
+        os.remove('../mcvrss.txt')
+        wr = open('../mcvrss.txt', 'a')
         y = []
         h = ''
         for x in q:

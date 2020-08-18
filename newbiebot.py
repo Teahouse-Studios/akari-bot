@@ -2,11 +2,10 @@ import json
 import requests
 import time
 import traceback
-from datetime import datetime
-from mirai import Mirai, Group, MessageChain, Member, Plain, At, Source, Image, Friend
+from mirai import Mirai, Plain
 
-from UTC8 import UTC8
-from pbc import pbc1
+from plugins.UTC8 import UTC8
+from plugins.pbc import pbc1
 
 qq = 2052142661  # 字段 qq 的值
 authKey = '1145141919810'  # 字段 authKey 的值
