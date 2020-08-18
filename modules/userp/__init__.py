@@ -4,7 +4,7 @@ import re
 import traceback
 import urllib
 
-from plugins.UTC8 import UTC8
+from modules.UTC8 import UTC8
 from .gender import gender
 from .puserlib import PUser1
 

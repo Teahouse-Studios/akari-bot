@@ -1,7 +1,7 @@
 import re
 
-from plugins.help import userhelp
-from plugins.interwikilist import iwlink, iwlist
+from modules.help import userhelp
+from modules.interwikilist import iwlink, iwlist
 from .ruserlib import rUser1
 from .userlib import User1
 

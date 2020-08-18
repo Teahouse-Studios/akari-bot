@@ -4,7 +4,7 @@ from graia.application.message.elements.internal import Plain, Image, UploadMeth
 from os.path import abspath
 
 from CommandGen import command
-from plugins.findimage import findimage
+from modules.findimage import findimage
 
 
 async def gen(app, message, target1, target2='0', msgtype='None'):
@@ -47,7 +47,7 @@ async def gen(app, message, target1, target2='0', msgtype='None'):
             await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
 
 
-from plugins.wiki import im, imt, imarc
+from modules.wiki import im, imt, imarc
 
 
 async def findwikitext(app, message, target1, target2='0', msgtype='None'):

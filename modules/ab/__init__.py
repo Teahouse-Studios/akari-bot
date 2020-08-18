@@ -3,8 +3,8 @@ import json
 
 import aiohttp
 
-from plugins.UTC8 import UTC8
-from plugins.pbc import pbc2
+from modules.UTC8 import UTC8
+from modules.pbc import pbc2
 
 
 async def ab():

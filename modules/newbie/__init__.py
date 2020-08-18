@@ -3,7 +3,7 @@ import aiohttp
 import json
 import re
 
-from plugins.pbc import pbc2
+from modules.pbc import pbc2
 
 
 async def new():

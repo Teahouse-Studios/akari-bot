@@ -2,7 +2,7 @@ import aiohttp
 import re
 import urllib
 
-from plugins.UTC8 import UTC8
+from modules.UTC8 import UTC8
 from .tool import yhz, gender
 
 

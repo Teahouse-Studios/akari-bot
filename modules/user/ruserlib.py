@@ -3,7 +3,7 @@ import re
 import urllib
 from bs4 import BeautifulSoup as bs
 
-from plugins.UTC8 import UTC8
+from modules.UTC8 import UTC8
 from .tool import yhz, gender
 
 

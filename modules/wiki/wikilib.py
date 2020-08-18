@@ -3,7 +3,7 @@ import re
 import traceback
 import urllib
 
-from plugins.interwikilist import iwlist, iwlink
+from modules.interwikilist import iwlist, iwlink
 
 
 async def get_data(url: str, fmt: str):

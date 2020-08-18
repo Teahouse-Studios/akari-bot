@@ -4,8 +4,8 @@ import time
 import traceback
 from mirai import Mirai, Plain
 
-from plugins.UTC8 import UTC8
-from plugins.pbc import pbc1
+from modules.UTC8 import UTC8
+from modules.pbc import pbc1
 
 qq = 2052142661  # 字段 qq 的值
 authKey = '1145141919810'  # 字段 authKey 的值

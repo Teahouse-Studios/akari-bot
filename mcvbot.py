@@ -9,7 +9,7 @@ app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}", websoc
 
 @app.subroutine
 async def ver(app: Mirai):
-    from plugins.mcvrss import mcvrss
+    from modules.mcvrss import mcvrss
     for qqgroup in mcvrss():
         try:
             await app.sendGroupMessage(int(qqgroup), [Plain('已开启检测游戏版本。')])
