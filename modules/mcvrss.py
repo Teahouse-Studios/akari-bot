@@ -1,9 +1,9 @@
 import os
 import re
-
+from os.path import abspath
 
 def mcvrss():
-    w = open('../mcvrss.txt', 'r')
+    w = open(abspath('./mcvrss.txt'), 'r')
     s = w.read().split('\n')
     if '' in s:
         s.remove('')

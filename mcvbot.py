@@ -1,31 +1,49 @@
-from mirai import Mirai, Plain
+import asyncio
+import traceback
 
-qq = 2052142661  # 字段 qq 的值
-authKey = '1145141919810'  # 字段 authKey 的值
-mirai_api_http_locate = 'localhost:11919/ws'  # httpapi所在主机的地址端口,如果 setting.yml 文件里字段 "enableWebsocket" 的值为 "true" 则需要将 "/" 换成 "/ws", 否则将接收不到消息.
+from graia.application import GraiaMiraiApplication, Session
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import Plain
+from graia.broadcast import Broadcast
 
-app = Mirai(f"mirai://{mirai_api_http_locate}?authKey={authKey}&qq={qq}", websocket=True)
+loop = asyncio.get_event_loop()
 
+bcc = Broadcast(loop=loop, debug_flag=True)
+app = GraiaMiraiApplication(
+    broadcast=bcc,
+    connect_info=Session(
+        host="http://localhost:11919",  # 填入 httpapi 服务运行的地址
+        authKey='1145141919810',  # 填入 authKey
+        account=2052142661,  # 你的机器人的 qq 号
+        websocket=True  # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
+    )
+)
+import aiohttp
+async def get_data(url: str, fmt: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
+            if hasattr(req, fmt):
+                return await getattr(req, fmt)()
+            else:
+                raise ValueError(f"NoSuchMethod: {fmt}")
 
-@app.subroutine
-async def ver(app: Mirai):
+@bcc.receiver("ApplicationLaunched")
+async def ver(app: GraiaMiraiApplication):
     from modules.mcvrss import mcvrss
     for qqgroup in mcvrss():
         try:
-            await app.sendGroupMessage(int(qqgroup), [Plain('已开启检测游戏版本。')])
+            await app.sendGroupMessage(int(qqgroup), MessageChain.create([Plain('已开启检测游戏版本。')]).asSendable())
         except Exception as e:
+            traceback.print_exc()
             print(str(e))
 
     from mcversion import mcversion
     import time
-    import requests
-    import json
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     while True:
         try:
             verlist = mcversion()
-            version_manifest = requests.get(url)
-            file = json.loads(version_manifest.text)
+            file = await get_data(url,'json')
             release = file['latest']['release']
             snapshot = file['latest']['snapshot']
             if release in verlist:
@@ -33,7 +51,7 @@ async def ver(app: Mirai):
             else:
                 for qqgroup in mcvrss():
                     try:
-                        await app.sendGroupMessage(int(qqgroup), [Plain('启动器已更新' + file['latest']['release'] + '正式版。')])
+                        await app.sendGroupMessage(int(qqgroup), MessageChain.create([Plain('启动器已更新' + file['latest']['release'] + '正式版。')]).asSendable())
                     except Exception as e:
                         print(str(e))
                 addversion = open('mcversion.txt', 'a')
@@ -44,7 +62,7 @@ async def ver(app: Mirai):
             else:
                 for qqgroup in mcvrss():
                     try:
-                        await app.sendGroupMessage(int(qqgroup), [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')])
+                        await app.sendGroupMessage(int(qqgroup), MessageChain.create([Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]).asSendable())
                     except Exception as e:
                         print(str(e))
                 addversion = open('mcversion.txt', 'a')
@@ -58,4 +76,4 @@ async def ver(app: Mirai):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.launch_blocking()

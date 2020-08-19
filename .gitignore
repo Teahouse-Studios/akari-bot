@@ -3,3 +3,5 @@
 *.pyc
 config/config.cfg
 .idea
+mcversion.txt
+mcvrss.txt
