@@ -1,4 +1,5 @@
 import re
+import asyncio
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, UploadMethods
 from os.path import abspath
@@ -36,15 +37,18 @@ async def gen(app, message, target1, target2='0', msgtype='None'):
             msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
         if msgtype == 'friend':
             friend = target1
-            await app.sendFriendMessage(friend, msgchain.asSendable())
+            send = await app.sendFriendMessage(friend, msgchain.asSendable())
         elif msgtype == 'group':
             group = target1
             member = target2
-            await app.sendGroupMessage(group, msgchain.asSendable(), quote=message.__root__[0].id)
+            send = await app.sendGroupMessage(group, msgchain.asSendable(), quote=message.__root__[0].id)
         elif msgtype == 'temp':
             group = target1
             member = target2
-            await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
+            send = await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
+        if run.find('[一分钟后撤回]') != -1:
+            await asyncio.sleep(60)
+            await app.revokeMessage(send)
 
 
 from modules.wiki import im, imt, imarc
