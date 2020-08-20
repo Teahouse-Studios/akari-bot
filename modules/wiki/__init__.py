@@ -9,7 +9,7 @@ from .wikilib import wiki1, wiki2
 
 async def wiki(message, group=0):
     if message.find(' -h') != -1:
-        return (await wikihelp())
+        return wikihelp()
     else:
         lower = re.sub(r'^Wiki', 'wiki', message)
         try:

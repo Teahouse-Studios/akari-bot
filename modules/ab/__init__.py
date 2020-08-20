@@ -24,6 +24,6 @@ async def ab():
     space = '\n'
     f = space.join(y)
     if f.find('<吃掉了>') != -1 or f.find('<全部吃掉了>') != -1:
-        return (f + '\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。Special:滥用日志\n[一分钟后撤回]')
+        return f + '\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。Special:滥用日志\n[一分钟后撤回]'
     else:
-        return (f + '\n...仅显示前5条内容\n[一分钟后撤回]')
+        return f + '\n...仅显示前5条内容\n[一分钟后撤回]'

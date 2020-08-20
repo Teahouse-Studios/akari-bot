@@ -9,7 +9,7 @@ from .userlib import User1
 async def Username(name):
     name = re.sub(r'^User', 'user', name)
     if name.find(" -h") != -1:
-        return await userhelp()
+        return userhelp()
     else:
         try:
             q = re.match(r'^user-(.*?) (.*)', name)

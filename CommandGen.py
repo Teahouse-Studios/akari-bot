@@ -3,7 +3,7 @@ import re
 from modules.ab import ab
 from modules.bug import bugtracker
 from modules.checkuser import checkuser
-from modules.help import help
+from modules.help import help,credits
 from modules.mcv import mcv, mcbv, mcdv
 from modules.newbie import new
 from modules.ping import ping
@@ -28,7 +28,7 @@ def findcommand(str1, group=0):
             try:
                 q = re.match(r'^!(.*\-.*)', str1)
                 q = str.upper(q.group(1))
-                return ('bug ' + q)
+                return 'bug ' + q
             except Exception:
                 pass
 
@@ -44,27 +44,27 @@ async def command(text, group=0):
             d = c
         if d == 'echo':
             echo = re.sub(r'^echo ', '', c)
-            return (echo)
+            return echo
         if c == 'help':
-            return (await help())
+            return help()
         elif d == 'paa':
-            return ('爬')
+            return '爬'
         elif d == 'mcv':
-            return (await mcv())
+            return await mcv()
         elif d == 'mcbv':
-            return (await mcbv())
+            return await mcbv()
         elif d == 'mcdv':
-            return (await mcdv())
+            return await mcdv()
         elif d.find('新人') != -1 or d.find('new') != -1:
-            return (await new())
+            return await new()
         elif d.find("wiki") != -1 or d.find("Wiki") != -1:
-            return (await(wiki(c, group)))
+            return await(wiki(c, group))
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find(
                 "MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find(
                 "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
-            return (await bugtracker(c))
+            return await bugtracker(c)
         elif d == 'server' or d == 'Server':
-            return (await ser(c))
+            return await ser(c)
         elif d.find("user") != -1 or d.find("User") != -1:
             if c.find("-p") != -1:
                 f = re.sub(' -p', '', c)
@@ -99,20 +99,22 @@ async def command(text, group=0):
                     if checkuser(h, h2):
                         h2 = re.sub('User:','',h2)
                         print(h2)
-                        return (await Userp(h, h2) + "[[usn:" + h2 + "]]")
+                        return await Userp(h, h2) + "[[usn:" + h2 + "]]"
                     else:
-                        return ('没有找到此用户。')
+                        return '没有找到此用户。'
                 except Exception as e:
                     print(str(e))
 
             else:
-                return (await Username(c))
+                return await Username(c)
         elif d == 'rc':
-            return (await rc())
+            return await rc()
         elif d == 'ab':
-            return (await ab())
+            return await ab()
         elif d == 'ping':
-            return (await ping())
+            return await ping()
+        elif d == 'credits':
+            return credits()
         else:
             pass
     except:
