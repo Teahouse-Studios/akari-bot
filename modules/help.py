@@ -15,7 +15,7 @@ def help():
 ! - 用于快捷查bug，如!mc-4
 [[]] - 用于快捷查wiki，如[[海晶石]]
 {{{{}}}} - 用于快捷查wiki模板，如{{{{v}}}}
-[30秒后撤回]'''
+[30秒后撤回本消息]'''
 
 
 def wikihelp():
@@ -40,4 +40,5 @@ def credits():
                  wyapx
 2020 Teahouse Studios
 ===============
-此机器人的源代码已于https://github.com/Teahouse-Studios/bot仓库与母项目Graia采用相同协议AGPL-3.0 License进行开源。'''
+此机器人的源代码已于https://github.com/Teahouse-Studios/bot仓库与母项目Graia采用相同协议AGPL-3.0 License进行开源。
+[30秒后撤回本消息]'''

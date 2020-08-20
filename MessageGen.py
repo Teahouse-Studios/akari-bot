@@ -46,8 +46,11 @@ async def gen(app, message, target1, target2='0', msgtype='None'):
             group = target1
             member = target2
             send = await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
-        if run.find('[一分钟后撤回]') != -1:
+        if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
+            await app.revokeMessage(send)
+        elif run.find('[30秒后撤回本消息]') != -1:
+            await asyncio.sleep(30)
             await app.revokeMessage(send)
 
 
