@@ -71,8 +71,8 @@ async def wiki1(wikilink, pagename):
                 rmlstlb = re.sub('\n$', '', '\n（重定向[' + pagename + ']至[' + finalpagename + ']）\n' + getfullurl + '\n' + desc)
             rmlstlb = re.sub('\n\n', '\n', rmlstlb)
             rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-            rmlstlb = re.sub('\n\n\n','\n',rmlstlb)
-            rmlstlb = re.sub('\n\n\n\n', '\n', rmlstlb)
+            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
             try:
                 rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n',rmlstlb)
                 result = rm5lline[0] + '\n...行数过多已截断。'

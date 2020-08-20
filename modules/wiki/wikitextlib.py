@@ -99,8 +99,8 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                     rmlstlb = re.sub('\n$', '', '（重定向[' + pagename + ']至[' + finalpagename + ']）\n' + fullurl + '\n' + desc)
                 rmlstlb = re.sub('\n\n', '\n', rmlstlb)
                 rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-                rmlstlb = re.sub('\n\n\n', '\n', rmlstlb)
-                rmlstlb = re.sub('\n\n\n\n', '\n', rmlstlb)
+                rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+                rmlstlb = re.sub('\n\n', '\n', rmlstlb)
                 try:
                     rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
                     result = rm5lline[0] + '\n...行数过多已截断。'
