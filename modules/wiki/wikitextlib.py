@@ -24,7 +24,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 pageid = sorted(pages.keys())[0]
             except Exception:
                 if ignoremessage == 'f':
-                    return ('发生错误：请检查您输入的标题是否正确。')
+                    return '发生错误：请检查您输入的标题是否正确。'
                 else:
                     pass
             if int(pageid) == -1:
@@ -32,7 +32,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                     if ignoremessage == 'f':
                         rs = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
                                     pages['-1']['invalidreason'])
-                        return ('发生错误：“' + rs + '”。')
+                        return '发生错误：“' + rs + '”。'
                     else:
                         pass
                 else:
@@ -49,20 +49,20 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                                         if itw == 't':
                                             sectitle = interwiki + ':' + sectitle
                                             pagename = interwiki + ':' + pagename
-                                        return ('提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？')
+                                        return '提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？'
                                     except Exception:
-                                        searchurl = wikiurl + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+                                        searchurl = wikiurl + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json '
                                         getsecjson = await get_data(searchurl, "json")
                                         sectitle = getsecjson['query']['search'][0]['title']
                                         if itw == 't':
                                             sectitle = interwiki + ':' + sectitle
                                             pagename = interwiki + ':' + pagename
-                                        return ('提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？')
+                                        return '提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？'
                                 except Exception:
                                     traceback.print_exc()
                                     if itw == 't':
                                         pagename = interwiki + ':' + pagename
-                                    return ('提示：找不到' + pagename + '。')
+                                    return '提示：找不到' + pagename + '。'
                             else:
                                 pass
                         else:
@@ -71,7 +71,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                             return ('提示：[' + pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(wikiurl, interwiki, pagename, itw, ignoremessage,
                                                                                        template='f'))
                     else:
-                        return (wikiurl + urllib.parse.quote(pagename.encode('UTF-8')))
+                        return wikiurl + urllib.parse.quote(pagename.encode('UTF-8'))
             else:
                 try:
                     fullurl = pages[pageid]['fullurl']
@@ -97,16 +97,21 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                     rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
                 else:
                     rmlstlb = re.sub('\n$', '', '（重定向[' + pagename + ']至[' + finalpagename + ']）\n' + fullurl + '\n' + desc)
-                return (rmlstlb)
+                try:
+                    rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
+                    result = rm5lline[0] + '\n...行数过多已截断。'
+                except:
+                    result = rmlstlb
+                return result
         except  Exception as getdesc:
             traceback.print_exc()
             if ignoremessage == 'f':
-                return ('发生错误：' + str(getdesc))
+                return '发生错误：' + str(getdesc)
             else:
                 pass
     except  Exception as getdesc:
         traceback.print_exc()
         if ignoremessage == 'f':
-            return ('发生错误：' + str(getdesc))
+            return '发生错误：' + str(getdesc)
         else:
             pass
