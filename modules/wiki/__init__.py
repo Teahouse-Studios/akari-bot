@@ -20,13 +20,13 @@ async def wiki(message, group=0):
                 return (await wiki2(matchmsg.group(1), matchmsg.group(2)))
             else:
                 return ('未知语言，请使用~wiki -h查看帮助。')
-        except:
+        except Exception:
             matchmsg = re.match(r'^wiki (.*)', lower)
             try:
                 matchsite = re.match(r'~(.*?) (.*)', matchmsg.group(1))
                 wikiurl = 'https://' + matchsite.group(1) + '.gamepedia.com'
                 return (await wiki1(wikiurl, matchsite.group(2)))
-            except:
+            except Exception:
                 try:
                     if group == 250500369 or group == 676942198:
                         pagename = matchmsg.group(1)

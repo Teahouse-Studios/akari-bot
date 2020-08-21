@@ -18,7 +18,6 @@ class EchoClientProtocol:
 
     def error_received(self, exc):
         print('Error received:', exc)
-        pass
 
     def connection_lost(self, exc):
         pass

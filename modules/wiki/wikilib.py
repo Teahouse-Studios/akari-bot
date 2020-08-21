@@ -76,7 +76,7 @@ async def wiki1(wikilink, pagename):
             try:
                 rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n',rmlstlb)
                 result = rm5lline[0] + '\n...行数过多已截断。'
-            except:
+            except Exception:
                 result = rmlstlb
             return ('您要的' + pagename + "：" + result)
     except Exception:

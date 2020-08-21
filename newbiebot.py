@@ -72,7 +72,6 @@ async def newbie(app: GraiaMiraiApplication):
                     else:
                         print('nope')
                         time.sleep(10)
-                        pass
                 time.sleep(5)
             except Exception as e:
                 traceback.print_exc()

@@ -83,7 +83,7 @@ async def findwikitext(app, message, target1, target2='0', msgtype='None'):
                     pass
                 else:
                     z.append(await im(x))
-    except:
+    except Exception:
         pass
     try:
         if str(w2) == '['']' or str(w2) == '[]':
@@ -104,7 +104,7 @@ async def findwikitext(app, message, target1, target2='0', msgtype='None'):
                         pass
                     else:
                         z.append(await imt(x))
-    except:
+    except Exception:
         pass
     if str(z) == '['']['']' or str(z) == '[][]' or str(z) == '[]':
         pass

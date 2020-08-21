@@ -80,7 +80,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                         1)
                     getdesc = await get_data(texturl, "json")
                     desc = getdesc['query']['pages'][pageid]['extract']
-                except:
+                except Exception:
                     desc = ''
                 try:
                     section = re.match(r'.*(\#.*)', pagename)
@@ -104,7 +104,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 try:
                     rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
                     result = rm5lline[0] + '\n...行数过多已截断。'
-                except:
+                except Exception:
                     result = rmlstlb
                 return result
         except  Exception as getdesc:

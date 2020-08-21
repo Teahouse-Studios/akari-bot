@@ -21,7 +21,7 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
     h = int(h)
     try:
         img2 = img2.resize((int(w / (w // 100)), int(h / (h // 100))))
-    except:
+    except Exception:
         pass
     img3.paste(img, (0, 0))
 
@@ -55,7 +55,6 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
 
     img4 = Image.new("RGBA", (280, 40))
     W = 280
-    H = 40
     draww = ImageDraw.Draw(img4)
     w, h = draww.textsize(createcount, font=font)
     draww.text(((W - w - font.getoffset(createcount)[0]) / 2, 0), createcount, "#ffffff", font=font)

@@ -1,14 +1,11 @@
 import aiohttp
-import asyncio
 import base64
 import datetime
 import hashlib
 import hmac
 import json
-import os
 import time
 from hashlib import sha1
-from time import gmtime, strftime
 from urllib.parse import urlencode
 
 from config import config
@@ -27,8 +24,6 @@ def computeMD5hash(my_string):
 
 accessKeyId = config("accessKeyId")
 accessKeySecret = config("accessKeySecret")
-print(accessKeyId)
-print(accessKeySecret)
 
 
 async def pbc1(newUsers):
@@ -177,7 +172,3 @@ async def pbc2(newUsers):
 
             else:
                 return (await resp.text())
-
-
-if __name__ == '__main__':
-    asyncio.run(pbc1())

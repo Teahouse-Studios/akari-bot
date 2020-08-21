@@ -23,7 +23,7 @@ async def Username(name):
                     return await User1(url, q.group(2))
             else:
                 return '未知语言，请使用~user -h查看帮助。'
-        except:
+        except Exception:
             q = re.match(r'^user (.*)', name)
             try:
                 s = re.match(r'~(.*?) (.*)', q.group(1))
@@ -33,7 +33,7 @@ async def Username(name):
                     return await rUser1(metaurl, x)
                 else:
                     return await User1(metaurl, q.group(2))
-            except:
+            except Exception:
                 try:
                     i = re.match(r'(.*?):(.*)', q.group(1))
                     w = i.group(1)

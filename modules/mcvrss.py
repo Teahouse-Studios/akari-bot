@@ -31,7 +31,7 @@ def mcvrssr(group):
         y = []
         h = ''
         for x in q:
-            f = y.append(x + '\n')
+            y.append(x + '\n')
         g = h.join(y)
         k = re.sub(r'\n$', '', g)
         wr.write(k)

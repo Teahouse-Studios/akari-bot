@@ -1,13 +1,10 @@
 import asyncio
 from graia.application import GraiaMiraiApplication, Session
-from graia.application.event.messages import TempMessage
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, At, Image, UploadMethods, Quote
 from graia.broadcast import Broadcast
-from os.path import abspath
 
 from MessageGen import gen, findwikitext
 

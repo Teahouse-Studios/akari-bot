@@ -40,7 +40,7 @@ async def command(text, group=0):
         try:
             d = result.split(' ')
             d = d[0]
-        except:
+        except Exception:
             d = c
         if d == 'echo':
             echo = re.sub(r'^echo ', '', c)
@@ -117,5 +117,5 @@ async def command(text, group=0):
             return credits()
         else:
             pass
-    except:
+    except Exception:
         pass

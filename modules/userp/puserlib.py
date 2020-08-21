@@ -23,7 +23,6 @@ def ddk(str1):
 
 
 async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Blockedtimestamp='0', Blockexpiry='0', Blockreason='0'):
-    q = str3
     url2 = url + '/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
     file2 = await get_data(url2, 'json')
     try:
@@ -37,7 +36,7 @@ async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Block
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url, ss)
-    url2 = url + '/UserProfile:' + q
+    url2 = url + '/UserProfile:' + str3
     res = await get_data(url2, 'text')
     soup = bs(res, 'html.parser')
     stats = soup.find('div', class_='section stats')
@@ -45,7 +44,6 @@ async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Block
     dd = stats.find_all('dd')
     for tag in dd:
         pass
-    g = re.sub('User:', '', str3)
     if Blockedby == '0':
         tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname),
             username=User, gender=Gender, registertime=Registration,

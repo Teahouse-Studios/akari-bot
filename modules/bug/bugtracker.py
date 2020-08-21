@@ -1,9 +1,6 @@
 # -*- coding:utf-8 -*-
 import aiohttp
 import json
-import os
-import string
-import sys
 from xml.etree import ElementTree
 
 

@@ -25,7 +25,7 @@ async def mcv():
             if not v['archived']:
                 release.append(v['name'])
         message2 = prefix.join(release)
-    except:
+    except Exception:
         message2 = "获取Mojira信息失败。"
     return f"""目前启动器内最新版本为：
 {message1}，
