@@ -68,7 +68,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                         else:
                             pagename = re.sub('Template:', '', pagename)
                             pagename = re.sub('template:', '', pagename)
-                            return ('提示：[' + pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(wikiurl, interwiki, pagename, itw, ignoremessage,
+                            return ('提示：[' + 'Template:' +pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(wikiurl, interwiki, pagename, itw, ignoremessage,
                                                                                        template='f'))
                     else:
                         return wikiurl + urllib.parse.quote(pagename.encode('UTF-8'))
@@ -96,9 +96,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 if finalpagename == pagename:
                     rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
                 else:
-                    rmlstlb = re.sub('\n$', '', '（重定向[' + pagename + ']至[' + finalpagename + ']）\n' + fullurl + '\n' + desc)
-                rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-                rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+                    rmlstlb = re.sub('\n$', '', '（重定向[' + pagename + '] -> [' + finalpagename + ']）\n' + fullurl + '\n' + desc)
                 rmlstlb = re.sub('\n\n', '\n', rmlstlb)
                 rmlstlb = re.sub('\n\n', '\n', rmlstlb)
                 try:
