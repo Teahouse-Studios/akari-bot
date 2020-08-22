@@ -41,7 +41,7 @@ async def gen(app, message, target1, target2='0', msgtype='None'):
         elif msgtype == 'group':
             group = target1
             member = target2
-            send = await app.sendGroupMessage(group, msgchain.asSendable(), quote=message['Source'][0])
+            send = await app.sendGroupMessage(group, msgchain.asSendable(), quote=message.__root__[0].id)
         elif msgtype == 'temp':
             group = target1
             member = target2
@@ -132,7 +132,7 @@ async def findwikitext(app, message, target1, target2='0', msgtype='None'):
         elif msgtype == 'group':
             group = target1
             member = target2
-            await app.sendGroupMessage(group, msgchain.asSendable(), quote=message['Source'][0])
+            await app.sendGroupMessage(group, msgchain.asSendable(), quote=message.__root__[0].id)
         elif msgtype == 'temp':
             group = target1
             member = target2
