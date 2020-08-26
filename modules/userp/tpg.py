@@ -29,8 +29,16 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
     W = 200
     H = 200
     w, h = img2.size
-    img21.alpha_composite(img2.convert("RGBA"), (int((W - w) / 2), int((H - h) / 2)))
-
+    try:
+        img21.alpha_composite(img2.convert("RGBA"), (int((W - w) / 2), int((H - h) / 2)))
+    except Exception:
+        try:
+            img21.alpha_composite(img2.convert("RGBA"), (int(-(W - w) / 2), int((H - h) / 2)))
+        except Exception:
+            try:
+                img21.alpha_composite(img2.convert("RGBA"), (int((W - w) / 2), int(-(H - h) / 2)))
+            except Exception:
+                img21.alpha_composite(img2.convert("RGBA"), (int(-(W - w) / 2), int(-(H - h) / 2)))
     img3.alpha_composite(img21, (95, 52))
     draw = ImageDraw.Draw(img3)
     draw.text((325, 120), str(wikiname), '#ffffff', font=font1)
