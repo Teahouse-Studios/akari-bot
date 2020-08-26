@@ -35,7 +35,7 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
         wg = int((w - W) / 2)
     if hg < 0:
         hg = int((h - H) / 2)
-    img21.alpha_composite(img2.convert("RGBA"), wg, hg)
+    img21.alpha_composite(img2.convert("RGBA"), (wg, hg))
     img3.alpha_composite(img21, (95, 52))
     draw = ImageDraw.Draw(img3)
     draw.text((325, 120), str(wikiname), '#ffffff', font=font1)
