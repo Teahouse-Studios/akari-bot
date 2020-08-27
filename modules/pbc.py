@@ -11,7 +11,7 @@ from config import config
 
 
 def hash_hmac(key, code, sha1):
-    hmac_code = hmac.new(key.encode(), code.encode(), sha1)
+    hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1())
     return base64.b64encode(hmac_code.digest()).decode('utf-8')
 
 
