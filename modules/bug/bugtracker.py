@@ -14,7 +14,6 @@ async def bug(pagename):
                     return f"请求时发生错误：{req.status}"
                 else:
                     respose_str = await req.text()
-                    respose_str = await req.text()
         try:
             root = ElementTree.XML(respose_str)
             for node in root.iter("channel"):
