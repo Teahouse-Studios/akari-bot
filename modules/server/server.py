@@ -66,6 +66,7 @@ async def server(address):
             return ('连接失败，没有检测到任何服务器。')
         else:
             awa = '\n'
+            servers.append("[30秒后撤回本消息]")
             return (awa.join(servers))
     except Exception as e:
         return ("发生错误：" + str(e) + ".")
