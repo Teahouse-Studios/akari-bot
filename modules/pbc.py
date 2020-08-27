@@ -5,7 +5,6 @@ import hashlib
 import hmac
 import json
 import time
-from hashlib import sha1
 from urllib.parse import urlencode
 
 from config import config
