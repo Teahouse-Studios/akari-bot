@@ -74,7 +74,7 @@ async def pbc1(newUsers):
         contentMd5=contentMd5,
         date=headers['Date'], step1=step1, step2=step2)
     print(step3)
-    sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, sha1))
+    sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, hashlib.sha1()))
     headers['Authorization'] = sign
     print(headers)
     # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
@@ -147,7 +147,7 @@ async def pbc2(newUsers):
         contentMd5=contentMd5,
         date=headers['Date'], step1=step1, step2=step2)
     print(step3)
-    sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, sha1))
+    sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, hashlib.sha1()))
     headers['Authorization'] = sign
     print(headers)
     # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
