@@ -15,7 +15,10 @@ from modules.findimage import findimage
 
 async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     im = inter.InterruptControl(bcc)
-    run = await command(message.asDisplay())
+    if msgtype == 'group':
+        run = await command(message.asDisplay(),target1.id)
+    else:
+        run = await command(message.asDisplay())
     print(run)
     if run != None:
         msgchain = await makemsgchain(run, msgtype)
