@@ -49,7 +49,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                                         if itw == 't':
                                             sectitle = interwiki + ':' + sectitle
                                             pagename = interwiki + ':' + pagename
-                                        return '提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？'
+                                        return f'[wait]提示：您要找的{pagename}不存在，要找的页面是[[{sectitle}]]吗？'
                                     except Exception:
                                         searchurl = wikiurl + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json '
                                         getsecjson = await get_data(searchurl, "json")
@@ -57,7 +57,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                                         if itw == 't':
                                             sectitle = interwiki + ':' + sectitle
                                             pagename = interwiki + ':' + pagename
-                                        return '提示：您要找的' + pagename + '不存在，要找的页面是' + sectitle + '吗？'
+                                        return f'[wait]提示：您要找的{pagename}不存在，要找的页面是[[{sectitle}]]吗？'
                                 except Exception:
                                     traceback.print_exc()
                                     if itw == 't':

@@ -15,7 +15,8 @@ async def get_data(url: str, fmt: str):
                 raise ValueError(f"NoSuchMethod: {fmt}")
 
 
-async def wiki1(wikilink, pagename):
+async def wiki1(wikilink, pagename, interwiki=''):
+    pagename = re.sub(r'^:','',pagename)
     print(pagename)
     getlinkurl = wikilink + 'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     print(getlinkurl)
@@ -37,12 +38,12 @@ async def wiki1(wikilink, pagename):
                             secpages = getsecjson['query']['pages']
                             secpageid = sorted(secpages.keys())[0]
                             sectitle = secpages[secpageid]['title']
-                            return ('找不到条目，您是否要找的是：' + sectitle + '？')
+                            return (f'[wait]找不到条目，您是否要找的是：[[{interwiki}:{sectitle}]]？')
                         except Exception:
                             searchurl = wikilink + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
                             getsecjson = await get_data(searchurl, "json")
                             sectitle = getsecjson['query']['search'][0]['title']
-                            return ('找不到条目，您是否要找的是：' + sectitle + '？')
+                            return (f'[wait]找不到条目，您是否要找的是：[[{interwiki}:{sectitle}]]？')
                     except Exception:
                         return ('找不到条目。')
                 else:
@@ -93,7 +94,7 @@ async def wiki1(wikilink, pagename):
 async def wiki2(interwiki, str1):
     try:
         url = iwlink(interwiki)
-        return (await wiki1(url, str1))
+        return (await wiki1(url, str1, interwiki))
     except Exception as e:
         traceback.print_exc()
         return (str(e))
