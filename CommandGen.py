@@ -55,7 +55,7 @@ async def findcommand(str1, group=0):
                         pass
                     else:
                         for x in w2:
-                            if group.id == 250500369 or group.id == 676942198:
+                            if group == 250500369 or group == 676942198:
                                 pass
                             else:
                                 if x == '':
