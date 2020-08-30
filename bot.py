@@ -13,6 +13,7 @@ loop = asyncio.get_event_loop()
 bcc = Broadcast(loop=loop, debug_flag=True)
 app = GraiaMiraiApplication(
     broadcast=bcc,
+    enable_chat_log=False,
     connect_info=Session(
         host="http://localhost:11919",  # 填入 httpapi 服务运行的地址
         authKey='1145141919810',  # 填入 authKey
