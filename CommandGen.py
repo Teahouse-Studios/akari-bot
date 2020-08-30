@@ -3,7 +3,7 @@ import re
 from modules.ab import ab
 from modules.bug import bugtracker
 from modules.checkuser import checkuser
-from modules.help import help,credits
+from modules.help import help, credits
 from modules.mcv import mcv, mcbv, mcdv
 from modules.newbie import new
 from modules.ping import ping
@@ -16,7 +16,7 @@ from modules.wiki import im, imt, imarc
 
 
 async def findcommand(str1, group=0):
-    print(group)
+#    print(group)
     str1 = re.sub(r'^～', '~', str1)
     try:
         q = re.match(r'^.*(: ~)(.*)', str1)
@@ -33,7 +33,7 @@ async def findcommand(str1, group=0):
             except Exception:
                 w = re.findall(r'\[\[(.*?)\]\]', str1)
                 w2 = re.findall(r'\{\{(.*?)\}\}', str1)
-                print(str(w), str(w2))
+#                print(str(w), str(w2))
                 z = []
                 c = '\n'
                 try:
@@ -99,7 +99,7 @@ async def command(text, group=0):
             return await(wiki(c, group))
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find(
                 "MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find(
-                "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
+            "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
             return await bugtracker(c)
         elif d == 'server' or d == 'Server':
             return await ser(c)
@@ -135,7 +135,7 @@ async def command(text, group=0):
                                 except Exception as e:
                                     print(str(e))
                     if checkuser(h, h2):
-                        h2 = re.sub('User:','',h2)
+                        h2 = re.sub('User:', '', h2)
                         print(h2)
                         return await Userp(h, h2) + "[[usn:" + h2 + "]]"
                     else:

@@ -19,8 +19,9 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
         run = await command(message.asDisplay(),target1.id)
     else:
         run = await command(message.asDisplay())
-    print(run)
+#    print(run)
     if run != None:
+        print(run)
         msgchain = await makemsgchain(run, msgtype)
         if msgtype == 'friend':
             friend = target1
