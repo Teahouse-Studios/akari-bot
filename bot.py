@@ -24,21 +24,21 @@ app = GraiaMiraiApplication(
 
 @bcc.receiver("GroupMessage")
 async def group_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(app, message, group, member, msgtype='group')
+    await gen(bcc, app, message, group, member, msgtype='group')
 
 
 @bcc.receiver("FriendMessage")
 async def friend_message_handler(app: GraiaMiraiApplication, message: MessageChain, friend: Friend):
     print(message)
     print('f')
-    await gen(app, message, friend, msgtype='friend')
+    await gen(bcc, app, message, friend, msgtype='friend')
 
 
 @bcc.receiver("TempMessage")
 async def temp_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
     print(group.id, member.id, message.asDisplay())
     print('t')
-    await gen(app, message, group, member, msgtype='temp')
+    await gen(bcc, app, message, group, member, msgtype='temp')
 
 @bcc.receiver("NewFriendRequestEvent")
 async def NFriend(event: NewFriendRequestEvent):
