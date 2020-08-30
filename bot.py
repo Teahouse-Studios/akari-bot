@@ -6,7 +6,7 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 from graia.broadcast import Broadcast
 
-from MessageGen import gen, findwikitext
+from MessageGen import gen
 
 loop = asyncio.get_event_loop()
 
@@ -25,7 +25,6 @@ app = GraiaMiraiApplication(
 @bcc.receiver("GroupMessage")
 async def group_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
     await gen(app, message, group, member, msgtype='group')
-    await findwikitext(app, message, group, member, msgtype='group')
 
 
 @bcc.receiver("FriendMessage")
@@ -33,7 +32,6 @@ async def friend_message_handler(app: GraiaMiraiApplication, message: MessageCha
     print(message)
     print('f')
     await gen(app, message, friend, msgtype='friend')
-    await findwikitext(app, message, friend, msgtype='friend')
 
 
 @bcc.receiver("TempMessage")
@@ -41,7 +39,6 @@ async def temp_message_handler(app: GraiaMiraiApplication, message: MessageChain
     print(group.id, member.id, message.asDisplay())
     print('t')
     await gen(app, message, group, member, msgtype='temp')
-    await findwikitext(app, message, group, member, msgtype='temp')
 
 @bcc.receiver("NewFriendRequestEvent")
 async def NFriend(event: NewFriendRequestEvent):
