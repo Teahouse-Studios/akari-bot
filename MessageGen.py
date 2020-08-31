@@ -17,10 +17,10 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     im = inter.InterruptControl(bcc)
     if msgtype == 'friend':
         friend = target1
-    elif msgtype == 'group':
+    if msgtype == 'group':
         group = target1
         member = target2
-    elif msgtype == 'temp':
+    if msgtype == 'temp':
         group = target1
         member = target2
     if msgtype == 'group':
@@ -35,7 +35,7 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
         if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
             await app.revokeMessage(send)
-        elif run.find('[30秒后撤回本消息]') != -1:
+        if run.find('[30秒后撤回本消息]') != -1:
             await asyncio.sleep(30)
             await app.revokeMessage(send)
         if run.find('[wait]') != -1:
@@ -45,9 +45,9 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
                 await sendmessage(app, msgchain, target1, target2, msgtype)
             if msgtype == 'friend':
                 event: FriendMessage = await im.wait(FriendMessageInterrupt(friend))
-            elif msgtype == 'group':
+            if msgtype == 'group':
                 event: GroupMessage = await im.wait(GroupMessageInterrupt(group, member))
-            elif msgtype == 'temp':
+            if msgtype == 'temp':
                 event: TempMessage = await im.wait(TempMessageInterrupt(group, member))
             print(event)
             if event.messageChain.asDisplay() == '是':
@@ -63,12 +63,10 @@ async def makemsgchain(msg, msgtype):
     msg = re.sub('\[wait\]', '', msg)
     if msgtype == 'friend':
         mth = UploadMethods.Friend
-    elif msgtype == 'group':
+    if msgtype == 'group':
         mth = UploadMethods.Group
-    elif msgtype == 'temp':
+    if msgtype == 'temp':
         mth = UploadMethods.Temp
-    else:
-        mth = None
     if msg.find('[[usn:') != -1:
         user = re.sub(r'.*\[\[usn:|\]\]', '', msg)
         msg = re.sub(r'\[\[.*\]\]', '', msg)
@@ -91,13 +89,11 @@ async def sendmessage(app, msgchain, target1, target2, msgtype, quoteid=0):
     if msgtype == 'friend':
         friend = target1
         send = await app.sendFriendMessage(friend, msgchain.asSendable())
-    elif msgtype == 'group':
+    if msgtype == 'group':
         group = target1
         send = await app.sendGroupMessage(group, msgchain.asSendable(), quote=quoteid if quoteid != 0 else None)
-    elif msgtype == 'temp':
+    if msgtype == 'temp':
         group = target1
         member = target2
         send = await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
-    else:
-        print('错误：消息来源有误')
     return send
