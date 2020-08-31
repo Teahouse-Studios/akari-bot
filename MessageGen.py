@@ -15,6 +15,14 @@ from modules.findimage import findimage
 
 async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     im = inter.InterruptControl(bcc)
+    if msgtype == 'friend':
+        friend = target1
+    elif msgtype == 'group':
+        group = target1
+        member = target2
+    elif msgtype == 'temp':
+        group = target1
+        member = target2
     if msgtype == 'group':
         run = await command(message.asDisplay(),target1.id)
     else:
@@ -23,50 +31,18 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     if run != None:
         print(run)
         msgchain = await makemsgchain(run, msgtype)
-        if msgtype == 'friend':
-            friend = target1
-            send = await app.sendFriendMessage(friend, msgchain.asSendable())
-        elif msgtype == 'group':
-            group = target1
-            member = target2
-            send = await app.sendGroupMessage(group, msgchain.asSendable(), quote=message[Source][0])
-        elif msgtype == 'temp':
-            group = target1
-            member = target2
-            send = await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
-        else:
-            print('错误：消息来源有误')
+        send = await sendmessage(app, msgchain, target1, target2, msgtype, message[Source][0] if msgtype == 'group' else 0)
         if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
             await app.revokeMessage(send)
         elif run.find('[30秒后撤回本消息]') != -1:
             await asyncio.sleep(30)
             await app.revokeMessage(send)
-        if msgtype == 'friend':
-            friend = target1
-        elif msgtype == 'group':
-            group = target1
-            member = target2
-        elif msgtype == 'temp':
-            group = target1
-            member = target2
         if run.find('[wait]') != -1:
             ranint = random.randint(1, 3)
             if ranint == 2:
-                randmessage = await makemsgchain('提示：你可以发送“是”字来将所有无效结果再次查询。（考虑到实现复杂性，恕不提供选择性查询）', msgtype)
-                if msgtype == 'friend':
-                    friend = target1
-                    await app.sendFriendMessage(friend, randmessage.asSendable())
-                elif msgtype == 'group':
-                    group = target1
-                    member = target2
-                    await app.sendGroupMessage(group, randmessage.asSendable())
-                elif msgtype == 'temp':
-                    group = target1
-                    member = target2
-                    await app.sendTempMessage(group=group, target=member, message=randmessage.asSendable())
-                else:
-                    print('错误：消息来源有误')
+                await makemsgchain('提示：你可以发送“是”字来将所有无效结果再次查询。（考虑到实现复杂性，恕不提供选择性查询）', msgtype)
+                await sendmessage(app, msgchain, target1, target2, msgtype)
             if msgtype == 'friend':
                 event: FriendMessage = await im.wait(FriendMessageInterrupt(friend))
             elif msgtype == 'group':
@@ -77,18 +53,7 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
             if event.messageChain.asDisplay() == '是':
                 msg2 = await command(run)
                 msgchain = await makemsgchain(msg2, msgtype)
-                if msgtype == 'friend':
-                    friend = target1
-                    await app.sendFriendMessage(friend, msgchain.asSendable())
-                elif msgtype == 'group':
-                    group = target1
-                    await app.sendGroupMessage(group, msgchain.asSendable())
-                elif msgtype == 'temp':
-                    group = target1
-                    member = target2
-                    await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
-                else:
-                    print('错误：消息来源有误')
+                await sendmessage(app, msgchain, target1, target2, msgtype)
 
             else:
                 pass
@@ -120,3 +85,19 @@ async def makemsgchain(msg, msgtype):
         print(d1)
         msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
     return msgchain
+
+
+async def sendmessage(app, msgchain, target1, target2, msgtype, quoteid=0):
+    if msgtype == 'friend':
+        friend = target1
+        send = await app.sendFriendMessage(friend, msgchain.asSendable())
+    elif msgtype == 'group':
+        group = target1
+        send = await app.sendGroupMessage(group, msgchain.asSendable(), quote=quoteid if quoteid != 0 else None)
+    elif msgtype == 'temp':
+        group = target1
+        member = target2
+        send = await app.sendTempMessage(group=group, target=member, message=msgchain.asSendable())
+    else:
+        print('错误：消息来源有误')
+    return send
