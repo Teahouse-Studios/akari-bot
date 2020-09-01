@@ -1,7 +1,8 @@
-import aiohttp
 import re
 import traceback
 import urllib
+
+import aiohttp
 
 
 async def get_data(url: str, fmt: str):
@@ -13,7 +14,7 @@ async def get_data(url: str, fmt: str):
                 raise ValueError(f"NoSuchMethod: {fmt}")
 
 
-async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template='f'):
+async def wi(wikiurl, interwiki, pagename, itw=False, ignoremessage=False, template=False):
     metaurl = wikiurl + 'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles='
     try:
         linkurl = metaurl + pagename
@@ -23,13 +24,13 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 pages = file['query']['pages']
                 pageid = sorted(pages.keys())[0]
             except Exception:
-                if ignoremessage == 'f':
+                if ignoremessage == False:
                     return '发生错误：请检查您输入的标题是否正确。'
                 else:
                     pass
             if int(pageid) == -1:
                 if 'invalid' in pages['-1']:
-                    if ignoremessage == 'f':
+                    if ignoremessage == False:
                         rs = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
                                     pages['-1']['invalidreason'])
                         return '发生错误：“' + rs + '”。'
@@ -37,8 +38,8 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                         pass
                 else:
                     if 'missing' in pages['-1']:
-                        if template == 'f':
-                            if ignoremessage == 'f':
+                        if template == False:
+                            if ignoremessage == False:
                                 try:
                                     try:
                                         searchurl = wikiurl + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
@@ -46,7 +47,7 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                                         secpages = getsecjson['query']['pages']
                                         secpageid = sorted(secpages.keys())[0]
                                         sectitle = secpages[secpageid]['title']
-                                        if itw == 't':
+                                        if itw == True:
                                             sectitle = interwiki + ':' + sectitle
                                             pagename = interwiki + ':' + pagename
                                         return f'[wait]提示：您要找的{pagename}不存在，要找的页面是[[{sectitle}]]吗？'
@@ -54,13 +55,13 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                                         searchurl = wikiurl + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json '
                                         getsecjson = await get_data(searchurl, "json")
                                         sectitle = getsecjson['query']['search'][0]['title']
-                                        if itw == 't':
+                                        if itw == True:
                                             sectitle = interwiki + ':' + sectitle
                                             pagename = interwiki + ':' + pagename
                                         return f'[wait]提示：您要找的{pagename}不存在，要找的页面是[[{sectitle}]]吗？'
                                 except Exception:
                                     traceback.print_exc()
-                                    if itw == 't':
+                                    if itw == True:
                                         pagename = interwiki + ':' + pagename
                                     return '提示：找不到' + pagename + '。'
                             else:
@@ -68,8 +69,10 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                         else:
                             pagename = re.sub('Template:', '', pagename)
                             pagename = re.sub('template:', '', pagename)
-                            return ('提示：[' + 'Template:' +pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(wikiurl, interwiki, pagename, itw, ignoremessage,
-                                                                                       template='f'))
+                            return ('提示：[' + 'Template:' + pagename + ']不存在，已自动回滚搜索页面。\n' + await wi(wikiurl, interwiki,
+                                                                                                     pagename, itw,
+                                                                                                     ignoremessage,
+                                                                                                     template=False))
                     else:
                         return wikiurl + urllib.parse.quote(pagename.encode('UTF-8'))
             else:
@@ -90,13 +93,14 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 matchfinalurl = re.match(r'https?://.*?/(?:index.php/|wiki/|)(.*)', fullurl, re.M | re.I)
                 finalpagename = urllib.parse.unquote(matchfinalurl.group(1), encoding='UTF-8')
                 finalpagename = re.sub('_', ' ', finalpagename)
-                if itw == 't':
+                if itw == True:
                     finalpagename = interwiki + ':' + finalpagename
                     pagename = interwiki + ':' + pagename
                 if finalpagename == pagename:
                     rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
                 else:
-                    rmlstlb = re.sub('\n$', '', '（重定向[' + pagename + '] -> [' + finalpagename + ']）\n' + fullurl + '\n' + desc)
+                    rmlstlb = re.sub('\n$', '',
+                                     '（重定向[' + pagename + '] -> [' + finalpagename + ']）\n' + fullurl + '\n' + desc)
                 rmlstlb = re.sub('\n\n', '\n', rmlstlb)
                 rmlstlb = re.sub('\n\n', '\n', rmlstlb)
                 try:
@@ -107,13 +111,13 @@ async def wi(wikiurl, interwiki, pagename, itw='f', ignoremessage='f', template=
                 return result
         except  Exception as getdesc:
             traceback.print_exc()
-            if ignoremessage == 'f':
+            if ignoremessage == False:
                 return '发生错误：' + str(getdesc)
             else:
                 pass
     except  Exception as getdesc:
         traceback.print_exc()
-        if ignoremessage == 'f':
+        if ignoremessage == False:
             return '发生错误：' + str(getdesc)
         else:
             pass

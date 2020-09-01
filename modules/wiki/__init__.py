@@ -81,23 +81,23 @@ async def im(message):
         pagename = matchinterwiki.group(2)
         if interwiki in iwlist():
             url = iwlink(interwiki)
-            itw = 't'
+            itw = True
         elif interwiki == 'gpsitename':
             wikiname = re.match(r'(.*?):(.*)', pagename)
             url = 'https://' + wikiname.group(1) + '.gamepedia.com/'
             pagename = wikiname.group(2)
             interwiki = 'gpsitename:' + wikiname.group(1)
-            itw = 't'
+            itw = True
         else:
             url = iwlink('zh')
             pagename = message
-            itw = 'f'
+            itw = False
     except Exception:
         url = iwlink('zh')
         pagename = message
-        itw = 'f'
+        itw = False
         interwiki = '.'
-    return (await wi(url, interwiki, pagename, itw, ignoremessage='f'))
+    return (await wi(url, interwiki, pagename, itw, ignoremessage=False))
 
 
 async def imarc(message):
@@ -108,9 +108,9 @@ async def imarc(message):
         pass
     message = re.sub(r'^:', '', message)
     url = 'https://wiki.arcaea.cn/'
-    itw = 'f'
+    itw = False
     interwiki = '.'
-    return (await wi(url, interwiki, message, itw, ignoremessage='t'))
+    return (await wi(url, interwiki, message, itw, ignoremessage=True))
 
 
 async def imt(message):
@@ -127,17 +127,17 @@ async def imt(message):
         if interwiki in iwlist():
             url = iwlink(interwiki)
             pagename = 'Template:' + matchinterwiki.group(2)
-            itw = 't'
+            itw = True
         else:
             url = iwlink('zh')
             pagename = 'Template:' + message
-            itw = 'f'
+            itw = False
     except Exception:
         url = iwlink('zh')
         pagename = 'Template:' + message
-        itw = 'f'
+        itw = False
         interwiki = '.'
-    return (await wi(url, interwiki, pagename, itw, ignoremessage='f', template='t'))
+    return (await wi(url, interwiki, pagename, itw, ignoremessage=False, template=True))
 
 
 if __name__ == '__main__':
