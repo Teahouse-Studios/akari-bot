@@ -1,1 +1,3 @@
 graia-application-mirai
+pillow
+googletrans
