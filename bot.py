@@ -17,7 +17,7 @@ app = GraiaMiraiApplication(
     connect_info=Session(
         host="http://localhost:11919",  # 填入 httpapi 服务运行的地址
         authKey='1145141919810',  # 填入 authKey
-        account=2052142661,  # 你的机器人的 qq 号
+        account=2926887640,  # 你的机器人的 qq 号
         websocket=True  # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
     )
 )
