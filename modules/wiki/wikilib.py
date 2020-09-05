@@ -33,10 +33,8 @@ async def researchpage(wikilink, pagename, interwiki):
     try:
         searchurl = wikilink + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
         getsecjson = await get_data(searchurl, "json")
-        secpages = getsecjson['query']['pages']
-        pagelist = iter(secpages)
-        secpageid = pagelist.__next__()
-        sectitle = secpages[secpageid]['title']
+        secpageid = parsepageid(getsecjson)
+        sectitle = getsecjson['query']['pages'][secpageid]['title']
         if interwiki == '':
             target = ''
         else:
