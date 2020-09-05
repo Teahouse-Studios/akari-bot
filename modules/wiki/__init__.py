@@ -4,10 +4,10 @@ import traceback
 
 from modules.help import wikihelp
 from modules.interwikilist import iwlist, iwlink
-from .wikilib import wiki1, wiki2
+from .wikilib import wiki
 
 
-async def wiki(message, group=0):
+async def wmg(message, group=0):
     if message.find(' -h') != -1:
         return wikihelp()
     else:
@@ -17,7 +17,7 @@ async def wiki(message, group=0):
             interwiki = matchmsg.group(1)
             print(interwiki)
             if interwiki in iwlist():
-                return await wiki2(matchmsg.group(1), matchmsg.group(2))
+                return await wiki(iwlink(interwiki), matchmsg.group(2))
             else:
                 return '未知语言，请使用~wiki -h查看帮助。'
         except Exception:
@@ -25,13 +25,13 @@ async def wiki(message, group=0):
             try:
                 matchsite = re.match(r'~(.*?) (.*)', matchmsg.group(1))
                 wikiurl = 'https://' + matchsite.group(1) + '.gamepedia.com/'
-                return await wiki1(wikiurl, matchsite.group(2),'gpsitename:'+ matchsite.group(1))
+                return await wiki(wikiurl, matchsite.group(2),'gpsitename:'+ matchsite.group(1))
             except Exception:
                 try:
                     if group == 250500369 or group == 676942198:
                         pagename = matchmsg.group(1)
                         wikiurl = 'https://wiki.arcaea.cn/'
-                        return (await wiki1(wikiurl, pagename, 'arc'))
+                        return (await wiki(wikiurl, pagename, 'arc'))
                     else:
                         matchinterwiki = re.match(r'(.*?):(.*)', matchmsg.group(1))
                         pagename = matchinterwiki.group(2)
@@ -40,14 +40,14 @@ async def wiki(message, group=0):
                             try:
                                 matchsitename = re.match(r'(.*?):(.*)', pagename)
                                 wikiurl = 'https://' + matchsitename.group(1) + '.gamepedia.com/'
-                                return await wiki1(wikiurl, matchsitename.group(2), 'gpsitename:' + matchsitename.group(1))
+                                return await wiki(wikiurl, matchsitename.group(2), 'gpsitename:' + matchsitename.group(1))
                             except  Exception as e:
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
                         if interwiki in iwlist():
                             try:
                                 wikiurl = iwlink(interwiki)
-                                return (await wiki1(wikiurl, pagename, interwiki))
+                                return (await wiki(wikiurl, pagename, interwiki))
                             except  Exception as e:
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
@@ -56,15 +56,13 @@ async def wiki(message, group=0):
                         else:
                             try:
                                 wikiurl = 'https://minecraft.gamepedia.com/'
-                                return (await wiki1(wikiurl, pagename,''))
+                                return (await wiki(wikiurl, pagename,''))
                             except  Exception as e:
                                 traceback.print_exc()
                                 return ('发生错误：' + str(e))
                 except Exception:
-                    return (await wiki2('en', matchmsg.group(1)))
+                    return (await wiki('en', matchmsg.group(1)))
 
-
-from .wikitextlib import wi
 
 
 async def im(message):
@@ -81,23 +79,19 @@ async def im(message):
         pagename = matchinterwiki.group(2)
         if interwiki in iwlist():
             url = iwlink(interwiki)
-            itw = True
         elif interwiki == 'gpsitename':
             wikiname = re.match(r'(.*?):(.*)', pagename)
             url = 'https://' + wikiname.group(1) + '.gamepedia.com/'
             pagename = wikiname.group(2)
             interwiki = 'gpsitename:' + wikiname.group(1)
-            itw = True
         else:
             url = iwlink('zh')
             pagename = message
-            itw = False
     except Exception:
         url = iwlink('zh')
         pagename = message
-        itw = False
-        interwiki = '.'
-    return (await wi(url, interwiki, pagename, itw, ignoremessage=False))
+        interwiki = ''
+    return await wiki(url, pagename, interwiki)
 
 
 async def imarc(message):
@@ -108,9 +102,8 @@ async def imarc(message):
         pass
     message = re.sub(r'^:', '', message)
     url = 'https://wiki.arcaea.cn/'
-    itw = False
-    interwiki = '.'
-    return (await wi(url, interwiki, message, itw, ignoremessage=True))
+    interwiki = ''
+    return await wiki(url, message, interwiki, igmessage=True)
 
 
 async def imt(message):
@@ -127,17 +120,14 @@ async def imt(message):
         if interwiki in iwlist():
             url = iwlink(interwiki)
             pagename = 'Template:' + matchinterwiki.group(2)
-            itw = True
         else:
             url = iwlink('zh')
             pagename = 'Template:' + message
-            itw = False
     except Exception:
         url = iwlink('zh')
         pagename = 'Template:' + message
-        itw = False
-        interwiki = '.'
-    return (await wi(url, interwiki, pagename, itw, ignoremessage=False, template=True))
+        interwiki = ''
+    return (await wiki(url, pagename, interwiki, igmessage=False, template=True))
 
 
 if __name__ == '__main__':

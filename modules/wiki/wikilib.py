@@ -1,7 +1,8 @@
-import aiohttp
 import re
 import traceback
 import urllib
+
+import aiohttp
 
 from modules.interwikilist import iwlist, iwlink
 
@@ -15,86 +16,131 @@ async def get_data(url: str, fmt: str):
                 raise ValueError(f"NoSuchMethod: {fmt}")
 
 
-async def wiki1(wikilink, pagename, interwiki=''):
-    pagename = re.sub(r'^:','',pagename)
-    print(pagename)
+async def getpage(wikilink, pagename):
     getlinkurl = wikilink + 'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
-    print(getlinkurl)
-    file = await get_data(getlinkurl, "json")
+    getpage = await get_data(getlinkurl, "json")
+    return getpage
+
+
+async def parsepageid(getpage):
+    pageraw = getpage['query']['pages']
+    pagelist = iter(pageraw)
+    pageid = pagelist.__next__()
+    return pageid
+
+
+async def researchpage(wikilink, pagename, interwiki):
     try:
-        pages = file['query']['pages']
-        pageid = sorted(pages.keys())[0]
-        if int(pageid) == -1:
-            if 'invalid' in pages['-1']:
-                rs = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
-                            pages['-1']['invalidreason'])
-                return ('发生错误：“' + rs + '”。')
-            else:
-                if 'missing' in pages['-1']:
-                    try:
-                        try:
-                            searchurl = wikilink + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                            getsecjson = await get_data(searchurl, "json")
-                            secpages = getsecjson['query']['pages']
-                            secpageid = sorted(secpages.keys())[0]
-                            sectitle = secpages[secpageid]['title']
-                            return (f'[wait]找不到条目，您是否要找的是：[[{interwiki}:{sectitle}]]？')
-                        except Exception:
-                            searchurl = wikilink + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                            getsecjson = await get_data(searchurl, "json")
-                            sectitle = getsecjson['query']['search'][0]['title']
-                            return (f'[wait]找不到条目，您是否要找的是：[[{interwiki}:{sectitle}]]？')
-                    except Exception:
-                        return ('找不到条目。')
-                else:
-                    return ('您要的' + pagename + '：' + wikilink + urllib.parse.quote(pagename.encode('UTF-8')))
+        searchurl = wikilink + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+        getsecjson = await get_data(searchurl, "json")
+        secpages = getsecjson['query']['pages']
+        pagelist = iter(secpages)
+        secpageid = pagelist.__next__()
+        sectitle = secpages[secpageid]['title']
+        if interwiki == '':
+            target = ''
         else:
-            getfullurl = pages[pageid]['fullurl']
-            geturlpagename = re.match(r'https?://.*?/(?:index.php/|wiki/|)(.*)', getfullurl, re.M | re.I)
-            try:
-                descurl = getlinkurl + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + geturlpagename.group(
-                    1)
-                loadtext = await get_data(descurl, "json")
-                desc = loadtext['query']['pages'][pageid]['extract']
-            except Exception:
-                desc = ''
-            try:
-                section = re.match(r'.*(\#.*)', pagename)
-                getfullurl = pages[pageid]['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
-            except Exception:
-                getfullurl = pages[pageid]['fullurl']
-            getfinalpagename = re.match(r'https?://.*?/(?:index.php/|wiki/|)(.*)', getfullurl)
-            finalpagename = urllib.parse.unquote(getfinalpagename.group(1), encoding='UTF-8')
-            finalpagename = re.sub('_', ' ', finalpagename)
-            if finalpagename == pagename:
-                rmlstlb = re.sub('\n$', '', getfullurl + '\n' + desc)
-            else:
-                rmlstlb = re.sub('\n$', '', '\n（重定向[' + pagename + '] -> [' + finalpagename + ']）\n' + getfullurl + '\n' + desc)
-            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-            try:
-                rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n',rmlstlb)
-                result = rm5lline[0] + '...行数过多已截断。'
-            except Exception:
-                result = rmlstlb
-            return ('您要的' + pagename + "：" + result)
+            target = f'{interwiki}:'
+        return f'[wait]找不到条目，您是否要找的是：[[{target}{sectitle}]]？'
     except Exception:
         try:
-            matchinterwiki = re.match(r'(.*?):(.*)', pagename)
-            interwiki = matchinterwiki.group(1)
-            if interwiki in iwlist():
-                return (await wiki2(interwiki, matchinterwiki.group(2)))
+            searchurl = wikilink + 'api.php?action=query&list=search&srsearch=' + pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+            getsecjson = await get_data(searchurl, "json")
+            sectitle = getsecjson['query']['search'][0]['title']
+            if interwiki == '':
+                target = ''
             else:
-                return ('发生错误：内容非法。')
-        except Exception as e:
-            traceback.print_exc()
+                target = f'{interwiki}:'
+            return f'[wait]找不到条目，您是否要找的是：[[{target}{sectitle}]]？'
+        except Exception:
+            return '找不到条目。'
+
+
+async def nullpage(wikilink, pagename, interwiki, psepgraw):
+    if 'invalid' in psepgraw:
+        rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
+                     psepgraw['invalidreason'])
+        rs = '发生错误：“' + rs1 + '”。'
+        rs = re.sub('".”', '"”', rs)
+        return rs
+    if 'missing' in psepgraw:
+        return await researchpage(wikilink, pagename, interwiki)
+    return wikilink + urllib.parse.quote(pagename.encode('UTF-8'))
+
+
+async def getdesc(wikilink, pagename):
+    try:
+        descurl = wikilink + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + pagename
+        loadtext = await get_data(descurl, "json")
+        pageid = await parsepageid(loadtext)
+        desc = loadtext['query']['pages'][pageid]['extract']
+    except Exception:
+        desc = ''
+    return desc
+
+
+async def step1(wikilink, pagename, interwiki, igmessage=False, template=False):
+    pageraw = await getpage(wikilink, pagename)
+    pageid = await parsepageid(pageraw)
+    psepgraw = pageraw['query']['pages'][pageid]
+    if pageid == '-1':
+        if igmessage == False:
+            if template == True:
+                pagename = re.sub(r'^Template:', '', pagename)
+                return f'提示：[Template:{pagename}]不存在，已自动回滚搜索页面。\n' + await step1(wikilink, pagename, interwiki,
+                                                                                 igmessage)
+            return await nullpage(wikilink, pagename, interwiki, psepgraw)
+    else:
+        return await step2(wikilink, pagename, interwiki, psepgraw)
+
+
+async def step2(wikilink, pagename, interwiki, psepgraw):
+    fullurl = psepgraw['fullurl']
+    geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|))(.*)', fullurl, re.M | re.I)
+    desc = await getdesc(wikilink, geturlpagename.group(2))
+    try:
+        section = re.match(r'.*(\#.*)', pagename)
+        finpgname = geturlpagename.group(2) + urllib.parse.quote(section.group(1).encode('UTF-8'))
+    except Exception:
+        finpgname = geturlpagename.group(2)
+    finpgname = urllib.parse.unquote(finpgname)
+    finpgname = re.sub('_', ' ', finpgname)
+    if finpgname == pagename:
+        rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
+    else:
+        rmlstlb = re.sub('\n$', '', '\n' +
+                         f'（重定向[{pagename}] -> [{finpgname}]）\n' + fullurl + '\n' + desc)
+    rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+    rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+    try:
+        rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
+        result = rm5lline[0] + '...行数过多已截断。'
+    except Exception:
+        result = rmlstlb
+    if interwiki != '':
+        pagename = interwiki + ':' + pagename
+    return ('您要的' + pagename + "：" + result)
+
+
+async def wiki(wikilink, pagename, interwiki='', igmessage=False, template=False):
+    try:
+        try:
+            matchinterwiki = re.match(r'(.*?):(.*)', pagename)
+            if matchinterwiki.group(1) in iwlist():
+                return await wiki(iwlink(matchinterwiki.group(1)), matchinterwiki.group(2), matchinterwiki.group(1),
+                                  igmessage, template)
+            else:
+                return await step1(wikilink, pagename, interwiki, igmessage, template)
+        except Exception:
+            return await step1(wikilink, pagename, interwiki, igmessage, template)
+    except Exception as e:
+        traceback.print_exc()
+        if igmessage == False:
             return ('发生错误：' + str(e))
 
 
-async def wiki2(interwiki, str1):
-    try:
-        url = iwlink(interwiki)
-        return (await wiki1(url, str1, interwiki))
-    except Exception as e:
-        traceback.print_exc()
-        return (str(e))
+if __name__ == '__main__':
+    import asyncio
+
+    a = asyncio.run(wiki('https://minecraft-zh.gamepedia.com/', 'zh:en:zh:海晶石'))
+    print(a)

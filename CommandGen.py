@@ -11,7 +11,7 @@ from modules.rc import rc
 from modules.server import ser
 from modules.user import Username
 from modules.userp import Userp
-from modules.wiki import wiki
+from modules.wiki import wmg
 from modules.wiki import im, imt, imarc
 
 
@@ -96,7 +96,7 @@ async def command(text, group=0):
         elif d.find('新人') != -1 or d.find('new') != -1:
             return await new()
         elif d.find("wiki") != -1 or d.find("Wiki") != -1:
-            return await(wiki(c, group))
+            return await(wmg(c, group))
         elif c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find(
                 "MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find(
             "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
