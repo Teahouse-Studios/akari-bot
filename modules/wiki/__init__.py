@@ -31,7 +31,7 @@ async def wmg(message, group=0):
                     if group == 250500369 or group == 676942198:
                         pagename = matchmsg.group(1)
                         wikiurl = 'https://wiki.arcaea.cn/'
-                        return (await wiki(wikiurl, pagename, 'arc'))
+                        return await wiki(wikiurl, pagename, 'arc')
                     else:
                         matchinterwiki = re.match(r'(.*?):(.*)', matchmsg.group(1))
                         pagename = matchinterwiki.group(2)
@@ -43,25 +43,25 @@ async def wmg(message, group=0):
                                 return await wiki(wikiurl, matchsitename.group(2), 'gpsitename:' + matchsitename.group(1))
                             except  Exception as e:
                                 traceback.print_exc()
-                                return ('发生错误：' + str(e))
+                                return '发生错误：' + str(e)
                         if interwiki in iwlist():
                             try:
                                 wikiurl = iwlink(interwiki)
-                                return (await wiki(wikiurl, pagename, interwiki))
+                                return await wiki(wikiurl, pagename, interwiki)
                             except  Exception as e:
                                 traceback.print_exc()
-                                return ('发生错误：' + str(e))
+                                return '发生错误：' + str(e)
                         elif interwiki == 'Wikipedia' or interwiki == 'wikipedia':
-                            return ('暂不支持Wikipedia查询。')
+                            return '暂不支持Wikipedia查询。'
                         else:
                             try:
                                 wikiurl = 'https://minecraft.gamepedia.com/'
-                                return (await wiki(wikiurl, pagename,''))
+                                return await wiki(wikiurl, pagename, '')
                             except  Exception as e:
                                 traceback.print_exc()
-                                return ('发生错误：' + str(e))
+                                return '发生错误：' + str(e)
                 except Exception:
-                    return (await wiki('en', matchmsg.group(1)))
+                    return await wiki('en', matchmsg.group(1))
 
 
 
@@ -127,7 +127,7 @@ async def imt(message):
         url = iwlink('zh')
         pagename = 'Template:' + message
         interwiki = ''
-    return (await wiki(url, pagename, interwiki, igmessage=False, template=True))
+    return await wiki(url, pagename, interwiki, igmessage=False, template=True)
 
 
 if __name__ == '__main__':

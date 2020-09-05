@@ -108,8 +108,8 @@ async def step2(wikilink, pagename, interwiki, psepgraw):
     if finpgname == pagename:
         rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
     else:
-        rmlstlb = re.sub('\n$', '', '\n' +
-                         f'（重定向[{pagename}] -> [{finpgname}]）\n' + fullurl + '\n' + desc)
+        rmlstlb = re.sub('\n$', '',
+                         f'\n（重定向[{pagename}] -> [{finpgname}]）\n{fullurl}\n{desc}')
     rmlstlb = re.sub('\n\n', '\n', rmlstlb)
     rmlstlb = re.sub('\n\n', '\n', rmlstlb)
     try:
@@ -119,7 +119,7 @@ async def step2(wikilink, pagename, interwiki, psepgraw):
         result = rmlstlb
     if interwiki != '':
         pagename = interwiki + ':' + pagename
-    return ('您要的' + pagename + "：" + result)
+    return f'您要的{pagename}：{result}'
 
 
 async def wiki(wikilink, pagename, interwiki='', igmessage=False, template=False):
@@ -136,7 +136,7 @@ async def wiki(wikilink, pagename, interwiki='', igmessage=False, template=False
     except Exception as e:
         traceback.print_exc()
         if igmessage == False:
-            return ('发生错误：' + str(e))
+            return f'发生错误：{str(e)}'
 
 
 if __name__ == '__main__':
