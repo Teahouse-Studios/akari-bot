@@ -99,6 +99,7 @@ async def step2(wikilink, pagename, interwiki, psepgraw):
     try:
         section = re.match(r'.*(\#.*)', pagename)
         finpgname = geturlpagename.group(2) + urllib.parse.quote(section.group(1).encode('UTF-8'))
+        fullurl = psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
     except Exception:
         finpgname = geturlpagename.group(2)
     finpgname = urllib.parse.unquote(finpgname)
