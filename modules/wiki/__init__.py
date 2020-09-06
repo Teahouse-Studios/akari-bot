@@ -132,7 +132,7 @@ async def im(message):
         else:
             url = iwlink('zh')
             pagename = message
-            interwiki = 'fd:'
+            interwiki = ''
     except Exception:
         url = iwlink('zh')
         pagename = message
