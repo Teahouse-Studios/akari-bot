@@ -120,19 +120,19 @@ async def im(message):
                     if matchlangcode.group(1) in langcode:
                         url = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
                         pagename = matchlangcode.group(2)
-                        interwiki = matchlangcode.group(1)
+                        interwiki = 'fd:' + matchlangcode.group(1)
                     else:
                         url = f'https://{matchsitename.group(1)}.fandom.com/'
                         pagename = matchsitename.group(2)
-                        interwiki = ''
+                        interwiki = 'fd:'
                 except Exception:
                     url = f'https://{matchsitename.group(1)}.fandom.com/'
                     pagename = matchsitename.group(2)
-                    interwiki = ''
+                    interwiki = 'fd:'
         else:
             url = iwlink('zh')
             pagename = message
-            interwiki = ''
+            interwiki = 'fd:'
     except Exception:
         url = iwlink('zh')
         pagename = message
