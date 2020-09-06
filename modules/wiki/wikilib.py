@@ -33,7 +33,7 @@ async def researchpage(wikilink, pagename, interwiki):
     try:
         searchurl = wikilink + 'api.php?action=query&generator=search&gsrsearch=' + pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
         getsecjson = await get_data(searchurl, "json")
-        secpageid = parsepageid(getsecjson)
+        secpageid = await parsepageid(getsecjson)
         sectitle = getsecjson['query']['pages'][secpageid]['title']
         if interwiki == '':
             target = ''
@@ -68,7 +68,7 @@ async def nullpage(wikilink, pagename, interwiki, psepgraw):
 
 async def getdesc(wikilink, pagename):
     try:
-        descurl = wikilink + '/api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + pagename
+        descurl = wikilink + 'api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + pagename
         loadtext = await get_data(descurl, "json")
         pageid = await parsepageid(loadtext)
         desc = loadtext['query']['pages'][pageid]['extract']
@@ -122,6 +122,9 @@ async def step2(wikilink, pagename, interwiki, psepgraw):
 
 
 async def wiki(wikilink, pagename, interwiki='', igmessage=False, template=False):
+    print(wikilink)
+    print(pagename)
+    print(interwiki)
     try:
         try:
             matchinterwiki = re.match(r'(.*?):(.*)', pagename)
