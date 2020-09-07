@@ -68,10 +68,23 @@ async def nullpage(wikilink, pagename, interwiki, psepgraw):
 
 async def getdesc(wikilink, pagename):
     try:
-        descurl = wikilink + 'api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki&format=json&titles=' + pagename
+        descurl = wikilink + 'api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki' \
+                             '&format=json&titles=' + pagename
         loadtext = await get_data(descurl, "json")
         pageid = await parsepageid(loadtext)
         desc = loadtext['query']['pages'][pageid]['extract']
+    except Exception:
+        desc = ''
+    return desc
+
+
+async def getfirstline(wikilink, pagename):
+    try:
+        descurl = wikilink + f'api.php?action=parse&page={pagename}&prop=wikitext&section=1&format=json'
+        loaddesc = await get_data(descurl, 'json')
+        descraw = loaddesc['parse']['wikitext']['*']
+        cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.I)
+        desc = cutdesc[0]
     except Exception:
         desc = ''
     return desc
@@ -96,6 +109,8 @@ async def step2(wikilink, pagename, interwiki, psepgraw):
     fullurl = psepgraw['fullurl']
     geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|))(.*)', fullurl, re.M | re.I)
     desc = await getdesc(wikilink, geturlpagename.group(2))
+    if desc == '':
+        desc = await getfirstline(wikilink, geturlpagename.group(2))
     try:
         section = re.match(r'.*(\#.*)', pagename)
         finpgname = geturlpagename.group(2) + urllib.parse.quote(section.group(1).encode('UTF-8'))
