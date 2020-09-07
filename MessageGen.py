@@ -41,8 +41,8 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
         if run.find('[wait]') != -1:
             ranint = random.randint(1, 3)
             if ranint == 2:
-                await makemsgchain('提示：你可以发送“是”字来将所有无效结果再次查询。（考虑到实现复杂性，恕不提供选择性查询）', msgtype)
-                await sendmessage(app, msgchain, target1, target2, msgtype)
+                waitmsg = await makemsgchain('提示：你可以发送“是”字来将所有无效结果再次查询。（考虑到实现复杂性，恕不提供选择性查询）', msgtype)
+                await sendmessage(app, waitmsg, target1, target2, msgtype)
             if msgtype == 'friend':
                 event: FriendMessage = await im.wait(FriendMessageInterrupt(friend))
             if msgtype == 'group':
