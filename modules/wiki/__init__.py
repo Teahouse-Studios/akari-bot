@@ -61,16 +61,16 @@ async def wmg(message, group=0):
                                     if matchlangcode.group(1) in langcode:
                                         wikiurl = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
                                         pagename = matchlangcode.group(2)
-                                        interwiki = matchlangcode.group(1)
+                                        interwiki = 'fd:' + matchlangcode.group(1)
                                     else:
                                         wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
                                         pagename = matchsitename.group(2)
-                                        interwiki = ''
+                                        interwiki = 'fd'
                                 except Exception:
                                     wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
                                     pagename = matchsitename.group(2)
-                                    interwiki = ''
-                                return await wiki(wikiurl, pagename, 'fd:' + interwiki)
+                                    interwiki = 'fd'
+                                return await wiki(wikiurl, pagename, interwiki)
                             except  Exception as e:
                                 traceback.print_exc()
                                 return '发生错误：' + str(e)
@@ -124,7 +124,7 @@ async def im(message):
                     else:
                         url = f'https://{matchsitename.group(1)}.fandom.com/'
                         pagename = matchsitename.group(2)
-                        interwiki = 'fd:'
+                        interwiki = 'fd'
                 except Exception:
                     url = f'https://{matchsitename.group(1)}.fandom.com/'
                     pagename = matchsitename.group(2)
