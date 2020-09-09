@@ -111,7 +111,7 @@ async def step1(wikilink, pagename, interwiki, igmessage=False, template=False):
 
 async def step2(wikilink, pagename, interwiki, psepgraw):
     fullurl = psepgraw['fullurl']
-    geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|))(.*)', fullurl, re.M | re.I)
+    geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|.*wiki/|))(.*)', fullurl, re.M | re.I)
     desc = await getdesc(wikilink, geturlpagename.group(2))
     if desc == '':
         desc = await getfirstline(wikilink, geturlpagename.group(2))
@@ -145,14 +145,14 @@ async def wiki(wikilink, pagename, interwiki='', igmessage=False, template=False
     print(pagename)
     print(interwiki)
     try:
-        try:
-            matchinterwiki = re.match(r'(.*?):(.*)', pagename)
+        matchinterwiki = re.match(r'(.*?):(.*)', pagename)
+        if matchinterwiki:
             if matchinterwiki.group(1) in iwlist():
                 return await wiki(iwlink(matchinterwiki.group(1)), matchinterwiki.group(2), matchinterwiki.group(1),
                                   igmessage, template)
             else:
                 return await step1(wikilink, pagename, interwiki, igmessage, template)
-        except Exception:
+        else:
             return await step1(wikilink, pagename, interwiki, igmessage, template)
     except Exception as e:
         traceback.print_exc()

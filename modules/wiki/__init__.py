@@ -21,123 +21,91 @@ async def wmg(message, group=0):
         return wikihelp()
     else:
         lower = re.sub(r'^Wiki', 'wiki', message)
-        try:
-            matchmsg = re.match(r'^wiki-(.*?) (.*)', lower)
+        matchmsg = re.match(r'^wiki-(.*?) (.*)', lower)
+        if matchmsg:
             interwiki = matchmsg.group(1)
-            print(interwiki)
             if interwiki in iwlist():
                 return await wiki(iwlink(interwiki), matchmsg.group(2))
             else:
-                return '未知语言，请使用~wiki -h查看帮助。'
-        except Exception:
-            matchmsg = re.match(r'^wiki (.*)', lower)
-            try:
-                matchsite = re.match(r'~(.*?) (.*)', matchmsg.group(1))
+                return '未知Interwiki，请使用~wiki -h查看帮助。'
+        matchmsg = re.match(r'^wiki (.*)', lower)
+        if matchmsg:
+            matchsite = re.match(r'~(.*?) (.*)', matchmsg.group(1))
+            if matchsite:
                 wikiurl = 'https://' + matchsite.group(1) + '.gamepedia.com/'
                 return await wiki(wikiurl, matchsite.group(2), 'gp:' + matchsite.group(1))
-            except Exception:
-                try:
-                    if group == 250500369 or group == 676942198:
-                        pagename = matchmsg.group(1)
-                        wikiurl = 'https://wiki.arcaea.cn/'
-                        return await wiki(wikiurl, pagename, 'arc')
-                    else:
-                        matchinterwiki = re.match(r'(.*?):(.*)', matchmsg.group(1))
-                        pagename = matchinterwiki.group(2)
-                        interwiki = str.lower(matchinterwiki.group(1))
-                        if interwiki == 'gp':
-                            try:
-                                matchsitename = re.match(r'(.*?):(.*)', pagename)
-                                wikiurl = 'https://' + matchsitename.group(1) + '.gamepedia.com/'
-                                return await wiki(wikiurl, matchsitename.group(2), 'gp:' + matchsitename.group(1))
-                            except  Exception as e:
-                                traceback.print_exc()
-                                return '发生错误：' + str(e)
-                        if interwiki == 'fd':
-                            try:
-                                matchsitename = re.match(r'(.*?):(.*)', pagename)
-                                try:
-                                    matchlangcode = re.match(r'(.*?):(.*)', matchsitename.group(2))
-                                    if matchlangcode.group(1) in langcode:
-                                        wikiurl = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
-                                        pagename = matchlangcode.group(2)
-                                        interwiki = 'fd:' + matchsitename.group(1) + ':' + matchlangcode.group(1)
-                                    else:
-                                        wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
-                                        pagename = matchsitename.group(2)
-                                        interwiki = 'fd:' + matchsitename.group(1)
-                                except Exception:
-                                    wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
-                                    pagename = matchsitename.group(2)
-                                    interwiki = 'fd:' + matchsitename.group(1)
-                                return await wiki(wikiurl, pagename, interwiki)
-                            except  Exception as e:
-                                traceback.print_exc()
-                                return '发生错误：' + str(e)
-                        if interwiki in iwlist():
-                            try:
-                                wikiurl = iwlink(interwiki)
-                                return await wiki(wikiurl, pagename, interwiki)
-                            except  Exception as e:
-                                traceback.print_exc()
-                                return '发生错误：' + str(e)
-                        elif interwiki == 'Wikipedia' or interwiki == 'wikipedia':
-                            return '暂不支持Wikipedia查询。'
-                        else:
-                            try:
-                                wikiurl = 'https://minecraft.gamepedia.com/'
-                                return await wiki(wikiurl, pagename, '')
-                            except  Exception as e:
-                                traceback.print_exc()
-                                return '发生错误：' + str(e)
-                except Exception:
-                    return await wiki('en', matchmsg.group(1))
+            return await choosemethod(matchmsg.group(1), group)
+
+
+async def choosemethod(matchmsg, group='0', basewiki='en'):
+    try:
+        pagename = matchmsg
+        if group == 250500369 or group == 676942198:
+            wikiurl = 'https://wiki.arcaea.cn/'
+            return await wiki(wikiurl, pagename, 'arc')
+        else:
+            matchinterwiki = re.match(r'(.*?):(.*)', matchmsg)
+            if matchinterwiki:
+                pagename = matchinterwiki.group(2)
+                interwiki = str.lower(matchinterwiki.group(1))
+                if interwiki == 'gp':
+                    matchsitename = re.match(r'(.*?):(.*)', pagename)
+                    wikiurl = 'https://' + matchsitename.group(1) + '.gamepedia.com/'
+                    return await wiki(wikiurl, matchsitename.group(2), 'gp:' + matchsitename.group(1))
+                if interwiki == 'fd':
+                    matchsitename = re.match(r'(.*?):(.*)', pagename)
+                    wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
+                    pagename = matchsitename.group(2)
+                    interwiki = 'fd:' + matchsitename.group(1)
+                    matchlangcode = re.match(r'(.*?):(.*)', matchsitename.group(2))
+                    if matchlangcode:
+                        if matchlangcode.group(1) in langcode:
+                            wikiurl = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
+                            pagename = matchlangcode.group(2)
+                            interwiki = 'fd:' + matchsitename.group(1) + ':' + matchlangcode.group(1)
+                    return await wiki(wikiurl, pagename, interwiki)
+                if interwiki == 'w':
+                    matchsitename = re.match(r'(.*?):(.*)', pagename)
+                    if matchsitename.group(1) == 'c':
+                        matchsitename = re.match(r'(.*?):(.*)', matchsitename.group(2))
+                        pagename = matchsitename.group(2)
+                        interwiki = 'w:c:' + matchsitename.group(1)
+                        matchlangcode = re.match(r'(.*?):(.*)', matchsitename.group(2))
+                        if matchlangcode:
+                            if matchlangcode.group(1) in langcode:
+                                wikiurl = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
+                                pagename = matchlangcode.group(2)
+                                interwiki = 'w:c:' + matchsitename.group(1) + ':' + matchlangcode.group(1)
+                        return await wiki(wikiurl, pagename, interwiki)
+                if interwiki in iwlist():
+                    wikiurl = iwlink(interwiki)
+                    return await wiki(wikiurl, pagename, interwiki)
+                elif interwiki == 'Wikipedia' or interwiki == 'wikipedia':
+                    return '暂不支持Wikipedia查询。'
+                else:
+                    wikiurl = iwlink(basewiki)
+                    return await wiki(wikiurl, matchmsg, '')
+            else:
+                wikiurl = iwlink(basewiki)
+                return await wiki(wikiurl, matchmsg, '')
+    except Exception as e:
+        traceback.print_exc()
+        return f'发生错误：{str(e)}'
 
 
 async def im(message):
-    try:
-        pipe = re.match(r'(.*?)\|.*', message)
+    pipe = re.match(r'(.*?)\|.*', message)
+    if pipe:
         message = pipe.group(1)
-    except Exception:
-        pass
     message = re.sub(r'^:', '', message)
-    try:
-        matchinterwiki = re.match(r'(.*?):(.*)', message)
-        interwiki = matchinterwiki.group(1)
-        interwiki = str.lower(interwiki)
-        pagename = matchinterwiki.group(2)
-        if interwiki in iwlist():
-            url = iwlink(interwiki)
-        elif interwiki == 'gp':
-            wikiname = re.match(r'(.*?):(.*)', pagename)
-            url = 'https://' + wikiname.group(1) + '.gamepedia.com/'
-            pagename = wikiname.group(2)
-            interwiki = 'gp:' + wikiname.group(1)
-        elif interwiki == 'fd':
-                matchsitename = re.match(r'(.*?):(.*)', pagename)
-                try:
-                    matchlangcode = re.match(r'(.*?):(.*)', matchsitename.group(2))
-                    if matchlangcode.group(1) in langcode:
-                        url = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
-                        pagename = matchlangcode.group(2)
-                        interwiki = 'fd:' + matchsitename.group(1) + ':' + matchlangcode.group(1)
-                    else:
-                        url = f'https://{matchsitename.group(1)}.fandom.com/'
-                        pagename = matchsitename.group(2)
-                        interwiki = 'fd:' + matchsitename.group(1)
-                except Exception:
-                    url = f'https://{matchsitename.group(1)}.fandom.com/'
-                    pagename = matchsitename.group(2)
-                    interwiki = 'fd:' + matchsitename.group(1)
-        else:
-            url = iwlink('zh')
-            pagename = message
-            interwiki = ''
-    except Exception:
-        url = iwlink('zh')
-        pagename = message
-        interwiki = ''
-    return await wiki(url, pagename, interwiki)
+    url = iwlink('zh')
+    pagename = message
+    interwiki = ''
+    matchinterwiki = re.match(r'(.*?):(.*)', message)
+    if matchinterwiki:
+        return await choosemethod(message, basewiki='zh')
+    else:
+        return await wiki(url, pagename, interwiki)
 
 
 async def imarc(message):
@@ -153,26 +121,18 @@ async def imarc(message):
 
 
 async def imt(message):
-    try:
-        pipe = re.match(r'(.*?)\|.*', message)
+    pipe = re.match(r'(.*?)\|.*', message)
+    if pipe:
         message = pipe.group(1)
-    except Exception:
-        pass
     message = re.sub(r'^:', '', message)
-    try:
-        matchinterwiki = re.match(r'(.*?):(.*)', message)
-        interwiki = matchinterwiki.group(1)
-        interwiki = str.lower(interwiki)
-        if interwiki in iwlist():
-            url = iwlink(interwiki)
-            pagename = 'Template:' + matchinterwiki.group(2)
-        else:
-            url = iwlink('zh')
-            pagename = 'Template:' + message
-    except Exception:
-        url = iwlink('zh')
-        pagename = 'Template:' + message
-        interwiki = ''
+    matchinterwiki = re.match(r'(.*?):(.*)', message)
+    interwiki = matchinterwiki.group(1)
+    interwiki = str.lower(interwiki)
+    url = iwlink('zh')
+    pagename = 'Template:' + message
+    if interwiki in iwlist():
+        url = iwlink(interwiki)
+        pagename = 'Template:' + matchinterwiki.group(2)
     return await wiki(url, pagename, interwiki, igmessage=False, template=True)
 
 
