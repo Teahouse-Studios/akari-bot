@@ -61,15 +61,15 @@ async def wmg(message, group=0):
                                     if matchlangcode.group(1) in langcode:
                                         wikiurl = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
                                         pagename = matchlangcode.group(2)
-                                        interwiki = 'fd:' + matchlangcode.group(1)
+                                        interwiki = 'fd:' + matchsitename.group(1) + ':' + matchlangcode.group(1)
                                     else:
                                         wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
                                         pagename = matchsitename.group(2)
-                                        interwiki = 'fd'
+                                        interwiki = 'fd:' + matchsitename.group(1)
                                 except Exception:
                                     wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
                                     pagename = matchsitename.group(2)
-                                    interwiki = 'fd'
+                                    interwiki = 'fd:' + matchsitename.group(1)
                                 return await wiki(wikiurl, pagename, interwiki)
                             except  Exception as e:
                                 traceback.print_exc()
@@ -120,15 +120,15 @@ async def im(message):
                     if matchlangcode.group(1) in langcode:
                         url = f'https://{matchsitename.group(1)}.fandom.com/{matchlangcode.group(1)}/'
                         pagename = matchlangcode.group(2)
-                        interwiki = 'fd:' + matchlangcode.group(1)
+                        interwiki = 'fd:' + matchsitename.group(1) + ':' + matchlangcode.group(1)
                     else:
                         url = f'https://{matchsitename.group(1)}.fandom.com/'
                         pagename = matchsitename.group(2)
-                        interwiki = 'fd'
+                        interwiki = 'fd:' + matchsitename.group(1)
                 except Exception:
                     url = f'https://{matchsitename.group(1)}.fandom.com/'
                     pagename = matchsitename.group(2)
-                    interwiki = 'fd:'
+                    interwiki = 'fd:' + matchsitename.group(1)
         else:
             url = iwlink('zh')
             pagename = message
