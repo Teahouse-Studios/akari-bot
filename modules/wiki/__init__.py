@@ -68,6 +68,7 @@ async def choosemethod(matchmsg, group='0', basewiki='en'):
                     matchsitename = re.match(r'(.*?):(.*)', pagename)
                     if matchsitename.group(1) == 'c':
                         matchsitename = re.match(r'(.*?):(.*)', matchsitename.group(2))
+                        wikiurl = f'https://{matchsitename.group(1)}.fandom.com/'
                         pagename = matchsitename.group(2)
                         interwiki = 'w:c:' + matchsitename.group(1)
                         matchlangcode = re.match(r'(.*?):(.*)', matchsitename.group(2))
