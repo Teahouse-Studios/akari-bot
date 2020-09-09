@@ -87,7 +87,7 @@ async def getfirstline(wikilink, pagename):
         descurl = wikilink + f'api.php?action=parse&page={pagename}&prop=wikitext&section=1&format=json'
         loaddesc = await get_data(descurl, 'json')
         descraw = loaddesc['parse']['wikitext']['*']
-        cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.I)
+        cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S|re.M)
         desc = cutdesc[0]
     except Exception:
         desc = ''
