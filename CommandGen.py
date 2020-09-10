@@ -52,9 +52,10 @@ async def findcommand(str1, group=0):
                         pass
                     else:
                         z.append(await imt(x))
-    if str(z) != '['']['']' or str(z) != '[][]' or str(z) != '[]':
+    if str(z):
         v = c.join(z)
-        return 'echo ' + v
+        if v != None:
+            return 'echo ' + v
 
 
 async def command(text, group=0):
