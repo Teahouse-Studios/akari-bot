@@ -15,6 +15,7 @@ from modules.wiki import im, imt, imarc
 
 ignorelist = [250500369, 676942198]
 
+
 async def findcommand(str1, group=0):
     str1 = re.sub(r'^～', '~', str1)
     q = re.match(r'^.*(: ~)(.*)', str1)
@@ -59,6 +60,7 @@ async def findcommand(str1, group=0):
 async def command(text, group=0):
     result = await findcommand(text, group)
     c = result
+    print(c)
     if c != None:
         try:
             d = result.split(' ')
@@ -101,5 +103,5 @@ async def command(text, group=0):
             return await ping()
         if d == 'credits':
             return credits()
-        else:
-            pass
+    else:
+        pass
