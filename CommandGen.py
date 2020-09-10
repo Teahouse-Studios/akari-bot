@@ -61,7 +61,6 @@ async def findcommand(str1, group=0):
 async def command(text, group=0):
     result = await findcommand(text, group)
     c = result
-    print(c)
     if c != None:
         try:
             d = result.split(' ')
