@@ -54,7 +54,7 @@ async def findcommand(str1, group=0):
                         z.append(await imt(x))
     if str(z):
         v = c.join(z)
-        if v != ' ':
+        if v != '':
             return 'echo ' + v
 
 
