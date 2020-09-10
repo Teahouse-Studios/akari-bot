@@ -7,7 +7,7 @@ import urllib
 from modules.UTC8 import UTC8
 from .gender import gender
 from .puserlib import PUser1
-from modules import checkuser
+from modules.checkuser import checkuser
 
 async def userpic(message):
     c = message
