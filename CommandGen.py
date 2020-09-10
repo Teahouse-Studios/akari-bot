@@ -59,48 +59,47 @@ async def findcommand(str1, group=0):
 async def command(text, group=0):
     result = await findcommand(text, group)
     c = result
-    if c == None:
-        return
-    try:
-        d = result.split(' ')
-        d = d[0]
-    except Exception:
-        d = c
-    if d == 'echo':
-        echo = re.sub(r'^echo ', '', c)
-        return echo
-    if c == 'help':
-        return help()
-    if d == 'pa':
-        return '爬'
-    if d == 'mcv':
-        return await mcv()
-    if d == 'mcbv':
-        return await mcbv()
-    if d == 'mcdv':
-        return await mcdv()
-    if d.find('新人') != -1 or d.find('new') != -1:
-        return await new()
-    if d.find("wiki") != -1 or d.find("Wiki") != -1:
-        return await(wmg(c, group))
-    if c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find(
-            "MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find(
-        "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
-        return await bugtracker(c)
-    if d == 'server' or d == 'Server':
-        return await ser(c)
-    if d.find("user") != -1 or d.find("User") != -1:
-        if c.find("-p") != -1:
-            return await userpic(c)
+    if c != None:
+        try:
+            d = result.split(' ')
+            d = d[0]
+        except Exception:
+            d = c
+        if d == 'echo':
+            echo = re.sub(r'^echo ', '', c)
+            return echo
+        if c == 'help':
+            return help()
+        if d == 'pa':
+            return '爬'
+        if d == 'mcv':
+            return await mcv()
+        if d == 'mcbv':
+            return await mcbv()
+        if d == 'mcdv':
+            return await mcdv()
+        if d.find('新人') != -1 or d.find('new') != -1:
+            return await new()
+        if d.find("wiki") != -1 or d.find("Wiki") != -1:
+            return await(wmg(c, group))
+        if c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find(
+                "MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find(
+            "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
+            return await bugtracker(c)
+        if d == 'server' or d == 'Server':
+            return await ser(c)
+        if d.find("user") != -1 or d.find("User") != -1:
+            if c.find("-p") != -1:
+                return await userpic(c)
+            else:
+                return await Username(c)
+        if d == 'rc':
+            return await rc()
+        if d == 'ab':
+            return await ab()
+        if d == 'ping':
+            return await ping()
+        if d == 'credits':
+            return credits()
         else:
-            return await Username(c)
-    if d == 'rc':
-        return await rc()
-    if d == 'ab':
-        return await ab()
-    if d == 'ping':
-        return await ping()
-    if d == 'credits':
-        return credits()
-    else:
-        pass
+            pass
