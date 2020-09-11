@@ -1,18 +1,5 @@
 import re
 
-from modules.ab import ab
-from modules.bug import bugtracker
-from modules.help import help, credits
-from modules.mcv import mcv, mcbv, mcdv
-from modules.newbie import new
-from modules.ping import ping
-from modules.rc import rc
-from modules.server import ser
-from modules.user import Username
-from modules.userp import userpic
-from modules.wiki import wmg
-from modules.wiki import im, imt, imarc
-
 ignorelist = [250500369, 676942198]
 
 
@@ -33,6 +20,7 @@ async def findcommand(str1, group=0):
     z = []
     c = '\n'
     if w:
+        from modules.wiki import im, imarc
         if str(w) != '['']' or str(w) != '[]':
             for x in w:
                 if x == '':
@@ -43,6 +31,7 @@ async def findcommand(str1, group=0):
                     else:
                         z.append(await im(x))
     if w2:
+        from modules.wiki import imt
         if str(w2) != '['']' or str(w2) != '[]':
             for x in w2:
                 if x == '':
@@ -71,37 +60,51 @@ async def command(text, group=0):
             echo = re.sub(r'^echo ', '', c)
             return echo
         if c == 'help':
+            from modules.help import help
             return help()
         if d == 'pa':
             return '爬'
         if d == 'mcv':
+            from modules.mcv import mcv
             return await mcv()
         if d == 'mcbv':
+            from modules.mcv import mcbv
             return await mcbv()
         if d == 'mcdv':
+            from modules.mcv import mcdv
             return await mcdv()
         if d.find('新人') != -1 or d.find('new') != -1:
+            from modules.newbie import new
             return await new()
         if d.find("wiki") != -1 or d.find("Wiki") != -1:
+            from modules.wiki import wmg
             return await(wmg(c, group))
         if c.find("bug") != -1 or c.find("MC-") != -1 or c.find("BDS-") != -1 or c.find("MCPE-") != -1 or c.find(
                 "MCAPI-") != -1 or c.find("MCCE-") != -1 or c.find("MCD-") != -1 or c.find("MCL-") != -1 or c.find(
             "REALMS-") != -1 or c.find("MCE-") != -1 or c.find("WEB-") != -1:
+            from modules.bug import bugtracker
             return await bugtracker(c)
         if d == 'server' or d == 'Server':
+            from modules.server import ser
             return await ser(c)
         if d.find("user") != -1 or d.find("User") != -1:
             if c.find("-p") != -1:
+                from modules.userp import userpic
                 return await userpic(c)
             else:
+                from modules.user import Username
                 return await Username(c)
         if d == 'rc':
+            from modules.rc import rc
             return await rc()
         if d == 'ab':
+            from modules.ab import ab
             return await ab()
         if d == 'ping':
+            from modules.ping import ping
             return await ping()
         if d == 'credits':
+            from modules.help import credits
             return credits()
     else:
         pass

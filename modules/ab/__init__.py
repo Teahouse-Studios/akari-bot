@@ -4,7 +4,7 @@ import json
 import aiohttp
 
 from modules.UTC8 import UTC8
-from modules.pbc import pbc2
+from modules.pbc import pbc
 
 
 async def ab():
@@ -20,7 +20,7 @@ async def ab():
     for x in file['query']['abuselog'][:5]:
         d.append('•' + x['title'] + ' - ' + x['user'] + '于' + UTC8(x['timestamp'], 'onlytimenoutc') + '\n过滤器名：' + x[
             'filter'] + '\n处理结果：' + x['result'])
-    y = await pbc2(d)
+    y = await pbc(d)
     space = '\n'
     f = space.join(y)
     if f.find('<吃掉了>') != -1 or f.find('<全部吃掉了>') != -1:

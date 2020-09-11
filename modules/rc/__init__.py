@@ -3,7 +3,7 @@ import aiohttp
 import json
 
 from modules.UTC8 import UTC8
-from modules.pbc import pbc2
+from modules.pbc import pbc
 
 
 async def rc():
@@ -18,7 +18,7 @@ async def rc():
     d = []
     for x in file['query']['recentchanges'][:5]:
         d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
-    y = await pbc2(d)
+    y = await pbc(d)
     print(y)
     space = '\n'
     f = space.join(y)

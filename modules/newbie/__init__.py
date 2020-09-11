@@ -3,7 +3,7 @@ import aiohttp
 import json
 import re
 
-from modules.pbc import pbc2
+from modules.pbc import pbc
 
 
 async def new():
@@ -19,7 +19,7 @@ async def new():
     for x in file['query']['logevents']:
         d.append(x['title'])
     print(str(d))
-    y = await pbc2(d)
+    y = await pbc(d)
     space = '\n'
     print(str(y))
     j = space.join(y)
