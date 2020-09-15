@@ -29,11 +29,12 @@ async def userpic(message):
         h = 'minecraft-' + g.group(1)
         h2 = g.group(2)
         h2 = re.sub('_', ' ', h2)
-    g = re.match(r'user (.*)', z)
-    if g:
-        h = 'minecraft'
-        h2 = g.group(1)
-        h2 = re.sub('_', ' ', h2)
+    else:
+        g = re.match(r'user (.*)', z)
+        if g:
+            h = 'minecraft'
+            h2 = g.group(1)
+            h2 = re.sub('_', ' ', h2)
     if checkuser(h, h2):
         h2 = re.sub('User:', '', h2)
         print(h2)
