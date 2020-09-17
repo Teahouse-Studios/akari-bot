@@ -105,7 +105,7 @@ async def im(message):
         url = iwlink('zh')
         pagename = x
         interwiki = ''
-        matchinterwiki = re.match(r'(.*?):(.*)', x)
+        matchinterwiki = re.match(r'(.*?):(.*)', x, re.I)
         if matchinterwiki:
             z.append(await choosemethod(x, basewiki='zh'))
         else:
@@ -117,7 +117,7 @@ async def imarc(message):
     z = []
     a = '\n'
     for x in message:
-        pipe = re.match(r'(.*?)\|.*', x)
+        pipe = re.match(r'(.*?)\|.*', x, re.I)
         x = pipe.group(1)
         x = re.sub(r'^:', '', x)
         url = 'https://wiki.arcaea.cn/'
@@ -130,7 +130,7 @@ async def imt(message):
     z = []
     a = '\n'
     for x in message:
-        pipe = re.match(r'(.*?)\|.*', x)
+        pipe = re.match(r'(.*?)\|.*', x, re.I)
         if pipe:
             x = pipe.group(1)
         x = re.sub(r'^:', '', x)

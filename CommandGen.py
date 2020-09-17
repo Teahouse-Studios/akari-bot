@@ -15,8 +15,8 @@ async def findcommand(str1, group=0):
     if q:
         q = str.upper(q.group(1))
         return 'bug ' + q
-    w = re.findall(r'\[\[(.*?)\]\]', str1)
-    w2 = re.findall(r'\{\{(.*?)\}\}', str1)
+    w = re.findall(r'\[\[(.*?)\]\]', str1, re.I)
+    w2 = re.findall(r'\{\{(.*?)\}\}', str1, re.I)
     z = []
     c = '\n'
     if w:
