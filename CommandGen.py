@@ -21,26 +21,34 @@ async def findcommand(str1, group=0):
     c = '\n'
     if w:
         from modules.wiki import im, imarc
+        wi1 = []
         if str(w) != '['']' or str(w) != '[]':
             for x in w:
-                if x == '':
+                if x == '' or x in wi1:
                     pass
                 else:
-                    if group in ignorelist:
-                        z.append(await imarc(x))
-                    else:
-                        z.append(await im(x))
+                    wi1.append(x)
+        if wi1 != []:
+            if group in ignorelist:
+                z.append(await imarc(wi1))
+            else:
+                z.append(await im(wi1))
     if w2:
         from modules.wiki import imt
+        wi2 = []
         if str(w2) != '['']' or str(w2) != '[]':
             for x in w2:
-                if x == '':
+                if x == '' or x in wi2:
                     pass
                 else:
-                    if group in ignorelist:
-                        pass
-                    else:
-                        z.append(await imt(x))
+                    wi2.append(x)
+        print(wi2)
+        if wi2 != []:
+            if group in ignorelist:
+                pass
+            else:
+                z.append(await imt(wi2))
+    print(z)
     if str(z):
         v = c.join(z)
         if v != '':

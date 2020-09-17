@@ -5,3 +5,8 @@ config/config.cfg
 .idea
 mcversion.txt
 mcvrss.txt
+*test.py
+assests\usercard\*.png
+test.py
+assests\Favicon\**\*.png
+assests\cache\*

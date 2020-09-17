@@ -95,46 +95,60 @@ async def choosemethod(matchmsg, group='0', basewiki='en'):
 
 
 async def im(message):
-    pipe = re.match(r'(.*?)\|.*', message)
-    if pipe:
-        message = pipe.group(1)
-    message = re.sub(r'^:', '', message)
-    url = iwlink('zh')
-    pagename = message
-    interwiki = ''
-    matchinterwiki = re.match(r'(.*?):(.*)', message)
-    if matchinterwiki:
-        return await choosemethod(message, basewiki='zh')
-    else:
-        return await wiki(url, pagename, interwiki)
+    z = []
+    a = '\n'
+    for x in message:
+        pipe = re.match(r'(.*?)\|.*', x)
+        if pipe:
+            x = pipe.group(1)
+        x = re.sub(r'^:', '', x)
+        url = iwlink('zh')
+        pagename = x
+        interwiki = ''
+        matchinterwiki = re.match(r'(.*?):(.*)', x)
+        if matchinterwiki:
+            z.append(await choosemethod(x, basewiki='zh'))
+        else:
+            z.append(await wiki(url, pagename, interwiki))
+    return a.join(z)
 
 
 async def imarc(message):
-    try:
-        pipe = re.match(r'(.*?)\|.*', message)
-        message = pipe.group(1)
-    except Exception:
-        pass
-    message = re.sub(r'^:', '', message)
-    url = 'https://wiki.arcaea.cn/'
-    interwiki = ''
-    return await wiki(url, message, interwiki, igmessage=True)
+    z = []
+    a = '\n'
+    for x in message:
+        pipe = re.match(r'(.*?)\|.*', x)
+        x = pipe.group(1)
+        x = re.sub(r'^:', '', x)
+        url = 'https://wiki.arcaea.cn/'
+        interwiki = ''
+        z.append(await wiki(url, x, interwiki, igmessage=True))
+    return a.join(z)
 
 
 async def imt(message):
-    pipe = re.match(r'(.*?)\|.*', message)
-    if pipe:
-        message = pipe.group(1)
-    message = re.sub(r'^:', '', message)
-    matchinterwiki = re.match(r'(.*?):(.*)', message)
-    interwiki = matchinterwiki.group(1)
-    interwiki = str.lower(interwiki)
-    url = iwlink('zh')
-    pagename = 'Template:' + message
-    if interwiki in iwlist():
-        url = iwlink(interwiki)
-        pagename = 'Template:' + matchinterwiki.group(2)
-    return await wiki(url, pagename, interwiki, igmessage=False, template=True)
+    z = []
+    a = '\n'
+    for x in message:
+        pipe = re.match(r'(.*?)\|.*', x)
+        if pipe:
+            x = pipe.group(1)
+        x = re.sub(r'^:', '', x)
+        url = iwlink('zh')
+        pagename = 'Template:' + x
+        matchinterwiki = re.match(r'(.*?):(.*)', x)
+        interwiki = ''
+        if matchinterwiki:
+            interwiki = matchinterwiki.group(1)
+            interwiki = str.lower(interwiki)
+            if interwiki in iwlist():
+                url = iwlink(interwiki)
+                pagename = 'Template:' + matchinterwiki.group(2)
+            else:
+                interwiki = ''
+                pagename = 'Template:' + x
+        z.append(await wiki(url, pagename, interwiki, igmessage=False, template=True))
+    return a.join(z)
 
 
 if __name__ == '__main__':
