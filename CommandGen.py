@@ -42,13 +42,11 @@ async def findcommand(str1, group=0):
                     pass
                 else:
                     wi2.append(x)
-        print(wi2)
         if wi2 != []:
             if group in ignorelist:
                 pass
             else:
                 z.append(await imt(wi2))
-    print(z)
     if str(z):
         v = c.join(z)
         if v != '':
