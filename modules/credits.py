@@ -1,4 +1,4 @@
-def main():
+async def main():
     return '''===============
 主开发者    OasisAkari
 

@@ -1,7 +1,7 @@
 path = '~'
 
 
-def main():
+async def main():
     return f'''{path}ab - 查看Minecraft Wiki过滤器日志。
 {path}bug <JiraID> - 从Mojira中获取此Bug的信息。
 {path}credits - 展示制作人员列表。
