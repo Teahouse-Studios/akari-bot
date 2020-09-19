@@ -5,7 +5,7 @@ from os.path import abspath
 
 import graia.application.interrupt as inter
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image, Source
+from graia.application.message.elements.internal import Plain, Image, Source, UploadMethods
 
 from CommandGen import command
 from modules.findimage import findimage
