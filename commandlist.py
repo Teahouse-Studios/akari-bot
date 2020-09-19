@@ -16,9 +16,6 @@ def commandlist():
                 try:
                     if isinstance(a.command, dict):
                         clist.update(a.command)
-                    else:
-                        for x in a.command:
-                            clist.update(x)
                 except:
                     pass
         if os.path.isfile(filename):
@@ -28,9 +25,6 @@ def commandlist():
                 try:
                     if isinstance(a.command, dict):
                         clist.update(a.command)
-                    else:
-                        for x in a.command:
-                            clist.update(x)
                 except:
                     pass
     return clist
