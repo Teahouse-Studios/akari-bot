@@ -6,7 +6,7 @@ from modules.UTC8 import UTC8
 from modules.pbc import pbc
 
 
-async def rc():
+async def main():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -26,3 +26,5 @@ async def rc():
         return (f + '\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。Special:最近更改')
     else:
         return (f + '\n...仅显示前5条内容')
+
+command = 'rc'

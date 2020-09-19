@@ -1,7 +1,7 @@
 path = '~'
 
 
-def help():
+def main():
     return f'''{path}ab - 查看Minecraft Wiki过滤器日志。
 {path}bug <JiraID> - 从Mojira中获取此Bug的信息。
 {path}credits - 展示制作人员列表。
@@ -31,14 +31,5 @@ def userhelp():
 [-r] - 输出详细信息。
 [-p] - 输出一张用户信息的图片（不包含用户组）。'''
 
-def credits():
-    return '''===============
-主开发者    OasisAkari
 
-                 _LittleC_
-代码贡献    Dianliang233
-                 wyapx
-2020 Teahouse Studios
-===============
-此机器人的源代码已于https://github.com/Teahouse-Studios/bot仓库与母项目Graia采用相同协议AGPL-3.0 License进行开源。
-[30秒后撤回本消息]'''
+command = 'help'

@@ -4,7 +4,7 @@ from .server import server
 from .serverraw import serverraw
 
 
-async def ser(str1):
+async def main(str1):
     str1 = re.sub(r'^Server', 'server', str1)
     print(str1)
     if str1.find(" -h") != -1:
@@ -18,3 +18,5 @@ async def ser(str1):
     else:
         str1 = re.match(r'^server (.*)', str1)
         return (await server(str1.group(1)))
+
+command = 'server'

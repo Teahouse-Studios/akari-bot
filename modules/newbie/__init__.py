@@ -29,3 +29,5 @@ async def new():
         return (g + '\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers')
     else:
         return (g)
+
+command = '新人'

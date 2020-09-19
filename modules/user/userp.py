@@ -7,40 +7,7 @@ import urllib
 from modules.UTC8 import UTC8
 from modules.user.gender import gender
 from modules.user.puserlib import PUser1
-from modules.checkuser import checkuser
 
-async def main(message):
-    c = message
-    f = re.sub(' -p', '', c)
-    print(f)
-    z = re.sub(r'^User', 'user', f)
-    g = re.match(r'^user ~(.*) (.*)', z)
-    if g:
-        h = g.group(1)
-        h2 = g.group(2)
-        h2 = re.sub('_', ' ', h2)
-    g = re.match(r'^user-(.*?) (.*)', z)
-    if g:
-        h = 'minecraft-' + g.group(1)
-        h2 = g.group(2)
-        h2 = re.sub('_', ' ', h2)
-    g = re.match(r'^user (.*?):(.*)', z)
-    if g:
-        h = 'minecraft-' + g.group(1)
-        h2 = g.group(2)
-        h2 = re.sub('_', ' ', h2)
-    else:
-        g = re.match(r'user (.*)', z)
-        if g:
-            h = 'minecraft'
-            h2 = g.group(1)
-            h2 = re.sub('_', ' ', h2)
-    if checkuser(h, h2):
-        h2 = re.sub('User:', '', h2)
-        print(h2)
-        return await Userp(h, h2) + "[[usn:" + h2 + "]]"
-    else:
-        return '没有找到此用户。'
 
 async def Userp(path, Username):
     try:
@@ -83,5 +50,3 @@ async def Userp(path, Username):
                 return ('N')
     except Exception as e:
         return ('发生错误：' + str(e))
-
-command = 'userp'

@@ -4,12 +4,45 @@ from modules.help import userhelp
 from modules.interwikilist import iwlink, iwlist
 from .ruserlib import rUser1
 from .userlib import User1
+from modules.checkuser import checkuser
 
-
-async def Username(name):
+async def main(name):
     name = re.sub(r'^User', 'user', name)
     if name.find(" -h") != -1:
         return userhelp()
+    elif name.find(' -p') != -1:
+        c = name
+        f = re.sub(' -p', '', c)
+        print(f)
+        z = re.sub(r'^User', 'user', f)
+        g = re.match(r'^user ~(.*) (.*)', z)
+        if g:
+            h = g.group(1)
+            h2 = g.group(2)
+            h2 = re.sub('_', ' ', h2)
+        g = re.match(r'^user-(.*?) (.*)', z)
+        if g:
+            h = 'minecraft-' + g.group(1)
+            h2 = g.group(2)
+            h2 = re.sub('_', ' ', h2)
+        g = re.match(r'^user (.*?):(.*)', z)
+        if g:
+            h = 'minecraft-' + g.group(1)
+            h2 = g.group(2)
+            h2 = re.sub('_', ' ', h2)
+        else:
+            g = re.match(r'user (.*)', z)
+            if g:
+                h = 'minecraft'
+                h2 = g.group(1)
+                h2 = re.sub('_', ' ', h2)
+        if checkuser(h, h2):
+            h2 = re.sub('User:', '', h2)
+            print(h2)
+            from .userp import Userp
+            return await Userp(h, h2) + "[[usn:" + h2 + "]]"
+        else:
+            return '没有找到此用户。'
     else:
         try:
             q = re.match(r'^user-(.*?) (.*)', name)
@@ -65,3 +98,5 @@ async def Username(name):
                         return (await rUser1(metaurl, x))
                     else:
                         return await User1(metaurl, q.group(1))
+
+command = 'user'

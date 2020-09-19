@@ -7,7 +7,7 @@ from modules.UTC8 import UTC8
 from modules.pbc import pbc
 
 
-async def ab():
+async def main():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=abuselog&aflprop=user|title|action|result|filter|timestamp&format=json'
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as req:
@@ -27,3 +27,5 @@ async def ab():
         return f + '\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。Special:滥用日志\n[一分钟后撤回本消息]'
     else:
         return f + '\n...仅显示前5条内容\n[一分钟后撤回本消息]'
+
+command = 'ab'
