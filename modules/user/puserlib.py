@@ -17,12 +17,14 @@ async def get_data(url: str, fmt: str):
             else:
                 raise ValueError(f"NoSuchMethod: {fmt}")
 
+
 def ddk(str1):
     a = re.sub(r'<dd>|</dd>', '', str1)
     return a
 
 
-async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Blockedtimestamp='0', Blockexpiry='0', Blockreason='0'):
+async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Blockedtimestamp='0', Blockexpiry='0',
+                 Blockreason='0'):
     url2 = url + '/api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
     file2 = await get_data(url2, 'json')
     try:
@@ -65,4 +67,3 @@ async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Block
                 patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])),
                 wikipoint=point, blockbyuser=Blockedby, blocktimestamp1=Blockedtimestamp, blocktimestamp2=Blockexpiry,
                 blockreason=hh1(Blockreason), bantype='Y')
-

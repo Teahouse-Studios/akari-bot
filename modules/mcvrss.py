@@ -2,6 +2,7 @@ import os
 import re
 from os.path import abspath
 
+
 def mcvrss():
     w = open(abspath('./mcvrss.txt'), 'r')
     s = w.read().split('\n')

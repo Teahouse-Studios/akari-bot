@@ -1,6 +1,7 @@
-import aiohttp
 import re
 import urllib
+
+import aiohttp
 from bs4 import BeautifulSoup as bs
 
 from modules.UTC8 import UTC8
@@ -14,8 +15,6 @@ async def get_data(url: str, fmt: str):
                 return await getattr(req, fmt)()
             else:
                 raise ValueError(f"NoSuchMethod: {fmt}")
-
-
 
 
 async def rUser1(url, username):

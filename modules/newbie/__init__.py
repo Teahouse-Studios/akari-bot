@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
-import aiohttp
 import json
 import re
+
+import aiohttp
 
 from modules.pbc import pbc
 
@@ -30,4 +31,5 @@ async def main():
     else:
         return (g)
 
-command = {'新人':'newbie'}
+
+command = {'新人': 'newbie'}

@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
-import aiohttp
 import json
 from xml.etree import ElementTree
+
+import aiohttp
 
 
 async def bug(pagename):
@@ -45,16 +46,16 @@ async def bug(pagename):
                 if TStatus == 'Status: Open':
                     Type = "Type: " + node.find("type").text + ' | Status: ' + node.find("status").text
                     return (
-                                Title + '\n' + Type + '\n' + Project + '\n' + Priority + '\n' + Resolution + '\n' + Version + '\n' + Link)
+                            Title + '\n' + Type + '\n' + Project + '\n' + Priority + '\n' + Resolution + '\n' + Version + '\n' + Link)
                 elif TStatus == 'Status: Resolved':
                     Resolution = "Resolution: " + node.find("resolution").text + ' | Fixed Version: ' + node.find(
                         "fixVersion").text
                     Type = Type + ' | ' + TStatus
                     return (
-                                Title + '\n' + Type + '\n' + Project + '\n' + Resolution + '\n' + Priority + '\n' + Version + '\n' + Link)
+                            Title + '\n' + Type + '\n' + Project + '\n' + Resolution + '\n' + Priority + '\n' + Version + '\n' + Link)
                 else:
                     return (
-                                Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Priority + '\n' + Resolution + '\n' + Version + '\n' + Link)
+                            Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Priority + '\n' + Resolution + '\n' + Version + '\n' + Link)
             except Exception:
                 try:
                     if TStatus == 'Status: Open':
@@ -67,14 +68,14 @@ async def bug(pagename):
                         return (Title + '\n' + Type + '\n' + Project + '\n' + Resolution + '\n' + Version + '\n' + Link)
                     else:
                         return (
-                                    Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Resolution + '\n' + Version + '\n' + Link)
+                                Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Resolution + '\n' + Version + '\n' + Link)
                 except Exception:
                     return (
-                                Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Resolution + '\n' + Version + '\n' + Link)
+                            Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Resolution + '\n' + Version + '\n' + Link)
         except Exception:
             try:
                 return (
-                            Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Priority + '\n' + Resolution + '\n' + Link)
+                        Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Priority + '\n' + Resolution + '\n' + Link)
             except Exception:
                 try:
                     return (Title + '\n' + Type + '\n' + Project + '\n' + TStatus + '\n' + Resolution + '\n' + Link)

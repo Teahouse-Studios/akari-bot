@@ -5,10 +5,11 @@ from os.path import abspath
 
 import graia.application.interrupt as inter
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image, UploadMethods, Source
+from graia.application.message.elements.internal import Plain, Image, Source
 
 from CommandGen import command
 from modules.findimage import findimage
+
 
 async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     im = inter.InterruptControl(bcc)
@@ -16,11 +17,12 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
         run = await command(message.asDisplay(), target1.id)
     else:
         run = await command(message.asDisplay())
-#    print(run)
+    #    print(run)
     if run != None:
         print(run)
         msgchain = await makemsgchain(run, msgtype)
-        send = await sendmessage(app, msgchain, target1, target2, msgtype, message[Source][0] if msgtype == 'Group' else 0)
+        send = await sendmessage(app, msgchain, target1, target2, msgtype,
+                                 message[Source][0] if msgtype == 'Group' else 0)
         '''
         if msgtype == 'group':
             voice = re.findall(r'https?://.*?/File:.*?\.(?:ogg|m4a|mp3|flac|wav)', run, re.I)
@@ -44,7 +46,8 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
                 await sendmessage(app, waitmsg, target1, target2, msgtype)
             MessageEventImport = __import__('graia.application', fromlist=[f'{msgtype}Message'])
             MessageEvent = getattr(MessageEventImport, f'{msgtype}Message')
-            InterruptImport = __import__('graia.application.interrupt.interrupts', fromlist=[f'{msgtype}MessageInterrupt'])
+            InterruptImport = __import__('graia.application.interrupt.interrupts',
+                                         fromlist=[f'{msgtype}MessageInterrupt'])
             Interrupt = getattr(InterruptImport, f'{msgtype}MessageInterrupt')
             if msgtype == 'Friend':
                 event: MessageEvent = await im.wait(Interrupt(target1.id))

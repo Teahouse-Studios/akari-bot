@@ -20,6 +20,8 @@ app = GraiaMiraiApplication(
     )
 )
 import aiohttp
+
+
 async def get_data(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -27,6 +29,7 @@ async def get_data(url: str, fmt: str):
                 return await getattr(req, fmt)()
             else:
                 raise ValueError(f"NoSuchMethod: {fmt}")
+
 
 @bcc.receiver("ApplicationLaunched")
 async def ver(app: GraiaMiraiApplication):
@@ -44,7 +47,7 @@ async def ver(app: GraiaMiraiApplication):
     while True:
         try:
             verlist = mcversion()
-            file = await get_data(url,'json')
+            file = await get_data(url, 'json')
             release = file['latest']['release']
             snapshot = file['latest']['snapshot']
             if release in verlist:
@@ -52,7 +55,8 @@ async def ver(app: GraiaMiraiApplication):
             else:
                 for qqgroup in mcvrss():
                     try:
-                        await app.sendGroupMessage(int(qqgroup), MessageChain.create([Plain('启动器已更新' + file['latest']['release'] + '正式版。')]).asSendable())
+                        await app.sendGroupMessage(int(qqgroup), MessageChain.create(
+                            [Plain('启动器已更新' + file['latest']['release'] + '正式版。')]).asSendable())
                     except Exception as e:
                         print(str(e))
                 addversion = open('mcversion.txt', 'a')
@@ -63,7 +67,8 @@ async def ver(app: GraiaMiraiApplication):
             else:
                 for qqgroup in mcvrss():
                     try:
-                        await app.sendGroupMessage(int(qqgroup), MessageChain.create([Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]).asSendable())
+                        await app.sendGroupMessage(int(qqgroup), MessageChain.create(
+                            [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]).asSendable())
                     except Exception as e:
                         print(str(e))
                 addversion = open('mcversion.txt', 'a')

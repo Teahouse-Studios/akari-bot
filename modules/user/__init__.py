@@ -1,10 +1,11 @@
 import re
 
+from modules.checkuser import checkuser
 from modules.help import userhelp
 from modules.interwikilist import iwlink, iwlist
 from .ruserlib import rUser1
 from .userlib import User1
-from modules.checkuser import checkuser
+
 
 async def main(name):
     name = re.sub(r'^User', 'user', name)
@@ -99,4 +100,5 @@ async def main(name):
                     else:
                         return await User1(metaurl, q.group(1))
 
-command = {'user':'user'}
+
+command = {'user': 'user'}

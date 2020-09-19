@@ -1,8 +1,9 @@
 import os
 import re
+from os.path import abspath
+
 import requests
 from bs4 import BeautifulSoup as bs
-from os.path import abspath
 
 
 def dpng(link, ss):

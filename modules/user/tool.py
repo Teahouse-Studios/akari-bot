@@ -8,6 +8,7 @@ def gender(str3):
     j = re.sub('unknown', '未知', j)
     return (j)
 
+
 def yhz(str1):
     q = re.sub('\[', '', str1)
     q = re.sub('\]', '', q)

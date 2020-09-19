@@ -28,4 +28,5 @@ async def main():
     else:
         return f + '\n...仅显示前5条内容\n[一分钟后撤回本消息]'
 
-command = {'ab':'ab'}
+
+command = {'ab': 'ab'}

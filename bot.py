@@ -1,4 +1,5 @@
 import asyncio
+
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
 from graia.application.friend import Friend
@@ -41,14 +42,15 @@ async def temp_message_handler(app: GraiaMiraiApplication, message: MessageChain
     print('t')
     await gen(bcc, app, message, group, member, msgtype='Temp')
 
+
 @bcc.receiver("NewFriendRequestEvent")
 async def NFriend(event: NewFriendRequestEvent):
     await event.accept()
 
+
 @bcc.receiver("BotInvitedJoinGroupRequestEvent")
 async def NGroup(event: BotInvitedJoinGroupRequestEvent):
     await event.accept()
-
 
 
 app.launch_blocking()

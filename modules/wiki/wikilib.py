@@ -19,7 +19,6 @@ async def get_data(url: str, fmt: str):
             traceback.print_exc()
 
 
-
 async def getpage(wikilink, pagename):
     getlinkurl = wikilink + 'api.php?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
     getpage = await get_data(getlinkurl, "json")

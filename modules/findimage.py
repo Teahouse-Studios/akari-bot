@@ -1,5 +1,6 @@
-import aiohttp
 import re
+
+import aiohttp
 from bs4 import BeautifulSoup as bs
 
 

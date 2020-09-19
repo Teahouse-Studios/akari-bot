@@ -1,5 +1,6 @@
 import aiohttp
 
+
 async def get_data(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -16,7 +17,7 @@ async def main():
     except (ConnectionError, OSError):  # Probably...
         message1 = "获取manifest.json失败。"
     try:
-        mojira = await get_data('https://bugs.mojang.com/rest/api/2/project/10400/versions','json')
+        mojira = await get_data('https://bugs.mojang.com/rest/api/2/project/10400/versions', 'json')
         release = []
         prefix = ' | '
         for v in mojira:
@@ -31,4 +32,5 @@ Mojira上所记录最新版本为：
 {message2}
 （以启动器内最新版本为准，Mojira仅作版本号预览用）"""
 
-command = {'mcv':'mcv'}
+
+command = {'mcv': 'mcv'}

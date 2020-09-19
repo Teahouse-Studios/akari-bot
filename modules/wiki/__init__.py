@@ -6,8 +6,6 @@ from modules.help import wikihelp
 from modules.interwikilist import iwlist, iwlink
 from .wikilib import wiki
 
-
-
 langcode = ['ab', 'aa', 'af', 'sq', 'am', 'ar', 'hy', 'as', 'ay', 'az', 'ba', 'eu', 'bn', 'dz', 'bh', 'bi', 'br', 'bg',
             'my', 'be', 'km', 'ca', 'zh', 'co', 'hr', 'cs', 'da', 'nl', 'en', 'eo', 'et', 'fo', 'fa', 'fj', 'fi', 'fr',
             'fy', 'gl', 'gd', 'gv', 'ka', 'de', 'el', 'kl', 'gn', 'gu', 'ha', 'he', 'iw', 'hi', 'hu', 'is', 'id', 'in',
@@ -156,5 +154,4 @@ async def imt(message):
 if __name__ == '__main__':
     print(asyncio.run(wiki('wiki Netherite')))
 
-
-command = {'wiki':'wiki'}
+command = {'wiki': 'wiki'}

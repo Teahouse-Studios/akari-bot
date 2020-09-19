@@ -12,7 +12,7 @@ def commandlist():
             if file == '__pycache__':
                 pass
             else:
-                a = __import__('modules.'+file, fromlist=[file])
+                a = __import__('modules.' + file, fromlist=[file])
                 try:
                     if isinstance(a.command, dict):
                         clist.update(a.command)
@@ -21,7 +21,7 @@ def commandlist():
         if os.path.isfile(filename):
             b = re.match(r'(.*)(.py)', file)
             if b:
-                a = __import__('modules.'+b.group(1), fromlist=[b.group(1)])
+                a = __import__('modules.' + b.group(1), fromlist=[b.group(1)])
                 try:
                     if isinstance(a.command, dict):
                         clist.update(a.command)

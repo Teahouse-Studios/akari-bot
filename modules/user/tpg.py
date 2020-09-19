@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from os.path import abspath
+
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
-from os.path import abspath
 
 
 def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, createcount, editcount, deletecount,

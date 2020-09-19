@@ -6,6 +6,7 @@ from commandlist import commandlist
 
 clist = commandlist()
 
+
 async def findcommand(str1, group=0):
     str1 = re.sub(r'^～', '~', str1)
     q = re.match(r'^.*(: ~)(.*)', str1)
@@ -71,12 +72,12 @@ async def command(text, group=0):
         except Exception:
             pass
         if d == 'echo':
-            echo = re.sub('echo ','',c)
+            echo = re.sub('echo ', '', c)
             if echo != '':
                 return echo
         if d in clist:
             k = clist.get(d)
-            a = __import__('modules.'+k, fromlist=[k])
+            a = __import__('modules.' + k, fromlist=[k])
             try:
                 return await a.main(c)
             except TypeError:

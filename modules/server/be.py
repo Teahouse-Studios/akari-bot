@@ -41,7 +41,7 @@ async def main(addr, port):
         edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
         game_mode, game_mode_num, port_v4, port_v6, nothing_here = data.split(';')
         return (
-                    '[BE]\n' + motd_1 + ' - ' + motd_2 + '\n在线玩家：' + player_count + '/' + max_players + '\n游戏版本：' + edition + version_name + '\n游戏模式：' + game_mode)
+                '[BE]\n' + motd_1 + ' - ' + motd_2 + '\n在线玩家：' + player_count + '/' + max_players + '\n游戏版本：' + edition + version_name + '\n游戏模式：' + game_mode)
     except Exception:
         pass
     finally:

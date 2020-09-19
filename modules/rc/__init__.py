@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
-import aiohttp
 import json
+
+import aiohttp
 
 from modules.UTC8 import UTC8
 from modules.pbc import pbc
@@ -27,4 +28,5 @@ async def main():
     else:
         return (f + '\n...仅显示前5条内容')
 
-command = {'rc':'rc'}
+
+command = {'rc': 'rc'}
