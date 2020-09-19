@@ -1,21 +1,14 @@
 import asyncio
 import random
 import re
-import importlib
 from os.path import abspath
 
 import graia.application.interrupt as inter
-import graia.application
-#from graia.application import FriendMessage, GroupMessage, TempMessage
-#from graia.application.interrupt.interrupts import GroupMessageInterrupt, FriendMessageInterrupt, TempMessageInterrupt
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, UploadMethods, Source
 
 from CommandGen import command
 from modules.findimage import findimage
-
-from modules.dfile import dfile
-from modules.camr import camr
 
 async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     im = inter.InterruptControl(bcc)
