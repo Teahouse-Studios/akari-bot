@@ -1,5 +1,5 @@
 def commandlist():
-    clist = []
+    clist = {}
     import os
     path = os.path.abspath('./modules')
     dirs = os.listdir(path)
@@ -14,11 +14,11 @@ def commandlist():
             else:
                 a = __import__('modules.'+file, fromlist=[file])
                 try:
-                    if isinstance(a.command, str):
-                        clist.append(a.command)
+                    if isinstance(a.command, dict):
+                        clist.update(a.command)
                     else:
                         for x in a.command:
-                            clist.append(x)
+                            clist.update(x)
                 except:
                     pass
         if os.path.isfile(filename):
@@ -26,11 +26,11 @@ def commandlist():
             if b:
                 a = __import__('modules.'+b.group(1), fromlist=[b.group(1)])
                 try:
-                    if isinstance(a.command, str):
-                        clist.append(a.command)
+                    if isinstance(a.command, dict):
+                        clist.update(a.command)
                     else:
                         for x in a.command:
-                            clist.append(x)
+                            clist.update(x)
                 except:
                     pass
     return clist

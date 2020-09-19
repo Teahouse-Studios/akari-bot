@@ -99,4 +99,4 @@ async def main(name):
                     else:
                         return await User1(metaurl, q.group(1))
 
-command = 'user'
+command = {'user':'user'}

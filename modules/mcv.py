@@ -31,4 +31,4 @@ Mojira上所记录最新版本为：
 {message2}
 （以启动器内最新版本为准，Mojira仅作版本号预览用）"""
 
-command = 'mcv'
+command = {'mcv':'mcv'}

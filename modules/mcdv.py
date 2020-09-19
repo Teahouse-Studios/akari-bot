@@ -1,5 +1,6 @@
 import aiohttp
 
+
 async def get_data(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -7,6 +8,7 @@ async def get_data(url: str, fmt: str):
                 return await getattr(req, fmt)()
             else:
                 raise ValueError(f"NoSuchMethod: {fmt}")
+
 
 async def main():
     try:
@@ -19,4 +21,4 @@ async def main():
     return "出了点问题，快去锤develop（"
 
 
-command = 'mcdv'
+command = {'mcdv': 'mcdv'}

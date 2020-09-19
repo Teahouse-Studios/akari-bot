@@ -16,4 +16,4 @@ async def main():
             + "\n物理内存：%dM 使用率：%s%s" % (RAM, RAM_percent, BFH) \
             + "\nSwap内存：%dM 使用率：%s%s" % (Swap, Swap_percent, BFH))
 
-command = 'ping'
+command = {'ping':'ping'}

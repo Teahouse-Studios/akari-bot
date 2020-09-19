@@ -157,4 +157,4 @@ if __name__ == '__main__':
     print(asyncio.run(wiki('wiki Netherite')))
 
 
-command = 'wiki'
+command = {'wiki':'wiki'}

@@ -19,4 +19,4 @@ async def main(str1):
         str1 = re.match(r'^server (.*)', str1)
         return (await server(str1.group(1)))
 
-command = 'server'
+command = {'server','server'}

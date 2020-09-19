@@ -75,7 +75,8 @@ async def command(text, group=0):
             if echo != '':
                 return echo
         if d in clist:
-            a = __import__('modules.'+d, fromlist=[d])
+            k = clist.get(d)
+            a = __import__('modules.'+k, fromlist=[k])
             try:
                 return await a.main(c)
             except TypeError:

@@ -30,4 +30,4 @@ async def main():
            f'（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
 
 
-command = 'mcbv'
+command = {'mcbv':'mcbv'}

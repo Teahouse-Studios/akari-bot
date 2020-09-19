@@ -6,7 +6,7 @@ import re
 from modules.pbc import pbc
 
 
-async def new():
+async def main():
     url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=logevents&letype=newusers&format=json'
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -30,4 +30,4 @@ async def new():
     else:
         return (g)
 
-command = '新人'
+command = {'新人':'newbie'}

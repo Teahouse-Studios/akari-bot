@@ -10,4 +10,4 @@ async def main(name):
     except Exception as e:
         return (str(e))
 
-command = 'bug'
+command = {'bug':'bug'}

@@ -32,4 +32,4 @@ def userhelp():
 [-p] - 输出一张用户信息的图片（不包含用户组）。'''
 
 
-command = 'help'
+command = {'help':'help'}

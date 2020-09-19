@@ -27,4 +27,4 @@ async def main():
     else:
         return (f + '\n...仅显示前5条内容')
 
-command = 'rc'
+command = {'rc':'rc'}
