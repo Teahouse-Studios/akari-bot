@@ -1,3 +1,4 @@
 graia-application-mirai
 pillow
 googletrans
+ffmpy
