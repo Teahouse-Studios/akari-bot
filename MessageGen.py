@@ -13,7 +13,7 @@ from modules.camr import camr
 from modules.dfile import dfile
 from modules.findimage import findimage
 
-
+import traceback
 async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
     im = inter.InterruptControl(bcc)
     if msgtype == 'Group':
@@ -29,18 +29,21 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
         if msgtype == 'Group':
             voice = re.findall(r'https?://.*?/File:.*?\.(?:ogg|m4a|mp3|flac|wav)', run, re.I)
             for voicelink in voice:
-                findvoicename = re.match(r'(https?://.*?/)File:(.*?\.(?:ogg|m4a|mp3|flac|wav))', voicelink, re.I)
-                downloadfile = await dfile(findvoicename.group(1), findvoicename.group(2))
-                print(downloadfile)
-                conventamr = await camr(downloadfile)
-                print(conventamr)
-                readfile = open(conventamr, 'rb')
-                readvoice = await app.uploadVoice(readfile.read())
-                voicemsgchain = MessageChain.create([readvoice])
-                await app.sendGroupMessage(target1, voicemsgchain)
-                readfile.close()
-                os.remove(downloadfile)
-                os.remove(conventamr)
+                try:
+                    findvoicename = re.match(r'(https?://.*?/)File:(.*?\.(?:ogg|m4a|mp3|flac|wav))', voicelink, re.I)
+                    downloadfile = await dfile(findvoicename.group(1), findvoicename.group(2))
+                    print(downloadfile)
+                    conventamr = await camr(downloadfile)
+                    print(conventamr)
+                    readfile = open(conventamr, 'rb+')
+                    uploadvoice = await app.uploadVoice(readfile.read())
+                    voicemsgchain = MessageChain.create([uploadvoice])
+                    await app.sendGroupMessage(target1, voicemsgchain)
+                    readfile.close()
+                    os.remove(downloadfile)
+                    os.remove(conventamr)
+                except Exception:
+                    traceback.print_exc()
         if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
             await app.revokeMessage(send)

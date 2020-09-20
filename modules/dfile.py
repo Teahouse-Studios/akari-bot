@@ -36,11 +36,8 @@ async def dfile(link, filename):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as r:
                     with open(path, "wb") as fp:
-                        while True:
-                            chunk = await r.content.read(10)
-                            if not chunk:
-                                break
-                            fp.write(chunk)
+                        chunk = await r.content.read()
+                        fp.write(chunk)
             return path
         else:
             print("已存在")
