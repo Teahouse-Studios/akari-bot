@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as bs
 
 
 async def dfile(link, filename):
-    suffix = re.match('.*(\.*)$',filename)
+    suffix = re.match(r'.*(\.*)$', filename)
     async with aiohttp.ClientSession() as session:
         async with session.get(link + 'File:' + filename) as req:
             if req.status != 200:

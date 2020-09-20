@@ -1,4 +1,5 @@
 import asyncio
+import os
 import random
 import re
 from os.path import abspath
@@ -6,11 +7,10 @@ from os.path import abspath
 import graia.application.interrupt as inter
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, Source
-from modules.dfile import dfile
-from modules.camr import camr
-import os
 
 from CommandGen import command
+from modules.camr import camr
+from modules.dfile import dfile
 from modules.findimage import findimage
 
 
@@ -31,8 +31,10 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
             for voicelink in voice:
                 findvoicename = re.match(r'(https?://.*?/)File:(.*?\.(?:ogg|m4a|mp3|flac|wav))', voicelink, re.I)
                 downloadfile = await dfile(findvoicename.group(1), findvoicename.group(2))
+                print(downloadfile)
                 conventamr = await camr(downloadfile)
-                readfile = open(conventamr,'rb')
+                print(conventamr)
+                readfile = open(conventamr, 'rb')
                 readvoice = await app.uploadVoice(readfile.read())
                 voicemsgchain = MessageChain.create([readvoice])
                 await app.sendGroupMessage(target1, voicemsgchain)

@@ -11,7 +11,7 @@ def UTC8(str1, outtype):
         d = int(q.group(3))
         h = int(q.group(4))
         mi = int(q.group(5))
-#        s = int(q.group(6))
+        #        s = int(q.group(6))
 
         h = h + 8
         if h > 24:
