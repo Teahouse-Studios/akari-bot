@@ -6,7 +6,7 @@ config/config.cfg
 mcversion.txt
 mcvrss.txt
 *test.py
-assests\usercard\*.png
+assets/usercard/*.png
 test.py
-assests\Favicon\**\*.png
-assests/cache/*
+assets/Favicon/**/*.png
+assets/cache/*

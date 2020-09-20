@@ -31,10 +31,10 @@ async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Block
         Wikiname = file2['query']['allmessages'][0]['*']
     except Exception:
         Wikiname = 'Unknown'
-    d = abspath('./assests/Favicon/' + ss + '/')
+    d = abspath('./assets/Favicon/' + ss + '/')
     if not os.path.exists(d):
         os.mkdir(d)
-    ddd = abspath('./assests/Favicon/' + ss + '/Wiki.png')
+    ddd = abspath('./assets/Favicon/' + ss + '/Wiki.png')
     if not os.path.exists(ddd):
         from .dpng import dpng
         dpng(url, ss)
@@ -47,21 +47,21 @@ async def PUser1(url, str3, ss, User, Gender, Registration, Blockedby='0', Block
     for tag in dd:
         pass
     if Blockedby == '0':
-        tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname),
+        tpg(favicon=abspath('./assets/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname),
             username=User, gender=Gender, registertime=Registration,
             contributionwikis=ddk(str(dd[0])), createcount=ddk(str(dd[1])),
             editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])), patrolcount=ddk(str(dd[4])),
             sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])), wikipoint=point)
     else:
         if Blockreason == '0':
-            tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User,
+            tpg(favicon=abspath('./assets/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User,
                 gender=Gender, registertime=Registration, contributionwikis=ddk(str(dd[0])),
                 createcount=ddk(str(dd[1])), editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])),
                 patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])),
                 wikipoint=point, blockbyuser=Blockedby, blocktimestamp1=Blockedtimestamp, blocktimestamp2=Blockexpiry,
                 bantype='YN')
         else:
-            tpg(favicon=abspath('./assests/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User,
+            tpg(favicon=abspath('./assets/Favicon/' + ss + '/Wiki.png'), wikiname=hh(Wikiname), username=User,
                 gender=Gender, registertime=Registration, contributionwikis=ddk(str(dd[0])),
                 createcount=ddk(str(dd[1])), editcount=ddk(str(dd[2])), deletecount=ddk(str(dd[3])),
                 patrolcount=ddk(str(dd[4])), sitetop=ddk(str(dd[5])), globaltop=ddk(str(dd[6])),

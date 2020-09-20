@@ -9,12 +9,12 @@ from PIL import ImageFont
 def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, createcount, editcount, deletecount,
         patrolcount, sitetop, globaltop, wikipoint, blockbyuser='0', blocktimestamp1='0', blocktimestamp2='0',
         blockreason='0', bantype='None'):
-    font = ImageFont.truetype(abspath('./assests/SourceHanSansCN-Normal.ttf'), 40)
-    font1 = ImageFont.truetype(abspath('./assests/SourceHanSansCN-Normal.ttf'), 70)
+    font = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 40)
+    font1 = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 70)
     if bantype == 'None':
-        img = Image.open(abspath('./assests/base.png'))
+        img = Image.open(abspath('./assets/base.png'))
     elif bantype == 'Y' or bantype == 'YN':
-        img = Image.open(abspath('./assests/ban.png'))
+        img = Image.open(abspath('./assets/ban.png'))
     img2 = Image.open(favicon)
     img3 = Image.new("RGBA", img.size)
     w, h = img2.size
@@ -85,7 +85,7 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
     img3.alpha_composite(img7, (655, 960))
 
     if bantype == 'Y' or bantype == 'YN':
-        img8 = Image.open(abspath('./assests/Blocked.png'))
+        img8 = Image.open(abspath('./assets/Blocked.png'))
         w, h = img8.size
         w = int(w)
         h = int(h)
@@ -102,4 +102,4 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
         draw.text((200, 1539), '到' + str(blocktimestamp2), '#ffffff', font=font)
     if bantype == 'Y':
         draw.text((200, 1589), str(blockreason), '#ffffff', font=font)
-    img3.save(abspath('./assests/usercard/' + username + '.png'))
+    img3.save(abspath('./assets/usercard/' + username + '.png'))

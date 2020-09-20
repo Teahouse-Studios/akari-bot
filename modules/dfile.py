@@ -23,7 +23,7 @@ async def dfile(link, filename):
     z = re.match('.*<.*src="(.*)".*><.*', str(aaa), re.S)
     url = z.group(1)
     print(url)
-    d = abspath('./assests/cache/')
+    d = abspath('./assets/cache/')
     if not os.path.exists(d):
         os.makedirs(d)
     path = d + '/' + str(uuid.uuid4()) + suffix.group(1)
