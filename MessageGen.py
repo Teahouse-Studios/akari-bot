@@ -76,7 +76,7 @@ async def makemsgchain(msg, msgtype):
         msgchain = MessageChain.create(
             [Plain(msg)])
         msgchain = msgchain.plusWith(
-            [Image.fromLocalFile(filepath=abspath(f"./assests/usercard/{user}.png"), method=mth)])
+            [Image.fromLocalFile(filepath=abspath(f"./assets/usercard/{user}.png"), method=mth)])
     else:
         msgchain = MessageChain.create(
             [Plain(msg)])
