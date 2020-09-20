@@ -66,7 +66,7 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
 async def makemsgchain(msg, msgtype):
     msg = re.sub('\[wait\]', '', msg)
     exec('from graia.application.message.elements.internal import UploadMethods')
-    exec(f'mth = UploadMethods.{msgtype}')
+    mth = eval(f'UploadMethods.{msgtype}')
     if msg.find('[[usn:') != -1:
         user = re.sub(r'.*\[\[usn:|\]\]', '', msg)
         msg = re.sub(r'\[\[.*\]\]', '', msg)

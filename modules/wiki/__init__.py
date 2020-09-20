@@ -151,7 +151,4 @@ async def imt(message):
     return a.join(z)
 
 
-if __name__ == '__main__':
-    print(asyncio.run(wiki('wiki Netherite')))
-
 command = {'wiki': 'wiki'}
