@@ -6,6 +6,8 @@ from os.path import abspath
 import graia.application.interrupt as inter
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, Source
+from modules.dfile import dfile
+import os
 
 from CommandGen import command
 from modules.findimage import findimage
@@ -23,16 +25,17 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
         msgchain = await makemsgchain(run, msgtype)
         send = await sendmessage(app, msgchain, target1, target2, msgtype,
                                  message[Source][0] if msgtype == 'Group' else 0)
-        '''
-        if msgtype == 'group':
+        if msgtype == 'Group':
             voice = re.findall(r'https?://.*?/File:.*?\.(?:ogg|m4a|mp3|flac|wav)', run, re.I)
-            for x in voice:
-                y = re.match(r'(https?://.*?/)File:(.*?\.(?:ogg|m4a|mp3|flac|wav))', x, re.I)
-                z = await dfile(y.group(1), y.group(2))
-                c = await camr(z)
-                voicemsgchain = MessageChain.create(Voice.fromExternal(abspath(c)))
-                await app.sendGroupMessage(group, voicemsgchain)
-        '''
+            for voicelink in voice:
+                findvoicename = re.match(r'(https?://.*?/)File:(.*?\.(?:ogg|m4a|mp3|flac|wav))', voicelink, re.I)
+                downloadfile = await dfile(findvoicename.group(1), findvoicename.group(2))
+                readfile = open(downloadfile,'rb')
+                readvoice = await app.uploadVoice(readfile.read())
+                voicemsgchain = MessageChain.create([readvoice])
+                await app.sendGroupMessage(target1, voicemsgchain)
+                readfile.close()
+                os.remove(downloadfile)
         if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
             await app.revokeMessage(send)
