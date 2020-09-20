@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as bs
 
 
 async def dfile(link, filename):
-    suffix = re.match(r'.*(\.*)$', filename)
+    suffix = re.match(r'.*(\..*)$', filename)
     async with aiohttp.ClientSession() as session:
         async with session.get(link + 'File:' + filename) as req:
             if req.status != 200:
@@ -26,7 +26,9 @@ async def dfile(link, filename):
     d = abspath('./assets/cache/')
     if not os.path.exists(d):
         os.makedirs(d)
+    print(suffix.group(1))
     path = d + '/' + str(uuid.uuid4()) + suffix.group(1)
+    print(path)
     try:
         if not os.path.exists(d):
             os.mkdir(d)
