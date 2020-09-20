@@ -13,7 +13,7 @@ def dpng(link, ss):
     src = aa.find_all('div', class_='fullImageLink')
     z = re.match('.*<a href="(.*)"><.*', str(src), re.S)
     url = z.group(1)
-    d = abspath('./assests/Favicon/' + ss + '/')
+    d = abspath('./assets/Favicon/' + ss + '/')
     if not os.path.exists(d):
         os.makedirs(d)
     path = d + '/Wiki.png'

@@ -5,12 +5,12 @@ from os.path import abspath
 
 def pathexist(ss):
     ss = re.sub('_', '', ss)
-    d = abspath('./assests/Favicon/' + ss + '/')
+    d = abspath('./assets/Favicon/' + ss + '/')
     if not os.path.exists(d):
         os.mkdir(d)
     else:
         pass
-    ddd = abspath('./assests/Favicon/' + ss + '/Wiki.png')
+    ddd = abspath('./assets/Favicon/' + ss + '/Wiki.png')
     if not os.path.exists(ddd):
         return False
     else:
@@ -18,7 +18,7 @@ def pathexist(ss):
 
 
 def pathexist2(ss):
-    ddd = abspath('./home/wdljt/oasisakari/bot/assests/usercard/' + ss + '.png')
+    ddd = abspath('./home/wdljt/oasisakari/bot/assets/usercard/' + ss + '.png')
     if not os.path.exists(ddd):
         return False
     else:
