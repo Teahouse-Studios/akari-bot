@@ -9,4 +9,4 @@ mcvrss.txt
 assests\usercard\*.png
 test.py
 assests\Favicon\**\*.png
-assests\cache\*
+assests/cache/*
