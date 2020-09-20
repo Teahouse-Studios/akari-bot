@@ -40,6 +40,7 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
                 await app.sendGroupMessage(target1, voicemsgchain)
                 readfile.close()
                 os.remove(downloadfile)
+                os.remove(conventamr)
         if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
             await app.revokeMessage(send)
