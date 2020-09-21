@@ -6,7 +6,7 @@ from os.path import abspath
 
 import graia.application.interrupt as inter
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image, Source
+from graia.application.message.elements.internal import Plain, Image, Source, At
 
 from CommandGen import command
 from modules.camr import camr
@@ -55,6 +55,14 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
             if ranint == 2:
                 waitmsg = await makemsgchain('提示：你可以发送“是”字来将所有无效结果再次查询。（考虑到实现复杂性，恕不提供选择性查询）', msgtype)
                 await sendmessage(app, waitmsg, target1, target2, msgtype)
+            if ranint == 3:
+                try:
+                    mgroup = [657876815, 676942198]
+                    if msgtype == 'Group' and target1.id in mgroup:
+                        waitmsg = MessageChain.create([At(2854196310)])
+                        await sendmessage(app, waitmsg, target1, target2, msgtype)
+                except Exception:
+                    traceback.print_exc()
             MessageEventImport = __import__('graia.application', fromlist=[f'{msgtype}Message'])
             MessageEvent = getattr(MessageEventImport, f'{msgtype}Message')
             InterruptImport = __import__('graia.application.interrupt.interrupts',
@@ -69,7 +77,6 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
                 msg2 = await command(run)
                 msgchain = await makemsgchain(msg2, msgtype)
                 await sendmessage(app, msgchain, target1, target2, msgtype)
-
             else:
                 pass
 
@@ -79,20 +86,26 @@ async def makemsgchain(msg, msgtype):
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
     if msg.find('[[usn:') != -1:
-        user = re.sub(r'.*\[\[usn:|\]\]', '', msg)
-        msg = re.sub(r'\[\[.*\]\]', '', msg)
-        msgchain = MessageChain.create(
-            [Plain(msg)])
-        msgchain = msgchain.plusWith(
-            [Image.fromLocalFile(filepath=abspath(f"./assets/usercard/{user}.png"), method=mth)])
+        try:
+            user = re.sub(r'.*\[\[usn:|\]\]', '', msg)
+            msg = re.sub(r'\[\[.*\]\]', '', msg)
+            msgchain = MessageChain.create(
+                [Plain(msg)])
+            msgchain = msgchain.plusWith(
+                [Image.fromLocalFile(filepath=abspath(f"./assets/usercard/{user}.png"), method=mth)])
+        except Exception:
+            traceback.print_exc()
     else:
         msgchain = MessageChain.create(
             [Plain(msg)])
     r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', msg, re.I)
     for d in r:
-        d1 = await findimage(d)
-        print(d1)
-        msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
+        try:
+            d1 = await findimage(d)
+            print(d1)
+            msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
+        except Exception:
+            traceback.print_exc()
     return msgchain
 
 
