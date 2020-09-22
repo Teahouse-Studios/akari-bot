@@ -150,4 +150,4 @@ async def imt(message):
     return a.join(z)
 
 
-command = {'wiki': 'wiki'}, {'imt': 'from wiki import imt'}
+command = {'wiki': 'wiki'}
