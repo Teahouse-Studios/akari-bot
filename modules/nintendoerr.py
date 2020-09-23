@@ -480,7 +480,7 @@ class Err():
             if err in self.errcodes:
                 self.messages.append(self.errcodes[err])
             else:
-                self.messages.append("I don't know this one! Click the error code for details on Nintendo Support.\n\nIf you keep getting this issue and Nintendo Support does not help, or know how to fix it, you should report relevant details to [the Kurisu repository](https://github.com/nh-server/Kurisu/issues) so it can be added to the bot.")
+                self.messages.append("I don't know this one! Click the error code for details on Nintendo Support.")
 
         # 0xE60012
         # Switch Error Codes (w/ website)
