@@ -76,18 +76,26 @@ async def command(text, group=0):
                 return echo
         if d in clist:
             k = clist.get(d)
-            kk = re.match(r'from (.*) import (.*)', k)
-            if kk:
-                cmd = eval(f'__import__("modules.{kk.group(1)}", fromlist=["{kk.group(1)}"]).{kk.group(2)}')
+            k1 = re.match(r'from (.*) import (.*)\|(.*)', k)
+            if k1:
+                cmd = eval(f'__import__("modules.{k1.group(1)}", fromlist=["{k1.group(1)}"]).{k1.group(2)}().{k1.group(3)}')
                 if d == c:
                     return await cmd()
                 else:
                     return await cmd(c)
             else:
-                a = __import__('modules.' + k, fromlist=[k])
-                if d == c:
-                    return await a.main()
+                k2 = re.match(r'from (.*) import (.*)', k)
+                if k2:
+                    cmd = eval(f'__import__("modules.{k2.group(1)}", fromlist=["{k2.group(1)}"]).{k2.group(2)}')
+                    if d == c:
+                        return await cmd()
+                    else:
+                        return await cmd(c)
                 else:
-                    return await a.main(c)
+                    a = __import__('modules.' + k, fromlist=[k])
+                    if d == c:
+                        return await a.main()
+                    else:
+                        return await a.main(c)
     else:
         pass
