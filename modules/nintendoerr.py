@@ -466,7 +466,6 @@ class Err():
         return False
 
     async def err(self, err: str):
-        err = re.sub('^err ','',err)
         """
         Parses Nintendo and CTR error codes, with a fancy embed. 0x prefix is not required.
 
