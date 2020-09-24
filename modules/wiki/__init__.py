@@ -16,27 +16,17 @@ langcode = ['ab', 'aa', 'af', 'sq', 'am', 'ar', 'hy', 'as', 'ay', 'az', 'ba', 'e
 
 
 async def main(message, group=0):
-    if message.find(' -h') != -1:
+    if message == '-h':
         return wikihelp()
     else:
-        lower = re.sub(r'^Wiki', 'wiki', message)
-        matchmsg = re.match(r'^wiki-(.*?) (.*)', lower)
-        if matchmsg:
-            interwiki = matchmsg.group(1)
-            if interwiki in iwlist():
-                return await wiki(iwlink(interwiki), matchmsg.group(2))
-            else:
-                return '未知Interwiki，请使用~wiki -h查看帮助。'
-        matchmsg = re.match(r'^wiki (.*)', lower)
-        if matchmsg:
-            matchsite = re.match(r'~(.*?) (.*)', matchmsg.group(1))
-            if matchsite:
-                wikiurl = 'https://' + matchsite.group(1) + '.gamepedia.com/'
-                return await wiki(wikiurl, matchsite.group(2), 'gp:' + matchsite.group(1))
-            return await choosemethod(matchmsg.group(1), group)
+        matchsite = re.match(r'~(.*?) (.*)', message)
+        if matchsite:
+            wikiurl = 'https://' + matchsite.group(1) + '.gamepedia.com/'
+            return await wiki(wikiurl, matchsite.group(2), 'gp:' + matchsite.group(1))
+        return await choosemethod(message, group)
 
 
-async def choosemethod(matchmsg, group='0', basewiki='en'):
+async def choosemethod(matchmsg, group=0, basewiki='en'):
     try:
         pagename = matchmsg
         if group == 250500369 or group == 676942198:

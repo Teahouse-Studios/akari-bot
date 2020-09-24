@@ -6,6 +6,7 @@ from commandlist import commandlist
 
 clist = commandlist()
 
+
 async def findcommand(str1, group=0):
     str1 = re.sub(r'^～', '~', str1)
     q = re.match(r'^.*(: ~)(.*)', str1)
@@ -65,11 +66,6 @@ async def command(text, group=0):
             d = d[0]
         except Exception:
             d = c
-        try:
-            d = d.split('-')
-            d = d[0]
-        except Exception:
-            d = c
         if d == 'echo':
             echo = re.sub('echo ', '', c)
             if echo != '':
@@ -78,10 +74,12 @@ async def command(text, group=0):
             k = clist.get(d)
             k1 = re.match(r'from (.*) import (.*)\|(.*)', k)
             if k1:
-                cmd = eval(f'__import__("modules.{k1.group(1)}", fromlist=["{k1.group(1)}"]).{k1.group(2)}().{k1.group(3)}')
+                cmd = eval(
+                    f'__import__("modules.{k1.group(1)}", fromlist=["{k1.group(1)}"]).{k1.group(2)}().{k1.group(3)}')
                 if d == c:
                     return await cmd()
                 else:
+                    c = re.sub(r'^'+d+' ','',c)
                     return await cmd(c)
             else:
                 k2 = re.match(r'from (.*) import (.*)', k)
@@ -90,12 +88,12 @@ async def command(text, group=0):
                     if d == c:
                         return await cmd()
                     else:
+                        c = re.sub(r'^' + d + ' ', '', c)
                         return await cmd(c)
                 else:
                     a = __import__('modules.' + k, fromlist=[k])
                     if d == c:
                         return await a.main()
                     else:
+                        c = re.sub(r'^' + d + ' ', '', c)
                         return await a.main(c)
-    else:
-        pass
