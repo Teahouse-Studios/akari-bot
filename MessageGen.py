@@ -85,14 +85,14 @@ async def makemsgchain(msg, msgtype):
     msg = re.sub('\[wait\]', '', msg)
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
-    if msg.find('[[usn:') != -1:
+    fuimg = re.match(r'.*\[\[uimg:(.*)\]\]', msg)
+    if fuimg:
+        msg = re.sub(r'\[\[uimg:.*\]\]','',msg)
         try:
-            user = re.sub(r'.*\[\[usn:|\]\]', '', msg)
-            msg = re.sub(r'\[\[.*\]\]', '', msg)
             msgchain = MessageChain.create(
                 [Plain(msg)])
             msgchain = msgchain.plusWith(
-                [Image.fromLocalFile(filepath=abspath(f"./assets/usercard/{user}.png"), method=mth)])
+                [Image.fromLocalFile(filepath=abspath(fuimg.group(1)), method=mth)])
         except Exception:
             traceback.print_exc()
     else:

@@ -7,7 +7,8 @@ from bs4 import BeautifulSoup as bs
 
 
 def dpng(link, ss):
-    q = requests.get(link + '/File:Wiki.png', timeout=10)
+    print(link)
+    q = requests.get(link + 'File:Wiki.png', timeout=10)
     soup = bs(q.text, 'html.parser')
     aa = soup.find('div', id='mw-content-text')
     src = aa.find_all('div', class_='fullImageLink')
@@ -27,8 +28,8 @@ def dpng(link, ss):
             with open(path, 'wb') as f:
                 f.write(r.content)
                 f.close()
-                print("图片保存成功")
+                return True
         else:
-            print("图片已存在")
-    except Exception as e:
-        print(str(e))
+            return True
+    except Exception:
+        return False

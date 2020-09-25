@@ -5,6 +5,7 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 
+import uuid
 
 def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, createcount, editcount, deletecount,
         patrolcount, sitetop, globaltop, wikipoint, blockbyuser='0', blocktimestamp1='0', blocktimestamp2='0',
@@ -102,4 +103,6 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
         draw.text((200, 1539), '到' + str(blocktimestamp2), '#ffffff', font=font)
     if bantype == 'Y':
         draw.text((200, 1589), str(blockreason), '#ffffff', font=font)
-    img3.save(abspath('./assets/usercard/' + username + '.png'))
+    filepath = abspath('./assets/cache/' + str(uuid.uuid4()) + '.png')
+    img3.save(filepath)
+    return filepath
