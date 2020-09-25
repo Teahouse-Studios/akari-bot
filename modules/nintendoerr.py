@@ -1,3 +1,4 @@
+#Copied from kurisu(https://github.com/nh-server/Kurisu/blob/port/cogs/err.py)
 import binascii
 import re
 
