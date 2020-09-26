@@ -95,7 +95,6 @@ async def ttext(text, group):
         if matchbug:
             import modules.bug
             z.append(await modules.bug.main(matchbug.group(1)))
-    print(z)
     if str(z):
         v = c.join(z)
         if v != '':
