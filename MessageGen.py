@@ -7,15 +7,15 @@ from os.path import abspath
 import graia.application.interrupt as inter
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, Source, At
-
-from CommandGen import command
 from modules.camr import camr
 from modules.dfile import dfile
 from modules.findimage import findimage
 
 import traceback
-async def gen(bcc, app, message, target1, target2='0', msgtype='None'):
+async def gen(bcc, app, message, target1, target2='0', msgtype='None', runfun='command'):
     im = inter.InterruptControl(bcc)
+    command = __import__('CommandGen',fromlist=[runfun])
+    command = getattr(command, runfun)
     if msgtype == 'Group':
         run = await command(message.asDisplay(), target1.id)
     else:

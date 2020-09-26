@@ -14,3 +14,10 @@ def iwlink(iw):
     cp.read(abspath("./modules/interwikilist/list.cfg"))
     section = cp.sections()[0]
     return (cp.get(section, iw))
+
+
+def iwalllink():
+    links = []
+    for x in iwlist():
+        links.append(iwlink(x))
+    return links
