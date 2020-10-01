@@ -55,14 +55,6 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None', runfun='c
             if ranint == 2:
                 waitmsg = await makemsgchain('提示：你可以发送“是”字来将所有无效结果再次查询。（考虑到实现复杂性，恕不提供选择性查询）', msgtype)
                 await sendmessage(app, waitmsg, target1, target2, msgtype)
-            if ranint == 3:
-                try:
-                    mgroup = [657876815, 676942198]
-                    if msgtype == 'Group' and target1.id in mgroup:
-                        waitmsg = MessageChain.create([At(2854196310)])
-                        await sendmessage(app, waitmsg, target1, target2, msgtype)
-                except Exception:
-                    traceback.print_exc()
             MessageEventImport = __import__('graia.application', fromlist=[f'{msgtype}Message'])
             MessageEvent = getattr(MessageEventImport, f'{msgtype}Message')
             InterruptImport = __import__('graia.application.interrupt.interrupts',

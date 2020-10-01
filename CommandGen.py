@@ -62,7 +62,7 @@ async def command(text, group=0):
                         return await a.main(c)
 
 
-async def ttext(text, group):
+async def ttext(text, group=0):
     w = re.findall(r'\[\[(.*?)\]\]', text, re.I)
     w2 = re.findall(r'\{\{(.*?)\}\}', text, re.I)
     z = []
