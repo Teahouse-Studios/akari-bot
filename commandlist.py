@@ -1,4 +1,3 @@
-import traceback
 def commandlist():
     clist = {}
     import os

@@ -33,6 +33,9 @@ async def command(text, group=0):
             echo = re.sub('echo ', '', c)
             if echo != '':
                 return echo
+        if d == 'reload':
+            clist = commandlist()
+            
         if d in clist:
             k = clist.get(d)
             k1 = re.match(r'from (.*) import (.*)\|(.*)', k)

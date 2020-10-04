@@ -3,7 +3,7 @@
 *.pyc
 config/config.cfg
 .idea
-mcversion.txt
+assets/mcversion.txt
 mcvrss.txt
 *test.py
 assets/usercard/*.png

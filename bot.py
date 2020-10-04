@@ -28,25 +28,31 @@ app = GraiaMiraiApplication(
 async def group_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
     await gen(bcc, app, message, group, member, msgtype='Group')
 
+
 @bcc.receiver("GroupMessage")
 async def group_message_handler1(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(bcc, app, message, group, member, msgtype='Group',runfun='ttext')
+    await gen(bcc, app, message, group, member, msgtype='Group', runfun='ttext')
+
 
 @bcc.receiver("FriendMessage")
 async def friend_message_handler(app: GraiaMiraiApplication, message: MessageChain, friend: Friend):
     await gen(bcc, app, message, friend, msgtype='Friend')
 
+
 @bcc.receiver("FriendMessage")
 async def friend_message_handler1(app: GraiaMiraiApplication, message: MessageChain, friend: Friend):
-    await gen(bcc, app, message, friend, msgtype='Friend',runfun='ttext')
+    await gen(bcc, app, message, friend, msgtype='Friend', runfun='ttext')
+
 
 @bcc.receiver("TempMessage")
 async def temp_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
     await gen(bcc, app, message, group, member, msgtype='Temp')
 
+
 @bcc.receiver("TempMessage")
 async def temp_message_handler1(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(bcc, app, message, group, member, msgtype='Temp',runfun='ttext')
+    await gen(bcc, app, message, group, member, msgtype='Temp', runfun='ttext')
+
 
 @bcc.receiver("NewFriendRequestEvent")
 async def NFriend(event: NewFriendRequestEvent):
@@ -56,6 +62,19 @@ async def NFriend(event: NewFriendRequestEvent):
 @bcc.receiver("BotInvitedJoinGroupRequestEvent")
 async def NGroup(event: BotInvitedJoinGroupRequestEvent):
     await event.accept()
+
+
+import subbot
+
+
+@bcc.receiver("ApplicationLaunched")
+async def subbot1(app: GraiaMiraiApplication):
+    await subbot.ver(app)
+
+
+@bcc.receiver("ApplicationLaunched")
+async def subbot2(app: GraiaMiraiApplication):
+    await subbot.newbie(app)
 
 
 app.launch_blocking()
