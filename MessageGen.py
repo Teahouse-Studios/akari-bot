@@ -12,6 +12,15 @@ from modules.dfile import dfile
 from modules.findimage import findimage
 
 import traceback
+
+try:
+    cachepath = abspath('./assets/cache/')
+    cachefile = os.listdir(cachepath)
+    for file in cachefile:
+        os.remove(f'{cachepath}/{file}')
+except Exception:
+    pass
+
 async def gen(bcc, app, message, target1, target2='0', msgtype='None', runfun='command'):
     im = inter.InterruptControl(bcc)
     command = __import__('CommandGen',fromlist=[runfun])
@@ -77,19 +86,18 @@ async def makemsgchain(msg, msgtype):
     msg = re.sub('\[wait\]', '', msg)
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
-    fuimg = re.match(r'.*\[\[uimg:(.*)\]\]', msg)
-    if fuimg:
-        msg = re.sub(r'\[\[uimg:.*\]\]','',msg)
-        try:
-            msgchain = MessageChain.create(
-                [Plain(msg)])
-            msgchain = msgchain.plusWith(
-                [Image.fromLocalFile(filepath=abspath(fuimg.group(1)), method=mth)])
-        except Exception:
-            traceback.print_exc()
-    else:
-        msgchain = MessageChain.create(
-            [Plain(msg)])
+    fuimg = re.findall(r'\[\[uimgc:.*\]\]', msg)
+    print(fuimg)
+    msgbase = re.sub(r'\[\[uimgc:.*\]\]', '', msg)
+    msgchain = MessageChain.create([Plain(msgbase)])
+    for imgc in fuimg:
+        img = re.match(r'\[\[uimgc:(.*)\]\]',imgc)
+        if img:
+            try:
+                msgchain = msgchain.plusWith(
+                    [Image.fromLocalFile(filepath=abspath(img.group(1)), method=mth)])
+            except Exception:
+                traceback.print_exc()
     r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', msg, re.I)
     for d in r:
         try:

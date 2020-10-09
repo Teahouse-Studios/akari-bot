@@ -60,7 +60,7 @@ async def command(text, group=0):
                     else:
                         c = re.sub(r'^' + d + ' ', '', c)
                         return await a.main(c)
-                    
+
 
 async def ttext(text, group=0):
     w = re.findall(r'\[\[(.*?)\]\]', text, re.I)
