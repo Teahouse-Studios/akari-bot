@@ -35,6 +35,7 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None', runfun='c
         msgchain = await makemsgchain(run, msgtype)
         send = await sendmessage(app, msgchain, target1, target2, msgtype,
                                  message[Source][0] if msgtype == 'Group' else 0)
+        """
         if msgtype == 'Group':
             voice = re.findall(r'https?://.*?/File:.*?\.(?:ogg|m4a|mp3|flac|wav)', run, re.I)
             for voicelink in voice:
@@ -53,6 +54,7 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None', runfun='c
                     os.remove(conventamr)
                 except Exception:
                     traceback.print_exc()
+        """
         if run.find('[一分钟后撤回本消息]') != -1:
             await asyncio.sleep(60)
             await app.revokeMessage(send)
