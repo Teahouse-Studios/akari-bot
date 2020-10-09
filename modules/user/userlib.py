@@ -150,7 +150,7 @@ async def User(wikiurl, username, argv=None):
                         globaltop=d(str(dd[6])),
                         wikipoint=point)
         if argv == '-p':
-            return f'{wikiurl}UserProfile:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimg:{imagepath}]]'
+            return f'{wikiurl}UserProfile:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimgc:{imagepath}]]'
         return (wikiurl + 'UserProfile:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
                 Wikiname + '\n' +
                 f'用户：{User} | 编辑数：{Editcount}\n' +
