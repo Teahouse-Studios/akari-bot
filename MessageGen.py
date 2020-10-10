@@ -89,7 +89,6 @@ async def makemsgchain(msg, msgtype):
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
     fuimg = re.findall(r'\[\[uimgc:.*\]\]', msg)
-    print(fuimg)
     msgbase = re.sub(r'\[\[uimgc:.*\]\]', '', msg)
     msgchain = MessageChain.create([Plain(msgbase)])
     for imgc in fuimg:
@@ -98,14 +97,19 @@ async def makemsgchain(msg, msgtype):
             try:
                 msgchain = msgchain.plusWith(
                     [Image.fromLocalFile(filepath=abspath(img.group(1)), method=mth)])
+            except TimeoutError:
+                msgchain = msgchain.plusWith(
+                    [Plain('\n上传超时，发送失败。')])
             except Exception:
                 traceback.print_exc()
     r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', msg, re.I)
     for d in r:
         try:
             d1 = await findimage(d)
-            print(d1)
             msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
+        except TimeoutError:
+            msgchain = msgchain.plusWith(
+                [Plain('\n上传超时，发送失败。')])
         except Exception:
             traceback.print_exc()
     return msgchain
