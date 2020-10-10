@@ -97,7 +97,7 @@ async def makemsgchain(msg, msgtype):
             try:
                 msgchain = msgchain.plusWith(
                     [Image.fromLocalFile(filepath=abspath(img.group(1)), method=mth)])
-            except TimeoutError:
+            except (TimeoutError, asyncio.TimeoutError):
                 msgchain = msgchain.plusWith(
                     [Plain('\n上传超时，发送失败。')])
             except Exception:
@@ -107,7 +107,7 @@ async def makemsgchain(msg, msgtype):
         try:
             d1 = await findimage(d)
             msgchain = msgchain.plusWith([Image.fromNetworkAddress(url=d1, method=mth)])
-        except TimeoutError:
+        except (TimeoutError, asyncio.TimeoutError):
             msgchain = msgchain.plusWith(
                 [Plain('\n上传超时，发送失败。')])
         except Exception:
