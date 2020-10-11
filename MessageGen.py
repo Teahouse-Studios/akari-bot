@@ -35,10 +35,10 @@ async def gen(bcc, app, message, target1, target2='0', msgtype='None', runfun='c
 
 async def msgproc(resultmsgraw, app, im, command, message, target1, target2='0', msgtype='None'):
     print(resultmsgraw)
-    uimg = re.match(r'.*?\[\[uimgc:.*?\]\].*?', resultmsgraw)
     msgchain = await makemsgchain(resultmsgraw)
     send = await sendmessage(app, msgchain, target1, target2, msgtype,
                              message[Source][0] if msgtype == 'Group' else 0)
+    uimg = re.match(r'.*?\s?.*?\[\[uimgc:.*\]\].*?', resultmsgraw, re.I | re.M)
     if uimg:
         await uimgsend(app, message, target1, target2, msgtype, resultmsgraw)
     r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', resultmsgraw, re.I)
@@ -88,9 +88,10 @@ async def afterproc(resultmsgraw, app, im, command, send, message, target1, targ
 async def uimgsend(app, message, target1, target2, msgtype, runmsg):
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
-    fuimg = re.findall(r'\[\[uimgc:.*?\]\]', runmsg)
+    fuimg = re.findall(r'\[\[uimgc:.*?\]\]', runmsg, re.M)
     for imgc in fuimg:
         img = re.match(r'\[\[uimgc:(.*)\]\]', imgc)
+        print(img.group(1))
         if img:
             try:
                 msgchain = MessageChain.create(
@@ -106,7 +107,7 @@ async def uimgsend(app, message, target1, target2, msgtype, runmsg):
                                   message[Source][0] if msgtype == 'Group' else 0)
 
 
-async def linkimgsend(app, sendlink, target1, target2,msgtype):
+async def linkimgsend(app, sendlink, target1, target2, msgtype):
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
     try:
