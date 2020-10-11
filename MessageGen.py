@@ -80,7 +80,7 @@ async def afterproc(resultmsgraw, app, im, command, send, message, target1, targ
         print(event)
         if event.messageChain.asDisplay() == '是':
             msg2 = await command(resultmsgraw)
-            await msgproc(msg2, app, im, command, message, target1, target2)
+            await msgproc(msg2, app, im, command, message, target1, target2, msgtype)
         else:
             pass
 
