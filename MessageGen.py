@@ -95,15 +95,15 @@ async def uimgsend(app, message, target1, target2, msgtype, runmsg):
             try:
                 msgchain = MessageChain.create(
                     [Image.fromLocalFile(filepath=abspath(img.group(1)), method=mth)])
-                await sendmessage(app, msgchain, target1, target2, msgtype,
-                                  message[Source][0] if msgtype == 'Group' else 0)
-            except (asyncio.exceptions.TimeoutError, asyncio.TimeoutError):
-                msgchain = MessageChain.create(
-                    [Plain('上传超时，发送失败。')])
+                print('Sending Image...')
                 await sendmessage(app, msgchain, target1, target2, msgtype,
                                   message[Source][0] if msgtype == 'Group' else 0)
             except Exception:
                 traceback.print_exc()
+                msgchain = MessageChain.create(
+                    [Plain('上传过程中遇到了问题，图片发送失败。')])
+                await sendmessage(app, msgchain, target1, target2, msgtype,
+                                  message[Source][0] if msgtype == 'Group' else 0)
 
 
 async def linkimgsend(app, sendlink, target1, target2,msgtype):
@@ -111,10 +111,12 @@ async def linkimgsend(app, sendlink, target1, target2,msgtype):
     mth = eval(f'UploadMethods.{msgtype}')
     try:
         msgchain = MessageChain.create([Image.fromNetworkAddress(url=sendlink, method=mth)])
+        print('Sending Image...')
         await sendmessage(app, msgchain, target1, target2, msgtype)
-    except (asyncio.exceptions.TimeoutError, asyncio.TimeoutError):
+    except Exception:
+        traceback.print_exc()
         msgchain = MessageChain.create(
-            [Plain('上传超时，发送失败。')])
+            [Plain('上传过程中遇到了问题，图片发送失败。')])
         await sendmessage(app, msgchain, target1, target2, msgtype)
 
 
