@@ -88,7 +88,7 @@ async def afterproc(resultmsgraw, app, im, command, send, message, target1, targ
 async def uimgsend(app, message, target1, target2, msgtype, runmsg):
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
-    fuimg = re.findall(r'\[\[uimgc:.*\]\]', runmsg)
+    fuimg = re.findall(r'\[\[uimgc:.*?\]\]', runmsg)
     for imgc in fuimg:
         img = re.match(r'\[\[uimgc:(.*)\]\]', imgc)
         if img:
