@@ -38,9 +38,11 @@ async def msgproc(resultmsgraw, app, im, command, message, target1, target2='0',
     msgchain = await makemsgchain(resultmsgraw)
     send = await sendmessage(app, msgchain, target1, target2, msgtype,
                              message[Source][0] if msgtype == 'Group' else 0)
-    uimg = re.match(r'.*?\s?.*?\[\[uimgc:.*\]\].*?', resultmsgraw, re.I | re.M)
-    if uimg:
-        await uimgsend(app, message, target1, target2, msgtype, resultmsgraw)
+    uimgcs = re.findall(r'\[\[uimgc:.*\]\]', resultmsgraw, re.I | re.M)
+    for uimgc in uimgcs:
+        uimgc = re.match(r'\[\[uimgc:(.*)\]\]', uimgc)
+        if uimgc:
+            await uimgsend(app, message, target1, target2, msgtype, uimgc.group(1))
     r = re.findall(r'(https?://.*?/File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico))', resultmsgraw, re.I)
     for d in r:
         d1 = await findimage(d)
@@ -85,26 +87,21 @@ async def afterproc(resultmsgraw, app, im, command, send, message, target1, targ
             pass
 
 
-async def uimgsend(app, message, target1, target2, msgtype, runmsg):
+async def uimgsend(app, message, target1, target2, msgtype, link):
     exec('from graia.application.message.elements.internal import UploadMethods')
     mth = eval(f'UploadMethods.{msgtype}')
-    fuimg = re.findall(r'\[\[uimgc:.*?\]\]', runmsg, re.M)
-    for imgc in fuimg:
-        img = re.match(r'\[\[uimgc:(.*)\]\]', imgc)
-        print(img.group(1))
-        if img:
-            try:
-                msgchain = MessageChain.create(
-                    [Image.fromLocalFile(filepath=abspath(img.group(1)), method=mth)])
-                print('Sending Image...')
-                await sendmessage(app, msgchain, target1, target2, msgtype,
-                                  message[Source][0] if msgtype == 'Group' else 0)
-            except Exception:
-                traceback.print_exc()
-                msgchain = MessageChain.create(
-                    [Plain('上传过程中遇到了问题，图片发送失败。')])
-                await sendmessage(app, msgchain, target1, target2, msgtype,
-                                  message[Source][0] if msgtype == 'Group' else 0)
+    try:
+        msgchain = MessageChain.create(
+            [Image.fromLocalFile(filepath=abspath(link), method=mth)])
+        print('Sending Image...')
+        await sendmessage(app, msgchain, target1, target2, msgtype,
+                          message[Source][0] if msgtype == 'Group' else 0)
+    except Exception:
+        traceback.print_exc()
+        msgchain = MessageChain.create(
+            [Plain('上传过程中遇到了问题，图片发送失败。')])
+        await sendmessage(app, msgchain, target1, target2, msgtype,
+                          message[Source][0] if msgtype == 'Group' else 0)
 
 
 async def linkimgsend(app, sendlink, target1, target2, msgtype):
