@@ -100,6 +100,7 @@ class wiki:
                 if self.template == True:
                     self.pagename = re.sub(r'^Template:', '', self.pagename)
                     self.template = False
+                    self.interference()
                     return f'提示：[Template:{self.pagename}]不存在，已自动回滚搜索页面。\n' + await self.step1()
                 return await self.nullpage()
         else:
@@ -139,6 +140,8 @@ class wiki:
 
     def interference(self):
         if self.pagename.find('色图来') != -1 or self.pagename.find('cu') != -1:#ftynmsl
+            self.pagename = '你妈'
+        if self.pagename == '你妈':
             self.rspt = '[wait] 提示：找不到[你妈]，请问你是否想找一个[[新妈]]？'
         if self.pagename == '新妈':
             self.rspt = '你没有妈。'
