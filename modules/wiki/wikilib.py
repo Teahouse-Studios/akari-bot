@@ -24,8 +24,8 @@ class wiki:
         getpage = await self.get_data(getlinkurl, "json")
         return getpage
 
-    def parsepageid(self):
-        pageraw = self.pageraw['query']['pages']
+    def parsepageid(self, pageraw):
+        pageraw = pageraw['query']['pages']
         pagelist = iter(pageraw)
         pageid = pagelist.__next__()
         return pageid
@@ -34,7 +34,7 @@ class wiki:
         try:
             searchurl = self.wikilink + 'api.php?action=query&generator=search&gsrsearch=' + self.pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
             getsecjson = await self.get_data(searchurl, "json")
-            secpageid = self.parsepageid()
+            secpageid = self.parsepageid(getsecjson)
             sectitle = getsecjson['query']['pages'][secpageid]['title']
             if self.interwiki == '':
                 target = ''
@@ -73,15 +73,16 @@ class wiki:
             descurl = self.wikilink + 'api.php?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki' \
                                  '&format=json&titles=' + self.pagename
             loadtext = await self.get_data(descurl, "json")
-            pageid = self.parsepageid()
+            pageid = self.parsepageid(loadtext)
             desc = loadtext['query']['pages'][pageid]['extract']
         except Exception:
+            traceback.print_exc()
             desc = ''
         return desc
 
     async def getfirstline(self):
         try:
-            descurl = self.wikilink + f'api.php?action=parse&page={self.pagename}&prop=wikitext&section=1&format=json'
+            descurl = self.wikilink + f'api.php?action=parse&page={self.gflpagename}&prop=wikitext&section=1&format=json'
             loaddesc = await self.get_data(descurl, 'json')
             descraw = loaddesc['parse']['wikitext']['*']
             cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S | re.M)
@@ -92,7 +93,9 @@ class wiki:
 
     async def step1(self):
         self.pageraw = await self.getpage()
-        self.pageid = self.parsepageid()
+        if 'redirects' in self.pageraw['query']:
+            self.pagename = self.pageraw['query']['redirects'][0]['to']
+        self.pageid = self.parsepageid(self.pageraw)
         self.psepgraw = self.pageraw['query']['pages'][self.pageid]
 
         if self.pageid == '-1':
@@ -111,7 +114,7 @@ class wiki:
         geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|.*wiki/|))(.*)', fullurl, re.M | re.I)
         desc = await self.getdesc()
         if desc == '':
-            self.pagename = geturlpagename.group(2)
+            self.gflpagename = geturlpagename.group(2)
             desc = await self.getfirstline()
         try:
             section = re.match(r'.*(\#.*)', self.pagename)
@@ -121,11 +124,11 @@ class wiki:
             finpgname = geturlpagename.group(2)
         finpgname = urllib.parse.unquote(finpgname)
         finpgname = re.sub('_', ' ', finpgname)
-        if finpgname == self.pagename:
+        if finpgname == self.orginpagename:
             rmlstlb = re.sub('\n$', '', fullurl + '\n' + desc)
         else:
             rmlstlb = re.sub('\n$', '',
-                             f'\n（重定向[{self.pagename}] -> [{finpgname}]）\n{fullurl}\n{desc}')
+                             f'\n（重定向[{self.orginpagename}] -> [{finpgname}]）\n{fullurl}\n{desc}')
         rmlstlb = re.sub('\n\n', '\n', rmlstlb)
         rmlstlb = re.sub('\n\n', '\n', rmlstlb)
         try:
@@ -151,6 +154,7 @@ class wiki:
         print(pagename)
         print(interwiki)
         self.wikilink = wikilink
+        self.orginpagename = pagename
         self.pagename = pagename
         self.interwiki = interwiki
         self.igmessage = igmessage
@@ -173,5 +177,5 @@ class wiki:
 if __name__ == '__main__':
     import asyncio
 
-    a = asyncio.run(wiki('https://minecraft-zh.gamepedia.com/', 'zh:en:zh:海晶石'))
+    a = asyncio.run(wiki().main('https://minecraft-zh.gamepedia.com/', '海晶石','zh'))
     print(a)
