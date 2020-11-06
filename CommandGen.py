@@ -63,39 +63,42 @@ async def command(text, group=0):
 
 
 async def ttext(text, group=0):
-    w = re.findall(r'\[\[(.*?)\]\]', text, re.I)
-    w2 = re.findall(r'\{\{(.*?)\}\}', text, re.I)
-    z = []
-    c = '\n'
-    if w:
-        from modules.wiki import im
-        wi1 = []
-        if str(w) != '['']' or str(w) != '[]':
-            for x in w:
-                if x == '' or x in wi1:
-                    pass
-                else:
-                    wi1.append(x)
-        if wi1 != []:
-            z.append(await im(wi1))
-    if w2:
-        from modules.wiki import imt
-        wi2 = []
-        if str(w2) != '['']' or str(w2) != '[]':
-            for x in w2:
-                if x == '' or x in wi2:
-                    pass
-                else:
-                    wi2.append(x)
-        if wi2 != []:
-            z.append(await imt(wi2))
-    w3 = re.findall(r'(https://bugs.mojang.com/browse/.*?-\d*)', text)
-    for link in w3:
-        matchbug = re.match(r'https://bugs.mojang.com/browse/(.*?-\d*)',link)
-        if matchbug:
-            import modules.bug
-            z.append(await modules.bug.main(matchbug.group(1)))
-    if str(z):
-        v = c.join(z)
-        if v != '':
-            return v
+    if text.find('[Webhook]') != -1:
+        pass
+    else:
+        w = re.findall(r'\[\[(.*?)\]\]', text, re.I)
+        w2 = re.findall(r'\{\{(.*?)\}\}', text, re.I)
+        z = []
+        c = '\n'
+        if w:
+            from modules.wiki import im
+            wi1 = []
+            if str(w) != '['']' or str(w) != '[]':
+                for x in w:
+                    if x == '' or x in wi1:
+                        pass
+                    else:
+                        wi1.append(x)
+            if wi1 != []:
+                z.append(await im(wi1))
+        if w2:
+            from modules.wiki import imt
+            wi2 = []
+            if str(w2) != '['']' or str(w2) != '[]':
+                for x in w2:
+                    if x == '' or x in wi2:
+                        pass
+                    else:
+                        wi2.append(x)
+            if wi2 != []:
+                z.append(await imt(wi2))
+        w3 = re.findall(r'(https://bugs.mojang.com/browse/.*?-\d*)', text)
+        for link in w3:
+            matchbug = re.match(r'https://bugs.mojang.com/browse/(.*?-\d*)',link)
+            if matchbug:
+                import modules.bug
+                z.append(await modules.bug.main(matchbug.group(1)))
+        if str(z):
+            v = c.join(z)
+            if v != '':
+                return v
