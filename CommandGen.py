@@ -9,7 +9,7 @@ clist = commandlist()
 
 async def findcommand(str1, group=0):
     str1 = re.sub(r'^～', '~', str1)
-    q = re.match(r'^.*(: ~)(.*)', str1)
+    q = re.match(r'^.*(:\n~)(.*)', str1)
     if q:
         return q.group(2)
     q = re.match(r'^~(.*)', str1)
