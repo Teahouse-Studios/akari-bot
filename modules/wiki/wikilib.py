@@ -101,7 +101,7 @@ class wiki:
         if self.pageid == '-1':
             if self.igmessage == False:
                 if self.template == True:
-                    self.pagename = re.sub(r'^Template:', '', self.pagename)
+                    self.pagename = self.orginpagename = re.sub(r'^Template:', '', self.pagename)
                     self.template = False
                     self.interference()
                     return f'提示：[Template:{self.pagename}]不存在，已自动回滚搜索页面。\n' + await self.step1()
@@ -111,7 +111,7 @@ class wiki:
 
     async def step2(self):
         fullurl = self.psepgraw['fullurl']
-        geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|.*wiki/|))(.*)', fullurl, re.M | re.I)
+        geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|.*/wiki/|))(.*)', fullurl, re.M | re.I)
         desc = await self.getdesc()
         if desc == '':
             self.gflpagename = geturlpagename.group(2)
