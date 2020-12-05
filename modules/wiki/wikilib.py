@@ -142,7 +142,7 @@ class wiki:
 
 
     def interference(self):
-        if self.pagename.find('色图来') != -1 or self.pagename.find('cu') != -1:#ftynmsl
+        if self.pagename.find('色图来') != -1:#ftynmsl
             self.pagename = '你妈'
         if self.pagename == '你妈':
             self.rspt = '[wait] 提示：找不到[你妈]，请问你是否想找一个[[新妈]]？'
