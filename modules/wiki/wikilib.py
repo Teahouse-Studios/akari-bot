@@ -66,7 +66,7 @@ class wiki:
             self.interference()
             return self.rspt
 
-        return self.wikilink + urllib.parse.quote(self.pagename.encode('UTF-8'))
+        return self.orginwikilink + urllib.parse.quote(self.pagename.encode('UTF-8'))
 
     async def getdesc(self):
         try:
