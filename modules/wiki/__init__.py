@@ -71,7 +71,7 @@ async def choosemethod(matchmsg, group=0, basewiki='en'):
                 if interwiki in iwlist():
                     wikiurl = iwlink(interwiki)
                     return await wiki(wikiurl, pagename, interwiki)
-                elif interwiki == 'Wikipedia' or interwiki == 'wikipedia':
+                elif interwiki in ['Wikipedia', 'wikipedia', 'WP', 'wp']:
                     return '暂不支持Wikipedia查询。'
                 else:
                     wikiurl = iwlink(basewiki)
