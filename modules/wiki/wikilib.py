@@ -154,7 +154,7 @@ class wiki:
         print(pagename)
         print(interwiki)
         self.orginwikilink = wikilink
-        self.wikilink = re.match(r'(https?://.*?/)(?:index.php/|).*', self.orginwikilink, re.M | re.I).group(1)
+        self.wikilink = re.sub('index.php/', '', self.orginwikilink)#fxxk
         self.orginpagename = pagename
         self.pagename = pagename
         self.interwiki = interwiki
