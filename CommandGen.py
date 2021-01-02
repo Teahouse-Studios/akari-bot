@@ -29,10 +29,6 @@ async def command(text, group=0):
             d = d[0]
         except Exception:
             d = c
-        if d == 'echo':
-            echo = re.sub('echo ', '', c)
-            if echo != '':
-                return echo
         if d in clist:
             k = clist.get(d)
             k1 = re.match(r'from (.*) import (.*)\|(.*)', k)
