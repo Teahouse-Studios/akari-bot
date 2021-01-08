@@ -5,7 +5,7 @@ import traceback
 import aiohttp
 
 
-async def server(address):
+async def serverraw(address):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
     servers = []
 
