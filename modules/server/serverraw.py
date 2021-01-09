@@ -70,14 +70,8 @@ async def serverraw(address):
                     else:
                         bemotd = await req.text()
                         bejson = json.loads(bemotd)
-                        besplit = bejson['motd'].split(';')
-                        motd_1 = besplit[1]
-                        motd_2 = besplit[8]
-                        player_count = besplit[5]
-                        max_players = besplit[6]
-                        edition = besplit[0]
-                        version_name = besplit[4]
-                        game_mode = besplit[9]
+                        edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
+                        game_mode, game_mode_num, port_v4, port_v6, nothing_here = bejson['motd'].split(';')
                         bemsg = '[BE]\n' +\
                         motd_1 + ' - ' + motd_2 +\
                         '\n在线玩家：' + player_count + '/' + max_players +\

@@ -20,10 +20,11 @@ async def server(address):
             port2 = '19132'
 
         try:
-            url = 'http://motd.wd-api.com/java?ip=' + serip + '&port=' + port1 + '&mode=info'
+            url = 'http://motd.wd-api.com/java?ip=' + serip + '&port=' + port1
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
+                        print(await req.text())
                         print(f"请求时发生错误：{req.status}")
                     else:
                         motd = await req.text()
@@ -62,22 +63,18 @@ async def server(address):
             print('获取JE服务器信息失败。')
             traceback.print_exc()
         try:
-            beurl = 'http://motd.wd-api.com/bedrock?ip=' + serip + '&port=' + port2 + '&mode=info'
+            beurl = 'http://motd.wd-api.com/bedrock?ip=' + serip + '&port=' + port2
+            print(beurl)
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
+                        print(await req.text())
                         print(f"请求时发生错误：{req.status}")
                     else:
                         bemotd = await req.text()
                         bejson = json.loads(bemotd)
-                        besplit = bejson['motd'].split(';')
-                        motd_1 = besplit[1]
-                        motd_2 = besplit[8]
-                        player_count = besplit[5]
-                        max_players = besplit[6]
-                        edition = besplit[0]
-                        version_name = besplit[4]
-                        game_mode = besplit[9]
+                        edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
+                        game_mode, game_mode_num, port_v4, port_v6, nothing_here = bejson['motd'].split(';')
                         bemsg = '[BE]\n' +\
                         motd_1 + ' - ' + motd_2 +\
                         '\n在线玩家：' + player_count + '/' + max_players +\
