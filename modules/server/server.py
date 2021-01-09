@@ -3,7 +3,7 @@ import re
 import traceback
 
 import aiohttp
-
+import asyncio
 
 async def server(address):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
@@ -25,6 +25,7 @@ async def server(address):
                 if req.status != 200:
                     print(await req.text())
                     print(f"请求时发生错误：{req.status}")
+                    await asyncio.sleep(2)
                 else:
                     motd = await req.text()
                     file = json.loads(motd)
