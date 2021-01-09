@@ -3,7 +3,6 @@ import re
 import traceback
 
 import aiohttp
-import asyncio
 
 async def server(address):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
@@ -25,7 +24,6 @@ async def server(address):
                 if req.status != 200:
                     print(await req.text())
                     print(f"请求时发生错误：{req.status}")
-                    await asyncio.sleep(2)
                 else:
                     motd = await req.text()
                     file = json.loads(motd)
@@ -65,8 +63,8 @@ async def server(address):
     try:
         beurl = 'http://motd.wd-api.com/bedrock?ip=' + serip + '&port=' + port2
         print(beurl)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
+        async with aiohttp.ClientSession() as session2:
+            async with session2.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status != 200:
                     print(await req.text())
                     print(f"请求时发生错误：{req.status}")
