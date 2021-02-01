@@ -92,7 +92,7 @@ async def revokeMessage(msgchain):
 def check_permission(kwargs):
     if Group in kwargs:
         if str(kwargs[Member].permission) in ['MemberPerm.Administrator', 'MemberPerm.Owner'] or check_superuser(
-                kwargs[Member].id):
+                kwargs):
             return True
     if Friend in kwargs:
         if check_superuser(kwargs[Friend].id):
