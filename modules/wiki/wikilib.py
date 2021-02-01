@@ -80,7 +80,7 @@ class wikilib:
             if self.templateprompt:
                 prompt = self.templateprompt + prompt
             if await self.danger_text_check(prompt):
-                return {'status': 'done', 'text': '发生错误：拒绝访问。'}
+                return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
             return {'status': 'wait', 'title': f'{target}{sectitle}', 'text': prompt}
         except Exception:
             try:
@@ -95,7 +95,7 @@ class wikilib:
                 if self.templateprompt:
                     prompt = self.templateprompt + prompt
                 if await self.danger_text_check(prompt):
-                    return {'status': 'done', 'text': '发生错误：拒绝访问。'}
+                    return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
                 return {'status': 'wait', 'title': f'{target}{sectitle}', 'text': prompt}
             except Exception:
                 traceback.print_exc()
@@ -199,7 +199,7 @@ class wikilib:
             if getimg:
                 msgs['net_image'] = getimg
         if await self.danger_text_check(result):
-            return {'status': 'done', 'text': '发生错误：拒绝访问。'}
+            return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
         return msgs
 
     async def main(self, wikilink, pagename, interwiki=None, igmessage=False, template=False, tryiw=0):
@@ -213,7 +213,7 @@ class wikilib:
         danger_check = self.danger_wiki_check()
         if danger_check:
             if await self.danger_text_check(pagename):
-                return {'status': 'done', 'text': '发生错误：拒绝访问。'}
+                return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
         self.orginpagename = pagename
         self.pagename = pagename
         if interwiki == None:

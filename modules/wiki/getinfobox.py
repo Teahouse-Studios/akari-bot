@@ -25,7 +25,7 @@ except:
 async def get_infobox_pic(link, pagelink):
     try:
         print('hello')
-        link = re.sub('api.php', '', link)
+        link = re.sub(r'(?:w/|)api.php', '', link)
         print(link)
         print(pagelink)
         try:
@@ -69,6 +69,7 @@ async def get_infobox_pic(link, pagelink):
         else:
             html_list.append(str(replace_link))
             html = {'content': '\n'.join(html_list)}
+            print(html)
         print(333)
 
         path2 = os.path.abspath('./assets/chromedriver.exe')
