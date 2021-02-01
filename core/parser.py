@@ -43,6 +43,7 @@ async def parser(kwargs: dict):
                                                                                    command_first_word)
                     if check_command_enable_self:
                         kwargs['trigger_msg'] = command
+                        kwargs['help_list'] = help_list
                         await command_list[command_first_word](kwargs)
                 else:
                     await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
@@ -50,6 +51,7 @@ async def parser(kwargs: dict):
                 check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id, command_first_word)
                 if check_command_enable_self:
                     kwargs['trigger_msg'] = command
+                    kwargs['help_list'] = help_list
                     await command_list[command_first_word](kwargs)
         elif command_first_word in essential_list:
             kwargs['trigger_msg'] = command
