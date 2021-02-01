@@ -54,11 +54,12 @@ async def ping(kwargs: dict):
     Swap = int(psutil.swap_memory().total / (1027 * 1024))
     Swap_percent = psutil.swap_memory().percent
     BFH = r'%'
-    result =  ("Pong!\n" + "系统运行时间：%s" % Boot_Start \
-            + "\n当前CPU使用率：%s%s" % (Cpu_usage, BFH) \
-            + "\n物理内存：%dM 使用率：%s%s" % (RAM, RAM_percent, BFH) \
-            + "\nSwap内存：%dM 使用率：%s%s" % (Swap, Swap_percent, BFH))
+    result = ("Pong!\n" + "系统运行时间：%s" % Boot_Start \
+              + "\n当前CPU使用率：%s%s" % (Cpu_usage, BFH) \
+              + "\n物理内存：%dM 使用率：%s%s" % (RAM, RAM_percent, BFH) \
+              + "\nSwap内存：%dM 使用率：%s%s" % (Swap, Swap_percent, BFH))
     await sendMessage(kwargs, result)
+
 
 command = {'rc': rc_loader, 'ab': ab_loader, 'newbie': newbie_loader}
 essential = {'ping': ping}

@@ -23,11 +23,13 @@ async def sendMessage(kwargs: dict, msgchain):
             split_msg = msgchain.get(Plain)
             sent_msgs = []
             for msgs in split_msg:
-                send = await app.sendGroupMessage(kwargs[Group], MessageChain.create([msgs]), quote=kwargs[MessageChain][Source][0].id)
+                send = await app.sendGroupMessage(kwargs[Group], MessageChain.create([msgs]),
+                                                  quote=kwargs[MessageChain][Source][0].id)
                 sent_msgs.append(send)
             split_img = msgchain.get(Image)
             for imgs in split_img:
-                send = await app.sendGroupMessage(kwargs[Group], MessageChain.create([imgs]), quote=kwargs[MessageChain][Source][0].id)
+                send = await app.sendGroupMessage(kwargs[Group], MessageChain.create([imgs]),
+                                                  quote=kwargs[MessageChain][Source][0].id)
                 sent_msgs.append(send)
             return sent_msgs
     if Friend in kwargs:

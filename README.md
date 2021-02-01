@@ -12,4 +12,4 @@ This bot is designed to work in different scenarios, the code may be confusing a
 
 ## How it works
 
-message -> `bot.py` -> `messageGen.py` -> `commandGen.py` -> pre-process -> choose a method -> `messageGen.py` -> return message
+message -> `bot.py` -> `core.parser` -> pre-process -> choose a method -> return message

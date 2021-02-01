@@ -95,7 +95,7 @@ async def main(kwargs: dict):
 
 
 command = {'user': main}
-help = {'user':{'module':'获取一个Gamepedia用户的信息。',
-                'help':'~user [~(wiki_name)] <username> - 获取一个Gamepedia用户的信息。' +
-                       '\n[-r] - 获取详细信息' +
-                       '\n[-p] - 生成一张图片'}}
+help = {'user': {'module': '获取一个Gamepedia用户的信息。',
+                 'help': '~user [~(wiki_name)] <username> - 获取一个Gamepedia用户的信息。' +
+                         '\n[-r] - 获取详细信息' +
+                         '\n[-p] - 生成一张图片'}}

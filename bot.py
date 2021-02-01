@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from graia.application import GraiaMiraiApplication
 from graia.application.friend import Friend
@@ -8,7 +9,7 @@ from graia.application.message.chain import MessageChain
 from core.broadcast import bcc, app
 from core.loader import rss_loader
 from core.parser import parser
-import os
+from legacy_subbot import newbie
 
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):
@@ -18,6 +19,7 @@ if os.path.exists(cache_path):
     os.mkdir(cache_path)
 else:
     os.mkdir(cache_path)
+
 
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
@@ -38,6 +40,11 @@ async def message_handler(app: GraiaMiraiApplication):
     for x in rss_list:
         gather_list.append(asyncio.ensure_future(rss_list[x](app)))
     await asyncio.gather(*gather_list)
+
+
+@bcc.receiver('ApplicationLaunched')
+async def legacy_message_handler(app: GraiaMiraiApplication):
+    await newbie(app)
 
 
 app.launch_blocking()

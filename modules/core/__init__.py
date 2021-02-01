@@ -153,7 +153,7 @@ async def modules_help(kwargs: dict):
     help_msg.append('当前可用的模块有：')
     for x in help_list:
         if 'module' in help_list[x]:
-            help_msg.append(x+ '：' + help_list[x]['module'])
+            help_msg.append(x + '：' + help_list[x]['module'])
     await sendMessage(kwargs, '\n'.join(help_msg))
 
 
