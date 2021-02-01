@@ -1,8 +1,10 @@
+import asyncio
+
 from graia.application import Group, MessageChain, Member, Friend
 from graia.application.message.elements.internal import Plain
 
 import database
-from core.template import sendMessage, check_permission
+from core.template import sendMessage, check_permission, revokeMessage
 
 
 async def enable_modules(kwargs: dict):
@@ -122,29 +124,37 @@ async def disable_modules(kwargs: dict):
 
 async def bot_help(kwargs: dict):
     help_list = kwargs['help_list']
-    print(help_list)
-    help_msg = []
-    help_msg.append('基础命令：')
-    for x in help_list:
-        if 'essential' in help_list[x]:
-            help_msg.append(help_list[x]['help'])
-    help_msg.append('模块扩展命令：')
-    for x in help_list:
-        if Group in kwargs:
-            if database.check_enable_modules(kwargs, x):
+    command = kwargs['trigger_msg'].split(' ')
+    try:
+        if command[1] in help_list:
+            await sendMessage(kwargs, help_list[command[1]]['help'])
+    except:
+        print(help_list)
+        help_msg = []
+        help_msg.append('基础命令：')
+        for x in help_list:
+            if 'essential' in help_list[x]:
+                help_msg.append(help_list[x]['help'])
+        help_msg.append('模块扩展命令：')
+        for x in help_list:
+            if Group in kwargs:
+                if database.check_enable_modules(kwargs, x):
+                    if 'module' in help_list[x]:
+                        help_msg.append(x + '：' + help_list[x]['module'])
+                if 'depend' in help_list[x]:
+                    if database.check_enable_modules(kwargs, help_list[x]['depend']):
+                        if help_list[x]['help'] not in help_msg:
+                            help_msg.append(help_list[x]['help'])
+            elif Friend in kwargs:
                 if 'help' in help_list[x]:
                     help_msg.append(help_list[x]['help'])
-            if 'depend' in help_list[x]:
-                if database.check_enable_modules(kwargs, help_list[x]['depend']):
+                if 'depend' in help_list[x]:
                     if help_list[x]['help'] not in help_msg:
                         help_msg.append(help_list[x]['help'])
-        elif Friend in kwargs:
-            if 'help' in help_list[x]:
-                help_msg.append(help_list[x]['help'])
-            if 'depend' in help_list[x]:
-                if help_list[x]['help'] not in help_msg:
-                    help_msg.append(help_list[x]['help'])
-    await sendMessage(kwargs, '\n'.join(help_msg))
+        help_msg.append('使用~help <模块名>查看详细信息。\n[本消息将在一分钟后撤回]')
+        send = await sendMessage(kwargs, '\n'.join(help_msg))
+        await asyncio.sleep(60)
+        await revokeMessage(send)
 
 
 async def modules_help(kwargs: dict):
@@ -154,7 +164,10 @@ async def modules_help(kwargs: dict):
     for x in help_list:
         if 'module' in help_list[x]:
             help_msg.append(x + '：' + help_list[x]['module'])
-    await sendMessage(kwargs, '\n'.join(help_msg))
+    help_msg.append('使用~help <模块名>查看详细信息。\n[本消息将在一分钟后撤回]')
+    send = await sendMessage(kwargs, '\n'.join(help_msg))
+    await asyncio.sleep(60)
+    await revokeMessage(send)
 
 
 async def add_su(kwargs: dict):

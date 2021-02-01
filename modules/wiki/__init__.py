@@ -147,7 +147,10 @@ async def interwiki(kwargs: dict):
         if check:
             if command[0] == 'add':
                 iw = command[1].split('>')
-                check = await check_wiki_available(iw[1])
+                try:
+                    check = await check_wiki_available(iw[1])
+                except:
+                    await sendMessage(kwargs, '错误：命令不合法：~interwiki add Interwiki>url')
                 if check:
                     result = database.config_custom_interwiki('add', 'custom_interwiki_group', kwargs[Group].id, iw[0],
                                                               check[0])
@@ -224,9 +227,7 @@ async def regex_wiki(kwargs: dict):
                         prompt = '没有指定起始Wiki，请管理员在群内发送~wiki_start_site <域名>来设定起始Wiki。\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
                     if Friend in kwargs:
                         prompt = '没有指定起始Wiki，请发送~wiki_start_site <域名>来设定起始Wiki。\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
-                    prompt = Plain(prompt)
-                    if prompt not in msglist:
-                        msglist.plusWith(MessageChain.create([prompt]))
+                    msglist = msglist.plusWith(MessageChain.create([prompt]))
                 else:
                     iw = None
                     matchinterwiki = re.match(r'(.*?):(.*)', find)
@@ -332,7 +333,7 @@ self_options = ['wiki_infobox']
 options = ['wiki_fandom_addon', 'wiki_gamepedia_addon']
 help = {'wiki': {'module': '查询Wiki内容。', 'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。'},
         'wiki_start_site': {'module': '设置起始查询Wiki。', 'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
-        'interwiki': {'module': '设置自定义Interwiki。', 'help': '~interwiki <add|del> <wikilink> - 设置自定义Interwiki。'},
+        'interwiki': {'module': '设置自定义Interwiki。', 'help': '~interwiki <add|del> <wikilink>><wikiurl> - 设置自定义Interwiki。'},
         'wiki_regex': {'module': '启用正则Wikitext查询。', 'help': '[[<pagename>]]|{{<pagename>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
         'wiki_infobox': {'module': '当被查询的页面包含Infobox时自动提取并渲染为图片发送。',
                          'help': 'Infobox渲染已开启：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',
