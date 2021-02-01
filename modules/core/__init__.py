@@ -176,8 +176,18 @@ async def del_su(kwargs: dict):
 async def add_base_su(kwargs: dict):
     await sendMessage(kwargs, database.add_superuser('2596322644'))
 
+
+async def set_modules(kwargs: dict):
+    command = kwargs['trigger_msg'].split(' ')
+    command_second_word = command[1]
+    command_third_word = command[2]
+    command_forth_word = command[3]
+    msg = database.update_modules(command_second_word, command_third_word, command_forth_word)
+    await sendMessage(kwargs, msg)
+
+
 essential = {'enable': enable_modules, 'disable': disable_modules, 'help': bot_help, 'modules': modules_help, 'add_base_su': add_base_su}
-admin = {'add_su': add_su, 'del_su': del_su}
+admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules}
 help = {'enable': {'module': '开启一个模块', 'help': '~enable <模块名> - 开启一个模块', 'essential': True},
         'disable': {'module': '关闭一个模块', 'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
         'module': {'help': '~modules - 查询所有可用模块。'}}
