@@ -1,9 +1,13 @@
 from configparser import ConfigParser
-from os.path import abspath
 
 
-def config(q):
+def config(path, q):
     cp = ConfigParser()
-    cp.read(abspath("./config/config.cfg"))
+    cp.read(path)
     section = cp.sections()[0]
-    return (cp.get(section, q))
+    value = cp.get(section, q)
+    if value.upper() == 'TRUE':
+        return True
+    if value.upper() == 'FALSE':
+        return False
+    return value

@@ -10,3 +10,5 @@ assets/usercard/*.png
 test.py
 assets/Favicon/**/*.png
 assets/cache/*
+save.db
+cache/*

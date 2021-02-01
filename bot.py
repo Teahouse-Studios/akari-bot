@@ -1,80 +1,43 @@
 import asyncio
 
-from graia.application import GraiaMiraiApplication, Session
-from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
+from graia.application import GraiaMiraiApplication
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
-from graia.broadcast import Broadcast
 
-from MessageGen import gen
+from core.broadcast import bcc, app
+from core.loader import rss_loader
+from core.parser import parser
+import os
 
-loop = asyncio.get_event_loop()
+cache_path = os.path.abspath('./cache/')
+if os.path.exists(cache_path):
+    for x in os.listdir(cache_path):
+        os.remove(cache_path + x)
+    os.removedirs(cache_path)
+    os.mkdir(cache_path)
+else:
+    os.mkdir(cache_path)
 
-bcc = Broadcast(loop=loop, debug_flag=True)
-app = GraiaMiraiApplication(
-    broadcast=bcc,
-    enable_chat_log=False,
-    connect_info=Session(
-        host="http://localhost:11919",  # 填入 httpapi 服务运行的地址
-        authKey='1145141919810',  # 填入 authKey
-        account=2926887640,  # 你的机器人的 qq 号
-        websocket=True  # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
-    )
-)
-
-
-@bcc.receiver("GroupMessage")
-async def group_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(bcc, app, message, group, member, msgtype='Group')
+@bcc.receiver('GroupMessage')
+async def group_message_handler(message: MessageChain, group: Group, member: Member):
+    kwargs = {MessageChain: message, Group: group, Member: member}
+    await parser(kwargs)
 
 
-@bcc.receiver("GroupMessage")
-async def group_message_handler1(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(bcc, app, message, group, member, msgtype='Group', runfun='ttext')
+@bcc.receiver('FriendMessage')
+async def group_message_handler(message: MessageChain, friend: Friend):
+    kwargs = {MessageChain: message, Friend: friend}
+    await parser(kwargs)
 
 
-@bcc.receiver("FriendMessage")
-async def friend_message_handler(app: GraiaMiraiApplication, message: MessageChain, friend: Friend):
-    await gen(bcc, app, message, friend, msgtype='Friend')
-
-
-@bcc.receiver("FriendMessage")
-async def friend_message_handler1(app: GraiaMiraiApplication, message: MessageChain, friend: Friend):
-    await gen(bcc, app, message, friend, msgtype='Friend', runfun='ttext')
-
-
-@bcc.receiver("TempMessage")
-async def temp_message_handler(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(bcc, app, message, group, member, msgtype='Temp')
-
-
-@bcc.receiver("TempMessage")
-async def temp_message_handler1(app: GraiaMiraiApplication, message: MessageChain, group: Group, member: Member):
-    await gen(bcc, app, message, group, member, msgtype='Temp', runfun='ttext')
-
-
-@bcc.receiver("NewFriendRequestEvent")
-async def NFriend(event: NewFriendRequestEvent):
-    await event.accept()
-
-
-@bcc.receiver("BotInvitedJoinGroupRequestEvent")
-async def NGroup(event: BotInvitedJoinGroupRequestEvent):
-    await event.accept()
-
-
-import subbot
-
-
-@bcc.receiver("ApplicationLaunched")
-async def subbot1(app: GraiaMiraiApplication):
-    await subbot.ver(app)
-
-
-@bcc.receiver("ApplicationLaunched")
-async def subbot2(app: GraiaMiraiApplication):
-    await subbot.newbie(app)
+@bcc.receiver('ApplicationLaunched')
+async def message_handler(app: GraiaMiraiApplication):
+    rss_list = rss_loader()
+    gather_list = []
+    for x in rss_list:
+        gather_list.append(asyncio.ensure_future(rss_list[x](app)))
+    await asyncio.gather(*gather_list)
 
 
 app.launch_blocking()

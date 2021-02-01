@@ -1,20 +1,24 @@
+import asyncio
 import re
 
+from core.template import sendMessage, revokeMessage
 from .server import server
-from .serverraw import serverraw
 
 
-async def main(message):
-    if message == '-h':
-        return ('''~server <address> - 从指定地址服务器的25565端口中获取Motd。
-~server <address>:<port> - 从指定地址服务器的端口中获取Motd。
-[-r] - 获取Motd的源代码。''')
+async def main(kwargs: dict):
+    message = kwargs['trigger_msg']
+    message = re.sub('^server ', '', message)
     msgsplit = message.split(' ')
     if '-r' in msgsplit:
         message = re.sub(' -r|-r ', '', message)
-        return await serverraw(message)
+        sendmsg = await server(message, raw=True)
     else:
-        return await server(message)
+        sendmsg = await server(message)
+    send = await sendMessage(kwargs, sendmsg)
+    await asyncio.sleep(30)
+    await revokeMessage(send)
 
 
-command = {'server': 'server'}
+command = {'server': main}
+help = {'server': {'module': '获取Minecraft Java/基岩版服务器motd。',
+                   'help': '~server <服务器地址>:<服务器端口> - 获取Minecraft Java/基岩版服务器motd。'}}

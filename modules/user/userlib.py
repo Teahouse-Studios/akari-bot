@@ -3,7 +3,7 @@ import urllib
 
 import aiohttp
 
-from modules.UTC8 import UTC8
+from modules.utils.UTC8 import UTC8
 from .tool import yhz, gender
 
 
@@ -18,7 +18,7 @@ async def get_data(url: str, fmt: str):
 
 async def getwikiname(wikiurl):
     try:
-        wikinameurl = wikiurl + 'api.php?action=query&meta=allmessages&ammessages=mainpage&format=json'
+        wikinameurl = wikiurl + '?action=query&meta=allmessages&ammessages=mainpage&format=json'
         wikiname = await get_data(wikinameurl, 'json')
         Wikiname = wikiname['query']['allmessages'][0]['*']
     except Exception:
@@ -32,7 +32,7 @@ def d(str1):
 
 
 async def User(wikiurl, username, argv=None):
-    UserJsonURL = wikiurl + 'api.php?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
+    UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
     GetUserJson = await get_data(UserJsonURL, 'json')
     Wikiname = await getwikiname(wikiurl)
     try:
@@ -48,8 +48,8 @@ async def User(wikiurl, username, argv=None):
             if BlockedBy:
                 Blockedtimestamp = UTC8(GetUserJson['query']['users'][0]['blockedtimestamp'], 'full')
                 Blockexpiry = UTC8(str(GetUserJson['query']['users'][0]['blockexpiry']), 'full')
-                Blockmessage = f'\n{User}正在被封禁！' +\
-                f'\n被{BlockedBy}封禁，时间从{Blockedtimestamp}到{Blockexpiry}'
+                Blockmessage = f'\n{User}正在被封禁！' + \
+                               f'\n被{BlockedBy}封禁，时间从{Blockedtimestamp}到{Blockexpiry}'
                 try:
                     Blockreason = GetUserJson['query']['users'][0]['blockreason']
                     if Blockreason:
@@ -60,6 +60,7 @@ async def User(wikiurl, username, argv=None):
             pass
         if argv == '-r' or argv == '-p':
             from bs4 import BeautifulSoup as bs
+            wikiurl = re.sub('api.php', '', wikiurl)
             clawerurl = wikiurl + 'UserProfile:' + username
             clawer = await get_data(clawerurl, 'text')
             soup = bs(clawer, 'html.parser')
@@ -79,6 +80,9 @@ async def User(wikiurl, username, argv=None):
                 matchlink = re.match(r'https?://(.*)/', wikiurl)
                 filepath = os.path.abspath('./assets/Favicon/' + matchlink.group(1) + '/')
                 if not os.path.exists(filepath):
+                    favicon_path = os.path.abspath('./assets/Favicon/')
+                    if not os.path.exists(favicon_path):
+                        os.mkdir(favicon_path)
                     os.mkdir(filepath)
                 wikipng = os.path.abspath('./assets/Favicon/' + matchlink.group(1) + '/Wiki.png')
                 if not os.path.exists(wikipng):
@@ -100,55 +104,55 @@ async def User(wikiurl, username, argv=None):
                             pass
                         if Brs == 1:
                             imagepath = tpg(favicon=wikipng,
-                                wikiname=Wikiname,
-                                username=User,
-                                gender=Gender,
-                                registertime=Registration,
-                                contributionwikis=d(str(dd[0])),
-                                createcount=d(str(dd[1])),
-                                editcount=d(str(dd[2])),
-                                deletecount=d(str(dd[3])),
-                                patrolcount=d(str(dd[4])),
-                                sitetop=d(str(dd[5])),
-                                globaltop=d(str(dd[6])),
-                                wikipoint=point,
-                                blockbyuser=BlockedBy,
-                                blocktimestamp1=Blockedtimestamp,
-                                blocktimestamp2=Blockexpiry,
-                                bantype='YN')
+                                            wikiname=Wikiname,
+                                            username=User,
+                                            gender=Gender,
+                                            registertime=Registration,
+                                            contributionwikis=d(str(dd[0])),
+                                            createcount=d(str(dd[1])),
+                                            editcount=d(str(dd[2])),
+                                            deletecount=d(str(dd[3])),
+                                            patrolcount=d(str(dd[4])),
+                                            sitetop=d(str(dd[5])),
+                                            globaltop=d(str(dd[6])),
+                                            wikipoint=point,
+                                            blockbyuser=BlockedBy,
+                                            blocktimestamp1=Blockedtimestamp,
+                                            blocktimestamp2=Blockexpiry,
+                                            bantype='YN')
                         elif Brs == 2:
                             imagepath = tpg(favicon=wikipng,
-                                wikiname=Wikiname,
-                                username=User,
-                                gender=Gender,
-                                registertime=Registration,
-                                contributionwikis=d(str(dd[0])),
-                                createcount=d(str(dd[1])),
-                                editcount=d(str(dd[2])),
-                                deletecount=d(str(dd[3])),
-                                patrolcount=d(str(dd[4])),
-                                sitetop=d(str(dd[5])),
-                                globaltop=d(str(dd[6])),
-                                wikipoint=point,
-                                blockbyuser=BlockedBy,
-                                blocktimestamp1=Blockedtimestamp,
-                                blocktimestamp2=Blockexpiry,
-                                blockreason=Blockreason,
-                                bantype='Y')
+                                            wikiname=Wikiname,
+                                            username=User,
+                                            gender=Gender,
+                                            registertime=Registration,
+                                            contributionwikis=d(str(dd[0])),
+                                            createcount=d(str(dd[1])),
+                                            editcount=d(str(dd[2])),
+                                            deletecount=d(str(dd[3])),
+                                            patrolcount=d(str(dd[4])),
+                                            sitetop=d(str(dd[5])),
+                                            globaltop=d(str(dd[6])),
+                                            wikipoint=point,
+                                            blockbyuser=BlockedBy,
+                                            blocktimestamp1=Blockedtimestamp,
+                                            blocktimestamp2=Blockexpiry,
+                                            blockreason=Blockreason,
+                                            bantype='Y')
                 except KeyError:
                     imagepath = tpg(favicon=wikipng,
-                        wikiname=Wikiname,
-                        username=User,
-                        gender=Gender,
-                        registertime=Registration,
-                        contributionwikis=d(str(dd[0])),
-                        createcount=d(str(dd[1])),
-                        editcount=d(str(dd[2])),
-                        deletecount=d(str(dd[3])),
-                        patrolcount=d(str(dd[4])),
-                        sitetop=d(str(dd[5])),
-                        globaltop=d(str(dd[6])),
-                        wikipoint=point)
+                                    wikiname=Wikiname,
+                                    username=User,
+                                    gender=Gender,
+                                    registertime=Registration,
+                                    contributionwikis=d(str(dd[0])),
+                                    createcount=d(str(dd[1])),
+                                    editcount=d(str(dd[2])),
+                                    deletecount=d(str(dd[3])),
+                                    patrolcount=d(str(dd[4])),
+                                    sitetop=d(str(dd[5])),
+                                    globaltop=d(str(dd[6])),
+                                    wikipoint=point)
         if argv == '-p':
             return f'{wikiurl}UserProfile:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimgc:{imagepath}]]'
         return (wikiurl + 'UserProfile:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +

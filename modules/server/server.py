@@ -4,7 +4,8 @@ import traceback
 
 import aiohttp
 
-async def server(address):
+
+async def server(address, raw=False):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
     servers = []
 
@@ -34,16 +35,16 @@ async def server(address):
                             if 'description' in jejson:
                                 description = jejson['description']
                                 if 'text' in description:
-                                    servers.append(description['text'])
+                                    servers.append(str(description['text']))
                                 elif 'extra' in description:
                                     extra = description['extra']
                                     text = []
                                     qwq = ''
                                     for item in extra[:]:
-                                        text.append(item['text'])
+                                        text.append(str(item['text']))
                                     servers.append(qwq.join(text))
                                 else:
-                                    servers.append(description)
+                                    servers.append(str(description))
 
                             if 'players' in jejson:
                                 onlinesplayer = f"在线玩家：{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
@@ -73,11 +74,11 @@ async def server(address):
                     bejson = json.loads(bemotd)
                     edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
                     game_mode, game_mode_num, port_v4, port_v6, nothing_here = bejson['motd'].split(';')
-                    bemsg = '[BE]\n' +\
-                    motd_1 + ' - ' + motd_2 +\
-                    '\n在线玩家：' + player_count + '/' + max_players +\
-                    '\n游戏版本：' + edition + version_name +\
-                    '\n游戏模式：' + game_mode
+                    bemsg = '[BE]\n' + \
+                            motd_1 + ' - ' + motd_2 + \
+                            '\n在线玩家：' + player_count + '/' + max_players + \
+                            '\n游戏版本：' + edition + version_name + \
+                            '\n游戏模式：' + game_mode
                     servers.append(bemsg)
 
     except Exception:
@@ -88,4 +89,7 @@ async def server(address):
     else:
         awa = '\n'
         servers.append("[30秒后撤回本消息]")
+        print(servers)
+        if raw:
+            return awa.join(servers)
         return re.sub(r'§\w', "", awa.join(servers))
