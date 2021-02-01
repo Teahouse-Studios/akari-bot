@@ -11,7 +11,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from config import config
-from .helper import get_url
+from modules.wiki.helper import get_url
 
 config_path = os.path.abspath('./config/config.cfg')
 
@@ -26,9 +26,13 @@ async def get_infobox_pic(link, pagelink):
     try:
         print('hello')
         link = re.sub('api.php', '', link)
+        print(link)
+        print(pagelink)
         try:
             html = await get_url(pagelink, 'text')
+            print(html)
         except:
+            traceback.print_exc()
             return False
         print(111)
         soup = BeautifulSoup(html, 'html.parser')
