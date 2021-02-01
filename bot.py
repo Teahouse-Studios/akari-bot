@@ -14,7 +14,7 @@ from legacy_subbot import newbie
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):
     for x in os.listdir(cache_path):
-        os.remove(cache_path + x)
+        os.remove(cache_path + '/' + x)
     os.removedirs(cache_path)
     os.mkdir(cache_path)
 else:
