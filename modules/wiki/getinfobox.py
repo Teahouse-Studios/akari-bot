@@ -62,7 +62,7 @@ async def get_infobox_pic(link, pagelink):
 
         for x in soup.find_all(rel='stylesheet'):
             y = str(x.get('href'))
-            z = re.sub(r'^.*load.php', f'{link}load.php', y)
+            z = re.sub(r'^.*load.php', f'{wlink}load.php', y)
             z = re.sub(';', '&', z)
             if infobox_render is None:
                 open_file.write(f'<link href="{z}" rel="stylesheet"/>\n')
