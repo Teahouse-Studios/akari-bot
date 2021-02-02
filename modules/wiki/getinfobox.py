@@ -25,6 +25,7 @@ except:
 async def get_infobox_pic(link, pagelink):
     try:
         print('hello')
+        wlink = re.sub(r'api.php', '', link)
         link = re.sub(r'(?:w/|)api.php', '', link)
         print(link)
         print(pagelink)
@@ -69,7 +70,7 @@ async def get_infobox_pic(link, pagelink):
                 html_list.append(f'<link href="{z}" rel="stylesheet"/>\n')
 
         replace_link = re.sub(r'href=\"/(.*)\"', 'href=\"' + link + '\\1\"', str(find_infobox), re.M)
-        replace_link = re.sub(r'url\(/', 'url(' + link, replace_link, re.M)
+        replace_link = re.sub(r':url\(/', ':url(' + link, replace_link)
         replace_link = re.sub('//', 'https://', replace_link)
         replace_link = re.sub('http:https://', 'http://', replace_link)
         replace_link = re.sub('https:https://', 'https://', replace_link)
@@ -77,7 +78,7 @@ async def get_infobox_pic(link, pagelink):
 
         for x in soup.find_all(name='script'):
             x = str(x)
-            x = re.sub(r'\".*load.php', f'\"{link}load.php', x)
+            x = re.sub(r'\".*load.php', f'\"{wlink}load.php', x)
             if infobox_render is None:
                 open_file.write(x)
             else:
