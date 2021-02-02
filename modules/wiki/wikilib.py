@@ -150,7 +150,10 @@ class wikilib:
             return {'status': 'done', 'text': '发生错误：无法获取到页面。'}
         if 'redirects' in self.pageraw['query']:
             self.pagename = self.pageraw['query']['redirects'][0]['to']
-        self.pageid = self.parsepageid(self.pageraw)
+        try:
+            self.pageid = self.parsepageid(self.pageraw)
+        except:
+            return {'status': 'done', 'text': '发生错误：无法获取到页面，请检查是否设置了对应Interwiki。'}
         self.psepgraw = self.pageraw['query']['pages'][self.pageid]
 
         if self.pageid == '-1':
