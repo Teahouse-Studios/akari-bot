@@ -48,7 +48,9 @@ async def get_infobox_pic(link, pagelink):
                 if find_infobox is None:
                     find_infobox = soup.find(class_='tpl-infobox')
                     if find_infobox is None:
-                        return False#找你妈，不找了
+                        find_infobox = soup.find(class_='infoboxtable')
+                        if find_infobox is None:
+                            return False#找你妈，不找了<-咱还是回家吧
 
 
         if infobox_render is None:
