@@ -41,7 +41,7 @@ class wikilib:
         interwikimap = json['query']['interwikimap']
         interwiki_dict = {}
         for interwiki in interwikimap:
-            interwiki_dict[interwiki['prefix']] = re.sub('\$1', '', interwiki['url'])
+            interwiki_dict[interwiki['prefix']] = re.sub(r'(?:wiki/|)\$1', '', interwiki['url'])
         return interwiki_dict
 
     async def get_image(self, pagename):
