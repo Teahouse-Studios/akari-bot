@@ -19,6 +19,8 @@ async def bugtracker(kwargs: dict):
 
 async def regex_bugtracker(kwargs: dict):
     msg = kwargs[MessageChain].asDisplay()
+    if msg.find('[Webhook]') != -1:
+        return 
     if msg[0] == '!':
         msg = re.sub('!', '', msg)
         msg = re.sub('bug ', '', msg)
