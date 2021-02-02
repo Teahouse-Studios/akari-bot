@@ -83,6 +83,8 @@ async def wiki_loader(kwargs: dict):
                 except:
                     pass
             await sendMessage(kwargs, msgchain)
+            if 'apilink' in msg:
+                get_link = msg['apilink']
             if 'url' in msg:
                 check_options = check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
                                                           'wiki_infobox')
@@ -284,6 +286,8 @@ async def regex_wiki(kwargs: dict):
                                 msg['url'] + '\n' if 'url' in msg else '') + msg['text'])]))
                         if 'net_image' in msg:
                             imglist.append(msg['net_image'])
+                        if 'apilink' in msg:
+                            get_link = msg['apilink']
                         if 'url' in msg:
                             urllist.update({msg['url']: get_link})
             if msglist != MessageChain.create([]):

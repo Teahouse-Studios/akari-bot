@@ -24,6 +24,16 @@ class wikilib:
     def danger_wiki_check(self):
         if self.wikilink.upper().find('WIKIPEDIA') != -1:
             return True
+        if self.wikilink.upper().find('UNCYCLOPEDIA') != -1:
+            return True
+        if self.wikilink.upper().find('HMOEGIRL') != -1:
+            return True
+        if self.wikilink.upper().find('EVCHK') != -1:
+            return True
+        if self.wikilink.upper().find('HONGKONG.FANDOM') != -1:
+            return True
+        if self.wikilink.upper().find('WIKILEAKS') != -1:
+            return True
         return False
 
     async def danger_text_check(self, text):
@@ -195,7 +205,7 @@ class wikilib:
             result = rm5lline[0] + '...行数过多已截断。'
         except Exception:
             result = rmlstlb
-        msgs = {'status': 'done', 'url': fullurl, 'text': result}
+        msgs = {'status': 'done', 'url': fullurl, 'text': result, 'apilink': self.wikilink}
         matchimg = re.match(r'File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico)', self.pagename, re.I)
         if matchimg:
             getimg = await self.get_image(self.pagename)

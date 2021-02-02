@@ -9,6 +9,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from urllib.parse import urljoin
 
 from config import config
 from modules.wiki.helper import get_url
@@ -62,27 +63,35 @@ async def get_infobox_pic(link, pagelink):
 
         for x in soup.find_all(rel='stylesheet'):
             y = str(x.get('href'))
-            z = re.sub(r'^.*load.php', f'{wlink}load.php', y)
+            z = urljoin(wlink, y)
             z = re.sub(';', '&', z)
             if infobox_render is None:
                 open_file.write(f'<link href="{z}" rel="stylesheet"/>\n')
             else:
                 html_list.append(f'<link href="{z}" rel="stylesheet"/>\n')
 
-        replace_link = re.sub(r'href=\"/(.*)\"', 'href=\"' + link + '\\1\"', str(find_infobox), re.M)
-        replace_link = re.sub(r':url\(/', ':url(' + link, replace_link)
-        replace_link = re.sub('//', 'https://', replace_link)
-        replace_link = re.sub('http:https://', 'http://', replace_link)
-        replace_link = re.sub('https:https://', 'https://', replace_link)
-        replace_link = re.sub('https:///', '///', replace_link)
+        def join_url(base, target):
+            target = target.split(' ')
+            targetlist = []
+            for x in target:
+                if x.find('/') != -1:
+                    x = urljoin(base, x)
+                    targetlist.append(x)
+                else:
+                    targetlist.append(x)
+            target = ' '.join(targetlist)
+            return target
 
-        for x in soup.find_all(name='script'):
-            x = str(x)
-            x = re.sub(r'\".*load.php', f'\"{wlink}load.php', x)
-            if infobox_render is None:
-                open_file.write(x)
-            else:
-                html_list.append(x)
+        for x in find_infobox.find_all(['a', 'img', 'span']):
+            if x.has_attr('href'):
+                x.attrs['href'] = join_url(link, x.get('href'))
+            if x.has_attr('src'):
+                x.attrs['src'] = join_url(link, x.get('src'))
+            if x.has_attr('srcset'):
+                x.attrs['srcset'] = join_url(link, x.get('srcset'))
+            if x.has_attr('style'):
+                x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
+        replace_link = find_infobox
 
         if infobox_render is None:
             open_file.write(str(replace_link))
