@@ -237,7 +237,7 @@ class wikilib:
                         if check:
                             return await self.main(check[0], matchinterwiki.group(2),
                                                    matchinterwiki.group(1),
-                                                   self.igmessage, self.template, self.sentyouprompt, tryiw + 1)
+                                                   self.igmessage, self.template, tryiw + 1)
                         else:
                             return {'status': 'done',
                                     'text': f'发生错误：指向的interwiki不是一个有效的MediaWiki。{interwiki_link}{matchinterwiki.group(2)}'}

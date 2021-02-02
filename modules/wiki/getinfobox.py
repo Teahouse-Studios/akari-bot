@@ -30,7 +30,6 @@ async def get_infobox_pic(link, pagelink):
         print(pagelink)
         try:
             html = await get_url(pagelink, 'text')
-            print(html)
         except:
             traceback.print_exc()
             return False
@@ -43,9 +42,9 @@ async def get_infobox_pic(link, pagelink):
         print(222)
         find_infobox = soup.find(class_='notaninfobox')
         if find_infobox is None:
-            find_infobox = soup.find(class_='infobox')
+            find_infobox = soup.find(class_='portable-infobox')
             if find_infobox is None:
-                find_infobox = soup.find(class_='portable-infobox')
+                find_infobox = soup.find(class_='infobox')
                 if find_infobox is None:
                     find_infobox = soup.find(class_='tpl-infobox')
                     if find_infobox is None:
@@ -74,7 +73,6 @@ async def get_infobox_pic(link, pagelink):
         else:
             html_list.append(str(replace_link))
             html = {'content': '\n'.join(html_list)}
-            print(html)
         print(333)
 
         path2 = os.path.abspath('./assets/chromedriver.exe')
