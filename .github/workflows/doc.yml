@@ -1,8 +1,8 @@
 name: build and deploy
 on:
   push:
-    branches:
-      - doc
+    branches: [doc]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -10,7 +10,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: my-branch
+          ref: doc
 
       - name: Setup Python 3.9
         uses: actions/setup-python@v2
