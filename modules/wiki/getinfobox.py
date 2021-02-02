@@ -50,8 +50,9 @@ async def get_infobox_pic(link, pagelink):
                     if find_infobox is None:
                         find_infobox = soup.find(class_='infoboxtable')
                         if find_infobox is None:
-                            return False#找你妈，不找了<-咱还是回家吧
-
+                            find_infobox = soup.find(class_='infotemplatebox')
+                            if find_infobox is None:
+                                return False  # 找你妈，不找了<-咱还是回家吧
 
         if infobox_render is None:
             open_file = open(url, 'a', encoding='utf-8')
@@ -60,21 +61,36 @@ async def get_infobox_pic(link, pagelink):
 
         for x in soup.find_all(rel='stylesheet'):
             y = str(x.get('href'))
-            z = re.sub('^/load.php', f'{link}load.php', y)
+            z = re.sub(r'^.*load.php', f'{link}load.php', y)
+            z = re.sub(';', '&', z)
             if infobox_render is None:
                 open_file.write(f'<link href="{z}" rel="stylesheet"/>\n')
             else:
                 html_list.append(f'<link href="{z}" rel="stylesheet"/>\n')
 
         replace_link = re.sub(r'href=\"/(.*)\"', 'href=\"' + link + '\\1\"', str(find_infobox), re.M)
-        replace_link = re.sub(r'\(/(media/)', '(' + link + '\\1', replace_link, re.M)
+        replace_link = re.sub(r'url\(/', 'url(' + link, replace_link, re.M)
+        replace_link = re.sub('//', 'https://', replace_link)
+        replace_link = re.sub('http:https://', 'http://', replace_link)
+        replace_link = re.sub('https:https://', 'https://', replace_link)
+        replace_link = re.sub('https:///', '///', replace_link)
+
+        for x in soup.find_all(name='script'):
+            x = str(x)
+            x = re.sub(r'\".*load.php', f'\"{link}load.php', x)
+            if infobox_render is None:
+                open_file.write(x)
+            else:
+                html_list.append(x)
 
         if infobox_render is None:
             open_file.write(str(replace_link))
             open_file.close()
         else:
             html_list.append(str(replace_link))
-            html = {'content': '\n'.join(html_list)}
+            html = '\n'.join(html_list)
+            print(html)
+            html = {'content': html}
         print(333)
 
         path2 = os.path.abspath('./assets/chromedriver.exe')

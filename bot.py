@@ -2,6 +2,7 @@ import asyncio
 import os
 
 from graia.application import GraiaMiraiApplication
+from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
@@ -31,6 +32,16 @@ async def group_message_handler(message: MessageChain, group: Group, member: Mem
 async def group_message_handler(message: MessageChain, friend: Friend):
     kwargs = {MessageChain: message, Friend: friend}
     await parser(kwargs)
+
+
+@bcc.receiver("NewFriendRequestEvent")
+async def NFriend(event: NewFriendRequestEvent):
+    await event.accept()
+
+
+@bcc.receiver("BotInvitedJoinGroupRequestEvent")
+async def NGroup(event: BotInvitedJoinGroupRequestEvent):
+    await event.accept()
 
 
 @bcc.receiver('ApplicationLaunched')

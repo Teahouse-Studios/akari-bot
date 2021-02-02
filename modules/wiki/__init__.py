@@ -333,7 +333,8 @@ self_options = ['wiki_infobox']
 options = ['wiki_fandom_addon', 'wiki_gamepedia_addon']
 help = {'wiki': {'module': '查询Wiki内容。', 'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。'},
         'wiki_start_site': {'module': '设置起始查询Wiki。', 'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
-        'interwiki': {'module': '设置自定义Interwiki。', 'help': '~interwiki <add|del> <wikilink>><wikiurl> - 设置自定义Interwiki。'},
+        'interwiki': {'module': '设置自定义Interwiki。',
+                      'help': '~interwiki <add|del> <wikilink>><wikiurl> - 设置自定义Interwiki。'},
         'wiki_regex': {'module': '启用正则Wikitext查询。', 'help': '[[<pagename>]]|{{<pagename>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
         'wiki_infobox': {'module': '当被查询的页面包含Infobox时自动提取并渲染为图片发送。',
                          'help': 'Infobox渲染已开启：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',

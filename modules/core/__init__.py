@@ -198,6 +198,7 @@ async def set_modules(kwargs: dict):
     msg = database.update_modules(command_second_word, command_third_word, command_forth_word)
     await sendMessage(kwargs, msg)
 
+
 command = {'help': bot_help, 'modules': modules_help}
 essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su}
 admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules}
