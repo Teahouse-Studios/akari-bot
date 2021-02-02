@@ -45,7 +45,12 @@ async def get_infobox_pic(link, pagelink):
         if find_infobox is None:
             find_infobox = soup.find(class_='infobox')
             if find_infobox is None:
-                return False
+                find_infobox = soup.find(class_='portable-infobox')
+                if find_infobox is None:
+                    find_infobox = soup.find(class_='tpl-infobox')
+                    if find_infobox is None:
+                        return False#找你妈，不找了
+
 
         if infobox_render is None:
             open_file = open(url, 'a', encoding='utf-8')

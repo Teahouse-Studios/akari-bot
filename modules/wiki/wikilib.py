@@ -206,6 +206,8 @@ class wikilib:
         print(wikilink)
         print(pagename)
         print(interwiki)
+        if pagename == '':
+            return {'status': 'done', 'text': '错误：需要查询的页面为空。'}
         pagename = re.sub('_', ' ', pagename)
         pagename = pagename.split('|')[0]
         self.orginwikilink = wikilink
