@@ -229,7 +229,8 @@ async def regex_wiki(kwargs: dict):
                         prompt = '没有指定起始Wiki，请管理员在群内发送~wiki_start_site <域名>来设定起始Wiki。\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
                     if Friend in kwargs:
                         prompt = '没有指定起始Wiki，请发送~wiki_start_site <域名>来设定起始Wiki。\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
-                    msglist = msglist.plusWith(MessageChain.create([prompt]))
+                    msglist = msglist.plusWith(MessageChain.create([Plain(prompt)]))
+                    status = 'done'
                 else:
                     iw = None
                     matchinterwiki = re.match(r'(.*?):(.*)', find)
@@ -271,25 +272,25 @@ async def regex_wiki(kwargs: dict):
                                                 iw = matchinterwiki.group(1)
                     msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
                     status = msg['status']
-                    if status == 'wait':
-                        global_status = 'wait'
-                        waitlist.append(msg['title'])
-                        waitmsglist = waitmsglist.plusWith(MessageChain.create(
-                            [Plain(('\n' if msglist != MessageChain.create([]) else '') + msg['text'])]))
-                    if status == 'warn':
-                        global_status = 'warn'
-                        msglist = msglist.plusWith(MessageChain.create(
-                            [Plain(('\n' if msglist != MessageChain.create([]) else '') + msg['text'])]))
-                    if status == 'done':
-                        msglist = msglist.plusWith(MessageChain.create([Plain(
-                            ('\n' if msglist != MessageChain.create([]) else '') + (
-                                msg['url'] + '\n' if 'url' in msg else '') + msg['text'])]))
-                        if 'net_image' in msg:
-                            imglist.append(msg['net_image'])
-                        if 'apilink' in msg:
-                            get_link = msg['apilink']
-                        if 'url' in msg:
-                            urllist.update({msg['url']: get_link})
+                if status == 'wait':
+                    global_status = 'wait'
+                    waitlist.append(msg['title'])
+                    waitmsglist = waitmsglist.plusWith(MessageChain.create(
+                        [Plain(('\n' if msglist != MessageChain.create([]) else '') + msg['text'])]))
+                if status == 'warn':
+                    global_status = 'warn'
+                    msglist = msglist.plusWith(MessageChain.create(
+                        [Plain(('\n' if msglist != MessageChain.create([]) else '') + msg['text'])]))
+                if status == 'done':
+                    msglist = msglist.plusWith(MessageChain.create([Plain(
+                        ('\n' if msglist != MessageChain.create([]) else '') + (
+                            msg['url'] + '\n' if 'url' in msg else '') + msg['text'])]))
+                    if 'net_image' in msg:
+                        imglist.append(msg['net_image'])
+                    if 'apilink' in msg:
+                        get_link = msg['apilink']
+                    if 'url' in msg:
+                        urllist.update({msg['url']: get_link})
             if msglist != MessageChain.create([]):
                 await sendMessage(kwargs, msglist)
                 if imglist != []:
@@ -309,7 +310,7 @@ async def regex_wiki(kwargs: dict):
                             infoboxchain = infoboxchain.plusWith(
                                 MessageChain.create([Image.fromLocalFile(get_infobox, method=mth)]))
                     if infoboxchain != MessageChain.create([]):
-                        await sendMessage(kwargs, infoboxchain)
+                        await sendMessage(kwargs, infoboxchain, Quote=False)
             if global_status == 'warn':
                 if Group in kwargs:
                     trigger = kwargs[Member].id

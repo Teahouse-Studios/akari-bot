@@ -197,7 +197,7 @@ class wikilib:
             rmlstlb = re.sub('\n$', '', desc)
         else:
             rmlstlb = re.sub('\n$', '',
-                             f'（重定向[{self.orginpagename}] -> [{finpgname}]）{desc}')
+                             f'（重定向[{self.orginpagename}] -> [{finpgname}]）' + ('\n' if desc != '' else '') + f'{desc}')
         rmlstlb = re.sub('\n\n', '\n', rmlstlb)
         rmlstlb = re.sub('\n\n', '\n', rmlstlb)
         try:
