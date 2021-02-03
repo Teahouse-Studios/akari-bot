@@ -40,7 +40,7 @@ async def parser(kwargs: dict):
     if display[0] in command_prefix:  # 检查消息前缀
         command = re.sub(r'^' + display[0], '', display)
         command_first_word = command.split(' ')[0]  # 切割消息
-        if command_first_word in command_list:
+        if command_first_word in command_list:  # 检查触发命令是否在模块列表中
             if Group in kwargs:
                 check_command_enable = database.check_enable_modules(kwargs[Group].id, command_first_word)  # 检查群组是否开启模块
                 if check_command_enable:  # 若开启
@@ -49,7 +49,7 @@ async def parser(kwargs: dict):
                     if check_command_enable_self:
                         kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
                         kwargs['help_list'] = help_list  # 帮助列表
-                        await command_list[command_first_word](kwargs)  # 将消息传入下游模块
+                        await command_list[command_first_word](kwargs)  # 将dict传入下游模块
                 else:
                     await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
             else:
@@ -78,7 +78,7 @@ async def parser(kwargs: dict):
             if check_command_enable:
                 check_command_enable_self = database.check_enable_modules_self(kwargs[Member].id, regex)  # 检查个人是否打开模块
                 if check_command_enable_self:
-                    await regex_list[regex](kwargs)  # 将整条消息传入下游正则模块
+                    await regex_list[regex](kwargs)  # 将整条dict传入下游正则模块
     if Friend in kwargs:
         for regex in regex_list:
             check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id, regex)
