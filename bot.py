@@ -7,20 +7,17 @@ from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
-import core
 from core.broadcast import bcc, app
 from core.loader import rss_loader
 from core.parser import parser
 from legacy_subbot import newbie
 
-from importlib import reload
+import shutil
+
 
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):
-    for x in os.listdir(cache_path):
-        os.remove(cache_path + '/' + x)
-    os.removedirs(cache_path)
-    os.mkdir(cache_path)
+    shutil.rmtree(cache_path)
 else:
     os.mkdir(cache_path)
 
