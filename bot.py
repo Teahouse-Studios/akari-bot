@@ -18,6 +18,7 @@ import shutil
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):
     shutil.rmtree(cache_path)
+    os.mkdir(cache_path)
 else:
     os.mkdir(cache_path)
 
