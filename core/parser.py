@@ -88,8 +88,12 @@ async def parser(kwargs: dict):
             else:
                 await sendMessage(kwargs, '权限不足')
         elif command_first_word == 'reload':
-            load_modules(reload=True)
-            await sendMessage(kwargs, '!')
+            if database.check_superuser(kwargs):
+                await sendMessage(kwargs, '重新加载中！')
+                load_modules(reload=True)
+                await sendMessage(kwargs, '成功重新加载。')
+            else:
+                await sendMessage(kwargs, '权限不足')
     # 正则模块部分
     if Group in kwargs:
         for regex in regex_list:  # 遍历正则模块列表
