@@ -7,7 +7,7 @@ from graia.application.message.elements.internal import Plain
 
 from database import check_enable_modules_all
 from modules.mcv.mcv import get_data
-
+from core.loader import logger_info
 
 def mcversion():
     w = open(abspath('./assets/mcversion.txt'), 'r+')
@@ -25,15 +25,16 @@ def mcversion_jira():
 
 async def mcv_rss(app):
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
-    print('subbot ver launched')
+    logger_info('Subbot ver launched')
     while True:
         try:
+            logger_info('Checking mcv...')
             verlist = mcversion()
             file = await get_data(url, 'json')
             release = file['latest']['release']
             snapshot = file['latest']['snapshot']
             if release not in verlist:
-                print(release)
+                logger_info(f'huh, we find {release}.')
                 for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                     try:
                         await app.sendGroupMessage(int(qqgroup), MessageChain.create(
@@ -46,7 +47,7 @@ async def mcv_rss(app):
                 addversion.close()
                 verlist = mcversion()
             if snapshot not in verlist:
-                print(snapshot)
+                logger_info(f'huh, we find {snapshot}.')
                 for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                     try:
                         await app.sendGroupMessage(int(qqgroup), MessageChain.create(
@@ -57,7 +58,8 @@ async def mcv_rss(app):
                 addversion = open('./assets/mcversion.txt', 'a')
                 addversion.write('\n' + snapshot)
                 addversion.close()
-            await asyncio.sleep(10)
+            logger_info('mcv checked.')
+            await asyncio.sleep(20)
         except Exception:
             traceback.print_exc()
             await asyncio.sleep(5)
@@ -65,9 +67,10 @@ async def mcv_rss(app):
 
 async def mcv_jira_rss(app):
     url = 'https://bugs.mojang.com/rest/api/2/project/10400/versions'
-    print('subbot jira launched')
+    logger_info('Subbot jira launched')
     while True:
         try:
+            logger_info('Checking Jira mcv...')
             verlist = mcversion_jira()
             file = await get_data(url, 'json')
             release = []
@@ -76,7 +79,7 @@ async def mcv_jira_rss(app):
                     release.append(v['name'])
             for x in release:
                 if x not in verlist:
-                    print(x)
+                    logger_info(f'huh, we find {x}.')
                     for qqgroup in check_enable_modules_all('group_permission', 'mcv_jira_rss'):
                         try:
                             await app.sendGroupMessage(int(qqgroup), MessageChain.create(
@@ -87,7 +90,8 @@ async def mcv_jira_rss(app):
                     addversion = open('./assets/mcversion_jira.txt', 'a')
                     addversion.write('\n' + x)
                     addversion.close()
-            await asyncio.sleep(10)
+            logger_info('jira mcv checked.')
+            await asyncio.sleep(20)
         except Exception:
             traceback.print_exc()
             await asyncio.sleep(5)

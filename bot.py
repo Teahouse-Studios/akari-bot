@@ -7,10 +7,13 @@ from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
+import core
 from core.broadcast import bcc, app
 from core.loader import rss_loader
 from core.parser import parser
 from legacy_subbot import newbie
+
+from importlib import reload
 
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):

@@ -5,21 +5,38 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
 import database
-from core.loader import command_loader
+from core.loader import command_loader, logger_info
 from core.template import sendMessage
 
-admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list = command_loader()
-print(essential_list)
+import importlib
+
+
+admin_list = []
+essential_list = []
+command_list = []
+help_list = []
+regex_list = []
+self_options_list = []
+options_list = []
 function_list = []
-for command in command_list:
-    function_list.append(command)
-for reg in regex_list:
-    function_list.append(reg)
-for options in self_options_list:
-    function_list.append(options)
-for options in options_list:
-    function_list.append(options)
-print(function_list)
+
+
+def load_modules(reload=False):
+    global admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, function_list
+    admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list = command_loader(reload)
+    function_list = []
+    for command in command_list:
+        function_list.append(command)
+    for reg in regex_list:
+        function_list.append(reg)
+    for options in self_options_list:
+        function_list.append(options)
+    for options in options_list:
+        function_list.append(options)
+    logger_info(f'Now we have function = {function_list}')
+
+
+load_modules()
 
 
 async def parser(kwargs: dict):
@@ -70,6 +87,9 @@ async def parser(kwargs: dict):
                 await admin_list[command_first_word](kwargs)
             else:
                 await sendMessage(kwargs, '权限不足')
+        elif command_first_word == 'reload':
+            load_modules(reload=True)
+            await sendMessage(kwargs, '!')
     # 正则模块部分
     if Group in kwargs:
         for regex in regex_list:  # 遍历正则模块列表
