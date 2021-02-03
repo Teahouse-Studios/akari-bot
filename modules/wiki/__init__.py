@@ -229,7 +229,8 @@ async def regex_wiki(kwargs: dict):
                         prompt = '没有指定起始Wiki，请管理员在群内发送~wiki_start_site <域名>来设定起始Wiki。\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
                     if Friend in kwargs:
                         prompt = '没有指定起始Wiki，请发送~wiki_start_site <域名>来设定起始Wiki。\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
-                    msglist = msglist.plusWith(MessageChain.create([Plain(prompt)]))
+                    msg = {}
+                    msg['text'] = prompt
                     status = 'done'
                 else:
                     iw = None
