@@ -34,6 +34,8 @@ class wikilib:
             return True
         if self.wikilink.upper().find('WIKILEAKS') != -1:
             return True
+        if self.wikilink.upper().find('NANFANGGONGYUAN') != -1:
+            return True
         return False
 
     async def danger_text_check(self, text):
