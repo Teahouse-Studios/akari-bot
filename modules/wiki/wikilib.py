@@ -251,7 +251,7 @@ class wikilib:
                         check = await check_wiki_available(interwiki_link)
                         if check:
                             return await self.main(check[0], matchinterwiki.group(2),
-                                                   matchinterwiki.group(1),
+                                                   interwiki + matchinterwiki.group(1),
                                                    self.igmessage, self.template, tryiw + 1)
                         else:
                             return {'status': 'done',

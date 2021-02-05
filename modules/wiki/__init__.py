@@ -13,15 +13,6 @@ from database import warn_someone, check_enable_modules_self, check_enable_modul
 from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
 
-langcode = ['ab', 'aa', 'af', 'sq', 'am', 'ar', 'hy', 'as', 'ay', 'az', 'ba', 'eu', 'bn', 'dz', 'bh', 'bi', 'br', 'bg',
-            'my', 'be', 'km', 'ca', 'zh', 'co', 'hr', 'cs', 'da', 'nl', 'en', 'eo', 'et', 'fo', 'fa', 'fj', 'fi', 'fr',
-            'fy', 'gl', 'gd', 'gv', 'ka', 'de', 'el', 'kl', 'gn', 'gu', 'ha', 'he', 'iw', 'hi', 'hu', 'is', 'id', 'in',
-            'ia', 'ie', 'iu', 'ik', 'ga', 'it', 'ja', 'jv', 'kn', 'ks', 'kk', 'rw', 'ky', 'rn', 'ko', 'ku', 'lo', 'la',
-            'lv', 'li', 'ln', 'lt', 'mk', 'mg', 'ms', 'ml', 'mt', 'mi', 'mr', 'mo', 'mn', 'na', 'ne', 'no', 'oc', 'or',
-            'om', 'ps', 'pl', 'pt', 'pa', 'qu', 'rm', 'ro', 'ru', 'sm', 'sg', 'sa', 'sr', 'sh', 'st', 'tn', 'sn', 'sd',
-            'si', 'ss', 'sk', 'sl', 'so', 'es', 'su', 'sw', 'sv', 'tl', 'tg', 'ta', 'tt', 'te', 'th', 'to', 'ts', 'tr',
-            'tk', 'tw', 'ug', 'uk', 'ur', 'uz', 'vi', 'vo', 'cy', 'wo', 'xh', 'yi', 'yo', 'zu']
-
 
 async def wiki_loader(kwargs: dict):
     command = kwargs['trigger_msg']
@@ -257,20 +248,9 @@ async def regex_wiki(kwargs: dict):
                                     if check_fandom_addon_enable:
                                         matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
                                         if matchinterwiki:
-                                            matchlangcode = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-                                            if matchlangcode:
-                                                if matchlangcode.group(1) in langcode:
-                                                    get_link = f'https://{matchinterwiki.group(1)}.fandom.com/{matchlangcode.group(1)}/api.php'
-                                                    find = matchlangcode.group(2)
-                                                    iw = matchinterwiki.group(1) + ':' + matchlangcode.group(1)
-                                                else:
-                                                    get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
-                                                    find = matchinterwiki.group(2)
-                                                    iw = matchinterwiki.group(1)
-                                            else:
-                                                get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
-                                                find = matchinterwiki.group(2)
-                                                iw = matchinterwiki.group(1)
+                                            get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
+                                            find = matchinterwiki.group(2)
+                                            iw = matchinterwiki.group(1)
                     msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
                     status = msg['status']
                 if status == 'wait':
