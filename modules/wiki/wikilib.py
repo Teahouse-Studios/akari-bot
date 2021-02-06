@@ -124,10 +124,7 @@ class wikilib:
             self.rspt = await self.researchpage()
             return self.rspt
         self.orginwikilink = re.sub('api.php', '', self.orginwikilink)
-        if not self.sentyouprompt:
-            msg = self.orginwikilink + urllib.parse.quote(self.pagename.encode('UTF-8'))
-        else:
-            msg = '您要的' + self.pagename + '：' + self.orginwikilink + urllib.parse.quote(self.pagename.encode('UTF-8'))
+        msg = self.orginwikilink + urllib.parse.quote(self.pagename.encode('UTF-8'))
         return {'status': 'done', 'text': msg}
 
     async def getdesc(self):
