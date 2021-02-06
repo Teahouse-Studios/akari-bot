@@ -51,6 +51,8 @@ async def parser(kwargs: dict):
         trigger = kwargs[Member].id
     if Friend in kwargs:  # 若为好友
         trigger = kwargs[Friend].id
+    if trigger == 1143754816:  # 特殊规则
+        display = re.sub('^.*:\n', '', display)
     if database.check_black_list(trigger):  # 检查是否在黑名单
         if not database.check_white_list(trigger):  # 检查是否在白名单
             return  # 在黑名单且不在白名单，给我爪巴
