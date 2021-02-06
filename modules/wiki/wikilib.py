@@ -141,7 +141,7 @@ class wikilib:
 
     async def getfirstline(self):
         try:
-            descurl = self.wikilink + f'?action=parse&page={self.gflpagename}&prop=wikitext&section=1&format=json'
+            descurl = self.wikilink + f'?action=parse&page={self.gflpagename}&prop=wikitext&section=0&format=json'
             loaddesc = await self.get_data(descurl, 'json')
             descraw = loaddesc['parse']['wikitext']['*']
             cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S | re.M)
