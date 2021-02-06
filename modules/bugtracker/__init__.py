@@ -4,7 +4,7 @@ from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
 from core.template import sendMessage
-from .bugtracker import bug
+from .bugtracker_new import bugtracker_get
 
 
 async def bugtracker(kwargs: dict):
@@ -12,7 +12,7 @@ async def bugtracker(kwargs: dict):
     msg = re.sub('bug ', '', msg)
     q = re.match(r'(.*)\-(.*)', msg)
     if q:
-        result = await bug(q.group(1) + '-' + q.group(2))
+        result = await bugtracker_get(q.group(1) + '-' + q.group(2))
         msgchain = MessageChain.create([Plain(result)])
         await sendMessage(kwargs, msgchain)
 
@@ -26,7 +26,7 @@ async def regex_bugtracker(kwargs: dict):
         msg = re.sub('bug ', '', msg)
         q = re.match(r'(.*)\-(.*)', msg)
         if q:
-            result = await bug(q.group(1) + '-' + q.group(2))
+            result = await bugtracker_get(q.group(1) + '-' + q.group(2))
             msgchain = MessageChain.create([Plain(result)])
             await sendMessage(kwargs, msgchain)
     findlink = re.findall(r'(https://bugs.mojang.com/browse/.*?-\d*)', msg)
@@ -34,7 +34,7 @@ async def regex_bugtracker(kwargs: dict):
         print(link)
         matchbug = re.match(r'https://bugs.mojang.com/browse/(.*?-\d*)', link)
         if matchbug:
-            await sendMessage(kwargs, await bug(matchbug.group(1)))
+            await sendMessage(kwargs, await bugtracker_get(matchbug.group(1)))
 
 
 command = {'bug': bugtracker}
