@@ -199,6 +199,8 @@ class wikilib:
                              f'（重定向[{self.orginpagename}] -> [{finpgname}]）' + ('\n' if desc != '' else '') + f'{desc}')
         rmlstlb = re.sub('\n\n', '\n', rmlstlb)
         rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+        if len(rmlstlb) > 250:
+            rmlstlb = rmlstlb[0:250]
         try:
             rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
             result = rm5lline[0] + '...行数过多已截断。'
