@@ -4,4 +4,6 @@ googletrans
 ffmpy
 aiohttp
 beautifulsoup4
+selenium
+eventlet
 psutil~=5.7.2
