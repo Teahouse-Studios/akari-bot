@@ -126,48 +126,60 @@ async def bot_help(kwargs: dict):
     help_list = kwargs['help_list']
     command = kwargs['trigger_msg'].split(' ')
     try:
+        msg = []
         if command[1] in help_list:
-            await sendMessage(kwargs, help_list[command[1]]['help'])
+            msg.append(help_list[command[1]]['help'])
+            for x in help_list:
+                if 'depend' in help_list[x]:
+                    if help_list[x]['depend'] == command[1]:
+                        msg.append(help_list[x]['help'])
+            await sendMessage(kwargs, '\n'.join(msg))
     except:
         print(help_list)
         help_msg = []
         help_msg.append('基础命令：')
+        essential = []
         for x in help_list:
             if 'essential' in help_list[x]:
-                help_msg.append(help_list[x]['help'])
+                essential.append(x)
+        help_msg.append(' | '.join(essential))
         help_msg.append('模块扩展命令：')
+        module = []
         for x in help_list:
             if Group in kwargs:
                 if database.check_enable_modules(kwargs, x):
                     if 'module' in help_list[x]:
-                        help_msg.append(x + '：' + help_list[x]['module'])
-                if 'depend' in help_list[x]:
-                    if database.check_enable_modules(kwargs, help_list[x]['depend']):
-                        if help_list[x]['help'] not in help_msg:
-                            help_msg.append(help_list[x]['help'])
+                        module.append(x)
             elif Friend in kwargs:
                 if 'help' in help_list[x]:
-                    help_msg.append(help_list[x]['help'])
-                if 'depend' in help_list[x]:
-                    if help_list[x]['help'] not in help_msg:
-                        help_msg.append(help_list[x]['help'])
-        help_msg.append('使用~help <模块名>查看详细信息。\n[本消息将在一分钟后撤回]')
+                    module.append(x)
+        help_msg.append(' | '.join(module))
+        print(help_msg)
+        help_msg.append('使用~help <对应模块名>查看详细信息。')
+        if Group in kwargs:
+            help_msg.append('[本消息将在一分钟后撤回]')
         send = await sendMessage(kwargs, '\n'.join(help_msg))
-        await asyncio.sleep(60)
-        await revokeMessage(send)
+        if Group in kwargs:
+            await asyncio.sleep(60)
+            await revokeMessage(send)
 
 
 async def modules_help(kwargs: dict):
     help_list = kwargs['help_list']
     help_msg = []
     help_msg.append('当前可用的模块有：')
+    module = []
     for x in help_list:
         if 'module' in help_list[x]:
-            help_msg.append(x + '：' + help_list[x]['module'])
-    help_msg.append('使用~help <模块名>查看详细信息。\n[本消息将在一分钟后撤回]')
+            module.append(x)
+    help_msg.append('|'.join(module))
+    help_msg.append('使用~help <模块名>查看详细信息。')
+    if Group in kwargs:
+        help_msg.append('[本消息将在一分钟后撤回]')
     send = await sendMessage(kwargs, '\n'.join(help_msg))
-    await asyncio.sleep(60)
-    await revokeMessage(send)
+    if Group in kwargs:
+        await asyncio.sleep(60)
+        await revokeMessage(send)
 
 
 async def add_su(kwargs: dict):
@@ -199,8 +211,7 @@ async def set_modules(kwargs: dict):
     await sendMessage(kwargs, msg)
 
 
-command = {'help': bot_help, 'modules': modules_help}
-essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su}
+essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help, 'modules': modules_help}
 admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules}
 help = {'enable': {'module': '开启一个模块', 'help': '~enable <模块名> - 开启一个模块', 'essential': True},
         'disable': {'module': '关闭一个模块', 'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
