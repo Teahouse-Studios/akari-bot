@@ -22,11 +22,11 @@ async def main(kwargs: dict):
 
     if '-r' in commandsplit:
         mode = '-r'
-        commandsplit = commandsplit.remove('-r')
+        commandsplit.remove('-r')
         command = ' '.join(commandsplit)
     if '-p' in commandsplit:
         mode = '-p'
-        commandsplit = commandsplit.remove('-p')
+        commandsplit.remove('-p')
         command = ' '.join(commandsplit)
     match_gpsite = re.match(r'~(.*?) (.*)', command)
     if match_gpsite:
