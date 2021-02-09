@@ -65,7 +65,7 @@ class wikilib:
         siteinfo = await self.get_siteinfo(url)
         article_path = siteinfo['query']['general']['articlepath']
         article_path = re.sub(r'\$1', '', article_path)
-        baseurl = re.match(r'https?://(.*?)/.*', url)
+        baseurl = re.match(r'(https?://.*?)/.*', url)
         return baseurl.group(1) + article_path
 
     async def get_image(self, pagename, wikilink=None):

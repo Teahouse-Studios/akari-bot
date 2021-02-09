@@ -8,7 +8,6 @@ from modules.wiki.wikilib import wikilib
 
 
 async def dpng(link, ss):
-    link = await wikilib().get_article_path(link)
     imgurl = await wikilib().get_image('File:Wiki.png', link)
     d = abspath('./assets/Favicon/' + ss + '/')
     if not os.path.exists(d):

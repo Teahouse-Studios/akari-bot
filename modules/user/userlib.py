@@ -21,9 +21,9 @@ async def get_data(url: str, fmt: str):
 
 async def getwikiname(wikiurl):
     try:
-        wikinameurl = wikiurl + '?action=query&meta=allmessages&ammessages=mainpage&format=json'
+        wikinameurl = wikiurl + '?action=query&meta=siteinfo&siprop=general&format=json'
         wikiname = await get_data(wikinameurl, 'json')
-        Wikiname = wikiname['query']['allmessages'][0]['*']
+        Wikiname = wikiname['query']['general']['sitename']
     except Exception:
         Wikiname = 'Unknown'
     return Wikiname
@@ -57,15 +57,19 @@ def d(str1):
 
 
 async def GetUser(wikiurl, username, argv=None):
+    print(wikiurl)
     GetInterwiki = await wikilib().get_interwiki(wikiurl)
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in GetInterwiki:
             wikiurl = await check_wiki_available(GetInterwiki[match_interwiki.group(1)])
             if wikiurl:
-                return await GetUser(wikiurl, match_interwiki.group(2), argv)
+                return await GetUser(wikiurl[0], match_interwiki.group(2), argv)
     UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
-    GetUserJson = await get_data(UserJsonURL, 'json')
+    try:
+        GetUserJson = await get_data(UserJsonURL, 'json')
+    except:
+        return '发生错误：无法获取到页面信息，请检查是否设置了对应Interwiki。'
     Wikiname = await getwikiname(wikiurl)
     GetUserGroupsList = await get_user_group(wikiurl)
     GetArticleUrl = await wikilib().get_article_path(wikiurl)
@@ -90,11 +94,10 @@ async def GetUser(wikiurl, username, argv=None):
                         Blockmessage += f'，理由：“{Blockreason}”'
         if argv == '-r' or argv == '-p':
             from bs4 import BeautifulSoup as bs
-            wikiurl = re.sub('api.php', '', wikiurl)
-            clawerurl = wikiurl + 'UserProfile:' + username
-            clawer = await get_data(clawerurl, 'text')
-            soup = bs(clawer, 'html.parser')
             try:
+                clawerurl = GetArticleUrl + 'UserProfile:' + username
+                clawer = await get_data(clawerurl, 'text')
+                soup = bs(clawer, 'html.parser')
                 stats = soup.find('div', class_='section stats')
                 point = soup.find('div', class_='score').text
                 dd = stats.find_all('dd')
@@ -106,6 +109,7 @@ async def GetUser(wikiurl, username, argv=None):
             except:
                 Editcount = '无法获取到增强型用户页中的编辑信息。'
                 dd = ['?', '?', '?', '?', '?', '?', '?']
+                point = '?'
             if argv == '-p':
                 import uuid
                 import os

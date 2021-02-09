@@ -6,6 +6,7 @@ from graia.application.message.elements.internal import Image, UploadMethods, Pl
 from core.template import sendMessage
 from modules.wiki.database import get_start_wiki, get_custom_interwiki
 from .userlib import GetUser
+from modules.wiki.helper import check_wiki_available
 
 
 # 呜呜呜 想偷个懒都不行
