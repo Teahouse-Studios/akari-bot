@@ -93,6 +93,7 @@ async def GetUser(wikiurl, username, argv=None):
                     if Blockreason:
                         Blockmessage += f'，理由：“{Blockreason}”'
         if argv == '-r' or argv == '-p':
+            Editcount_Api = Editcount
             from bs4 import BeautifulSoup as bs
             try:
                 clawerurl = GetArticleUrl + 'UserProfile:' + username
@@ -108,7 +109,7 @@ async def GetUser(wikiurl, username, argv=None):
                 Editcount += f' | Wikipoints：{point}'
             except:
                 Editcount = '无法获取到增强型用户页中的编辑信息。'
-                dd = ['?', '?', '?', '?', '?', '?', '?']
+                dd = ['?', '?', Editcount_Api, '?', '?', '?', '?']
                 point = '?'
             if argv == '-p':
                 import uuid
