@@ -34,7 +34,8 @@ async def get_user_group(wikiurl):
     get_json = await get_data(user_group_link, 'json')
     j = get_json['query']['allmessages']
     for x in j:
-        groups[x['name']] = x['*']
+        name = re.sub('^group-', '', x['name'])
+        groups[name] = x['*']
     return groups
 
 
