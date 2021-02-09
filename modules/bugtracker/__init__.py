@@ -39,6 +39,5 @@ async def regex_bugtracker(kwargs: dict):
 
 command = {'bug': bugtracker}
 regex = {'bug_regex': regex_bugtracker}
-help = {'bug': {'module': '查询Mojira上的漏洞编号。', 'help': '~bug <mojiraid> 查询Mojira上的漏洞编号。'},
-        'bug_regex': {'module': '正则自动查询Mojira上的漏洞编号。',
-                      'help': '正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。'}}
+help = {'bug': {'help': '~bug <mojiraid> 查询Mojira上的漏洞编号。'},
+        'bug_regex': {'help': '正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。'}}

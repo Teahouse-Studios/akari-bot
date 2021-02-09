@@ -211,8 +211,9 @@ async def set_modules(kwargs: dict):
     await sendMessage(kwargs, msg)
 
 
-essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help, 'modules': modules_help}
+essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help,
+             'modules': modules_help}
 admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules}
-help = {'enable': {'module': '开启一个模块', 'help': '~enable <模块名> - 开启一个模块', 'essential': True},
-        'disable': {'module': '关闭一个模块', 'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
+help = {'enable': {'help': '~enable <模块名> - 开启一个模块', 'essential': True},
+        'disable': {'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
         'module': {'help': '~modules - 查询所有可用模块。'}}

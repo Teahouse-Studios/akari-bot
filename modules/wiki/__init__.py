@@ -139,11 +139,14 @@ async def interwiki(kwargs: dict):
         check = check_permission(kwargs)
         if check:
             if command[0] == 'add':
-                iw = command[1].split('>')
+                command = re.sub(r'^interwiki add ', '', kwargs['trigger_msg'])
+                command = re.sub(' ', '>', command)
+                iw = command.split('>')
                 try:
                     check = await check_wiki_available(iw[1])
                 except:
-                    await sendMessage(kwargs, '错误：命令不合法：~interwiki add Interwiki>url')
+                    await sendMessage(kwargs, '错误：命令不合法：~interwiki add <Interwiki> <url>')
+                    check = False
                 if check:
                     result = database.config_custom_interwiki('add', 'custom_interwiki_group', kwargs[Group].id, iw[0],
                                                               check[0])
@@ -161,8 +164,14 @@ async def interwiki(kwargs: dict):
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     if Friend in kwargs:
         if command[0] == 'add':
-            iw = command[1].split('>')
-            check = await check_wiki_available(iw[1])
+            command = re.sub(r'^interwiki add ', '', kwargs['trigger_msg'])
+            command = re.sub(' ', '>', command)
+            iw = command.split('>')
+            try:
+                check = await check_wiki_available(iw[1])
+            except:
+                await sendMessage(kwargs, '错误：命令不合法：~interwiki add <Interwiki> <url>')
+                check = False
             if check:
                 result = database.config_custom_interwiki('add', 'custom_interwiki_self', kwargs[Friend].id, iw[0],
                                                           check[0])
@@ -317,15 +326,15 @@ command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': 
 regex = {'wiki_regex': regex_wiki}
 self_options = ['wiki_infobox']
 options = ['wiki_fandom_addon', 'wiki_gamepedia_addon']
-help = {'wiki': {'module': '查询Wiki内容。', 'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。'},
-        'wiki_start_site': {'module': '设置起始查询Wiki。', 'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
-        'interwiki': {'module': '设置自定义Interwiki。',
-                      'help': '~interwiki <add|del> <wikilink>><wikiurl> - 设置自定义Interwiki。'},
-        'wiki_regex': {'module': '启用正则Wikitext查询。', 'help': '[[<pagename>]]|{{<pagename>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
-        'wiki_infobox': {'module': '当被查询的页面包含Infobox时自动提取并渲染为图片发送。',
-                         'help': 'Infobox渲染：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',
-                         'depend': 'wiki'},
-        'wiki_fandom_addon': {'module': '启用为Fandom定制的Wiki查询功能。（仅群聊）',
-                              'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<pagename>]]的消息会自动定向查询至Fandom的Wiki。'},
-        'wiki_gamepedia_addon': {'module': '启用为Gamepedia定制的Wiki查询功能。（仅群聊）',
-                                 'help': '为Gamepedia定制的查询功能，输入~wiki ~<wikiname> <pagename>会自动定向查询至Gamepedia的Wiki。'}}
+help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。'},
+        'wiki_start_site': {'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
+        'interwiki': {
+            'help': '~interwiki <add|del> <wikilink> <wikiurl> - 设置自定义Interwiki。'},
+        'wiki_regex': {'help': '[[<pagename>]]|{{<pagename>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
+        'wiki_infobox': {
+            'help': 'Infobox渲染：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',
+            'depend': 'wiki'},
+        'wiki_fandom_addon': {
+            'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<pagename>]]的消息会自动定向查询至Fandom的Wiki。'},
+        'wiki_gamepedia_addon': {
+            'help': '为Gamepedia定制的查询功能，输入~wiki ~<wikiname> <pagename>会自动定向查询至Gamepedia的Wiki。'}}

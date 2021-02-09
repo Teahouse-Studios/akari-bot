@@ -63,7 +63,7 @@ async def ping(kwargs: dict):
 
 command = {'rc': rc_loader, 'ab': ab_loader, 'newbie': newbie_loader}
 essential = {'ping': ping}
-help = {'rc': {'module': '查询Wiki最近更改。', 'help': '~rc - 查询Wiki最近更改。'},
-        'ab': {'module': '查询Wiki滥用过滤器日志。', 'help': '~ab - 查询Wiki滥用过滤器日志。'},
-        'newbie': {'module': '查询Wiki用户注册日志。', 'help': '~newbie - 查询Wiki用户注册日志。'},
-        'ping': {'module': 'Pong', 'help': '~ping - PongPongPong', 'essential': True}}
+help = {'rc': {'help': '~rc - 查询Wiki最近更改。'},
+        'ab': {'help': '~ab - 查询Wiki滥用过滤器日志。'},
+        'newbie': {'help': '~newbie - 查询Wiki用户注册日志。'},
+        'ping': {'help': '~ping - PongPongPong', 'essential': True}}

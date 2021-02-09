@@ -5,9 +5,10 @@ from os.path import abspath
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
+from core.loader import logger_info
 from database import check_enable_modules_all
 from modules.mcv.mcv import get_data
-from core.loader import logger_info
+
 
 def mcversion():
     w = open(abspath('./assets/mcversion.txt'), 'r+')
@@ -99,5 +100,5 @@ async def mcv_jira_rss(app):
 
 rss = {'mcv_rss': mcv_rss, 'mcv_jira_rss': mcv_jira_rss}
 options = ['mcv_rss', 'mcv_jira_rss']
-help = {'mcv_rss': {'module': '订阅Minecraft Java版游戏版本检测。（仅群聊）'},
-        'mcv_jira_rss': {'module': '订阅Minecraft Java版游戏版本检测（Jira记录，仅作预览用）。（仅群聊）'}}
+help = {'mcv_rss': {'help': '订阅Minecraft Java版游戏版本检测。（仅群聊）'},
+        'mcv_jira_rss': {'help': '订阅Minecraft Java版游戏版本检测（Jira记录，仅作预览用）。（仅群聊）'}}

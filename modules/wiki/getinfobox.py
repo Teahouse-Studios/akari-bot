@@ -4,12 +4,12 @@ import os
 import re
 import traceback
 import uuid
+from urllib.parse import urljoin
 
 import aiohttp
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from urllib.parse import urljoin
 
 from config import config
 from modules.wiki.helper import get_url

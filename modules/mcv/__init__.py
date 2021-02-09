@@ -24,10 +24,10 @@ async def mcdv_loader(kwargs: dict):
 
 
 command = {'mcv': mcv_loader, 'mcbv': mcbv_loader, 'mcdv': mcdv_loader}
-help = {'mcv': {'module': '查询当前Minecraft Java版启动器内最新版本。',
-                'help': '~mcv - 查询当前Minecraft Java版启动器内最新版本。'},
-        'mcbv': {'module': '查询当前Minecraft基岩版Jira上记录的最新版本。',
-                 'help': '~mcbv - 查询当前Minecraft基岩版Jira上记录的最新版本。'},
-        'mcdv': {'module': '查询当前Minecraft Dungeons Jira上记录的最新版本。',
-                 'help': '~mcdv - 查询当前Minecraft Dungeons Jira上记录的最新版本。'}
-        }
+help = {'mcv': {
+    'help': '~mcv - 查询当前Minecraft Java版启动器内最新版本。'},
+    'mcbv': {
+        'help': '~mcbv - 查询当前Minecraft基岩版Jira上记录的最新版本。'},
+    'mcdv': {
+        'help': '~mcdv - 查询当前Minecraft Dungeons Jira上记录的最新版本。'}
+}

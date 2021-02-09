@@ -20,5 +20,5 @@ async def main(kwargs: dict):
 
 
 command = {'server': main}
-help = {'server': {'module': '获取Minecraft Java/基岩版服务器motd。',
-                   'help': '~server <服务器地址>:<服务器端口> - 获取Minecraft Java/基岩版服务器motd。'}}
+help = {'server': {
+    'help': '~server <服务器地址>:<服务器端口> - 获取Minecraft Java/基岩版服务器motd。'}}

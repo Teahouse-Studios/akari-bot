@@ -1,5 +1,4 @@
 import json
-from xml.etree import ElementTree
 
 from core.utils import get_url
 
@@ -92,6 +91,3 @@ async def bugtracker_get(MojiraID):
             msglist.append(Link)
         msg = '\n'.join(msglist)
     return msg
-
-
-

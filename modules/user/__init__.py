@@ -5,45 +5,44 @@ from graia.application.message.elements.internal import Image, UploadMethods, Pl
 
 from core.template import sendMessage
 from modules.wiki.database import get_start_wiki, get_custom_interwiki
-from .userlib import User
+from .userlib import GetUser
 
 
 # 使用次数过少，故简单移植处理（
 async def main(kwargs: dict):
     command = re.sub('^user ', '', kwargs['trigger_msg'])
     commandsplit = command.split(' ')
-    s = re.match(r'~(.*?) (.*)', command)
-    if s:
-        metaurl = 'https://' + s.group(1) + '.gamepedia.com/api.php'
-        if '-r' in commandsplit:
-            rmargv = re.sub(' -r|-r ', '', s.group(2))
-            result = await User(metaurl, rmargv, '-r')
-        elif '-p' in commandsplit:
-            rmargv = re.sub(' -p|-p ', '', s.group(2))
-            result = await User(metaurl, rmargv, '-p')
-        else:
-            result = await User(metaurl, s.group(2))
-    i = re.match(r'(.*?):(.*)', command)
-    if i:
-        w = i.group(1)
-        rmargv = i.group(2)
-        if Group in kwargs:
-            table = 'custom_interwiki_group'
-            id = kwargs[Group].id
-        if Friend in kwargs:
-            table = 'custon_interwiki_self'
-            id = kwargs[Friend].id
-        get_iw = get_custom_interwiki(table, id, w)
-        if get_iw:
-            metaurl = get_iw
-            if '-r' in commandsplit:
-                rmargv = re.sub(' -r|-r ', '', rmargv)
-                result = await User(metaurl, rmargv, '-r')
-            elif '-p' in commandsplit:
-                rmargv = re.sub(' -p|-p ', '', rmargv)
-                result = await User(metaurl, rmargv, '-p')
-            else:
-                result = await User(metaurl, rmargv)
+    mode = None
+    metaurl = None
+    username = None
+    if Group in kwargs:
+        id = kwargs[Group].id
+    if Friend in kwargs:
+        id = kwargs[Friend].id
+
+    if '-r' in commandsplit:
+        mode = '-r'
+        commandsplit = commandsplit.remove('-r')
+        command = ' '.join(commandsplit)
+    if '-p' in commandsplit:
+        mode = '-p'
+        commandsplit = commandsplit.remove('-p')
+        command = ' '.join(commandsplit)
+    match_gpsite = re.match(r'~(.*?) (.*)', command)
+    if match_gpsite:
+        metaurl = f'https://{match_gpsite.group(1)}.gamepedia.com/api.php'
+        username = match_gpsite.group(2)
+    else:
+        match_interwiki = re.match(r'(.*?):(.*)', command)
+        if match_interwiki:
+            if Group in kwargs:
+                table = 'custom_interwiki_group'
+            if Friend in kwargs:
+                table = 'custon_interwiki_self'
+            get_iw = get_custom_interwiki(table, id, match_interwiki.group(1))
+            if get_iw:
+                metaurl = get_iw
+                username = match_interwiki.group(2)
         else:
             if Group in kwargs:
                 table = 'start_wiki_link_group'
@@ -52,32 +51,10 @@ async def main(kwargs: dict):
             get_url = get_start_wiki(table, id)
             if get_url:
                 metaurl = get_url
-                if '-r' in commandsplit:
-                    rmargv = re.sub(' -r|-r ', '', rmargv)
-                    result = await User(metaurl, rmargv, '-r')
-                elif '-p' in commandsplit:
-                    rmargv = re.sub(' -p|-p ', '', rmargv)
-                    result = await User(metaurl, rmargv, '-p')
-                else:
-                    result = await User(metaurl, rmargv)
-    else:
-        if Group in kwargs:
-            table = 'start_wiki_link_group'
-            id = kwargs[Group].id
-        if Friend in kwargs:
-            table = 'start_wiki_link_self'
-            id = kwargs[Friend].id
-        get_url = get_start_wiki(table, id)
-        if get_url:
-            metaurl = get_url
-            if '-r' in commandsplit:
-                rmargv = re.sub(' -r|-r ', '', command)
-                result = await User(metaurl, rmargv, '-r')
-            elif '-p' in commandsplit:
-                rmargv = re.sub(' -p|-p ', '', command)
-                result = await User(metaurl, rmargv, '-p')
+                username = command
             else:
-                result = await User(metaurl, command)
+                await sendMessage(kwargs, '未设置起始Interwiki。')
+    result = await GetUser(metaurl, username, mode)
     if result:
         matchimg = re.match('.*\[\[uimgc:(.*)]]', result)
         if matchimg:
@@ -95,7 +72,7 @@ async def main(kwargs: dict):
 
 
 command = {'user': main}
-help = {'user': {'module': '获取一个Gamepedia用户的信息。',
-                 'help': '~user [~(wiki_name)] <username> - 获取一个Gamepedia用户的信息。' +
-                         '\n[-r] - 获取详细信息' +
-                         '\n[-p] - 生成一张图片'}}
+help = {'user': {
+    'help': '~user [~(wiki_name)] <username> - 获取一个Gamepedia用户的信息。' +
+            '\n[-r] - 获取详细信息' +
+            '\n[-p] - 生成一张图片'}}

@@ -4,7 +4,9 @@ import urllib
 import aiohttp
 
 from modules.utils.UTC8 import UTC8
-from .tool import yhz, gender
+from .tool import gender
+from modules.wiki.wikilib import wikilib
+from modules.wiki.helper import check_wiki_available
 
 
 async def get_data(url: str, fmt: str):
@@ -26,38 +28,59 @@ async def getwikiname(wikiurl):
     return Wikiname
 
 
+async def get_user_group(wikiurl):
+    groups = {}
+    user_group_link = wikiurl + '?action=query&meta=allmessages&amprefix=group-&format=json'
+    get_json = await get_data(user_group_link, 'json')
+    j = get_json['query']['allmessages']
+    for x in j:
+        groups[x['name']] = x['*']
+    return groups
+
+
+async def trans_user_group(user_group: list, group_dict: dict):
+    trans = []
+    for x in user_group:
+        trans.append(group_dict[x])
+    return '、'.join(trans)
+
+
 def d(str1):
     a = re.sub(r'<dd>|</dd>', '', str1)
     return a
 
 
-async def User(wikiurl, username, argv=None):
+async def GetUser(wikiurl, username, argv=None):
+    GetInterwiki = await wikilib().get_interwiki(wikiurl)
+    match_interwiki = re.match(r'(.*?):(.*)', username)
+    if match_interwiki:
+        if match_interwiki.group(1) in GetInterwiki:
+            wikiurl = check_wiki_available(GetInterwiki[match_interwiki.group(1)])
+            if wikiurl:
+                return await GetUser(wikiurl, match_interwiki.group(2), argv)
     UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
     GetUserJson = await get_data(UserJsonURL, 'json')
     Wikiname = await getwikiname(wikiurl)
+    GetUserGroupsList = await get_user_group(wikiurl)
     try:
         User = GetUserJson['query']['users'][0]['name']
         Editcount = str(GetUserJson['query']['users'][0]['editcount'])
-        Group = yhz(str(GetUserJson['query']['users'][0]['groups']))
+        Group = trans_user_group(GetUserJson['query']['users'][0]['groups'], GetUserGroupsList)
         Gender = gender(GetUserJson['query']['users'][0]['gender'])
         Registration = UTC8(GetUserJson['query']['users'][0]['registration'], 'full')
         rmuser = re.sub('User:', '', username)
         Blockmessage = ''
-        try:
+        if 'blockedby' in GetUserJson['query']['users'][0]:
             BlockedBy = GetUserJson['query']['users'][0]['blockedby']
             if BlockedBy:
                 Blockedtimestamp = UTC8(GetUserJson['query']['users'][0]['blockedtimestamp'], 'full')
                 Blockexpiry = UTC8(str(GetUserJson['query']['users'][0]['blockexpiry']), 'full')
                 Blockmessage = f'\n{User}正在被封禁！' + \
                                f'\n被{BlockedBy}封禁，时间从{Blockedtimestamp}到{Blockexpiry}'
-                try:
+                if 'blockreason' in GetUserJson['query']['users'][0]:
                     Blockreason = GetUserJson['query']['users'][0]['blockreason']
                     if Blockreason:
                         Blockmessage += f'，理由：“{Blockreason}”'
-                except KeyError:
-                    pass
-        except KeyError:
-            pass
         if argv == '-r' or argv == '-p':
             from bs4 import BeautifulSoup as bs
             wikiurl = re.sub('api.php', '', wikiurl)
@@ -161,9 +184,10 @@ async def User(wikiurl, username, argv=None):
                 f'用户组：{Group}\n' +
                 f'性别：{Gender}\n' +
                 f'注册时间：{Registration}' + Blockmessage)
-    except Exception:
+    except Exception as e:
         if 'missing' in GetUserJson['query']['users'][0]:
             return '没有找到此用户。'
         else:
+            return '发生错误：' + e
             import traceback
             traceback.print_exc()

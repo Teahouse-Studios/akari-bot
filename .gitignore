@@ -12,3 +12,4 @@ assets/Favicon/**/*.png
 assets/cache/*
 save.db
 cache/*
+assets/mcversion_jira.txt
