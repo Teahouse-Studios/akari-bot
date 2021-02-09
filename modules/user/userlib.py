@@ -38,7 +38,7 @@ async def get_user_group(wikiurl):
     return groups
 
 
-async def trans_user_group(user_group: list, group_dict: dict):
+def trans_user_group(user_group: list, group_dict: dict):
     trans = []
     for x in user_group:
         trans.append(group_dict[x])
@@ -55,7 +55,7 @@ async def GetUser(wikiurl, username, argv=None):
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in GetInterwiki:
-            wikiurl = check_wiki_available(GetInterwiki[match_interwiki.group(1)])
+            wikiurl = await check_wiki_available(GetInterwiki[match_interwiki.group(1)])
             if wikiurl:
                 return await GetUser(wikiurl, match_interwiki.group(2), argv)
     UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
