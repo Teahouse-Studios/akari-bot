@@ -8,7 +8,7 @@ from modules.wiki.database import get_start_wiki, get_custom_interwiki
 from .userlib import GetUser
 
 
-# 使用次数过少，故简单移植处理（
+# 呜呜呜 想偷个懒都不行
 async def main(kwargs: dict):
     command = re.sub('^user ', '', kwargs['trigger_msg'])
     commandsplit = command.split(' ')
