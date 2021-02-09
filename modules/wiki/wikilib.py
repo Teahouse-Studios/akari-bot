@@ -68,9 +68,9 @@ class wikilib:
         baseurl = re.match(r'https?://(.*?)/.*', url)
         return baseurl.group(1) + article_path
 
-    async def get_image(self, pagename):
+    async def get_image(self, pagename, wikilink=None):
         try:
-            url = self.wikilink + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
+            url = (wikilink if wikilink is not None else self.wikilink) + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
             json = await self.get_data(url, 'json')
             parsepageid = self.parsepageid(json)
             imagelink = json['query']['pages'][parsepageid]['imageinfo'][0]['url']

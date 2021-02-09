@@ -121,10 +121,10 @@ async def GetUser(wikiurl, username, argv=None):
                 wikipng = os.path.abspath('./assets/Favicon/' + matchlink.group(1) + '/Wiki.png')
                 if not os.path.exists(wikipng):
                     from .dpng import dpng
-                    if not dpng(wikiurl, matchlink.group(1)):
+                    if not await dpng(wikiurl, matchlink.group(1)):
                         raise
                 from .tpg import tpg
-                try:
+                if 'blockedby' in GetUserJson['query']['users'][0]:
                     BlockedBy = GetUserJson['query']['users'][0]['blockedby']
                     if BlockedBy:
                         Blockedtimestamp = UTC8(GetUserJson['query']['users'][0]['blockedtimestamp'], 'notimezone')
@@ -173,7 +173,7 @@ async def GetUser(wikiurl, username, argv=None):
                                             blocktimestamp2=Blockexpiry,
                                             blockreason=Blockreason,
                                             bantype='Y')
-                except KeyError:
+                else:
                     imagepath = tpg(favicon=wikipng,
                                     wikiname=Wikiname,
                                     username=User,
@@ -200,4 +200,4 @@ async def GetUser(wikiurl, username, argv=None):
             return '没有找到此用户。'
         else:
             traceback.print_exc()
-            return '发生错误：' + e
+            return '发生错误：' + str(e)
