@@ -1,4 +1,5 @@
 import re
+import traceback
 import urllib
 
 import aiohttp
@@ -67,6 +68,7 @@ async def GetUser(wikiurl, username, argv=None):
     GetUserJson = await get_data(UserJsonURL, 'json')
     Wikiname = await getwikiname(wikiurl)
     GetUserGroupsList = await get_user_group(wikiurl)
+    GetArticleUrl = await wikilib().get_article_path(wikiurl)
     try:
         User = GetUserJson['query']['users'][0]['name']
         Editcount = str(GetUserJson['query']['users'][0]['editcount'])
@@ -92,14 +94,18 @@ async def GetUser(wikiurl, username, argv=None):
             clawerurl = wikiurl + 'UserProfile:' + username
             clawer = await get_data(clawerurl, 'text')
             soup = bs(clawer, 'html.parser')
-            stats = soup.find('div', class_='section stats')
-            point = soup.find('div', class_='score').text
-            dd = stats.find_all('dd')
-            Editcount = ('\n编辑过的Wiki：' + str(dd[0]) + '\n创建数：' + str(dd[1]) + ' | 编辑数：' + str(dd[2]) + '\n删除数：' + str(
-                dd[3]) + ' | 巡查数：' + str(dd[4]) + '\n本站排名：' + str(dd[5]) + ' | 全域排名：' + str(dd[6]) + '\n好友：' + str(
-                dd[7]))
-            Editcount = re.sub(r'<dd>|</dd>', '', Editcount)
-            Editcount += f' | Wikipoints：{point}'
+            try:
+                stats = soup.find('div', class_='section stats')
+                point = soup.find('div', class_='score').text
+                dd = stats.find_all('dd')
+                Editcount = ('\n编辑过的Wiki：' + str(dd[0]) + '\n创建数：' + str(dd[1]) + ' | 编辑数：' + str(dd[2]) + '\n删除数：' + str(
+                    dd[3]) + ' | 巡查数：' + str(dd[4]) + '\n本站排名：' + str(dd[5]) + ' | 全域排名：' + str(dd[6]) + '\n好友：' + str(
+                    dd[7]))
+                Editcount = re.sub(r'<dd>|</dd>', '', Editcount)
+                Editcount += f' | Wikipoints：{point}'
+            except:
+                Editcount = '无法获取到增强型用户页中的编辑信息。'
+                dd = ['?', '?', '?', '?', '?', '?', '?']
             if argv == '-p':
                 import uuid
                 import os
@@ -182,8 +188,8 @@ async def GetUser(wikiurl, username, argv=None):
                                     globaltop=d(str(dd[6])),
                                     wikipoint=point)
         if argv == '-p':
-            return f'{wikiurl}UserProfile:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimgc:{imagepath}]]'
-        return (wikiurl + 'UserProfile:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
+            return f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimgc:{imagepath}]]'
+        return (GetArticleUrl+ 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
                 Wikiname + '\n' +
                 f'用户：{User} | 编辑数：{Editcount}\n' +
                 f'用户组：{Group}\n' +
@@ -193,6 +199,5 @@ async def GetUser(wikiurl, username, argv=None):
         if 'missing' in GetUserJson['query']['users'][0]:
             return '没有找到此用户。'
         else:
-            return '发生错误：' + e
-            import traceback
             traceback.print_exc()
+            return '发生错误：' + e

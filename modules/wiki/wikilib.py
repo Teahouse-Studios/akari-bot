@@ -56,6 +56,18 @@ class wikilib:
             interwiki_dict[interwiki['prefix']] = re.sub(r'(?:wiki/|)\$1', '', interwiki['url'])
         return interwiki_dict
 
+    async def get_siteinfo(self, url):
+        siteinfo_url = url + '?action=query&meta=siteinfo&siprop=general&format=json'
+        j = await self.get_data(siteinfo_url, 'json')
+        return j
+
+    async def get_article_path(self, url):
+        siteinfo = await self.get_siteinfo(url)
+        article_path = siteinfo['query']['general']['articlepath']
+        article_path = re.sub(r'\$1', '', article_path)
+        baseurl = re.match(r'https?://(.*?)/.*', url)
+        return baseurl.group(1) + article_path
+
     async def get_image(self, pagename):
         try:
             url = self.wikilink + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
@@ -123,8 +135,7 @@ class wikilib:
         if 'missing' in self.psepgraw:
             self.rspt = await self.researchpage()
             return self.rspt
-        self.orginwikilink = re.sub('api.php', '', self.orginwikilink)
-        msg = self.orginwikilink + urllib.parse.quote(self.pagename.encode('UTF-8'))
+        msg = await self.get_article_path(self.wikilink) + urllib.parse.quote(self.pagename.encode('UTF-8'))
         return {'status': 'done', 'text': msg}
 
     async def getdesc(self):
@@ -221,7 +232,7 @@ class wikilib:
         print(pagename)
         print(interwiki)
         if pagename == '':
-            return {'status': 'done', 'text': '错误：需要查询的页面为空。'}
+            return {'status': 'done', 'text': await self.get_article_path(wikilink)}
         pagename = re.sub('_', ' ', pagename)
         pagename = pagename.split('|')[0]
         self.orginwikilink = wikilink
@@ -243,7 +254,6 @@ class wikilib:
             matchinterwiki = re.match(r'(.*?):(.*)', self.pagename)
             if matchinterwiki:
                 iwlist = await self.get_interwiki(self.wikilink)
-                print(iwlist)
                 if matchinterwiki.group(1) in iwlist:
                     if tryiw <= 5:
                         interwiki_link = iwlist[matchinterwiki.group(1)]
