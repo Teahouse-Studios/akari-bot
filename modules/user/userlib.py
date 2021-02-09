@@ -41,8 +41,10 @@ async def get_user_group(wikiurl):
 def trans_user_group(user_group: list, group_dict: dict):
     trans = []
     for x in user_group:
-        if x != "*":
+        if x in group_dict:
             trans.append(group_dict[x])
+        else:
+            trans.append(x)
     return '、'.join(trans)
 
 
