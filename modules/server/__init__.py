@@ -2,6 +2,7 @@ import asyncio
 import re
 
 from core.template import sendMessage, revokeMessage
+from core.dirty_check import check
 from .server import server
 
 
@@ -14,6 +15,7 @@ async def main(kwargs: dict):
         sendmsg = await server(message, raw=True)
     else:
         sendmsg = await server(message)
+    sendmsg = await check(sendmsg)
     send = await sendMessage(kwargs, sendmsg)
     await asyncio.sleep(30)
     await revokeMessage(send)
