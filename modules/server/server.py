@@ -17,7 +17,7 @@ async def server(address, raw=False):
         serip = address
         port1 = '25565'
         port2 = '19132'
-    matchserip = re.match(r'(.*?).(.*?).(.*?).(.*?)', serip)
+    matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', serip)
     if matchserip:
         try:
             if matchserip.group(1) == '192':
