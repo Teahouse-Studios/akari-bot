@@ -148,7 +148,7 @@ async def bot_help(kwargs: dict):
         for x in help_list:
             if Group in kwargs:
                 if database.check_enable_modules(kwargs, x):
-                    if 'module' in help_list[x]:
+                    if 'help' in help_list[x]:
                         module.append(x)
             elif Friend in kwargs:
                 if 'help' in help_list[x]:
@@ -170,9 +170,9 @@ async def modules_help(kwargs: dict):
     help_msg.append('当前可用的模块有：')
     module = []
     for x in help_list:
-        if 'module' in help_list[x]:
+        if 'help' in help_list[x]:
             module.append(x)
-    help_msg.append('|'.join(module))
+    help_msg.append(' | '.join(module))
     help_msg.append('使用~help <模块名>查看详细信息。')
     if Group in kwargs:
         help_msg.append('[本消息将在一分钟后撤回]')
