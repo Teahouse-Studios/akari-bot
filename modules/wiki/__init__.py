@@ -257,9 +257,15 @@ async def regex_wiki(kwargs: dict):
                                     if check_fandom_addon_enable:
                                         matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
                                         if matchinterwiki:
-                                            get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
-                                            find = matchinterwiki.group(2)
-                                            iw = matchinterwiki.group(1)
+                                            interwiki_split = matchinterwiki.group(1).split('.')
+                                            if len(interwiki_split) == 2:
+                                                get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
+                                                find = interwiki_split[0] + ':' + matchinterwiki.group(2)
+                                                iw = interwiki_split[0]
+                                            else:
+                                                get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
+                                                find = matchinterwiki.group(2)
+                                                iw = matchinterwiki.group(1)
                     msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
                     status = msg['status']
                 if status == 'wait':
