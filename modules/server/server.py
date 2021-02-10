@@ -29,6 +29,11 @@ async def server(address, raw=False):
             if matchserip.group(1) == '10':
                 if 0 <= int(matchserip.group(2)) <= 255:
                     return '¿'
+            if matchserip.group(1) == '0':
+                if matchserip.group(2) == '0':
+                    if matchserip.group(3) == '0':
+                        if matchserip.group(4) == '0':
+                            return '¿'
         except:
             traceback.print_exc()
 
