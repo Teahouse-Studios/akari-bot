@@ -26,7 +26,8 @@ async def server(address, raw=False):
             if 16 <= int(matchserip.group(2)) <= 31:
                 return '¿'
         if matchserip.group(1) == '10':
-            return '¿'
+            if 0 <= int(matchserip.group(2)) <= 255:
+                return '¿'
 
     try:
         url = 'http://motd.wd-api.com/java?ip=' + serip + '&port=' + port1
