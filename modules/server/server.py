@@ -19,15 +19,18 @@ async def server(address, raw=False):
         port2 = '19132'
     matchserip = re.match(r'(.*?).(.*?).(.*?).(.*?)', serip)
     if matchserip:
-        if matchserip.group(1) == '192':
-            if matchserip.group(2) == '168':
-                return '¿'
-        if matchserip.group(1) == '172':
-            if 16 <= int(matchserip.group(2)) <= 31:
-                return '¿'
-        if matchserip.group(1) == '10':
-            if 0 <= int(matchserip.group(2)) <= 255:
-                return '¿'
+        try:
+            if matchserip.group(1) == '192':
+                if matchserip.group(2) == '168':
+                    return '¿'
+            if matchserip.group(1) == '172':
+                if 16 <= int(matchserip.group(2)) <= 31:
+                    return '¿'
+            if matchserip.group(1) == '10':
+                if 0 <= int(matchserip.group(2)) <= 255:
+                    return '¿'
+        except:
+            traceback.print_exc()
 
     try:
         url = 'http://motd.wd-api.com/java?ip=' + serip + '&port=' + port1
