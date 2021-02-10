@@ -34,19 +34,43 @@ async def wiki_loader(kwargs: dict):
         if Group in kwargs:
             check_gamepedia_addon_enable = check_enable_modules(kwargs[Group].id,
                                                                 'wiki_gamepedia_addon')
-            if check_gamepedia_addon_enable:
-                matchsite = re.match(r'~(.*?) (.*)', command)
-                if matchsite:
-                    get_link = 'https://' + matchsite.group(1) + '.gamepedia.com/api.php'
-                    iw = 'gp:' + matchsite.group(1)
-                    co = True
-                    command = matchsite.group(2)
-                matchgp = re.match(r'^gp:(.*?):(.*)', command)
-                if matchgp:
-                    get_link = 'https://' + matchgp.group(1) + '.gamepedia.com/api.php'
-                    iw = 'gp:' + matchgp.group(1)
-                    co = True
-                    command = matchsite.group(2)
+        if Friend in kwargs:
+            check_gamepedia_addon_enable = check_enable_modules_self(kwargs[Group].id,
+                                                                'wiki_gamepedia_addon')
+        if check_gamepedia_addon_enable:
+            matchsite = re.match(r'~(.*?) (.*)', command)
+            if matchsite:
+                get_link = 'https://' + matchsite.group(1) + '.gamepedia.com/api.php'
+                iw = 'gp:' + matchsite.group(1)
+                co = True
+                command = matchsite.group(2)
+            matchgp = re.match(r'^gp:(.*?):(.*)', command)
+            if matchgp:
+                get_link = 'https://' + matchgp.group(1) + '.gamepedia.com/api.php'
+                iw = 'gp:' + matchgp.group(1)
+                co = True
+                command = matchsite.group(2)
+
+        if Group in kwargs:
+            check_fandom_addon_enable = check_enable_modules(kwargs[Group].id,
+                                                                'wiki_fandom_addon')
+        if Friend in kwargs:
+            check_fandom_addon_enable = check_enable_modules_self(kwargs[Group].id,
+                                                                'wiki_fandom_addon')
+        if check_fandom_addon_enable:
+            matchsite = re.match(r'\?(.*?) (.*)', command)
+            if matchsite:
+                get_link = 'https://' + matchsite.group(1) + '.fandom.com/api.php'
+                iw = 'fd:' + matchsite.group(1)
+                co = True
+                command = matchsite.group(2)
+            matchfd = re.match(r'^fd:(.*?):(.*)', command)
+            if matchfd:
+                get_link = 'https://' + matchfd.group(1) + '.fandom.com/api.php'
+                iw = 'fd:' + matchfd.group(1)
+                co = True
+                command = matchsite.group(2)
+
         print(co)
         matchinterwiki = re.match(r'(.*?):(.*)', command)
         if matchinterwiki and not co:
