@@ -155,7 +155,7 @@ async def bot_help(kwargs: dict):
                     module.append(x)
         help_msg.append(' | '.join(module))
         print(help_msg)
-        help_msg.append('使用~help <对应模块名>查看详细信息。')
+        help_msg.append('使用~help <对应模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
         if Group in kwargs:
             help_msg.append('[本消息将在一分钟后撤回]')
         send = await sendMessage(kwargs, '\n'.join(help_msg))
@@ -173,7 +173,7 @@ async def modules_help(kwargs: dict):
         if 'help' in help_list[x]:
             module.append(x)
     help_msg.append(' | '.join(module))
-    help_msg.append('使用~help <模块名>查看详细信息。')
+    help_msg.append('使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
     if Group in kwargs:
         help_msg.append('[本消息将在一分钟后撤回]')
     send = await sendMessage(kwargs, '\n'.join(help_msg))
