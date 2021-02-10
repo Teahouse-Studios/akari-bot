@@ -34,8 +34,7 @@ async def server(address, raw=False):
             if matchserip.group(1) == '0':
                 if matchserip.group(2) == '0':
                     if matchserip.group(3) == '0':
-                        if matchserip.group(4) == '0':
-                            return '¿'
+                        return '¿'
         except:
             traceback.print_exc()
 
