@@ -15,7 +15,7 @@ async def main(kwargs: dict):
         sendmsg = await server(message, raw=True)
     else:
         sendmsg = await server(message)
-    sendmsg = await check(sendmsg)
+    sendmsg = await check([sendmsg])
     send = await sendMessage(kwargs, sendmsg)
     await asyncio.sleep(30)
     await revokeMessage(send)
