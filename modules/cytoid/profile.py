@@ -26,7 +26,7 @@ async def cytoid_profile(kwargs: dict):
     totalExp = profile['exp']['totalExp']
     currentLevel = profile['exp']['currentLevel']
     nextLevelExp = profile['exp']['nextLevelExp']
-    rating = profile['exp']['rating']
+    rating = profile['rating']
     grade = profile['grade']
     grade = f'A: {grade["A"]}, B: {grade["B"]}, C: {grade["C"]}, D: {grade["D"]}, F: {grade["F"]}, S: {grade["S"]}, SS: {grade["SS"]}'
     text = f'UID: {uid}\n' +\
