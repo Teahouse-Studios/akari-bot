@@ -20,7 +20,7 @@ async def main(kwargs: dict):
         showplayer = True
     else:
         showplayer = False
-    sendmsg = server(message, raw, showplayer)
+    sendmsg = await server(message, raw, showplayer)
     sendmsg = await check([sendmsg])
     send = await sendMessage(kwargs, sendmsg)
     await asyncio.sleep(30)
