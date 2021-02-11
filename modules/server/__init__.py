@@ -12,9 +12,15 @@ async def main(kwargs: dict):
     msgsplit = message.split(' ')
     if '-r' in msgsplit:
         message = re.sub(' -r|-r ', '', message)
-        sendmsg = await server(message, raw=True)
+        raw = True
     else:
-        sendmsg = await server(message)
+        raw =False
+    if '-p' in msgsplit:
+        message = re.sub(' -p|-p ', '', message)
+        showplayer = True
+    else:
+        showplayer = False
+    sendmsg = server(message, raw, showplayer)
     sendmsg = await check([sendmsg])
     send = await sendMessage(kwargs, sendmsg)
     await asyncio.sleep(30)

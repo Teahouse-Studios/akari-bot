@@ -5,7 +5,7 @@ import traceback
 import aiohttp
 
 
-async def server(address, raw=False):
+async def server(address, raw=False, showplayer=False):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
     servers = []
 
@@ -69,6 +69,11 @@ async def server(address, raw=False):
                             if 'players' in jejson:
                                 onlinesplayer = f"在线玩家：{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
                                 servers.append(onlinesplayer)
+                                if showplayer:
+                                    playerlist = []
+                                    for x in jejson['players']['sample']:
+                                        playerlist.append(x['name'])
+                                    servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
                             if 'version' in jejson:
                                 versions = "游戏版本：" + file['data']['version']['name']
                                 servers.append(versions)
