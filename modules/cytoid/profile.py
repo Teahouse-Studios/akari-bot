@@ -16,6 +16,10 @@ async def cytoid_profile(kwargs: dict):
     name = kwargs['trigger_msg']
     profile_url = 'http://services.cytoid.io/profile/' + name
     profile = json.loads(await get_url(profile_url))
+    if 'statusCode' in profile:
+        if profile['statusCode'] == 404:
+            await sendMessage(kwargs, '发生错误：此用户不存在。')
+            return
     uid = profile['user']['uid']
     nick = profile['user']['name']
     if nick is None:

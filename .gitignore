@@ -13,3 +13,5 @@ assets/cache/*
 save.db
 cache/*
 assets/mcversion_jira.txt
+assets/cytoid-avatar/
+assets/cytoid-cover/
