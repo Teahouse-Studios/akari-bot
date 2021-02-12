@@ -25,7 +25,7 @@ async def cytoid(kwargs: dict):
             if 'text' in img:
                 await sendMessage(kwargs, img['text'])
         else:
-            await sendMessage(kwargs, f'距离上次执行已过去{-c}秒，本命令的冷却时间为300秒。')
+            await sendMessage(kwargs, f'距离上次执行已过去{int(-c)}秒，本命令的冷却时间为300秒。')
     if command_split[0] == 'test':
         c = check_time(kwargs, 'test')
         if c:
