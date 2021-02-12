@@ -112,15 +112,19 @@ async def get_rating(uid, query_type):
         if avatar_path:
             im = Image.open(avatar_path)
             im = im.resize((110, 110))
-            bigsize = (im.size[0] * 3, im.size[1] * 3)
-            mask = Image.new('L', bigsize, 0)
-            draw = ImageDraw.Draw(mask)
-            draw.ellipse((0, 0) + bigsize, fill=255)
-            mask = mask.resize(im.size, Image.ANTIALIAS)
-            im.putalpha(mask)
-            output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
-            output.putalpha(mask)
-            b30img.alpha_composite(output, (1825, 25))
+            try:
+                bigsize = (im.size[0] * 3, im.size[1] * 3)
+                mask = Image.new('L', bigsize, 0)
+                draw = ImageDraw.Draw(mask)
+                draw.ellipse((0, 0) + bigsize, fill=255)
+                mask = mask.resize(im.size, Image.ANTIALIAS)
+                im.putalpha(mask)
+                output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
+                output.putalpha(mask)
+                output.convert('RGBA')
+                b30img.alpha_composite(output, (1825, 25))
+            except:
+                traceback.print_exc()
 
         font4 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Regular.ttf'), 35)
         drawtext = ImageDraw.Draw(b30img)

@@ -1,5 +1,7 @@
+import datetime
 import os
 import sqlite3
+import time
 import traceback
 
 from graia.application import Group, Friend, Member
@@ -27,6 +29,10 @@ def initialize():
            WARN  TEXT);''')
     c.execute('''CREATE TABLE superuser
            (ID INT PRIMARY KEY     NOT NULL);''')
+    c.execute('''CREATE TABLE time
+           (ID INT PRIMARY KEY     NOT NULL,
+           NAME  TEXT NOT NULL,
+           TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
     c.close()
 
 
@@ -275,3 +281,46 @@ def warn_someone(id):
     conn.commit()
     if int(a[1]) > 5:
         add_black_list(id)
+
+
+def write_time(kwargs, name):
+    if not os.path.exists(dbpath):
+        initialize()
+    if Group in kwargs:
+        id = kwargs[Member].id
+    if Friend in kwargs:
+        id = kwargs[Friend].id
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()
+    a = c.execute(f"SELECT * FROM time WHERE ID='{id}' and NAME='{name}'").fetchone()
+    if a:
+        print(a)
+        c.execute(f"UPDATE time SET TIME=datetime('now') WHERE ID='{id}'")
+        conn.commit()
+    else:
+        c.execute(f"INSERT INTO time (ID, NAME) VALUES (?, ?)", (id, name))
+        conn.commit()
+
+
+def check_time(kwargs, name, delay: int):
+    if not os.path.exists(dbpath):
+        initialize()
+    if Group in kwargs:
+        id = kwargs[Member].id
+    if Friend in kwargs:
+        id = kwargs[Friend].id
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()
+    a = c.execute(f"SELECT * FROM time WHERE ID='{id}' and NAME='{name}'").fetchone()
+    if a:
+        print(a)
+        print(datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S").timestamp())
+        print(datetime.datetime.now().timestamp())
+        check = (datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(hours=8)).timestamp() - datetime.datetime.now().timestamp()
+        print(check)
+        if check > - delay:
+            return check
+        else:
+            return False
+    else:
+        return False
