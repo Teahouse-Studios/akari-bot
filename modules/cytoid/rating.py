@@ -189,10 +189,7 @@ async def get_rating(uid, query_type):
 
 async def download_cover_thumb(uid):
     print(uid)
-    level_url = 'http://services.cytoid.io/levels/' + uid
-    get_level = json.loads(await get_url(level_url))
     try:
-        cover_thumbnail = get_level['cover']['thumbnail']
         d = abspath('./assets/cytoid-cover/' + uid + '/')
         if not os.path.exists(d):
             os.makedirs(d)
@@ -200,6 +197,9 @@ async def download_cover_thumb(uid):
         if not os.path.exists(d):
             os.mkdir(d)
         if not os.path.exists(path):
+            level_url = 'http://services.cytoid.io/levels/' + uid
+            get_level = json.loads(await get_url(level_url))
+            cover_thumbnail = get_level['cover']['thumbnail']
             async with aiohttp.ClientSession() as session:
                 async with session.get(cover_thumbnail) as resp:
                     with open(path, 'wb+') as jpg:
@@ -220,14 +220,13 @@ async def download_avatar_thumb(link, id):
         path = d + f'/{id}.png'
         if not os.path.exists(d):
             os.mkdir(d)
-        if not os.path.exists(path):
-            async with aiohttp.ClientSession() as session:
-                async with session.get(link, timeout=aiohttp.ClientTimeout(total=20)) as resp:
-                    with open(path, 'wb+') as jpg:
-                        jpg.write(await resp.read())
-                        return path
-        else:
-            return path
+        if os.path.exists(path):
+            os.remove(path)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link, timeout=aiohttp.ClientTimeout(total=20)) as resp:
+                with open(path, 'wb+') as jpg:
+                    jpg.write(await resp.read())
+                    return path
     except:
         traceback.print_exc()
         return False
