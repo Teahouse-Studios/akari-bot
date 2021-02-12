@@ -62,6 +62,7 @@ async def get_rating(uid, query_type):
               title
             }}
           }}
+          score
           accuracy
           rating
         }}
@@ -78,6 +79,7 @@ async def get_rating(uid, query_type):
             chart_type = x['chart']['type']
             difficulty = x['chart']['difficulty']
             chart_name = x['chart']['level']['title']
+            score = str(x['score'])
             acc = x['accuracy']
             rt = x['rating']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -103,7 +105,7 @@ async def get_rating(uid, query_type):
                 havecover = True
             else:
                 havecover = False
-            make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, acc, rt, playtime, rank, havecover)
+            make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, havecover)
         # b30card
         b30img = Image.new("RGBA", (1965, 1600), '#1e2129')
         avatar_path = await download_avatar_thumb(Avatar_img, ProfileId)
@@ -227,7 +229,7 @@ async def download_avatar_thumb(link, id):
         return False
 
 
-def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, acc, rt, playtime, rank, havecover=True):
+def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, havecover=True):
     if havecover:
         img = Image.open(coverpath)
     else:
@@ -245,6 +247,7 @@ def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, acc, r
     font2 = ImageFont.truetype(os.path.abspath(font_path), 15)
     font3 = ImageFont.truetype(os.path.abspath(font_path), 20)
     drawtext = ImageDraw.Draw(img)
+    drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), chart_name, '#ffffff', font=font)
     drawtext.text((20, 185), f'Accuracy: {acc}\nRating: {rt}', font=font2)
     playtime = f'{playtime} #{rank}'
