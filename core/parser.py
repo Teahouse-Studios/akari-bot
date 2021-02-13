@@ -46,6 +46,8 @@ async def parser(kwargs: dict):
     :return: 无返回
     """
     display = kwargs[MessageChain].asDisplay()  # 将消息转换为一般显示形式
+    if len(display) == 0:  # 转换后若为空消息则停止执行
+        return
     command_prefix = ['~', '～']  # 消息前缀
     if Group in kwargs:  # 若为群组
         trigger = kwargs[Member].id
