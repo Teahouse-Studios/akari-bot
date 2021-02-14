@@ -119,3 +119,16 @@ def get_custom_interwiki(table, id, iw):
                 return iws[1]
     else:
         return False
+
+
+def get_custom_interwiki_list(table, id):
+    if not os.path.exists(dbpath):
+        initialize()
+    conn = sqlite3.connect(dbpath)
+    c = conn.cursor()
+    a = c.execute(f"SELECT * FROM {table} WHERE ID={id}").fetchone()
+    if a:
+        interwikis = a[1].split('|')
+        return '\n'.join(interwikis)
+    else:
+        return False

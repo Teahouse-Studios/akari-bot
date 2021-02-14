@@ -56,10 +56,24 @@ class wikilib:
             interwiki_dict[interwiki['prefix']] = re.sub(r'(?:wiki/|)\$1', '', interwiki['url'])
         return interwiki_dict
 
-    async def get_siteinfo(self, url):
+    async def get_siteinfo(self, url=None):
+        url = url if url is not None else self.wikilink
         siteinfo_url = url + '?action=query&meta=siteinfo&siprop=general&format=json'
         j = await self.get_data(siteinfo_url, 'json')
         return j
+
+    async def get_namespace(self, url=None):
+        url = url if url is not None else self.wikilink
+        namespace_url = url + '?action=query&meta=siteinfo&siprop=namespaces&format=json'
+        j = await self.get_data(namespace_url, 'json')
+        d = {}
+        for x in j['query']['namespaces']:
+            try:
+                d[j['query']['namespaces'][x]['*']] = j['query']['namespaces'][x]['canonical']
+            except:
+                traceback.print_exc()
+                pass
+        return d
 
     async def get_article_path(self, url):
         siteinfo = await self.get_siteinfo(url)
@@ -94,38 +108,34 @@ class wikilib:
 
     async def researchpage(self):
         try:
-            searchurl = self.wikilink + '?action=query&generator=search&gsrsearch=' + self.pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-            getsecjson = await self.get_data(searchurl, "json")
-            secpageid = self.parsepageid(getsecjson)
-            sectitle = getsecjson['query']['pages'][secpageid]['title']
+            try:
+                searchurl = self.wikilink + '?action=query&generator=search&gsrsearch=' + self.pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
+                getsecjson = await self.get_data(searchurl, "json")
+                secpageid = self.parsepageid(getsecjson)
+                sectitle = getsecjson['query']['pages'][secpageid]['title']
+            except:
+                traceback.print_exc()
+                searchurl = self.wikilink + '?action=query&list=search&srsearch=' + self.pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+                getsecjson = await self.get_data(searchurl, "json")
+                sectitle = getsecjson['query']['search'][0]['title']
             if self.interwiki == '':
                 target = ''
             else:
                 target = f'{self.interwiki}:'
             prompt = f'找不到{target}{self.pagename}，您是否要找的是：[[{target}{sectitle}]]？'
+            titlesplit = self.pagename.split(':')
+            if len(titlesplit) > 1:
+                get_namespace = await self.get_namespace()
+                if titlesplit[0] not in get_namespace:
+                    prompt += f'\n提示：此Wiki上找不到“{titlesplit[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~interwiki list命令可以查询当前已设置的Interwiki）。'
             if self.templateprompt:
                 prompt = self.templateprompt + prompt
             if await self.danger_text_check(prompt):
                 return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
             return {'status': 'wait', 'title': f'{target}{sectitle}', 'text': prompt}
         except Exception:
-            try:
-                searchurl = self.wikilink + '?action=query&list=search&srsearch=' + self.pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                getsecjson = await self.get_data(searchurl, "json")
-                sectitle = getsecjson['query']['search'][0]['title']
-                if self.interwiki == '':
-                    target = ''
-                else:
-                    target = f'{self.interwiki}:'
-                prompt = f'找不到{target}{self.pagename}，您是否要找的是：[[{target}{sectitle}]]？'
-                if self.templateprompt:
-                    prompt = self.templateprompt + prompt
-                if await self.danger_text_check(prompt):
-                    return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
-                return {'status': 'wait', 'title': f'{target}{sectitle}', 'text': prompt}
-            except Exception:
-                traceback.print_exc()
-                return {'status': 'done', 'text': '找不到条目。'}
+            traceback.print_exc()
+            return {'status': 'done', 'text': '找不到条目。'}
 
     async def nullpage(self):
         if 'invalid' in self.psepgraw:
@@ -209,25 +219,28 @@ class wikilib:
             artpath = await self.get_article_path(self.wikilink)
             artpath = re.sub(r'https?://', '', artpath)
             geturlpagename = re.sub(r'.*' + artpath, '', fullurl)
-            self.querytextname = geturlpagename
-            if re.match(r'(?:Template|%E6%A8%A1%E6%9D%BF):.*', self.querytextname):
-                getalltext = await self.getalltext()
-                try:
-                    matchdoc = re.match(r'.*{{documentation\|?(.*?)}}.*', getalltext, re.I | re.S)
-                    matchlink = re.match(r'link=(.*)', matchdoc.group(1), re.I | re.S)
-                    if matchlink:
-                        getdoc = matchlink.group(1)
-                        getdocraw = await self.getpage(getdoc)
-                        getdocid = self.parsepageid(getdocraw)
-                        getdoclink = getdocraw['query']['pages'][getdocid]['fullurl']
-                        getdocpagename = re.sub(r'.*' + artpath, '', getdoclink)
-                        self.querytextname = getdocpagename
-                    else:
-                        self.querytextname = geturlpagename + '/doc'
-                except AttributeError:
-                    self.querytextname = geturlpagename + '/doc'
+            self.querytextname = urllib.parse.unquote(geturlpagename)
+            querytextnamesplit = self.querytextname.split(':')
+            if len(querytextnamesplit) > 1:
+                namespaces = await self.get_namespace()
+                if querytextnamesplit[0] in namespaces:
+                    if namespaces[querytextnamesplit[0]] == 'Template':
+                        getalltext = await self.getalltext()
+                        try:
+                            matchdoc = re.match(r'.*{{documentation\|?(.*?)}}.*', getalltext, re.I | re.S)
+                            matchlink = re.match(r'link=(.*)', matchdoc.group(1), re.I | re.S)
+                            if matchlink:
+                                getdoc = matchlink.group(1)
+                                getdocraw = await self.getpage(getdoc)
+                                getdocid = self.parsepageid(getdocraw)
+                                getdoclink = getdocraw['query']['pages'][getdocid]['fullurl']
+                                getdocpagename = re.sub(r'.*' + artpath, '', getdoclink)
+                                self.querytextname = getdocpagename
+                            else:
+                                self.querytextname = geturlpagename + '/doc'
+                        except AttributeError:
+                            self.querytextname = geturlpagename + '/doc'
             print(self.querytextname)
-
             desc = await self.getdesc()
             if desc == '':
                 desc = await self.getfirstline()

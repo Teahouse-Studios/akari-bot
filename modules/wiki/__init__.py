@@ -181,6 +181,13 @@ async def interwiki(kwargs: dict):
             elif command[0] == 'del':
                 result = database.config_custom_interwiki('del', 'custom_interwiki_group', kwargs[Group].id, command[1])
                 await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+            elif command[0] == 'list':
+                query_database = database.get_custom_interwiki_list('custom_interwiki_group', kwargs[Group].id)
+                if query_database:
+                    result = '当前设置了以下Interwiki：\n' + query_database
+                    await sendMessage(kwargs, result)
+                else:
+                    await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
             else:
                 await sendMessage(kwargs, '命令不合法。')
         else:
@@ -206,6 +213,13 @@ async def interwiki(kwargs: dict):
         elif command[0] == 'del':
             result = database.config_custom_interwiki('del', 'custom_interwiki_self', kwargs[Friend].id, command[1])
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+        elif command[0] == 'list':
+            query_database = database.get_custom_interwiki_list('custom_interwiki_self', kwargs[Friend].id)
+            if query_database:
+                result = '当前设置了以下Interwiki：\n' + query_database
+                await sendMessage(kwargs, result)
+            else:
+                await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
         else:
             await sendMessage(kwargs, '命令不合法。')
 
