@@ -45,16 +45,18 @@ async def get_infobox_pic(link, pagelink):
         find_infobox = soup.find(class_='notaninfobox')  # 我
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='portable-infobox')  # 找
-            if find_infobox is None:  # 找
-                find_infobox = soup.find(class_='infobox')  # 找
-                if find_infobox is None:  # 找
-                    find_infobox = soup.find(class_='tpl-infobox')  # 找
-                    if find_infobox is None:  # 找
-                        find_infobox = soup.find(class_='infoboxtable')  # 找
-                        if find_infobox is None:  # 找
-                            find_infobox = soup.find(class_='infotemplatebox')  # 找
-                            if find_infobox is None:  # 找
-                                return False  # 找你妈，不找了<-咱还是回家吧
+        if find_infobox is None:  # 找
+            find_infobox = soup.find(class_='infobox')  # 找
+        if find_infobox is None:  # 找
+            find_infobox = soup.find(class_='tpl-infobox')  # 找
+        if find_infobox is None:  # 找
+            find_infobox = soup.find(class_='infoboxtable')  # 找
+        if find_infobox is None:  # 找
+            find_infobox = soup.find(class_='infotemplatebox')  # 找
+        if find_infobox is None:  # 找
+            find_infobox = soup.find(class_='wikitable songtable')  # 找 (arcw)
+        if find_infobox is None:  # 找
+            return False  # 找你妈，不找了<-咱还是回家吧
 
         if infobox_render is None:
             open_file = open(url, 'a', encoding='utf-8')

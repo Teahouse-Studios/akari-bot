@@ -70,7 +70,8 @@ class wikilib:
 
     async def get_image(self, pagename, wikilink=None):
         try:
-            url = (wikilink if wikilink is not None else self.wikilink) + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
+            url = (
+                      wikilink if wikilink is not None else self.wikilink) + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
             json = await self.get_data(url, 'json')
             parsepageid = self.parsepageid(json)
             imagelink = json['query']['pages'][parsepageid]['imageinfo'][0]['url']
@@ -79,8 +80,9 @@ class wikilib:
             traceback.print_exc()
             return False
 
-    async def getpage(self):
-        getlinkurl = self.wikilink + '?action=query&format=json&prop=info&inprop=url&redirects&titles=' + self.pagename
+    async def getpage(self, pagename=None):
+        pagename = pagename if pagename is not None else self.pagename
+        getlinkurl = self.wikilink + '?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
         getpage = await self.get_data(getlinkurl, "json")
         return getpage
 
@@ -141,7 +143,7 @@ class wikilib:
     async def getdesc(self):
         try:
             descurl = self.wikilink + '?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki' \
-                                      '&format=json&titles=' + self.pagename
+                                      '&format=json&titles=' + self.querytextname
             loadtext = await self.get_data(descurl, "json")
             pageid = self.parsepageid(loadtext)
             desc = loadtext['query']['pages'][pageid]['extract']
@@ -152,11 +154,24 @@ class wikilib:
 
     async def getfirstline(self):
         try:
-            descurl = self.wikilink + f'?action=parse&page={self.gflpagename}&prop=wikitext&section=0&format=json'
+            descurl = self.wikilink + f'?action=parse&page={self.querytextname}&prop=wikitext&section=0&format=json'
             loaddesc = await self.get_data(descurl, 'json')
             descraw = loaddesc['parse']['wikitext']['*']
-            cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S | re.M)
-            desc = cutdesc[0]
+            try:
+                cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S | re.M)
+                desc = cutdesc[0]
+            except IndexError:
+                desc = descraw
+        except Exception:
+            traceback.print_exc()
+            desc = ''
+        return desc
+
+    async def getalltext(self):
+        try:
+            descurl = self.wikilink + f'?action=parse&page={self.querytextname}&prop=wikitext&format=json'
+            loaddesc = await self.get_data(descurl, 'json')
+            desc = loaddesc['parse']['wikitext']['*']
         except Exception:
             traceback.print_exc()
             desc = ''
@@ -188,44 +203,74 @@ class wikilib:
             return await self.step2()
 
     async def step2(self):
-        fullurl = self.psepgraw['fullurl']
-        geturlpagename = re.match(r'(https?://.*?/(?:index.php/|wiki/|.*/wiki/|))(.*)', fullurl, re.M | re.I)
-        desc = await self.getdesc()
-        if desc == '':
-            self.gflpagename = geturlpagename.group(2)
-            desc = await self.getfirstline()
-        print(desc)
         try:
-            section = re.match(r'.*(\#.*)', self.pagename)
-            finpgname = geturlpagename.group(2) + urllib.parse.quote(section.group(1).encode('UTF-8'))
-            fullurl = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
-        except Exception:
-            finpgname = geturlpagename.group(2)
-        finpgname = urllib.parse.unquote(finpgname)
-        finpgname = re.sub('_', ' ', finpgname)
-        if finpgname == self.orginpagename:
-            rmlstlb = re.sub('\n$', '', desc)
-        else:
-            rmlstlb = re.sub('\n$', '',
-                             f'（重定向[{self.orginpagename}] -> [{finpgname}]）' + ('\n' if desc != '' else '') + f'{desc}')
-        rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-        rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-        if len(rmlstlb) > 250:
-            rmlstlb = rmlstlb[0:250] + '\n...字数过多已截断。'
-        try:
-            rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
-            result = rm5lline[0] + '...行数过多已截断。'
-        except Exception:
-            result = rmlstlb
-        msgs = {'status': 'done', 'url': fullurl, 'text': result, 'apilink': self.wikilink}
-        matchimg = re.match(r'File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico)', self.pagename, re.I)
-        if matchimg:
-            getimg = await self.get_image(self.pagename)
-            if getimg:
-                msgs['net_image'] = getimg
-        if await self.danger_text_check(result):
-            return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
-        return msgs
+            fullurl = self.psepgraw['fullurl']
+            print(fullurl)
+            artpath = await self.get_article_path(self.wikilink)
+            artpath = re.sub(r'https?://', '', artpath)
+            geturlpagename = re.sub(r'.*' + artpath, '', fullurl)
+            self.querytextname = geturlpagename
+            if re.match(r'(?:Template|%E6%A8%A1%E6%9D%BF):.*', self.querytextname):
+                getalltext = await self.getalltext()
+                matchdoc = re.match(r'.*{{documentation\|?(.*?)}}.*', getalltext, re.I | re.S)
+                print(matchdoc.group(1))
+                try:
+                    matchlink = re.match(r'link=(.*)', matchdoc.group(1), re.I | re.S)
+                    if matchlink:
+                        getdoc = matchlink.group(1)
+                        getdocraw = await self.getpage(getdoc)
+                        getdocid = self.parsepageid(getdocraw)
+                        getdoclink = getdocraw['query']['pages'][getdocid]['fullurl']
+                        getdocpagename = re.sub(r'.*' + artpath, '', getdoclink)
+                        self.querytextname = getdocpagename
+                    else:
+                        self.querytextname = geturlpagename + '/doc'
+                except AttributeError:
+                    self.querytextname = geturlpagename + '/doc'
+            print(self.querytextname)
+
+            desc = await self.getdesc()
+            if desc == '':
+                desc = await self.getfirstline()
+            print(desc)
+            try:
+                section = re.match(r'.*(\#.*)', self.pagename)
+                finpgname = geturlpagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
+                fullurl = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
+            except Exception:
+                finpgname = geturlpagename
+            finpgname = urllib.parse.unquote(finpgname)
+            finpgname = re.sub('_', ' ', finpgname)
+            if finpgname == self.orginpagename:
+                rmlstlb = re.sub('\n$', '', desc)
+            else:
+                if self.interwiki == '':
+                    target = ''
+                else:
+                    target = f'{self.interwiki}:'
+                rmlstlb = re.sub('\n$', '',
+                                 f'（重定向[{target}{self.orginpagename}] -> [{target}{finpgname}]）' + ('\n' if desc != '' else '') + f'{desc}')
+            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
+            if len(rmlstlb) > 250:
+                rmlstlb = rmlstlb[0:250] + '\n...字数过多已截断。'
+            try:
+                rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
+                result = rm5lline[0] + '...行数过多已截断。'
+            except Exception:
+                result = rmlstlb
+            msgs = {'status': 'done', 'url': fullurl, 'text': result, 'apilink': self.wikilink}
+            matchimg = re.match(r'File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico)', self.pagename, re.I)
+            if matchimg:
+                getimg = await self.get_image(self.pagename)
+                if getimg:
+                    msgs['net_image'] = getimg
+            if await self.danger_text_check(result):
+                return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
+            return msgs
+        except Exception as e:
+            traceback.print_exc()
+            return {'status': 'done', 'text': '发生错误：' + str(e)}
 
     async def main(self, wikilink, pagename, interwiki=None, igmessage=False, template=False, tryiw=0):
         print(wikilink)
@@ -261,7 +306,7 @@ class wikilib:
                         if check:
                             return await self.main(check[0], matchinterwiki.group(2),
                                                    ((
-                                                                interwiki + ':') if interwiki is not None else '') + matchinterwiki.group(
+                                                            interwiki + ':') if interwiki is not None else '') + matchinterwiki.group(
                                                        1),
                                                    self.igmessage, self.template, tryiw + 1)
                         else:

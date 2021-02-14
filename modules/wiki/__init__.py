@@ -219,12 +219,12 @@ async def regex_wiki(kwargs: dict):
         find_dict = {}
         global_status = 'done'
         for main in mains:
-            if main == '' or main in find_dict:
+            if main == '' or main in find_dict or main.find("{") != -1:
                 pass
             else:
                 find_dict.update({main: 'main'})
         for template in templates:
-            if template == '' or template in find_dict:
+            if template == '' or template in find_dict or template.find("{") != -1:
                 pass
             else:
                 find_dict.update({template: 'template'})
