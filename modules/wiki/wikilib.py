@@ -212,9 +212,8 @@ class wikilib:
             self.querytextname = geturlpagename
             if re.match(r'(?:Template|%E6%A8%A1%E6%9D%BF):.*', self.querytextname):
                 getalltext = await self.getalltext()
-                matchdoc = re.match(r'.*{{documentation\|?(.*?)}}.*', getalltext, re.I | re.S)
-                print(matchdoc.group(1))
                 try:
+                    matchdoc = re.match(r'.*{{documentation\|?(.*?)}}.*', getalltext, re.I | re.S)
                     matchlink = re.match(r'link=(.*)', matchdoc.group(1), re.I | re.S)
                     if matchlink:
                         getdoc = matchlink.group(1)
