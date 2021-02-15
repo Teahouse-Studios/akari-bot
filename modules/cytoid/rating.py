@@ -107,7 +107,7 @@ async def get_rating(uid, query_type):
                 havecover = False
             make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, havecover)
         # b30card
-        b30img = Image.new("RGBA", (1965, 1600), '#1e2129')
+        b30img = Image.new("RGBA", (1975, 1610), '#1e2129')
         avatar_path = await download_avatar_thumb(Avatar_img, ProfileId)
         if avatar_path:
             im = Image.open(avatar_path)
