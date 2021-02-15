@@ -1,5 +1,7 @@
 import asyncio
 import os
+from os.path import abspath
+import config
 
 from graia.application import GraiaMiraiApplication
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
@@ -56,7 +58,10 @@ async def message_handler(app: GraiaMiraiApplication):
 
 @bcc.receiver('ApplicationLaunched')
 async def legacy_message_handler(app: GraiaMiraiApplication):
-    await newbie(app)
+    config_filename = 'config.cfg'
+    config_path = abspath('./config/' + config_filename)
+    if config.config(config_path, 'account') != '2052142661':
+        await newbie(app)
 
 
 app.launch_blocking()

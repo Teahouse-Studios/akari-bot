@@ -48,7 +48,7 @@ class wikilib:
         return False
 
     async def get_interwiki(self, url):
-        interwiki_list = url + '?action=query&meta=siteinfo&siprop=interwikimap&sifilteriw=local&format=json'
+        interwiki_list = url + '?action=query&meta=siteinfo&siprop=interwikimap&format=json'
         json = await self.get_data(interwiki_list, 'json')
         interwikimap = json['query']['interwikimap']
         interwiki_dict = {}
@@ -315,6 +315,7 @@ class wikilib:
                     if tryiw <= 5:
                         interwiki_link = iwlist[matchinterwiki.group(1)]
                         check = await check_wiki_available(interwiki_link)
+                        print(check)
                         if check:
                             return await self.main(check[0], matchinterwiki.group(2),
                                                    ((
