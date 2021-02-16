@@ -60,10 +60,10 @@ async def mcv_rss(app):
                 addversion.write('\n' + snapshot)
                 addversion.close()
             logger_info('mcv checked.')
-            await asyncio.sleep(20)
+            await asyncio.sleep(40)
         except Exception:
             traceback.print_exc()
-            await asyncio.sleep(5)
+            await asyncio.sleep(20)
 
 
 async def mcv_jira_rss(app):
@@ -92,10 +92,10 @@ async def mcv_jira_rss(app):
                     addversion.write('\n' + x)
                     addversion.close()
             logger_info('jira mcv checked.')
-            await asyncio.sleep(20)
+            await asyncio.sleep(40)
         except Exception:
             traceback.print_exc()
-            await asyncio.sleep(5)
+            await asyncio.sleep(20)
 
 
 rss = {'mcv_rss': mcv_rss, 'mcv_jira_rss': mcv_jira_rss}

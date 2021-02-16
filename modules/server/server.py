@@ -12,11 +12,9 @@ async def server(address, raw=False, showplayer=False):
     if matchObj:
         serip = matchObj.group(1)
         port1 = matchObj.group(2)
-        port2 = matchObj.group(2)
     else:
         serip = address
         port1 = '25565'
-        port2 = '19132'
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', serip)
     if matchserip:
         print(matchserip.group(1), matchserip.group(2),
@@ -79,18 +77,58 @@ async def server(address, raw=False, showplayer=False):
                                 servers.append(versions)
                             servers.append(serip + ':' + port1)
                         else:
-                            print('获取JE服务器信息失败。')
+                            servers.append('获取JE服务器信息失败。')
                     except Exception:
                         traceback.print_exc()
                         servers.append("[JE]\n发生错误：调用API时发生错误。")
     except Exception:
         print('获取JE服务器信息失败。')
         traceback.print_exc()
+    awa = '\n'
+    servers.append("[30秒后撤回本消息]")
+    print(servers)
+    if raw:
+        return awa.join(servers)
+    return re.sub(r'§\w', "", awa.join(servers))
+
+
+
+async def server_be(address, raw=False):
+    matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
+    servers = []
+
+    if matchObj:
+        serip = matchObj.group(1)
+        port2 = matchObj.group(2)
+    else:
+        serip = address
+        port2 = '19132'
+    matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', serip)
+    if matchserip:
+        print(matchserip.group(1), matchserip.group(2),
+              matchserip.group(3), matchserip.group(4))
+        try:
+            if matchserip.group(1) == '192':
+                if matchserip.group(2) == '168':
+                    return '¿'
+            if matchserip.group(1) == '172':
+                if 16 <= int(matchserip.group(2)) <= 31:
+                    return '¿'
+            if matchserip.group(1) == '10':
+                if 0 <= int(matchserip.group(2)) <= 255:
+                    return '¿'
+            if matchserip.group(1) == '0':
+                if matchserip.group(2) == '0':
+                    if matchserip.group(3) == '0':
+                        return '¿'
+        except:
+            traceback.print_exc()
+
     try:
         beurl = 'http://motd.wd-api.com/bedrock?ip=' + serip + '&port=' + port2
         print(beurl)
         async with aiohttp.ClientSession() as session2:
-            async with session2.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
+            async with session2.get(beurl, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status != 200:
                     print(await req.text())
                     print(f"请求时发生错误：{req.status}")
@@ -107,14 +145,11 @@ async def server(address, raw=False, showplayer=False):
                     servers.append(bemsg)
 
     except Exception:
-        print('获取BE服务器信息失败。')
+        servers.append('获取BE服务器信息失败。')
         traceback.print_exc()
-    if str(servers) == '[]':
-        return ('连接失败，没有检测到任何服务器。')
-    else:
-        awa = '\n'
-        servers.append("[30秒后撤回本消息]")
-        print(servers)
-        if raw:
-            return awa.join(servers)
-        return re.sub(r'§\w', "", awa.join(servers))
+    awa = '\n'
+    servers.append("[30秒后撤回本消息]")
+    print(servers)
+    if raw:
+        return awa.join(servers)
+    return re.sub(r'§\w', "", awa.join(servers))
