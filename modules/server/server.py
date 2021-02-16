@@ -82,7 +82,7 @@ async def server(address, raw=False, showplayer=False):
                         traceback.print_exc()
                         servers.append("[JE]\n发生错误：调用API时发生错误。")
     except Exception:
-        print('获取JE服务器信息失败。')
+        servers.append('获取JE服务器信息失败。')
         traceback.print_exc()
     awa = '\n'
     servers.append("[30秒后撤回本消息]")
