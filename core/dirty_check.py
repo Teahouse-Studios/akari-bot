@@ -23,13 +23,13 @@ def computeMD5hash(my_string):
     return m.hexdigest()
 
 
-async def check(text):
+async def check(text: list):
     try:
         config_path = os.path.abspath('config/config.cfg')
         accessKeyId = config(config_path, "Check_accessKeyId")
         accessKeySecret = config(config_path, "Check_accessKeySecret")
     except Exception:
-        return ''
+        return '\n'.join(text)
     print('hello')
     body = {
         "scenes": [
