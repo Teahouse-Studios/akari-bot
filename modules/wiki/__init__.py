@@ -34,6 +34,7 @@ async def wiki_loader(kwargs: dict):
                      '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
             database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
                                     'https://minecraft-zh.gamepedia.com/api.php')
+        get_link = 'https://minecraft-zh.gamepedia.com/api.php'
     iw = None
     co = False
     if Group in kwargs:
@@ -280,6 +281,7 @@ async def regex_wiki(kwargs: dict):
                                  '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
                         database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
                                                 'https://minecraft-zh.gamepedia.com/api.php')
+                    get_link = 'https://minecraft-zh.gamepedia.com/api.php'
                 iw = None
                 matchinterwiki = re.match(r'(.*?):(.*)', find)
                 if matchinterwiki:
