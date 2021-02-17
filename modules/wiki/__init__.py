@@ -255,6 +255,7 @@ async def regex_wiki(kwargs: dict):
             msglist = MessageChain.create([])
             waitmsglist = MessageChain.create([])
             status = None
+            text = ""
             if Group in kwargs:
                 table = 'start_wiki_link_group'
                 target = kwargs[Group].id
@@ -317,7 +318,7 @@ async def regex_wiki(kwargs: dict):
                                             iw = matchinterwiki.group(1)
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
                 status = msg['status']
-                text = (prompt + '\n' if prompt else '') + msg['text']
+                text += (prompt + '\n' if prompt else '') + msg['text']
             if status == 'wait':
                 global_status = 'wait'
                 waitlist.append(msg['title'])
