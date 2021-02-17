@@ -323,7 +323,7 @@ async def regex_wiki(kwargs: dict):
                     global_status = 'wait'
                     waitlist.append(msg['title'])
                     waitmsglist = waitmsglist.plusWith(MessageChain.create(
-                        [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
+                        [Plain(('\n' if waitmsglist != MessageChain.create([]) else '') + text)]))
                 if status == 'warn':
                     global_status = 'warn'
                     msglist = msglist.plusWith(MessageChain.create(
