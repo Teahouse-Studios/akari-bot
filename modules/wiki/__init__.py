@@ -318,7 +318,7 @@ async def regex_wiki(kwargs: dict):
                                             iw = matchinterwiki.group(1)
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
                 status = msg['status']
-                text += (prompt if prompt else '')+ ("\n" if text != "" else "") + msg['text']
+                text = (prompt if prompt else '') + ("\n" if text != "" else "") + msg['text']
                 if status == 'wait':
                     global_status = 'wait'
                     waitlist.append(msg['title'])
