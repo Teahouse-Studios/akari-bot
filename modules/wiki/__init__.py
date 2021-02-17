@@ -319,27 +319,27 @@ async def regex_wiki(kwargs: dict):
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
                 status = msg['status']
                 text += (prompt if prompt else '')+ ("\n" if text != "" else "") + msg['text']
-            if status == 'wait':
-                global_status = 'wait'
-                waitlist.append(msg['title'])
-                waitmsglist = waitmsglist.plusWith(MessageChain.create(
-                    [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
-            if status == 'warn':
-                global_status = 'warn'
-                msglist = msglist.plusWith(MessageChain.create(
-                    [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
-            if status == 'done':
-                msglist = msglist.plusWith(MessageChain.create([Plain(
-                    ('\n' if msglist != MessageChain.create([]) else '') + (
-                        msg['url'] + '\n' if 'url' in msg else '') + text)]))
-                if 'net_image' in msg:
-                    imglist.append(msg['net_image'])
-                if 'apilink' in msg:
-                    get_link = msg['apilink']
-                if 'url' in msg:
-                    urllist.update({msg['url']: get_link})
-            if status is None:
-                msglist = msglist.plusWith(MessageChain.create([Plain('发生错误：机器人内部代码错误，请联系开发者解决。')]))
+                if status == 'wait':
+                    global_status = 'wait'
+                    waitlist.append(msg['title'])
+                    waitmsglist = waitmsglist.plusWith(MessageChain.create(
+                        [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
+                if status == 'warn':
+                    global_status = 'warn'
+                    msglist = msglist.plusWith(MessageChain.create(
+                        [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
+                if status == 'done':
+                    msglist = msglist.plusWith(MessageChain.create([Plain(
+                        ('\n' if msglist != MessageChain.create([]) else '') + (
+                            msg['url'] + '\n' if 'url' in msg else '') + text)]))
+                    if 'net_image' in msg:
+                        imglist.append(msg['net_image'])
+                    if 'apilink' in msg:
+                        get_link = msg['apilink']
+                    if 'url' in msg:
+                        urllist.update({msg['url']: get_link})
+                if status is None:
+                    msglist = msglist.plusWith(MessageChain.create([Plain('发生错误：机器人内部代码错误，请联系开发者解决。')]))
             if msglist != MessageChain.create([]):
                 await sendMessage(kwargs, msglist)
                 if imglist != []:
