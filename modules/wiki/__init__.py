@@ -167,67 +167,49 @@ async def interwiki(kwargs: dict):
     command = command.split(' ')
     if Group in kwargs:
         check = check_permission(kwargs)
-        if check:
-            if command[0] == 'add':
-                command = re.sub(r'^interwiki add ', '', kwargs['trigger_msg'])
-                command = re.sub(' ', '>', command)
-                iw = command.split('>')
-                try:
-                    check = await check_wiki_available(iw[1])
-                except:
-                    await sendMessage(kwargs, '错误：命令不合法：~interwiki add <Interwiki> <url>')
-                    check = False
-                if check:
-                    result = database.config_custom_interwiki('add', 'custom_interwiki_group', kwargs[Group].id, iw[0],
-                                                              check[0])
-                    await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
-                else:
-                    result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
-                    await sendMessage(kwargs, MessageChain.create([Plain(result)]))
-            elif command[0] == 'del':
-                result = database.config_custom_interwiki('del', 'custom_interwiki_group', kwargs[Group].id, command[1])
-                await sendMessage(kwargs, MessageChain.create([Plain(result)]))
-            elif command[0] == 'list':
-                query_database = database.get_custom_interwiki_list('custom_interwiki_group', kwargs[Group].id)
-                if query_database:
-                    result = '当前设置了以下Interwiki：\n' + query_database
-                    await sendMessage(kwargs, result)
-                else:
-                    await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
-            else:
-                await sendMessage(kwargs, '命令不合法。')
-        else:
+        if not check:
             result = '你没有使用该命令的权限。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+            return
+        table = 'custom_interwiki_group'
+        target = kwargs[Group].id
     if Friend in kwargs:
-        if command[0] == 'add':
-            command = re.sub(r'^interwiki add ', '', kwargs['trigger_msg'])
-            command = re.sub(' ', '>', command)
-            iw = command.split('>')
-            try:
-                check = await check_wiki_available(iw[1])
-            except:
-                await sendMessage(kwargs, '错误：命令不合法：~interwiki add <Interwiki> <url>')
-                check = False
-            if check:
-                result = database.config_custom_interwiki('add', 'custom_interwiki_self', kwargs[Friend].id, iw[0],
-                                                          check[0])
-                await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
-            else:
-                result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
-                await sendMessage(kwargs, MessageChain.create([Plain(result)]))
-        elif command[0] == 'del':
-            result = database.config_custom_interwiki('del', 'custom_interwiki_self', kwargs[Friend].id, command[1])
-            await sendMessage(kwargs, MessageChain.create([Plain(result)]))
-        elif command[0] == 'list':
-            query_database = database.get_custom_interwiki_list('custom_interwiki_self', kwargs[Friend].id)
-            if query_database:
-                result = '当前设置了以下Interwiki：\n' + query_database
-                await sendMessage(kwargs, result)
-            else:
-                await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
+        table = 'custom_interwiki_self'
+        target = kwargs[Friend].id
+    if command[0] == 'add':
+        command = re.sub(r'^interwiki add ', '', kwargs['trigger_msg'])
+        command = re.sub(' ', '>', command)
+        iw = command.split('>')
+        try:
+            check = await check_wiki_available(iw[1])
+        except:
+            await sendMessage(kwargs, '错误：命令不合法：~interwiki add <Interwiki> <url>')
+            return
+        if check:
+            result = database.config_custom_interwiki('add', table, target, iw[0],
+                                                      check[0])
+            await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
         else:
-            await sendMessage(kwargs, '命令不合法。')
+            result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
+            link = re.match(r'^(https?://).*', iw[1])
+            if not link:
+                result = '错误：所给的链接没有指明协议头（链接应以http://或https://开头）。'
+            article = re.match(r'.*/wiki/', iw[1])
+            if article:
+                result += '\n提示：所给的链接似乎是文章地址（/wiki/），请将文章地址去掉或直接指定api地址后再试。'
+            await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+    elif command[0] == 'del':
+        result = database.config_custom_interwiki('del', table, target, command[1])
+        await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+    elif command[0] == 'list':
+        query_database = database.get_custom_interwiki_list(table, target)
+        if query_database:
+            result = '当前设置了以下Interwiki：\n' + query_database
+            await sendMessage(kwargs, result)
+        else:
+            await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
+    else:
+        await sendMessage(kwargs, '命令不合法，参数应为add/del/list。')
 
 
 async def regex_wiki(kwargs: dict):

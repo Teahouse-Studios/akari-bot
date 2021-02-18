@@ -96,6 +96,7 @@ class wikilib:
 
     async def getpage(self, pagename=None):
         pagename = pagename if pagename is not None else self.pagename
+        pagename = re.sub('(.*)\?.*$', '\\1', pagename)
         getlinkurl = self.wikilink + '?action=query&format=json&prop=info&inprop=url&redirects&titles=' + pagename
         getpage = await self.get_data(getlinkurl, "json")
         return getpage
@@ -245,12 +246,21 @@ class wikilib:
             if desc == '':
                 desc = await self.getfirstline()
             print(desc)
+            finpgname = geturlpagename
             try:
                 section = re.match(r'.*(\#.*)', self.pagename)
-                finpgname = geturlpagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
-                fullurl = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
+                if section:
+                    finpgname = geturlpagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
+                    fullurl = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
             except Exception:
-                finpgname = geturlpagename
+                pass
+            try:
+                pgtag = re.match(r'.*(\?.*)', self.pagename)
+                if pgtag:
+                    finpgname = geturlpagename + pgtag.group(1)
+                    fullurl = fullurl + pgtag.group(1)
+            except Exception:
+                pass
             finpgname = urllib.parse.unquote(finpgname)
             finpgname = re.sub('_', ' ', finpgname)
             if finpgname == self.orginpagename:
@@ -261,7 +271,8 @@ class wikilib:
                 else:
                     target = f'{self.interwiki}:'
                 rmlstlb = re.sub('\n$', '',
-                                 f'（重定向[{target}{self.orginpagename}] -> [{target}{finpgname}]）' + ('\n' if desc != '' else '') + f'{desc}')
+                                 f'（重定向[{target}{self.orginpagename}] -> [{target}{finpgname}]）' + (
+                                     '\n' if desc != '' else '') + f'{desc}')
             rmlstlb = re.sub('\n\n', '\n', rmlstlb)
             rmlstlb = re.sub('\n\n', '\n', rmlstlb)
             if len(rmlstlb) > 250:
