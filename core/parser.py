@@ -78,7 +78,7 @@ async def parser(kwargs: dict):
                         await command_list[command_first_word](kwargs)  # 将dict传入下游模块
                 else:
                     await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
-            if 'TEST' in kwargs:
+            elif 'TEST' in kwargs:
                 kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
                 kwargs['help_list'] = help_list  # 帮助列表
                 await command_list[command_first_word](kwargs)  # 将dict传入下游模块

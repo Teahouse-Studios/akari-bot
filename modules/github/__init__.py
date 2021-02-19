@@ -9,25 +9,26 @@ from core import dirty_check as dirty
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
-async def time_diff(time: str):
-    datetimed = datetime.datetime.strftime(time, '%Y-%m-%dT%H:%M:%SZ')
-    now = datetime.datetime.now()
+def time_diff(time: str):
+    datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+    now = datetime.datetime.now().timestamp()
     diff = now - datetimed
 
-    if diff.year > 0:
-        return diff.year + ' year(s)'
-    if diff.month > 0:
-        return diff.month + ' month(s)'
-    if diff.day > 0:
-        return diff.day + ' day(s)'
-    if diff.hour > 0:
-        return diff.hour + ' hour(s)'
-    if diff.minute > 0:
-        return diff.hour + ' minute(s)'
-    if diff.second > 0:
-        return diff.second + ' second(s)'
-    else:
-        return 'miliseconds'
+    diff = diff
+    t = diff / 60 / 60 / 24
+    dw = ' day(s)'
+    if t < 1:
+        t = diff / 60 / 60
+        dw = ' hour(s)'
+        if t < 1:
+            t = diff / 60
+            dw = ' minute(s)'
+            if t < 1:
+                t = diff
+                dw = ' second(s)'
+    diff = str(int(t)) + dw
+    return diff
+
 
 async def dirty_check(text):
     check = await dirty.check([text])
@@ -64,9 +65,12 @@ async def repo(kwargs: dict, cmd: list):
     is_fork = result['fork']
     created = result['created_at']
     updated = result['updated_at']
+    parent = False
 
-    if mirror:
+    if mirror is not None:
         mirror = f' (This is a mirror of {mirror} )'
+    else:
+        mirror = False
 
     if is_fork:
         parent_name = result['parent']['name']
@@ -79,8 +83,14 @@ Language · {lang} | Fork · {fork} | Star · {star} | Watch · {watch}
 License: {rlicense}
 Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
 
-{url}{mirror}{parent}
+{url}
 '''
+
+    if mirror:
+        msg += '\n' + mirror
+
+    if parent:
+        msg += '\n' + parent
 
     is_dirty = await dirty_check(msg)
     if is_dirty:
@@ -97,18 +107,35 @@ async def user(kwargs: dict, cmd: list):
     url = result['html_url']
     bio = result['bio']
     utype = result['type']
-    company = result['company']
+    if 'company' in result:
+        company = result['company']
+    else:
+        company = False
     following = result['following']
     follower = result['followers']
     repo = result['public_repos']
     gist = result['public_gists']
-    is_staff = result['license']['spdx_id']
-    twitter = result['twitter_username']
+    is_staff = False
+    if 'license' in result:
+        if 'spdx_id' in result['license']:
+            is_staff = result['license']['spdx_id']
+    if 'twitter_username' in result:
+        twitter = result['twitter_username']
+    else:
+        twitter = False
     created = result['created_at']
     updated = result['updated_at']
-    website = result['blog']
-    location = result['location']
-    hireable = result['hireable']
+    if 'blog' in result:
+        website = result['blog']
+    else:
+        website = False
+    if 'location' in result:
+        location = result['location']
+    else:
+        location = False
+    hireable = False
+    if 'hireable' in result:
+        hireable = result['hireable']
     optional = []
     if hireable:
         optional.append('Hireable')
@@ -122,8 +149,10 @@ async def user(kwargs: dict, cmd: list):
         optional.append('Site · ' + website)
     if location:
         optional.append('Location · ' + location)
+    if bio is None:
+        bio = ''
 
-    optional_text = '\n' + optional.join(' | ')
+    optional_text = '\n' + ' | '.join(optional)
     msg = f'''{login} aka {name} ({uid})
 {bio}
 
@@ -141,12 +170,12 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
 
 async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
-    cmd = re.sub(r'^github ', '', cmd)
+    cmd = re.sub(r'^github ', '', cmd).split(' ')
     if cmd[0] == 'repo':
-        return await repo(kwargs ,cmd)
-    elif cmd[0] == 'user' or cmd[0] == 'usr' or cmd[0] == 'organization' or cmd[0] == 'org':
+        return await repo(kwargs, cmd)
+    elif cmd[0] in ['user', 'usr', 'organization', 'org']:
         return await user(kwargs, cmd)
 
 command = {'github': forker}
-help = {'github':{'github': '''- ~github repo <user>/<name>：获取GitHub仓库信息
+help = {'github': {'github': '''- ~github repo <user>/<name>：获取GitHub仓库信息
 - ~github <user|usr|organization|org>：获取GitHub用户或组织信息'''}}
