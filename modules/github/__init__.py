@@ -4,7 +4,7 @@ import traceback
 import datetime
 
 from core.template import sendMessage
-from core import dirty_check
+from core import dirty_check as dirty
 
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
@@ -30,7 +30,7 @@ async def time_diff(time: str):
         return 'miliseconds'
 
 async def dirty_check(text):
-    check = await dirty_check.check([text])
+    check = await dirty.check([text])
     print(check)
     if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
         return True
