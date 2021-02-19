@@ -23,7 +23,7 @@ async def newbie(table, id):
         d.append(x['title'])
     print(str(d))
     m = '\n'.join(d)
-    y = await check([m])
+    y = await check(m)
     print(str(y))
     f = re.findall(r'.*\n.*\n.*\n.*\n.*', str(y))
     g = '这是当前的新人列表：\n' + f[0] + '\n...仅显示前5条内容'
