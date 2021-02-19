@@ -45,7 +45,10 @@ async def parser(kwargs: dict):
     :param kwargs: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
     :return: 无返回
     """
-    display = kwargs[MessageChain].asDisplay()  # 将消息转换为一般显示形式
+    if 'TEST' in kwargs:
+        display = kwargs['command']
+    else:
+        display = kwargs[MessageChain].asDisplay()  # 将消息转换为一般显示形式
     if len(display) == 0:  # 转换后若为空消息则停止执行
         return
     command_prefix = ['~', '～']  # 消息前缀
@@ -53,6 +56,8 @@ async def parser(kwargs: dict):
         trigger = kwargs[Member].id
     if Friend in kwargs:  # 若为好友
         trigger = kwargs[Friend].id
+    if 'TEST' in kwargs:
+        trigger = 0
     if trigger == 1143754816:  # 特殊规则
         display = re.sub('^.*:\n', '', display)
     if database.check_black_list(trigger):  # 检查是否在黑名单
@@ -73,6 +78,10 @@ async def parser(kwargs: dict):
                         await command_list[command_first_word](kwargs)  # 将dict传入下游模块
                 else:
                     await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
+            if 'TEST' in kwargs:
+                kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
+                kwargs['help_list'] = help_list  # 帮助列表
+                await command_list[command_first_word](kwargs)  # 将dict传入下游模块
             else:
                 check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id, command_first_word)  # 检查个人是否开启模块
                 if check_command_enable_self:

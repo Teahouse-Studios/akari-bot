@@ -1,11 +1,10 @@
 *.env
 *.pyc
 *.pyc
-config/config.cfg
+config/*
 .idea
 assets/mcversion.txt
 mcvrss.txt
-*test.py
 assets/usercard/*.png
 test.py
 assets/Favicon/**/*.png
