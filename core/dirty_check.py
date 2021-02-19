@@ -28,7 +28,7 @@ async def check(*text):
     try:
         accessKeyId = config(config_path, "Check_accessKeyId")
         accessKeySecret = config(config_path, "Check_accessKeySecret")
-    except FileNotFoundError:
+    except (FileNotFoundError, IndexError):
         return '\n'.join(text)
     body = {
         "scenes": [
