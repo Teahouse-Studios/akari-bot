@@ -1,11 +1,10 @@
 import json
 
-import re
+from graia.application import MessageChain, Group, Friend
+from graia.application.message.elements.internal import Plain, Image, UploadMethods
 
 from core.template import sendMessage
 from core.utils import get_url
-from graia.application.message.elements.internal import Plain, Image, UploadMethods
-from graia.application import MessageChain, Group, Friend
 
 
 async def cytoid_profile(kwargs: dict):
@@ -33,17 +32,14 @@ async def cytoid_profile(kwargs: dict):
     rating = profile['rating']
     grade = profile['grade']
     grade = f'A: {grade["A"]}, B: {grade["B"]}, C: {grade["C"]}, D: {grade["D"]}, F: {grade["F"]}, S: {grade["S"]}, SS: {grade["SS"]}'
-    text = f'UID: {uid}\n' +\
-           (f'Nickname: {nick}\n' if nick else '') +\
-            f'BasicExp: {basicExp}\n' +\
-            f'LevelExp: {levelExp}\n' +\
-            f'TotalExp: {totalExp}\n' +\
-            f'CurrentLevel: {currentLevel}\n' +\
-            f'NextLevelExp: {nextLevelExp}\n' +\
-            f'Rating: {rating}\n' +\
-            f'Grade: {grade}'
+    text = f'UID: {uid}\n' + \
+           (f'Nickname: {nick}\n' if nick else '') + \
+           f'BasicExp: {basicExp}\n' + \
+           f'LevelExp: {levelExp}\n' + \
+           f'TotalExp: {totalExp}\n' + \
+           f'CurrentLevel: {currentLevel}\n' + \
+           f'NextLevelExp: {nextLevelExp}\n' + \
+           f'Rating: {rating}\n' + \
+           f'Grade: {grade}'
     msg = MessageChain.create([Image.fromNetworkAddress(avatar, method=mth), Plain(text)])
     await sendMessage(kwargs, msg)
-
-
-

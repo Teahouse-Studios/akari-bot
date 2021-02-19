@@ -2,10 +2,8 @@ import importlib
 import os
 import re
 import traceback
-from os.path import abspath
 
 from graia.application.logger import LoggingLogger
-
 
 display_load_err = False
 

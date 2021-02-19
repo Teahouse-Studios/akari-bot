@@ -1,8 +1,8 @@
 import asyncio
 import re
 
-from core.template import sendMessage, revokeMessage
 from core.dirty_check import check
+from core.template import sendMessage, revokeMessage
 from .server import server, server_be
 
 
@@ -14,7 +14,7 @@ async def main(kwargs: dict):
         message = re.sub(' -r|-r ', '', message)
         raw = True
     else:
-        raw =False
+        raw = False
     if '-p' in msgsplit:
         message = re.sub(' -p|-p ', '', message)
         showplayer = True

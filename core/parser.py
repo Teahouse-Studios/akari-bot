@@ -8,9 +8,6 @@ import database
 from core.loader import command_loader, logger_info
 from core.template import sendMessage
 
-import importlib
-
-
 admin_list = []
 essential_list = []
 command_list = []
@@ -23,7 +20,8 @@ function_list = []
 
 def load_modules(reload=False):
     global admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, function_list
-    admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list = command_loader(reload)
+    admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list = command_loader(
+        reload)
     function_list = []
     for command in command_list:
         function_list.append(command)
@@ -83,7 +81,8 @@ async def parser(kwargs: dict):
                 kwargs['help_list'] = help_list  # 帮助列表
                 await command_list[command_first_word](kwargs)  # 将dict传入下游模块
             else:
-                check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id, command_first_word)  # 检查个人是否开启模块
+                check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id,
+                                                                               command_first_word)  # 检查个人是否开启模块
                 if check_command_enable_self:
                     kwargs['trigger_msg'] = command
                     kwargs['help_list'] = help_list

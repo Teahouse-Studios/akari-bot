@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 
+
 def config(path, q):
     cp = ConfigParser()
     cp.read(path)

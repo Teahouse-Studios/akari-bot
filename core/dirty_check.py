@@ -5,7 +5,6 @@ import hmac
 import json
 import os.path
 import time
-from urllib.parse import urlencode
 
 import aiohttp
 

@@ -1,7 +1,6 @@
 import datetime
 import os
 import sqlite3
-import time
 import traceback
 
 from graia.application import Group, Friend, Member
@@ -316,7 +315,8 @@ def check_time(kwargs, name, delay: int):
         print(a)
         print(datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S").timestamp())
         print(datetime.datetime.now().timestamp())
-        check = (datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(hours=8)).timestamp() - datetime.datetime.now().timestamp()
+        check = (datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
+            hours=8)).timestamp() - datetime.datetime.now().timestamp()
         print(check)
         if check > - delay:
             return check
