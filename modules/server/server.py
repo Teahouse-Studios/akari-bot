@@ -92,7 +92,6 @@ async def server(address, raw=False, showplayer=False):
     return re.sub(r'§\w', "", awa.join(servers))
 
 
-
 async def server_be(address, raw=False):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
     servers = []

@@ -1,5 +1,6 @@
-from core.parser import parser
 import asyncio
+
+from core.parser import parser
 
 kwargs = {}
 kwargs['TEST'] = True

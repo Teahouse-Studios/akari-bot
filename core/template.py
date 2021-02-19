@@ -62,7 +62,7 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
                 sent_msgs.append(send)
             return sent_msgs
     if 'TEST' in kwargs:
-         print(msgchain.asDisplay())
+        print(msgchain.asDisplay())
 
 
 async def wait_confirm(kwargs: dict):

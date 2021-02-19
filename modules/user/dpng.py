@@ -1,5 +1,4 @@
 import os
-import re
 from os.path import abspath
 
 import aiohttp

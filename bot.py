@@ -1,7 +1,7 @@
 import asyncio
 import os
+import shutil
 from os.path import abspath
-import config
 
 from graia.application import GraiaMiraiApplication
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
@@ -9,13 +9,11 @@ from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
+import config
 from core.broadcast import bcc, app
 from core.loader import rss_loader
 from core.parser import parser
 from legacy_subbot import newbie
-
-import shutil
-
 
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):

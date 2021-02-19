@@ -109,7 +109,8 @@ async def wiki_loader(kwargs: dict):
             command = re.sub(matchinterwiki.group(1) + ':', '', command)
     msg = await wikilib.wikilib().main(get_link, command, interwiki=iw)
     if msg['status'] == 'done':
-        msgchain = MessageChain.create([Plain((prompt + '\n' if prompt else '') + (msg['url'] + '\n' if 'url' in msg else '') + msg['text'])])
+        msgchain = MessageChain.create(
+            [Plain((prompt + '\n' if prompt else '') + (msg['url'] + '\n' if 'url' in msg else '') + msg['text'])])
         if 'net_image' in msg:
             try:
                 if Group in kwargs:

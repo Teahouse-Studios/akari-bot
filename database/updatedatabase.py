@@ -1,7 +1,6 @@
 import os
 import sqlite3
 
-
 dbpath = os.path.abspath('./database/save.db')
 conn = sqlite3.connect(dbpath)
 c = conn.cursor()

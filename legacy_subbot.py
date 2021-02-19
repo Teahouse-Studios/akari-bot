@@ -5,9 +5,9 @@ from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
 from core.dirty_check import check
+from core.loader import logger_info
 from modules.user.userlib import get_data
 from modules.utils.UTC8 import UTC8
-from core.loader import logger_info
 
 
 async def newbie(app):

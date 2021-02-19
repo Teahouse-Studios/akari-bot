@@ -1,13 +1,14 @@
-import re
-import aiohttp
-import traceback
 import datetime
+import re
+import traceback
 
-from core.template import sendMessage
-from core import dirty_check as dirty
-
+import aiohttp
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+
+from core import dirty_check as dirty
+from core.template import sendMessage
+
 
 def time_diff(time: str):
     datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
@@ -37,6 +38,7 @@ async def dirty_check(text):
         return True
     return False
 
+
 async def query(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
         try:
@@ -48,6 +50,7 @@ async def query(url: str, fmt: str):
         except Exception:
             traceback.print_exc()
             return False
+
 
 async def repo(kwargs: dict, cmd: list):
     try:
@@ -103,6 +106,7 @@ Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
     except Exception as e:
         await sendMessage(kwargs, '发生错误：' + str(e))
+
 
 async def user(kwargs: dict, cmd: list):
     try:
@@ -177,6 +181,7 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
     except Exception as e:
         await sendMessage(kwargs, '发生错误：' + str(e))
 
+
 async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
     cmd = re.sub(r'^github ', '', cmd).split(' ')
@@ -184,6 +189,7 @@ async def forker(kwargs: dict):
         return await repo(kwargs, cmd)
     elif cmd[0] in ['user', 'usr', 'organization', 'org']:
         return await user(kwargs, cmd)
+
 
 command = {'github': forker}
 help = {'github': {'github': '''- ~github repo <user>/<name>：获取GitHub仓库信息

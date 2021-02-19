@@ -21,7 +21,7 @@ jobs:
 
       - name: Build with mkdocs
         run: mkdocs build
-      
+
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      
+
       - name: Cache Node Modules
         id: node-cache
         uses: actions/cache@v2
@@ -44,7 +44,7 @@ jobs:
       - name: Install
         if: steps.node-cache.outputs.cache-hit != 'true'
         run: yarn --no-lockfile
-      
+
       - name: Deploy to server
         run: node deploy.js
         env:

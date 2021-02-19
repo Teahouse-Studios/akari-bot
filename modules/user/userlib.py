@@ -5,9 +5,9 @@ import urllib
 import aiohttp
 
 from modules.utils.UTC8 import UTC8
-from .tool import gender
-from modules.wiki.wikilib import wikilib
 from modules.wiki.helper import check_wiki_available
+from modules.wiki.wikilib import wikilib
+from .tool import gender
 
 
 async def get_data(url: str, fmt: str):
@@ -102,7 +102,8 @@ async def GetUser(wikiurl, username, argv=None):
                 stats = soup.find('div', class_='section stats')
                 point = soup.find('div', class_='score').text
                 dd = stats.find_all('dd')
-                Editcount = ('\n编辑过的Wiki：' + str(dd[0]) + '\n创建数：' + str(dd[1]) + ' | 编辑数：' + str(dd[2]) + '\n删除数：' + str(
+                Editcount = ('\n编辑过的Wiki：' + str(dd[0]) + '\n创建数：' + str(dd[1]) + ' | 编辑数：' + str(
+                    dd[2]) + '\n删除数：' + str(
                     dd[3]) + ' | 巡查数：' + str(dd[4]) + '\n本站排名：' + str(dd[5]) + ' | 全域排名：' + str(dd[6]) + '\n好友：' + str(
                     dd[7]))
                 Editcount = re.sub(r'<dd>|</dd>', '', Editcount)
@@ -194,7 +195,7 @@ async def GetUser(wikiurl, username, argv=None):
                                     wikipoint=point)
         if argv == '-p':
             return f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimgc:{imagepath}]]'
-        return (GetArticleUrl+ 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
+        return (GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
                 Wikiname + '\n' +
                 f'用户：{User} | 编辑数：{Editcount}\n' +
                 f'用户组：{Group}\n' +
