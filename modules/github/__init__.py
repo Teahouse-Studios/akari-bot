@@ -4,7 +4,7 @@ import traceback
 import datetime
 
 from core.template import sendMessage
-from core.dirty_check import check
+from core import dirty_check
 
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
@@ -27,25 +27,23 @@ async def time_diff(time: str):
     if diff.second > 0:
         return diff.second + ' second(s)'
     else:
-        return 'miliseconds'    
+        return 'miliseconds'
 
-async def dirty_check(self, text):
-    if not self.danger_wiki_check():
-        return False
-    check = await check([text])
+async def dirty_check(text):
+    check = await dirty_check.check([text])
     print(check)
     if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
         return True
     return False
 
-async def query(url: str, format: str):
+async def query(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                if hasattr(req, format):
-                    return await getattr(req, format)()
+                if hasattr(req, fmt):
+                    return await getattr(req, fmt)()
                 else:
-                    raise ValueError(f"NoSuchMethod: {format}")
+                    raise ValueError(f"NoSuchMethod: {fmt}")
         except Exception:
             traceback.print_exc()
             return False
@@ -55,14 +53,14 @@ async def repo(kwargs: dict, cmd: list):
     result = await query('https://api.github.com/repos/' + obj, 'json')
     name = result['full_name']
     url = result['html_url']
-    id = result['id']
+    rid = result['id']
     desc = result['description']
     lang = result['language']
     fork = result['forks_count']
     star = result['stargazers_count']
     watch = result['watchers_count']
     mirror = result['mirror_url']
-    license = result['license']['spdx_id']
+    rlicense = result['license']['spdx_id']
     is_fork = result['fork']
     created = result['created_at']
     updated = result['updated_at']
@@ -74,11 +72,11 @@ async def repo(kwargs: dict, cmd: list):
         parent_name = result['parent']['name']
         parent = f' (This is a mirror of {parent_name} )'
 
-    msg = f'''{name} ({id})
+    msg = f'''{name} ({rid})
 {desc}
 
 Language · {lang} | Fork · {fork} | Star · {star} | Watch · {watch}
-License: {license}
+License: {rlicense}
 Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
 
 {url}{mirror}{parent}
@@ -95,10 +93,10 @@ async def user(kwargs: dict, cmd: list):
     result = await query('https://api.github.com/users/' + obj, 'json')
     login = result['login']
     name = result['name']
-    id = result['id']
+    uid = result['id']
     url = result['html_url']
     bio = result['bio']
-    type = result['type']
+    utype = result['type']
     company = result['company']
     following = result['following']
     follower = result['followers']
@@ -126,10 +124,10 @@ async def user(kwargs: dict, cmd: list):
         optional.append('Location · ' + location)
 
     optional_text = '\n' + optional.join(' | ')
-    msg = f'''{login} aka {name} ({id})
+    msg = f'''{login} aka {name} ({uid})
 {bio}
 
-Type · {type} | Follower · {follower} | Following · {following} | Repo · {repo} | Gist · {gist}{optional_text}
+Type · {utype} | Follower · {follower} | Following · {following} | Repo · {repo} | Gist · {gist}{optional_text}
 Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} ago
 
 {url}
