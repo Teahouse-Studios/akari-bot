@@ -1,0 +1,7 @@
+[cfg]
+debug_flag = True
+enable_chat_log = True
+host =
+authkey =
+account =
+websocket = True

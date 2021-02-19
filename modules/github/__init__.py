@@ -143,9 +143,9 @@ async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
     cmd = re.sub(r'^github ', '', cmd)
     if cmd[0] == 'repo':
-        return repo(kwargs ,cmd)
+        return await repo(kwargs ,cmd)
     elif cmd[0] == 'user' or cmd[0] == 'usr' or cmd[0] == 'organization' or cmd[0] == 'org':
-        return user(kwargs, cmd)
+        return await user(kwargs, cmd)
 
 command = {'github': forker}
 help = {'github':{'github': '''- ~github repo <user>/<name>：获取GitHub仓库信息
