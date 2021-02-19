@@ -4,7 +4,7 @@ import urllib
 
 import aiohttp
 
-import core.dirty_check
+from core import dirty_check
 from .helper import check_wiki_available
 
 
@@ -41,7 +41,7 @@ class wikilib:
     async def danger_text_check(self, text):
         if not self.danger_wiki_check():
             return False
-        check = await core.dirty_check.check([text])
+        check = await dirty_check.check(text)
         print(check)
         if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
             return True
