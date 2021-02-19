@@ -1,7 +1,7 @@
 *.env
 *.pyc
 *.pyc
-config/*
+config/*.cfg
 .idea
 assets/mcversion.txt
 mcvrss.txt

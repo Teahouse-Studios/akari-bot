@@ -3,5 +3,5 @@ import asyncio
 
 kwargs = {}
 kwargs['TEST'] = True
-kwargs['command'] = '~ping'
+kwargs['command'] = '~github user Dianliang233'
 asyncio.run(parser(kwargs))
