@@ -22,7 +22,7 @@ async def ab(table, id):
         for x in file['query']['abuselog'][:5]:
             d.append('•' + x['title'] + ' - ' + x['user'] + '于' + UTC8(x['timestamp'], 'onlytimenoutc') + '\n过滤器名：' + x[
                 'filter'] + '\n处理结果：' + x['result'])
-        y = await check(['\n'.join(d)])
+        y = await check('\n'.join(d))
         if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
             return y + '\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。Special:滥用日志\n[一分钟后撤回本消息]'
         else:
