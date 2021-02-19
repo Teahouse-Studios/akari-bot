@@ -20,10 +20,11 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
     '''
     if isinstance(msgchain, str):
         msgchain = MessageChain.create([Plain(msgchain)])
-    if Quote:
-        QuoteTarget = kwargs[MessageChain][Source][0].id
-    else:
-        QuoteTarget = None
+    if 'TEST' not in kwargs:
+        if Quote:
+            QuoteTarget = kwargs[MessageChain][Source][0].id
+        else:
+            QuoteTarget = None
     if Group in kwargs:
         try:
             eventlet.monkey_patch()
@@ -60,6 +61,8 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
                 send = await app.sendFriendMessage(kwargs[Friend], MessageChain.create([imgs]))
                 sent_msgs.append(send)
             return sent_msgs
+    if 'TEST' in kwargs:
+         print(msgchain.asDisplay())
 
 
 async def wait_confirm(kwargs: dict):
