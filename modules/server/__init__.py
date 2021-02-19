@@ -21,10 +21,10 @@ async def main(kwargs: dict):
     else:
         showplayer = False
     sendmsg = await server(message, raw, showplayer)
-    sendmsg = await check([sendmsg])
+    sendmsg = await check(sendmsg)
     send = await sendMessage(kwargs, sendmsg)
     sendmsgb = await server_be(message, raw)
-    sendmsgb = await check([sendmsgb])
+    sendmsgb = await check(sendmsgb)
     sendb = await sendMessage(kwargs, sendmsgb)
     await asyncio.sleep(30)
     await revokeMessage(send)
