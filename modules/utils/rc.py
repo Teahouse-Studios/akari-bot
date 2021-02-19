@@ -23,7 +23,7 @@ async def rc(table, id):
             d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
         m = '\n'.join(d)
         print(m)
-        y = await check([m])
+        y = await check(m)
         print(y)
         if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
             msg = y + '\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。Special:最近更改'
