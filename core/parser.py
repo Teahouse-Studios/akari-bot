@@ -118,6 +118,15 @@ async def parser(kwargs: dict):
                     os.execl(python, python, *sys.argv)
             else:
                 await sendMessage(kwargs, '权限不足')
+        elif command_first_word == 'update':
+            if database.check_superuser(kwargs):
+                await sendMessage(kwargs, '你确定吗？')
+                confirm = await wait_confirm(kwargs)
+                if confirm:
+                    result = os.popen('git pull', 'r')
+                    await sendMessage(kwargs, result.read())
+            else:
+                await sendMessage(kwargs, '权限不足')
     # 正则模块部分
     if Group in kwargs:
         for regex in regex_list:  # 遍历正则模块列表
