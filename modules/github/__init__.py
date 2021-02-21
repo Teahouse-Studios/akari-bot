@@ -59,7 +59,6 @@ async def repo(kwargs: dict, cmd: list):
         name = result['full_name']
         url = result['html_url']
         rid = result['id']
-        desc = result['description']
         lang = result['language']
         fork = result['forks_count']
         star = result['stargazers_count']
@@ -73,6 +72,12 @@ async def repo(kwargs: dict, cmd: list):
         created = result['created_at']
         updated = result['updated_at']
         parent = False
+        website = result['homepage']
+
+        if website is not None:
+            website = 'Website: ' + website + '\n'
+        else:
+            website = False
 
         if mirror is not None:
             mirror = f' (This is a mirror of {mirror} )'
@@ -81,17 +86,22 @@ async def repo(kwargs: dict, cmd: list):
 
         if is_fork:
             parent_name = result['parent']['name']
-            parent = f' (This is a mirror of {parent_name} )'
+            parent = f' (This is a fork of {parent_name} )'
 
-        msg = f'''{name} ({rid})
-{desc}
+        desc = result['description']
+        if desc is None:
+            desc = ''
+        else:
+            desc = '\n' + result['bio']
+
+        msg = f'''{name} ({rid}){desc}
 
 Language · {lang} | Fork · {fork} | Star · {star} | Watch · {watch}
 License: {rlicense}
 Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
 
-{url}
-    '''
+{website}{url}
+'''
 
         if mirror:
             msg += '\n' + mirror
@@ -116,7 +126,6 @@ async def user(kwargs: dict, cmd: list):
         name = result['name']
         uid = result['id']
         url = result['html_url']
-        bio = result['bio']
         utype = result['type']
         if 'company' in result:
             company = result['company']
@@ -160,12 +169,15 @@ async def user(kwargs: dict, cmd: list):
             optional.append('Site · ' + website)
         if location:
             optional.append('Location · ' + location)
+
+        bio = result['bio']
         if bio is None:
             bio = ''
+        else:
+            bio = '\n' + result['bio']
 
         optional_text = '\n' + ' | '.join(optional)
-        msg = f'''{login} aka {name} ({uid})
-{bio}
+        msg = f'''{login} aka {name} ({uid}){bio}
     
 Type · {utype} | Follower · {follower} | Following · {following} | Repo · {repo} | Gist · {gist}{optional_text}
 Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} ago
