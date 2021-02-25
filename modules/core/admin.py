@@ -1,0 +1,51 @@
+import os
+import sys
+
+import database
+from core.template import sendMessage, wait_confirm
+
+
+async def add_su(kwargs: dict):
+    command = kwargs['trigger_msg'].split(' ')
+    if database.check_superuser(kwargs):
+        await sendMessage(kwargs, database.add_superuser(command[1]))
+    else:
+        await sendMessage(kwargs, '权限不足。')
+
+
+async def del_su(kwargs: dict):
+    command = kwargs['trigger_msg'].split(' ')
+    if database.check_superuser(kwargs):
+        await sendMessage(kwargs, database.del_superuser(command[1]))
+    else:
+        await sendMessage(kwargs, '权限不足。')
+
+
+async def add_base_su(kwargs: dict):
+    await sendMessage(kwargs, database.add_superuser('2596322644'))
+
+
+async def set_modules(kwargs: dict):
+    command = kwargs['trigger_msg'].split(' ')
+    command_second_word = command[1]
+    command_third_word = command[2]
+    command_forth_word = command[3]
+    msg = database.update_modules(command_second_word, command_third_word, command_forth_word)
+    await sendMessage(kwargs, msg)
+
+
+async def restart_bot(kwargs: dict):
+    await sendMessage(kwargs, '你确定吗？')
+    confirm = await wait_confirm(kwargs)
+    if confirm:
+        await sendMessage(kwargs, '已执行。')
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+
+async def update_bot(kwargs: dict):
+    await sendMessage(kwargs, '你确定吗？')
+    confirm = await wait_confirm(kwargs)
+    if confirm:
+        result = os.popen('git pull', 'r')
+        await sendMessage(kwargs, result.read())

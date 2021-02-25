@@ -30,6 +30,7 @@ def command_loader(reload=False):
     regex_list = {}
     self_options_list = []
     options_list = []
+    friend_options_list = []
     load_dir_path = os.path.abspath('./modules/')
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:
@@ -105,10 +106,19 @@ def command_loader(reload=False):
                 except:
                     if display_load_err:
                         traceback.print_exc()
+                try:
+                    friend_options = import_fun.friend_options
+                    if isinstance(friend_options, list):
+                        for x in friend_options:
+                            friend_options_list.append(x)
+                        find_modules_logger(friend_options)
+                except:
+                    if display_load_err:
+                        traceback.print_exc()
         except:
             if display_load_err:
                 traceback.print_exc()
-    return admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list
+    return admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, friend_options_list
 
 
 def rss_loader():

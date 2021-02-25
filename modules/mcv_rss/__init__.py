@@ -43,6 +43,13 @@ async def mcv_rss(app):
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
+                for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
+                    try:
+                        await app.sendFriendMessage(int(qqfriend), MessageChain.create(
+                            [Plain('启动器已更新' + file['latest']['release'] + '正式版。')]))
+                        await asyncio.sleep(0.5)
+                    except Exception:
+                        traceback.print_exc()
                 addversion = open('./assets/mcversion.txt', 'a')
                 addversion.write('\n' + release)
                 addversion.close()
@@ -52,6 +59,13 @@ async def mcv_rss(app):
                 for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                     try:
                         await app.sendGroupMessage(int(qqgroup), MessageChain.create(
+                            [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]))
+                        await asyncio.sleep(0.5)
+                    except Exception:
+                        traceback.print_exc()
+                for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
+                    try:
+                        await app.sendFriendMessage(int(qqfriend), MessageChain.create(
                             [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]))
                         await asyncio.sleep(0.5)
                     except Exception:
@@ -88,6 +102,13 @@ async def mcv_jira_rss(app):
                             await asyncio.sleep(0.5)
                         except Exception:
                             traceback.print_exc()
+                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss_self'):
+                        try:
+                            await app.sendFriendMessage(int(qqfriend), MessageChain.create(
+                                [Plain(f'Jira已更新{x}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')]))
+                            await asyncio.sleep(0.5)
+                        except Exception:
+                            traceback.print_exc()
                     addversion = open('./assets/mcversion_jira.txt', 'a')
                     addversion.write('\n' + x)
                     addversion.close()
@@ -100,5 +121,6 @@ async def mcv_jira_rss(app):
 
 rss = {'mcv_rss': mcv_rss, 'mcv_jira_rss': mcv_jira_rss}
 options = ['mcv_rss', 'mcv_jira_rss']
+friend_options = ['mcv_rss_self', 'mcv_jira_rss_self']
 help = {'mcv_rss': {'help': '订阅Minecraft Java版游戏版本检测。（仅群聊）'},
         'mcv_jira_rss': {'help': '订阅Minecraft Java版游戏版本检测（Jira记录，仅作预览用）。（仅群聊）'}}

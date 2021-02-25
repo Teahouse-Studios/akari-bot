@@ -19,6 +19,9 @@ def initialize():
     c.execute('''CREATE TABLE self_permission
            (ID INT PRIMARY KEY     NOT NULL,
            DISABLE_MODULES  TEXT);''')
+    c.execute('''CREATE TABLE friend_permission
+           (ID INT PRIMARY KEY     NOT NULL,
+           ENABLE_MODULES  TEXT);''')
     c.execute('''CREATE TABLE black_list
            (ID INT PRIMARY KEY     NOT NULL);''')
     c.execute('''CREATE TABLE white_list
@@ -145,6 +148,18 @@ def check_enable_modules(kwargs, modules_name, table='group_permission'):
                 return True
         else:
             return True
+    if table == 'friend_modules_permission':
+        conn = sqlite3.connect(dbpath)
+        c = conn.cursor()
+        a = c.execute(f"SELECT * FROM {table} WHERE ID='{target}'").fetchone()
+        if a:
+            enabled_split = a[1].split('|')
+            if modules_name in enabled_split:
+                return True
+            else:
+                return False
+        else:
+            return False
 
 
 def check_enable_modules_self(id, modules_name, table='self_permission'):

@@ -21,10 +21,11 @@ function_list = []
 
 
 def load_modules(reload=False):
-    global admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, function_list
-    admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list = command_loader(
+    global admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, friend_options_list, function_list, friend_function_list
+    admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, friend_options_list = command_loader(
         reload)
     function_list = []
+    friend_function_list = []
     for command in command_list:
         function_list.append(command)
     for reg in regex_list:
@@ -34,6 +35,9 @@ def load_modules(reload=False):
     for options in options_list:
         function_list.append(options)
     logger_info(f'Now we have function = {function_list}')
+    for friend_options in friend_options_list:
+        friend_function_list.append(friend_options)
+    logger_info(f'Now we have friend function = {friend_function_list}')
 
 
 load_modules()
@@ -92,6 +96,7 @@ async def parser(kwargs: dict):
         elif command_first_word in essential_list:  # 若触发的对象命令为基础命令
             kwargs['trigger_msg'] = command
             kwargs['function_list'] = function_list  # 所有可用模块列表
+            kwargs['friend_function_list'] = friend_function_list
             kwargs['help_list'] = help_list
             await essential_list[command_first_word](kwargs)
         elif command_first_word in admin_list:  # 若触发的对象为超管命令
@@ -99,32 +104,6 @@ async def parser(kwargs: dict):
                 kwargs['trigger_msg'] = command
                 kwargs['function_list'] = function_list
                 await admin_list[command_first_word](kwargs)
-            else:
-                await sendMessage(kwargs, '权限不足')
-        elif command_first_word == 'reload':
-            if database.check_superuser(kwargs):
-                await sendMessage(kwargs, '重新加载中！')
-                load_modules(reload=True)
-                await sendMessage(kwargs, '成功重新加载。')
-            else:
-                await sendMessage(kwargs, '权限不足')
-        elif command_first_word == 'restart':
-            if database.check_superuser(kwargs):
-                await sendMessage(kwargs, '你确定吗？')
-                confirm = await wait_confirm(kwargs)
-                if confirm:
-                    await sendMessage(kwargs, '已执行。')
-                    python = sys.executable
-                    os.execl(python, python, *sys.argv)
-            else:
-                await sendMessage(kwargs, '权限不足')
-        elif command_first_word == 'update':
-            if database.check_superuser(kwargs):
-                await sendMessage(kwargs, '你确定吗？')
-                confirm = await wait_confirm(kwargs)
-                if confirm:
-                    result = os.popen('git pull', 'r')
-                    await sendMessage(kwargs, result.read())
             else:
                 await sendMessage(kwargs, '权限不足')
     # 正则模块部分

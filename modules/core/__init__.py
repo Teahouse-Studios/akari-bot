@@ -5,6 +5,7 @@ from graia.application.message.elements.internal import Plain
 
 import database
 from core.template import sendMessage, check_permission, revokeMessage
+from .admin import *
 
 
 async def enable_modules(kwargs: dict):
@@ -12,6 +13,7 @@ async def enable_modules(kwargs: dict):
 ~enable [self] <modules/all>"""
     command = kwargs['trigger_msg'].split(' ')
     function_list = kwargs['function_list']
+    friend_function_list = kwargs['friend_function_list']
     if not len(command) > 1:
         await sendMessage(kwargs, '命令格式错误。' + enable_modules.__doc__)
         return
@@ -61,6 +63,9 @@ async def enable_modules(kwargs: dict):
         elif command_second_word in function_list:
             msg = database.update_modules_self(do, kwargs[Friend].id, command_second_word)
             await sendMessage(kwargs, msg)
+        elif command_second_word in friend_function_list:
+            msg = database.update_modules(do, kwargs[Friend].id, command_second_word, table='friend_permission')
+            await sendMessage(kwargs, msg)
         else:
             await sendMessage(kwargs, '此模块不存在。')
 
@@ -73,6 +78,7 @@ async def disable_modules(kwargs: dict):
         await sendMessage(kwargs, '命令格式错误。' + disable_modules.__doc__)
         return
     function_list = kwargs['function_list']
+    friend_function_list = kwargs['friend_function_list']
     command_second_word = command[1]
     if Group in kwargs:
         if command_second_word == 'self':
@@ -117,6 +123,9 @@ async def disable_modules(kwargs: dict):
             await sendMessage(kwargs, '\n'.join(msglist))
         elif command_second_word in function_list:
             msg = database.update_modules_self(do, kwargs[Friend].id, command_second_word)
+            await sendMessage(kwargs, msg)
+        elif command_second_word in friend_function_list:
+            msg = database.update_modules(do, kwargs[Friend].id, command_second_word, table='friend_permission')
             await sendMessage(kwargs, msg)
         else:
             await sendMessage(kwargs, '此模块不存在。')
@@ -182,38 +191,10 @@ async def modules_help(kwargs: dict):
         await revokeMessage(send)
 
 
-async def add_su(kwargs: dict):
-    command = kwargs['trigger_msg'].split(' ')
-    if database.check_superuser(kwargs):
-        await sendMessage(kwargs, database.add_superuser(command[1]))
-    else:
-        await sendMessage(kwargs, '权限不足。')
-
-
-async def del_su(kwargs: dict):
-    command = kwargs['trigger_msg'].split(' ')
-    if database.check_superuser(kwargs):
-        await sendMessage(kwargs, database.del_superuser(command[1]))
-    else:
-        await sendMessage(kwargs, '权限不足。')
-
-
-async def add_base_su(kwargs: dict):
-    await sendMessage(kwargs, database.add_superuser('2596322644'))
-
-
-async def set_modules(kwargs: dict):
-    command = kwargs['trigger_msg'].split(' ')
-    command_second_word = command[1]
-    command_third_word = command[2]
-    command_forth_word = command[3]
-    msg = database.update_modules(command_second_word, command_third_word, command_forth_word)
-    await sendMessage(kwargs, msg)
-
-
 essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help,
              'modules': modules_help}
-admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules}
+
+admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules, 'restart': restart_bot, 'update': update_bot}
 help = {'enable': {'help': '~enable <模块名> - 开启一个模块', 'essential': True},
         'disable': {'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
         'module': {'help': '~modules - 查询所有可用模块。'}}
