@@ -153,8 +153,7 @@ class wikilib:
 
     async def getdesc(self):
         try:
-            descurl = self.wikilink + '?action=query&prop=extracts&exsentences=1&&explaintext&exsectionformat=wiki' \
-                                      '&format=json&titles=' + self.querytextname
+            descurl = self.wikilink + '?action=query&prop=info|pageprops|extracts&ppprop=description|displaytitle|disambiguation|infoboxes&explaintext=true&exsectionformat=plain&exsentences=1&format=json&titles=' + self.querytextname
             loadtext = await self.get_data(descurl, "json")
             pageid = self.parsepageid(loadtext)
             desc = loadtext['query']['pages'][pageid]['extract']

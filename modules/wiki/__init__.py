@@ -254,8 +254,6 @@ async def regex_wiki(kwargs: dict):
             urllist = {}
             msglist = MessageChain.create([])
             waitmsglist = MessageChain.create([])
-            status = None
-            text = ""
             if Group in kwargs:
                 table = 'start_wiki_link_group'
                 target = kwargs[Group].id

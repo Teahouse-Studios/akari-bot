@@ -1,38 +1,42 @@
 import re
 
 import aiohttp
+import json
 
 
-async def get_url(url, fmt):
+async def get_url(url):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-            if hasattr(req, fmt):
-                return await getattr(req, fmt)()
-            else:
-                raise ValueError(f"NoSuchMethod: {fmt}")
+            return json.loads(await req.read())
 
 
 async def check_wiki_available(link):
+    query = 'api.php?action=query&meta=siteinfo&siprop=general|extensions&format=json'
     try:
         api = re.match(r'(https?://.*?/api.php$)', link)
-        json1 = await get_url(api.group(1), 'json')
-        wikiname = json1['query']['general']['sitename']
-        return api.group(1), wikiname
+        wlink = api.group(1)
+        json1 = await get_url(api.group(1))
     except:
-        pass
-    if link[-1] not in ['/', '\\']:
-        link = link + '/'
-    test1 = link + 'api.php?action=query&meta=siteinfo&format=json'
-    try:
-        json1 = await get_url(test1, 'json')
-        wikiname = json1['query']['general']['sitename']
-        return link + 'api.php', wikiname
-    except:
-        pass
-    try:
-        test2 = link + 'w/api.php?action=query&meta=siteinfo&format=json'
-        json2 = await get_url(test2, 'json')
-        wikiname = json2['query']['general']['sitename']
-        return link + 'w/api.php', wikiname
-    except:
-        return False
+        if link[-1] not in ['/', '\\']:
+            link = link + '/'
+        test1 = link + query
+        try:
+            json1 = await get_url(test1)
+            wlink = link + 'api.php'
+        except:
+            try:
+                test2 = link + 'w/' + query
+                json1 = await get_url(test2)
+                wlink = link + 'w/api.php'
+            except:
+                return False
+    wikiname = json1['query']['general']['sitename']
+    extensions = json1['query']['extensions']
+    extlist = []
+    for ext in extensions:
+        extlist.append(ext['name'])
+    print(extlist)
+    if 'TextExtracts' not in extlist:
+        wikiname = wikiname + '\n警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
+
+    return wlink, wikiname

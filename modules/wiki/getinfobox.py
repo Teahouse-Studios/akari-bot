@@ -31,7 +31,9 @@ async def get_infobox_pic(link, pagelink):
         print(link)
         print(pagelink)
         try:
-            html = await get_url(pagelink, 'text')
+            async with aiohttp.ClientSession() as session:
+                async with session.get(pagelink, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                    html = await req.read()
         except:
             traceback.print_exc()
             return False
