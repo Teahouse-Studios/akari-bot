@@ -77,22 +77,23 @@ async def wiki_loader(kwargs: dict):
             co = True
             command = matchsite.group(2)
         matchinterwiki = re.match(r'(.*?):(.*)', command)
-        if matchinterwiki.group(1) == 'w':
-            matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-            if matchinterwiki:
-                if matchinterwiki.group(1) == 'c':
-                    matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-                    if matchinterwiki:
-                        interwiki_split = matchinterwiki.group(1).split('.')
-                        if len(interwiki_split) == 2:
-                            get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                            command = interwiki_split[0] + ':' + matchinterwiki.group(2)
-                            iw = interwiki_split[0]
-                        else:
-                            get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
-                            command = matchinterwiki.group(2)
-                            iw = matchinterwiki.group(1)
-                        co = True
+        if matchinterwiki:
+            if matchinterwiki.group(1) == 'w':
+                matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
+                if matchinterwiki:
+                    if matchinterwiki.group(1) == 'c':
+                        matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
+                        if matchinterwiki:
+                            interwiki_split = matchinterwiki.group(1).split('.')
+                            if len(interwiki_split) == 2:
+                                get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
+                                command = interwiki_split[0] + ':' + matchinterwiki.group(2)
+                                iw = interwiki_split[0]
+                            else:
+                                get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
+                                command = matchinterwiki.group(2)
+                                iw = matchinterwiki.group(1)
+                            co = True
 
     print(co)
     matchinterwiki = re.match(r'(.*?):(.*)', command)
