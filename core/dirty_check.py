@@ -34,7 +34,7 @@ async def check(*text):
             "antispam"
         ],
         "tasks": list(map(lambda x: {
-            "dataId": "OasisAkari is god {}".format(time.time()),
+            "dataId": "Nullcat is god {}".format(time.time()),
             "content": x
         }, text))
     }
@@ -44,7 +44,7 @@ async def check(*text):
 
     GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
     date = datetime.datetime.utcnow().strftime(GMT_FORMAT)
-    nonce = 'OasisAkari is god forever {}'.format(time.time())
+    nonce = 'LittleC is god forever {}'.format(time.time())
     contentMd5 = base64.b64encode(hashlib.md5(json.dumps(body).encode('utf-8')).digest()).decode('utf-8')
     headers = {
         'Accept': 'application/json',
