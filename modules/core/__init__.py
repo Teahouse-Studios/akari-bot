@@ -191,8 +191,14 @@ async def modules_help(kwargs: dict):
         await revokeMessage(send)
 
 
+async def bot_version(kwargs: dict):
+    git_commit_version = os.popen('git rev-parse HEAD', 'r')
+    msg = '当前运行的代码版本号为：' + git_commit_version[0:6]
+    await sendMessage(kwargs, msg)
+
+
 essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help,
-             'modules': modules_help}
+             'modules': modules_help, 'version': bot_version}
 
 admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules, 'restart': restart_bot, 'update': update_bot}
 help = {'enable': {'help': '~enable <模块名> - 开启一个模块', 'essential': True},
