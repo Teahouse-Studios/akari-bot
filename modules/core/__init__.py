@@ -192,9 +192,11 @@ async def modules_help(kwargs: dict):
 
 
 async def bot_version(kwargs: dict):
-    git_commit_version = os.popen('git rev-parse HEAD', 'r')
-    msg = '当前运行的代码版本号为：' + git_commit_version.read()[0:7]
+    version = os.path.abspath('.version')
+    openfile = open(version, 'r')
+    msg = '当前运行的代码版本号为：' + openfile.read()
     await sendMessage(kwargs, msg)
+    openfile.close()
 
 
 essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help,

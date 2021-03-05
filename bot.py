@@ -22,6 +22,11 @@ if os.path.exists(cache_path):
 else:
     os.mkdir(cache_path)
 
+version = os.path.abspath('.version')
+write_version = open(version, 'w')
+write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:7])
+write_version.close()
+
 
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
