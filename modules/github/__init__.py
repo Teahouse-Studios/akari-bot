@@ -190,8 +190,8 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
             msg = 'https://wdf.ink/6OUp'
 
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
-    except Exception as e:
-        await sendMessage(kwargs, '发生错误：' + str(e))
+    except Exception as error:
+        await sendMessage(kwargs, '发生错误：' + str(error))
 
 
 async def forker(kwargs: dict):
