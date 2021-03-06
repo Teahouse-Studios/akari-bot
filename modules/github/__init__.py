@@ -92,7 +92,7 @@ async def repo(kwargs: dict, cmd: list):
         if desc is None:
             desc = ''
         else:
-            desc = '\n' + result['bio']
+            desc = '\n' + result['description']
 
         msg = f'''{name} ({rid}){desc}
 
