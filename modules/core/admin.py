@@ -49,3 +49,8 @@ async def update_bot(kwargs: dict):
     if confirm:
         result = os.popen('git pull', 'r')
         await sendMessage(kwargs, result.read())
+
+
+async def echo_msg(kwargs: dict):
+    await sendMessage(kwargs, kwargs['trigger_msg'])
+
