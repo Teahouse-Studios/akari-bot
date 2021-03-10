@@ -57,7 +57,7 @@ async def mcv_rss(app):
                 addversion.close()
                 verlist = mcversion()
                 release_ = re.sub('\.', '-', release)
-                article_link = 'https://www.minecraft.net/zh-hans/article/minecraft-java-edition-' + release_
+                article_link = 'https://www.minecraft.net/en-us/article/minecraft-java-edition-' + release_
                 async with aiohttp.ClientSession() as getart:
                     async with getart.get(article_link) as getstatus:
                         if getstatus.status == 200:
@@ -94,7 +94,7 @@ async def mcv_rss(app):
                 addversion = open('./assets/mcversion.txt', 'a')
                 addversion.write('\n' + snapshot)
                 addversion.close()
-                article_link = 'https://www.minecraft.net/zh-hans/article/minecraft-snapshot-' + snapshot
+                article_link = 'https://www.minecraft.net/en-us/article/minecraft-snapshot-' + snapshot
                 async with aiohttp.ClientSession() as getart:
                     async with getart.get(article_link) as getstatus:
                         if getstatus.status == 200:
