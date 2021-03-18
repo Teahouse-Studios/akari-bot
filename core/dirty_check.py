@@ -76,6 +76,7 @@ async def check(*text):
             if resp.status == 200:
                 result = await resp.json()
                 resultUsers = []
+                print(result)
                 for item in result['data']:
                     content = item['content']
                     for itemResult in item['results']:
