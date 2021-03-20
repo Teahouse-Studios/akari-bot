@@ -126,9 +126,13 @@ class wikilib:
             prompt = f'找不到{target}{self.pagename}，您是否要找的是：[[{target}{sectitle}]]？'
             titlesplit = self.pagename.split(':')
             if len(titlesplit) > 1:
-                get_namespace = await self.get_namespace()
-                if titlesplit[0] not in get_namespace:
-                    prompt += f'\n提示：此Wiki上找不到“{titlesplit[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~interwiki list命令可以查询当前已设置的Interwiki）。'
+                try:
+                    get_namespace = await self.get_namespace()
+                    print(get_namespace)
+                    if titlesplit[0] not in get_namespace:
+                        prompt += f'\n提示：此Wiki上找不到“{titlesplit[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~interwiki list命令可以查询当前已设置的Interwiki）。'
+                except:
+                    traceback.print_exc()
             if self.templateprompt:
                 prompt = self.templateprompt + prompt
             if await self.danger_text_check(prompt):
