@@ -9,8 +9,8 @@ from .helper import check_wiki_available
 
 
 class wikilib:
-    async def get_data(self, url: str, fmt: str):
-        async with aiohttp.ClientSession() as session:
+    async def get_data(self, url: str, fmt: str, headers=None):
+        async with aiohttp.ClientSession(headers=headers) as session:
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if hasattr(req, fmt):
@@ -72,7 +72,6 @@ class wikilib:
                 d[j['query']['namespaces'][x]['*']] = j['query']['namespaces'][x]['canonical']
             except:
                 traceback.print_exc()
-                pass
         return d
 
     async def get_article_path(self, url):
@@ -111,13 +110,13 @@ class wikilib:
         try:
             try:
                 searchurl = self.wikilink + '?action=query&generator=search&gsrsearch=' + self.pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                getsecjson = await self.get_data(searchurl, "json")
+                getsecjson = await self.get_data(searchurl, "json", self.headers)
                 secpageid = self.parsepageid(getsecjson)
                 sectitle = getsecjson['query']['pages'][secpageid]['title']
             except:
                 traceback.print_exc()
                 searchurl = self.wikilink + '?action=query&list=search&srsearch=' + self.pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                getsecjson = await self.get_data(searchurl, "json")
+                getsecjson = await self.get_data(searchurl, "json", self.headers)
                 sectitle = getsecjson['query']['search'][0]['title']
             if self.interwiki == '':
                 target = ''
@@ -158,7 +157,7 @@ class wikilib:
     async def getdesc(self):
         try:
             descurl = self.wikilink + '?action=query&prop=info|pageprops|extracts&ppprop=description|displaytitle|disambiguation|infoboxes&explaintext=true&exsectionformat=plain&exsentences=1&format=json&titles=' + self.querytextname
-            loadtext = await self.get_data(descurl, "json")
+            loadtext = await self.get_data(descurl, "json", self.headers)
             pageid = self.parsepageid(loadtext)
             desc = loadtext['query']['pages'][pageid]['extract']
         except Exception:
@@ -169,7 +168,7 @@ class wikilib:
     async def getfirstline(self):
         try:
             descurl = self.wikilink + f'?action=parse&page={self.querytextname}&prop=wikitext&section=0&format=json'
-            loaddesc = await self.get_data(descurl, 'json')
+            loaddesc = await self.get_data(descurl, 'json', self.headers)
             descraw = loaddesc['parse']['wikitext']['*']
             try:
                 cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S | re.M)
@@ -184,7 +183,7 @@ class wikilib:
     async def getalltext(self):
         try:
             descurl = self.wikilink + f'?action=parse&page={self.querytextname}&prop=wikitext&format=json'
-            loaddesc = await self.get_data(descurl, 'json')
+            loaddesc = await self.get_data(descurl, 'json', self.headers)
             desc = loaddesc['parse']['wikitext']['*']
         except Exception:
             traceback.print_exc()
@@ -256,14 +255,14 @@ class wikilib:
                     finpgname = geturlpagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
                     fullurl = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
             except Exception:
-                pass
+                traceback.print_exc()
             try:
                 pgtag = re.match(r'.*(\?.*)', self.pagename)
                 if pgtag:
                     finpgname = geturlpagename + pgtag.group(1)
                     fullurl = fullurl + pgtag.group(1)
             except Exception:
-                pass
+                traceback.print_exc()
             finpgname = urllib.parse.unquote(finpgname)
             finpgname = re.sub('_', ' ', finpgname)
             if finpgname == self.orginpagename:
@@ -291,14 +290,15 @@ class wikilib:
                 getimg = await self.get_image(self.pagename)
                 if getimg:
                     msgs['net_image'] = getimg
-            if await self.danger_text_check(result):
+            print(result)
+            if result != '' and await self.danger_text_check(result):
                 return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
             return msgs
         except Exception as e:
             traceback.print_exc()
             return {'status': 'done', 'text': '发生错误：' + str(e)}
 
-    async def main(self, wikilink, pagename, interwiki=None, igmessage=False, template=False, tryiw=0):
+    async def main(self, wikilink, pagename, interwiki=None, igmessage=False, template=False, headers=None, tryiw=0):
         print(wikilink)
         print(pagename)
         print(interwiki)
@@ -321,6 +321,7 @@ class wikilib:
         self.igmessage = igmessage
         self.template = template
         self.templateprompt = None
+        self.headers = headers
         try:
             matchinterwiki = re.match(r'(.*?):(.*)', self.pagename)
             if matchinterwiki:
@@ -335,7 +336,7 @@ class wikilib:
                                                    ((
                                                             interwiki + ':') if interwiki is not None else '') + matchinterwiki.group(
                                                        1),
-                                                   self.igmessage, self.template, tryiw + 1)
+                                                   self.igmessage, self.template, headers, tryiw + 1)
                         else:
                             return {'status': 'done',
                                     'text': f'发生错误：指向的interwiki不是一个有效的MediaWiki。{interwiki_link}{matchinterwiki.group(2)}'}

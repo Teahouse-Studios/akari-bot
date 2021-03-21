@@ -4,9 +4,11 @@ from graia.application import Group, Friend, MessageChain
 from graia.application.message.elements.internal import Image, UploadMethods, Plain
 
 from core.template import sendMessage
-from modules.wiki.database import get_start_wiki, get_custom_interwiki
+from modules.wiki.database import WikiDB
 from .userlib import GetUser
 
+
+database = WikiDB()
 
 # 呜呜呜 想偷个懒都不行
 async def main(kwargs: dict):
@@ -39,7 +41,7 @@ async def main(kwargs: dict):
                 table = 'custom_interwiki_group'
             if Friend in kwargs:
                 table = 'custon_interwiki_self'
-            get_iw = get_custom_interwiki(table, id, match_interwiki.group(1))
+            get_iw = database.get_custom_interwiki(table, id, match_interwiki.group(1))
             if get_iw:
                 metaurl = get_iw
                 username = match_interwiki.group(2)
@@ -48,7 +50,7 @@ async def main(kwargs: dict):
                 table = 'start_wiki_link_group'
             if Friend in kwargs:
                 table = 'start_wiki_link_self'
-            get_url = get_start_wiki(table, id)
+            get_url = database.get_start_wiki(table, id)
             if get_url:
                 metaurl = get_url
                 username = command

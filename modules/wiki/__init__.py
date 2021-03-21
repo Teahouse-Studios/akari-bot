@@ -6,7 +6,7 @@ from graia.application.group import Group, Member
 from graia.application.message.elements.internal import Image, UploadMethods
 from graia.application.message.elements.internal import Plain
 
-import modules.wiki.database as database
+from modules.wiki.database import WikiDB
 import modules.wiki.wikilib
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage
 from database import warn_someone, check_enable_modules_self, check_enable_modules
@@ -14,13 +14,42 @@ from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
 
 
+database = WikiDB()
+
+
 async def wiki_loader(kwargs: dict):
+    kwargs['trigger_msg'] = cmd = re.sub(r'^wiki ', '', kwargs['trigger_msg'])
+    cmd = cmd.split(' ')
+    if isinstance(cmd, list):
+        if len(cmd) > 1:
+            if cmd[0] == 'set':
+                kwargs['trigger_msg'] = cmd[1]
+                await set_start_wiki(kwargs)
+            if cmd[0] == 'iw':
+                kwargs['trigger_msg'] = ' '.join(cmd[1:])
+                await interwiki(kwargs)
+            if cmd[0] == 'headers':
+                kwargs['trigger_msg'] = ' '.join(cmd[1:])
+                await set_headers(kwargs)
+        else:
+            await wiki_wrapper(kwargs)
+    else:
+        await wiki_wrapper(kwargs)
+
+
+
+
+async def wiki_wrapper(kwargs: dict):
     command = kwargs['trigger_msg']
-    command = re.sub(r'^wiki ', '', command)
     if Group in kwargs:
         start_table = 'start_wiki_link_group'
+        headtable = 'request_headers_group'
+        headtarget = kwargs[Group].id
     if Friend in kwargs:
         start_table = 'start_wiki_link_self'
+        headtable = 'request_headers_self'
+        headtarget = kwargs[Friend].id
+    headers = database.config_headers('get', headtable, headtarget)
     prompt = False
     get_link = database.get_start_wiki(start_table, kwargs[Group].id)
     if not get_link:
@@ -108,7 +137,7 @@ async def wiki_loader(kwargs: dict):
             iw = matchinterwiki.group(1)
             get_link = get_custom_iw
             command = re.sub(matchinterwiki.group(1) + ':', '', command)
-    msg = await wikilib.wikilib().main(get_link, command, interwiki=iw)
+    msg = await wikilib.wikilib().main(get_link, command, interwiki=iw, headers=headers)
     if msg['status'] == 'done':
         msgchain = MessageChain.create(
             [Plain((prompt + '\n' if prompt else '') + (msg['url'] + '\n' if 'url' in msg else '') + msg['text'])])
@@ -130,12 +159,8 @@ async def wiki_loader(kwargs: dict):
                                                       'wiki_infobox')
             print(check_options)
             if check_options:
-                pic = await get_infobox_pic(get_link, msg['url'])
-                if Group in kwargs:
-                    mth = UploadMethods.Group
-                elif Friend in kwargs:
-                    mth = UploadMethods.Friend
-                imgchain = MessageChain.create([Image.fromLocalFile(pic, method=mth)])
+                pic = await get_infobox_pic(get_link, msg['url'], headers)
+                imgchain = MessageChain.create([Image.fromLocalFile(pic)])
                 await sendMessage(kwargs, imgchain)
 
     elif msg['status'] == 'wait':
@@ -154,10 +179,10 @@ async def wiki_loader(kwargs: dict):
 
 
 async def set_start_wiki(kwargs: dict):
+    command = kwargs['trigger_msg']
+    command = re.sub(r'^wiki_start_site ', '', command)
     if Group in kwargs:
         if check_permission(kwargs):
-            command = kwargs['trigger_msg']
-            command = re.sub(r'^wiki_start_site ', '', command)
             check = await check_wiki_available(command)
             if check:
                 result = database.add_start_wiki('start_wiki_link_group', kwargs[Group].id, check[0])
@@ -169,8 +194,6 @@ async def set_start_wiki(kwargs: dict):
             result = '你没有使用该命令的权限。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     if Friend in kwargs:
-        command = kwargs['trigger_msg']
-        command = re.sub(r'^wiki_start_site ', '', command)
         check = await check_wiki_available(command)
         if check:
             result = database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id, check[0])
@@ -184,6 +207,7 @@ async def interwiki(kwargs: dict):
     command = kwargs['trigger_msg']
     command = re.sub(r'^interwiki ', '', command)
     command = command.split(' ')
+    print(command)
     if Group in kwargs:
         check = check_permission(kwargs)
         if not check:
@@ -196,7 +220,7 @@ async def interwiki(kwargs: dict):
         table = 'custom_interwiki_self'
         target = kwargs[Friend].id
     if command[0] == 'add':
-        command = re.sub(r'^interwiki add ', '', kwargs['trigger_msg'])
+        command = ' '.join(command[1:])
         command = re.sub(' ', '>', command)
         iw = command.split('>')
         try:
@@ -207,7 +231,7 @@ async def interwiki(kwargs: dict):
         if check:
             result = database.config_custom_interwiki('add', table, target, iw[0],
                                                       check[0])
-            await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
+            await sendMessage(kwargs, MessageChain.create([Plain(result + f'{iw[0]} > {check[1]}')]))
         else:
             result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
             link = re.match(r'^(https?://).*', iw[1])
@@ -229,6 +253,29 @@ async def interwiki(kwargs: dict):
             await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
     else:
         await sendMessage(kwargs, '命令不合法，参数应为add/del/list。')
+
+
+async def set_headers(kwargs: dict):
+    command = kwargs['trigger_msg']
+    command = command.split(' ')
+    if Group in kwargs:
+        check = check_permission(kwargs)
+        if not check:
+            result = '你没有使用该命令的权限。'
+            await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+            return
+        table = 'request_headers_group'
+        id = kwargs[Group].id
+    if Friend in kwargs:
+        table = 'request_headers_self'
+        id = kwargs[Friend].id
+    do = command[0]
+    if do == 'show':
+        headers = database.config_headers(do, table, id)
+        msg = f'当前设置了以下标头：\n{headers}\n如需自定义，请使用~wiki headers <set> <headers>，不同标头之间使用换行隔开。'
+    else:
+        msg = database.config_headers(do, table, id, ' '.join(command[1:]))
+    await sendMessage(kwargs, msg)
 
 
 async def regex_wiki(kwargs: dict):
@@ -259,10 +306,13 @@ async def regex_wiki(kwargs: dict):
                 table = 'start_wiki_link_group'
                 target = kwargs[Group].id
                 mth = UploadMethods.Group
+                headtable = 'request_headers_group'
             if Friend in kwargs:
                 table = 'start_wiki_link_self'
                 target = kwargs[Friend].id
                 mth = UploadMethods.Friend
+                headtable = 'request_headers_self'
+            headers = database.config_headers('get', headtable, target)
             for find in find_dict:
                 if find_dict[find] == 'template':
                     template = True
@@ -315,7 +365,7 @@ async def regex_wiki(kwargs: dict):
                                             get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
                                             find = matchinterwiki.group(2)
                                             iw = matchinterwiki.group(1)
-                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template)
+                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template, headers=headers)
                 status = msg['status']
                 text = (prompt + '\n' if prompt else '') + msg['text']
                 if status == 'wait':

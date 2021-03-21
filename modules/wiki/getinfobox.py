@@ -12,7 +12,6 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from config import config
-from modules.wiki.helper import get_url
 
 config_path = os.path.abspath('./config/config.cfg')
 
@@ -23,7 +22,7 @@ except:
     infobox_render = None
 
 
-async def get_infobox_pic(link, pagelink):
+async def get_infobox_pic(link, pagelink, headers):
     try:
         print('hello')
         wlink = re.sub(r'api.php', '', link)
@@ -31,7 +30,7 @@ async def get_infobox_pic(link, pagelink):
         print(link)
         print(pagelink)
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(pagelink, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
         except:
