@@ -129,7 +129,7 @@ class wikilib:
                     get_namespace = await self.get_namespace()
                     print(get_namespace)
                     if titlesplit[0] not in get_namespace:
-                        prompt += f'\n提示：此Wiki上找不到“{titlesplit[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~interwiki list命令可以查询当前已设置的Interwiki）。'
+                        prompt += f'\n提示：此Wiki上找不到“{titlesplit[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
                 except:
                     traceback.print_exc()
             if self.templateprompt:

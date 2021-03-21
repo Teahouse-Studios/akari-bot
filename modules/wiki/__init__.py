@@ -55,12 +55,12 @@ async def wiki_wrapper(kwargs: dict):
     if not get_link:
         if Group in kwargs:
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
-                     '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
+                     '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
             database.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
                                     'https://minecraft-zh.gamepedia.com/api.php')
         elif Friend in kwargs:
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
-                     '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
+                     '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
             database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
                                     'https://minecraft-zh.gamepedia.com/api.php')
         get_link = 'https://minecraft-zh.gamepedia.com/api.php'
@@ -226,7 +226,7 @@ async def interwiki(kwargs: dict):
         try:
             check = await check_wiki_available(iw[1])
         except:
-            await sendMessage(kwargs, '错误：命令不合法：~interwiki add <Interwiki> <url>')
+            await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
         if check:
             result = database.config_custom_interwiki('add', table, target, iw[0],
@@ -250,7 +250,7 @@ async def interwiki(kwargs: dict):
             result = '当前设置了以下Interwiki：\n' + query_database
             await sendMessage(kwargs, result)
         else:
-            await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~interwiki add <interwiki> <wikilink>添加一个。')
+            await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <wikilink>添加一个。')
     else:
         await sendMessage(kwargs, '命令不合法，参数应为add/del/list。')
 
@@ -322,12 +322,12 @@ async def regex_wiki(kwargs: dict):
                 prompt = False
                 if not get_link:
                     if Group in kwargs:
-                        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
+                        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki set <域名>来设定自定义起始Wiki。' \
                                  '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
                         database.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
                                                 'https://minecraft-zh.gamepedia.com/api.php')
                     elif Friend in kwargs:
-                        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
+                        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki set <域名>来设定自定义起始Wiki。' \
                                  '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
                         database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
                                                 'https://minecraft-zh.gamepedia.com/api.php')
@@ -403,7 +403,7 @@ async def regex_wiki(kwargs: dict):
                 if check_options:
                     infoboxchain = MessageChain.create([])
                     for url in urllist:
-                        get_infobox = await get_infobox_pic(urllist[url], url)
+                        get_infobox = await get_infobox_pic(urllist[url], url, headers)
                         if get_infobox:
                             infoboxchain = infoboxchain.plusWith(
                                 MessageChain.create([Image.fromLocalFile(get_infobox, method=mth)]))
@@ -434,10 +434,13 @@ command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': 
 regex = {'wiki_regex': regex_wiki}
 self_options = ['wiki_infobox']
 options = ['wiki_fandom_addon', 'wiki_gamepedia_addon']
-help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。'},
+help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。\n' +
+                 '~wiki set <wikilink> - 设置起始查询Wiki。\n' +
+                 '~wiki iw <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。\n' +
+                 '~wiki headers <set/reset/show> - 设置请求标头。'},
         'wiki_start_site': {'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
         'interwiki': {
-            'help': '~interwiki <add|del> <wikilink> <wikiurl> - 设置自定义Interwiki。'},
+            'help': '~interwiki <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。'},
         'wiki_regex': {'help': '[[<pagename>]]|{{<pagename>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
         'wiki_infobox': {
             'help': 'Infobox渲染：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',
