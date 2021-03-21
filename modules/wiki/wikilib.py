@@ -51,7 +51,7 @@ class wikilib:
         random_url = url + '?action=query&list=random&format=json'
         json = await self.get_data(random_url, 'json')
         randompage = json['query']['random'][0]['title']
-        await self.main(url, randompage, interwiki=iw, headers=headers)
+        return await self.main(url, randompage, interwiki=iw, headers=headers)
 
     async def get_interwiki(self, url):
         interwiki_list = url + '?action=query&meta=siteinfo&siprop=interwikimap&format=json'
