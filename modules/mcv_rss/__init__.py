@@ -8,8 +8,11 @@ from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
 from core.loader import logger_info
-from database import check_enable_modules_all
+from database import BotDB
 from modules.mcv.mcv import get_data
+
+
+check_enable_modules_all = BotDB().check_enable_modules_all
 
 
 def mcversion():

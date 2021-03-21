@@ -7,7 +7,10 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
 from core.broadcast import app, bcc
-from database import check_superuser
+from database import BotDB
+
+
+database = BotDB()
 
 
 async def sendMessage(kwargs: dict, msgchain, Quote=True):
@@ -124,6 +127,6 @@ def check_permission(kwargs):
                 kwargs):
             return True
     if Friend in kwargs:
-        if check_superuser(kwargs[Friend].id):
+        if database.check_superuser(kwargs[Friend].id):
             return True
     return False

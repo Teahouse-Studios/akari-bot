@@ -1,7 +1,6 @@
 import asyncio
 import os
 import shutil
-from os.path import abspath
 
 from graia.application import GraiaMiraiApplication
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
@@ -9,7 +8,7 @@ from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
-import config
+from config import Config
 from core.broadcast import bcc, app
 from core.loader import rss_loader
 from core.parser import parser
@@ -61,9 +60,7 @@ async def message_handler(app: GraiaMiraiApplication):
 
 @bcc.receiver('ApplicationLaunched')
 async def legacy_message_handler(app: GraiaMiraiApplication):
-    config_filename = 'config.cfg'
-    config_path = abspath('./config/' + config_filename)
-    if config.config(config_path, 'account') != '2052142661':
+    if Config().config('account') != '2052142661':
         await newbie(app)
 
 

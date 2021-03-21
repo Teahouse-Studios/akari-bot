@@ -3,9 +3,12 @@ import asyncio
 from graia.application import Group, MessageChain, Member, Friend
 from graia.application.message.elements.internal import Plain
 
-import database
+from database import BotDB
 from core.template import sendMessage, check_permission, revokeMessage
 from .admin import *
+
+
+database = BotDB()
 
 
 async def enable_modules(kwargs: dict):

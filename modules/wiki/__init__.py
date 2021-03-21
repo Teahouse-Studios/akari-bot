@@ -9,12 +9,13 @@ from graia.application.message.elements.internal import Plain
 from modules.wiki.database import WikiDB
 import modules.wiki.wikilib
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage
-from database import warn_someone, check_enable_modules_self, check_enable_modules
+from database import BotDB
 from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
 
 
 database = WikiDB()
+bot_db = BotDB()
 
 
 async def wiki_loader(kwargs: dict):
@@ -67,10 +68,10 @@ async def wiki_wrapper(kwargs: dict):
     iw = None
     co = False
     if Group in kwargs:
-        check_gamepedia_addon_enable = check_enable_modules(kwargs[Group].id,
+        check_gamepedia_addon_enable = bot_db.check_enable_modules(kwargs[Group].id,
                                                             'wiki_gamepedia_addon')
     if Friend in kwargs:
-        check_gamepedia_addon_enable = check_enable_modules_self(kwargs[Group].id,
+        check_gamepedia_addon_enable = bot_db.check_enable_modules_self(kwargs[Group].id,
                                                                  'wiki_gamepedia_addon')
     if check_gamepedia_addon_enable:
         matchsite = re.match(r'~(.*?) (.*)', command)
@@ -87,10 +88,10 @@ async def wiki_wrapper(kwargs: dict):
             command = matchsite.group(2)
 
     if Group in kwargs:
-        check_fandom_addon_enable = check_enable_modules(kwargs[Group].id,
+        check_fandom_addon_enable = bot_db.check_enable_modules(kwargs[Group].id,
                                                          'wiki_fandom_addon')
     if Friend in kwargs:
-        check_fandom_addon_enable = check_enable_modules_self(kwargs[Group].id,
+        check_fandom_addon_enable = bot_db.check_enable_modules_self(kwargs[Group].id,
                                                               'wiki_fandom_addon')
     if check_fandom_addon_enable:
         matchsite = re.match(r'\?(.*?) (.*)', command)
@@ -155,7 +156,7 @@ async def wiki_wrapper(kwargs: dict):
         if 'apilink' in msg:
             get_link = msg['apilink']
         if 'url' in msg:
-            check_options = check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
+            check_options = bot_db.check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
                                                       'wiki_infobox')
             print(check_options)
             if check_options:
@@ -174,7 +175,7 @@ async def wiki_wrapper(kwargs: dict):
             trigger = kwargs[Member].id
         if Friend in kwargs:
             trigger = kwargs[Friend].id
-        warn_someone(trigger)
+        bot_db.warn_someone(trigger)
         await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['text'])]))
 
 
@@ -351,7 +352,7 @@ async def regex_wiki(kwargs: dict):
                         matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
                         if matchinterwiki:
                             if matchinterwiki.group(1) == 'c':
-                                check_fandom_addon_enable = check_enable_modules(kwargs[Group].id,
+                                check_fandom_addon_enable = bot_db.check_enable_modules(kwargs[Group].id,
                                                                                  'wiki_fandom_addon')
                                 if check_fandom_addon_enable:
                                     matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
@@ -398,7 +399,7 @@ async def regex_wiki(kwargs: dict):
                     await sendMessage(kwargs, imgchain)
             if urllist != {}:
                 print(urllist)
-                check_options = check_enable_modules_self(
+                check_options = bot_db.check_enable_modules_self(
                     kwargs[Member].id if Group in kwargs else kwargs[Friend].id, 'wiki_infobox')
                 if check_options:
                     infoboxchain = MessageChain.create([])
@@ -414,7 +415,7 @@ async def regex_wiki(kwargs: dict):
                     trigger = kwargs[Member].id
                 if Friend in kwargs:
                     trigger = kwargs[Friend].id
-                warn_someone(trigger)
+                bot_db.warn_someone(trigger)
             if waitmsglist != MessageChain.create([]):
                 send = await sendMessage(kwargs, waitmsglist)
                 wait = await wait_confirm(kwargs)

@@ -1,14 +1,12 @@
-import os
 import re
-import sys
 
 from graia.application import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
-import database
+from database import BotDB
 from core.loader import command_loader, logger_info
-from core.template import sendMessage, wait_confirm
+from core.template import sendMessage
 
 admin_list = []
 essential_list = []
@@ -19,6 +17,8 @@ self_options_list = []
 options_list = []
 function_list = []
 
+
+database = BotDB()
 
 def load_modules(reload=False):
     global admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, friend_options_list, function_list, friend_function_list

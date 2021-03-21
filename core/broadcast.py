@@ -4,16 +4,13 @@ from os.path import abspath
 from graia.application import GraiaMiraiApplication, Session
 from graia.broadcast import Broadcast
 
-from config import config
+from config import Config
 
 loop = asyncio.get_event_loop()
 config_filename = 'config.cfg'
 config_path = abspath('./config/' + config_filename)
 
-
-def c(q):
-    return config(config_path, q)
-
+c = Config().config
 
 bcc = Broadcast(loop=loop, debug_flag=c('debug_flag'))
 app = GraiaMiraiApplication(

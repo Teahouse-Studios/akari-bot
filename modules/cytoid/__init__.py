@@ -4,9 +4,12 @@ from graia.application import MessageChain
 from graia.application.message.elements.internal import Image
 
 from core.template import sendMessage
-from database import write_time, check_time
+from database import BotDB
 from .profile import cytoid_profile
 from .rating import get_rating
+
+
+database = BotDB()
 
 
 async def cytoid(kwargs: dict):
@@ -17,9 +20,9 @@ async def cytoid(kwargs: dict):
         kwargs['trigger_msg'] = re.sub(r'^profile ', '', command)
         await cytoid_profile(kwargs)
     if command_split[0] in ['b30', 'r30']:
-        c = check_time(kwargs, 'cytoidrank', 300)
+        c = database.check_time(kwargs, 'cytoidrank', 300)
         if not c:
-            write_time(kwargs, 'cytoidrank')
+            database.write_time(kwargs, 'cytoidrank')
             uid = re.sub(r'^.*?30 ', '', command)
             img = await get_rating(uid, command_split[0])
             if 'path' in img:

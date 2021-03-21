@@ -3,13 +3,13 @@ import datetime
 import hashlib
 import hmac
 import json
-import os.path
 import time
 
 import aiohttp
 
-from config import config
+from config import Config
 
+config = Config().config
 
 def hash_hmac(key, code, sha1):
     hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1)
@@ -23,10 +23,9 @@ def computeMD5hash(my_string):
 
 
 async def check(*text):
-    config_path = os.path.abspath('config/config.cfg')
     try:
-        accessKeyId = config(config_path, "Check_accessKeyId")
-        accessKeySecret = config(config_path, "Check_accessKeySecret")
+        accessKeyId = config("Check_accessKeyId")
+        accessKeySecret = config("Check_accessKeySecret")
     except (FileNotFoundError, IndexError):
         return '\n'.join(text)
     body = {

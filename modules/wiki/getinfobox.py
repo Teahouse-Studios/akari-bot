@@ -11,13 +11,13 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-from config import config
+from config import Config
 
 config_path = os.path.abspath('./config/config.cfg')
 
 try:
     if config_path:
-        infobox_render = config(config_path, 'infobox_render')
+        infobox_render = Config().config(config_path, 'infobox_render')
 except:
     infobox_render = None
 
