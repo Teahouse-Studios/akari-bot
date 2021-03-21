@@ -4,7 +4,10 @@ import aiohttp
 
 from core.dirty_check import check
 from modules.utils.UTC8 import UTC8
-from modules.wiki.database import get_start_wiki
+from modules.wiki.database import WikiDB
+
+
+get_start_wiki = WikiDB.get_start_wiki
 
 
 async def ab(table, id):

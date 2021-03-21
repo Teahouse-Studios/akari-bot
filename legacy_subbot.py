@@ -30,7 +30,7 @@ async def newbie(app):
                             s = await check(UTC8(xz['timestamp'], 'onlytime') + '新增新人：' + xz['title'])
                             if s.find("<吃掉了>") != -1 or s.find("<全部吃掉了>") != -1:
                                 await app.sendGroupMessage(731397727, MessageChain.create(
-                                    [Plain(s + '\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers')]).asSendable())
+                                    [Plain(s + '\n检测到外来信息介入，请前往日志查看所有消息。https://minecraft-zh.gamepedia.com/Special:%E6%97%A5%E5%BF%97?type=newusers')]).asSendable())
                             else:
                                 await app.sendGroupMessage(731397727,
                                                            MessageChain.create([Plain(s)]).asSendable())
