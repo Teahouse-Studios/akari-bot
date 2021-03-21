@@ -32,8 +32,6 @@ async def wiki_loader(kwargs: dict):
             if cmd[0] == 'headers':
                 kwargs['trigger_msg'] = ' '.join(cmd[1:])
                 await set_headers(kwargs)
-        else:
-            await wiki_wrapper(kwargs)
     else:
         await wiki_wrapper(kwargs)
 
@@ -138,7 +136,10 @@ async def wiki_wrapper(kwargs: dict):
             iw = matchinterwiki.group(1)
             get_link = get_custom_iw
             command = re.sub(matchinterwiki.group(1) + ':', '', command)
-    msg = await wikilib.wikilib().main(get_link, command, interwiki=iw, headers=headers)
+    if command == 'random':
+        msg = await wikilib.wikilib().random_page(get_link, iw=iw, headers=headers)
+    else:
+        msg = await wikilib.wikilib().main(get_link, command, interwiki=iw, headers=headers)
     if msg['status'] == 'done':
         msgchain = MessageChain.create(
             [Plain((prompt + '\n' if prompt else '') + (msg['url'] + '\n' if 'url' in msg else '') + msg['text'])])
