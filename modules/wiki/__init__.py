@@ -32,6 +32,8 @@ async def wiki_loader(kwargs: dict):
             if cmd[0] == 'headers':
                 kwargs['trigger_msg'] = ' '.join(cmd[1:])
                 await set_headers(kwargs)
+        else:
+            await wiki_wrapper(kwargs)
     else:
         await wiki_wrapper(kwargs)
 
