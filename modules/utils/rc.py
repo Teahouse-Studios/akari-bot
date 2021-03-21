@@ -7,7 +7,7 @@ from modules.utils.UTC8 import UTC8
 from modules.wiki.database import WikiDB
 
 
-get_start_wiki = WikiDB.get_start_wiki
+get_start_wiki = WikiDB().get_start_wiki
 
 
 async def rc(table, id):

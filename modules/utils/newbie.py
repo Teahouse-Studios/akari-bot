@@ -7,7 +7,7 @@ from core.dirty_check import check
 from modules.wiki.database import WikiDB
 
 
-get_start_wiki = WikiDB.get_start_wiki
+get_start_wiki = WikiDB().get_start_wiki
 
 
 async def newbie(table, id):
