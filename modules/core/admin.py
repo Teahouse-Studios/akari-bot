@@ -54,6 +54,16 @@ async def update_bot(kwargs: dict):
         await sendMessage(kwargs, result.read())
 
 
+async def update_and_restart_bot(kwargs: dict):
+    await sendMessage(kwargs, '你确定吗？')
+    confirm = await wait_confirm(kwargs)
+    if confirm:
+        result = os.popen('git pull', 'r')
+        await sendMessage(kwargs, result.read())
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+
 async def echo_msg(kwargs: dict):
     await sendMessage(kwargs, kwargs['trigger_msg'])
 
