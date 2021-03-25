@@ -35,7 +35,7 @@ async def get_infobox_pic(link, pagelink, headers):
         if os.path.exists(url):
             os.remove(url)
         print(222)
-        find_infobox = soup.find(class_='.notaninfobox')  # 我
+        find_infobox = soup.find(class_='notaninfobox')  # 我
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='portable-infobox')  # 找
         if find_infobox is None:  # 找
