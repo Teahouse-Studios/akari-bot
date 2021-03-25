@@ -13,13 +13,8 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 from config import Config
 
-config_path = os.path.abspath('./config/config.cfg')
 
-try:
-    if config_path:
-        infobox_render = Config().config(config_path, 'infobox_render')
-except:
-    infobox_render = None
+infobox_render = Config().config('infobox_render')
 
 
 async def get_infobox_pic(link, pagelink, headers):
@@ -27,8 +22,6 @@ async def get_infobox_pic(link, pagelink, headers):
         print('hello')
         wlink = re.sub(r'api.php', '', link)
         link = re.sub(r'(?:w/|)api.php', '', link)
-        print(link)
-        print(pagelink)
         try:
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(pagelink, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -36,14 +29,13 @@ async def get_infobox_pic(link, pagelink, headers):
         except:
             traceback.print_exc()
             return False
-        print(111)
         soup = BeautifulSoup(html, 'html.parser')
         pagename = uuid.uuid4()
         url = os.path.abspath(f'./cache/{pagename}.html')
         if os.path.exists(url):
             os.remove(url)
         print(222)
-        find_infobox = soup.find(class_='notaninfobox')  # 我
+        find_infobox = soup.find(class_='.notaninfobox')  # 我
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='portable-infobox')  # 找
         if find_infobox is None:  # 找
@@ -60,6 +52,7 @@ async def get_infobox_pic(link, pagelink, headers):
             find_infobox = soup.find(class_='wikitable songtable')  # 找 (arcw)
         if find_infobox is None:  # 找
             return False  # 找你妈，不找了<-咱还是回家吧
+        print('Find infobox..')
 
         if infobox_render is None:
             open_file = open(url, 'a', encoding='utf-8')
