@@ -6,7 +6,7 @@ from graia.application.message.chain import MessageChain
 
 from database import BotDB
 from core.loader import command_loader, logger_info
-from core.template import sendMessage
+from core.template import sendMessage, Nudge
 
 admin_list = []
 essential_list = []
@@ -72,6 +72,7 @@ async def parser(kwargs: dict):
         command_first_word = command.split(' ')[0]  # 切割消息
         if command_first_word in command_list:  # 检查触发命令是否在模块列表中
             if Group in kwargs:
+                await Nudge(kwargs)
                 check_command_enable = database.check_enable_modules(kwargs[Group].id, command_first_word)  # 检查群组是否开启模块
                 if check_command_enable:  # 若开启
                     check_command_enable_self = database.check_enable_modules_self(kwargs[Member].id,
@@ -94,6 +95,7 @@ async def parser(kwargs: dict):
                     kwargs['help_list'] = help_list
                     await command_list[command_first_word](kwargs)
         elif command_first_word in essential_list:  # 若触发的对象命令为基础命令
+            await Nudge(kwargs)
             kwargs['trigger_msg'] = command
             kwargs['function_list'] = function_list  # 所有可用模块列表
             kwargs['friend_function_list'] = friend_function_list

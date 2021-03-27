@@ -3,7 +3,7 @@ import re
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
-from core.template import sendMessage
+from core.template import sendMessage, Nudge
 from .bugtracker_new import bugtracker_get
 
 
@@ -26,6 +26,7 @@ async def regex_bugtracker(kwargs: dict):
         msg = re.sub('bug ', '', msg)
         q = re.match(r'(.*)\-(.*)', msg)
         if q:
+            await Nudge(kwargs)
             result = await bugtracker_get(q.group(1) + '-' + q.group(2))
             msgchain = MessageChain.create([Plain(result)])
             await sendMessage(kwargs, msgchain)

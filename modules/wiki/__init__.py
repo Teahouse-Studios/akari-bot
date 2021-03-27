@@ -8,7 +8,7 @@ from graia.application.message.elements.internal import Plain
 
 from modules.wiki.database import WikiDB
 import modules.wiki.wikilib
-from core.template import sendMessage, check_permission, wait_confirm, revokeMessage
+from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge
 from database import BotDB
 from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
@@ -301,6 +301,7 @@ async def regex_wiki(kwargs: dict):
             else:
                 find_dict.update({template: 'template'})
         if find_dict != {}:
+            await Nudge(kwargs)
             waitlist = []
             imglist = []
             urllist = {}
