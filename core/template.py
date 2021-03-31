@@ -84,7 +84,6 @@ async def wait_confirm(kwargs: dict):
                 waiter_group.id == kwargs[Group].id,
                 waiter_member.id == kwargs[Member].id,
             ]):
-                print(111)
                 if waiter_message.asDisplay() in confirm_command:
                     return True
                 else:
@@ -99,6 +98,28 @@ async def wait_confirm(kwargs: dict):
                     return True
                 else:
                     return False
+
+    return await inc.wait(waiter)
+
+
+async def wait_anything(kwargs: dict):
+    inc = InterruptControl(bcc)
+    if Group in kwargs:
+        @Waiter.create_using_function([GroupMessage])
+        def waiter(waiter_group: Group,
+                   waiter_member: Member, waiter_message: MessageChain):
+            if all([
+                waiter_group.id == kwargs[Group].id,
+                waiter_member.id == kwargs[Member].id,
+            ]):
+                return True
+    if Friend in kwargs:
+        @Waiter.create_using_function([FriendMessage])
+        def waiter(waiter_friend: Friend, waiter_message: MessageChain):
+            if all([
+                waiter_friend.id == kwargs[Friend].id,
+            ]):
+                return True
 
     return await inc.wait(waiter)
 
@@ -135,5 +156,3 @@ def check_permission(kwargs):
 async def Nudge(kwargs):
     if Group in kwargs:
         await app.sendNudge(kwargs[Member], kwargs[Group])
-    if Friend in kwargs:
-        await app.sendNudge(kwargs[Friend])
