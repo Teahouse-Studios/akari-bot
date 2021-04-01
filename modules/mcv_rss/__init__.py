@@ -44,14 +44,14 @@ async def mcv_rss(app):
                 for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                     try:
                         await app.sendGroupMessage(int(qqgroup), MessageChain.create(
-                            [Plain('ÈÉÊËÈÉÊ' + file['latest']['release'] + 'èééë')]))
+                            [Plain('启动器已更新' + file['latest']['release'] + '正式版。')]))
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
                 for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
                     try:
                         await app.sendFriendMessage(int(qqfriend), MessageChain.create(
-                            [Plain('ÈÉÊËÈÉÊ' + file['latest']['release'] + 'èééë')]))
+                            [Plain('启动器已更新' + file['latest']['release'] + '正式版。')]))
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
@@ -67,14 +67,14 @@ async def mcv_rss(app):
                             for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                                 try:
                                     await app.sendGroupMessage(int(qqgroup), MessageChain.create(
-                                        [Plain(f'Mojangēéěè{release}eɪШЩэ{article_link}')]))
+                                        [Plain(f'Mojang已发布{release}的更新日志：{article_link}')]))
                                     await asyncio.sleep(0.5)
                                 except Exception:
                                     traceback.print_exc()
                             for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
                                 try:
                                     await app.sendFriendMessage(int(qqfriend), MessageChain.create(
-                                        [Plain(f'Mojangēéěè{release}eɪШЩэ{article_link}')]))
+                                        [Plain(f'Mojang已发布{release}的更新日志：{article_link}')]))
                                     await asyncio.sleep(0.5)
                                 except Exception:
                                     traceback.print_exc()
@@ -83,14 +83,14 @@ async def mcv_rss(app):
                 for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                     try:
                         await app.sendGroupMessage(int(qqgroup), MessageChain.create(
-                            [Plain('ëœēéěə' + file['latest']['snapshot'] + 'ééëœ')]))
+                            [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]))
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
                 for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
                     try:
                         await app.sendFriendMessage(int(qqfriend), MessageChain.create(
-                            [Plain('ëœēéěə' + file['latest']['snapshot'] + 'ééëœ')]))
+                            [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]))
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
@@ -104,14 +104,14 @@ async def mcv_rss(app):
                             for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
                                 try:
                                     await app.sendGroupMessage(int(qqgroup), MessageChain.create(
-                                        [Plain(f'Mojangêəeæ{snapshot}ÊËŒè{article_link}')]))
+                                        [Plain(f'Mojang已发布{snapshot}的更新日志：{article_link}')]))
                                     await asyncio.sleep(0.5)
                                 except Exception:
                                     traceback.print_exc()
                             for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
                                 try:
                                     await app.sendFriendMessage(int(qqfriend), MessageChain.create(
-                                        [Plain(f'Mojangêəeæ{snapshot}ÊËŒè{article_link}')]))
+                                        [Plain(f'Mojang已发布{snapshot}的更新日志：{article_link}')]))
                                     await asyncio.sleep(0.5)
                                 except Exception:
                                     traceback.print_exc()

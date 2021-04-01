@@ -1,16 +1,14 @@
 import re
-import random
-import googletrans
 
 from graia.application import MessageChain
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
-from graia.application.message.elements.internal import Image, UploadMethods, Face
+from graia.application.message.elements.internal import Image, UploadMethods
 from graia.application.message.elements.internal import Plain
 
 from modules.wiki.database import WikiDB
 import modules.wiki.wikilib
-from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, wait_anything
+from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge
 from database import BotDB
 from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
@@ -19,114 +17,6 @@ from .getinfobox import get_infobox_pic
 database = WikiDB()
 bot_db = BotDB()
 
-LANGUAGES = {
-    'af': 'afrikaans',
-    'sq': 'albanian',
-    'am': 'amharic',
-    'ar': 'arabic',
-    'hy': 'armenian',
-    'az': 'azerbaijani',
-    'eu': 'basque',
-    'be': 'belarusian',
-    'bn': 'bengali',
-    'bs': 'bosnian',
-    'bg': 'bulgarian',
-    'ca': 'catalan',
-    'ceb': 'cebuano',
-    'ny': 'chichewa',
-    'zh-cn': 'chinese (simplified)',
-    'zh-tw': 'chinese (traditional)',
-    'co': 'corsican',
-    'hr': 'croatian',
-    'cs': 'czech',
-    'da': 'danish',
-    'nl': 'dutch',
-    'en': 'english',
-    'eo': 'esperanto',
-    'et': 'estonian',
-    'tl': 'filipino',
-    'fi': 'finnish',
-    'fr': 'french',
-    'fy': 'frisian',
-    'gl': 'galician',
-    'ka': 'georgian',
-    'de': 'german',
-    'el': 'greek',
-    'gu': 'gujarati',
-    'ht': 'haitian creole',
-    'ha': 'hausa',
-    'haw': 'hawaiian',
-    'iw': 'hebrew',
-    'he': 'hebrew',
-    'hi': 'hindi',
-    'hmn': 'hmong',
-    'hu': 'hungarian',
-    'is': 'icelandic',
-    'ig': 'igbo',
-    'id': 'indonesian',
-    'ga': 'irish',
-    'it': 'italian',
-    'ja': 'japanese',
-    'jw': 'javanese',
-    'kn': 'kannada',
-    'kk': 'kazakh',
-    'km': 'khmer',
-    'ko': 'korean',
-    'ku': 'kurdish (kurmanji)',
-    'ky': 'kyrgyz',
-    'lo': 'lao',
-    'la': 'latin',
-    'lv': 'latvian',
-    'lt': 'lithuanian',
-    'lb': 'luxembourgish',
-    'mk': 'macedonian',
-    'mg': 'malagasy',
-    'ms': 'malay',
-    'ml': 'malayalam',
-    'mt': 'maltese',
-    'mi': 'maori',
-    'mr': 'marathi',
-    'mn': 'mongolian',
-    'my': 'myanmar (burmese)',
-    'ne': 'nepali',
-    'no': 'norwegian',
-    'or': 'odia',
-    'ps': 'pashto',
-    'fa': 'persian',
-    'pl': 'polish',
-    'pt': 'portuguese',
-    'pa': 'punjabi',
-    'ro': 'romanian',
-    'ru': 'russian',
-    'sm': 'samoan',
-    'gd': 'scots gaelic',
-    'sr': 'serbian',
-    'st': 'sesotho',
-    'sn': 'shona',
-    'sd': 'sindhi',
-    'si': 'sinhala',
-    'sk': 'slovak',
-    'sl': 'slovenian',
-    'so': 'somali',
-    'es': 'spanish',
-    'su': 'sundanese',
-    'sw': 'swahili',
-    'sv': 'swedish',
-    'tg': 'tajik',
-    'ta': 'tamil',
-    'te': 'telugu',
-    'th': 'thai',
-    'tr': 'turkish',
-    'uk': 'ukrainian',
-    'ur': 'urdu',
-    'ug': 'uyghur',
-    'uz': 'uzbek',
-    'vi': 'vietnamese',
-    'cy': 'welsh',
-    'xh': 'xhosa',
-    'yi': 'yiddish',
-    'yo': 'yoruba',
-    'zu': 'zulu'}
 
 async def wiki_loader(kwargs: dict):
     kwargs['trigger_msg'] = cmd = re.sub(r'^wiki ', '', kwargs['trigger_msg'])
@@ -482,19 +372,7 @@ async def regex_wiki(kwargs: dict):
                                             iw = matchinterwiki.group(1)
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template, headers=headers)
                 status = msg['status']
-                r = random.randint(1, 3)
-                msgtext = msg['text']
-                if r == 3:
-                    try:
-                        traaanslator = googletrans.Translator()
-                        traanslang = random.randint(1, 106)
-                        lang = []
-                        for x in LANGUAGES:
-                            lang.append(x)
-                        msgtext = traaanslator.translate(msgtext, dest=lang[traanslang]).text
-                    except Exception:
-                        msgtext = msg['text']
-                text = (prompt + '\n' if prompt else '') + msgtext
+                text = (prompt + '\n' if prompt else '') + msg['text']
                 if status == 'wait':
                     global_status = 'wait'
                     waitlist.append(msg['title'])
@@ -530,23 +408,7 @@ async def regex_wiki(kwargs: dict):
                 if check_options:
                     infoboxchain = MessageChain.create([])
                     for url in urllist:
-                        r = random.randint(3, 5)
-                        print(r)
-                        get_infobox = None
-                        if r == 3:
-                            get_infobox = await get_infobox_pic(urllist[url], url, headers, True, True, True)
-                        if r == 4:
-                            get_infobox = await get_infobox_pic(urllist[url], url, headers, True, True, True, True)
-                        if r == 5:
-                            r2 = random.randint(1, 3)
-                            if r2 == 1:
-                                get_infobox = await get_infobox_pic(urllist[url], url, headers, False, True, True, True)
-                            if r2 == 2:
-                                get_infobox = await get_infobox_pic(urllist[url], url, headers, False, False, False, True)
-                            if r2 == 3:
-                                get_infobox = await get_infobox_pic(urllist[url], url, headers, False, False, False, True, True)
-                        if get_infobox == None:
-                            get_infobox = await get_infobox_pic(urllist[url], url, headers)
+                        get_infobox = await get_infobox_pic(urllist[url], url, headers)
                         if get_infobox:
                             infoboxchain = infoboxchain.plusWith(
                                 MessageChain.create([Image.fromLocalFile(get_infobox, method=mth)]))
@@ -566,16 +428,6 @@ async def regex_wiki(kwargs: dict):
                     for waits in waitlist:
                         waits1 = f'[[{waits}]]'
                         nwaitlist.append(waits1)
-                    r = random.randint(1, 10)
-                    if r == 5:
-                        await sendMessage(kwargs, '哦，自己查吧', Quote=False)
-                        await wait_anything(kwargs)
-                    if r == 6:
-                        await sendMessage(kwargs, '那你为什么不自己上wiki查呢:rina:', Quote=False)
-                        await wait_anything(kwargs)
-                    if r == 7:
-                        await sendMessage(kwargs, MessageChain.create([Face(faceId=281)]), Quote=False)
-                        await wait_anything(kwargs)
                     await regex_proc(kwargs, '\n'.join(nwaitlist))
                 else:
                     await revokeMessage(send)
