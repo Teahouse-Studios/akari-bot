@@ -328,15 +328,15 @@ async def regex_wiki(kwargs: dict):
                 if not get_link:
                     if Group in kwargs:
                         prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki set <域名>来设定自定义起始Wiki。' \
-                                 '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
+                                 '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
                         database.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
-                                                'https://minecraft-zh.gamepedia.com/api.php')
+                                                'https://minecraft.fandom.com/zh/api.php')
                     elif Friend in kwargs:
                         prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki set <域名>来设定自定义起始Wiki。' \
-                                 '\n例子：~wiki_start_site https://minecraft-zh.gamepedia.com/'
+                                 '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
                         database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
-                                                'https://minecraft-zh.gamepedia.com/api.php')
-                    get_link = 'https://minecraft-zh.gamepedia.com/api.php'
+                                                'https://minecraft.fandom.com/zh/api.php')
+                    get_link = 'https://minecraft.fandom.com/zh/api.php'
                 iw = None
                 matchinterwiki = re.match(r'(.*?):(.*)', find)
                 if matchinterwiki:
