@@ -80,7 +80,7 @@ class wikilib:
                 traceback.print_exc()
         for x in j['query']['namespacealiases']:
             try:
-                d[j['query']['namespacealiases'][x]['*']] = 'aliases'
+                d[x['*']] = 'aliases'
             except:
                 traceback.print_exc()
         return d
