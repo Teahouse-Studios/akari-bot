@@ -6,6 +6,7 @@ from graia.application.message.elements.internal import Plain, Image, Source
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
+from core.loader import logger_info
 from core.broadcast import app, bcc
 from database import BotDB
 

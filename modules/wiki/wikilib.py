@@ -70,12 +70,17 @@ class wikilib:
 
     async def get_namespace(self, url=None):
         url = url if url is not None else self.wikilink
-        namespace_url = url + '?action=query&meta=siteinfo&siprop=namespaces&format=json'
+        namespace_url = url + '?action=query&meta=siteinfo&siprop=namespaces|namespacealiases&format=json'
         j = await self.get_data(namespace_url, 'json')
         d = {}
         for x in j['query']['namespaces']:
             try:
                 d[j['query']['namespaces'][x]['*']] = j['query']['namespaces'][x]['canonical']
+            except:
+                traceback.print_exc()
+        for x in j['query']['namespacealiases']:
+            try:
+                d[j['query']['namespacealiases'][x]['*']] = 'aliases'
             except:
                 traceback.print_exc()
         return d

@@ -1,4 +1,5 @@
 import re
+import traceback
 
 import aiohttp
 import json
@@ -19,7 +20,7 @@ async def check_wiki_available(link):
     except:
         if link[-1] not in ['/', '\\']:
             link = link + '/'
-        test1 = link + query
+        test1 = link + 'api.php' + query
         try:
             json1 = await get_url(test1)
             wlink = link + 'api.php' + query
@@ -29,6 +30,7 @@ async def check_wiki_available(link):
                 json1 = await get_url(test2)
                 wlink = link + 'w/api.php' + query
             except:
+                traceback.print_exc()
                 return False
     wikiname = json1['query']['general']['sitename']
     extensions = json1['query']['extensions']

@@ -21,16 +21,34 @@ def find_modules_logger(kwargs):
             logger_info(f'Find {x}, update to list.')
 
 
-def command_loader(reload=False):
+def command_loader():
     fun_file = None
-    admin_list = {}
-    essential_list = {}
-    command_list = {}
-    help_list = {}
-    regex_list = {}
-    self_options_list = []
-    options_list = []
-    friend_options_list = []
+    modules_function = {
+    'command': dict,
+    'regex': dict,
+    'options': list,
+    'self_options': list
+    }
+    friend_modules_function = {
+    'friend_options': list
+    }
+    other_function = {
+    'admin': dict,
+    'essential': dict,
+    'help': dict
+    }
+    functions = {}
+    functions.update(modules_function)
+    functions.update(friend_modules_function)
+    functions.update(other_function)
+    functions_list = {}
+    functions_list['modules_function'] = []
+    functions_list['friend_modules_function'] = []
+    for x in functions:
+        if functions[x] == dict:
+            functions_list[x] = {}
+        if functions[x] == list:
+            functions_list[x] = []
     load_dir_path = os.path.abspath('./modules/')
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:
@@ -38,6 +56,8 @@ def command_loader(reload=False):
         if os.path.isdir(file_path):
             if file_path != '__pycache__':
                 fun_file = file_name
+            else:
+                continue
         if os.path.isfile(file_path):
             b = re.match(r'(.*)(.py)', file_path)
             if b:
@@ -46,79 +66,40 @@ def command_loader(reload=False):
             if fun_file is not None:
                 logger_info('Loading modules.' + fun_file + '...')
                 import_fun = importlib.__import__('modules.' + fun_file, fromlist=[fun_file])
-                if reload:
-                    importlib.reload(import_fun)
-                try:
-                    admins = import_fun.admin
-                    if isinstance(admins, dict):
-                        admin_list.update(admins)
-                        find_modules_logger(admins)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    essentials = import_fun.essential
-                    if isinstance(essentials, dict):
-                        essential_list.update(essentials)
-                        find_modules_logger(essentials)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    fun_commands = import_fun.command
-                    if isinstance(fun_commands, dict):
-                        command_list.update(fun_commands)
-                        find_modules_logger(fun_commands)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    fun_help = import_fun.help
-                    if isinstance(fun_help, dict):
-                        help_list.update(fun_help)
-                        find_modules_logger(fun_help)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    fun_regex = import_fun.regex
-                    if isinstance(fun_regex, dict):
-                        regex_list.update(fun_regex)
-                        find_modules_logger(fun_regex)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    fun_self_options = import_fun.self_options
-                    if isinstance(fun_self_options, list):
-                        for x in fun_self_options:
-                            self_options_list.append(x)
-                        find_modules_logger(fun_self_options)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    fun_options = import_fun.options
-                    if isinstance(fun_options, list):
-                        for x in fun_options:
-                            self_options_list.append(x)
-                        find_modules_logger(fun_options)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
-                try:
-                    friend_options = import_fun.friend_options
-                    if isinstance(friend_options, list):
-                        for x in friend_options:
-                            friend_options_list.append(x)
-                        find_modules_logger(friend_options)
-                except:
-                    if display_load_err:
-                        traceback.print_exc()
+                for x in functions:
+                    try:
+                        attrs = import_fun.__getattribute__(x)
+                        if attrs:
+                            if functions[x] == dict:
+                                if isinstance(attrs, dict):
+                                    functions_list[x].update(attrs)
+                                    if x in modules_function:
+                                        for y in attrs:
+                                            functions_list['modules_function'].append(y)
+                                    if x in friend_modules_function:
+                                        for y in attrs:
+                                            functions_list['friend_modules_function'].append(y)
+                                else:
+                                    logger_info(f'?? wtf {x} in {fun_file} format is wrong! should be dict.')
+                            if functions[x] == list:
+                                if isinstance(attrs, list):
+                                    for y in attrs:
+                                        functions_list[x].append(y)
+                                        if x in modules_function:
+                                            functions_list['modules_function'].append(y)
+                                        if x in friend_modules_function:
+                                            functions_list['friend_modules_function'].append(y)
+                                else:
+                                    logger_info(f'?? wtf {x} in {fun_file} format is wrong! should be list.')
+                    except AttributeError as e:
+                        logger_info(str(e))
         except:
-            if display_load_err:
-                traceback.print_exc()
-    return admin_list, essential_list, command_list, help_list, regex_list, self_options_list, options_list, friend_options_list
+            traceback.print_exc()
+    functions_list["modules_function"] = list(set(functions_list["modules_function"]))
+    functions_list["friend_modules_function"] = list(set(functions_list["friend_modules_function"]))
+    logger_info(f'Now we have function = {functions_list["modules_function"]}')
+    logger_info(f'Now we have friend function = {functions_list["friend_modules_function"]}')
+    return functions_list
 
 
 def rss_loader():

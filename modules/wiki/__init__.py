@@ -26,12 +26,14 @@ async def wiki_loader(kwargs: dict):
             if cmd[0] == 'set':
                 kwargs['trigger_msg'] = cmd[1]
                 await set_start_wiki(kwargs)
-            if cmd[0] == 'iw':
+            elif cmd[0] == 'iw':
                 kwargs['trigger_msg'] = ' '.join(cmd[1:])
                 await interwiki(kwargs)
-            if cmd[0] == 'headers':
+            elif cmd[0] == 'headers':
                 kwargs['trigger_msg'] = ' '.join(cmd[1:])
                 await set_headers(kwargs)
+            else:
+                await wiki_wrapper(kwargs)
         else:
             await wiki_wrapper(kwargs)
     else:

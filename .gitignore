@@ -6,7 +6,7 @@ config/*.cfg
 assets/mcversion.txt
 mcvrss.txt
 assets/usercard/*.png
-test.py
+test*
 assets/Favicon/**/*.png
 assets/cache/*
 save.db
