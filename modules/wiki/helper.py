@@ -11,23 +11,23 @@ async def get_url(url):
 
 
 async def check_wiki_available(link):
-    query = 'api.php?action=query&meta=siteinfo&siprop=general|extensions&format=json'
+    query = '?action=query&meta=siteinfo&siprop=general|extensions&format=json'
     try:
         api = re.match(r'(https?://.*?/api.php$)', link)
         wlink = api.group(1)
-        json1 = await get_url(api.group(1))
+        json1 = await get_url(api.group(1) + query)
     except:
         if link[-1] not in ['/', '\\']:
             link = link + '/'
         test1 = link + query
         try:
             json1 = await get_url(test1)
-            wlink = link + 'api.php'
+            wlink = link + 'api.php' + query
         except:
             try:
                 test2 = link + 'w/' + query
                 json1 = await get_url(test2)
-                wlink = link + 'w/api.php'
+                wlink = link + 'w/api.php' + query
             except:
                 return False
     wikiname = json1['query']['general']['sitename']
