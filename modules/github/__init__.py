@@ -31,18 +31,7 @@ def time_diff(time: str):
     return diff
 
 
-async def dirty_check(text, *whitelist_check):
-    whitelist = [
-        'Teahouse-Studios',
-        'Dianliang233',
-        'OasisAkari',
-        'Lakejason0',
-        'wyapx',
-        'XxLittleCxX',
-        'lakejason0'
-    ]
-    if whitelist_check in whitelist:
-        return False
+async def dirty_check(text):
     check = await dirty.check([text])
     print(check)
     if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
@@ -123,7 +112,7 @@ Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
         if parent:
             msg += '\n' + parent
 
-        is_dirty = await dirty_check(msg, result['owner']['login'])
+        is_dirty = await dirty_check(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
 
@@ -199,7 +188,7 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
 {url}
 '''
 
-        is_dirty = await dirty_check(msg, login)
+        is_dirty = await dirty_check(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
 
