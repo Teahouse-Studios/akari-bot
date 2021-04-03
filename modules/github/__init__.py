@@ -54,7 +54,10 @@ async def query(url: str, fmt: str):
 
 async def repo(kwargs: dict, cmd: list):
     try:
-        obj = cmd[1].replace('@', '')
+        try:
+            obj = cmd[1].replace('@', '')
+        except IndexError:
+            obj = cmd[0].replace('@', '')
         result = await query('https://api.github.com/repos/' + obj, 'json')
         name = result['full_name']
         url = result['html_url']
