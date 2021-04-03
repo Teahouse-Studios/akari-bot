@@ -193,18 +193,43 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
     except Exception as error:
         await sendMessage(kwargs, '发生错误：' + str(error))
 
+async def search(kwargs: dict, cmd: list):
+    try:
+        obj = cmd[1]
+        result = await query('https://api.github.com/search/repositories?q=' + obj, 'json')
+        items = result['items']
+        item_count_expected = int(result['total_count']) if result['total_count'] < 5 else 5
+        items_out = []
+        for item in items:
+            try:
+                items_out.append(str(item['full_name'] + ': ' + item['html_url']))
+            except TypeError:
+                continue
+        footnotes = f"另有 {result['total_count'] - 5} 个结果未显示。" if item_count_expected == 5 else ''
+        msg = f"搜索成功：共 {result['total_count']} 个结果。\n" + '\n'.join(items_out[0:item_count_expected]) + f'\n{footnotes}'
+
+        is_dirty = await dirty_check(msg)
+        if is_dirty:
+            msg = 'https://wdf.ink/6OUp'
+
+        await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
+    except Exception as error:
+        await sendMessage(kwargs, '发生错误：' + str(error))
 
 async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
     cmd = re.sub(r'^github ', '', cmd).split(' ')
-    if cmd[0] == 'repo':
+    if cmd[0] == 'repo' or '/' in cmd[0]:
         return await repo(kwargs, cmd)
     elif cmd[0] in ['user', 'usr', 'organization', 'org']:
         return await user(kwargs, cmd)
+    elif cmd[0] == 'search':
+        return await search(kwargs, cmd)
     else:
         return await sendMessage(kwargs, '发生错误：指令使用错误，请选择 repo 或 user 工作模式。使用 ~help github 查看详细帮助。')
 
 
 command = {'github': forker}
-help = {'github':{'module': '查询 Github 的指定 repo（仓库）或用户详情。', 'help': '''~github repo <user>/<name> - 获取 GitHub 仓库信息。
-~github <user|usr|organization|org> - 获取 GitHub 用户或组织信息。'''}}
+help = {'github':{'module': '查询 Github 的指定 repo（仓库）或用户详情或进行搜索。', 'help': '''~github repo <user>/<name> - 获取 GitHub 仓库信息。
+~github <user|usr|organization|org> - 获取 GitHub 用户或组织信息。
+~github search - 搜索 GitHub 上的仓库。'''}}
