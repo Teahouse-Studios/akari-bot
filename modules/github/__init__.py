@@ -207,6 +207,7 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
     except Exception as error:
         await sendMessage(kwargs, '发生错误：' + str(error))
 
+
 async def search(kwargs: dict, cmd: list):
     try:
         obj = cmd[1]
@@ -229,6 +230,7 @@ async def search(kwargs: dict, cmd: list):
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
     except Exception as error:
         await sendMessage(kwargs, '发生错误：' + str(error))
+
 
 async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
