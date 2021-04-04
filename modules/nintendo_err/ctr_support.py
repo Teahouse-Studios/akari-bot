@@ -63,31 +63,31 @@ account = Module('account', {
 
 # 003: connection related errors
 internet = Module('internet', {
-    299: ResultInfo('The Wireless Connection is currently deactivated. Please activate the wireless connection.'),
-    399: ResultInfo('Accepted EULA version is too low'),
-    1099: ResultInfo('Access point with given SSID not found.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4249/kw/003-1099'),
-    2001: ResultInfo('DNS error. If you\'re using a custom DNS server, make sure the settings are correct.')
+    299: ResultInfo('无线开关已关闭，请打开无线开关。'),
+    399: ResultInfo('接受的EULA版本太低。'),
+    1099: ResultInfo('给定SSID的接入点未找到。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4249/kw/003-1099'),
+    2001: ResultInfo('DNS未找到，如果你正在使用自定义DNS服务器，请确保设置正确。')
 })
 
 # Yet another nim hack. Why does this category have so many redundant errors?
-NIM_4069 = ResultInfo('This error may appear if the eShop is unavailable. If the issue persists, you might need to replace your console\'s SD card.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14413'),
+NIM_4069 = ResultInfo('这个错误可能会在eShop不可用时出现。如果此问题一直出现，则可能你需要为主机更换一张内存卡。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14413'),
 
 # 005: nim
 nim = Module('nim', {
     # 005-2008 is the same as 007-2920 and 009-2920...
-    2008: ResultInfo('This error is typically displayed when a Nintendo eShop download failed, or when the title has an invalid ticket. Delete the title and/or its ticket in FBI and install it again from a legitimate source like the Nintendo eShop, or from your game cartridges if using cart dumps.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
-    4040: ResultInfo('The connection timed out when connecting to the eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4429'),
+    2008: ResultInfo('这个错误通常会在eShop下载错误时发生，或是应用使用了非法的ticket。使用FBI删除这个应用和它的ticket，然后从合法途径重新下载游戏；若是卡带导出的游戏，则建议删除后只使用卡带玩游戏。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
+    4040: ResultInfo('连接eShop超时。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4429'),
     4069: NIM_4069,
     # in HTTP range...
-    4240: ResultInfo('This error code likely indicates a temporary service issue with the Nintendo eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28399'),
-    4305: ResultInfo('A generic error that may be displayed when the connection times out or you are unable to download software from the eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4346'),
-    4320: ResultInfo('A generic error that may be displayed when formatting your console or performing a system transfer.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/48382'),
-    5602: ResultInfo('Unable to connect to the eShop. This usually occurs when the System\'s region setting is incorrect. Change it in system settings and try connecting again.'),
-    5687: ResultInfo('A generic error that displays when you\'re unable to connect to the eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26251/'),
+    4240: ResultInfo('这个错误可能代表eShop发生了暂时性的服务问题。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28399'),
+    4305: ResultInfo('这个错误常见于你从eShop下载软件的时候连接超时。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4346'),
+    4320: ResultInfo('这个错误常见于尝试初始化系统或数据迁移。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/48382'),
+    5602: ResultInfo('无法连接至eShop。这个错误通常代表系统区域设置不正确，请在系统设置中重新设置区域，然后再试一次。'),
+    5687: ResultInfo('这个错误常见于你无法连接至eShop。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26251/'),
     # in SOAP range...
-    5704: ResultInfo('A generic error that displays when you\'re unable to connect to the eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26252'),
-    5958: ResultInfo('Unknown eShop error. Usually seen on region-changed consoles.'),
-    5964: ResultInfo('Your NNID has been banned from accessing the eShop. You will need to contact Nintendo Support if you feel it was unjustified.'),
+    5704: ResultInfo('这个错误常见于你无法连接至eShop。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26252'),
+    5958: ResultInfo('未知的eShop错误，常见于改区后的机子。'),
+    5964: ResultInfo('你的NNID已经被eShop封禁。如果你不服，建议去联系任天堂支持。'),
     7545: NIM_4069,
     7550: NIM_4069,
     8025: NIM_4069,
@@ -96,88 +96,88 @@ nim = Module('nim', {
 })
 # 006: online matchmaking and gameplay errors
 matchmaking = Module('matchmaking', {
-    112: ResultInfo('Typically displayed when an issue with connecting to Pokémon Bank occurs.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4203/'),
-    (501, 502): ResultInfo('This may indicate in issue with the network being used blocking traffic necessary for online play.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4204'),
-    612: ResultInfo('This error code generally indicates that your network is not optimal for peer to peer connections, likely due to your network\'s NAT type.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/25881'),
-    811: ResultInfo('This error code indicates the service you are attempting to use is currently unavailable due to ongoing maintenance.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/25910/'),
-    (800, 899): ResultInfo('These are typically shown when there is an error during the matchmaking process and you were unable to connect to the authentication servers.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4328/')
+    112: ResultInfo('常见于连接宝可梦银行发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4203/'),
+    (501, 502): ResultInfo('可能发生于网络对在线游戏阻断通讯。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4204'),
+    612: ResultInfo('这个错误代码可能表示你的网络环境不适合进行端对端通讯，可能与你的网络NAT类型有关。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/25881'),
+    811: ResultInfo('这个错误表示你正在尝试进行的网络请求不可用，因为网络服务此时开始维护。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/25910/'),
+    (800, 899): ResultInfo('常见于配对过程中发生错误且你无法连接到身份验证服务器时。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4328/')
 })
 
 # 007: errors related to (presumably) the eShop API
 eshop_mint = Module('eshop (mint/api?)', {
-    200: ResultInfo('Could not access the SD card.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4234'),
-    1221: ResultInfo('The download code you entered can only be redeemed within the relevant software title. It cannot be redeemed in Nintendo eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14600'),
-    2001: ResultInfo('Error when attempting to access eshop on a region changed console. Fixed by changing back to the console original region.'),
-    2100: ResultInfo('The connection to the Nintendo eShop timed out. This error code is often times caused by slow download times due to interference or a slow Internet connection.', 'See [the support page](https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432) or [Nintendo\'s network status](https://support.nintendo.com/networkstatus).'),
-    2670: ResultInfo('An error occurred while attempting to connect.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4383'),
-    2913: ResultInfo('The server is probably down. Try again later.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
-    2916: ResultInfo('This is typically displayed when an error occurs while attempting to download a title from the Nintendo eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
-    2920: ResultInfo('This error is typically displayed when a Nintendo eShop download failed, or when the title has an invalid ticket. Delete the title and/or its ticket in FBI and install it again from a legitimate source like the Nintendo eShop, or from your game cartridges if using cart dumps.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
-    2924: ResultInfo('Happens when opening eshop with a invalid language setting'),
-    3049: ResultInfo('The eShop is down for maintenance.', 'https://support.nintendo.com/networkstatus/'),
-    6106: ResultInfo('Occurs when attempting to re-download software from the eshop with an invalid or fake ticket')
+    200: ResultInfo('无法访问SD卡。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4234'),
+    1221: ResultInfo('你输入的下载码只能用来在对应程序兑换。它不能在eShop兑换。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14600'),
+    2001: ResultInfo('当你改区后访问eShop就会发生此错误，目前解决它的唯一办法就是改回去。'),
+    2100: ResultInfo('连接eShop超时。此错误代码通常出现于网络连接质量较差或受到了某网络组织的干扰。', '参见支持页面：https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432\n或任天堂网络状态：https://support.nintendo.com/networkstatus'),
+    2670: ResultInfo('尝试连接时发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4383'),
+    2913: ResultInfo('服务器可能离线，稍后再试。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
+    2916: ResultInfo('常见于从eShop下载软件时错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
+    2920: ResultInfo('这个错误通常会在eShop下载错误时发生，或是应用使用了非法的ticket。使用FBI删除这个应用和它的ticket，然后从合法途径重新下载游戏；若是卡带导出的游戏，则建议删除后只使用卡带玩游戏。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
+    2924: ResultInfo('出现于使用无效的语言设置打开eShop。'),
+    3049: ResultInfo('eShop已停服维护。', 'https://support.nintendo.com/networkstatus/'),
+    6106: ResultInfo('常见于从eShop重新下载带有非法或无效ticket的软件时。')
 })
 
 # 009: errors related to (presumably) the eShop application itself
 eshop_app = Module('eshop (app?)', {
     # 1001: ResultInfo('The eShop is down for maintenance.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/45399'),
-    1000: ResultInfo('System update required (friends module?).'),
+    1000: ResultInfo('需要系统更新（好友模块？）。'),
     1001: eshop_mint.data[3049],
-    2705: ResultInfo('This error code is often the result of the Internet connection timing out or losing connection with the Nintendo eShop.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14478'),
-    2913: ResultInfo('An eShop or in-game DLC download failed (or the server is down).', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/7243'),
+    2705: ResultInfo('此错误经常于eShop网络连接超时或丢失时出现。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/14478'),
+    2913: ResultInfo('一个位于eShop或游戏内的DLC下载失败（或服务器离线）。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/7243'),
     2916: eshop_mint.data[2916],
     2920: eshop_mint.data[2920],
     2924: eshop_mint.data[2924],
-    2923: ResultInfo('You are unable to use a function which requires internet services, such as software updates or formatting the system memory.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17014'),
-    2995: ResultInfo('This error can occur if the download code was entered incorrectly, has not yet been activated, has expired, was entered in the wrong place, or is intended for a region other than your own.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/13515'),
-    4079: ResultInfo('Unable to access SD card.'),
-    4998: ResultInfo('Local content is newer. Unknown what causes this.'),
-    6106: ResultInfo('AM error in NIM. Bad ticket is likely.'),
-    8401: ResultInfo('The update data is corrupted. Delete it and reinstall.')
+    2923: ResultInfo('你无法使用需要联网的功能，例如软件更新和初始化主机。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17014'),
+    2995: ResultInfo('这个错误可能出现于下载码输入错误（已激活、失效、输错和区域不对等）。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/13515'),
+    4079: ResultInfo('无法访问内存卡。'),
+    4998: ResultInfo('本地内容比服务器的更新，鬼知道为什么会这样。'),
+    6106: ResultInfo('NIM的AM报错，可能是坏ticket惹的祸。'),
+    8401: ResultInfo('升级数据错误，删了然后重新下载它。')
 })
 
 # 011: eshop website, or other misc/overlapping errors
 eshop_site = Module('eshop (website?)', {
-    3021: ResultInfo('Cannot find title on Nintendo eShop (incorrect region, or never existed?).'),
-    3136: ResultInfo('Nintendo eShop is currently unavailable. Try again later.'),
-    6901: ResultInfo('This console is permanently banned by Nintendo (displayed in Japanese for some reason).', is_ban=True)
+    3021: ResultInfo('无法在eShop找到这个应用（错误的区域或者这个东西就根本不存在）'),
+    3136: ResultInfo('eShop不可用，等会再试。'),
+    6901: ResultInfo('此主机已被任天堂永久封禁（由于某种原因只显示日文）。', is_ban=True)
 })
 
 # 014: system transfers?
 data_transfer = Module('system transfer', {
-    13: ResultInfo('Attempting to do a system transfer with with a invalid language setting.'),
-    16: ResultInfo('Both consoles have the same movable.sed key. Format the target console and system transfer again.'),
-    62: ResultInfo('An error occurred during system transfer. Move closer to the wireless router and try again.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/15664')
+    13: ResultInfo('尝试使用无效的语言设定时进行数据迁移。'),
+    16: ResultInfo('两个主机拥有同样的movable.sed，初始化准备迁移数据到的主机然后再试一次。'),
+    62: ResultInfo('数据迁移时发生了错误，将它们靠近路由器然后再试。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/15664')
 })
 # 012: a category related to the web browser or ssl module considered 1511
 browser1 = Module('browser (?)', {
-    1004: ResultInfo('SSL connection failed.'),
-    1511: ResultInfo('Certificate warning.')
+    1004: ResultInfo('SSL连接失败。'),
+    1511: ResultInfo('证书警告。')
 })
 
 # 032: a second category related to the web browser
 browser2 = Module('browser (?)', {
-    1820: ResultInfo('Displayed when the browser asks if you want to go to to a potentially dangerous website. Press \'yes\' to continue if you feel it is safe.')
+    1820: ResultInfo('于你想访问一个危险的网站时出现。如果你是秋名山车神就直接确认。')
 })
 
 # 022: more account stuff?
 account2 = Module('account', {
-    2452: ResultInfo('Tried to access the eShop with UNITINFO patch enabled. Turn it off in Luma\'s options.'),
-    (2501, 2591): ResultInfo('NNID is already linked to another system. This can be the result of using System Transfer (where all NNIDs associated with the system are moved, whether they are currently linked or not), restoring the source console\'s NAND, and then attempting to use applications which require an NNID.'),
-    2511: ResultInfo('System update required (displayed by Miiverse?).'),
-    2613: ResultInfo('Incorrect email or password when attempting to link an existing NNID. Can also happen if the NNID is already linked to another system, or if you attempt to download an application from the eShop without a linked NNID on the console.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4314/kw/022-2613'),
-    2631: ResultInfo('The NNID you are attempting to use has been deleted, or is unusable due to a System Transfer. A transferred NNID will only work on the target system.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4285/kw/022-2631'),
-    2633: ResultInfo('NNID is temporarily locked due to too many incorrect password attempts. Try again later.'),
-    2634: ResultInfo('NNID is not correctly linked on this console.', '[To fix it, follow these steps. Afterwards, reboot and sign into your NNID again.](https://3ds.hacks.guide/godmode9-usage#removing-an-nnid-without-formatting-your-device)'),
-    2812: ResultInfo('This console is permanently banned by Nintendo for playing Pokémon Sun & Moon online before the release date illegally.', is_ban=True),
-    2815: ResultInfo('This console is banned from accessing Miiverse by Nintendo.'),
-    5363: ResultInfo('Happens when trying to load NNID settings with a invalid language setting.'),
-    5515: ResultInfo('Network timeout.'),
+    2452: ResultInfo('在你打开了UNITINFO补丁后访问eShop时出现，在Luma设置中关闭。'),
+    (2501, 2591): ResultInfo('NNID已绑定到另外一条主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机），还原备份的NAND然后尝试进入需要NNID的程序看看。'),
+    2511: ResultInfo('需要系统更新（可能出现于Miiverse？）。'),
+    2613: ResultInfo('绑定NNID时输入了错误的邮箱或密码，或是在没有绑定NNID的情况下从eShop下载软件时出现。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4314/kw/022-2613'),
+    2631: ResultInfo('你输入的NNID已被注销，或是因为数据迁移不可用。数据迁移后NNID只会在迁入的主机可用。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4285/kw/022-2631'),
+    2633: ResultInfo('NNID已因过多的错误密码尝试而被暂时锁定。稍后再试。'),
+    2634: ResultInfo('NNID没有正确绑定主机。', '如果你想修复它，使用这个教程：https://3ds.hacks.guide/zh_CN/godmode9-usage#%E5%9C%A8%E4%B8%8D%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%BB%E6%9C%BA%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E6%B8%85%E9%99%A4-nnid'),
+    2812: ResultInfo('此主机由于在宝可梦日月发售日前偷跑联网而被永久封禁。', is_ban=True),
+    2815: ResultInfo('此主机的Miiverse功能已被任天堂封禁。'),
+    5363: ResultInfo('出现于设置了无效的语言后加载NNID设置。'),
+    5515: ResultInfo('网络连接超时。'),
 })
 
 # 090: application defined?
 unknown1 = Module('unknown', {
-    212: ResultInfo('Game is permanently banned from Pokémon Global Link for using altered or illegal save data.', is_ban=True)
+    212: ResultInfo('此游戏的PGL功能已因使用了修改或非法的存档而被永久封禁。', is_ban=True)
 })
 
 # We have some modules partially documented, those that aren't return None.
@@ -213,23 +213,23 @@ def is_valid(error: str):
 
 def construct_result(ret, mod, desc):
     module = ctr_results_modules.get(mod, Module(''))
-    ret.add_field(ConsoleErrorField('Module', message_str=module.name, supplementary_value=mod))
+    ret.add_field(ConsoleErrorField('模组', message_str=module.name, supplementary_value=mod))
     description = module.get_error(desc)
     if description is None or not description.description:
         description = ctr_results_modules[0].get_error(desc)
         if description is None or not description.description:
-            ret.add_field(ConsoleErrorField('Description', supplementary_value=desc))
+            ret.add_field(ConsoleErrorField('描述', supplementary_value=desc))
         else:
-            ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
+            ret.add_field(ConsoleErrorField('描述', message_str=description.description, supplementary_value=desc))
     else:
-        ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
+        ret.add_field(ConsoleErrorField('描述', message_str=description.description, supplementary_value=desc))
 
     return ret
 
 
 def construct_result_range(ret, mod, range_desc):
     module = ctr_results_modules.get(mod, Module(''))
-    ret.add_field(ConsoleErrorField('Module', message_str=module.name, supplementary_value=mod))
+    ret.add_field(ConsoleErrorField('模组', message_str=module.name, supplementary_value=mod))
     found_descs = []
     unknown_descs = []
     for desc in range_desc:
@@ -242,14 +242,14 @@ def construct_result_range(ret, mod, range_desc):
             if description is None or not description.description:
                 unknown_descs.append(str(desc))
             else:
-                found_descs.append(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc).message)
+                found_descs.append(ConsoleErrorField('描述', message_str=description.description, supplementary_value=desc).message)
         else:
-            found_descs.append(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc).message)
+            found_descs.append(ConsoleErrorField('描述', message_str=description.description, supplementary_value=desc).message)
 
     if found_descs:
-        ret.add_field(ConsoleErrorField('Possible known descriptions', message_str='\n'.join(found_descs)))
+        ret.add_field(ConsoleErrorField('可能已知描述', message_str='\n'.join(found_descs)))
     if unknown_descs:
-        ret.add_field(ConsoleErrorField('Possible unknown descriptions', message_str=', '.join(unknown_descs)))
+        ret.add_field(ConsoleErrorField('可能未知描述', message_str=', '.join(unknown_descs)))
 
     return ret
 
@@ -257,14 +257,14 @@ def construct_result_range(ret, mod, range_desc):
 def construct_support(ret, mod, desc):
     category = modules.get(mod, Module(''))
     if category.name:
-        ret.add_field(ConsoleErrorField('Category', message_str=category.name))
+        ret.add_field(ConsoleErrorField('分类', message_str=category.name))
     else:
-        ret.add_field(ConsoleErrorField('Category', supplementary_value=mod))
+        ret.add_field(ConsoleErrorField('分类', supplementary_value=mod))
     description = category.get_error(desc)
     if description is not None and description.description:
-        ret.add_field(ConsoleErrorField('Description', message_str=description.description))
+        ret.add_field(ConsoleErrorField('描述', message_str=description.description))
         if description.support_url:
-            ret.add_field(ConsoleErrorField('Further information', message_str=description.support_url))
+            ret.add_field(ConsoleErrorField('更多描述', message_str=description.support_url))
         if description.is_ban:
             ret.add_field(BANNED_FIELD)
             ret.color = WARNING_COLOR
@@ -301,22 +301,22 @@ def nim_handler(ret, description):
         description -= 4200
         construct_result(ret, 40, description)  # http result module, not support category
         if description == 199:
-            ret.add_field(ConsoleErrorField('Extra note', message_str='Alternatively, any http description beyond 199.\nNIM truncates it to 199.'))
+            ret.add_field(ConsoleErrorField('扩展信息', message_str='或者超过199的http描述会被NIM截断为199。'))
 
     elif 4400 <= description < 5000:
         description -= 4400
-        ret.add_field(ConsoleErrorField('Category', message_str='nim'))
+        ret.add_field(ConsoleErrorField('分类', message_str='nim'))
         if description < 100:
-            ret.add_field(ConsoleErrorField('HTTP Status Code', message_str=f'{description + 100}'))
+            ret.add_field(ConsoleErrorField('HTTP状态码', message_str=f'{description + 100}'))
         elif 100 <= description < 500:
-            ret.add_field(ConsoleErrorField('HTTP Status Code', message_str=f'{description + 100} or {description} due to a programming mistake in NIM.'))
+            ret.add_field(ConsoleErrorField('HTTP状态码', message_str=f'{description + 100}或{description}由于NIM中的编程错误。'))
         else:
-            ret.add_field(ConsoleErrorField('HTTP Status Code', message_str=f'{description}'))
+            ret.add_field(ConsoleErrorField('HTTP状态码', message_str=f'{description}'))
 
     elif 5000 <= description < 7000:
         description -= 5000
-        ret.add_field(ConsoleErrorField('Category', message_str='nim'))
-        ret.add_field(ConsoleErrorField('Description', message_str=f'SOAP message returned result code {description} on a NIM operation.'))
+        ret.add_field(ConsoleErrorField('分类', message_str='nim'))
+        ret.add_field(ConsoleErrorField('描述', message_str=f'NIM活动时SOAP消息返回了状态码{description}'))
 
     # >= 7000 range is compacted
     elif description >= 7000:
@@ -327,7 +327,7 @@ def nim_handler(ret, description):
         return construct_result_range(ret, module, range(0 + description, 1024 + description, 32))
 
     else:
-        ret.add_field(ConsoleErrorField('Category', message_str='nim'))
+        ret.add_field(ConsoleErrorField('分类', message_str='nim'))
         ret.add_field(UNKNOWN_CATEGORY_DESCRIPTION)
 
     return ret

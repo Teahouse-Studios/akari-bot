@@ -97,9 +97,9 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
 
     def check_meme(self, err: str) -> str:
         memes = {
-            '0xdeadbeef': 'you sure you want to eat that?',
-            '0xdeadbabe': 'i think you have bigger problems if that\'s the case',
-            '0x8badf00d': 'told you not to eat it'
+            '0xdeadbeef': '都坏掉了，不能吃了。',
+            '0xdeadbabe': '我觉得你有问题。',
+            '0x8badf00d': '记得垃圾分类。'
         }
         return memes.get(err.casefold())
 
@@ -134,8 +134,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
             embed = embed.to_dict()
             await ctx.send(kwargs, embed=embed)
         else:
-            await ctx.send(kwargs, f'The code you entered is \
-invalid or is for a system I don\'t have support for.')
+            await ctx.send(kwargs, f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
 
     async def nxerr(self, kwargs):
         """

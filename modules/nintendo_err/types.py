@@ -91,18 +91,14 @@ class ConsoleErrorInfo:
 
 
 # Helper constants
-REPORT_DETAILS = 'You should report relevant details to \
-[the Kurisu repository](https://github.com/nh-server/Kurisu/issues).'
+REPORT_DETAILS = '你应该向本模块的原仓库发起Issue来添加有关内容（请说英文）：https://github.com/nh-server/Kurisu/issues'
 
-UNKNOWN_MODULE = ResultInfo(f'Invalid or unknown module. Are you sure you \
-typed the error code in correctly? {REPORT_DETAILS}')
+UNKNOWN_MODULE = ResultInfo(f'无效或未知的模组。请问你正确输入错误代码了吗？{REPORT_DETAILS}')
 
-NO_RESULTS_FOUND = ResultInfo(f'I know about this module, but I don\'t have any \
-information on error codes for it. {REPORT_DETAILS}')
+NO_RESULTS_FOUND = ResultInfo(f'我知道这个模组。但是我没有任何有关这个错误的记载。{REPORT_DETAILS}')
 
-BANNED_FIELD = ConsoleErrorField('Console, account and game bans', message_str='Nintendo Homebrew does not provide support \
-for unbanning. Please do not ask for further assistance with this.')
+BANNED_FIELD = ConsoleErrorField('致主机、账户或游戏被封禁者', message_str='我们不会提供解封服务，所以也请不要试图在这里获得谁的帮助。')
 
 WARNING_COLOR = 0xFFFF00
 
-UNKNOWN_CATEGORY_DESCRIPTION = ConsoleErrorField('Description', message_str=f'Your support description appears to be unknown. {REPORT_DETAILS}')
+UNKNOWN_CATEGORY_DESCRIPTION = ConsoleErrorField('描述', message_str=f'对应你的支持描述未知。{REPORT_DETAILS}')
