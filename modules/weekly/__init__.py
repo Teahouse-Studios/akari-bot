@@ -1,7 +1,7 @@
 import re
 import json
 import traceback
-
+from urllib.parse import unquote
 from core.utils import get_url
 import aiohttp
 from graia.application import MessageChain
@@ -19,7 +19,7 @@ async def weekly(kwargs: dict):
         text = re.sub(r'\n*$', '', text)
         img = re.findall(r'(?<=src=")(.*?)(?=/revision/latest/scale-to-(width|height)-down/\d{3}\?cb=\d{14}?")', html)
         page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
-        msg = '本周的每周页面：\n\n' + text + '\n图片：' + img[0][0] + '?format=original\n\n页面链接：https://minecraft.fandom.com/zh/' + page[0] + '\n每周页面：https://minecraft.fandom.com/zh/wiki/?oldid=' + str(result['parse']['revid'])
+        msg = '发生错误：本周页面已过期，请联系中文 Minecraft Wiki 更新。' if page[0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else '本周的每周页面：\n\n' + text + '\n图片：' + img[0][0] + '?format=original\n\n页面链接：https://minecraft.fandom.com' + page[0] + '\n每周页面：https://minecraft.fandom.com/zh/wiki/?oldid=' + str(result['parse']['revid'])
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
 
     except Exception as e:
