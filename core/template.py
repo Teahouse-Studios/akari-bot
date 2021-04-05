@@ -1,7 +1,3 @@
-import traceback
-import uuid
-
-import aiohttp
 import eventlet
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
@@ -11,9 +7,6 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
 from core.loader import logger_info
-from os.path import abspath
-import ffmpy
-from filetype import filetype as ft
 from core.broadcast import app, bcc
 from database import BotDB
 
@@ -159,29 +152,6 @@ def check_permission(kwargs):
         if database.check_superuser(kwargs[Friend].id):
             return True
     return False
-
-
-async def download_to_cache(link):
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as resp:
-                res = await resp.read()
-                ftt = ft.match(res).extension
-                path = abspath(f'./cache/{str(uuid.uuid4())}.{ftt}')
-                with open(path, 'wb+') as file:
-                    file.write(res)
-                    return path
-    except:
-        traceback.print_exc()
-        return False
-
-
-async def convert_amr(filename):
-    ff = ffmpy.FFmpeg(
-        inputs={abspath(filename): None},
-        outputs={abspath(filename + '.amr'): '-ar 8000 -ab 12.2k -filter_complex channelsplit=channel_layout=mono'})
-    ff.run()
-    return filename + '.amr'
 
 
 async def Nudge(kwargs):
