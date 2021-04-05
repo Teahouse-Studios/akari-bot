@@ -1,3 +1,8 @@
+import traceback
+import uuid
+from os.path import abspath
+
+import aiohttp
 import eventlet
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
@@ -9,6 +14,9 @@ from graia.broadcast.interrupt.waiter import Waiter
 from core.loader import logger_info
 from core.broadcast import app, bcc
 from database import BotDB
+
+import filetype as ft
+from graiax import silkcoder
 
 
 database = BotDB()
@@ -152,6 +160,27 @@ def check_permission(kwargs):
         if database.check_superuser(kwargs[Friend].id):
             return True
     return False
+
+
+async def download_to_cache(link):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link) as resp:
+                res = await resp.read()
+                ftt = ft.match(res).extension
+                path = abspath(f'./cache/{str(uuid.uuid4())}.{ftt}')
+                with open(path, 'wb+') as file:
+                    file.write(res)
+                    return path
+    except:
+        traceback.print_exc()
+        return False
+
+
+async def slk_converter(filepath):
+    filepath2 = filepath + '.silk'
+    await silkcoder.encode(filepath, filepath2)
+    return filepath2
 
 
 async def Nudge(kwargs):
