@@ -17,8 +17,9 @@ async def weekly(kwargs: dict):
         text = re.sub(r'<(.*?)>', '', text, flags=re.DOTALL) # 移除所有 HTML 标签
         text = re.sub(r'\n\n\n', '\n\n', text) # 移除不必要的空行
         text = re.sub(r'\n*$', '', text)
-        img = re.findall(r'(?<=src=").*?(?=")', html)
-        msg = '本周的每周页面：\n\n' + text + '\n图片：' + img[0] + '\n\nhttps://minecraft.fandom.com/zh/wiki/?oldid=' + str(result['parse']['revid'])
+        img = re.findall(r'(?<=src=")(.*?)(?=/revision/latest/scale-to-(width|height)-down/\d{3}\?cb=\d{14}?")', html)
+        page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
+        msg = '本周的每周页面：\n\n' + text + '\n图片：' + img[0][0] + '?format=original\n\n页面链接：https://minecraft.fandom.com/' + page[0] + '\n每周页面：https://minecraft.fandom.com/zh/wiki/?oldid=' + str(result['parse']['revid'])
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
 
     except Exception as e:
