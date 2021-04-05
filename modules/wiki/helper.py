@@ -23,12 +23,12 @@ async def check_wiki_available(link):
         test1 = link + 'api.php' + query
         try:
             json1 = await get_url(test1)
-            wlink = link + 'api.php' + query
+            wlink = link + 'api.php'
         except:
             try:
-                test2 = link + 'w/' + query
+                test2 = link + 'w/api.php' + query
                 json1 = await get_url(test2)
-                wlink = link + 'w/api.php' + query
+                wlink = link + 'w/api.php'
             except:
                 traceback.print_exc()
                 return False

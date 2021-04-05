@@ -10,6 +10,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from config import Config
+from core.template import logger_info
 
 
 infobox_render = Config().config('infobox_render')
@@ -17,7 +18,7 @@ infobox_render = Config().config('infobox_render')
 
 async def get_infobox_pic(link, pagelink, headers):
     try:
-        print('')
+        logger_info('Starting find infobox..')
         wlink = re.sub(r'api.php', '', link)
         link = re.sub(r'(?:w/|)api.php', '', link)
         try:
@@ -32,7 +33,7 @@ async def get_infobox_pic(link, pagelink, headers):
         url = os.path.abspath(f'./cache/{pagename}.html')
         if os.path.exists(url):
             os.remove(url)
-        print(222)
+        logger_info('Downloaded raw.')
         find_infobox = soup.find(class_='notaninfobox')  # 我
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='portable-infobox')  # 找
@@ -50,7 +51,7 @@ async def get_infobox_pic(link, pagelink, headers):
             find_infobox = soup.find(class_='wikitable songtable')  # 找 (arcw)
         if find_infobox is None:  # 找
             return False  # 找你妈，不找了<-咱还是回家吧
-        print('Find infobox..')
+        logger_info('Find infobox, start modding...')
 
         if infobox_render is None:
             open_file = open(url, 'a', encoding='utf-8')
@@ -95,9 +96,8 @@ async def get_infobox_pic(link, pagelink, headers):
         else:
             html_list.append(str(replace_link))
             html = '\n'.join(html_list)
-            print(html)
             html = {'content': html}
-        print(333)
+        print('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
             os.remove(picname)
