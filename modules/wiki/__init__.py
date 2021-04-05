@@ -3,12 +3,12 @@ import re
 from graia.application import MessageChain
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
-from graia.application.message.elements.internal import Image, Voice
+from graia.application.message.elements.internal import Image, UploadMethods
 from graia.application.message.elements.internal import Plain
 
 from modules.wiki.database import WikiDB
 import modules.wiki.wikilib
-from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, slk_converter
+from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge
 from database import BotDB
 from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
@@ -149,7 +149,11 @@ async def wiki_wrapper(kwargs: dict):
             [Plain((prompt + '\n' if prompt else '') + (msg['url'] + '\n' if 'url' in msg else '') + msg['text'])])
         if 'net_image' in msg:
             try:
-                imgchain = MessageChain.create([Image.fromNetworkAddress(msg['net_image'])])
+                if Group in kwargs:
+                    mth = UploadMethods.Group
+                elif Friend in kwargs:
+                    mth = UploadMethods.Friend
+                imgchain = MessageChain.create([Image.fromNetworkAddress(msg['net_image'], method=mth)])
                 msgchain = msgchain.plusWith(imgchain)
             except:
                 pass
@@ -302,17 +306,18 @@ async def regex_wiki(kwargs: dict):
             await Nudge(kwargs)
             waitlist = []
             imglist = []
-            audlist = []
             urllist = {}
             msglist = MessageChain.create([])
             waitmsglist = MessageChain.create([])
             if Group in kwargs:
                 table = 'start_wiki_link_group'
                 target = kwargs[Group].id
+                mth = UploadMethods.Group
                 headtable = 'request_headers_group'
             if Friend in kwargs:
                 table = 'start_wiki_link_self'
                 target = kwargs[Friend].id
+                mth = UploadMethods.Friend
                 headtable = 'request_headers_self'
             headers = database.config_headers('get', headtable, target)
             for find in find_dict:
@@ -385,8 +390,6 @@ async def regex_wiki(kwargs: dict):
                             msg['url'] + '\n' if 'url' in msg else '') + text)]))
                     if 'net_image' in msg:
                         imglist.append(msg['net_image'])
-                    if 'net_audio' in msg:
-                        audlist.append(msg['net_audio'])
                     if 'apilink' in msg:
                         get_link = msg['apilink']
                     if 'url' in msg:
@@ -398,12 +401,8 @@ async def regex_wiki(kwargs: dict):
                 if imglist != []:
                     imgchain = MessageChain.create([])
                     for img in imglist:
-                        imgchain = imgchain.plusWith(MessageChain.create([Image.fromNetworkAddress(img)]))
+                        imgchain = imgchain.plusWith(MessageChain.create([Image.fromNetworkAddress(img, method=mth)]))
                     await sendMessage(kwargs, imgchain)
-                if audlist != []:
-                    for aud in audlist:
-                        audchain = MessageChain.create([Voice().fromLocalFile(await slk_converter(await download_to_cache(aud)))])
-                        await sendMessage(kwargs, audchain)
             if urllist != {}:
                 print(urllist)
                 check_options = bot_db.check_enable_modules_self(
@@ -414,7 +413,7 @@ async def regex_wiki(kwargs: dict):
                         get_infobox = await get_infobox_pic(urllist[url], url, headers)
                         if get_infobox:
                             infoboxchain = infoboxchain.plusWith(
-                                MessageChain.create([Image.fromLocalFile(get_infobox)]))
+                                MessageChain.create([Image.fromLocalFile(get_infobox, method=mth)]))
                     if infoboxchain != MessageChain.create([]):
                         await sendMessage(kwargs, infoboxchain, Quote=False)
             if global_status == 'warn':

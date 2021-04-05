@@ -301,11 +301,6 @@ class wikilib:
                 getimg = await self.get_image(self.pagename)
                 if getimg:
                     msgs['net_image'] = getimg
-            matchaud = re.match(r'File:.*?\.(?:oga|ogg|flac|mp3|wav)', self.pagename, re.I)
-            if matchaud:
-                getaud = await self.get_image(self.pagename)
-                if getaud:
-                    msgs['net_audio'] = getaud
             print(result)
             if result != '' and await self.danger_text_check(result):
                 return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
