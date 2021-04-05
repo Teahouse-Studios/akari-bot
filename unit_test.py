@@ -4,5 +4,5 @@ from core.parser import parser
 
 kwargs = {}
 kwargs['TEST'] = True
-kwargs['command'] = '~github search mcwzh'
+kwargs['command'] = '~weekly'
 asyncio.run(parser(kwargs))
