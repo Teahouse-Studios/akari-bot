@@ -10,7 +10,7 @@ from graia.application.message.chain import MessageChain
 
 from config import Config
 from core.broadcast import bcc, app
-from core.loader import rss_loader
+from core.loader import Modules
 from core.parser import parser
 from legacy_subbot import newbie
 
@@ -51,7 +51,7 @@ async def NGroup(event: BotInvitedJoinGroupRequestEvent):
 
 @bcc.receiver('ApplicationLaunched')
 async def message_handler(app: GraiaMiraiApplication):
-    rss_list = rss_loader()
+    rss_list = Modules['rss']
     gather_list = []
     for x in rss_list:
         gather_list.append(asyncio.ensure_future(rss_list[x](app)))

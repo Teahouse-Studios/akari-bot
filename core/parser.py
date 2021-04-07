@@ -5,14 +5,14 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
 from database import BotDB
-from core.loader import command_loader, logger_info
+from core.loader import Modules
 from core.template import sendMessage, Nudge
 
 
 database = BotDB()
 
 
-command_list = command_loader()
+command_list = Modules
 
 
 async def parser(kwargs: dict):

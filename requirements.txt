@@ -6,4 +6,5 @@ aiohttp
 beautifulsoup4
 selenium
 eventlet
-psutil~=5.7.2
+psutil
+gql[all]==3.0.0a5
