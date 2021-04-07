@@ -180,7 +180,7 @@ async def download_to_cache(link):
 
 async def slk_converter(filepath):
     filepath2 = filepath + '.silk'
-    asyncio.run(silkcoder.encode(filepath, filepath2))
+    await asyncio.ensure_future(silkcoder.encode(filepath, filepath2), loop=bcc.loop)
     return filepath2
 
 
