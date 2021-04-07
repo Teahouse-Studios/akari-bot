@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 import uuid
 from os.path import abspath
@@ -179,7 +180,7 @@ async def download_to_cache(link):
 
 async def slk_converter(filepath):
     filepath2 = filepath + '.silk'
-    await silkcoder.encode(filepath, filepath2)
+    asyncio.run(silkcoder.encode(filepath, filepath2))
     return filepath2
 
 
