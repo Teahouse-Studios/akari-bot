@@ -12,7 +12,7 @@ from database import BotDB
 from modules.mcv.mcv import get_data
 
 
-check_enable_modules_all = BotDB().check_enable_modules_all
+check_enable_modules_all = BotDB.check_enable_modules_all
 
 
 def mcversion():
