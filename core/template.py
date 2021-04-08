@@ -5,19 +5,17 @@ from os.path import abspath
 
 import aiohttp
 import eventlet
+import filetype as ft
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.elements.internal import Plain, Image, Source
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
+from graiax import silkcoder
 
-from core.loader import logger_info
 from core.broadcast import app, bcc
 from database import BotDB as database
-
-import filetype as ft
-from graiax import silkcoder
 
 
 async def sendMessage(kwargs: dict, msgchain, Quote=True):
@@ -151,7 +149,8 @@ def check_permission(kwargs):
     :return: 若对象为群主、管理员或机器人超管则为True
     """
     if Group in kwargs:
-        if str(kwargs[Member].permission) in ['MemberPerm.Administrator', 'MemberPerm.Owner'] or database.check_superuser(
+        if str(kwargs[Member].permission) in ['MemberPerm.Administrator',
+                                              'MemberPerm.Owner'] or database.check_superuser(
                 kwargs):
             return True
     if Friend in kwargs:
