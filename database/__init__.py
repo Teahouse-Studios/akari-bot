@@ -8,7 +8,7 @@ from graia.application import Group, Friend, Member
 dbpath = os.path.abspath('./database/save.db')
 
 
-class BotDB:
+class BB:
     def __init__(self):
         if not os.path.exists(dbpath):
             self.initialize()
@@ -263,3 +263,6 @@ class BotDB:
                 return False
         else:
             return False
+
+
+BotDB = BB()
