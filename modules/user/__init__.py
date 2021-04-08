@@ -8,7 +8,6 @@ from modules.wiki.database import WikiDB
 from .userlib import GetUser
 
 
-
 # 呜呜呜 想偷个懒都不行
 async def main(kwargs: dict):
     command = re.sub('^user ', '', kwargs['trigger_msg'])

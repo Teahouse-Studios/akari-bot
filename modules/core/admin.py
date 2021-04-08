@@ -1,8 +1,8 @@
 import os
 import sys
 
-from database import BotDB as database
 from core.template import sendMessage, wait_confirm
+from database import BotDB as database
 
 
 async def add_su(kwargs: dict):
@@ -63,4 +63,3 @@ async def update_and_restart_bot(kwargs: dict):
 
 async def echo_msg(kwargs: dict):
     await sendMessage(kwargs, kwargs['trigger_msg'])
-

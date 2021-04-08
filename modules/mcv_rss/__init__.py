@@ -1,7 +1,7 @@
 import asyncio
+import os
 import re
 import traceback
-import os
 
 import aiohttp
 from graia.application import MessageChain
@@ -10,7 +10,6 @@ from graia.application.message.elements.internal import Plain
 from core.loader import logger_info
 from database import BotDB
 from modules.mcv.mcv import get_data
-
 
 check_enable_modules_all = BotDB.check_enable_modules_all
 

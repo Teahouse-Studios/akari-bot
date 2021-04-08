@@ -6,10 +6,11 @@ from graia.application.group import Group, Member
 from graia.application.message.elements.internal import Image, Voice
 from graia.application.message.elements.internal import Plain
 
-from modules.wiki.database import WikiDB
 import modules.wiki.wikilib
-from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, slk_converter
+from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, \
+    slk_converter
 from database import BotDB
+from modules.wiki.database import WikiDB
 from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
 
@@ -36,8 +37,6 @@ async def wiki_loader(kwargs: dict):
         await wiki_wrapper(kwargs)
 
 
-
-
 async def wiki_wrapper(kwargs: dict):
     command = kwargs['trigger_msg']
     if Group in kwargs:
@@ -56,21 +55,21 @@ async def wiki_wrapper(kwargs: dict):
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
                      '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
             WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
-                                    'https://minecraft-zh.gamepedia.com/api.php')
+                                  'https://minecraft-zh.gamepedia.com/api.php')
         elif Friend in kwargs:
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
                      '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
             WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
-                                    'https://minecraft-zh.gamepedia.com/api.php')
+                                  'https://minecraft-zh.gamepedia.com/api.php')
         get_link = 'https://minecraft-zh.gamepedia.com/api.php'
     iw = None
     co = False
     if Group in kwargs:
         check_gamepedia_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
-                                                            'wiki_gamepedia_addon')
+                                                                  'wiki_gamepedia_addon')
     if Friend in kwargs:
         check_gamepedia_addon_enable = BotDB.check_enable_modules_self(kwargs[Group].id,
-                                                                 'wiki_gamepedia_addon')
+                                                                       'wiki_gamepedia_addon')
     if check_gamepedia_addon_enable:
         matchsite = re.match(r'~(.*?) (.*)', command)
         if matchsite:
@@ -87,10 +86,10 @@ async def wiki_wrapper(kwargs: dict):
 
     if Group in kwargs:
         check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
-                                                         'wiki_fandom_addon')
+                                                               'wiki_fandom_addon')
     if Friend in kwargs:
         check_fandom_addon_enable = BotDB.check_enable_modules_self(kwargs[Group].id,
-                                                              'wiki_fandom_addon')
+                                                                    'wiki_fandom_addon')
     if check_fandom_addon_enable:
         matchsite = re.match(r'\?(.*?) (.*)', command)
         if matchsite:
@@ -154,7 +153,7 @@ async def wiki_wrapper(kwargs: dict):
             get_link = msg['apilink']
         if 'url' in msg:
             check_options = BotDB.check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
-                                                      'wiki_infobox')
+                                                            'wiki_infobox')
             print(check_options)
             if check_options:
                 pic = await get_infobox_pic(get_link, msg['url'], headers)
@@ -323,12 +322,12 @@ async def regex_wiki(kwargs: dict):
                         prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki set <域名>来设定自定义起始Wiki。' \
                                  '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
                         WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
-                                                'https://minecraft.fandom.com/zh/api.php')
+                                              'https://minecraft.fandom.com/zh/api.php')
                     elif Friend in kwargs:
                         prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki set <域名>来设定自定义起始Wiki。' \
                                  '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
                         WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
-                                                'https://minecraft.fandom.com/zh/api.php')
+                                              'https://minecraft.fandom.com/zh/api.php')
                     get_link = 'https://minecraft.fandom.com/zh/api.php'
                 iw = None
                 matchinterwiki = re.match(r'(.*?):(.*)', find)
@@ -350,7 +349,7 @@ async def regex_wiki(kwargs: dict):
                         if matchinterwiki:
                             if matchinterwiki.group(1) == 'c':
                                 check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
-                                                                                 'wiki_fandom_addon')
+                                                                                       'wiki_fandom_addon')
                                 if check_fandom_addon_enable:
                                     matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
                                     if matchinterwiki:
@@ -363,7 +362,8 @@ async def regex_wiki(kwargs: dict):
                                             get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
                                             find = matchinterwiki.group(2)
                                             iw = matchinterwiki.group(1)
-                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template, headers=headers)
+                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
+                                                                headers=headers)
                 status = msg['status']
                 text = (prompt + '\n' if prompt else '') + msg['text']
                 if status == 'wait':
@@ -398,7 +398,8 @@ async def regex_wiki(kwargs: dict):
                     await sendMessage(kwargs, imgchain)
                 if audlist != []:
                     for aud in audlist:
-                        audchain = MessageChain.create([Voice().fromLocalFile(await slk_converter(await download_to_cache(aud)))])
+                        audchain = MessageChain.create(
+                            [Voice().fromLocalFile(await slk_converter(await download_to_cache(aud)))])
                         await sendMessage(kwargs, audchain)
             if urllist != {}:
                 print(urllist)
@@ -439,9 +440,9 @@ regex = {'wiki_regex': regex_wiki}
 self_options = ['wiki_infobox']
 options = ['wiki_fandom_addon', 'wiki_gamepedia_addon']
 help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。\n' +
-                 '~wiki set <wikilink> - 设置起始查询Wiki。\n' +
-                 '~wiki iw <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。\n' +
-                 '~wiki headers <set/reset/show> - 设置请求标头。'},
+                         '~wiki set <wikilink> - 设置起始查询Wiki。\n' +
+                         '~wiki iw <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。\n' +
+                         '~wiki headers <set/reset/show> - 设置请求标头。'},
         'wiki_start_site': {'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
         'interwiki': {
             'help': '~interwiki <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。'},
