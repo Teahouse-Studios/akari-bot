@@ -4,6 +4,7 @@ import sqlite3
 import traceback
 
 from graia.application import Group, Friend, Member
+
 from core.template import logger_info
 
 dbpath = os.path.abspath('./database/save.db')
@@ -45,7 +46,6 @@ class BB:
                NAME  TEXT NOT NULL,
                TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
         c.close()
-
 
     def update_modules(self, do, id, modules_name, table='group_permission', value='ENABLE_MODULES'):
         a = self.c.execute(f"SELECT * FROM {table} WHERE ID={id}").fetchone()
