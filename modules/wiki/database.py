@@ -7,7 +7,7 @@ import traceback
 dbpath = os.path.abspath('./modules/wiki/save.db')
 
 
-class WikiDB:
+class WD:
     def __init__(self):
         if not os.path.exists(dbpath):
             self.initialize()
@@ -168,4 +168,6 @@ class WikiDB:
             traceback.print_exc()
             return '发生错误' + str(e)
 
+
+WikiDB = WD()
 
