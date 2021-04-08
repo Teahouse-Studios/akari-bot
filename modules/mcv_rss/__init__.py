@@ -1,7 +1,7 @@
 import asyncio
 import re
 import traceback
-from os.path import abspath
+import os
 
 import aiohttp
 from graia.application import MessageChain
@@ -16,14 +16,22 @@ check_enable_modules_all = BotDB().check_enable_modules_all
 
 
 def mcversion():
-    w = open(abspath('./assets/mcversion.txt'), 'r+')
+    path = os.path.abspath('./assets/mcversion.txt')
+    if not os.path.exists(path):
+        a = open(path, 'a')
+        a.close()
+    w = open(path, 'r+')
     s = w.read().split('\n')
     w.close()
     return s
 
 
 def mcversion_jira():
-    w = open(abspath('./assets/mcversion_jira.txt'), 'r+')
+    path = os.path.abspath('./assets/mcversion_jira.txt')
+    if not os.path.exists(path):
+        a = open(path, 'a')
+        a.close()
+    w = open(path, 'r+')
     s = w.read().split('\n')
     w.close()
     return s

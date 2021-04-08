@@ -5,9 +5,9 @@ config/*.cfg
 .idea
 assets/mcversion.txt
 mcvrss.txt
-assets/usercard/*.png
+assets/usercard/*
 test*
-assets/Favicon/**/*.png
+assets/Favicon/*
 assets/cache/*
 save.db
 cache/*
