@@ -9,7 +9,6 @@ import aiohttp
 
 from config import Config
 
-config = Config().config
 
 def hash_hmac(key, code, sha1):
     hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1)
@@ -24,8 +23,8 @@ def computeMD5hash(my_string):
 
 async def check(*text):
     try:
-        accessKeyId = config("Check_accessKeyId")
-        accessKeySecret = config("Check_accessKeySecret")
+        accessKeyId = Config("Check_accessKeyId")
+        accessKeySecret = Config("Check_accessKeySecret")
     except Exception:
         return '\n'.join(text)
     body = {
