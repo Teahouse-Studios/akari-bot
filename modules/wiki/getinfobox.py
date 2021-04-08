@@ -13,7 +13,7 @@ from config import Config
 from core.template import logger_info
 
 
-infobox_render = Config().config('infobox_render')
+infobox_render = Config('infobox_render')
 
 
 async def get_infobox_pic(link, pagelink, headers):
@@ -97,7 +97,7 @@ async def get_infobox_pic(link, pagelink, headers):
             html_list.append(str(replace_link))
             html = '\n'.join(html_list)
             html = {'content': html}
-        print('Start rendering...')
+        logger_info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
             os.remove(picname)
