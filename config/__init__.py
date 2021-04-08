@@ -3,7 +3,7 @@ from os.path import abspath
 
 
 config_filename = 'config.cfg'
-config_path = abspath('./Config/' + config_filename)
+config_path = abspath('./config/' + config_filename)
 
 class CFG:
     def config(self, q):
