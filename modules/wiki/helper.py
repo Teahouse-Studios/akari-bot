@@ -1,8 +1,8 @@
+import json
 import re
 import traceback
 
 import aiohttp
-import json
 
 
 async def get_url(url):

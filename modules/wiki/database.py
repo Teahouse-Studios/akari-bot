@@ -1,7 +1,7 @@
+import base64
 import os
 import re
 import sqlite3
-import base64
 import traceback
 
 dbpath = os.path.abspath('./modules/wiki/save.db')
@@ -170,4 +170,3 @@ class WD:
 
 
 WikiDB = WD()
-

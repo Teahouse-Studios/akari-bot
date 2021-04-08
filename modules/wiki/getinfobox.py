@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 import re
@@ -11,7 +10,6 @@ from bs4 import BeautifulSoup
 
 from config import Config
 from core.template import logger_info
-
 
 infobox_render = Config('infobox_render')
 
