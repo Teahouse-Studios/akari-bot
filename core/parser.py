@@ -4,12 +4,9 @@ from graia.application import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
-from database import BotDB
+from database import BotDB as database
 from core.loader import Modules
 from core.template import sendMessage, Nudge
-
-
-database = BotDB()
 
 
 async def parser(kwargs: dict):
