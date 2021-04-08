@@ -1,5 +1,4 @@
 import asyncio
-from os.path import abspath
 
 from graia.application import GraiaMiraiApplication, Session
 from graia.broadcast import Broadcast
@@ -7,9 +6,6 @@ from graia.broadcast import Broadcast
 from config import Config
 
 loop = asyncio.get_event_loop()
-config_filename = 'Config.cfg'
-config_path = abspath('./Config/' + config_filename)
-
 c = Config
 
 bcc = Broadcast(loop=loop, debug_flag=c('debug_flag'))
