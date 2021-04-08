@@ -4,6 +4,7 @@ import sqlite3
 import traceback
 
 from graia.application import Group, Friend, Member
+from core.template import logger_info
 
 dbpath = os.path.abspath('./database/save.db')
 
@@ -206,7 +207,7 @@ class BB:
         try:
             self.c.execute(f"INSERT INTO superuser (ID) VALUES ('{id}')")
         except:
-            traceback.print_exc()
+            traceback.logger_info_exc()
         self.conn.commit()
         self.c.close()
         return '成功？我也不知道成没成，懒得写判断了（'
@@ -215,7 +216,7 @@ class BB:
         try:
             self.c.execute(f"DELETE FROM superuser WHERE ID='{id}'")
         except:
-            traceback.print_exc()
+            traceback.logger_info_exc()
         self.conn.commit()
         self.c.close()
         return '成功？我也不知道成没成，懒得写判断了（'
@@ -237,7 +238,7 @@ class BB:
             id = kwargs[Friend].id
         a = self.c.execute(f"SELECT * FROM time WHERE ID='{id}' and NAME='{name}'").fetchone()
         if a:
-            print(a)
+            logger_info(a)
             self.c.execute(f"UPDATE time SET TIME=datetime('now') WHERE ID='{id}'")
             self.conn.commit()
         else:
@@ -251,12 +252,12 @@ class BB:
             id = kwargs[Friend].id
         a = self.c.execute(f"SELECT * FROM time WHERE ID='{id}' and NAME='{name}'").fetchone()
         if a:
-            print(a)
-            print(datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S").timestamp())
-            print(datetime.datetime.now().timestamp())
+            logger_info(a)
+            logger_info(datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S").timestamp())
+            logger_info(datetime.datetime.now().timestamp())
             check = (datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
                 hours=8)).timestamp() - datetime.datetime.now().timestamp()
-            print(check)
+            logger_info(check)
             if check > - delay:
                 return check
             else:
