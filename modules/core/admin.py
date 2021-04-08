@@ -1,11 +1,8 @@
 import os
 import sys
 
-from database import BotDB
+from database import BotDB as database
 from core.template import sendMessage, wait_confirm
-
-
-database = BotDB()
 
 
 async def add_su(kwargs: dict):
