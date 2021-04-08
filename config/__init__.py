@@ -3,9 +3,9 @@ from os.path import abspath
 
 
 config_filename = 'config.cfg'
-config_path = abspath('./config/' + config_filename)
+config_path = abspath('./Config/' + config_filename)
 
-class Config:
+class CFG:
     def config(self, q):
         cp = ConfigParser()
         cp.read(config_path)
@@ -16,3 +16,7 @@ class Config:
         if value.upper() == 'FALSE':
             return False
         return value
+
+
+Config = CFG().config
+
