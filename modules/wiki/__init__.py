@@ -14,10 +14,6 @@ from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
 
 
-database = WikiDB()
-bot_db = BotDB()
-
-
 async def wiki_loader(kwargs: dict):
     kwargs['trigger_msg'] = cmd = re.sub(r'^wiki ', '', kwargs['trigger_msg'])
     cmd = cmd.split(' ')
@@ -52,28 +48,28 @@ async def wiki_wrapper(kwargs: dict):
         start_table = 'start_wiki_link_self'
         headtable = 'request_headers_self'
         headtarget = kwargs[Friend].id
-    headers = database.config_headers('get', headtable, headtarget)
+    headers = WikiDB.config_headers('get', headtable, headtarget)
     prompt = False
-    get_link = database.get_start_wiki(start_table, kwargs[Group].id)
+    get_link = WikiDB.get_start_wiki(start_table, kwargs[Group].id)
     if not get_link:
         if Group in kwargs:
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
                      '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
-            database.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
+            WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
                                     'https://minecraft-zh.gamepedia.com/api.php')
         elif Friend in kwargs:
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
                      '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
-            database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
+            WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
                                     'https://minecraft-zh.gamepedia.com/api.php')
         get_link = 'https://minecraft-zh.gamepedia.com/api.php'
     iw = None
     co = False
     if Group in kwargs:
-        check_gamepedia_addon_enable = bot_db.check_enable_modules(kwargs[Group].id,
+        check_gamepedia_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
                                                             'wiki_gamepedia_addon')
     if Friend in kwargs:
-        check_gamepedia_addon_enable = bot_db.check_enable_modules_self(kwargs[Group].id,
+        check_gamepedia_addon_enable = BotDB.check_enable_modules_self(kwargs[Group].id,
                                                                  'wiki_gamepedia_addon')
     if check_gamepedia_addon_enable:
         matchsite = re.match(r'~(.*?) (.*)', command)
@@ -90,10 +86,10 @@ async def wiki_wrapper(kwargs: dict):
             command = matchsite.group(2)
 
     if Group in kwargs:
-        check_fandom_addon_enable = bot_db.check_enable_modules(kwargs[Group].id,
+        check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
                                                          'wiki_fandom_addon')
     if Friend in kwargs:
-        check_fandom_addon_enable = bot_db.check_enable_modules_self(kwargs[Group].id,
+        check_fandom_addon_enable = BotDB.check_enable_modules_self(kwargs[Group].id,
                                                               'wiki_fandom_addon')
     if check_fandom_addon_enable:
         matchsite = re.match(r'\?(.*?) (.*)', command)
@@ -131,11 +127,11 @@ async def wiki_wrapper(kwargs: dict):
     matchinterwiki = re.match(r'(.*?):(.*)', command)
     if matchinterwiki and not co:
         if Group in kwargs:
-            get_custom_iw = database.get_custom_interwiki('custom_interwiki_group', kwargs[Group].id,
-                                                          matchinterwiki.group(1))
+            get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_group', kwargs[Group].id,
+                                                        matchinterwiki.group(1))
         if Friend in kwargs:
-            get_custom_iw = database.get_custom_interwiki('custom_interwiki_self', kwargs[Friend].id,
-                                                          matchinterwiki.group(1))
+            get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_self', kwargs[Friend].id,
+                                                        matchinterwiki.group(1))
         if get_custom_iw:
             iw = matchinterwiki.group(1)
             get_link = get_custom_iw
@@ -157,7 +153,7 @@ async def wiki_wrapper(kwargs: dict):
         if 'apilink' in msg:
             get_link = msg['apilink']
         if 'url' in msg:
-            check_options = bot_db.check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
+            check_options = BotDB.check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
                                                       'wiki_infobox')
             print(check_options)
             if check_options:
@@ -176,7 +172,7 @@ async def wiki_wrapper(kwargs: dict):
             trigger = kwargs[Member].id
         if Friend in kwargs:
             trigger = kwargs[Friend].id
-        bot_db.warn_someone(trigger)
+        BotDB.warn_someone(trigger)
         await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['text'])]))
 
 
@@ -187,7 +183,7 @@ async def set_start_wiki(kwargs: dict):
         if check_permission(kwargs):
             check = await check_wiki_available(command)
             if check:
-                result = database.add_start_wiki('start_wiki_link_group', kwargs[Group].id, check[0])
+                result = WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id, check[0])
                 await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
             else:
                 result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
@@ -198,7 +194,7 @@ async def set_start_wiki(kwargs: dict):
     if Friend in kwargs:
         check = await check_wiki_available(command)
         if check:
-            result = database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id, check[0])
+            result = WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id, check[0])
             await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
         else:
             result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
@@ -231,8 +227,8 @@ async def interwiki(kwargs: dict):
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
         if check:
-            result = database.config_custom_interwiki('add', table, target, iw[0],
-                                                      check[0])
+            result = WikiDB.config_custom_interwiki('add', table, target, iw[0],
+                                                    check[0])
             await sendMessage(kwargs, MessageChain.create([Plain(result + f'{iw[0]} > {check[1]}')]))
         else:
             result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
@@ -244,10 +240,10 @@ async def interwiki(kwargs: dict):
                 result += '\n提示：所给的链接似乎是文章地址（/wiki/），请将文章地址去掉或直接指定api地址后再试。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     elif command[0] == 'del':
-        result = database.config_custom_interwiki('del', table, target, command[1])
+        result = WikiDB.config_custom_interwiki('del', table, target, command[1])
         await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     elif command[0] == 'list':
-        query_database = database.get_custom_interwiki_list(table, target)
+        query_database = WikiDB.get_custom_interwiki_list(table, target)
         if query_database:
             result = '当前设置了以下Interwiki：\n' + query_database
             await sendMessage(kwargs, result)
@@ -273,10 +269,10 @@ async def set_headers(kwargs: dict):
         id = kwargs[Friend].id
     do = command[0]
     if do == 'show':
-        headers = database.config_headers(do, table, id)
+        headers = WikiDB.config_headers(do, table, id)
         msg = f'当前设置了以下标头：\n{headers}\n如需自定义，请使用~wiki headers <set> <headers>，不同标头之间使用换行隔开。'
     else:
-        msg = database.config_headers(do, table, id, ' '.join(command[1:]))
+        msg = WikiDB.config_headers(do, table, id, ' '.join(command[1:]))
     await sendMessage(kwargs, msg)
 
 
@@ -314,24 +310,24 @@ async def regex_wiki(kwargs: dict):
                 table = 'start_wiki_link_self'
                 target = kwargs[Friend].id
                 headtable = 'request_headers_self'
-            headers = database.config_headers('get', headtable, target)
+            headers = WikiDB.config_headers('get', headtable, target)
             for find in find_dict:
                 if find_dict[find] == 'template':
                     template = True
                 else:
                     template = False
-                get_link = database.get_start_wiki(table, target)
+                get_link = WikiDB.get_start_wiki(table, target)
                 prompt = False
                 if not get_link:
                     if Group in kwargs:
                         prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki set <域名>来设定自定义起始Wiki。' \
                                  '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
-                        database.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
+                        WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
                                                 'https://minecraft.fandom.com/zh/api.php')
                     elif Friend in kwargs:
                         prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki set <域名>来设定自定义起始Wiki。' \
                                  '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
-                        database.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
+                        WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
                                                 'https://minecraft.fandom.com/zh/api.php')
                     get_link = 'https://minecraft.fandom.com/zh/api.php'
                 iw = None
@@ -341,9 +337,9 @@ async def regex_wiki(kwargs: dict):
                         iw_table = 'custom_interwiki_group'
                     if Friend in kwargs:
                         iw_table = 'custom_interwiki_self'
-                    get_custom_iw = modules.wiki.database.get_custom_interwiki(iw_table,
-                                                                               target,
-                                                                               matchinterwiki.group(1))
+                    get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
+                                                                             target,
+                                                                             matchinterwiki.group(1))
                     if get_custom_iw:
                         get_link = get_custom_iw
                         find = re.sub(matchinterwiki.group(1) + ':', '', find)
@@ -353,7 +349,7 @@ async def regex_wiki(kwargs: dict):
                         matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
                         if matchinterwiki:
                             if matchinterwiki.group(1) == 'c':
-                                check_fandom_addon_enable = bot_db.check_enable_modules(kwargs[Group].id,
+                                check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
                                                                                  'wiki_fandom_addon')
                                 if check_fandom_addon_enable:
                                     matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
@@ -406,7 +402,7 @@ async def regex_wiki(kwargs: dict):
                         await sendMessage(kwargs, audchain)
             if urllist != {}:
                 print(urllist)
-                check_options = bot_db.check_enable_modules_self(
+                check_options = BotDB.check_enable_modules_self(
                     kwargs[Member].id if Group in kwargs else kwargs[Friend].id, 'wiki_infobox')
                 if check_options:
                     infoboxchain = MessageChain.create([])
@@ -422,7 +418,7 @@ async def regex_wiki(kwargs: dict):
                     trigger = kwargs[Member].id
                 if Friend in kwargs:
                     trigger = kwargs[Friend].id
-                bot_db.warn_someone(trigger)
+                BotDB.warn_someone(trigger)
             if waitmsglist != MessageChain.create([]):
                 send = await sendMessage(kwargs, waitmsglist)
                 wait = await wait_confirm(kwargs)
