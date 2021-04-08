@@ -14,13 +14,10 @@ from graia.broadcast.interrupt.waiter import Waiter
 
 from core.loader import logger_info
 from core.broadcast import app, bcc
-from database import BotDB
+from database import BotDB as database
 
 import filetype as ft
 from graiax import silkcoder
-
-
-database = BotDB()
 
 
 async def sendMessage(kwargs: dict, msgchain, Quote=True):
