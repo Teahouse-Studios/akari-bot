@@ -7,10 +7,10 @@ from graia.broadcast import Broadcast
 from config import Config
 
 loop = asyncio.get_event_loop()
-config_filename = 'config.cfg'
-config_path = abspath('./config/' + config_filename)
+config_filename = 'Config.cfg'
+config_path = abspath('./Config/' + config_filename)
 
-c = Config().config
+c = Config
 
 bcc = Broadcast(loop=loop, debug_flag=c('debug_flag'))
 app = GraiaMiraiApplication(
