@@ -10,7 +10,7 @@ from .bugtracker_new import bugtracker_get
 async def bugtracker(kwargs: dict):
     msg = kwargs['trigger_msg']
     msg = re.sub('bug ', '', msg)
-    q = re.match(r'(.*)\-(.*)', msg)
+    q = re.match(r'(.*)-(.*)', msg)
     if q:
         result = await bugtracker_get(q.group(1) + '-' + q.group(2))
         msgchain = MessageChain.create([Plain(result)])
@@ -24,7 +24,7 @@ async def regex_bugtracker(kwargs: dict):
     if msg[0] == '!':
         msg = re.sub('!', '', msg)
         msg = re.sub('bug ', '', msg)
-        q = re.match(r'(.*)\-(.*)', msg)
+        q = re.match(r'(.*)-(.*)', msg)
         if q:
             await Nudge(kwargs)
             result = await bugtracker_get(q.group(1) + '-' + q.group(2))
