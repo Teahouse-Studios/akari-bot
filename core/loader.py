@@ -50,7 +50,7 @@ class ModulesLoader:
         for file_name in dir_list:
             file_path = f'{load_dir_path}/{file_name}'
             if os.path.isdir(file_path):
-                if file_path != '__pycache__':
+                if file_name != '__pycache__':
                     fun_file = file_name
                 else:
                     fun_file = None
