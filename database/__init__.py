@@ -207,7 +207,7 @@ class BB:
         try:
             self.c.execute(f"INSERT INTO superuser (ID) VALUES ('{id}')")
         except:
-            traceback.logger_info_exc()
+            traceback.print_exc()
         self.conn.commit()
         self.c.close()
         return '成功？我也不知道成没成，懒得写判断了（'
@@ -216,7 +216,7 @@ class BB:
         try:
             self.c.execute(f"DELETE FROM superuser WHERE ID='{id}'")
         except:
-            traceback.logger_info_exc()
+            traceback.print_exc()
         self.conn.commit()
         self.c.close()
         return '成功？我也不知道成没成，懒得写判断了（'
