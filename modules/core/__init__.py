@@ -3,8 +3,7 @@ import asyncio
 from graia.application import Group, MessageChain, Member, Friend
 from graia.application.message.elements.internal import Plain
 
-from database import BotDB as database
-from core.template import sendMessage, check_permission, revokeMessage
+from core.template import check_permission, revokeMessage
 from .admin import *
 
 
@@ -202,7 +201,8 @@ async def bot_version(kwargs: dict):
 essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help,
              'modules': modules_help, 'version': bot_version}
 
-admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules, 'restart': restart_bot, 'update': update_bot, 'echo': echo_msg, 'update&restart': update_and_restart_bot}
+admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules, 'restart': restart_bot, 'update': update_bot,
+         'echo': echo_msg, 'update&restart': update_and_restart_bot}
 help = {'enable': {'help': '~enable <模块名> - 开启一个模块', 'essential': True},
         'disable': {'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
         'module': {'help': '~modules - 查询所有可用模块。'}}

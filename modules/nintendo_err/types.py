@@ -4,6 +4,7 @@ class Module:
     and possibly a second dictionary with extra information.
     A module itself is basically who raised the error or returned the result.
     """
+
     def __init__(self, name, data={}, summaries={}):
         self.name = name
         self.data = data
@@ -37,6 +38,7 @@ class ResultInfo:
     to provide information about the result, error, or support code, including a support
     webpage, if available.
     """
+
     def __init__(self, description='', support_url='', is_ban=False):
         self.description = description
         self.support_url = support_url
@@ -68,7 +70,9 @@ class ConsoleErrorInfo:
     """
     Holds the console name, the embed fields by an iteration of the parsed error or support code
     """
-    def __init__(self, error: str, console_name: str, color: int, extra_description: str = None, secondary_error: str = None):
+
+    def __init__(self, error: str, console_name: str, color: int, extra_description: str = None,
+                 secondary_error: str = None):
         self.error = error
         self.secondary_error = secondary_error
         self.console_name = console_name

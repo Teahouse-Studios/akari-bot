@@ -1,8 +1,9 @@
-#copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
+# copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
-from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 from core.template import sendMessage
+from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
+
 
 class ctx:
     @classmethod
@@ -21,6 +22,7 @@ class ctx:
             if 'footer' in ele:
                 emsglst.append(ele['footer']['text'])
             return emsglst
+
         msglst = []
         if msg:
             if isinstance(msg, dict):
@@ -38,6 +40,7 @@ class Results:
     """
     Parses game console result codes.
     """
+
     def fetch(self, error):
         if ctr_support.is_valid(error):
             return ctr_support.get(error)

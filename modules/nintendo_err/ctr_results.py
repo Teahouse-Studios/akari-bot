@@ -340,7 +340,8 @@ def construct_result(ret, mod, summary, level, desc):
         if description is None:
             ret.add_field(ConsoleErrorField('Description', supplementary_value=desc))
         else:
-            ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
+            ret.add_field(
+                ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
     else:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
 

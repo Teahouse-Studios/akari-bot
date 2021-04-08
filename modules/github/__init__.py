@@ -246,6 +246,6 @@ async def forker(kwargs: dict):
 
 
 command = {'github': forker}
-help = {'github':{'module': '查询 Github 的指定 repo（仓库）或用户详情或进行搜索。', 'help': '''~github repo <user>/<name> - 获取 GitHub 仓库信息。
+help = {'github': {'module': '查询 Github 的指定 repo（仓库）或用户详情或进行搜索。', 'help': '''~github repo <user>/<name> - 获取 GitHub 仓库信息。
 ~github <user|usr|organization|org> - 获取 GitHub 用户或组织信息。
 ~github search - 搜索 GitHub 上的仓库。'''}}
