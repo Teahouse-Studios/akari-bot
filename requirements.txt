@@ -8,3 +8,4 @@ selenium
 eventlet
 psutil
 gql[all]==3.0.0a5
+graiax-silkcoder
