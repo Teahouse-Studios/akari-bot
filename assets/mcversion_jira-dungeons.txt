@@ -1,4 +1,0 @@
-
-1.8.3.0 (Nintendo Switch)
-1.8.4.0 (Xbox, PlayStation)
-1.8.6.0 (Windows)
