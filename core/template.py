@@ -14,6 +14,7 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 from graiax import silkcoder
 
+from core.loader import logger_info
 from core.broadcast import app, bcc
 from database import BotDB as database
 
