@@ -2,6 +2,7 @@ import asyncio
 import traceback
 import uuid
 from os.path import abspath
+import os
 
 import aiohttp
 import eventlet
@@ -12,7 +13,6 @@ from graia.application.group import Group, Member
 from graia.application.message.elements.internal import Plain, Image, Source
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
-from graiax import silkcoder
 
 from core.loader import logger_info
 from core.broadcast import app, bcc
@@ -177,7 +177,7 @@ async def download_to_cache(link):
 
 async def slk_converter(filepath):
     filepath2 = filepath + '.silk'
-    await asyncio.ensure_future(silkcoder.encode(filepath, filepath2), loop=bcc.loop)
+    os.system('python slk_coder.py ' + filepath)
     return filepath2
 
 
