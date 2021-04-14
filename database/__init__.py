@@ -165,7 +165,8 @@ class BB:
         for x in a:
             enabled_split = x[1].split('|')
             if modules_name in enabled_split:
-                enable_target.append(x[0])
+                if x[0] not in enable_target:
+                    enable_target.append(x[0])
         return enable_target
 
     def add_black_list(self, id):
