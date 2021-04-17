@@ -1,13 +1,13 @@
 import re
 import traceback
-import urllib
+import urllib.parse
 
 import aiohttp
 
 from modules.utils.UTC8 import UTC8
 from modules.wiki.helper import check_wiki_available
 from modules.wiki.wikilib import wikilib
-from .tool import gender
+from .gender import gender
 
 
 async def get_data(url: str, fmt: str):

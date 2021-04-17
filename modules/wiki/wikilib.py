@@ -1,6 +1,6 @@
 import re
 import traceback
-import urllib
+import urllib.parse
 
 import aiohttp
 

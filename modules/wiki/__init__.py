@@ -65,26 +65,6 @@ async def wiki_wrapper(kwargs: dict):
     iw = None
     co = False
     if Group in kwargs:
-        check_gamepedia_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
-                                                                  'wiki_gamepedia_addon')
-    if Friend in kwargs:
-        check_gamepedia_addon_enable = BotDB.check_enable_modules_self(kwargs[Group].id,
-                                                                       'wiki_gamepedia_addon')
-    if check_gamepedia_addon_enable:
-        matchsite = re.match(r'~(.*?) (.*)', command)
-        if matchsite:
-            get_link = 'https://' + matchsite.group(1) + '.gamepedia.com/api.php'
-            iw = 'gp:' + matchsite.group(1)
-            co = True
-            command = matchsite.group(2)
-        matchgp = re.match(r'^gp:(.*?):(.*)', command)
-        if matchgp:
-            get_link = 'https://' + matchgp.group(1) + '.gamepedia.com/api.php'
-            iw = 'gp:' + matchgp.group(1)
-            co = True
-            command = matchsite.group(2)
-
-    if Group in kwargs:
         check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
                                                                'wiki_fandom_addon')
     if Friend in kwargs:
@@ -438,7 +418,7 @@ async def regex_wiki(kwargs: dict):
 command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': interwiki}
 regex = {'wiki_regex': regex_wiki}
 self_options = ['wiki_infobox']
-options = ['wiki_fandom_addon', 'wiki_gamepedia_addon']
+options = ['wiki_fandom_addon']
 help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。\n' +
                          '~wiki set <wikilink> - 设置起始查询Wiki。\n' +
                          '~wiki iw <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。\n' +
@@ -451,6 +431,4 @@ help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。\n' 
             'help': 'Infobox渲染：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',
             'depend': 'wiki'},
         'wiki_fandom_addon': {
-            'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<pagename>]]的消息会自动定向查询至Fandom的Wiki。'},
-        'wiki_gamepedia_addon': {
-            'help': '为Gamepedia定制的查询功能，输入~wiki ~<wikiname> <pagename>会自动定向查询至Gamepedia的Wiki。'}}
+            'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<pagename>]]的消息会自动定向查询至Fandom的Wiki。'}}
