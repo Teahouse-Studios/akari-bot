@@ -70,6 +70,10 @@ async def repo(kwargs: dict, cmd: list):
         except IndexError:
             obj = cmd[0].replace('@', '')
         result = await query('https://api.github.com/repos/' + obj, 'json')
+        if 'message' in result and result['message'] == 'Not Found':
+            raise RuntimeError('此仓库不存在。')
+        elif 'message' in result and result['message']:
+            raise RuntimeError(result['message'])
         name = result['full_name']
         url = result['html_url']
         rid = result['id']
@@ -79,7 +83,7 @@ async def repo(kwargs: dict, cmd: list):
         watch = result['watchers_count']
         mirror = result['mirror_url']
         rlicense = 'Unknown'
-        if 'license' in result:
+        if 'license' in result and result['license'] is not None:
             if 'spdx_id' in result['license']:
                 rlicense = result['license']['spdx_id']
         is_fork = result['fork']
@@ -130,6 +134,7 @@ Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
     except Exception as e:
         await sendMessage(kwargs, '发生错误：' + str(e))
+        traceback.print_exc()
 
 
 async def user(kwargs: dict, cmd: list):
@@ -230,7 +235,6 @@ async def search(kwargs: dict, cmd: list):
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
     except Exception as error:
         await sendMessage(kwargs, '发生错误：' + str(error))
-
 
 async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
