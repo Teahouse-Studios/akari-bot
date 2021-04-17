@@ -12,7 +12,7 @@ from modules.utils.UTC8 import UTC8
 
 async def newbie(app):
     logger_info('Subbot newbie launched')
-    url = 'https://minecraft-zh.gamepedia.com/api.php?action=query&list=logevents&letype=newusers&format=json'
+    url = 'https://minecraft.fandom.com/zh/api.php?action=query&list=logevents&letype=newusers&format=json'
     while True:
         try:
             file = await get_data(url, 'json')
@@ -31,7 +31,7 @@ async def newbie(app):
                             if s.find("<吃掉了>") != -1 or s.find("<全部吃掉了>") != -1:
                                 await app.sendGroupMessage(731397727, MessageChain.create(
                                     [Plain(
-                                        s + '\n检测到外来信息介入，请前往日志查看所有消息。https://minecraft-zh.gamepedia.com/Special:%E6%97%A5%E5%BF%97?type=newusers')]).asSendable())
+                                        s + '\n检测到外来信息介入，请前往日志查看所有消息。https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers')]).asSendable())
                             else:
                                 await app.sendGroupMessage(731397727,
                                                            MessageChain.create([Plain(s)]).asSendable())
