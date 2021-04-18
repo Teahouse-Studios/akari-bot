@@ -356,7 +356,7 @@ class wikilib:
             return {'status': 'done', 'text': '发生错误：无法获取到页面。'}
         if 'interwiki' in self.pageraw['query']:
             iwp = self.pageraw['query']['interwiki'][0]
-            matchinterwiki = re.match(iwp['iw'] + r':(.*)', iwp['title'])
+            matchinterwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
             if tryiw <= 5:
                 iwlist = await self.get_interwiki(self.wikilink)
                 interwiki_link = iwlist[iwp['iw']]
