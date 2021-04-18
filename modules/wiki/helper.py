@@ -1,37 +1,56 @@
+import datetime
 import json
 import re
 import traceback
 
 import aiohttp
 
+from .database import WikiDB
 
-async def get_url(url):
+
+async def get_data(url: str, fmt: str, headers=None):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-            return json.loads(await req.read())
+        try:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                if hasattr(req, fmt):
+                    return await getattr(req, fmt)()
+                else:
+                    raise ValueError(f"NoSuchMethod: {fmt}")
+        except Exception:
+            traceback.print_exc()
+            return False
 
 
 async def check_wiki_available(link):
-    query = '?action=query&meta=siteinfo&siprop=general|extensions&format=json'
+    query = '?action=query&meta=siteinfo&siprop=general|namespaces|namespacealiases|interwikimap|extensions&format=json'
+    getcacheinfo = WikiDB.get_wikiinfo(link)
+    if getcacheinfo and ((datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
+            hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+        return link, json.loads(getcacheinfo[0])['query']['general']['sitename']
     try:
         api = re.match(r'(https?://.*?/api.php$)', link)
         wlink = api.group(1)
-        json1 = await get_url(api.group(1) + query)
+        json1 = json.loads(await get_data(api.group(1) + query, 'json'))
     except:
-        if link[-1] not in ['/', '\\']:
-            link = link + '/'
-        test1 = link + 'api.php' + query
         try:
-            json1 = await get_url(test1)
-            wlink = link + 'api.php'
-        except:
-            try:
-                test2 = link + 'w/api.php' + query
-                json1 = await get_url(test2)
-                wlink = link + 'w/api.php'
-            except:
-                traceback.print_exc()
-                return False
+            getpage = await get_data(link, 'text')
+            m = re.findall(r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>', getpage)
+            if m:
+                api = m[0]
+                if api.startswith('//'):
+                    api = link.split('//')[0] + api
+                getcacheinfo = WikiDB.get_wikiinfo(api)
+                if getcacheinfo and (
+                        (datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
+                                hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+                    return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
+                json1 = await get_data(api + query, 'json')
+                wlink = api
+        except aiohttp.ClientTimeout:
+            return False, 'Timeout'
+        except Exception as e:
+            return False, str(e)
+    WikiDB.update_wikiinfo(wlink, json.dumps(json1))
     wikiname = json1['query']['general']['sitename']
     extensions = json1['query']['extensions']
     extlist = []

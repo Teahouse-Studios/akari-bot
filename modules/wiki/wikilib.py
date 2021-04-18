@@ -1,3 +1,5 @@
+import datetime
+import json
 import re
 import traceback
 import urllib.parse
@@ -6,6 +8,7 @@ import aiohttp
 
 from core import dirty_check
 from .helper import check_wiki_available
+from .database import WikiDB
 
 
 class wikilib:
@@ -53,41 +56,59 @@ class wikilib:
         randompage = json['query']['random'][0]['title']
         return await self.main(url, randompage, interwiki=iw, headers=headers)
 
-    async def get_interwiki(self, url):
-        interwiki_list = url + '?action=query&meta=siteinfo&siprop=interwikimap&format=json'
-        json = await self.get_data(interwiki_list, 'json')
+    async def get_wiki_info(self, url=None):
+        url = url if url is not None else self.wikilink
+        getcacheinfo = WikiDB.get_wikiinfo(url)
+        if getcacheinfo and ((datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
+                hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+            return json.loads(getcacheinfo[0])
+        wiki_info_url = url + '?action=query&meta=siteinfo&siprop=general|namespaces|namespacealiases|interwikimap|extensions&format=json'
+        j = await self.get_data(wiki_info_url, 'json')
+        WikiDB.update_wikiinfo(url, json.dumps(j))
+        return j
+
+    async def get_interwiki(self, url=None):
+        if url is None:
+            json = self.wiki_info
+        else:
+            json = await self.get_wiki_info(url)
         interwikimap = json['query']['interwikimap']
         interwiki_dict = {}
         for interwiki in interwikimap:
-            interwiki_dict[interwiki['prefix']] = re.sub(r'(?:wiki/|)\$1', '', interwiki['url'])
+            interwiki_dict[interwiki['prefix']] = interwiki['url']
         return interwiki_dict
 
-    async def get_siteinfo(self, url=None):
-        url = url if url is not None else self.wikilink
-        siteinfo_url = url + '?action=query&meta=siteinfo&siprop=general&format=json'
-        j = await self.get_data(siteinfo_url, 'json')
-        return j
-
     async def get_namespace(self, url=None):
-        url = url if url is not None else self.wikilink
-        namespace_url = url + '?action=query&meta=siteinfo&siprop=namespaces|namespacealiases&format=json'
-        j = await self.get_data(namespace_url, 'json')
+        if url is None:
+            j = self.wiki_info
+        else:
+            j = await self.get_wiki_info(url)
         d = {}
         for x in j['query']['namespaces']:
             try:
                 d[j['query']['namespaces'][x]['*']] = j['query']['namespaces'][x]['canonical']
+            except KeyError:
+                pass
             except:
                 traceback.print_exc()
         for x in j['query']['namespacealiases']:
             try:
                 d[x['*']] = 'aliases'
+            except KeyError:
+                pass
             except:
                 traceback.print_exc()
         return d
 
-    async def get_article_path(self, url):
-        siteinfo = await self.get_siteinfo(url)
-        article_path = siteinfo['query']['general']['articlepath']
+    async def get_article_path(self, url=None):
+        if url is None:
+            wiki_info = self.wiki_info
+            url = self.wikilink
+        else:
+            wiki_info = await self.get_wiki_info(url)
+            if not wiki_info:
+                return '发生错误：此站点或许不是有效的Mediawiki网站。' + url
+        article_path = wiki_info['query']['general']['articlepath']
         article_path = re.sub(r'\$1', '', article_path)
         baseurl = re.match(r'(https?://.*?)/.*', url)
         return baseurl.group(1) + article_path
@@ -167,10 +188,11 @@ class wikilib:
 
     async def getdesc(self):
         try:
-            descurl = self.wikilink + '?action=query&prop=info|pageprops|extracts&ppprop=description|displaytitle|disambiguation|infoboxes&explaintext=true&exsectionformat=plain&exsentences=1&format=json&titles=' + self.querytextname
+            descurl = self.wikilink + '?action=query&prop=info|pageprops|extracts&ppprop=description|displaytitle|disambiguation|infoboxes&explaintext=true&exsectionformat=plain&exchars=200&format=json&titles=' + self.querytextname
             loadtext = await self.get_data(descurl, "json", self.headers)
             pageid = self.parsepageid(loadtext)
             desc = loadtext['query']['pages'][pageid]['extract']
+            desc = re.findall(r'(.*?(?:\!|\?|\.|\;|！|？|。|；)).*', desc, re.S | re.M)[0]
         except Exception:
             traceback.print_exc()
             desc = ''
@@ -182,7 +204,7 @@ class wikilib:
             loaddesc = await self.get_data(descurl, 'json', self.headers)
             descraw = loaddesc['parse']['wikitext']['*']
             try:
-                cutdesc = re.findall(r'(.*(?:!|\?|\.|;|！|？|。|；))', descraw, re.S | re.M)
+                cutdesc = re.findall(r'(.*?(?:!|\?|\.|;|！|？|。|；)).*', descraw, re.S | re.M)
                 desc = cutdesc[0]
             except IndexError:
                 desc = descraw
@@ -202,13 +224,6 @@ class wikilib:
         return desc
 
     async def step1(self):
-        if self.template:
-            self.pagename = 'Template:' + self.pagename
-        self.pageraw = await self.getpage()
-        if not self.pageraw:
-            return {'status': 'done', 'text': '发生错误：无法获取到页面。'}
-        if 'redirects' in self.pageraw['query']:
-            self.pagename = self.pageraw['query']['redirects'][0]['to']
         try:
             self.pageid = self.parsepageid(self.pageraw)
         except:
@@ -216,23 +231,19 @@ class wikilib:
         self.psepgraw = self.pageraw['query']['pages'][self.pageid]
 
         if self.pageid == '-1':
-            if self.igmessage == False:
-                if self.template == True:
-                    self.pagename = self.orginpagename = re.sub(r'^Template:', '', self.pagename)
-                    self.template = False
-                    self.templateprompt = f'提示：[Template:{self.pagename}]不存在，已自动回滚搜索页面。\n'
-                    return await self.step1()
-                return await self.nullpage()
+            if self.template == True:
+                self.pagename = self.orginpagename = re.sub(r'^Template:', '', self.pagename)
+                self.template = False
+                self.templateprompt = f'提示：[Template:{self.pagename}]不存在，已自动回滚搜索页面。\n'
+                return await self.step1()
+            return await self.nullpage()
         else:
             return await self.step2()
 
     async def step2(self):
         try:
             fullurl = self.psepgraw['fullurl']
-            print(fullurl)
-            artpath = await self.get_article_path(self.wikilink)
-            artpath = re.sub(r'https?://', '', artpath)
-            geturlpagename = re.sub(r'.*' + artpath, '', fullurl)
+            geturlpagename = fullurl.split(self.wiki_articlepath)[1]
             self.querytextname = urllib.parse.unquote(geturlpagename)
             querytextnamesplit = self.querytextname.split(':')
             if len(querytextnamesplit) > 1:
@@ -248,7 +259,7 @@ class wikilib:
                                 getdocraw = await self.getpage(getdoc)
                                 getdocid = self.parsepageid(getdocraw)
                                 getdoclink = getdocraw['query']['pages'][getdocid]['fullurl']
-                                getdocpagename = re.sub(r'.*' + artpath, '', getdoclink)
+                                getdocpagename = getdoclink.split(self.wiki_articlepath)[1]
                                 self.querytextname = getdocpagename
                             else:
                                 self.querytextname = geturlpagename + '/doc'
@@ -287,12 +298,11 @@ class wikilib:
                                  f'（重定向[{target}{self.orginpagename}] -> [{target}{finpgname}]）' + (
                                      '\n' if desc != '' else '') + f'{desc}')
             rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
             if len(rmlstlb) > 250:
-                rmlstlb = rmlstlb[0:250] + '\n...字数过多已截断。'
+                rmlstlb = rmlstlb[0:250] + '...'
             try:
                 rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
-                result = rm5lline[0] + '...行数过多已截断。'
+                result = rm5lline[0] + '...'
             except Exception:
                 result = rmlstlb
             msgs = {'status': 'done', 'url': fullurl, 'text': result, 'apilink': self.wikilink}
@@ -314,7 +324,7 @@ class wikilib:
             traceback.print_exc()
             return {'status': 'done', 'text': '发生错误：' + str(e)}
 
-    async def main(self, wikilink, pagename, interwiki=None, igmessage=False, template=False, headers=None, tryiw=0):
+    async def main(self, wikilink, pagename, interwiki=None, template=False, headers=None, tryiw=0):
         print(wikilink)
         print(pagename)
         print(interwiki)
@@ -322,8 +332,7 @@ class wikilib:
             return {'status': 'done', 'text': await self.get_article_path(wikilink)}
         pagename = re.sub('_', ' ', pagename)
         pagename = pagename.split('|')[0]
-        self.orginwikilink = wikilink
-        self.wikilink = re.sub('index.php/', '', self.orginwikilink)  # fxxk
+        self.wikilink = wikilink
         danger_check = self.danger_wiki_check()
         if danger_check:
             if await self.danger_text_check(pagename):
@@ -334,33 +343,36 @@ class wikilib:
             self.interwiki = ''
         else:
             self.interwiki = interwiki
-        self.igmessage = igmessage
+        self.wiki_info = await self.get_wiki_info()
+        self.wiki_namespace = await self.get_namespace()
+        self.wiki_articlepath = await self.get_article_path()
         self.template = template
         self.templateprompt = None
         self.headers = headers
-        try:
-            matchinterwiki = re.match(r'(.*?):(.*)', self.pagename)
-            if matchinterwiki:
+        if self.template:
+            self.pagename = 'Template:' + self.pagename
+        self.pageraw = await self.getpage()
+        if not self.pageraw:
+            return {'status': 'done', 'text': '发生错误：无法获取到页面。'}
+        if 'interwiki' in self.pageraw['query']:
+            iwp = self.pageraw['query']['interwiki'][0]
+            matchinterwiki = re.match(iwp['iw'] + r':(.*)', iwp['title'])
+            if tryiw <= 5:
                 iwlist = await self.get_interwiki(self.wikilink)
-                if matchinterwiki.group(1) in iwlist:
-                    if tryiw <= 5:
-                        interwiki_link = iwlist[matchinterwiki.group(1)]
-                        check = await check_wiki_available(interwiki_link)
-                        print(check)
-                        if check:
-                            return await self.main(check[0], matchinterwiki.group(2),
-                                                   ((
-                                                            interwiki + ':') if interwiki is not None else '') + matchinterwiki.group(
-                                                       1),
-                                                   self.igmessage, self.template, headers, tryiw + 1)
-                        else:
-                            return {'status': 'done',
-                                    'text': f'发生错误：指向的interwiki不是一个有效的MediaWiki。{interwiki_link}{matchinterwiki.group(2)}'}
-                    else:
-                        return {'status': 'warn', 'text': '警告：尝试重定向已超过5次，继续尝试将有可能导致你被机器人加入黑名单。'}
+                interwiki_link = iwlist[iwp['iw']]
+                check = await check_wiki_available(interwiki_link)
+                if check:
+                    return await self.main(check[0], matchinterwiki.group(1),
+                                           ((interwiki + ':') if interwiki is not None else '') + iwp['iw'], self.template, headers, tryiw + 1)
+                else:
+                    return {'status': 'done',
+                            'text': f'发生错误：指向的interwiki不是一个有效的MediaWiki。{interwiki_link}{matchinterwiki.group(1)}'}
+            else:
+                return {'status': 'warn', 'text': '警告：尝试重定向已超过5次，继续尝试将有可能导致你被机器人加入黑名单。'}
+        if 'redirects' in self.pageraw['query']:
+            self.pagename = self.pageraw['query']['redirects'][0]['to']
+        try:
             return await self.step1()
-
         except Exception as e:
             traceback.print_exc()
-            if igmessage == False:
-                return f'发生错误：{str(e)}' + '\n'
+            return f'发生错误：{str(e)}' + '\n'

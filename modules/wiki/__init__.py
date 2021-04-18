@@ -161,7 +161,7 @@ async def set_start_wiki(kwargs: dict):
     if Group in kwargs:
         if check_permission(kwargs):
             check = await check_wiki_available(command)
-            if check:
+            if check[0]:
                 result = WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id, check[0])
                 await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
             else:
@@ -172,7 +172,7 @@ async def set_start_wiki(kwargs: dict):
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     if Friend in kwargs:
         check = await check_wiki_available(command)
-        if check:
+        if check[0]:
             result = WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id, check[0])
             await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
         else:
@@ -205,18 +205,18 @@ async def interwiki(kwargs: dict):
         except:
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
-        if check:
+        if check[0]:
             result = WikiDB.config_custom_interwiki('add', table, target, iw[0],
                                                     check[0])
             await sendMessage(kwargs, MessageChain.create([Plain(result + f'{iw[0]} > {check[1]}')]))
         else:
-            result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
+            if check[1] == 'Timeout':
+                result = '错误：尝试建立连接超时。'
+            else:
+                result = '错误：此站点也许不是一个有效的Mediawiki。'
             link = re.match(r'^(https?://).*', iw[1])
             if not link:
                 result = '错误：所给的链接没有指明协议头（链接应以http://或https://开头）。'
-            article = re.match(r'.*/wiki/', iw[1])
-            if article:
-                result += '\n提示：所给的链接似乎是文章地址（/wiki/），请将文章地址去掉或直接指定api地址后再试。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     elif command[0] == 'del':
         result = WikiDB.config_custom_interwiki('del', table, target, command[1])

@@ -168,5 +168,20 @@ class WD:
             traceback.print_exc()
             return '发生错误' + str(e)
 
+    def update_wikiinfo(self, apilink, siteinfo):
+        a = self.c.execute(f"SELECT * FROM wiki_info WHERE LINK='{apilink}'").fetchone()
+        if a:
+            self.c.execute(f"UPDATE wiki_info SET SITEINFO='{siteinfo}' WHERE LINK='{apilink}'")
+        else:
+            self.c.execute(f"INSERT INTO wiki_info (LINK, SITEINFO) VALUES (?, ?)", (apilink, siteinfo))
+        self.conn.commit()
+
+    def get_wikiinfo(self, apilink):
+        a = self.c.execute(f"SELECT * FROM wiki_info WHERE LINK='{apilink}'").fetchone()
+        if a:
+            return a[1:]
+        else:
+            return False
+
 
 WikiDB = WD()
