@@ -350,7 +350,8 @@ class wikilib:
         self.templateprompt = None
         self.headers = headers
         if self.template:
-            self.pagename = 'Template:' + self.pagename
+            if not re.match('^Template:', self.pagename, re.I):
+                self.pagename = 'Template:' + self.pagename
         self.pageraw = await self.getpage()
         if not self.pageraw:
             return {'status': 'done', 'text': '发生错误：无法获取到页面。'}
