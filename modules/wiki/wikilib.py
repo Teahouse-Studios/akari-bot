@@ -107,11 +107,23 @@ class wikilib:
         else:
             wiki_info = await self.get_wiki_info(url)
             if not wiki_info:
-                return '发生错误：此站点或许不是有效的Mediawiki网站。' + url
+                return False
         article_path = wiki_info['query']['general']['articlepath']
         article_path = re.sub(r'\$1', '', article_path)
         baseurl = re.match(r'(https?://.*?)/.*', url)
         return baseurl.group(1) + article_path
+
+    async def get_enabled_extensions(self, url=None):
+        if url is None:
+            wiki_info = self.wiki_info
+        else:
+            wiki_info = await self.get_wiki_info(url)
+        extensions = wiki_info['query']['extensions']
+        extlist = []
+        for ext in extensions:
+            extlist.append(ext['name'])
+        return extlist
+
 
     async def get_image(self, pagename, wikilink=None):
         try:
@@ -159,7 +171,6 @@ class wikilib:
             if len(titlesplit) > 1:
                 try:
                     get_namespace = await self.get_namespace()
-                    print(get_namespace)
                     if titlesplit[0] not in get_namespace:
                         prompt += f'\n提示：此Wiki上找不到“{titlesplit[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
                 except:
@@ -265,8 +276,10 @@ class wikilib:
                                 self.querytextname = geturlpagename + '/doc'
                         except AttributeError:
                             self.querytextname = geturlpagename + '/doc'
-            print(self.querytextname)
-            desc = await self.getdesc()
+            if 'TextExtracts' in await self.get_enabled_extensions():
+                desc = await self.getdesc()
+            else:
+                desc = ''
             if desc == '':
                 desc = await self.getfirstline()
             print(desc)
@@ -316,7 +329,6 @@ class wikilib:
                 getaud = await self.get_image(self.pagename)
                 if getaud:
                     msgs['net_audio'] = getaud
-            print(result)
             if result != '' and await self.danger_text_check(result):
                 return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
             return msgs
@@ -329,7 +341,10 @@ class wikilib:
         print(pagename)
         print(interwiki)
         if pagename == '':
-            return {'status': 'done', 'text': await self.get_article_path(wikilink)}
+            article_path = await self.get_article_path(wikilink)
+            if not article_path:
+                article_path = '发生错误：此站点或许不是有效的Mediawiki网站。' + wikilink
+            return {'status': 'done', 'text': article_path}
         pagename = re.sub('_', ' ', pagename)
         pagename = pagename.split('|')[0]
         self.wikilink = wikilink

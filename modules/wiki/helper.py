@@ -56,7 +56,6 @@ async def check_wiki_available(link):
     extlist = []
     for ext in extensions:
         extlist.append(ext['name'])
-    print(extlist)
     if 'TextExtracts' not in extlist:
         wikiname = wikiname + '\n警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
 
