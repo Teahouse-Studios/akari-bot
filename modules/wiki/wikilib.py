@@ -152,16 +152,9 @@ class wikilib:
 
     async def researchpage(self):
         try:
-            try:
-                searchurl = self.wikilink + '?action=query&generator=search&gsrsearch=' + self.pagename + '&gsrsort=just_match&gsrenablerewrites&prop=info&gsrlimit=1&format=json'
-                getsecjson = await self.get_data(searchurl, "json", self.headers)
-                secpageid = self.parsepageid(getsecjson)
-                sectitle = getsecjson['query']['pages'][secpageid]['title']
-            except:
-                traceback.print_exc()
-                searchurl = self.wikilink + '?action=query&list=search&srsearch=' + self.pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
-                getsecjson = await self.get_data(searchurl, "json", self.headers)
-                sectitle = getsecjson['query']['search'][0]['title']
+            searchurl = self.wikilink + '?action=query&list=search&srsearch=' + self.pagename + '&srwhat=text&srlimit=1&srenablerewrites=&format=json'
+            getsecjson = await self.get_data(searchurl, "json", self.headers)
+            sectitle = getsecjson['query']['search'][0]['title']
             if self.interwiki == '':
                 target = ''
             else:
