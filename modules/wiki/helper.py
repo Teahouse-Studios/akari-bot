@@ -35,17 +35,16 @@ async def check_wiki_available(link):
         try:
             getpage = await get_data(link, 'text')
             m = re.findall(r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>', getpage)
-            if m:
-                api = m[0]
-                if api.startswith('//'):
-                    api = link.split('//')[0] + api
-                getcacheinfo = WikiDB.get_wikiinfo(api)
-                if getcacheinfo and (
+            api = m[0]
+            if api.startswith('//'):
+                api = link.split('//')[0] + api
+            getcacheinfo = WikiDB.get_wikiinfo(api)
+            if getcacheinfo and (
                         (datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
                                 hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
-                    return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
-                json1 = await get_data(api + query, 'json')
-                wlink = api
+                return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
+            json1 = await get_data(api + query, 'json')
+            wlink = api
         except aiohttp.ClientTimeout:
             return False, 'Timeout'
         except Exception as e:
