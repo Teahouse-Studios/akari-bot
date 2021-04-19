@@ -370,12 +370,12 @@ class wikilib:
                 iwlist = await self.get_interwiki(self.wikilink)
                 interwiki_link = iwlist[iwp['iw']]
                 check = await check_wiki_available(interwiki_link)
-                if check:
+                if check[0]:
                     return await self.main(check[0], matchinterwiki.group(1),
                                            ((interwiki + ':') if interwiki is not None else '') + iwp['iw'], self.template, headers, tryiw + 1)
                 else:
                     return {'status': 'done',
-                            'text': f'发生错误：指向的interwiki不是一个有效的MediaWiki。{interwiki_link}{matchinterwiki.group(1)}'}
+                            'text': f'发生错误：指向的interwiki或许不是一个有效的MediaWiki。{interwiki_link}{matchinterwiki.group(1)}'}
             else:
                 return {'status': 'warn', 'text': '警告：尝试重定向已超过5次，继续尝试将有可能导致你被机器人加入黑名单。'}
         if 'redirects' in self.pageraw['query']:
