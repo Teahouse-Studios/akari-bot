@@ -124,6 +124,14 @@ class wikilib:
             extlist.append(ext['name'])
         return extlist
 
+    async def get_real_address(self, url=None):
+        if url is None:
+            wiki_info = self.wiki_info
+        else:
+            wiki_info = await self.get_wiki_info(url)
+        realurl = wiki_info['query']['general']['server']
+        return realurl
+
 
     async def get_image(self, pagename, wikilink=None):
         try:
@@ -258,7 +266,8 @@ class wikilib:
     async def step2(self):
         try:
             fullurl = self.psepgraw['fullurl']
-            geturlpagename = fullurl.split(self.wiki_articlepath)[1]
+            geturlpagename = fullurl.split(self.wiki_articlepath)
+            geturlpagename = geturlpagename[1]
             self.querytextname = urllib.parse.unquote(geturlpagename)
             querytextnamesplit = self.querytextname.split(':')
             if len(querytextnamesplit) > 1:
@@ -340,18 +349,18 @@ class wikilib:
             traceback.print_exc()
             return {'status': 'done', 'text': '发生错误：' + str(e)}
 
-    async def main(self, wikilink, pagename, interwiki=None, template=False, headers=None, tryiw=0):
-        print(wikilink)
+    async def main(self, api_endpoint_link, pagename, interwiki=None, template=False, headers=None, tryiw=0):
+        print(api_endpoint_link)
         print(pagename)
         print(interwiki)
         if pagename == '':
-            article_path = await self.get_article_path(wikilink)
+            article_path = await self.get_article_path(api_endpoint_link)
             if not article_path:
-                article_path = '发生错误：此站点或许不是有效的Mediawiki网站。' + wikilink
+                article_path = '发生错误：此站点或许不是有效的Mediawiki网站。' + api_endpoint_link
             return {'status': 'done', 'text': article_path}
         pagename = re.sub('_', ' ', pagename)
         pagename = pagename.split('|')[0]
-        self.wikilink = wikilink
+        self.wikilink = api_endpoint_link
         danger_check = self.danger_wiki_check()
         if danger_check:
             if await self.danger_text_check(pagename):
@@ -365,6 +374,9 @@ class wikilib:
         self.wiki_info = await self.get_wiki_info()
         self.wiki_namespace = await self.get_namespace()
         self.wiki_articlepath = await self.get_article_path()
+        real_wiki_url = await self.get_real_address()
+        api_endpoint = re.match(r'^https?://.*?/(.*)', api_endpoint_link)
+        self.wikilink = real_wiki_url + '/' + api_endpoint.group(1)
         self.template = template
         self.templateprompt = None
         self.headers = headers
