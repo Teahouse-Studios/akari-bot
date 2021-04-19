@@ -127,8 +127,7 @@ class wikilib:
 
     async def get_image(self, pagename, wikilink=None):
         try:
-            url = (
-                      wikilink if wikilink is not None else self.wikilink) + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
+            url = (wikilink if wikilink is not None else self.wikilink) + f'?action=query&titles={pagename}&prop=imageinfo&iiprop=url&format=json'
             json = await self.get_data(url, 'json')
             parsepageid = self.parsepageid(json)
             imagelink = json['query']['pages'][parsepageid]['imageinfo'][0]['url']
@@ -195,7 +194,12 @@ class wikilib:
             descurl = self.wikilink + '?action=query&prop=info|pageprops|extracts&ppprop=description|displaytitle|disambiguation|infoboxes&explaintext=true&exsectionformat=plain&exchars=200&format=json&titles=' + self.querytextname
             loadtext = await self.get_data(descurl, "json", self.headers)
             pageid = self.parsepageid(loadtext)
-            desc = loadtext['query']['pages'][pageid]['extract']
+            desc = loadtext['query']['pages'][pageid]['extract'].split('\n')
+            desclist = []
+            for x in desc:
+                if x != '':
+                    desclist.append(x)
+            desc = '\n'.join(desclist)
             desc = re.findall(r'(.*?(?:\!|\?|\.|\;|！|？|。|；)).*', desc, re.S | re.M)[0]
         except Exception:
             traceback.print_exc()
@@ -206,7 +210,12 @@ class wikilib:
         try:
             descurl = self.wikilink + f'?action=parse&page={self.querytextname}&prop=wikitext&section=0&format=json'
             loaddesc = await self.get_data(descurl, 'json', self.headers)
-            descraw = loaddesc['parse']['wikitext']['*']
+            descraw = loaddesc['parse']['wikitext']['*'].split('\n')
+            desclist = []
+            for x in descraw:
+                if x != '':
+                    desclist.append(x)
+            descraw = '\n'.join(desclist)
             try:
                 cutdesc = re.findall(r'(.*?(?:!|\?|\.|;|！|？|。|；)).*', descraw, re.S | re.M)
                 desc = cutdesc[0]
