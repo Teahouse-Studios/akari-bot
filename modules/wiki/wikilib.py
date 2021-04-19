@@ -373,10 +373,10 @@ class wikilib:
             self.interwiki = interwiki
         self.wiki_info = await self.get_wiki_info()
         self.wiki_namespace = await self.get_namespace()
-        self.wiki_articlepath = await self.get_article_path()
         real_wiki_url = await self.get_real_address()
         api_endpoint = re.match(r'^https?://.*?/(.*)', api_endpoint_link)
         self.wikilink = real_wiki_url + '/' + api_endpoint.group(1)
+        self.wiki_articlepath = await self.get_article_path()
         self.template = template
         self.templateprompt = None
         self.headers = headers
