@@ -200,7 +200,9 @@ class wikilib:
                 if x != '':
                     desclist.append(x)
             desc = '\n'.join(desclist)
-            desc = re.findall(r'(.*?(?:\!|\?|\.|\;|！|？|。|；)).*', desc, re.S | re.M)[0]
+            descend = re.findall(r'(.*?(?:\!|\?|\.|\;|！|？|。|；)).*', desc, re.S | re.M)
+            if descend:
+                desc = descend[0]
         except Exception:
             traceback.print_exc()
             desc = ''
@@ -216,10 +218,10 @@ class wikilib:
                 if x != '':
                     desclist.append(x)
             descraw = '\n'.join(desclist)
-            try:
-                cutdesc = re.findall(r'(.*?(?:!|\?|\.|;|！|？|。|；)).*', descraw, re.S | re.M)
+            cutdesc = re.findall(r'(.*?(?:!|\?|\.|;|！|？|。|；)).*', descraw, re.S | re.M)
+            if cutdesc:
                 desc = cutdesc[0]
-            except IndexError:
+            else:
                 desc = descraw
         except Exception:
             traceback.print_exc()
