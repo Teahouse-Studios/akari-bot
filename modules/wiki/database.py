@@ -171,7 +171,7 @@ class WD:
     def update_wikiinfo(self, apilink, siteinfo):
         a = self.c.execute(f"SELECT * FROM wiki_info WHERE LINK='{apilink}'").fetchone()
         if a:
-            self.c.execute(f"UPDATE wiki_info SET SITEINFO='{siteinfo}' WHERE LINK='{apilink}'")
+            self.c.execute("UPDATE wiki_info SET SITEINFO=? WHERE LINK=?", (siteinfo, apilink))
         else:
             self.c.execute(f"INSERT INTO wiki_info (LINK, SITEINFO) VALUES (?, ?)", (apilink, siteinfo))
         self.conn.commit()
