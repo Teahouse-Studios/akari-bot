@@ -5,10 +5,11 @@ import urllib.parse
 import aiohttp
 
 from modules.utils.UTC8 import UTC8
-from modules.wiki.helper import check_wiki_available
-from modules.wiki.wikilib import wikilib
+from modules.wiki.wikilib import wikilib as wiki
 from .gender import gender
 
+
+wikilib = wiki()
 
 async def get_data(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
@@ -58,11 +59,11 @@ def d(str1):
 
 async def GetUser(wikiurl, username, argv=None):
     print(wikiurl)
-    GetInterwiki = await wikilib().get_interwiki(wikiurl)
+    GetInterwiki = await wikilib.get_interwiki(wikiurl)
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in GetInterwiki:
-            wikiurl = await check_wiki_available(GetInterwiki[match_interwiki.group(1)])
+            wikiurl = await wikilib.check_wiki_available(GetInterwiki[match_interwiki.group(1)])
             if wikiurl:
                 return await GetUser(wikiurl[0], match_interwiki.group(2), argv)
     UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
@@ -72,7 +73,7 @@ async def GetUser(wikiurl, username, argv=None):
         return '发生错误：无法获取到页面信息，请检查是否设置了对应Interwiki。'
     Wikiname = await getwikiname(wikiurl)
     GetUserGroupsList = await get_user_group(wikiurl)
-    GetArticleUrl = await wikilib().get_article_path(wikiurl)
+    GetArticleUrl = await wikilib.get_article_path(wikiurl)
     try:
         User = GetUserJson['query']['users'][0]['name']
         Editcount = str(GetUserJson['query']['users'][0]['editcount'])

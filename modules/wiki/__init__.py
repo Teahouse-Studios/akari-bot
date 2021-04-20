@@ -11,7 +11,6 @@ from core.template import sendMessage, check_permission, wait_confirm, revokeMes
     slk_converter
 from database import BotDB
 from modules.wiki.database import WikiDB
-from modules.wiki.helper import check_wiki_available
 from .getinfobox import get_infobox_pic
 
 
@@ -68,8 +67,7 @@ async def wiki_wrapper(kwargs: dict):
         check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
                                                                'wiki_fandom_addon')
     if Friend in kwargs:
-        check_fandom_addon_enable = BotDB.check_enable_modules_self(kwargs[Group].id,
-                                                                    'wiki_fandom_addon')
+        check_fandom_addon_enable = True
     if check_fandom_addon_enable:
         matchsite = re.match(r'\?(.*?) (.*)', command)
         if matchsite:
@@ -132,13 +130,9 @@ async def wiki_wrapper(kwargs: dict):
         if 'apilink' in msg:
             get_link = msg['apilink']
         if 'url' in msg:
-            check_options = BotDB.check_enable_modules_self(kwargs[Member].id if Group in kwargs else kwargs[Friend].id,
-                                                            'wiki_infobox')
-            print(check_options)
-            if check_options:
-                pic = await get_infobox_pic(get_link, msg['url'], headers)
-                imgchain = MessageChain.create([Image.fromLocalFile(pic)])
-                await sendMessage(kwargs, imgchain)
+            pic = await get_infobox_pic(get_link, msg['url'], headers)
+            imgchain = MessageChain.create([Image.fromLocalFile(pic)])
+            await sendMessage(kwargs, imgchain)
 
     elif msg['status'] == 'wait':
         await sendMessage(kwargs, MessageChain.create([Plain(msg['text'])]))
@@ -160,7 +154,7 @@ async def set_start_wiki(kwargs: dict):
     command = re.sub(r'^wiki_start_site ', '', command)
     if Group in kwargs:
         if check_permission(kwargs):
-            check = await check_wiki_available(command)
+            check = await wikilib.wikilib().check_wiki_available(command)
             if check[0]:
                 result = WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id, check[0])
                 await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
@@ -171,7 +165,7 @@ async def set_start_wiki(kwargs: dict):
             result = '你没有使用该命令的权限。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
     if Friend in kwargs:
-        check = await check_wiki_available(command)
+        check = await wikilib.wikilib().check_wiki_available(command)
         if check[0]:
             result = WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id, check[0])
             await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
@@ -201,7 +195,7 @@ async def interwiki(kwargs: dict):
         command = re.sub(' ', '>', command)
         iw = command.split('>')
         try:
-            check = await check_wiki_available(iw[1])
+            check = await wikilib.wikilib().check_wiki_available(iw[1])
         except:
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
@@ -227,7 +221,7 @@ async def interwiki(kwargs: dict):
             result = '当前设置了以下Interwiki：\n' + query_database
             await sendMessage(kwargs, result)
         else:
-            await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <wikilink>添加一个。')
+            await sendMessage(kwargs, '当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
     else:
         await sendMessage(kwargs, '命令不合法，参数应为add/del/list。')
 
@@ -383,17 +377,14 @@ async def regex_wiki(kwargs: dict):
                         await sendMessage(kwargs, audchain)
             if urllist != {}:
                 print(urllist)
-                check_options = BotDB.check_enable_modules_self(
-                    kwargs[Member].id if Group in kwargs else kwargs[Friend].id, 'wiki_infobox')
-                if check_options:
-                    infoboxchain = MessageChain.create([])
-                    for url in urllist:
-                        get_infobox = await get_infobox_pic(urllist[url], url, headers)
-                        if get_infobox:
-                            infoboxchain = infoboxchain.plusWith(
-                                MessageChain.create([Image.fromLocalFile(get_infobox)]))
-                    if infoboxchain != MessageChain.create([]):
-                        await sendMessage(kwargs, infoboxchain, Quote=False)
+                infoboxchain = MessageChain.create([])
+                for url in urllist:
+                    get_infobox = await get_infobox_pic(urllist[url], url, headers)
+                    if get_infobox:
+                        infoboxchain = infoboxchain.plusWith(
+                            MessageChain.create([Image.fromLocalFile(get_infobox)]))
+                if infoboxchain != MessageChain.create([]):
+                    await sendMessage(kwargs, infoboxchain, Quote=False)
             if global_status == 'warn':
                 if Group in kwargs:
                     trigger = kwargs[Member].id
@@ -417,18 +408,14 @@ async def regex_wiki(kwargs: dict):
 
 command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': interwiki}
 regex = {'wiki_regex': regex_wiki}
-self_options = ['wiki_infobox']
 options = ['wiki_fandom_addon']
-help = {'wiki': {'help': '~wiki [interwiki:]<pagename> - 查询Wiki内容。\n' +
-                         '~wiki set <wikilink> - 设置起始查询Wiki。\n' +
+help = {'wiki': {'help': '~wiki [interwiki:]<page_name> - 查询Wiki内容。\n' +
+                         '~wiki set <api_endpoint_link> - 设置起始查询Wiki。\n' +
                          '~wiki iw <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。\n' +
                          '~wiki headers <set/reset/show> - 设置请求标头。'},
-        'wiki_start_site': {'help': '~wiki_start_site <wikilink> - 设置起始查询Wiki。'},
+        'wiki_start_site': {'help': '~wiki_start_site <api_endpoint_link> - 设置起始查询Wiki。'},
         'interwiki': {
             'help': '~interwiki <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。'},
-        'wiki_regex': {'help': '[[<pagename>]]|{{<pagename>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
-        'wiki_infobox': {
-            'help': 'Infobox渲染：当被查询的页面包含Infobox时自动提取并渲染为图片发送。（群聊默认开启且不可全局关闭，个人可使用~disable self wiki_infobox关闭）',
-            'depend': 'wiki'},
+        'wiki_regex': {'help': '[[<page_name>]]|{{<page_name>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
         'wiki_fandom_addon': {
-            'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<pagename>]]的消息会自动定向查询至Fandom的Wiki。'}}
+            'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<page_name>]]的消息会自动定向查询至Fandom的Wiki。'}}
