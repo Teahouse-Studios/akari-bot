@@ -214,6 +214,8 @@ class wikilib:
         except Exception:
             traceback.print_exc()
             desc = ''
+        if desc == '...':
+            desc = ''
         return desc
 
     async def getfirstline(self):
