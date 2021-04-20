@@ -45,12 +45,9 @@ async def parser(kwargs: dict):
                         await Nudge(kwargs)
                         check_command_enable = database.check_enable_modules(kwargs[Group].id, command_first_word)  # 检查群组是否开启模块
                         if check_command_enable:  # 若开启
-                            check_command_enable_self = database.check_enable_modules_self(kwargs[Member].id,
-                                                                                           command_first_word)
-                            if check_command_enable_self:
-                                kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
-                                kwargs['help_list'] = Modules['help']  # 帮助列表
-                                await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
+                            kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
+                            kwargs['help_list'] = Modules['help']  # 帮助列表
+                            await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
                         else:
                             await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
                     elif 'TEST' in kwargs:
@@ -58,12 +55,9 @@ async def parser(kwargs: dict):
                         kwargs['help_list'] = Modules['help']  # 帮助列表
                         await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
                     else:
-                        check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id,
-                                                                                       command_first_word)  # 检查个人是否开启模块
-                        if check_command_enable_self:
-                            kwargs['trigger_msg'] = command
-                            kwargs['help_list'] = Modules['help']
-                            await Modules['command'][command_first_word](kwargs)
+                        kwargs['trigger_msg'] = command
+                        kwargs['help_list'] = Modules['help']
+                        await Modules['command'][command_first_word](kwargs)
                 elif command_first_word in Modules['essential']:  # 若触发的对象命令为基础命令
                     await Nudge(kwargs)
                     kwargs['trigger_msg'] = command
@@ -84,13 +78,9 @@ async def parser(kwargs: dict):
                     check_command_enable = database.check_enable_modules(kwargs[Group].id,
                                                                          regex)  # 检查群组是否打开模块
                     if check_command_enable:
-                        check_command_enable_self = database.check_enable_modules_self(kwargs[Member].id, regex)  # 检查个人是否打开模块
-                        if check_command_enable_self:
-                            await Modules['regex'][regex](kwargs)  # 将整条dict传入下游正则模块
+                        await Modules['regex'][regex](kwargs)  # 将整条dict传入下游正则模块
             if Friend in kwargs:
                 for regex in Modules['regex']:
-                    check_command_enable_self = database.check_enable_modules_self(kwargs[Friend].id, regex)
-                    if check_command_enable_self:
-                        await Modules['regex'][regex](kwargs)
+                    await Modules['regex'][regex](kwargs)
     except eventlet.timeout.Timeout:
         await sendMessage(kwargs, '发生错误：执行命令超时。')
