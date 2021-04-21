@@ -369,12 +369,12 @@ async def regex_wiki(kwargs: dict):
                     imgchain = MessageChain.create([])
                     for img in imglist:
                         imgchain = imgchain.plusWith(MessageChain.create([Image.fromNetworkAddress(img)]))
-                    await sendMessage(kwargs, imgchain)
+                    await sendMessage(kwargs, imgchain, Quote=False)
                 if audlist != []:
                     for aud in audlist:
                         audchain = MessageChain.create(
                             [Voice().fromLocalFile(await slk_converter(await download_to_cache(aud)))])
-                        await sendMessage(kwargs, audchain)
+                        await sendMessage(kwargs, audchain, Quote=False)
             if urllist != {}:
                 print(urllist)
                 infoboxchain = MessageChain.create([])
