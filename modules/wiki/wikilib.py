@@ -180,6 +180,8 @@ class wikilib:
         else:
             wiki_info = await self.get_wiki_info(url)
         real_url = wiki_info['query']['general']['server']
+        if real_url.startswith('//'):
+            real_url = self.wiki_api_endpoint.split('//')[0] + real_url
         return real_url
 
     async def get_image(self, page_name, wiki_api_endpoint=None):
