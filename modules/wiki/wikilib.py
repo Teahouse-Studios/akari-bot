@@ -41,6 +41,7 @@ class wikilib:
             try:
                 getpage = await self.get_data(link, 'text')
                 print(link)
+                print(getpage)
                 m = re.findall(
                     r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
                     getpage)
