@@ -195,12 +195,13 @@ async def interwiki(kwargs: dict):
         command = ' '.join(command[1:])
         command = re.sub(' ', '>', command)
         iw = command.split('>')
+        if len(iw) == 1 or len(iw) > 2:
+            await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
+            return
         try:
             check = await wikilib.wikilib().check_wiki_available(iw[1])
         except:
             traceback.print_exc()
-            await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
-            return
         if check[0]:
             result = WikiDB.config_custom_interwiki('add', table, target, iw[0],
                                                     check[0])
