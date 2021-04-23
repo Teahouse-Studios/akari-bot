@@ -1,4 +1,5 @@
 import re
+import traceback
 
 from graia.application import MessageChain
 from graia.application.friend import Friend
@@ -197,6 +198,7 @@ async def interwiki(kwargs: dict):
         try:
             check = await wikilib.wikilib().check_wiki_available(iw[1])
         except:
+            traceback.print_exc()
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
         if check[0]:
