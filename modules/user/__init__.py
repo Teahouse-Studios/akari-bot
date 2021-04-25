@@ -40,6 +40,7 @@ async def main(kwargs: dict):
         get_iw = WikiDB.get_custom_interwiki(table, id, match_interwiki.group(1))
         if get_iw:
             metaurl = get_iw
+            username = match_interwiki.group(2)
     result = await GetUser(metaurl, username, mode)
     if result:
         matchimg = re.match('.*\[\[uimgc:(.*)]]', result)
