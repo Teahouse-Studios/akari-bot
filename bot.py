@@ -30,7 +30,7 @@ write_version.close()
 
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
-    kwargs = {MessageChain: message, Group: group, Member: member, Target: Target(id=member.id, name=member.name, target_from='Group')}
+    kwargs = {MessageChain: message, Group: group, Member: member, Target: Target(id=group.id, name=group.name, target_from='Group')}
     await parser(kwargs)
 
 
