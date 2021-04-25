@@ -60,6 +60,7 @@ def d(str1):
 async def GetUser(wikiurl, username, argv=None):
     print(wikiurl)
     GetInterwiki = await wikilib.get_interwiki(url=wikiurl)
+    GetInterwiki = await wikilib.get_interwiki(url=wikiurl)
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in GetInterwiki:
@@ -129,7 +130,7 @@ async def GetUser(wikiurl, username, argv=None):
                 if not os.path.exists(wikipng):
                     from .dpng import dpng
                     if not await dpng(wikiurl, matchlink.group(1)):
-                        raise
+                        wikipng = False
                 from .tpg import tpg
                 if 'blockedby' in GetUserJson['query']['users'][0]:
                     BlockedBy = GetUserJson['query']['users'][0]['blockedby']

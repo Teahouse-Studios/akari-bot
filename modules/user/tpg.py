@@ -16,16 +16,17 @@ def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, cr
         img = Image.open(abspath('./assets/base.png'))
     elif bantype == 'Y' or bantype == 'YN':
         img = Image.open(abspath('./assets/ban.png'))
-    img2 = Image.open(favicon)
-    img3 = Image.new("RGBA", img.size)
-    w, h = img2.size
-    w = int(w)
-    h = int(h)
-    try:
-        img2 = img2.resize((int(w / (w // 100)), int(h / (h // 100))))
-    except Exception:
-        pass
-    img3.paste(img, (0, 0))
+    if favicon:
+        img2 = Image.open(favicon)
+        img3 = Image.new("RGBA", img.size)
+        w, h = img2.size
+        w = int(w)
+        h = int(h)
+        try:
+            img2 = img2.resize((int(w / (w // 100)), int(h / (h // 100))))
+        except Exception:
+            pass
+        img3.paste(img, (0, 0))
 
     img21 = Image.new("RGBA", (200, 200))
     W = 200
