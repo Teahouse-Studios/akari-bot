@@ -27,19 +27,19 @@ async def main(kwargs: dict):
         mode = '-p'
         commandsplit.remove('-p')
         command = ' '.join(commandsplit)
-    match_interwiki = re.match(r'(.*?):(.*)', command)
-    if match_interwiki:
-        table = 'custom_interwiki_' + kwargs[Target].target_from
-        get_iw = WikiDB.get_custom_interwiki(table, id, match_interwiki.group(1))
-        if get_iw:
-            metaurl = get_iw
     table = 'start_wiki_link_' + kwargs[Target].target_from
     get_url = WikiDB.get_start_wiki(table, id)
     if get_url:
         metaurl = get_url
         username = command
     else:
-        await sendMessage(kwargs, '未设置起始Interwiki。')
+        await sendMessage(kwargs, '未设置起始wiki。')
+    match_interwiki = re.match(r'(.*?):(.*)', command)
+    if match_interwiki:
+        table = 'custom_interwiki_' + kwargs[Target].target_from
+        get_iw = WikiDB.get_custom_interwiki(table, id, match_interwiki.group(1))
+        if get_iw:
+            metaurl = get_iw
     result = await GetUser(metaurl, username, mode)
     if result:
         matchimg = re.match('.*\[\[uimgc:(.*)]]', result)
