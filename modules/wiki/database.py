@@ -20,26 +20,26 @@ class WD:
         a.close()
         self.conn = sqlite3.connect(dbpath)
         self.c = self.conn.cursor()
-        self.c.execute('''CREATE TABLE start_wiki_link_group
+        self.c.execute('''CREATE TABLE start_wiki_link_Group
                (ID INT PRIMARY KEY     NOT NULL,
                LINK  TEXT);''')
-        self.c.execute('''CREATE TABLE custom_interwiki_group
+        self.c.execute('''CREATE TABLE custom_interwiki_Group
                (ID INT PRIMARY KEY     NOT NULL,
                INTERWIKIS  TEXT);''')
-        self.c.execute('''CREATE TABLE start_wiki_link_self
+        self.c.execute('''CREATE TABLE start_wiki_link_Friend
                (ID INT PRIMARY KEY     NOT NULL,
                LINK  TEXT);''')
-        self.c.execute('''CREATE TABLE custom_interwiki_self
+        self.c.execute('''CREATE TABLE custom_interwiki_Friend
                (ID INT PRIMARY KEY     NOT NULL,
                INTERWIKIS  TEXT);''')
         self.c.execute('''CREATE TABLE wiki_info
                (LINK TEXT PRIMARY KEY     NOT NULL,
                SITEINFO  TEXT,
                TS  TIMESTAMP DEFAULT CURRENT_TIMESTAMP);''')
-        self.c.execute('''CREATE TABLE request_headers_group
+        self.c.execute('''CREATE TABLE request_headers_Group
                (ID TEXT PRIMARY KEY     NOT NULL,
                HEADERS  TEXT);''')
-        self.c.execute('''CREATE TABLE request_headers_self
+        self.c.execute('''CREATE TABLE request_headers_Friend
                (ID TEXT PRIMARY KEY     NOT NULL,
                HEADERS  TEXT);''')
         self.c.close()

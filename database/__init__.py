@@ -76,87 +76,26 @@ class BB:
             else:
                 return '失败：未启用过该模块：' + modules_name
 
-    def update_modules_self(self, do, id, modules_name, table='self_permission', value='DISABLE_MODULES'):
-        a = self.c.execute(f"SELECT * FROM {table} WHERE ID={id}").fetchone()
-        if do == 'del':
-            if a:
-                enabled_split = a[1].split('|')
-                if modules_name in enabled_split:
-                    return '失败：模块已被禁用：' + modules_name
-                else:
-                    enabled_split.append(modules_name)
-                    self.c.execute(f"UPDATE {table} SET {value}='{'|'.join(enabled_split)}' WHERE ID='{id}'")
-                    self.conn.commit()
-                    return '成功：禁用模块：' + modules_name
-            else:
-                self.c.execute(f"INSERT INTO {table} (ID, {value}) VALUES (?, ?)", (id, modules_name))
-                self.conn.commit()
-                return '成功：禁用模块：' + modules_name
-        elif do == 'add':
-            if a:
-                enabled_split = a[1].split('|')
-                if modules_name in enabled_split:
-                    enabled_split.remove(modules_name)
-                    self.c.execute(f"UPDATE {table} SET {value}='{'|'.join(enabled_split)}' WHERE ID='{id}'")
-                    self.conn.commit()
-                    return '成功：启用模块：' + modules_name
-                else:
-                    return '失败：未禁用过该模块：' + modules_name
-            else:
-                return '失败：未禁用过该模块：' + modules_name
-
     def check_enable_modules(self, kwargs, modules_name, table='group_permission'):
         if isinstance(kwargs, int):
             target = kwargs
         else:
             if Group in kwargs:
-                table == 'group_permission'
+                table = 'group_permission'
                 target = kwargs[Group].id
             if Friend in kwargs:
-                table == 'self_permission'
+                table = 'friend_modules_permission'
                 target = kwargs[Friend].id
-        if table == 'group_permission':
-            a = self.c.execute(f"SELECT * FROM {table} WHERE ID='{target}'").fetchone()
-            if a:
-                enabled_split = a[1].split('|')
-                if modules_name in enabled_split:
-                    return True
-                else:
-                    return False
-            else:
-                return False
-        if table == 'self_permission':
-            a = self.c.execute(f"SELECT * FROM {table} WHERE ID='{target}'").fetchone()
-            if a:
-                enabled_split = a[1].split('|')
-                if modules_name in enabled_split:
-                    return False
-                else:
-                    return True
-            else:
+        a = self.c.execute(f"SELECT * FROM {table} WHERE ID='{target}'").fetchone()
+        if a:
+            enabled_split = a[1].split('|')
+            if modules_name in enabled_split:
                 return True
-        if table == 'friend_modules_permission':
-            a = self.c.execute(f"SELECT * FROM {table} WHERE ID='{target}'").fetchone()
-            if a:
-                enabled_split = a[1].split('|')
-                if modules_name in enabled_split:
-                    return True
-                else:
-                    return False
             else:
                 return False
+        else:
+            return False
 
-    def check_enable_modules_self(self, id, modules_name, table='self_permission'):
-        if table == 'self_permission':
-            a = self.c.execute(f"SELECT * FROM {table} WHERE ID='{id}'").fetchone()
-            if a:
-                enabled_split = a[1].split('|')
-                if modules_name in enabled_split:
-                    return False
-                else:
-                    return True
-            else:
-                return True
 
     def check_enable_modules_all(self, table, modules_name):
         # 检查表中所有匹配的对象，返回一个list

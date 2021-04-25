@@ -59,7 +59,7 @@ def d(str1):
 
 async def GetUser(wikiurl, username, argv=None):
     print(wikiurl)
-    GetInterwiki = await wikilib.get_interwiki(wikiurl)
+    GetInterwiki = await wikilib.get_interwiki(url=wikiurl)
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in GetInterwiki:
@@ -123,8 +123,8 @@ async def GetUser(wikiurl, username, argv=None):
                 if not os.path.exists(filepath):
                     favicon_path = os.path.abspath('./assets/Favicon/')
                     if not os.path.exists(favicon_path):
-                        os.mkdir(favicon_path)
-                    os.mkdir(filepath)
+                        os.makedirs(favicon_path)
+                    os.makedirs(filepath)
                 wikipng = os.path.abspath('./assets/Favicon/' + matchlink.group(1) + '/Wiki.png')
                 if not os.path.exists(wikipng):
                     from .dpng import dpng

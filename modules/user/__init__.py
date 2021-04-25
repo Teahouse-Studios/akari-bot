@@ -3,8 +3,10 @@ import re
 from graia.application import Group, Friend, MessageChain
 from graia.application.message.elements.internal import Image, UploadMethods, Plain
 
+from core.elements import Target
 from core.template import sendMessage
 from modules.wiki.database import WikiDB
+from modules.wiki.wikilib import wikilib
 from .userlib import GetUser
 
 
@@ -15,10 +17,7 @@ async def main(kwargs: dict):
     mode = None
     metaurl = None
     username = None
-    if Group in kwargs:
-        id = kwargs[Group].id
-    if Friend in kwargs:
-        id = kwargs[Friend].id
+    id = kwargs[Target].id
 
     if '-r' in commandsplit:
         mode = '-r'
@@ -28,41 +27,24 @@ async def main(kwargs: dict):
         mode = '-p'
         commandsplit.remove('-p')
         command = ' '.join(commandsplit)
-    match_gpsite = re.match(r'~(.*?) (.*)', command)
-    if match_gpsite:
-        metaurl = f'https://{match_gpsite.group(1)}.gamepedia.com/api.php'
-        username = match_gpsite.group(2)
+    match_interwiki = re.match(r'(.*?):(.*)', command)
+    if match_interwiki:
+        table = 'custom_interwiki_' + kwargs[Target].target_from
+        get_iw = WikiDB.get_custom_interwiki(table, id, match_interwiki.group(1))
+        if get_iw:
+            metaurl = get_iw
+    table = 'start_wiki_link_' + kwargs[Target].target_from
+    get_url = WikiDB.get_start_wiki(table, id)
+    if get_url:
+        metaurl = get_url
+        username = command
     else:
-        match_interwiki = re.match(r'(.*?):(.*)', command)
-        if match_interwiki:
-            if Group in kwargs:
-                table = 'custom_interwiki_group'
-            if Friend in kwargs:
-                table = 'custon_interwiki_self'
-            get_iw = WikiDB.get_custom_interwiki(table, id, match_interwiki.group(1))
-            if get_iw:
-                metaurl = get_iw
-                username = match_interwiki.group(2)
-        else:
-            if Group in kwargs:
-                table = 'start_wiki_link_group'
-            if Friend in kwargs:
-                table = 'start_wiki_link_self'
-            get_url = WikiDB.get_start_wiki(table, id)
-            if get_url:
-                metaurl = get_url
-                username = command
-            else:
-                await sendMessage(kwargs, '未设置起始Interwiki。')
+        await sendMessage(kwargs, '未设置起始Interwiki。')
     result = await GetUser(metaurl, username, mode)
     if result:
         matchimg = re.match('.*\[\[uimgc:(.*)]]', result)
         if matchimg:
-            if Group in kwargs:
-                mth = UploadMethods.Group
-            if Friend in kwargs:
-                mth = UploadMethods.Friend
-            imgchain = MessageChain.create([Image.fromLocalFile(matchimg.group(1), method=mth)])
+            imgchain = MessageChain.create([Image.fromLocalFile(matchimg.group(1))])
             result = re.sub('\[\[uimgc:.*]]', '', result)
             msgchain = MessageChain.create([Plain(result)])
             msgchain = msgchain.plusWith(imgchain)

@@ -10,22 +10,30 @@ from core import dirty_check
 from .database import WikiDB
 
 class wikilib:
-    async def get_data(self, url: str, fmt: str, headers=None):
+    async def get_data(self, url: str, fmt: str, headers=None, ignore_err=False):
         async with aiohttp.ClientSession(headers=headers) as session:
-            try:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                    if hasattr(req, fmt):
-                        return await getattr(req, fmt)()
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                if req.status == 200 or ignore_err:
+                    if fmt == 'json':
+                        try:
+                            return json.loads(await req.text())
+                        except UnicodeDecodeError:
+                            traceback.print_exc()
+                            return json.loads(await req.text(encoding='unicode-escape'))
                     else:
-                        raise ValueError(f"NoSuchMethod: {fmt}")
-            except Exception:
-                traceback.print_exc()
-                return False
+                        try:
+                            return await req.text()
+                        except UnicodeDecodeError:
+                            traceback.print_exc()
+                            return await req.text(encoding='unicode-escape')
+                else:
+                    raise ValueError(req.status)
+
 
     def encode_query_string(self, kwargs: dict):
         return '?' + urllib.parse.urlencode(kwargs)
 
-    async def check_wiki_available(self, link):
+    async def check_wiki_available(self, link, headers=None):
         query_string = {'action': 'query', 'meta': 'siteinfo',
                         'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         query = self.encode_query_string(query_string)
@@ -36,12 +44,10 @@ class wikilib:
         try:
             api = re.match(r'(https?://.*?/api.php$)', link)
             wlink = api.group(1)
-            json1 = json.loads(await self.get_data(api.group(1) + query, 'json'))
+            json1 = json.loads(await self.get_data(api.group(1) + query, 'json', headers=headers))
         except:
             try:
-                getpage = await self.get_data(link, 'text')
-                print(link)
-                print(getpage)
+                getpage = await self.get_data(link, 'text', headers=headers, ignore_err=True)
                 m = re.findall(
                     r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
                     getpage)
@@ -53,12 +59,18 @@ class wikilib:
                         (datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
                             hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
                     return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
-                json1 = await self.get_data(api + query, 'json')
+                json1 = await self.get_data(api + query, 'json', headers=headers)
+                print(json1)
                 wlink = api
-            except aiohttp.ClientTimeout:
+            except TimeoutError:
+                traceback.print_exc()
                 return False, 'Timeout'
             except Exception as e:
-                return False, str(e)
+                traceback.print_exc()
+                if e.args == (403, ):
+                    return False, '服务器拒绝了机器人的请求。'
+                else:
+                    return False, str(e)
         WikiDB.update_wikiinfo(wlink, json.dumps(json1))
         wikiname = json1['query']['general']['sitename']
         extensions = json1['query']['extensions']
@@ -118,15 +130,20 @@ class wikilib:
         WikiDB.update_wikiinfo(url, json.dumps(j))
         return j
 
-    async def get_interwiki(self, url=None):
+    async def get_interwiki(self, url=None, iw=None):
+        print(url)
         if url is None:
             json = self.wiki_info
         else:
             json = await self.get_wiki_info(url)
         interwikimap = json['query']['interwikimap']
         interwiki_dict = {}
-        for interwiki in interwikimap:
-            interwiki_dict[interwiki['prefix']] = interwiki['url']
+        if iw is None:
+            for interwiki in interwikimap:
+                interwiki_dict[interwiki['prefix']] = interwiki['url']
+        else:
+            if iw in interwikimap:
+                interwiki_dict[iw] = interwikimap[iw]['url']
         return interwiki_dict
 
     async def get_namespace(self, url=None):

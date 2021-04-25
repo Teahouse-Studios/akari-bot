@@ -10,6 +10,7 @@ from graia.application.message.elements.internal import Plain
 import modules.wiki.wikilib
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, \
     slk_converter
+from core.elements import Target
 from database import BotDB
 from modules.wiki.database import WikiDB
 from .getinfobox import get_infobox_pic
@@ -39,36 +40,22 @@ async def wiki_loader(kwargs: dict):
 
 async def wiki_wrapper(kwargs: dict):
     command = kwargs['trigger_msg']
-    if Group in kwargs:
-        start_table = 'start_wiki_link_group'
-        headtable = 'request_headers_group'
-        headtarget = kwargs[Group].id
-    if Friend in kwargs:
-        start_table = 'start_wiki_link_self'
-        headtable = 'request_headers_self'
-        headtarget = kwargs[Friend].id
-    headers = WikiDB.config_headers('get', headtable, headtarget)
+    start_table = 'start_wiki_link_' + kwargs[Target].target_from
+    headtable = 'request_headers_' + kwargs[Target].target_from
+    triggerId = kwargs[Target].id
+    headers = WikiDB.config_headers('get', headtable, triggerId)
     prompt = False
-    get_link = WikiDB.get_start_wiki(start_table, kwargs[Group].id)
+    get_link = WikiDB.get_start_wiki(start_table, triggerId)
     if not get_link:
-        if Group in kwargs:
-            prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
-                     '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
-            WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
-                                  'https://minecraft-zh.gamepedia.com/api.php')
-        elif Friend in kwargs:
-            prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki_start_site <域名>来设定自定义起始Wiki。' \
-                     '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
-            WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
-                                  'https://minecraft-zh.gamepedia.com/api.php')
+        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可发送~wiki set <域名>来设定自定义起始Wiki。' \
+                 '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
+        WikiDB.add_start_wiki(start_table, triggerId,
+                              'https://minecraft-zh.gamepedia.com/api.php')
         get_link = 'https://minecraft-zh.gamepedia.com/api.php'
     iw = None
     co = False
-    if Group in kwargs:
-        check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
-                                                               'wiki_fandom_addon')
-    if Friend in kwargs:
-        check_fandom_addon_enable = True
+    check_fandom_addon_enable = BotDB.check_enable_modules(kwargs,
+                                                           'wiki_fandom_addon')
     if check_fandom_addon_enable:
         matchsite = re.match(r'\?(.*?) (.*)', command)
         if matchsite:
@@ -104,11 +91,7 @@ async def wiki_wrapper(kwargs: dict):
     print(co)
     matchinterwiki = re.match(r'(.*?):(.*)', command)
     if matchinterwiki and not co:
-        if Group in kwargs:
-            get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_group', kwargs[Group].id,
-                                                        matchinterwiki.group(1))
-        if Friend in kwargs:
-            get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_self', kwargs[Friend].id,
+        get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_' + kwargs[Target].target_from, kwargs[Target].id,
                                                         matchinterwiki.group(1))
         if get_custom_iw:
             iw = matchinterwiki.group(1)
@@ -154,25 +137,23 @@ async def set_start_wiki(kwargs: dict):
     command = kwargs['trigger_msg']
     command = re.sub(r'^wiki_start_site ', '', command)
     if Group in kwargs:
-        if check_permission(kwargs):
-            check = await wikilib.wikilib().check_wiki_available(command)
-            if check[0]:
-                result = WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id, check[0])
-                await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
-            else:
-                result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
-                await sendMessage(kwargs, MessageChain.create([Plain(result)]))
-        else:
-            result = '你没有使用该命令的权限。'
+        if not check_permission(kwargs):
+            result = '你没有在群内使用该命令的权限，请联系管理员进行操作。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
-    if Friend in kwargs:
-        check = await wikilib.wikilib().check_wiki_available(command)
-        if check[0]:
-            result = WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id, check[0])
-            await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
+            return
+    check = await wikilib.wikilib().check_wiki_available(command)
+    if check[0]:
+        result = WikiDB.add_start_wiki('start_wiki_link_' + kwargs[Target].target_from, kwargs[Target].id, check[0])
+        await sendMessage(kwargs, MessageChain.create([Plain(result + check[1])]))
+    else:
+        if check[1] == 'Timeout':
+            result = '错误：尝试建立连接超时。'
         else:
-            result = '错误：此Wiki不是一个有效的MediaWiki/尝试建立连接超时。'
-            await sendMessage(kwargs, MessageChain.create([Plain(result)]))
+            result = '错误：此站点也许不是一个有效的Mediawiki：' + check[1]
+        link = re.match(r'^(https?://).*', command)
+        if not link:
+            result = '错误：所给的链接没有指明协议头（链接应以http://或https://开头）。'
+        await sendMessage(kwargs, MessageChain.create([Plain(result)]))
 
 
 async def interwiki(kwargs: dict):
@@ -183,14 +164,11 @@ async def interwiki(kwargs: dict):
     if Group in kwargs:
         check = check_permission(kwargs)
         if not check:
-            result = '你没有使用该命令的权限。'
+            result = '你没有使用该命令的权限，请联系管理员进行操作。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
             return
-        table = 'custom_interwiki_group'
-        target = kwargs[Group].id
-    if Friend in kwargs:
-        table = 'custom_interwiki_self'
-        target = kwargs[Friend].id
+    table = 'custom_interwiki_' + kwargs[Target].target_from
+    target = kwargs[Target].id
     if command[0] == 'add':
         command = ' '.join(command[1:])
         command = re.sub(' ', '>', command)
@@ -198,10 +176,7 @@ async def interwiki(kwargs: dict):
         if len(iw) == 1 or len(iw) > 2:
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
-        try:
-            check = await wikilib.wikilib().check_wiki_available(iw[1])
-        except:
-            traceback.print_exc()
+        check = await wikilib.wikilib().check_wiki_available(iw[1], headers=WikiDB.config_headers('get', table, target))
         if check[0]:
             result = WikiDB.config_custom_interwiki('add', table, target, iw[0],
                                                     check[0])
@@ -210,7 +185,7 @@ async def interwiki(kwargs: dict):
             if check[1] == 'Timeout':
                 result = '错误：尝试建立连接超时。'
             else:
-                result = '错误：此站点也许不是一个有效的Mediawiki。'
+                result = '错误：此站点也许不是一个有效的Mediawiki：' + check[1]
             link = re.match(r'^(https?://).*', iw[1])
             if not link:
                 result = '错误：所给的链接没有指明协议头（链接应以http://或https://开头）。'
@@ -235,14 +210,11 @@ async def set_headers(kwargs: dict):
     if Group in kwargs:
         check = check_permission(kwargs)
         if not check:
-            result = '你没有使用该命令的权限。'
+            result = '你没有使用该命令的权限，请联系管理员进行操作。'
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
             return
-        table = 'request_headers_group'
-        id = kwargs[Group].id
-    if Friend in kwargs:
-        table = 'request_headers_self'
-        id = kwargs[Friend].id
+    table = 'request_headers_' + kwargs[Target].target_from
+    id = kwargs[Target].id
     do = command[0]
     if do == 'show':
         headers = WikiDB.config_headers(do, table, id)
@@ -278,14 +250,9 @@ async def regex_wiki(kwargs: dict):
             urllist = {}
             msglist = MessageChain.create([])
             waitmsglist = MessageChain.create([])
-            if Group in kwargs:
-                table = 'start_wiki_link_group'
-                target = kwargs[Group].id
-                headtable = 'request_headers_group'
-            if Friend in kwargs:
-                table = 'start_wiki_link_self'
-                target = kwargs[Friend].id
-                headtable = 'request_headers_self'
+            table = 'start_wiki_link_' + kwargs[Target].target_from
+            target = kwargs[Target].id
+            headtable = 'request_headers_' + kwargs[Target].target_from
             headers = WikiDB.config_headers('get', headtable, target)
             for find in find_dict:
                 if find_dict[find] == 'template':
@@ -295,24 +262,15 @@ async def regex_wiki(kwargs: dict):
                 get_link = WikiDB.get_start_wiki(table, target)
                 prompt = False
                 if not get_link:
-                    if Group in kwargs:
-                        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，管理员可以在群内发送~wiki set <域名>来设定自定义起始Wiki。' \
-                                 '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
-                        WikiDB.add_start_wiki('start_wiki_link_group', kwargs[Group].id,
-                                              'https://minecraft.fandom.com/zh/api.php')
-                    elif Friend in kwargs:
-                        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可以发送~wiki set <域名>来设定自定义起始Wiki。' \
-                                 '\n例子：~wiki_start_site https://minecraft.fandom.com/zh/'
-                        WikiDB.add_start_wiki('start_wiki_link_self', kwargs[Friend].id,
-                                              'https://minecraft.fandom.com/zh/api.php')
+                    prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可发送~wiki set <域名>来设定自定义起始Wiki。' \
+                             '\n例子：~wiki set https://minecraft.fandom.com/zh/'
+                    WikiDB.add_start_wiki(table, target,
+                                          'https://minecraft.fandom.com/zh/api.php')
                     get_link = 'https://minecraft.fandom.com/zh/api.php'
                 iw = None
                 matchinterwiki = re.match(r'(.*?):(.*)', find)
                 if matchinterwiki:
-                    if Group in kwargs:
-                        iw_table = 'custom_interwiki_group'
-                    if Friend in kwargs:
-                        iw_table = 'custom_interwiki_self'
+                    iw_table = 'custom_interwiki_' + kwargs[Target].target_from
                     get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
                                                                              target,
                                                                              matchinterwiki.group(1))
@@ -325,7 +283,7 @@ async def regex_wiki(kwargs: dict):
                         matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
                         if matchinterwiki:
                             if matchinterwiki.group(1) == 'c':
-                                check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Group].id,
+                                check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Target].id,
                                                                                        'wiki_fandom_addon')
                                 if check_fandom_addon_enable:
                                     matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
@@ -389,10 +347,7 @@ async def regex_wiki(kwargs: dict):
                 if infoboxchain != MessageChain.create([]):
                     await sendMessage(kwargs, infoboxchain, Quote=False)
             if global_status == 'warn':
-                if Group in kwargs:
-                    trigger = kwargs[Member].id
-                if Friend in kwargs:
-                    trigger = kwargs[Friend].id
+                trigger = kwargs[Target].id
                 BotDB.warn_someone(trigger)
             if waitmsglist != MessageChain.create([]):
                 send = await sendMessage(kwargs, waitmsglist)
