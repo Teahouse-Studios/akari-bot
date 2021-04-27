@@ -125,10 +125,7 @@ async def wiki_wrapper(kwargs: dict):
             msg = await wikilib.wikilib().main(get_link, msg['title'])
             await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['title'])]))
     elif msg['status'] == 'warn':
-        if Group in kwargs:
-            trigger = kwargs[Member].id
-        if Friend in kwargs:
-            trigger = kwargs[Friend].id
+        trigger = kwargs[Target].senderId
         BotDB.warn_someone(trigger)
         await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['text'])]))
 
@@ -347,7 +344,7 @@ async def regex_wiki(kwargs: dict):
                 if infoboxchain != MessageChain.create([]):
                     await sendMessage(kwargs, infoboxchain, Quote=False)
             if global_status == 'warn':
-                trigger = kwargs[Target].id
+                trigger = kwargs[Target].senderId
                 BotDB.warn_someone(trigger)
             if waitmsglist != MessageChain.create([]):
                 send = await sendMessage(kwargs, waitmsglist)

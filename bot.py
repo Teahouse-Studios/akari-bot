@@ -10,9 +10,9 @@ from graia.application.message.chain import MessageChain
 
 from config import Config
 from core.broadcast import bcc, app
+from core.elements import Target
 from core.loader import Modules
 from core.parser import parser
-from core.elements import Target
 from legacy_subbot import newbie
 
 cache_path = os.path.abspath('./cache/')
@@ -30,13 +30,15 @@ write_version.close()
 
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
-    kwargs = {MessageChain: message, Group: group, Member: member, Target: Target(id=group.id, name=group.name, target_from='Group')}
+    kwargs = {MessageChain: message, Group: group, Member: member,
+              Target: Target(id=group.id, senderId=member.id, name=group.name, target_from='Group')}
     await parser(kwargs)
 
 
 @bcc.receiver('FriendMessage')
 async def group_message_handler(message: MessageChain, friend: Friend):
-    kwargs = {MessageChain: message, Friend: friend, Target: Target(id=friend.id, name=friend.nickname, target_from='Friend')}
+    kwargs = {MessageChain: message, Friend: friend,
+              Target: Target(id=friend.id, senderId=friend.id, name=friend.nickname, target_from='Friend')}
     await parser(kwargs)
 
 

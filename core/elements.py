@@ -6,5 +6,6 @@ from pydantic.fields import Field
 
 class Target(BaseModel):
     id: int
+    senderId: int
     name: str
     target_from: str

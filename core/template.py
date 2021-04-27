@@ -14,6 +14,7 @@ from graia.application.message.elements.internal import Plain, Image, Source
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
+from core.elements import Target
 from core.loader import logger_info
 from core.broadcast import app, bcc
 from database import BotDB as database
@@ -183,4 +184,6 @@ async def slk_converter(filepath):
 
 async def Nudge(kwargs):
     if Group in kwargs:
-        await app.sendNudge(kwargs[Member], kwargs[Group])
+        await app.nudge(kwargs[Member])
+    if Friend in kwargs:
+        await app.nudge(kwargs[Friend])
