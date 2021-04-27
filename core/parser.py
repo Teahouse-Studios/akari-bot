@@ -39,10 +39,10 @@ async def parser(kwargs: dict):
             if database.check_black_list(trigger):  # 检查是否在黑名单
                 if not database.check_white_list(trigger):  # 检查是否在白名单
                     return  # 在黑名单且不在白名单，给我爪巴
+            if display.find('色图来') != -1:  # 双倍快乐给我爬
+                await getsetu(kwargs)
+                return
             if display[0] in command_prefix:  # 检查消息前缀
-                if display.find('色图来') != -1:  # 双倍快乐给我爬
-                    await getsetu(kwargs)
-                    return 
                 command = re.sub(r'^' + display[0], '', display)
                 command_first_word = command.split(' ')[0]  # 切割消息
                 if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
