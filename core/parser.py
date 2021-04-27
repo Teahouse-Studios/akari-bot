@@ -42,6 +42,7 @@ async def parser(kwargs: dict):
             if display[0] in command_prefix:  # 检查消息前缀
                 if display.find('色图来') != -1:  # 双倍快乐给我爬
                     await getsetu(kwargs)
+                    return 
                 command = re.sub(r'^' + display[0], '', display)
                 command_first_word = command.split(' ')[0]  # 切割消息
                 if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
