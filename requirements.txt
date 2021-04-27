@@ -1,4 +1,4 @@
-graia-application-mirai
+graia-application-mirai==0.19.0
 pillow
 googletrans
 ffmpy
