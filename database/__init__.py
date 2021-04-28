@@ -111,12 +111,10 @@ class BB:
     def add_black_list(self, id):
         self.c.execute(f"INSERT INTO black_list (ID) VALUES ('{id}')")
         self.conn.commit()
-        self.c.close()
 
     def add_white_list(self, id):
         self.c.execute(f"INSERT INTO white_list (ID) VALUES ('{id}')")
         self.conn.commit()
-        self.c.close()
 
     def check_black_list(self, id):
         a = self.c.execute(f"SELECT * FROM black_list WHERE ID={id}").fetchone()
@@ -149,7 +147,6 @@ class BB:
         except:
             traceback.print_exc()
         self.conn.commit()
-        self.c.close()
         return '成功？我也不知道成没成，懒得写判断了（'
 
     def del_superuser(self, id):
@@ -158,7 +155,6 @@ class BB:
         except:
             traceback.print_exc()
         self.conn.commit()
-        self.c.close()
         return '成功？我也不知道成没成，懒得写判断了（'
 
     def warn_someone(self, id):
