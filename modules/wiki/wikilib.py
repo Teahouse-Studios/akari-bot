@@ -5,6 +5,7 @@ import traceback
 import urllib.parse
 
 import aiohttp
+import asyncio
 
 from core import dirty_check
 from .database import WikiDB
@@ -473,9 +474,12 @@ class wikilib:
         if self.template:
             if not re.match('^Template:', self.page_name, re.I):
                 self.page_name = 'Template:' + self.page_name
-        self.page_raw = await self.get_page_link()
-        if not self.page_raw:
-            return {'status': 'done', 'text': '发生错误：无法获取到页面。'}
+        try:
+            self.page_raw = await self.get_page_link()
+        except asyncio.exceptions.TimeoutError:
+            return {'status': 'done', 'text': '发生错误：请求页面超时。'}
+        except Exception as e:
+            return {'status': 'done', 'text': f'发生错误：{str(e)}'}
         if 'interwiki' in self.page_raw['query']:
             iwp = self.page_raw['query']['interwiki'][0]
             match_interwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
