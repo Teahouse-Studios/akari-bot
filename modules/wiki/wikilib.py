@@ -444,37 +444,37 @@ class wikilib:
         print(api_endpoint_link)
         print(page_name)
         print(interwiki)
-        if page_name == '':
-            article_path = await self.get_article_path(api_endpoint_link)
-            if not article_path:
-                article_path = '发生错误：此站点或许不是有效的Mediawiki网站。' + api_endpoint_link
-            return {'status': 'done', 'text': article_path}
-        page_name = re.sub('_', ' ', page_name)
-        page_name = page_name.split('|')[0]
-        self.wiki_api_endpoint = api_endpoint_link
-        danger_check = self.danger_wiki_check()
-        if danger_check:
-            if await self.danger_text_check(page_name):
-                return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
-        self.orginpagename = page_name
-        self.page_name = page_name
-        if interwiki == None:
-            self.interwiki = ''
-        else:
-            self.interwiki = interwiki
-        self.wiki_info = await self.get_wiki_info()
-        self.wiki_namespace = await self.get_namespace()
-        real_wiki_url = await self.get_real_address()
-        api_endpoint = re.match(r'^https?://.*?/(.*)', api_endpoint_link)
-        self.wiki_api_endpoint = real_wiki_url + '/' + api_endpoint.group(1)
-        self.wiki_articlepath = await self.get_article_path()
-        self.template = template
-        self.template_prompt = None
-        self.headers = headers
-        if self.template:
-            if not re.match('^Template:', self.page_name, re.I):
-                self.page_name = 'Template:' + self.page_name
         try:
+            if page_name == '':
+                article_path = await self.get_article_path(api_endpoint_link)
+                if not article_path:
+                    article_path = '发生错误：此站点或许不是有效的Mediawiki网站。' + api_endpoint_link
+                return {'status': 'done', 'text': article_path}
+            page_name = re.sub('_', ' ', page_name)
+            page_name = page_name.split('|')[0]
+            self.wiki_api_endpoint = api_endpoint_link
+            danger_check = self.danger_wiki_check()
+            if danger_check:
+                if await self.danger_text_check(page_name):
+                    return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
+            self.orginpagename = page_name
+            self.page_name = page_name
+            if interwiki == None:
+                self.interwiki = ''
+            else:
+                self.interwiki = interwiki
+            self.wiki_info = await self.get_wiki_info()
+            self.wiki_namespace = await self.get_namespace()
+            real_wiki_url = await self.get_real_address()
+            api_endpoint = re.match(r'^https?://.*?/(.*)', api_endpoint_link)
+            self.wiki_api_endpoint = real_wiki_url + '/' + api_endpoint.group(1)
+            self.wiki_articlepath = await self.get_article_path()
+            self.template = template
+            self.template_prompt = None
+            self.headers = headers
+            if self.template:
+                if not re.match('^Template:', self.page_name, re.I):
+                    self.page_name = 'Template:' + self.page_name
             self.page_raw = await self.get_page_link()
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done', 'text': '发生错误：请求页面超时。'}
