@@ -7,15 +7,14 @@ from core.template import sendMessage
 
 async def main(kwargs: dict):
     message = kwargs['trigger_msg']
-    message = re.sub('b30 ', '', message)
-    msg = await getb30(message)
+    message = message.split(' ')
+    if len(message) > 1:
+        msg = await getb30(message[1])
+    else:
+        msg = {'text': '请输入好友码！~b30 <friendcode>'}
 
     if 'file' in msg:
-        if Group in kwargs:
-            mth = UploadMethods.Group
-        if Friend in kwargs:
-            mth = UploadMethods.Friend
-        imgchain = MessageChain.create([Image.fromLocalFile(msg['file'], method=mth)])
+        imgchain = MessageChain.create([Image.fromLocalFile(msg['file'])])
     else:
         imgchain = False
     msgchain = MessageChain.create([Plain(msg['text'])])
