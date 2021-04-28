@@ -79,4 +79,4 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
 
 if __name__ == '__main__':
     dsimg(os.path.abspath(f'./assets/songimg/mahoroba.jpg'), '20', 'MAHOROBA', '2', 10000000, 12, 13, '999', '0', '0',
-          1601545604788)
+          1601545604789)

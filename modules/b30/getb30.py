@@ -16,7 +16,6 @@ async def getb30(usercode):
         url = "http://127.0.0.1:2333/v2/"
         async with session.get(url + "userbest30?usercode=" + usercode, headers=headers) as resp:
             a = await resp.text()
-            print(a)
             loadjson = json.loads(a)
             if loadjson["status"] == 0:
                 b30 = loadjson["content"]["best30_avg"]

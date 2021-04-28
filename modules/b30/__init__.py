@@ -1,8 +1,7 @@
 from graia.application import Group, MessageChain, Friend
 
 from .getb30 import getb30
-import re
-from graia.application.message.elements.internal import Image, UploadMethods, Plain
+from graia.application.message.elements.internal import Image, Plain
 from core.template import sendMessage
 
 async def main(kwargs: dict):
