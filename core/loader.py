@@ -6,6 +6,7 @@ import traceback
 from graia.application.logger import LoggingLogger
 
 DisplayAttributeError = False
+err_prompt = []
 
 
 def logger_info(msg):
@@ -97,6 +98,7 @@ class ModulesLoader:
                                 logger_info(str(e))
             except:
                 traceback.print_exc()
+                err_prompt.append(str(traceback.format_exc()))
         functions_list["modules_function"] = list(set(functions_list["modules_function"]))
         functions_list["friend_modules_function"] = list(set(functions_list["friend_modules_function"]))
         logger_info(f'Now we have function = {functions_list["modules_function"]}')
@@ -105,3 +107,11 @@ class ModulesLoader:
 
 
 Modules = ModulesLoader().load_modules()
+
+loadercache = os.path.abspath('.cache_loader')
+openloadercache = open(loadercache, 'w')
+if err_prompt:
+    openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + '\n'.join(err_prompt))
+else:
+    openloadercache.write('所有模块已正确加载。')
+openloadercache.close()

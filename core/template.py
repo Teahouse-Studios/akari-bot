@@ -71,6 +71,13 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
                 send = await app.sendFriendMessage(kwargs[Friend], MessageChain.create([imgs]))
                 sent_msgs.append(send)
             return sent_msgs
+    if 'From' in kwargs:
+        if kwargs['From'] == 'Group':
+            send = await app.sendGroupMessage(kwargs['ID'], msgchain)
+            return send
+        if kwargs['From'] == 'Friend':
+            send = await app.sendFriendMessage(kwargs['ID'], msgchain)
+            return send
     if 'TEST' in kwargs:
         print(msgchain.asDisplay())
 

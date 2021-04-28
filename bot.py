@@ -13,6 +13,7 @@ from core.broadcast import bcc, app
 from core.elements import Target
 from core.loader import Modules
 from core.parser import parser
+from core.utils import load_prompt as lp
 from legacy_subbot import newbie
 
 cache_path = os.path.abspath('./cache/')
@@ -65,6 +66,10 @@ async def message_handler(app: GraiaMiraiApplication):
 async def legacy_message_handler(app: GraiaMiraiApplication):
     if Config('account') != '2052142661':
         await newbie(app)
+
+@bcc.receiver('ApplicationLaunched', priority=16)
+async def load_prompt(app: GraiaMiraiApplication):
+    await lp()
 
 
 app.launch_blocking()

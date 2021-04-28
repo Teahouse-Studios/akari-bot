@@ -1,6 +1,8 @@
 import os
 import sys
+import json
 
+from core.elements import Target
 from core.template import sendMessage, wait_confirm
 from database import BotDB as database
 
@@ -38,6 +40,10 @@ async def restart_bot(kwargs: dict):
     await sendMessage(kwargs, '你确定吗？')
     confirm = await wait_confirm(kwargs)
     if confirm:
+        update = os.path.abspath('.cache_restart_author')
+        write_version = open(update, 'w')
+        write_version.write(json.dumps({'From': kwargs[Target].target_from, 'ID': kwargs[Target].id}))
+        write_version.close()
         await sendMessage(kwargs, '已执行。')
         python = sys.executable
         os.execl(python, python, *sys.argv)
@@ -55,6 +61,10 @@ async def update_and_restart_bot(kwargs: dict):
     await sendMessage(kwargs, '你确定吗？')
     confirm = await wait_confirm(kwargs)
     if confirm:
+        update = os.path.abspath('.cache_restart_author')
+        write_version = open(update, 'w')
+        write_version.write(json.dumps({'From': kwargs[Target].target_from, 'ID': kwargs[Target].id}))
+        write_version.close()
         result = os.popen('git pull', 'r')
         await sendMessage(kwargs, result.read())
         python = sys.executable

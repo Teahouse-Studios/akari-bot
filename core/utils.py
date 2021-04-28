@@ -1,3 +1,4 @@
+import os
 import re
 
 import aiohttp
@@ -7,6 +8,21 @@ from core.template import sendMessage
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Image, Plain
 
+
+async def load_prompt():
+    authorcache = os.path.abspath('.cache_restart_author')
+    loadercache = os.path.abspath('.cache_loader')
+    if os.path.exists(authorcache):
+        import json
+        from core.template import sendMessage
+        openauthorcache = open(authorcache, 'r')
+        cachejson = json.loads(openauthorcache.read())
+        openloadercache = open(loadercache, 'r')
+        await sendMessage(cachejson, openloadercache.read(), Quote=False)
+        openloadercache.close()
+        openauthorcache.close()
+        os.remove(authorcache)
+        os.remove(loadercache)
 
 async def get_url(url: str, headers=None):
     async with aiohttp.ClientSession() as session:
