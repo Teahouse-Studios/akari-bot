@@ -56,6 +56,14 @@ async def ping(kwargs: dict):
     Swap_percent = psutil.swap_memory().percent
     Disk = int(psutil.disk_usage('.').used / (1024 * 1024 * 1024))
     DiskTotal = int(psutil.disk_usage('.').total / (1024 * 1024 * 1024))
+    try:
+        GroupList = len(await app.groupList())
+    except Exception:
+        GroupList = '无法获取'
+    try:
+        FriendList = len(await app.friendList())
+    except Exception:
+        FriendList = '无法获取'
     BFH = r'%'
     result = ("Pong!"
               + f"\n系统运行时间：{Boot_Start}"
@@ -63,8 +71,8 @@ async def ping(kwargs: dict):
               + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
               + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
               + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
-              + f"\n已加入群聊：{len(await app.groupList())}"
-              + f" | 已添加好友：{len(await app.friendList())}")
+              + f"\n已加入群聊：{GroupList}"
+              + f" | 已添加好友：{FriendList}")
     await sendMessage(kwargs, result)
 
 
