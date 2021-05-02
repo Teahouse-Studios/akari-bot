@@ -141,7 +141,7 @@ class wikilib:
         interwiki_dict = {}
         if iw is None:
             for interwiki in interwikimap:
-                interwiki_dict[interwiki['prefix']] = interwiki['url']
+                interwiki_dict[interwiki['prefix']] = re.sub(r'\$1$', '', interwiki['url'])
         else:
             if iw in interwikimap:
                 interwiki_dict[iw] = interwikimap[iw]['url']
@@ -178,7 +178,7 @@ class wikilib:
             if not wiki_info:
                 return False
         article_path = wiki_info['query']['general']['articlepath']
-        article_path = re.sub(r'\$1', '', article_path)
+        article_path = re.sub(r'\$1$', '', article_path)
         print(url)
         base_url = re.match(r'(https?://.*?)/.*', url)
         return base_url.group(1) + article_path

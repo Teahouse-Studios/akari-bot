@@ -165,6 +165,7 @@ async def interwiki(kwargs: dict):
             await sendMessage(kwargs, MessageChain.create([Plain(result)]))
             return
     table = 'custom_interwiki_' + kwargs[Target].target_from
+    htable = 'request_headers_' + kwargs[Target].target_from
     target = kwargs[Target].id
     if command[0] == 'add':
         command = ' '.join(command[1:])
@@ -173,7 +174,7 @@ async def interwiki(kwargs: dict):
         if len(iw) == 1 or len(iw) > 2:
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
-        check = await wikilib.wikilib().check_wiki_available(iw[1], headers=WikiDB.config_headers('get', table, target))
+        check = await wikilib.wikilib().check_wiki_available(iw[1], headers=WikiDB.config_headers('get', htable, target))
         if check[0]:
             result = WikiDB.config_custom_interwiki('add', table, target, iw[0],
                                                     check[0])
