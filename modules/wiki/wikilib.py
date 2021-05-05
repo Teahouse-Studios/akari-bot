@@ -291,7 +291,7 @@ class wikilib:
                 if x != '':
                     desc_list.append(x)
             desc = '\n'.join(desc_list)
-            desc_end = re.findall(r'(.*?(?:!|\?|\.\s|！|？|。)).*', desc, re.S | re.M)
+            desc_end = re.findall(r'(.*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc, re.S | re.M)
             if desc_end:
                 desc = desc_end[0]
         except Exception:
@@ -313,7 +313,7 @@ class wikilib:
                 if x != '':
                     desc_list.append(x)
             desc_raw = '\n'.join(desc_list)
-            cut_desc = re.findall(r'(.*?(?:!|\?|\.\s|！|？|。)).*', desc_raw, re.S | re.M)
+            cut_desc = re.findall(r'(.*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc_raw, re.S | re.M)
             if cut_desc:
                 desc = cut_desc[0]
             else:
@@ -380,11 +380,10 @@ class wikilib:
                                 self.query_text_name = geturl_pagename + '/doc'
                         except AttributeError:
                             self.query_text_name = geturl_pagename + '/doc'
-            if 'TextExtracts' in await self.get_enabled_extensions():
+            enabled_extensions = await self.get_enabled_extensions()
+            if 'TextExtracts' in enabled_extensions:
                 desc = await self.get_desc()
             else:
-                desc = ''
-            if desc == '':
                 desc = await self.get_first_line()
             print(desc)
             fin_page_name = geturl_pagename
