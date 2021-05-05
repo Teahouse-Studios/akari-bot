@@ -115,8 +115,9 @@ async def wiki_wrapper(kwargs: dict):
             get_link = msg['apilink']
         if 'url' in msg:
             pic = await get_infobox_pic(get_link, msg['url'], headers)
-            imgchain = MessageChain.create([Image.fromLocalFile(pic)])
-            await sendMessage(kwargs, imgchain)
+            if pic:
+                imgchain = MessageChain.create([Image.fromLocalFile(pic)])
+                await sendMessage(kwargs, imgchain)
 
     elif msg['status'] == 'wait':
         await sendMessage(kwargs, MessageChain.create([Plain(msg['text'])]))

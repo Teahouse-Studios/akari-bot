@@ -297,7 +297,7 @@ class wikilib:
         except Exception:
             traceback.print_exc()
             desc = ''
-        if desc == '...':
+        if desc in ['...', '…']:
             desc = ''
         return desc
 
