@@ -35,10 +35,10 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
             QuoteTarget = kwargs[MessageChain][Source][0].id
         else:
             QuoteTarget = None
+    eventlet.monkey_patch()
     if Group in kwargs:
         try:
-            eventlet.monkey_patch()
-            with eventlet.Timeout(15):
+            with eventlet.Timeout(15, False):
                 send = await app.sendGroupMessage(kwargs[Group], msgchain, quote=QuoteTarget)
                 return send
         except eventlet.timeout.Timeout:
@@ -56,8 +56,7 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
             return sent_msgs
     if Friend in kwargs:
         try:
-            eventlet.monkey_patch()
-            with eventlet.Timeout(15):
+            with eventlet.Timeout(15, False):
                 send = await app.sendFriendMessage(kwargs[Friend], msgchain)
                 return send
         except eventlet.timeout.Timeout:
