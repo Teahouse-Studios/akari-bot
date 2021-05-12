@@ -41,11 +41,11 @@ async def parser(kwargs: dict):
         if display.find('色图来') != -1:  # 双倍快乐给我爬
             await getsetu(kwargs)
             return
-        if display[0] in command_prefix:  # 检查消息前缀
-            command = re.sub(r'^' + display[0], '', display)
-            command_first_word = command.split(' ')[0]  # 切割消息
-            try:
-                with eventlet.Timeout(90, False):
+        try:
+            with eventlet.Timeout(90, False):
+                if display[0] in command_prefix:  # 检查消息前缀
+                    command = re.sub(r'^' + display[0], '', display)
+                    command_first_word = command.split(' ')[0]  # 切割消息
                     if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
                         eventlet.monkey_patch()
                         if Group in kwargs:
@@ -90,7 +90,7 @@ async def parser(kwargs: dict):
                 if Friend in kwargs:
                     for regex in Modules['regex']:
                         await Modules['regex'][regex](kwargs)
-            except eventlet.timeout.Timeout:
-                await sendMessage(kwargs, '发生错误：执行命令超时。')
+        except eventlet.timeout.Timeout:
+            await sendMessage(kwargs, '发生错误：执行命令超时。')
     except:
         traceback.print_exc()
