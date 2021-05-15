@@ -32,6 +32,8 @@ async def get_infobox_pic(link, pagelink, headers):
         if os.path.exists(url):
             os.remove(url)
         logger_info('Downloaded raw.')
+        open_file = open(url, 'a', encoding='utf-8')
+        html_list = []
         find_infobox = soup.find(class_='notaninfobox')  # 我
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='portable-infobox')  # 找
@@ -46,26 +48,28 @@ async def get_infobox_pic(link, pagelink, headers):
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='skin-infobox')  # 找
         if find_infobox is None:  # 找
-            find_infobox = soup.find(class_='songbox')  # 找 (arcw)
+            elementlist = []
+            for x in soup.find_all('style'):
+                if x.has_attr('href'):
+                    x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
+                if x.has_attr('style'):
+                    x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
+                print(x)
+                elementlist.append(str(x.parent))
+
+            find_infobox = BeautifulSoup('\n'.join(elementlist), 'html.parser')
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='songtable')  # 找 (arcw)
         if find_infobox is None:  # 找
             return False  # 找你妈，不找了<-咱还是回家吧
         logger_info('Find infobox, start modding...')
 
-        if infobox_render is None:
-            open_file = open(url, 'a', encoding='utf-8')
-        else:
-            html_list = []
-
         for x in soup.find_all(rel='stylesheet'):
-            y = str(x.get('href'))
-            z = urljoin(wlink, y)
-            z = re.sub(';', '&', z)
-            if infobox_render is None:
-                open_file.write(f'<link href="{z}" rel="stylesheet"/>\n')
-            else:
-                html_list.append(f'<link href="{z}" rel="stylesheet"/>\n')
+            if x.has_attr('href'):
+                x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
+            print(x)
+            open_file.write(str(x))
+            html_list.append(str(x))
 
         def join_url(base, target):
             target = target.split(' ')
@@ -90,13 +94,11 @@ async def get_infobox_pic(link, pagelink, headers):
                 x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
         replace_link = find_infobox
 
-        if infobox_render is None:
-            open_file.write(str(replace_link))
-            open_file.close()
-        else:
-            html_list.append(str(replace_link))
-            html = '\n'.join(html_list)
-            html = {'content': html}
+        open_file.write(str(replace_link))
+        open_file.close()
+        html_list.append(str(replace_link))
+        html = '\n'.join(html_list)
+        html = {'content': html}
         logger_info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
