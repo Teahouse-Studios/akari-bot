@@ -64,7 +64,7 @@ async def message_handler(app: GraiaMiraiApplication):
 
 @bcc.receiver('ApplicationLaunched')
 async def legacy_message_handler(app: GraiaMiraiApplication):
-    if Config('account') == '2926887640':
+    if Config('account') != '2052142661':
         await newbie(app)
 
 @bcc.receiver('ApplicationLaunched', priority=16)
