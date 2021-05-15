@@ -46,7 +46,7 @@ async def get_infobox_pic(link, pagelink, headers):
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='skin-infobox')  # 找
         if find_infobox is None:  # 找
-            find_infobox = soup.find(class_='songbox')  # 找 (arcw)
+            find_infobox = soup.find(id_='songbox')  # 找 (arcw)
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='songtable')  # 找 (arcw)
         if find_infobox is None:  # 找
