@@ -5,7 +5,6 @@ from os.path import abspath
 import os
 
 import aiohttp
-import eventlet
 import filetype as ft
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
