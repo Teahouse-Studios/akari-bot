@@ -36,41 +36,11 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
         else:
             QuoteTarget = None
     if Group in kwargs:
-        try:
-            eventlet.monkey_patch()
-            with eventlet.Timeout(15):
-                send = await app.sendGroupMessage(kwargs[Group], msgchain, quote=QuoteTarget)
-                return send
-        except eventlet.timeout.Timeout:
-            split_msg = msgchain.get(Plain)
-            sent_msgs = []
-            for msgs in split_msg:
-                send = await app.sendGroupMessage(kwargs[Group], MessageChain.create([msgs]),
-                                                  quote=QuoteTarget)
-                sent_msgs.append(send)
-            split_img = msgchain.get(Image)
-            for imgs in split_img:
-                send = await app.sendGroupMessage(kwargs[Group], MessageChain.create([imgs]),
-                                                  quote=QuoteTarget)
-                sent_msgs.append(send)
-            return sent_msgs
+        send = await app.sendGroupMessage(kwargs[Group], msgchain, quote=QuoteTarget)
+        return send
     if Friend in kwargs:
-        try:
-            eventlet.monkey_patch()
-            with eventlet.Timeout(15):
-                send = await app.sendFriendMessage(kwargs[Friend], msgchain)
-                return send
-        except eventlet.timeout.Timeout:
-            split_msg = msgchain.get(Plain)
-            sent_msgs = []
-            for msgs in split_msg:
-                send = await app.sendFriendMessage(kwargs[Friend], MessageChain.create([msgs]))
-                sent_msgs.append(send)
-            split_img = msgchain.get(Image)
-            for imgs in split_img:
-                send = await app.sendFriendMessage(kwargs[Friend], MessageChain.create([imgs]))
-                sent_msgs.append(send)
-            return sent_msgs
+        send = await app.sendFriendMessage(kwargs[Friend], msgchain)
+        return send
     if 'From' in kwargs:
         if kwargs['From'] == 'Group':
             send = await app.sendGroupMessage(kwargs['ID'], msgchain)
