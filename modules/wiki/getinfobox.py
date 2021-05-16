@@ -33,7 +33,6 @@ async def get_infobox_pic(link, pagelink, headers):
             os.remove(url)
         logger_info('Downloaded raw.')
         open_file = open(url, 'a', encoding='utf-8')
-        html_list = []
         find_infobox = soup.find(class_='notaninfobox')  # 我
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='portable-infobox')  # 找
@@ -48,16 +47,9 @@ async def get_infobox_pic(link, pagelink, headers):
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='skin-infobox')  # 找
         if find_infobox is None:  # 找
-            elementlist = []
-            for x in soup.find_all('style'):
-                if x.has_attr('href'):
-                    x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
-                if x.has_attr('style'):
-                    x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
-                print(x)
-                elementlist.append(str(x.parent))
-
-            find_infobox = BeautifulSoup('\n'.join(elementlist), 'html.parser')
+            find_infobox = soup.find(class_='songbox')  # 找 (arcw)
+            if find_infobox is not None:
+                find_infobox = find_infobox.parent  # 曲线救国，以后再找新办法（
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='songtable')  # 找 (arcw)
         if find_infobox is None:  # 找
@@ -67,9 +59,7 @@ async def get_infobox_pic(link, pagelink, headers):
         for x in soup.find_all(rel='stylesheet'):
             if x.has_attr('href'):
                 x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
-            print(x)
             open_file.write(str(x))
-            html_list.append(str(x))
 
         def join_url(base, target):
             target = target.split(' ')
@@ -96,9 +86,8 @@ async def get_infobox_pic(link, pagelink, headers):
 
         open_file.write(str(replace_link))
         open_file.close()
-        html_list.append(str(replace_link))
-        html = '\n'.join(html_list)
-        html = {'content': html}
+        read_file = open(url, 'r', encoding='utf-8')
+        html = {'content': read_file.read()}
         logger_info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
