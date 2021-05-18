@@ -6,8 +6,7 @@ from graia.application import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
-from core.elements import Target
-from core.loader import Modules
+from core.loader import Modules, logger_info
 from core.template import sendMessage, Nudge
 from core.utils import getsetu
 from database import BotDB as database
@@ -44,6 +43,7 @@ async def parser(kwargs: dict):
         try:
             with eventlet.Timeout(90, False):
                 if display[0] in command_prefix:  # 检查消息前缀
+                    logger_info(kwargs)
                     command = re.sub(r'^' + display[0], '', display)
                     command_first_word = command.split(' ')[0]  # 切割消息
                     if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中

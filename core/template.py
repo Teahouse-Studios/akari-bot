@@ -154,7 +154,9 @@ async def download_to_cache(link):
 
 async def slk_converter(filepath):
     filepath2 = filepath + '.silk'
+    logger_info('Start encoding voice...')
     os.system('python slk_coder.py ' + filepath)
+    logger_info('Voice encoded.')
     return filepath2
 
 
