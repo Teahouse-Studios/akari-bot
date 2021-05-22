@@ -9,18 +9,12 @@ from database import BotDB as database
 
 async def add_su(kwargs: dict):
     command = kwargs['trigger_msg'].split(' ')
-    if database.check_superuser(kwargs):
-        await sendMessage(kwargs, database.add_superuser(command[1]))
-    else:
-        await sendMessage(kwargs, '权限不足。')
+    await sendMessage(kwargs, database.add_superuser(command[1]))
 
 
 async def del_su(kwargs: dict):
     command = kwargs['trigger_msg'].split(' ')
-    if database.check_superuser(kwargs):
-        await sendMessage(kwargs, database.del_superuser(command[1]))
-    else:
-        await sendMessage(kwargs, '权限不足。')
+    await sendMessage(kwargs, database.del_superuser(command[1]))
 
 
 async def add_base_su(kwargs: dict):
