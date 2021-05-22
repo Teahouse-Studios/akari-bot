@@ -3,7 +3,7 @@ import re
 
 from core.dirty_check import check
 from core.template import sendMessage, revokeMessage
-from .server import server, server_be
+from .server import server
 
 
 async def main(kwargs: dict):
@@ -20,15 +20,19 @@ async def main(kwargs: dict):
         showplayer = True
     else:
         showplayer = False
-    sendmsg = await server(message, raw, showplayer)
+    gather_list = []
+    sm = ['j', 'b']
+    for x in sm:
+        gather_list.append(asyncio.ensure_future(s(kwargs, message, raw, showplayer, x)))
+    await asyncio.gather(*gather_list)
+
+
+async def s(kwargs, message, raw, showplayer, mode):
+    sendmsg = await server(message, raw, showplayer, mode)
     sendmsg = await check(sendmsg)
     send = await sendMessage(kwargs, sendmsg)
-    sendmsgb = await server_be(message, raw)
-    sendmsgb = await check(sendmsgb)
-    sendb = await sendMessage(kwargs, sendmsgb)
-    await asyncio.sleep(30)
+    await asyncio.sleep(120)
     await revokeMessage(send)
-    await revokeMessage(sendb)
 
 
 command = {'server': main}
