@@ -67,8 +67,9 @@ async def legacy_message_handler(app: GraiaMiraiApplication):
     if Config('account') == '2926887640':
         await newbie(app)
 
+
 @bcc.receiver('ApplicationLaunched', priority=16)
-async def load_prompt(app: GraiaMiraiApplication):
+async def load_prompt():
     await lp()
 
 
