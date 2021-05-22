@@ -1,4 +1,5 @@
-from configparser import ConfigParser
+import traceback
+from configparser import ConfigParser, NoOptionError
 from os.path import abspath
 
 config_filename = 'config.cfg'
@@ -9,8 +10,12 @@ class CFG:
     def config(self, q):
         cp = ConfigParser()
         cp.read(config_path)
-        section = cp.sections()[0]
-        value = cp.get(section, q)
+        try:
+            section = cp.sections()[0]
+            value = cp.get(section, q)
+        except Exception:
+            traceback.print_exc()
+            return False
         if value.upper() == 'TRUE':
             return True
         if value.upper() == 'FALSE':

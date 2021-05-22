@@ -15,6 +15,8 @@ infobox_render = Config('infobox_render')
 
 
 async def get_infobox_pic(link, pagelink, headers):
+    if not infobox_render:
+        return False
     try:
         logger_info('Starting find infobox..')
         wlink = re.sub(r'api.php', '', link)
