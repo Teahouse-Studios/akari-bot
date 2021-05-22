@@ -22,11 +22,10 @@ def computeMD5hash(my_string):
 
 
 async def check(*text):
-    try:
-        accessKeyId = Config("Check_accessKeyId")
-        accessKeySecret = Config("Check_accessKeySecret")
-    except Exception:
-        return '\n'.join(text)
+    accessKeyId = Config("Check_accessKeyId")
+    accessKeySecret = Config("Check_accessKeySecret")
+    if not accessKeyId or not accessKeySecret:
+        return "\n".join(text)
     body = {
         "scenes": [
             "antispam"
