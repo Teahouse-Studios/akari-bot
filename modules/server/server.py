@@ -103,8 +103,9 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                     else:
                         bemotd = await req.text()
                         bejson = json.loads(bemotd)
+                        print(bejson)
                         edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
-                        game_mode, game_mode_num, port_v4, port_v6, nothing_here = bejson['motd'].split(';')
+                        game_mode, game_mode_num = bejson['motd'].split(';')
                         bemsg = '[BE]\n' + \
                                 motd_1 + ' - ' + motd_2 + \
                                 '\n在线玩家：' + player_count + '/' + max_players + \

@@ -14,7 +14,6 @@ class CFG:
             section = cp.sections()[0]
             value = cp.get(section, q)
         except Exception:
-            traceback.print_exc()
             return False
         if value.upper() == 'TRUE':
             return True

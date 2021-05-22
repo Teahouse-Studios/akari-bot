@@ -43,7 +43,7 @@ async def dirty_check(text, *whitelist_check):
     ]
     if whitelist_check in whitelist:
         return False
-    check = await dirty.check([text])
+    check = await dirty.check(text)
     print(check)
     if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
         return True
@@ -211,6 +211,7 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
     except Exception as error:
         await sendMessage(kwargs, '发生错误：' + str(error))
+        traceback.print_exc()
 
 
 async def search(kwargs: dict, cmd: list):
@@ -235,6 +236,7 @@ async def search(kwargs: dict, cmd: list):
         await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
     except Exception as error:
         await sendMessage(kwargs, '发生错误：' + str(error))
+        traceback.print_exc()
 
 async def forker(kwargs: dict):
     cmd = kwargs['trigger_msg']
