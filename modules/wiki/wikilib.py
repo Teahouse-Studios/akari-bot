@@ -245,7 +245,7 @@ class wikilib:
                 target = ''
             else:
                 target = f'{self.interwiki}:'
-            prompt = f'找不到{target}{self.page_name}，您是否要找的是：[[{target}{sec_title}]]？'
+            prompt = f'找不到{target}{self.page_name}，您是否要找的是：[{target}{sec_title}]？'
             title_split = self.page_name.split(':')
             if len(title_split) > 1:
                 try:
