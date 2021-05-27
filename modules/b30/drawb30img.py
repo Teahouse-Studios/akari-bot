@@ -45,7 +45,7 @@ def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour
 def drawb30(Username, b30, r10, ptt, character, path=''):
     b30img = Image.new("RGBA", (2489, 1400))
     # backgroud
-    bg = Image.open(os.path.abspath('./assets/1001.jpg'))
+    bg = Image.open(os.path.abspath('./assets/6.jpg'))
     bg = bg.resize((2560, 4096))
     b30img.alpha_composite(bg.convert("RGBA"), (0, 0))
     # triangle
