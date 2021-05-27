@@ -34,6 +34,12 @@ async def parser(kwargs: dict):
             trigger = 0
         if trigger == 1143754816:  # 特殊规则
             display = re.sub('^.*:\n', '', display)
+        strip_display_space = display.split(' ')
+        display_list = []  # 清除指令中间多余的空格
+        for x in strip_display_space:
+            if x != '':
+                display_list.append(x)
+        display = ' '.join(display_list)
         if database.check_black_list(trigger):  # 检查是否在黑名单
             if not database.check_white_list(trigger):  # 检查是否在白名单
                 return  # 在黑名单且不在白名单，给我爪巴
@@ -45,7 +51,6 @@ async def parser(kwargs: dict):
             command = re.sub(r'^' + display[0], '', display)
             command_first_word = command.split(' ')[0]  # 切割消息
             if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
-                eventlet.monkey_patch()
                 if Group in kwargs:
                     await Nudge(kwargs)
                     check_command_enable = database.check_enable_modules(kwargs[Group].id,

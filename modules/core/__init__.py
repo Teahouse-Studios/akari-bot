@@ -53,16 +53,7 @@ async def enable_modules(kwargs: dict):
                 return
             command_second_word = command[2]
         do = 'add'
-        if command_second_word == 'all':
-            msglist = []
-            for function in function_list:
-                msg = database.update_modules_self(do, kwargs[Friend].id, function)
-                msglist.append(msg)
-            await sendMessage(kwargs, '\n'.join(msglist))
-        elif command_second_word in function_list:
-            msg = database.update_modules_self(do, kwargs[Friend].id, command_second_word)
-            await sendMessage(kwargs, msg)
-        elif command_second_word in friend_function_list:
+        if command_second_word in friend_function_list:
             msg = database.update_modules(do, kwargs[Friend].id, command_second_word, table='friend_permission')
             await sendMessage(kwargs, msg)
         else:
@@ -114,16 +105,7 @@ async def disable_modules(kwargs: dict):
                 return
             command_second_word = command[2]
         do = 'del'
-        if command_second_word == 'all':
-            msglist = []
-            for function in function_list:
-                msg = database.update_modules_self(do, kwargs[Friend].id, function)
-                msglist.append(msg)
-            await sendMessage(kwargs, '\n'.join(msglist))
-        elif command_second_word in function_list:
-            msg = database.update_modules_self(do, kwargs[Friend].id, command_second_word)
-            await sendMessage(kwargs, msg)
-        elif command_second_word in friend_function_list:
+        if command_second_word in friend_function_list:
             msg = database.update_modules(do, kwargs[Friend].id, command_second_word, table='friend_permission')
             await sendMessage(kwargs, msg)
         else:
