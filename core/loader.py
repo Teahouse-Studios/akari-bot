@@ -111,7 +111,8 @@ Modules = ModulesLoader().load_modules()
 loadercache = os.path.abspath('.cache_loader')
 openloadercache = open(loadercache, 'w')
 if err_prompt:
-    openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + '\n'.join(err_prompt))
+    err_prompt = re.sub('  File "<frozen importlib.*?>", .*?\n', '', '\n'.join(err_prompt))
+    openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + err_prompt)
 else:
     openloadercache.write('所有模块已正确加载。')
 openloadercache.close()
