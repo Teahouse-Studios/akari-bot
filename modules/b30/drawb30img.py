@@ -46,7 +46,7 @@ def drawb30(Username, b30, r10, ptt, character, path=''):
     b30img = Image.new("RGBA", (2489, 1400))
     # backgroud
     bg = Image.open(os.path.abspath('./assets/1001.jpg'))
-    bg = bg.resize((3072, 3072))
+    bg = bg.resize((2560, 4096))
     b30img.alpha_composite(bg.convert("RGBA"), (0, 0))
     # triangle
     tg = Image.open(os.path.abspath('./assets/triangle.png'))
