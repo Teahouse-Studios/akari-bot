@@ -168,7 +168,7 @@ async def interwiki(kwargs: dict):
     table = 'custom_interwiki_' + kwargs[Target].target_from
     htable = 'request_headers_' + kwargs[Target].target_from
     target = kwargs[Target].id
-    if command[0] == 'add':
+    if command[0] in ['add', 'set']:
         command = ' '.join(command[1:])
         command = re.sub(' ', '>', command)
         iw = command.split('>')

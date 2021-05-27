@@ -87,6 +87,19 @@ async def get_infobox_pic(link, pagelink, headers):
         replace_link = find_infobox
 
         open_file.write(str(replace_link))
+        open_file.write('<style>span.heimu a.external,\
+span.heimu a.external:visited,\
+span.heimu a.extiw,\
+span.heimu a.extiw:visited {\
+    color: #252525;\
+}\
+.heimu,\
+.heimu a,\
+a .heimu,\
+.heimu a.new {\
+    background-color: #cccccc;\
+    text-shadow: none;\
+}</style>')
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
         html = {'content': read_file.read()}
