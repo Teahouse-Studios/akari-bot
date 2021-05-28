@@ -51,7 +51,7 @@ def drawb30(Username, b30, r10, ptt, character, path=''):
     bgr = random.randint(0, len(bglist))
     bg = Image.open(bgimgpath + f'/{bglist[bgr]}')
     bg = bg.resize((bg.size[0] * 2, bg.size[1] * 2))
-    b30img.alpha_composite(bg.convert("RGBA"), (0, 0))
+    b30img.alpha_composite(bg.convert("RGBA"), (0, -random.randint(0, 2048)))
     # triangle
     tg = Image.open(os.path.abspath('./assets/arcaea/triangle.png'))
     b30img.alpha_composite(tg.convert("RGBA"), (1580, 550))
