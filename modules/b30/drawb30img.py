@@ -1,7 +1,7 @@
 import os
+import random
 import traceback
 import uuid
-import random
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -97,16 +97,17 @@ def drawb30(Username, b30, r10, ptt, character, path=''):
     font2_width, font2_height = font2.getsize(ptt2)
     print(font1_width, font1_height)
     print(font2_width, font2_height)
-    pttimg = Image.new("RGBA", (font1_width + font2_width+4, font1_height+4))
+    pttimg = Image.new("RGBA", (font1_width + font2_width + 4, font1_height + 4))
     drawptt = ImageDraw.Draw(pttimg)
     text_border(drawptt, 0, 0,
-                ptt1+'.',
+                ptt1 + '.',
                 '#52495d', 'white', font=font1)
-    print(int(int(font1_height)-int(font2_height)))
+    print(int(int(font1_height) - int(font2_height)))
     text_border(drawptt, font1_width, 9, ptt2,
                 '#52495d', 'white', font=font2)
     pttimg_width, pttimg_height = pttimg.size
-    ptttext.alpha_composite(pttimg, (int((ptttext_width-pttimg_width)/2), int((ptttext_height-pttimg_height)/2)))
+    ptttext.alpha_composite(pttimg,
+                            (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2)))
     b30img.alpha_composite(ptttext, (1712, 1157))
     # username
     userfont = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/GeosansLight.ttf'), 45)

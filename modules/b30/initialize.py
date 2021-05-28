@@ -1,10 +1,11 @@
-import re
-import zipfile
-import os
-import shutil
-
 import math
+import os
+import re
+import shutil
+import zipfile
+
 from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
+
 from core.template import sendMessage
 
 
@@ -30,8 +31,8 @@ async def arcb30init(kwargs):
             output = os.path.abspath('./cache/songoutput/')
             if not os.path.exists(output):
                 os.makedirs(output)
-            file = re.sub('dl_','',file)
-            filename = filename+'/base.jpg'
+            file = re.sub('dl_', '', file)
+            filename = filename + '/base.jpg'
             if os.path.exists(filename):
                 shutil.copy(filename, f'{output}/{file}.jpg')
 
@@ -57,12 +58,12 @@ async def arcb30init(kwargs):
     for file in files:
         img = Image.open(os.path.abspath(f'{outputpath}/{file}'))
         img1 = img.resize((325, 325))
-        img2 = img1.crop((0,62,325,263))
+        img2 = img1.crop((0, 62, 325, 263))
         img2.save(os.path.abspath(f'{songimgdir}/{file}'))
 
     shutil.copytree(cache + '/assets/char', assets + '/char')
     shutil.copytree(cache + '/assets/Fonts', assets + '/Fonts')
-    ratings = ['0','1','2','3','4','5','6','off']
+    ratings = ['0', '1', '2', '3', '4', '5', '6', 'off']
     os.mkdir(assets + f'/ptt/')
     for rating in ratings:
         shutil.copy(cache + f'/assets/img/rating_{rating}.png', assets + f'/ptt/rating_{rating}.png')
@@ -74,15 +75,14 @@ async def arcb30init(kwargs):
         if x.find('_') == -1:
             shutil.copy(cache + f'/assets/img/world/{x}', assets + f'/world/{x}')
 
-
     coordinate = {'left_top': [1070, 25], 'right_top': [1070, 25], 'right_bottom': [1070, 959],
                   'left_bottom': [134, 959]}
     rotate = Rotate(Image.open(cache + '/assets/img/scenery/bg_triangle.png'), coordinate)
     rotate.run().convert('RGBA').save(assets + '/triangle.png')
     cardoverlay = Image.open(os.path.abspath(f'{cache}/assets/layouts/mainmenu/card/card_overlay.png'))
-    cropoverlay = cardoverlay.crop((56, 307, 771, 377))
+    cropoverlay = cardoverlay.crop((56, 307, 971, 377))
     cropoverlay.save(os.path.abspath(f'{assets}/card_overlay.png'))
-    difficult = ['0','1','2','3']
+    difficult = ['0', '1', '2', '3']
     for ds in difficult:
         d = Image.open(os.path.abspath(f'{cache}/assets/img/cutoff_dia_{ds}.png'))
         cd = d.crop((0, 0, 47, 47))
@@ -90,8 +90,6 @@ async def arcb30init(kwargs):
         cd.save(os.path.abspath(f'{assets}/{ds}.png'))
 
     await sendMessage(kwargs, '成功初始化！')
-
-
 
 
 class Rotate(object):

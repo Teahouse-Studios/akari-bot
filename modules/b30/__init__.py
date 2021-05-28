@@ -1,11 +1,13 @@
-from graia.application import MessageChain
-
-from .getb30 import getb30
-from graia.application.message.elements.internal import Image, Plain
-from core.template import sendMessage
-from .initialize import arcb30init
-from database import BotDB as database
 import os
+
+from graia.application import MessageChain
+from graia.application.message.elements.internal import Image, Plain
+
+from core.template import sendMessage
+from database import BotDB as database
+from .getb30 import getb30
+from .initialize import arcb30init
+
 
 async def main(kwargs: dict):
     message = kwargs['trigger_msg']
@@ -17,7 +19,7 @@ async def main(kwargs: dict):
                 await arcb30init(kwargs)
             else:
                 await sendMessage(kwargs, '权限不足')
-                return 
+                return
         else:
             if not os.path.exists(assets):
                 msg = {'text': '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~b30 initialize初始化资源。'}
