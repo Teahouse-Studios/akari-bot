@@ -1,6 +1,7 @@
 import os
 import traceback
 import uuid
+import random
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -45,8 +46,11 @@ def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour
 def drawb30(Username, b30, r10, ptt, character, path=''):
     b30img = Image.new("RGBA", (2489, 1400))
     # backgroud
-    bg = Image.open(os.path.abspath('./assets/arcaea/world/6.jpg'))
-    bg = bg.resize((2560, 4096))
+    bgimgpath = os.path.abspath('./assets/arcaea/world/')
+    bglist = os.listdir(bgimgpath)
+    bgr = random.randint(0, len(bglist))
+    bg = Image.open(bgimgpath + f'/{bglist[bgr]}')
+    bg = bg.resize((bg.size[0] * 2, bg.size[1] * 2))
     b30img.alpha_composite(bg.convert("RGBA"), (0, 0))
     # triangle
     tg = Image.open(os.path.abspath('./assets/arcaea/triangle.png'))
