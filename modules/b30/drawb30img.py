@@ -44,14 +44,14 @@ def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour
 
 
 def drawb30(Username, b30, r10, ptt, character, path=''):
-    b30img = Image.new("RGBA", (2489, 1400))
     # backgroud
     bgimgpath = os.path.abspath('./assets/arcaea/world/')
     bglist = os.listdir(bgimgpath)
     bgr = random.randint(0, len(bglist))
     bg = Image.open(bgimgpath + f'/{bglist[bgr]}')
     bg = bg.resize((bg.size[0] * 2, bg.size[1] * 2))
-    b30img.alpha_composite(bg.convert("RGBA"), (0, -random.randint(0, 2048)))
+    offset = random.randint(0, 1024)
+    b30img = bg.crop((0, offset, 2489, 1400 + offset))
     # triangle
     tg = Image.open(os.path.abspath('./assets/arcaea/triangle.png'))
     b30img.alpha_composite(tg.convert("RGBA"), (1580, 550))
