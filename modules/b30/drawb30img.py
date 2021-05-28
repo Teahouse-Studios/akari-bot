@@ -45,20 +45,20 @@ def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour
 def drawb30(Username, b30, r10, ptt, character, path=''):
     b30img = Image.new("RGBA", (2489, 1400))
     # backgroud
-    bg = Image.open(os.path.abspath('./assets/6.jpg'))
+    bg = Image.open(os.path.abspath('./assets/arcaea/world/6.jpg'))
     bg = bg.resize((2560, 4096))
     b30img.alpha_composite(bg.convert("RGBA"), (0, 0))
     # triangle
-    tg = Image.open(os.path.abspath('./assets/triangle.png'))
+    tg = Image.open(os.path.abspath('./assets/arcaea/triangle.png'))
     b30img.alpha_composite(tg.convert("RGBA"), (1580, 550))
     # character
     try:
-        character = Image.open(os.path.abspath(f'./assets/character/{str(character)}.png'))
+        character = Image.open(os.path.abspath(f'./assets/arcaea/char/{str(character)}.png'))
         b30img.alpha_composite(character.convert("RGBA"), (1660, 350))
     except Exception:
         pass
     # usercard overlay
-    cardoverlay = Image.open(os.path.abspath('./assets/card_overlay.png'))
+    cardoverlay = Image.open(os.path.abspath('./assets/arcaea/card_overlay.png'))
     b30img.alpha_composite(cardoverlay.convert("RGBA"), (1750, 1227))
     # ptt
     if ptt >= 12.50:
@@ -77,12 +77,12 @@ def drawb30(Username, b30, r10, ptt, character, path=''):
         pttimg = 0
     else:
         pttimg = 'off'
-    pttimg = Image.open(os.path.abspath(f'./assets/ptt/rating_{str(pttimg)}.png'))
+    pttimg = Image.open(os.path.abspath(f'./assets/arcaea/ptt/rating_{str(pttimg)}.png'))
     pttimg = pttimg.resize((75, 75))
     b30img.alpha_composite(pttimg.convert("RGBA"), (1775, 1226))
     ptttext = Image.new("RGBA", (200, 200))
-    font1 = ImageFont.truetype(os.path.abspath('./assets/Fonts/Exo-SemiBold.ttf'), 30)
-    font2 = ImageFont.truetype(os.path.abspath('./assets/Fonts/Exo-SemiBold.ttf'), 21)
+    font1 = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/Exo-SemiBold.ttf'), 30)
+    font2 = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/Exo-SemiBold.ttf'), 21)
     rawptt = str(ptt).split('.')
     ptt1 = rawptt[0]
     ptt2 = rawptt[1]
@@ -105,11 +105,11 @@ def drawb30(Username, b30, r10, ptt, character, path=''):
     ptttext.alpha_composite(pttimg, (int((ptttext_width-pttimg_width)/2), int((ptttext_height-pttimg_height)/2)))
     b30img.alpha_composite(ptttext, (1712, 1157))
     # username
-    userfont = ImageFont.truetype(os.path.abspath('./assets/Fonts/GeosansLight.ttf'), 45)
+    userfont = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/GeosansLight.ttf'), 45)
     textdraw = ImageDraw.Draw(b30img)
     text_border(textdraw, 1871, 1225, Username, 'white', '#3a4853', font=userfont)
     # b30
-    b30font = ImageFont.truetype(os.path.abspath('./assets/Fonts/Exo-Medium.ttf'), 17)
+    b30font = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/Exo-Medium.ttf'), 17)
     text_border(textdraw, 1876, 1270, f'B30: {str(b30)}  R10: {str(r10)}', 'white', '#3a4853', font=b30font)
     # b30card
     i = 0
