@@ -29,11 +29,10 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
     """
     if isinstance(msgchain, str):
         msgchain = MessageChain.create([Plain(msgchain)])
+    QuoteTarget = None
     if 'TEST' not in kwargs:
         if Quote:
             QuoteTarget = kwargs[MessageChain][Source][0].id
-        else:
-            QuoteTarget = None
     if Group in kwargs:
         send = await app.sendGroupMessage(kwargs[Group], msgchain, quote=QuoteTarget)
         return send
