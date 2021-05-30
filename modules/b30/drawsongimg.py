@@ -50,7 +50,7 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
     songimg = Image.open(img).convert("RGBA")
     font = ImageFont.truetype(f'{assets_path}/Fonts/Kazesawa-Regular.ttf', 40)
     font2 = ImageFont.truetype(f'{assets_path}/Fonts/Exo-SemiBold.ttf', 27)
-    difficultyimg = Image.open(f'{assets_path}/arcaea/{difficulty}.png')
+    difficultyimg = Image.open(f'{assets_path}/{difficulty}.png')
     songimg.alpha_composite(difficultyimg.convert("RGBA"), (277, 0))
     drawtext = ImageDraw.Draw(songimg)
     drawtext.text((20, 115), '#' + str(rank), '#ffffff', font=font)
