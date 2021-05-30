@@ -5,6 +5,9 @@ import time
 from PIL import Image, ImageDraw, ImageFont
 
 
+assets_path = os.path.abspath('./assets/arcaea')
+
+
 def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, playtime, path=''):
     # score rating
     if score > 9900000:
@@ -45,9 +48,9 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
     playtime = str(int(t)) + dw
     # drawimg
     songimg = Image.open(img).convert("RGBA")
-    font = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/Kazesawa-Regular.ttf'), 40)
-    font2 = ImageFont.truetype(os.path.abspath('./assets/arcaea/Fonts/Exo-SemiBold.ttf'), 27)
-    difficultyimg = Image.open(os.path.abspath(f'./assets/arcaea/{difficulty}.png'))
+    font = ImageFont.truetype(f'{assets_path}/Fonts/Kazesawa-Regular.ttf', 40)
+    font2 = ImageFont.truetype(f'{assets_path}/Fonts/Exo-SemiBold.ttf', 27)
+    difficultyimg = Image.open(f'{assets_path}/arcaea/{difficulty}.png')
     songimg.alpha_composite(difficultyimg.convert("RGBA"), (277, 0))
     drawtext = ImageDraw.Draw(songimg)
     drawtext.text((20, 115), '#' + str(rank), '#ffffff', font=font)
