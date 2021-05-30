@@ -5,12 +5,12 @@ import aiohttp
 
 from core.dirty_check import check
 from modules.wiki.database import WikiDB
-
-get_start_wiki = WikiDB.get_start_wiki
+from modules.wiki.wikilib import wikilib
 
 
 async def newbie(table, id):
-    get_wiki_url = get_start_wiki(table, id)
+    get_wiki_url = WikiDB.get_start_wiki(table, id)
+    pageurl = await wikilib().get_article_path(get_wiki_url) + 'Special:Log?type=newusers'
     if get_wiki_url:
         url = get_wiki_url + '?action=query&list=logevents&letype=newusers&format=json'
     async with aiohttp.ClientSession() as session:
@@ -28,8 +28,8 @@ async def newbie(table, id):
     y = await check(m)
     print(str(y))
     f = re.findall(r'.*\n.*\n.*\n.*\n.*', str(y))
-    g = '这是当前的新人列表：\n' + f[0] + '\n...仅显示前5条内容'
+    g = pageurl + '\n' + f[0] + '\n...仅显示前5条内容'
     if g.find('<吃掉了>') != -1 or g.find('<全部吃掉了>') != -1:
-        return (g + '\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers')
+        return g + '\n检测到外来信息介入，请前往日志查看所有消息。Special:日志?type=newusers'
     else:
-        return (g)
+        return g

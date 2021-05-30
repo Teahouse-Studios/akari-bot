@@ -50,8 +50,6 @@ async def get_infobox_pic(link, pagelink, headers):
             find_infobox = soup.find(class_='skin-infobox')  # 找
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='songbox')  # 找 (arcw)
-            if find_infobox is not None:
-                find_infobox = find_infobox.parent  # 曲线救国，以后再找新办法（
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='songtable')  # 找 (arcw)
         if find_infobox is None:  # 找
@@ -84,9 +82,10 @@ async def get_infobox_pic(link, pagelink, headers):
                 x.attrs['srcset'] = join_url(link, x.get('srcset'))
             if x.has_attr('style'):
                 x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
-        replace_link = find_infobox
 
-        open_file.write(str(replace_link))
+        open_file.write(str(find_infobox))
+        if find_infobox.parent.has_attr('style'):
+            open_file.write(join_url(link, find_infobox.parent.get('style')))
         open_file.write('<style>span.heimu a.external,\
 span.heimu a.external:visited,\
 span.heimu a.extiw,\
