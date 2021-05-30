@@ -1,16 +1,14 @@
 import re
-import traceback
 
 from graia.application import MessageChain
-from graia.application.friend import Friend
-from graia.application.group import Group, Member
+from graia.application.group import Group
 from graia.application.message.elements.internal import Image, Voice
 from graia.application.message.elements.internal import Plain
 
 import modules.wiki.wikilib
+from core.elements import Target
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, \
     slk_converter
-from core.elements import Target
 from database import BotDB
 from modules.wiki.database import WikiDB
 from .getinfobox import get_infobox_pic
@@ -69,14 +67,11 @@ async def wiki_wrapper(kwargs: dict):
             iw = 'fd:' + matchfd.group(1)
             co = True
             command = matchsite.group(2)
-        matchinterwiki = re.match(r'(.*?):(.*)', command)
-        if matchinterwiki:
+        if matchinterwiki := re.match(r'(.*?):(.*)', command):
             if matchinterwiki.group(1) == 'w':
-                matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-                if matchinterwiki:
+                if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
                     if matchinterwiki.group(1) == 'c':
-                        matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-                        if matchinterwiki:
+                        if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
                             interwiki_split = matchinterwiki.group(1).split('.')
                             if len(interwiki_split) == 2:
                                 get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
@@ -87,10 +82,7 @@ async def wiki_wrapper(kwargs: dict):
                                 command = matchinterwiki.group(2)
                                 iw = matchinterwiki.group(1)
                             co = True
-
-    print(co)
-    matchinterwiki = re.match(r'(.*?):(.*)', command)
-    if matchinterwiki and not co:
+    if matchinterwiki := re.match(r'(.*?):(.*)', command) and not co:
         get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_' + kwargs[Target].target_from, kwargs[Target].id,
                                                     matchinterwiki.group(1))
         if get_custom_iw:
@@ -126,7 +118,8 @@ async def wiki_wrapper(kwargs: dict):
         wait = await wait_confirm(kwargs)
         if wait:
             msg = await wikilib.wikilib().main(get_link, msg['title'])
-            await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['url'] + (('\n' + msg['text']) if msg['text'] != '' else ''))]))
+            await sendMessage(kwargs, MessageChain.create([Plain(
+                (prompt + '\n' if prompt else '') + msg['url'] + (('\n' + msg['text']) if msg['text'] != '' else ''))]))
     elif msg['status'] == 'warn':
         trigger = kwargs[Target].senderId
         BotDB.warn_someone(trigger)
@@ -270,8 +263,7 @@ async def regex_wiki(kwargs: dict):
                                           'https://minecraft.fandom.com/zh/api.php')
                     get_link = 'https://minecraft.fandom.com/zh/api.php'
                 iw = None
-                matchinterwiki = re.match(r'(.*?):(.*)', find)
-                if matchinterwiki:
+                if matchinterwiki := re.match(r'(.*?):(.*)', find):
                     iw_table = 'custom_interwiki_' + kwargs[Target].target_from
                     get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
                                                                              target,
@@ -282,14 +274,10 @@ async def regex_wiki(kwargs: dict):
                         iw = matchinterwiki.group(1)
                     # fandom addon
                     if matchinterwiki.group(1) == 'w':
-                        matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-                        if matchinterwiki:
+                        if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
                             if matchinterwiki.group(1) == 'c':
-                                check_fandom_addon_enable = BotDB.check_enable_modules(kwargs[Target].id,
-                                                                                       'wiki_fandom_addon')
-                                if check_fandom_addon_enable:
-                                    matchinterwiki = re.match(r'(.*?):(.*)', matchinterwiki.group(2))
-                                    if matchinterwiki:
+                                if BotDB.check_enable_modules(kwargs[Target].id, 'wiki_fandom_addon'):
+                                    if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
                                         interwiki_split = matchinterwiki.group(1).split('.')
                                         if len(interwiki_split) == 2:
                                             get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'

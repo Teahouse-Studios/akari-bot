@@ -70,8 +70,7 @@ async def parser(kwargs: dict):
                 if x not in command_duplicated_list:
                     command_duplicated_list.append(x)
             command_list = command_duplicated_list
-            check_command_list_length = len(command_list)
-            if check_command_list_length > 5:
+            if len(command_list) > 5:
                 if not database.check_superuser(kwargs):
                     await sendMessage(kwargs, '你不是本机器人的超级管理员，最多只能并排执行5个命令。')
                     return
