@@ -82,7 +82,8 @@ async def wiki_wrapper(kwargs: dict):
                                 command = matchinterwiki.group(2)
                                 iw = matchinterwiki.group(1)
                             co = True
-    if matchinterwiki := re.match(r'(.*?):(.*)', command) and not co:
+    matchinterwiki = re.match(r'(.*?):(.*)', command)
+    if matchinterwiki and not co:
         get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_' + kwargs[Target].target_from, kwargs[Target].id,
                                                     matchinterwiki.group(1))
         if get_custom_iw:
