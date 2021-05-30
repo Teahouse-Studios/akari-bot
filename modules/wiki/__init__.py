@@ -103,7 +103,9 @@ async def wiki_wrapper(kwargs: dict):
         msg = await wikilib.wikilib().main(get_link, command, interwiki=iw, headers=headers)
     if msg['status'] == 'done':
         msgchain = MessageChain.create(
-            [Plain((prompt + '\n' if prompt else '') + (msg['url'] + '\n' if 'url' in msg else '') + msg['text'])])
+            [Plain(((msg['url'] +
+                     '\n' if msg['text'] != '' else '')
+                    if 'url' in msg else '') + msg['text'])])
         if 'net_image' in msg:
             try:
                 imgchain = MessageChain.create([Image.fromNetworkAddress(msg['net_image'])])
@@ -117,7 +119,7 @@ async def wiki_wrapper(kwargs: dict):
             pic = await get_infobox_pic(get_link, msg['url'], headers)
             if pic:
                 imgchain = MessageChain.create([Image.fromLocalFile(pic)])
-                await sendMessage(kwargs, imgchain)
+                await sendMessage(kwargs, imgchain, Quote=False)
 
     elif msg['status'] == 'wait':
         await sendMessage(kwargs, MessageChain.create([Plain(msg['text'])]))
@@ -299,7 +301,7 @@ async def regex_wiki(kwargs: dict):
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
                                                                 headers=headers)
                 status = msg['status']
-                text = (prompt + '\n' if prompt else '') + msg['text']
+                text = msg['text']
                 if status == 'wait':
                     global_status = 'wait'
                     waitlist.append(msg['title'])
@@ -312,7 +314,7 @@ async def regex_wiki(kwargs: dict):
                 if status == 'done':
                     msglist = msglist.plusWith(MessageChain.create([Plain(
                         ('\n' if msglist != MessageChain.create([]) else '') + (
-                            msg['url'] + '\n' if 'url' in msg else '') + text)]))
+                            (msg['url'] + '\n' if text != '' else '') if 'url' in msg else '') + text)]))
                     if 'net_image' in msg:
                         imglist.append(msg['net_image'])
                     if 'net_audio' in msg:
