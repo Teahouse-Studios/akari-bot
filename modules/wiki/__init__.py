@@ -119,14 +119,14 @@ async def wiki_wrapper(kwargs: dict):
             pic = await get_infobox_pic(get_link, msg['url'], headers)
             if pic:
                 imgchain = MessageChain.create([Image.fromLocalFile(pic)])
-                await sendMessage(kwargs, imgchain)
+                await sendMessage(kwargs, imgchain, Quote=False)
 
     elif msg['status'] == 'wait':
         await sendMessage(kwargs, MessageChain.create([Plain(msg['text'])]))
         wait = await wait_confirm(kwargs)
         if wait:
             msg = await wikilib.wikilib().main(get_link, msg['title'])
-            await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['title'])]))
+            await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['url'] + (('\n' + msg['text']) if msg['text'] != '' else ''))]))
     elif msg['status'] == 'warn':
         trigger = kwargs[Target].senderId
         BotDB.warn_someone(trigger)
