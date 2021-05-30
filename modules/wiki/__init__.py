@@ -92,7 +92,7 @@ async def wiki_wrapper(kwargs: dict):
     matchinterwiki = re.match(r'(.*?):(.*)', command)
     if matchinterwiki and not co:
         get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_' + kwargs[Target].target_from, kwargs[Target].id,
-                                                        matchinterwiki.group(1))
+                                                    matchinterwiki.group(1))
         if get_custom_iw:
             iw = matchinterwiki.group(1)
             get_link = get_custom_iw
@@ -103,9 +103,9 @@ async def wiki_wrapper(kwargs: dict):
         msg = await wikilib.wikilib().main(get_link, command, interwiki=iw, headers=headers)
     if msg['status'] == 'done':
         msgchain = MessageChain.create(
-            [Plain(((msg['url'] +
-                     '\n' if msg['text'] != '' else '')
-                    if 'url' in msg else '') + msg['text'])])
+            [Plain((prompt + '\n' if prompt else '') + ((msg['url'] +
+                                                         '\n' if msg['text'] != '' else '')
+                                                        if 'url' in msg else '') + msg['text'])])
         if 'net_image' in msg:
             try:
                 imgchain = MessageChain.create([Image.fromNetworkAddress(msg['net_image'])])
@@ -119,7 +119,7 @@ async def wiki_wrapper(kwargs: dict):
             pic = await get_infobox_pic(get_link, msg['url'], headers)
             if pic:
                 imgchain = MessageChain.create([Image.fromLocalFile(pic)])
-                await sendMessage(kwargs, imgchain, Quote=False)
+                await sendMessage(kwargs, imgchain)
 
     elif msg['status'] == 'wait':
         await sendMessage(kwargs, MessageChain.create([Plain(msg['text'])]))
@@ -177,7 +177,8 @@ async def interwiki(kwargs: dict):
         if len(iw) == 1 or len(iw) > 2:
             await sendMessage(kwargs, '错误：命令不合法：~wiki iw add <interwiki> <url>')
             return
-        check = await wikilib.wikilib().check_wiki_available(iw[1], headers=WikiDB.config_headers('get', htable, target))
+        check = await wikilib.wikilib().check_wiki_available(iw[1],
+                                                             headers=WikiDB.config_headers('get', htable, target))
         if check[0]:
             result = WikiDB.config_custom_interwiki('add', table, target, iw[0],
                                                     check[0])
@@ -301,7 +302,7 @@ async def regex_wiki(kwargs: dict):
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
                                                                 headers=headers)
                 status = msg['status']
-                text = msg['text']
+                text = (prompt + '\n' if prompt else '') + msg['text']
                 if status == 'wait':
                     global_status = 'wait'
                     waitlist.append(msg['title'])
