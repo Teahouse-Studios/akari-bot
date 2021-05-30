@@ -77,39 +77,42 @@ async def parser(kwargs: dict):
                     return
             for command in command_list:
                 command_first_word = command.split(' ')[0]  # 切割消息
-                if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
-                    if Group in kwargs:
-                        await Nudge(kwargs)
-                        check_command_enable = database.check_enable_modules(kwargs[Group].id,
-                                                                             command_first_word)  # 检查群组是否开启模块
-                        if check_command_enable:  # 若开启
+                try:
+                    if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
+                        if Group in kwargs:
+                            await Nudge(kwargs)
+                            check_command_enable = database.check_enable_modules(kwargs[Group].id,
+                                                                                 command_first_word)  # 检查群组是否开启模块
+                            if check_command_enable:  # 若开启
+                                kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
+                                kwargs['help_list'] = Modules['help']  # 帮助列表
+                                await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
+                            else:
+                                await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
+                        elif 'TEST' in kwargs:
                             kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
                             kwargs['help_list'] = Modules['help']  # 帮助列表
                             await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
                         else:
-                            await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
-                    elif 'TEST' in kwargs:
-                        kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
-                        kwargs['help_list'] = Modules['help']  # 帮助列表
-                        await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
-                    else:
+                            kwargs['trigger_msg'] = command
+                            kwargs['help_list'] = Modules['help']
+                            await Modules['command'][command_first_word](kwargs)
+                    elif command_first_word in Modules['essential']:  # 若触发的对象命令为基础命令
+                        await Nudge(kwargs)
                         kwargs['trigger_msg'] = command
+                        kwargs['function_list'] = Modules['modules_function']  # 所有可用模块列表
+                        kwargs['friend_function_list'] = Modules['friend_modules_function']
                         kwargs['help_list'] = Modules['help']
-                        await Modules['command'][command_first_word](kwargs)
-                elif command_first_word in Modules['essential']:  # 若触发的对象命令为基础命令
-                    await Nudge(kwargs)
-                    kwargs['trigger_msg'] = command
-                    kwargs['function_list'] = Modules['modules_function']  # 所有可用模块列表
-                    kwargs['friend_function_list'] = Modules['friend_modules_function']
-                    kwargs['help_list'] = Modules['help']
-                    await Modules['essential'][command_first_word](kwargs)
-                elif command_first_word in Modules['admin']:  # 若触发的对象为超管命令
-                    if database.check_superuser(kwargs):  # 检查是否为超管
-                        kwargs['trigger_msg'] = command
-                        kwargs['function_list'] = Modules['modules_function']
-                        await Modules['admin'][command_first_word](kwargs)
-                    else:
-                        await sendMessage(kwargs, '权限不足')
+                        await Modules['essential'][command_first_word](kwargs)
+                    elif command_first_word in Modules['admin']:  # 若触发的对象为超管命令
+                        if database.check_superuser(kwargs):  # 检查是否为超管
+                            kwargs['trigger_msg'] = command
+                            kwargs['function_list'] = Modules['modules_function']
+                            await Modules['admin'][command_first_word](kwargs)
+                        else:
+                            await sendMessage(kwargs, '权限不足')
+                except Exception:
+                    await sendMessage(kwargs, '执行命令时发生错误，请报告管理员：\n' + traceback.format_exc())
         # 正则模块部分
         if Group in kwargs:
             for regex in Modules['regex']:  # 遍历正则模块列表
