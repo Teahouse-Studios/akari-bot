@@ -358,6 +358,7 @@ async def regex_wiki(kwargs: dict):
 command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': interwiki}
 regex = {'wiki_regex': regex_wiki}
 options = ['wiki_fandom_addon']
+self_options = options
 help = {'wiki': {'help': '~wiki [interwiki:]<page_name> - 查询Wiki内容。\n' +
                          '~wiki set <api_endpoint_link> - 设置起始查询Wiki。\n' +
                          '~wiki iw <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。\n' +

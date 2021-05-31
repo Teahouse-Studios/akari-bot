@@ -84,7 +84,7 @@ class BB:
                 table = 'group_permission'
                 target = kwargs[Group].id
             if Friend in kwargs:
-                table = 'friend_modules_permission'
+                table = 'friend_permission'
                 target = kwargs[Friend].id
         a = self.c.execute(f"SELECT * FROM {table} WHERE ID='{target}'").fetchone()
         if a:
