@@ -58,11 +58,13 @@ async def parser(kwargs: dict):
                     for _ in split_list:
                         if split_list[0] == '':
                             del split_list[0]
-                        if split_list[-1] == '':
-                            del split_list[-1]
+                        if len(split_list) > 0:
+                            if split_list[-1] == '':
+                                del split_list[-1]
                     for _ in split_list:
-                        if split_list[0][0] in command_prefix:
-                            split_list[0] = re.sub(r'^' + display[0], '', split_list[0])
+                        if len(split_list) > 0:
+                            if split_list[0][0] in command_prefix:
+                                split_list[0] = re.sub(r'^' + display[0], '', split_list[0])
                     command_list_cache.append(x.join(split_list))
                 command_list = command_list_cache
             command_duplicated_list = []  # 移除重复命令
