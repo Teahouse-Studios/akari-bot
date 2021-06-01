@@ -6,6 +6,8 @@ def UTC8(str1, outtype):
         return ('无限期')
     else:
         q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', str1)
+        if not q:
+            q = re.match(r'(....)(..)(..)(..)(..)(..)', str1)
         y = int(q.group(1))
         m = int(q.group(2))
         d = int(q.group(3))
