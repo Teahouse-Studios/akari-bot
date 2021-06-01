@@ -7,6 +7,7 @@ import urllib.parse
 import aiohttp
 import asyncio
 
+from bs4 import BeautifulSoup
 from core import dirty_check
 from .database import WikiDB
 
@@ -303,11 +304,11 @@ class wikilib:
 
     async def get_first_line(self):
         try:
-            query_string = {'action': 'parse', 'page': self.query_text_name, 'prop': 'wikitext', 'section': '0',
+            query_string = {'action': 'parse', 'page': self.query_text_name, 'prop': 'text',
                             'format': 'json'}
             desc_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
             load_desc = await self.get_data(desc_url, 'json', self.headers)
-            desc_raw = load_desc['parse']['wikitext']['*'].split('\n')
+            desc_raw = BeautifulSoup(load_desc['parse']['text']['*'], 'html.parser').get_text(separator='\n').split('\n')
             desc_list = []
             for x in desc_raw:
                 if x != '':
