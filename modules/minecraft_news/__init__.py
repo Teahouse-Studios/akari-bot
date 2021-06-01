@@ -1,6 +1,8 @@
 import asyncio
+import json
 import traceback
 
+import aiohttp
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, Image
 from graia.scheduler import GraiaScheduler
@@ -8,25 +10,20 @@ from graia.scheduler.timers import every_minute
 
 from core.broadcast import bcc
 from core.template import logger_info
-import json
-import aiohttp
 from database import BotDB
 from .database import MD as db
-from datetime import datetime
-
 
 database = db()
 check_enable_modules_all = BotDB.check_enable_modules_all
-
-
 scheduler = GraiaScheduler(bcc.loop, bcc)
+
 
 async def start_check_news(app):
     @scheduler.schedule(every_minute())
     async def check_news():
         logger_info('Checking Minecraft news...')
         baseurl = 'https://www.minecraft.net'
-        url = 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&propResPath=/content/minecraft-net/language-masters/zh-hans/jcr:content/root/generic-container/par/bleeding_page_sectio_1278766118/page-section-par/grid&offset=0&count=500&pageSize=10'
+        url = 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&count=500&pageSize=10'
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 status = resp.status
@@ -58,8 +55,6 @@ async def start_check_news(app):
                                     traceback.print_exc()
                             logger_info(articletext)
                     logger_info('Minecraft news checked.')
-
-
                 else:
                     logger_info('Check minecraft news failed:' + status)
 
