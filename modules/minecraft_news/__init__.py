@@ -42,7 +42,7 @@ async def start_check_news(app):
                         q = database.check_exist(title)
                         if not q:
                             database.add_news(title, link, desc, image, date)
-                            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
+                            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}\n'
                             msgchain = MessageChain.create([Plain(articletext), Image.fromNetworkAddress(image)])
                             for qqgroup in check_enable_modules_all('group_permission', 'minecraft_news'):
                                 try:
