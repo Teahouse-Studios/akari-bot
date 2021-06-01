@@ -37,94 +37,8 @@ async def wiki_loader(kwargs: dict):
 
 
 async def wiki_wrapper(kwargs: dict):
-    command = kwargs['trigger_msg']
-    start_table = 'start_wiki_link_' + kwargs[Target].target_from
-    headtable = 'request_headers_' + kwargs[Target].target_from
-    triggerId = kwargs[Target].id
-    headers = WikiDB.config_headers('get', headtable, triggerId)
-    prompt = False
-    get_link = WikiDB.get_start_wiki(start_table, triggerId)
-    if not get_link:
-        prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可发送~wiki set <域名>来设定自定义起始Wiki。' \
-                 '\n例子：~wiki set https://minecraft-zh.gamepedia.com/'
-        WikiDB.add_start_wiki(start_table, triggerId,
-                              'https://minecraft-zh.gamepedia.com/api.php')
-        get_link = 'https://minecraft-zh.gamepedia.com/api.php'
-    iw = None
-    co = False
-    check_fandom_addon_enable = BotDB.check_enable_modules(kwargs,
-                                                           'wiki_fandom_addon')
-    if check_fandom_addon_enable:
-        matchsite = re.match(r'\?(.*?) (.*)', command)
-        if matchsite:
-            get_link = 'https://' + matchsite.group(1) + '.fandom.com/api.php'
-            iw = 'fd:' + matchsite.group(1)
-            co = True
-            command = matchsite.group(2)
-        matchfd = re.match(r'^fd:(.*?):(.*)', command)
-        if matchfd:
-            get_link = 'https://' + matchfd.group(1) + '.fandom.com/api.php'
-            iw = 'fd:' + matchfd.group(1)
-            co = True
-            command = matchsite.group(2)
-        if matchinterwiki := re.match(r'(.*?):(.*)', command):
-            if matchinterwiki.group(1) == 'w':
-                if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
-                    if matchinterwiki.group(1) == 'c':
-                        if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
-                            interwiki_split = matchinterwiki.group(1).split('.')
-                            if len(interwiki_split) == 2:
-                                get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                                command = interwiki_split[0] + ':' + matchinterwiki.group(2)
-                                iw = interwiki_split[0]
-                            else:
-                                get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
-                                command = matchinterwiki.group(2)
-                                iw = matchinterwiki.group(1)
-                            co = True
-    matchinterwiki = re.match(r'(.*?):(.*)', command)
-    if matchinterwiki and not co:
-        get_custom_iw = WikiDB.get_custom_interwiki('custom_interwiki_' + kwargs[Target].target_from, kwargs[Target].id,
-                                                    matchinterwiki.group(1))
-        if get_custom_iw:
-            iw = matchinterwiki.group(1)
-            get_link = get_custom_iw
-            command = re.sub(matchinterwiki.group(1) + ':', '', command)
-    if command == 'random':
-        msg = await wikilib.wikilib().random_page(get_link, iw=iw, headers=headers)
-    else:
-        msg = await wikilib.wikilib().main(get_link, command, interwiki=iw, headers=headers)
-    if msg['status'] == 'done':
-        msgchain = MessageChain.create(
-            [Plain((prompt + '\n' if prompt else '') + ((msg['url'] +
-                                                         '\n' if msg['text'] != '' else '')
-                                                        if 'url' in msg else '') + msg['text'])])
-        if 'net_image' in msg:
-            try:
-                imgchain = MessageChain.create([Image.fromNetworkAddress(msg['net_image'])])
-                msgchain = msgchain.plusWith(imgchain)
-            except:
-                pass
-        await sendMessage(kwargs, msgchain)
-        if 'apilink' in msg:
-            get_link = msg['apilink']
-        if 'url' in msg:
-            pic = await get_infobox_pic(get_link, msg['url'], headers)
-            if pic:
-                imgchain = MessageChain.create([Image.fromLocalFile(pic)])
-                await sendMessage(kwargs, imgchain, Quote=False)
-
-    elif msg['status'] == 'wait':
-        await sendMessage(kwargs, MessageChain.create([Plain(msg['text'])]))
-        wait = await wait_confirm(kwargs)
-        if wait:
-            msg = await wikilib.wikilib().main(get_link, msg['title'])
-            await sendMessage(kwargs, MessageChain.create([Plain(
-                (prompt + '\n' if prompt else '') + msg['url'] + (('\n' + msg['text']) if msg['text'] != '' else ''))]))
-    elif msg['status'] == 'warn':
-        trigger = kwargs[Target].senderId
-        BotDB.warn_someone(trigger)
-        await sendMessage(kwargs, MessageChain.create([Plain((prompt + '\n' if prompt else '') + msg['text'])]))
+    command = f'[[{kwargs["trigger_msg"]}]]'
+    await regex_proc(kwargs, command)
 
 
 async def set_start_wiki(kwargs: dict):
@@ -222,137 +136,141 @@ async def set_headers(kwargs: dict):
 
 async def regex_wiki(kwargs: dict):
     display = kwargs[MessageChain].asDisplay()
-
-    async def regex_proc(kwargs: dict, display):
-        mains = re.findall(r'\[\[(.*?)\]\]', display, re.I)
-        templates = re.findall(r'\{\{(.*?)\}\}', display, re.I)
-        find_dict = {}
-        global_status = 'done'
-        for main in mains:
-            if main == '' or main in find_dict or main.find("{") != -1:
-                pass
-            else:
-                find_dict.update({main: 'main'})
-        for template in templates:
-            if template == '' or template in find_dict or template.find("{") != -1:
-                pass
-            else:
-                find_dict.update({template: 'template'})
-        if find_dict != {}:
-            await Nudge(kwargs)
-            waitlist = []
-            imglist = []
-            audlist = []
-            urllist = {}
-            msglist = MessageChain.create([])
-            waitmsglist = MessageChain.create([])
-            table = 'start_wiki_link_' + kwargs[Target].target_from
-            target = kwargs[Target].id
-            headtable = 'request_headers_' + kwargs[Target].target_from
-            headers = WikiDB.config_headers('get', headtable, target)
-            for find in find_dict:
-                if find_dict[find] == 'template':
-                    template = True
-                else:
-                    template = False
-                get_link = WikiDB.get_start_wiki(table, target)
-                prompt = False
-                if not get_link:
-                    prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可发送~wiki set <域名>来设定自定义起始Wiki。' \
-                             '\n例子：~wiki set https://minecraft.fandom.com/zh/'
-                    WikiDB.add_start_wiki(table, target,
-                                          'https://minecraft.fandom.com/zh/api.php')
-                    get_link = 'https://minecraft.fandom.com/zh/api.php'
-                iw = None
-                if matchinterwiki := re.match(r'(.*?):(.*)', find):
-                    iw_table = 'custom_interwiki_' + kwargs[Target].target_from
-                    get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
-                                                                             target,
-                                                                             matchinterwiki.group(1))
-                    if get_custom_iw:
-                        get_link = get_custom_iw
-                        find = re.sub(matchinterwiki.group(1) + ':', '', find)
-                        iw = matchinterwiki.group(1)
-                    # fandom addon
-                    if matchinterwiki.group(1) == 'w':
-                        if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
-                            if matchinterwiki.group(1) == 'c':
-                                if BotDB.check_enable_modules(kwargs[Target].id, 'wiki_fandom_addon'):
-                                    if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
-                                        interwiki_split = matchinterwiki.group(1).split('.')
-                                        if len(interwiki_split) == 2:
-                                            get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                                            find = interwiki_split[0] + ':' + matchinterwiki.group(2)
-                                            iw = interwiki_split[0]
-                                        else:
-                                            get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
-                                            find = matchinterwiki.group(2)
-                                            iw = matchinterwiki.group(1)
-                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
-                                                                headers=headers)
-                status = msg['status']
-                text = (prompt + '\n' if prompt else '') + msg['text']
-                if status == 'wait':
-                    global_status = 'wait'
-                    waitlist.append(msg['title'])
-                    waitmsglist = waitmsglist.plusWith(MessageChain.create(
-                        [Plain(('\n' if waitmsglist != MessageChain.create([]) else '') + text)]))
-                if status == 'warn':
-                    global_status = 'warn'
-                    msglist = msglist.plusWith(MessageChain.create(
-                        [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
-                if status == 'done':
-                    msglist = msglist.plusWith(MessageChain.create([Plain(
-                        ('\n' if msglist != MessageChain.create([]) else '') + (
-                            (msg['url'] + '\n' if text != '' else '') if 'url' in msg else '') + text)]))
-                    if 'net_image' in msg:
-                        imglist.append(msg['net_image'])
-                    if 'net_audio' in msg:
-                        audlist.append(msg['net_audio'])
-                    if 'apilink' in msg:
-                        get_link = msg['apilink']
-                    if 'url' in msg:
-                        urllist.update({msg['url']: get_link})
-                if status is None:
-                    msglist = msglist.plusWith(MessageChain.create([Plain('发生错误：机器人内部代码错误，请联系开发者解决。')]))
-            if msglist != MessageChain.create([]):
-                await sendMessage(kwargs, msglist)
-                if imglist != []:
-                    imgchain = MessageChain.create([])
-                    for img in imglist:
-                        imgchain = imgchain.plusWith(MessageChain.create([Image.fromNetworkAddress(img)]))
-                    await sendMessage(kwargs, imgchain, Quote=False)
-                if audlist != []:
-                    for aud in audlist:
-                        audchain = MessageChain.create(
-                            [Voice().fromLocalFile(await slk_converter(await download_to_cache(aud)))])
-                        await sendMessage(kwargs, audchain, Quote=False)
-            if urllist != {}:
-                print(urllist)
-                infoboxchain = MessageChain.create([])
-                for url in urllist:
-                    get_infobox = await get_infobox_pic(urllist[url], url, headers)
-                    if get_infobox:
-                        infoboxchain = infoboxchain.plusWith(
-                            MessageChain.create([Image.fromLocalFile(get_infobox)]))
-                if infoboxchain != MessageChain.create([]):
-                    await sendMessage(kwargs, infoboxchain, Quote=False)
-            if global_status == 'warn':
-                trigger = kwargs[Target].senderId
-                BotDB.warn_someone(trigger)
-            if waitmsglist != MessageChain.create([]):
-                send = await sendMessage(kwargs, waitmsglist)
-                wait = await wait_confirm(kwargs)
-                if wait:
-                    nwaitlist = []
-                    for waits in waitlist:
-                        waits1 = f'[[{waits}]]'
-                        nwaitlist.append(waits1)
-                    await regex_proc(kwargs, '\n'.join(nwaitlist))
-                else:
-                    await revokeMessage(send)
-
     await regex_proc(kwargs, display)
+
+
+async def regex_proc(kwargs: dict, display):
+    mains = re.findall(r'\[\[(.*?)\]\]', display, re.I)
+    templates = re.findall(r'\{\{(.*?)\}\}', display, re.I)
+    find_dict = {}
+    global_status = 'done'
+    for main in mains:
+        if main == '' or main in find_dict or main.find("{") != -1:
+            pass
+        else:
+            find_dict.update({main: 'main'})
+    for template in templates:
+        if template == '' or template in find_dict or template.find("{") != -1:
+            pass
+        else:
+            find_dict.update({template: 'template'})
+    if find_dict != {}:
+        await Nudge(kwargs)
+        waitlist = []
+        imglist = []
+        audlist = []
+        urllist = {}
+        msglist = MessageChain.create([])
+        waitmsglist = MessageChain.create([])
+        table = 'start_wiki_link_' + kwargs[Target].target_from
+        target = kwargs[Target].id
+        headtable = 'request_headers_' + kwargs[Target].target_from
+        headers = WikiDB.config_headers('get', headtable, target)
+        for find in find_dict:
+            if find_dict[find] == 'template':
+                template = True
+            else:
+                template = False
+            get_link = WikiDB.get_start_wiki(table, target)
+            prompt = False
+            if not get_link:
+                prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可发送~wiki set <域名>来设定自定义起始Wiki。' \
+                         '\n例子：~wiki set https://minecraft.fandom.com/zh/'
+                WikiDB.add_start_wiki(table, target,
+                                      'https://minecraft.fandom.com/zh/api.php')
+                get_link = 'https://minecraft.fandom.com/zh/api.php'
+            iw = None
+            if matchinterwiki := re.match(r'(.*?):(.*)', find):
+                iw_table = 'custom_interwiki_' + kwargs[Target].target_from
+                get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
+                                                                         target,
+                                                                         matchinterwiki.group(1))
+                if get_custom_iw:
+                    get_link = get_custom_iw
+                    find = re.sub(matchinterwiki.group(1) + ':', '', find)
+                    iw = matchinterwiki.group(1)
+                # fandom addon
+                if matchinterwiki.group(1) == 'w':
+                    if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
+                        if matchinterwiki.group(1) == 'c':
+                            if BotDB.check_enable_modules(kwargs[Target].id, 'wiki_fandom_addon'):
+                                if matchinterwiki := re.match(r'(.*?):(.*)', matchinterwiki.group(2)):
+                                    interwiki_split = matchinterwiki.group(1).split('.')
+                                    if len(interwiki_split) == 2:
+                                        get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
+                                        find = interwiki_split[0] + ':' + matchinterwiki.group(2)
+                                        iw = interwiki_split[0]
+                                    else:
+                                        get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
+                                        find = matchinterwiki.group(2)
+                                        iw = matchinterwiki.group(1)
+            if find == 'random':
+                msg = await modules.wiki.wikilib.wikilib().random_page(get_link, iw, headers)
+            else:
+                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
+                                                            headers=headers)
+            status = msg['status']
+            text = (prompt + '\n' if prompt else '') + msg['text']
+            if status == 'wait':
+                global_status = 'wait'
+                waitlist.append(msg['title'])
+                waitmsglist = waitmsglist.plusWith(MessageChain.create(
+                    [Plain(('\n' if waitmsglist != MessageChain.create([]) else '') + text)]))
+            if status == 'warn':
+                global_status = 'warn'
+                msglist = msglist.plusWith(MessageChain.create(
+                    [Plain(('\n' if msglist != MessageChain.create([]) else '') + text)]))
+            if status == 'done':
+                msglist = msglist.plusWith(MessageChain.create([Plain(
+                    ('\n' if msglist != MessageChain.create([]) else '') + (
+                        (msg['url'] + '\n' if text != '' else '') if 'url' in msg else '') + text)]))
+                if 'net_image' in msg:
+                    imglist.append(msg['net_image'])
+                if 'net_audio' in msg:
+                    audlist.append(msg['net_audio'])
+                if 'apilink' in msg:
+                    get_link = msg['apilink']
+                if 'url' in msg:
+                    urllist.update({msg['url']: get_link})
+            if status is None:
+                msglist = msglist.plusWith(MessageChain.create([Plain('发生错误：机器人内部代码错误，请联系开发者解决。')]))
+        if msglist != MessageChain.create([]):
+            await sendMessage(kwargs, msglist)
+            if imglist != []:
+                imgchain = MessageChain.create([])
+                for img in imglist:
+                    imgchain = imgchain.plusWith(MessageChain.create([Image.fromNetworkAddress(img)]))
+                await sendMessage(kwargs, imgchain, Quote=False)
+            if audlist != []:
+                for aud in audlist:
+                    audchain = MessageChain.create(
+                        [Voice().fromLocalFile(await slk_converter(await download_to_cache(aud)))])
+                    await sendMessage(kwargs, audchain, Quote=False)
+        if urllist != {}:
+            print(urllist)
+            infoboxchain = MessageChain.create([])
+            for url in urllist:
+                get_infobox = await get_infobox_pic(urllist[url], url, headers)
+                if get_infobox:
+                    infoboxchain = infoboxchain.plusWith(
+                        MessageChain.create([Image.fromLocalFile(get_infobox)]))
+            if infoboxchain != MessageChain.create([]):
+                await sendMessage(kwargs, infoboxchain, Quote=False)
+        if global_status == 'warn':
+            trigger = kwargs[Target].senderId
+            BotDB.warn_someone(trigger)
+        if waitmsglist != MessageChain.create([]):
+            send = await sendMessage(kwargs, waitmsglist)
+            wait = await wait_confirm(kwargs)
+            if wait:
+                nwaitlist = []
+                for waits in waitlist:
+                    waits1 = f'[[{waits}]]'
+                    nwaitlist.append(waits1)
+                await regex_proc(kwargs, '\n'.join(nwaitlist))
+            else:
+                await revokeMessage(send)
+
 
 
 command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': interwiki}
