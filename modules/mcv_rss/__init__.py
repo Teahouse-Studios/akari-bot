@@ -54,25 +54,6 @@ async def mcv_rss(app):
                 addversion.write('\n' + release)
                 addversion.close()
                 verlist = getfileversions(version_file)
-                release_ = re.sub('\.', '-', release)
-                article_link = 'https://www.minecraft.net/en-us/article/minecraft-java-edition-' + release_
-                async with aiohttp.ClientSession() as getart:
-                    async with getart.get(article_link) as getstatus:
-                        if getstatus.status == 200:
-                            for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
-                                try:
-                                    await app.sendGroupMessage(int(qqgroup), MessageChain.create(
-                                        [Plain(f'Mojang已发布{release}的更新日志：{article_link}')]))
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
-                            for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
-                                try:
-                                    await app.sendFriendMessage(int(qqfriend), MessageChain.create(
-                                        [Plain(f'Mojang已发布{release}的更新日志：{article_link}')]))
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
             if snapshot not in verlist:
                 logger_info(f'huh, we find {snapshot}.')
                 for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
@@ -92,24 +73,6 @@ async def mcv_rss(app):
                 addversion = open('./assets/mcversion.txt', 'a')
                 addversion.write('\n' + snapshot)
                 addversion.close()
-                article_link = 'https://www.minecraft.net/en-us/article/minecraft-snapshot-' + snapshot
-                async with aiohttp.ClientSession() as getart:
-                    async with getart.get(article_link) as getstatus:
-                        if getstatus.status == 200:
-                            for qqgroup in check_enable_modules_all('group_permission', 'mcv_rss'):
-                                try:
-                                    await app.sendGroupMessage(int(qqgroup), MessageChain.create(
-                                        [Plain(f'Mojang已发布{snapshot}的更新日志：{article_link}')]))
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
-                            for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
-                                try:
-                                    await app.sendFriendMessage(int(qqfriend), MessageChain.create(
-                                        [Plain(f'Mojang已发布{snapshot}的更新日志：{article_link}')]))
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
             logger_info('mcv checked.')
             await asyncio.sleep(40)
         except Exception:
