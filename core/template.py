@@ -28,6 +28,8 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
     :return: 被发送的消息链
     """
     if isinstance(msgchain, str):
+        if msgchain == '':
+            msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
         msgchain = MessageChain.create([Plain(msgchain)])
     QuoteTarget = None
     if 'TEST' not in kwargs:
