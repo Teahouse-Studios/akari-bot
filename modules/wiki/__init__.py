@@ -209,6 +209,7 @@ async def regex_proc(kwargs: dict, display):
             else:
                 msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
                                                             headers=headers)
+            print(msg)
             status = msg['status']
             text = (prompt + '\n' if prompt else '') + msg['text']
             if status == 'wait':
@@ -223,7 +224,7 @@ async def regex_proc(kwargs: dict, display):
             if status == 'done':
                 msglist = msglist.plusWith(MessageChain.create([Plain(
                     ('\n' if msglist != MessageChain.create([]) else '') + (
-                        (msg['url'] + '\n' if text != '' else '') if 'url' in msg else '') + text)]))
+                        (msg['url'] + ('\n' if text != '' else '')) if 'url' in msg else '') + text)]))
                 if 'net_image' in msg:
                     imglist.append(msg['net_image'])
                 if 'net_audio' in msg:
