@@ -3,11 +3,11 @@ import json
 import re
 import traceback
 import urllib.parse
+import html2text
 
 import aiohttp
 import asyncio
 
-from bs4 import BeautifulSoup
 from core import dirty_check
 from .database import WikiDB
 
@@ -308,11 +308,16 @@ class wikilib:
                             'format': 'json'}
             desc_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
             load_desc = await self.get_data(desc_url, 'json', self.headers)
-            desc_raw = BeautifulSoup(load_desc['parse']['text']['*'], 'html.parser').get_text().split('\n')
+            h = html2text.HTML2Text()
+            h.ignore_links = True
+            h.ignore_images = True
+            h.ignore_tables = True
+            desc_raw = h.handle(load_desc['parse']['text']['*']).split('\n')
             desc_list = []
             for x in desc_raw:
                 if x != '':
-                    desc_list.append(x)
+                    if x not in desc_list:
+                        desc_list.append(x)
             desc_raw = '\n'.join(desc_list)
             cut_desc = re.findall(r'(.*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc_raw, re.S | re.M)
             if cut_desc:
