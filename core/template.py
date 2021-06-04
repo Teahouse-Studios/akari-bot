@@ -130,7 +130,7 @@ def check_permission(kwargs):
     if Group in kwargs:
         if str(kwargs[Member].permission) in ['MemberPerm.Administrator',
                                               'MemberPerm.Owner'] or database.check_superuser(
-                kwargs):
+                kwargs) or database.check_group_adminuser(kwargs):
             return True
     if Friend in kwargs:
         if database.check_superuser(kwargs[Friend].id):

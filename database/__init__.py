@@ -39,6 +39,9 @@ class BB:
         c.execute('''CREATE TABLE warn
                (ID INT PRIMARY KEY     NOT NULL,
                WARN  TEXT);''')
+        c.execute('''CREATE TABLE group_adminuser
+               (ID INT PRIMARY KEY     NOT NULL,
+               QGROUP  INT);''')
         c.execute('''CREATE TABLE superuser
                (ID INT PRIMARY KEY     NOT NULL);''')
         c.execute('''CREATE TABLE time
@@ -140,6 +143,32 @@ class BB:
             return True
         else:
             return False
+
+    def check_group_adminuser(self, kwargs: dict):
+        if Group in kwargs:
+            id = kwargs[Member].id
+            groupid = kwargs[Group].id
+        a = self.c.execute(f"SELECT * FROM group_adminuser WHERE ID={id}").fetchone()
+        if a:
+            if a[1] == groupid:
+                return True
+        return False
+
+    def add_group_adminuser(self, id, group):
+        try:
+            self.c.execute(f"INSERT INTO group_adminuser (ID, QGROUP) VALUES (?, ?)", (id, group))
+        except:
+            traceback.print_exc()
+        self.conn.commit()
+        return '成功'
+
+    def del_group_adminuser(self, id, group):
+        try:
+            self.c.execute(f"DELETE FROM group_adminuser WHERE ID=? AND QGROUP=?", (id, group))
+        except:
+            traceback.print_exc()
+        self.conn.commit()
+        return '成功'
 
     def add_superuser(self, id):
         try:

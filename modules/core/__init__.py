@@ -180,11 +180,26 @@ async def bot_version(kwargs: dict):
     openfile.close()
 
 
+async def config_gu(kwargs):
+    if Group in kwargs:
+        if check_permission(kwargs):
+            command = kwargs['trigger_msg'].split(' ')
+            if len(command) < 3:
+                await sendMessage(kwargs, '命令格式错误。')
+                return
+            print(command)
+            if command[1] == 'add':
+                await sendMessage(kwargs, database.add_group_adminuser(command[2], kwargs[Group].id))
+            if command[1] == 'del':
+                await sendMessage(kwargs, database.del_group_adminuser(command[2], kwargs[Group].id))
+
+
 essential = {'enable': enable_modules, 'disable': disable_modules, 'add_base_su': add_base_su, 'help': bot_help,
-             'modules': modules_help, 'version': bot_version}
+             'modules': modules_help, 'version': bot_version, 'admin_user': config_gu}
 
 admin = {'add_su': add_su, 'del_su': del_su, 'set': set_modules, 'restart': restart_bot, 'update': update_bot,
          'echo': echo_msg, 'update&restart': update_and_restart_bot}
 help = {'enable': {'help': '~enable <模块名> - 开启一个模块', 'essential': True},
         'disable': {'help': '~disable <模块名> - 关闭一个模块', 'essential': True},
-        'module': {'help': '~modules - 查询所有可用模块。'}}
+        'module': {'help': '~modules - 查询所有可用模块。'},
+        'admin_user': {'help': '~admin_user <add/del> <QQ> - 配置群内成员为机器人管理员（无需设置其为群内管理员）'}}
