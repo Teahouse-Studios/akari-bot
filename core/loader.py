@@ -32,7 +32,8 @@ class ModulesLoader:
             'admin': dict,
             'essential': dict,
             'help': dict,
-            'rss': dict
+            'rss': dict,
+            'alias': dict
         }
         functions = {}
         functions.update(modules_function)

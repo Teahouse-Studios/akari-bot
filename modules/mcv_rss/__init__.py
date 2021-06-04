@@ -202,5 +202,6 @@ async def mcv_jira_rss_dungeons(app):
 rss = {'mcv_rss': mcv_rss, 'mcv_jira_rss': mcv_jira_rss, 'mcv_bedrock_jira_rss': mcv_jira_rss_bedrock, 'mcv_dungeons_jira_rss': mcv_jira_rss_dungeons}
 options = ['mcv_rss', 'mcv_jira_rss']
 friend_options = ['mcv_rss_self', 'mcv_jira_rss_self']
-help = {'mcv_rss': {'help': '订阅Minecraft Java版游戏版本检测。（仅群聊）'},
-        'mcv_jira_rss': {'help': '订阅Minecraft Java版游戏版本检测（Jira记录，仅作预览用）。（仅群聊）'}}
+alias = {'mcv_rss_self': 'mcv_rss', 'mcv_jira_rss_self': 'mcv_jira_rss'}
+help = {'mcv_rss': {'help': '订阅Minecraft Java版游戏版本检测。'},
+        'mcv_jira_rss': {'help': '订阅Minecraft Java版游戏版本检测（Jira记录，仅作预览用）。'}}

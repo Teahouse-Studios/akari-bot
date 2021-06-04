@@ -62,3 +62,4 @@ async def start_check_news(app):
 rss = {'minecraft_news': start_check_news}
 options = ['minecraft_news']
 friend_options = options
+help = {'minecraft_news': {'help': '订阅Minecraft官网文章。'}}

@@ -276,6 +276,7 @@ async def regex_proc(kwargs: dict, display):
 
 command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': interwiki}
 regex = {'wiki_regex': regex_wiki}
+alias = {'wiki_inline': 'wiki_regex'}
 options = ['wiki_fandom_addon']
 self_options = options
 help = {'wiki': {'help': '~wiki [interwiki:]<page_name> - 查询Wiki内容。\n' +
