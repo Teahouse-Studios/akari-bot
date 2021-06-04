@@ -308,7 +308,7 @@ class wikilib:
                             'format': 'json'}
             desc_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
             load_desc = await self.get_data(desc_url, 'json', self.headers)
-            desc_raw = BeautifulSoup(load_desc['parse']['text']['*'], 'html.parser').get_text(separator='\n').split('\n')
+            desc_raw = BeautifulSoup(load_desc['parse']['text']['*'], 'html.parser').get_text().split('\n')
             desc_list = []
             for x in desc_raw:
                 if x != '':
