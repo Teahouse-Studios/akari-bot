@@ -32,8 +32,6 @@ async def ab_loader(kwargs: dict):
         id = kwargs[Friend].id
     msg = await ab(table, id)
     send = await sendMessage(kwargs, msg)
-    await asyncio.sleep(60)
-    await revokeMessage(send)
 
 
 async def newbie_loader(kwargs: dict):
