@@ -40,8 +40,9 @@ class BB:
                (ID INT PRIMARY KEY     NOT NULL,
                WARN  TEXT);''')
         c.execute('''CREATE TABLE group_adminuser
-               (ID INT PRIMARY KEY     NOT NULL,
-               QGROUP  INT);''')
+               (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+               TID INT,
+               TGROUP INT);''')
         c.execute('''CREATE TABLE superuser
                (ID INT PRIMARY KEY     NOT NULL);''')
         c.execute('''CREATE TABLE time
@@ -148,15 +149,14 @@ class BB:
         if Group in kwargs:
             id = kwargs[Member].id
             groupid = kwargs[Group].id
-        a = self.c.execute(f"SELECT * FROM group_adminuser WHERE ID={id}").fetchone()
+        a = self.c.execute("SELECT * FROM group_adminuser WHERE TID=? AND TGROUP=?", (id, groupid)).fetchone()
         if a:
-            if a[1] == groupid:
-                return True
+            return True
         return False
 
     def add_group_adminuser(self, id, group):
         try:
-            self.c.execute(f"INSERT INTO group_adminuser (ID, QGROUP) VALUES (?, ?)", (id, group))
+            self.c.execute(f"INSERT INTO group_adminuser (TID, TGROUP) VALUES (?, ?)", (id, group))
         except:
             traceback.print_exc()
         self.conn.commit()
@@ -164,7 +164,7 @@ class BB:
 
     def del_group_adminuser(self, id, group):
         try:
-            self.c.execute(f"DELETE FROM group_adminuser WHERE ID=? AND QGROUP=?", (id, group))
+            self.c.execute(f"DELETE FROM group_adminuser WHERE TID=? AND TGROUP=?", (id, group))
         except:
             traceback.print_exc()
         self.conn.commit()
