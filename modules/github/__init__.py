@@ -4,7 +4,7 @@ import traceback
 
 import aiohttp
 from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.application.message.elements.internal import Image, Plain
 
 from core import dirty_check as dirty
 from core.template import sendMessage
@@ -130,8 +130,9 @@ Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
         is_dirty = await dirty_check(msg, result['owner']['login'])
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
-
-        await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
+            await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
+        else:
+            await sendMessage(kwargs, MessageChain.create([Plain(msg), Image.fromNetworkAddress('https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/' + name)]))
     except Exception as e:
         await sendMessage(kwargs, '发生错误：' + str(e))
         traceback.print_exc()
