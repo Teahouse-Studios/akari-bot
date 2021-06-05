@@ -9,6 +9,25 @@ from graia.application.message.elements.internal import Image, Plain
 from core import dirty_check as dirty
 from core.template import sendMessage
 
+def darkCheck(msg: str):
+    blacklist = [
+        'china-dictatorship'
+        'cirosantilli',
+        'gfwlist',
+        'v2ray',
+        'shadowsocks',
+        'xi-yu-yan-kai-fa',
+        'xi-winnie-rainbow-fart',
+        'xi-speech-synthesizer',
+        'dnmkrgi',
+        'xi-speech-demo',
+        'zhao',
+        'programthink'
+    ]
+    for i in blacklist:
+        if msg.find(i) > -1:
+            return True
+    return False
 
 def time_diff(time: str):
     datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
@@ -127,7 +146,7 @@ Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
         if parent:
             msg += '\n' + parent
 
-        is_dirty = await dirty_check(msg, result['owner']['login'])
+        is_dirty = await dirty_check(msg, result['owner']['login']) or await darkCheck(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
             await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
@@ -205,7 +224,7 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
 {url}
 '''
 
-        is_dirty = await dirty_check(msg, login)
+        is_dirty = await dirty_check(msg, login) or await darkCheck(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
 
@@ -230,7 +249,7 @@ async def search(kwargs: dict, cmd: list):
         footnotes = f"另有 {result['total_count'] - 5} 个结果未显示。" if item_count_expected == 5 else ''
         msg = f"搜索成功：共 {result['total_count']} 个结果。\n" + '\n'.join(items_out[0:item_count_expected]) + f'\n{footnotes}'
 
-        is_dirty = await dirty_check(msg)
+        is_dirty = await dirty_check(msg) or await darkCheck(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
 
