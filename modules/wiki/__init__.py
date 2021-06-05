@@ -38,7 +38,7 @@ async def wiki_loader(kwargs: dict):
 
 async def wiki_wrapper(kwargs: dict):
     command = f'[[{kwargs["trigger_msg"]}]]'
-    await regex_proc(kwargs, command)
+    await regex_proc(kwargs, command, nudge=False)
 
 
 async def set_start_wiki(kwargs: dict):
@@ -139,7 +139,7 @@ async def regex_wiki(kwargs: dict):
     await regex_proc(kwargs, display)
 
 
-async def regex_proc(kwargs: dict, display):
+async def regex_proc(kwargs: dict, display, nudge=True):
     mains = re.findall(r'\[\[(.*?)\]\]', display, re.I)
     templates = re.findall(r'\{\{(.*?)\}\}', display, re.I)
     find_dict = {}
@@ -155,7 +155,8 @@ async def regex_proc(kwargs: dict, display):
         else:
             find_dict.update({template: 'template'})
     if find_dict != {}:
-        await Nudge(kwargs)
+        if nudge:
+            await Nudge(kwargs)
         waitlist = []
         imglist = []
         audlist = []
