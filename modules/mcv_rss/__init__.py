@@ -4,14 +4,19 @@ import re
 import traceback
 
 import aiohttp
+from graia.scheduler import GraiaScheduler
+from graia.scheduler.timers import every_minute
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
 from core.loader import logger_info
+from core.broadcast import bcc
 from database import BotDB
 from modules.mcv.mcv import get_data
 
+
 check_enable_modules_all = BotDB.check_enable_modules_all
+scheduler = GraiaScheduler(bcc.loop, bcc)
 
 
 def getfileversions(path):
@@ -24,9 +29,9 @@ def getfileversions(path):
     return s
 
 async def mcv_rss(app):
-    url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
-    logger_info('Subbot ver launched')
-    while True:
+    @scheduler.schedule(every_minute())
+    async def java_main():
+        url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
         try:
             version_file = os.path.abspath('./assets/mcversion.txt')
             logger_info('Checking mcv...')
@@ -43,7 +48,7 @@ async def mcv_rss(app):
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
-                for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
+                for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss'):
                     try:
                         await app.sendFriendMessage(int(qqfriend), MessageChain.create(
                             [Plain('启动器已更新' + file['latest']['release'] + '正式版。')]))
@@ -63,7 +68,7 @@ async def mcv_rss(app):
                         await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
-                for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss_self'):
+                for qqfriend in check_enable_modules_all('friend_permission', 'mcv_rss'):
                     try:
                         await app.sendFriendMessage(int(qqfriend), MessageChain.create(
                             [Plain('启动器已更新' + file['latest']['snapshot'] + '快照。')]))
@@ -74,16 +79,14 @@ async def mcv_rss(app):
                 addversion.write('\n' + snapshot)
                 addversion.close()
             logger_info('mcv checked.')
-            await asyncio.sleep(40)
         except Exception:
             traceback.print_exc()
-            await asyncio.sleep(20)
 
 
 async def mcv_jira_rss(app):
-    url = 'https://bugs.mojang.com/rest/api/2/project/10400/versions'
-    logger_info('Subbot jira launched')
-    while True:
+    @scheduler.schedule(every_minute())
+    async def java_jira():
+        url = 'https://bugs.mojang.com/rest/api/2/project/10400/versions'
         try:
             version_file = os.path.abspath('./assets/mcversion_jira.txt')
             logger_info('Checking Jira mcv...')
@@ -103,7 +106,7 @@ async def mcv_jira_rss(app):
                             await asyncio.sleep(0.5)
                         except Exception:
                             traceback.print_exc()
-                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss_self'):
+                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss'):
                         try:
                             await app.sendFriendMessage(int(qqfriend), MessageChain.create(
                                 [Plain(f'Jira已更新Java版{x}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')]))
@@ -114,16 +117,14 @@ async def mcv_jira_rss(app):
                     addversion.write('\n' + x)
                     addversion.close()
             logger_info('jira mcv checked.')
-            await asyncio.sleep(40)
         except Exception:
             traceback.print_exc()
-            await asyncio.sleep(20)
 
 
 async def mcv_jira_rss_bedrock(app):
-    url = 'https://bugs.mojang.com/rest/api/2/project/10200/versions'
-    logger_info('Subbot jira-bedrock launched')
-    while True:
+    @scheduler.schedule(every_minute())
+    async def bedrock_jira():
+        url = 'https://bugs.mojang.com/rest/api/2/project/10200/versions'
         try:
             version_file = os.path.abspath('./assets/mcversion_jira-bedrock.txt')
             logger_info('Checking Jira mcv-bedrock...')
@@ -143,7 +144,7 @@ async def mcv_jira_rss_bedrock(app):
                             await asyncio.sleep(0.5)
                         except Exception:
                             traceback.print_exc()
-                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss_self'):
+                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss'):
                         try:
                             await app.sendFriendMessage(int(qqfriend), MessageChain.create(
                                 [Plain(f'Jira已更新基岩版{x}。\n（Jira上的信息仅作版本号预览用，不代表商店已更新此版本）')]))
@@ -154,16 +155,14 @@ async def mcv_jira_rss_bedrock(app):
                     addversion.write('\n' + x)
                     addversion.close()
             logger_info('jira mcv-bedrock checked.')
-            await asyncio.sleep(90)
         except Exception:
             traceback.print_exc()
-            await asyncio.sleep(20)
 
 
 async def mcv_jira_rss_dungeons(app):
-    url = 'https://bugs.mojang.com/rest/api/2/project/11901/versions'
-    logger_info('Subbot jira-dungeons launched')
-    while True:
+    @scheduler.schedule(every_minute())
+    async def bedrock_dungeons():
+        url = 'https://bugs.mojang.com/rest/api/2/project/11901/versions'
         try:
             version_file = os.path.abspath('./assets/mcversion_jira-dungeons.txt')
             logger_info('Checking Jira mcv-bedrock...')
@@ -183,7 +182,7 @@ async def mcv_jira_rss_dungeons(app):
                             await asyncio.sleep(0.5)
                         except Exception:
                             traceback.print_exc()
-                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss_self'):
+                    for qqfriend in check_enable_modules_all('friend_permission', 'mcv_jira_rss'):
                         try:
                             await app.sendFriendMessage(int(qqfriend), MessageChain.create(
                                 [Plain(f'Jira已更新Dungeons {x}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')]))
@@ -194,14 +193,13 @@ async def mcv_jira_rss_dungeons(app):
                     addversion.write('\n' + x)
                     addversion.close()
             logger_info('jira mcv-dungeons checked.')
-            await asyncio.sleep(90)
         except Exception:
             traceback.print_exc()
-            await asyncio.sleep(20)
+
 
 rss = {'mcv_rss': mcv_rss, 'mcv_jira_rss': mcv_jira_rss, 'mcv_bedrock_jira_rss': mcv_jira_rss_bedrock, 'mcv_dungeons_jira_rss': mcv_jira_rss_dungeons}
 options = ['mcv_rss', 'mcv_jira_rss']
-friend_options = ['mcv_rss_self', 'mcv_jira_rss_self']
+friend_options = options
 alias = {'mcv_rss_self': 'mcv_rss', 'mcv_jira_rss_self': 'mcv_jira_rss'}
 help = {'mcv_rss': {'help': '订阅Minecraft Java版游戏版本检测。'},
         'mcv_jira_rss': {'help': '订阅Minecraft Java版游戏版本检测（Jira记录，仅作预览用）。'}}

@@ -276,8 +276,8 @@ async def regex_proc(kwargs: dict, display, nudge=True):
 
 
 command = {'wiki': wiki_loader, 'wiki_start_site': set_start_wiki, 'interwiki': interwiki}
-regex = {'wiki_regex': regex_wiki}
-alias = {'wiki_inline': 'wiki_regex'}
+regex = {'wiki_inline': regex_wiki}
+alias = {'wiki_regex': 'wiki_inline', 'w': 'wiki'}
 options = ['wiki_fandom_addon']
 self_options = options
 help = {'wiki': {'help': '~wiki [interwiki:]<page_name> - 查询Wiki内容。\n' +
@@ -287,6 +287,6 @@ help = {'wiki': {'help': '~wiki [interwiki:]<page_name> - 查询Wiki内容。\n'
         'wiki_start_site': {'help': '~wiki_start_site <api_endpoint_link> - 设置起始查询Wiki。'},
         'interwiki': {
             'help': '~interwiki <add/del> <interwiki> <wikiurl> - 设置自定义Interwiki跨站查询。'},
-        'wiki_regex': {'help': '[[<page_name>]]|{{<page_name>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
+        'wiki_inline': {'help': '[[<page_name>]]|{{<page_name>}} - 当聊天中出现此种Wikitext时进行自动查询。'},
         'wiki_fandom_addon': {
             'help': '为Fandom定制的Wiki查询功能，包含有[[w:c:<wikiname>:[langcode:]<page_name>]]的消息会自动定向查询至Fandom的Wiki。'}}

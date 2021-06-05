@@ -36,5 +36,6 @@ async def s(kwargs, message, raw, showplayer, mode):
 
 
 command = {'server': main}
+alias = {'s': 'server'}
 help = {'server': {
     'help': '~server <服务器地址>:<服务器端口> - 获取Minecraft Java/基岩版服务器motd。'}}

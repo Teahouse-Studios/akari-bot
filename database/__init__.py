@@ -26,9 +26,6 @@ class BB:
         c.execute('''CREATE TABLE group_permission
                (ID INT PRIMARY KEY     NOT NULL,
                ENABLE_MODULES  TEXT);''')
-        c.execute('''CREATE TABLE self_permission
-               (ID INT PRIMARY KEY     NOT NULL,
-               DISABLE_MODULES  TEXT);''')
         c.execute('''CREATE TABLE friend_permission
                (ID INT PRIMARY KEY     NOT NULL,
                ENABLE_MODULES  TEXT);''')
@@ -53,7 +50,7 @@ class BB:
 
     def update_modules(self, do, id, modules_name, table='group_permission', value='ENABLE_MODULES'):
         a = self.c.execute(f"SELECT * FROM {table} WHERE ID={id}").fetchone()
-        if do == 'add':
+        if do == 'enable':
             if a:
                 enabled_split = a[1].split('|')
                 if modules_name in enabled_split:
@@ -67,7 +64,7 @@ class BB:
                 self.c.execute(f"INSERT INTO {table} (ID, {value}) VALUES (?, ?)", (id, modules_name))
                 self.conn.commit()
                 return '成功：启用模块：' + modules_name
-        elif do == 'del':
+        elif do == 'disable':
             if a:
                 enabled_split = a[1].split('|')
                 if modules_name in enabled_split:
@@ -99,7 +96,6 @@ class BB:
                 return False
         else:
             return False
-
 
     def check_enable_modules_all(self, table, modules_name):
         # 检查表中所有匹配的对象，返回一个list

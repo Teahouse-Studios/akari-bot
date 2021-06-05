@@ -79,6 +79,7 @@ async def ping(kwargs: dict):
 
 command = {'rc': rc_loader, 'ab': ab_loader, 'newbie': newbie_loader}
 essential = {'ping': ping}
+alias = {'p': 'ping'}
 help = {'rc': {'help': '~rc - 查询Wiki最近更改。'},
         'ab': {'help': '~ab - 查询Wiki滥用过滤器日志。'},
         'newbie': {'help': '~newbie - 查询Wiki用户注册日志。'},
