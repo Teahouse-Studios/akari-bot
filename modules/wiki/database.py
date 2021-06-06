@@ -131,18 +131,18 @@ class WD:
 
     def config_headers(self, do, table, id, header=None):
         try:
-            a = self.c.execute(f"SELECT * FROM {table} WHERE ID={id}").fetchone()
+            a = self.c.execute(f"SELECT * FROM {table} WHERE ID=?", (id,)).fetchone()
             if do == 'set':
                 header = base64.encodebytes(header.encode('utf-8'))
                 if a:
-                    self.c.execute(f"UPDATE {table} SET HEADERS='{header}' WHERE ID='{id}'")
+                    self.c.execute(f"UPDATE {table} SET HEADERS=? WHERE ID=?", (header, id))
                 else:
                     self.c.execute(f"INSERT INTO {table} (ID, HEADERS) VALUES (?, ?)", (id, header))
                 self.conn.commit()
                 return '成功更新请求所使用的Headers。'
             elif do == 'reset':
                 if a:
-                    self.c.execute(f"DELETE FROM {table} WHERE ID='{id}'")
+                    self.c.execute(f"DELETE FROM {table} WHERE ID=?", (id,))
                     return '成功重置请求所使用的Headers。'
                 else:
                     return '当前未自定义请求所使用的Headers。'
@@ -151,9 +151,11 @@ class WD:
                 if a:
                     headerd = str(base64.decodebytes(a[1]).decode('utf-8'))
                     headersp = headerd.split('\n')
+                    print(headersp)
                     for x in headersp:
-                        x = x.split(':')
-                        headers[x[0]] = re.sub(r'^ ', '', x[1])
+                        if x != '':
+                            x = x.split(':')
+                            headers[x[0]] = re.sub(r'^ ', '', x[1])
                 else:
                     headers['accept-language'] = 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'
                 print(header)
