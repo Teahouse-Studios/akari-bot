@@ -108,6 +108,24 @@ async def wait_anything(kwargs: dict):
     return await inc.wait(waiter)
 
 
+def kwargs_GetTrigger(kwargs: dict):
+    if Group in kwargs:  # 若为群组
+        trigger = kwargs[Member].id
+    if Friend in kwargs:  # 若为好友
+        trigger = kwargs[Friend].id
+    if 'TEST' in kwargs:
+        trigger = 0
+    return trigger
+
+
+def kwargs_AsDisplay(kwargs: dict):
+    if 'TEST' in kwargs:
+        display = kwargs['command']
+    else:
+        display = kwargs[MessageChain].asDisplay()
+    return display
+
+
 async def revokeMessage(msgchain):
     """
     用于撤回消息。

@@ -1,15 +1,15 @@
 import re
 import traceback
 
-import eventlet
 from graia.application import Friend
-from graia.application.group import Group, Member
-from graia.application.message.chain import MessageChain
+from graia.application.group import Group
 
 from core.loader import Modules, logger_info
-from core.template import sendMessage, Nudge
-from core.utils import getsetu
+from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay
+from core.utils import remove_ineffective_text
 from database import BotDB as database
+
+command_prefix = ['~', '～']  # 消息前缀
 
 
 async def parser(kwargs: dict):
@@ -18,19 +18,10 @@ async def parser(kwargs: dict):
     :param kwargs: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
     :return: 无返回
     """
-    if 'TEST' in kwargs:
-        display = kwargs['command']
-    else:
-        display = kwargs[MessageChain].asDisplay()  # 将消息转换为一般显示形式
+    display = kwargs_AsDisplay(kwargs)  # 将消息转换为一般显示形式
     if len(display) == 0:  # 转换后若为空消息则停止执行
         return
-    command_prefix = ['~', '～']  # 消息前缀
-    if Group in kwargs:  # 若为群组
-        trigger = kwargs[Member].id
-    if Friend in kwargs:  # 若为好友
-        trigger = kwargs[Friend].id
-    if 'TEST' in kwargs:
-        trigger = 0
+    trigger = kwargs_GetTrigger(kwargs)  # 得到触发者来源
     if trigger == 1143754816:  # 特殊规则
         display = re.sub('^.*:\n', '', display)
     strip_display_space = display.split(' ')
@@ -39,38 +30,17 @@ async def parser(kwargs: dict):
         if x != '':
             display_list.append(x)
     display = ' '.join(display_list)
+    if len(display) == 0:  # 转换后若为空消息则停止执行
+        return
     if database.check_black_list(trigger):  # 检查是否在黑名单
         if not database.check_white_list(trigger):  # 检查是否在白名单
             return  # 在黑名单且不在白名单，给我爪巴
     if display.find('色图来') != -1:  # 双倍快乐给我爬
-        await getsetu(kwargs)
         return
     if display[0] in command_prefix:  # 检查消息前缀
         logger_info(kwargs)
         command = re.sub(r'^' + display[0], '', display)
-        command_list = command.split('&&')  # 并行命令处理
-        command_remove_list = ['\n', ' ']  # 首尾需要移除的东西
-        for x in command_remove_list:
-            command_list_cache = []
-            for y in command_list:
-                split_list = y.split(x)
-                for _ in split_list:
-                    if split_list[0] == '':
-                        del split_list[0]
-                    if len(split_list) > 0:
-                        if split_list[-1] == '':
-                            del split_list[-1]
-                for _ in split_list:
-                    if len(split_list) > 0:
-                        if split_list[0][0] in command_prefix:
-                            split_list[0] = re.sub(r'^' + display[0], '', split_list[0])
-                command_list_cache.append(x.join(split_list))
-            command_list = command_list_cache
-        command_duplicated_list = []  # 移除重复命令
-        for x in command_list:
-            if x not in command_duplicated_list:
-                command_duplicated_list.append(x)
-        command_list = command_duplicated_list
+        command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
         if len(command_list) > 5:
             if not database.check_superuser(kwargs):
                 await sendMessage(kwargs, '你不是本机器人的超级管理员，最多只能并排执行5个命令。')
