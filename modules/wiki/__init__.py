@@ -148,12 +148,14 @@ async def regex_proc(kwargs: dict, display, nudge=True):
         if main == '' or main in find_dict or main.find("{") != -1:
             pass
         else:
-            find_dict.update({main: 'main'})
+            if main[0] != '#':
+                find_dict.update({main: 'main'})
     for template in templates:
         if template == '' or template in find_dict or template.find("{") != -1:
             pass
         else:
-            find_dict.update({template: 'template'})
+            if template[0] != '#':
+                find_dict.update({template: 'template'})
     if find_dict != {}:
         if nudge:
             await Nudge(kwargs)
