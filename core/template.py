@@ -134,9 +134,15 @@ async def revokeMessage(msgchain):
     """
     if isinstance(msgchain, list):
         for msg in msgchain:
-            await app.revokeMessage(msg)
+            try:
+                await app.revokeMessage(msg)
+            except Exception:
+                traceback.print_exc()
     else:
-        await app.revokeMessage(msgchain)
+        try:
+            await app.revokeMessage(msgchain)
+        except Exception:
+            traceback.print_exc()
 
 
 def check_permission(kwargs):
