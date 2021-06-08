@@ -5,7 +5,7 @@ from graia.application import Friend
 from graia.application.group import Group
 
 from core.loader import Modules, logger_info
-from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay
+from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay, RemoveDuplicateSpace
 from core.utils import remove_ineffective_text
 from database import BotDB as database
 
@@ -18,20 +18,12 @@ async def parser(kwargs: dict):
     :param kwargs: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
     :return: 无返回
     """
-    display = kwargs_AsDisplay(kwargs)  # 将消息转换为一般显示形式
+    display = RemoveDuplicateSpace(kwargs_AsDisplay(kwargs))  # 将消息转换为一般显示形式
     if len(display) == 0:  # 转换后若为空消息则停止执行
         return
     trigger = kwargs_GetTrigger(kwargs)  # 得到触发者来源
     if trigger == 1143754816:  # 特殊规则
         display = re.sub('^.*:\n', '', display)
-    strip_display_space = display.split(' ')
-    display_list = []  # 清除指令中间多余的空格
-    for x in strip_display_space:
-        if x != '':
-            display_list.append(x)
-    display = ' '.join(display_list)
-    if len(display) == 0:  # 转换后若为空消息则停止执行
-        return
     if database.check_black_list(trigger):  # 检查是否在黑名单
         if not database.check_white_list(trigger):  # 检查是否在白名单
             return  # 在黑名单且不在白名单，给我爪巴

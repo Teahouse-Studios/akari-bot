@@ -126,6 +126,17 @@ def kwargs_AsDisplay(kwargs: dict):
     return display
 
 
+def RemoveDuplicateSpace(text: str):
+    strip_display_space = text.split(' ')
+    display_list = []  # 清除指令中间多余的空格
+    for x in strip_display_space:
+        if x != '':
+            display_list.append(x)
+    text = ' '.join(display_list)
+    return text
+
+
+
 async def revokeMessage(msgchain):
     """
     用于撤回消息。
