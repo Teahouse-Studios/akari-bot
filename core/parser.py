@@ -67,8 +67,9 @@ async def parser(kwargs: dict):
                         await Modules['admin'][command_first_word](kwargs)
                     else:
                         await sendMessage(kwargs, '权限不足')
-            except Exception:
-                await sendMessage(kwargs, '执行命令时发生错误，请报告管理员：\n' + traceback.format_exc())
+            except Exception as e:
+                traceback.print_exc()
+                await sendMessage(kwargs, '执行命令时发生错误，请报告管理员：\n' + str(e))
     # 正则模块部分
     if Group in kwargs:
         for regex in Modules['regex']:  # 遍历正则模块列表
