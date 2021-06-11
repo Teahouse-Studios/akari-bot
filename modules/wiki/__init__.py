@@ -202,11 +202,11 @@ async def regex_proc(kwargs: dict, display, nudge=True):
                                     if len(interwiki_split) == 2:
                                         get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
                                         find = interwiki_split[0] + ':' + matchinterwiki.group(2)
-                                        iw = interwiki_split[0]
+                                        iw = 'w:c' + interwiki_split[0]
                                     else:
                                         get_link = f'https://{matchinterwiki.group(1)}.fandom.com/api.php'
                                         find = matchinterwiki.group(2)
-                                        iw = matchinterwiki.group(1)
+                                        iw = 'w:c' + matchinterwiki.group(1)
             if find == 'random':
                 msg = await modules.wiki.wikilib.wikilib().random_page(get_link, iw, headers)
             else:
