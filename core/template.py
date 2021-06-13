@@ -59,7 +59,9 @@ async def wait_confirm(kwargs: dict):
     :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
     """
     inc = InterruptControl(bcc)
-    confirm_command = ["是", "对", 'yes', 'y', '确定']
+    confirm_command = ["是", "对", 'yes', 'y', '确定', '是吧', '大概是',
+                       '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
+                       '吼啊', '资瓷', '是呗', '也许吧', '对呗']
     if Group in kwargs:
         @Waiter.create_using_function([GroupMessage])
         def waiter(waiter_group: Group,
