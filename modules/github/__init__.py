@@ -146,7 +146,7 @@ Created {time_diff(created)} ago | Updated {time_diff(updated)} ago
         if parent:
             msg += '\n' + parent
 
-        is_dirty = await dirty_check(msg, result['owner']['login']) or await darkCheck(msg)
+        is_dirty = await dirty_check(msg, result['owner']['login']) or darkCheck(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
             await sendMessage(kwargs, MessageChain.create([Plain(msg)]))
@@ -224,7 +224,7 @@ Account Created {time_diff(created)} ago | Latest activity {time_diff(updated)} 
 {url}
 '''
 
-        is_dirty = await dirty_check(msg, login) or await darkCheck(msg)
+        is_dirty = await dirty_check(msg, login) or darkCheck(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
 
