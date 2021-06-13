@@ -114,7 +114,7 @@ async def repo(kwargs: dict, cmd: list):
         if website is not None:
             website = 'Website: ' + website + '\n'
         else:
-            website = False
+            website = ''
 
         if mirror is not None:
             mirror = f' (This is a mirror of {mirror} )'
