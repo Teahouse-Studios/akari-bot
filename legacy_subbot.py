@@ -20,14 +20,14 @@ async def newbie(app):
             for x in file['query']['logevents'][:]:
                 qq.append(x['title'])
             while True:
-                c = 'f'
+                c = False
                 try:
                     qqqq = await get_data(url, 'json')
                     for xz in qqqq['query']['logevents'][:]:
                         if xz['title'] in qq:
                             pass
                         else:
-                            s = await check(UTC8(xz['timestamp'], 'onlytime') + '新增新人：' + xz['title'])
+                            s = await check(UTC8(xz['timestamp'], 'onlytime') + '新增新人：\n' + xz['title'])
                             if s.find("<吃掉了>") != -1 or s.find("<全部吃掉了>") != -1:
                                 await app.sendGroupMessage(731397727, MessageChain.create(
                                     [Plain(
@@ -35,10 +35,10 @@ async def newbie(app):
                             else:
                                 await app.sendGroupMessage(731397727,
                                                            MessageChain.create([Plain(s)]).asSendable())
-                            c = 't'
+                            c = True
                 except Exception:
                     pass
-                if c == 't':
+                if c:
                     break
                 else:
                     await asyncio.sleep(10)
