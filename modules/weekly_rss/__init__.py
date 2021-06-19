@@ -11,9 +11,7 @@ from core.broadcast import bcc
 from core.template import logger_info
 from core.utils import get_url
 from database import BotDB
-from .database import MD as db
 
-database = db()
 check_enable_modules_all = BotDB.check_enable_modules_all
 scheduler = GraiaScheduler(bcc.loop, bcc)
 
