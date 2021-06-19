@@ -146,17 +146,14 @@ async def revokeMessage(msgchain):
     :param msgchain: 需要撤回的已发送/接收的消息链
     :return: 无返回
     """
-    if isinstance(msgchain, list):
-        for msg in msgchain:
-            try:
+    try:
+        if isinstance(msgchain, list):
+            for msg in msgchain:
                 await app.revokeMessage(msg)
-            except Exception:
-                traceback.print_exc()
-    else:
-        try:
+        else:
             await app.revokeMessage(msgchain)
-        except Exception:
-            traceback.print_exc()
+    except:
+        traceback.print_exc()
 
 
 def check_permission(kwargs):
