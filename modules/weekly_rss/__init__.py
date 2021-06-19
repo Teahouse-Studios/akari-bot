@@ -52,7 +52,7 @@ async def start_check_weekly(app):
                 traceback.print_exc()
 
         logger_info(msg)
-        logger_info('Minecraft news checked.')
+        logger_info('Weekly checked.')
 
 
 rss = {'weekly_rss': start_check_weekly}
