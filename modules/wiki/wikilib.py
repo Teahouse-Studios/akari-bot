@@ -351,7 +351,11 @@ class wikilib:
             if self.template == True:
                 self.page_name = self.orginpagename = re.sub(r'^Template:', '', self.page_name)
                 self.template = False
-                self.template_prompt = f'提示：[Template:{self.page_name}]不存在，已自动回滚搜索页面。\n'
+                if self.interwiki == '':
+                    target = ''
+                else:
+                    target = self.interwiki + ':'
+                self.template_prompt = f'提示：[{target}Template:{self.page_name}]不存在，已自动回滚搜索页面。\n'
                 return await self.step1()
             return await self.page_not_found()
         else:

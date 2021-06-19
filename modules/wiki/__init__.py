@@ -144,18 +144,27 @@ async def regex_proc(kwargs: dict, display, nudge=True):
     templates = re.findall(r'\{\{(.*?)\}\}', display, re.I)
     find_dict = {}
     global_status = 'done'
+    site_lock = False
     for main in mains:
         if main == '' or main in find_dict or main.find("{") != -1:
             pass
         else:
             if main[0] != '#':
-                find_dict.update({main: 'main'})
+                if main[0] == ':':
+                    site_lock = True
+                    find_dict.update({main[1:]: 'main'})
+                else:
+                    find_dict.update({main: 'main'})
     for template in templates:
         if template == '' or template in find_dict or template.find("{") != -1:
             pass
         else:
             if template[0] != '#':
-                find_dict.update({template: 'template'})
+                if template == ':':
+                    site_lock = True
+                    find_dict.update({template[1:]: 'template'})
+                else:
+                    find_dict.update({template: 'template'})
     if find_dict != {}:
         if nudge:
             await Nudge(kwargs)
@@ -183,7 +192,8 @@ async def regex_proc(kwargs: dict, display, nudge=True):
                                       'https://minecraft.fandom.com/zh/api.php')
                 get_link = 'https://minecraft.fandom.com/zh/api.php'
             iw = None
-            if matchinterwiki := re.match(r'(.*?):(.*)', find):
+            matchinterwiki = re.match(r'(.*?):(.*)', find)
+            if matchinterwiki and not site_lock:
                 iw_table = 'custom_interwiki_' + kwargs[Target].target_from
                 get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
                                                                          target,
