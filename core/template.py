@@ -200,7 +200,10 @@ async def slk_converter(filepath):
 
 
 async def Nudge(kwargs):
-    if Group in kwargs:
-        await app.nudge(kwargs[Member])
-    if Friend in kwargs:
-        await app.nudge(kwargs[Friend])
+    try:
+        if Group in kwargs:
+            await app.nudge(kwargs[Member])
+        if Friend in kwargs:
+            await app.nudge(kwargs[Friend])
+    except:
+        traceback.print_exc()
