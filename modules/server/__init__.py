@@ -27,7 +27,7 @@ async def main(kwargs: dict):
         gather_list.append(asyncio.ensure_future(s(kwargs, message, raw, showplayer, x)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        send = await sendMessage(kwargs, '发生错误：没有找到任何类型的Minecraft服务器。')
+        send = await sendMessage(kwargs, '发生错误：没有找到任何类型的Minecraft服务器。\n[90秒后撤回消息]')
         await asyncio.sleep(90)
         await revokeMessage(send)
 
