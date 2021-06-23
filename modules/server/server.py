@@ -39,7 +39,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
             traceback.print_exc()
     if mode == 'j':
         try:
-            url = 'http://motd.wd-api.com/v1/java?ip=' + serip + '&port=' + port1
+            url = 'http://motd.wd-api.com/v1/java?host=' + serip + '&port=' + port1
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
@@ -94,7 +94,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
         return re.sub(r'§\w', "", awa.join(servers))
     if mode == 'b':
         try:
-            beurl = 'http://motd.wd-api.com/v1/bedrock?ip=' + serip + '&port=' + port2
+            beurl = 'http://motd.wd-api.com/v1/bedrock?host=' + serip + '&port=' + port2
             async with aiohttp.ClientSession() as session2:
                 async with session2.get(beurl, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
