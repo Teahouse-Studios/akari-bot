@@ -1,6 +1,5 @@
 *.env
-*.pyc
-*.pyc
+__pycache__/
 config/*.cfg
 .idea
 assets/mcversion.txt
