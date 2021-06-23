@@ -8,6 +8,7 @@ import aiohttp
 async def server(address, raw=False, showplayer=False, mode='j'):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
     servers = []
+    n = '\n'
 
     if matchObj:
         serip = matchObj.group(1)
@@ -19,8 +20,6 @@ async def server(address, raw=False, showplayer=False, mode='j'):
         port2 = '19132'
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', serip)
     if matchserip:
-        print(matchserip.group(1), matchserip.group(2),
-              matchserip.group(3), matchserip.group(4))
         try:
             if matchserip.group(1) == '192':
                 if matchserip.group(2) == '168':
@@ -44,68 +43,64 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
                         print(await req.text())
-                        print(f"请求时发生错误：{req.status}")
                     else:
-                        motd = await req.text()
-                        file = json.loads(motd)
+                        jejson = json.loads(await req.text())
                         try:
-                            if file['code'] == 200:
-                                servers.append('[JE]')
-                                jejson = file['data']
-                                if 'description' in jejson:
-                                    description = jejson['description']
-                                    if 'text' in description:
-                                        servers.append(str(description['text']))
-                                    elif 'extra' in description:
-                                        extra = description['extra']
-                                        text = []
-                                        qwq = ''
-                                        for item in extra[:]:
-                                            text.append(str(item['text']))
-                                        servers.append(qwq.join(text))
-                                    else:
-                                        servers.append(str(description))
+                            servers.append('[JE]')
+                            if 'description' in jejson:
+                                description = jejson['description']
+                                if 'text' in description:
+                                    servers.append(str(description['text']))
+                                elif 'extra' in description:
+                                    extra = description['extra']
+                                    text = []
+                                    qwq = ''
+                                    for item in extra[:]:
+                                        text.append(str(item['text']))
+                                    servers.append(qwq.join(text))
+                                else:
+                                    servers.append(str(description))
 
-                                if 'players' in jejson:
-                                    onlinesplayer = f"在线玩家：{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
-                                    servers.append(onlinesplayer)
-                                    if showplayer:
-                                        playerlist = []
-                                        for x in jejson['players']['sample']:
-                                            playerlist.append(x['name'])
-                                        servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
-                                if 'version' in jejson:
-                                    versions = "游戏版本：" + file['data']['version']['name']
-                                    servers.append(versions)
-                                servers.append(serip + ':' + port1)
-                            else:
-                                servers.append('获取JE服务器信息失败。')
+                            if 'players' in jejson:
+                                onlinesplayer = f"在线玩家：{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
+                                servers.append(onlinesplayer)
+                                if showplayer:
+                                    playerlist = []
+                                    for x in jejson['players']['sample']:
+                                        playerlist.append(x['name'])
+                                    servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
+                            if 'version' in jejson:
+                                versions = "游戏版本：" + jejson['version']['name']
+                                servers.append(versions)
+                            servers.append(serip + ':' + port1)
                         except Exception:
                             traceback.print_exc()
                             servers.append("[JE]\n发生错误：调用API时发生错误。")
         except Exception:
-            servers.append('获取JE服务器信息失败。')
             traceback.print_exc()
-        awa = '\n'
-        servers.append("[120秒后撤回本消息]")
-        print(servers)
         if raw:
-            return awa.join(servers)
-        return re.sub(r'§\w', "", awa.join(servers))
+            return n.join(servers)
+        return re.sub(r'§\w', "", n.join(servers))
     if mode == 'b':
         try:
             beurl = 'http://motd.wd-api.com/v1/bedrock?host=' + serip + '&port=' + port2
+            print(beurl)
             async with aiohttp.ClientSession() as session2:
                 async with session2.get(beurl, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
                         print(await req.text())
-                        servers.append(f'获取BE服务器信息失败：{req.status}')
                     else:
                         bemotd = await req.text()
                         bejson = json.loads(bemotd)
                         print(bejson)
-                        edition, motd_1, protocol, version_name, player_count, max_players, unique_id, motd_2, \
-                        game_mode, game_mode_num = bejson['motd'].split(';')
+                        unpack_data = bejson['data'].split(';')
+                        motd_1 = unpack_data[1]
+                        motd_2 = unpack_data[7]
+                        player_count = unpack_data[4]
+                        max_players = unpack_data[5]
+                        edition = unpack_data[0]
+                        version_name = unpack_data[3]
+                        game_mode = unpack_data[8]
                         bemsg = '[BE]\n' + \
                                 motd_1 + ' - ' + motd_2 + \
                                 '\n在线玩家：' + player_count + '/' + max_players + \
@@ -114,11 +109,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                         servers.append(bemsg)
 
         except Exception:
-            servers.append('获取BE服务器信息失败。')
             traceback.print_exc()
-        awa = '\n'
-        servers.append("[120秒后撤回本消息]")
-        print(servers)
         if raw:
-            return awa.join(servers)
-        return re.sub(r'§\w', "", awa.join(servers))
+            return n.join(servers)
+        return re.sub(r'§\w', "", n.join(servers))
