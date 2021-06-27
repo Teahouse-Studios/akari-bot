@@ -19,13 +19,14 @@ async def cytoid(kwargs: dict):
     if command_split[0] in ['b30', 'r30']:
         c = database.check_time(kwargs, 'cytoidrank', 300)
         if not c:
-            database.write_time(kwargs, 'cytoidrank')
             uid = re.sub(r'^.*?30 ', '', command)
             img = await get_rating(uid, command_split[0])
             if 'path' in img:
                 await sendMessage(kwargs, MessageChain.create([Image.fromLocalFile(img['path'])]))
             if 'text' in img:
                 await sendMessage(kwargs, img['text'])
+            if img['status']:
+                database.write_time(kwargs, 'cytoidrank')
         else:
             await sendMessage(kwargs, f'距离上次执行已过去{int(-c)}秒，本命令的冷却时间为300秒。')
 
