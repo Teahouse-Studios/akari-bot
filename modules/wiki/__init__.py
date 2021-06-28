@@ -15,7 +15,10 @@ from .getinfobox import get_infobox_pic
 
 
 async def wiki_loader(kwargs: dict):
-    kwargs['trigger_msg'] = cmd = re.sub(r'^wiki ', '', kwargs['trigger_msg'])
+    kwargs['trigger_msg'] = cmd = re.sub(r'^wiki ?', '', kwargs['trigger_msg'])
+    if cmd == '':
+        await sendMessage(kwargs, help['wiki']['help'])
+        return
     cmd = cmd.split(' ')
     if isinstance(cmd, list):
         if len(cmd) > 1:
