@@ -4,6 +4,7 @@ import re
 import traceback
 
 from graia.application.logger import LoggingLogger
+from .elements import Plugin
 
 DisplayAttributeError = False
 err_prompt = []
@@ -11,6 +12,21 @@ err_prompt = []
 
 def logger_info(msg):
     LoggingLogger().info(msg)
+
+
+class PluginManager:
+    _plugin_list = set()
+
+    @classmethod
+    def add_plugin(cls, plugin: Plugin):
+        PluginManager._plugin_list.add(plugin)
+
+    @classmethod
+    def return_as_dict(cls):
+        d = {}
+        for x in PluginManager._plugin_list:
+            d.update({x.name: x.function})
+        return d
 
 
 class ModulesLoader:
@@ -25,9 +41,6 @@ class ModulesLoader:
             'options': list,
             'self_options': list
         }
-        friend_modules_function = {
-            'friend_options': list
-        }
         other_function = {
             'admin': dict,
             'essential': dict,
@@ -37,11 +50,9 @@ class ModulesLoader:
         }
         functions = {}
         functions.update(modules_function)
-        functions.update(friend_modules_function)
         functions.update(other_function)
         functions_list = {}
         functions_list['modules_function'] = []
-        functions_list['friend_modules_function'] = []
         for x in functions:
             if functions[x] == dict:
                 functions_list[x] = {}
@@ -55,55 +66,19 @@ class ModulesLoader:
                 if file_name != '__pycache__':
                     fun_file = file_name
                 else:
-                    fun_file = None
+                    continue
             if os.path.isfile(file_path):
                 b = re.match(r'(.*)(.py)', file_path)
                 if b:
                     fun_file = b.group(1)
-            try:
-                if fun_file is not None:
-                    logger_info('Loading modules.' + fun_file + '...')
-                    modules = 'modules.' + fun_file
-                    import_fun = importlib.__import__(modules, fromlist=[fun_file])
-                    for x in functions:
-                        try:
-                            attrs = import_fun.__getattribute__(x)
-                            if attrs:
-                                if functions[x] == dict:
-                                    if isinstance(attrs, dict):
-                                        functions_list[x].update(attrs)
-                                        logger_info(
-                                            f'Successfully loaded to {x} list from {modules} module: ' + str(attrs))
-                                        if x in modules_function:
-                                            for y in attrs:
-                                                functions_list['modules_function'].append(y)
-                                        if x in friend_modules_function:
-                                            for y in attrs:
-                                                functions_list['friend_modules_function'].append(y)
-                                    else:
-                                        logger_info(f'?? wtf {x} in {fun_file} format is wrong! should be dict.')
-                                if functions[x] == list:
-                                    if isinstance(attrs, list):
-                                        for y in attrs:
-                                            functions_list[x].append(y)
-                                            logger_info(
-                                                f'Successfully loaded to {x} list from {modules} module: ' + str(y))
-                                            if x in modules_function:
-                                                functions_list['modules_function'].append(y)
-                                            if x in friend_modules_function:
-                                                functions_list['friend_modules_function'].append(y)
-                                    else:
-                                        logger_info(f'?? wtf {x} in {fun_file} format is wrong! should be list.')
-                        except AttributeError as e:
-                            if DisplayAttributeError:
-                                logger_info(str(e))
-            except:
-                traceback.print_exc()
-                err_prompt.append(str(traceback.format_exc()))
-        functions_list["modules_function"] = list(set(functions_list["modules_function"]))
-        functions_list["friend_modules_function"] = list(set(functions_list["friend_modules_function"]))
+                else:
+                    continue
+            if fun_file is not None:
+                logger_info('Loading modules.' + fun_file + '...')
+                modules = 'modules.' + fun_file
+                importlib.import_module(modules)
+        functions_list["modules_function"] = PluginManager.return_as_dict()
         logger_info(f'Now we have function = {functions_list["modules_function"]}')
-        logger_info(f'Now we have friend function = {functions_list["friend_modules_function"]}')
         return functions_list
 
 

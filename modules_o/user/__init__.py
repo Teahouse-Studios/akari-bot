@@ -5,8 +5,8 @@ from graia.application.message.elements.internal import Image, UploadMethods, Pl
 
 from core.elements import Target
 from core.template import sendMessage
-from modules.wiki.database import WikiDB
-from modules.wiki.wikilib import wikilib
+from modules_o.wiki.database import WikiDB
+from modules_o.wiki.wikilib import wikilib
 from .userlib import GetUser
 
 

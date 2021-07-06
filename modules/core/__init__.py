@@ -5,8 +5,10 @@ from graia.application.message.elements.internal import Plain
 
 from core.template import check_permission, revokeMessage
 from .admin import *
+from core.decorator import command
 
 
+@command(name='module')
 async def config_modules(kwargs: dict):
     """
 ~module <enable/disable> <module/all>"""

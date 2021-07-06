@@ -4,8 +4,8 @@ import urllib.parse
 
 import aiohttp
 
-from modules.utils.UTC8 import UTC8
-from modules.wiki.wikilib import wikilib as wiki
+from modules_o.utils.UTC8 import UTC8
+from modules_o.wiki.wikilib import wikilib as wiki
 from .gender import gender
 
 

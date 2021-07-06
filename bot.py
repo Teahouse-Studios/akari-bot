@@ -14,7 +14,6 @@ from core.elements import Target
 from core.loader import Modules
 from core.parser import parser
 from core.utils import load_prompt as lp
-from legacy_subbot import newbie
 
 cache_path = os.path.abspath('./cache/')
 if os.path.exists(cache_path):
@@ -60,12 +59,6 @@ async def message_handler(app: GraiaMiraiApplication):
     for x in rss_list:
         gather_list.append(asyncio.ensure_future(rss_list[x](app)))
     await asyncio.gather(*gather_list)
-
-
-@bcc.receiver('ApplicationLaunched')
-async def legacy_message_handler(app: GraiaMiraiApplication):
-    if Config('account') == '2926887640':
-        await newbie(app)
 
 
 @bcc.receiver('ApplicationLaunched', priority=16)

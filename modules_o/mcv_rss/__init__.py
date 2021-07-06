@@ -1,9 +1,7 @@
 import asyncio
 import os
-import re
 import traceback
 
-import aiohttp
 from graia.scheduler import GraiaScheduler
 from graia.scheduler.timers import every_minute
 from graia.application import MessageChain

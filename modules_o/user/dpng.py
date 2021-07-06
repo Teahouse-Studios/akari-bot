@@ -3,7 +3,7 @@ from os.path import abspath
 
 import aiohttp
 
-from modules.wiki.wikilib import wikilib
+from modules_o.wiki.wikilib import wikilib
 
 
 async def dpng(link, ss):

@@ -49,15 +49,15 @@ async def parser(kwargs: dict):
                     command_spilt = command.split(' ')
                     command_first_word = command_spilt[0]
                     kwargs['trigger_msg'] = command
-                if command_first_word in Modules['command']:  # 检查触发命令是否在模块列表中
+                if command_first_word in Modules["modules_function"]:  # 检查触发命令是否在模块列表中
                     if Group in kwargs:
                         await Nudge(kwargs)
                         check_command_enable = database.check_enable_modules(kwargs[Group].id,
                                                                              command_first_word)  # 检查群组是否开启模块
-                        if not check_command_enable:  # 若未开启
-                            await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
-                            return
-                    await Modules['command'][command_first_word](kwargs)  # 将dict传入下游模块
+                        #if not check_command_enable:  # 若未开启
+                        #    await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
+                        #    return
+                    await Modules["modules_function"][command_first_word](kwargs)  # 将dict传入下游模块
                 elif command_first_word in Modules['essential']:  # 若触发的对象命令为基础命令
                     if Group in kwargs:
                         await Nudge(kwargs)

@@ -5,12 +5,12 @@ from graia.application.group import Group
 from graia.application.message.elements.internal import Image, Voice
 from graia.application.message.elements.internal import Plain
 
-import modules.wiki.wikilib
+import modules_o.wiki.wikilib
 from core.elements import Target
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, \
     slk_converter
 from database import BotDB
-from modules.wiki.database import WikiDB
+from modules_o.wiki.database import WikiDB
 from .getinfobox import get_infobox_pic
 
 
@@ -198,9 +198,9 @@ async def regex_proc(kwargs: dict, display, nudge=True):
             matchinterwiki = re.match(r'(.*?):(.*)', find)
             if matchinterwiki and not site_lock:
                 iw_table = 'custom_interwiki_' + kwargs[Target].target_from
-                get_custom_iw = modules.wiki.WikiDB.get_custom_interwiki(iw_table,
-                                                                         target,
-                                                                         matchinterwiki.group(1))
+                get_custom_iw = modules_o.wiki.WikiDB.get_custom_interwiki(iw_table,
+                                                                           target,
+                                                                           matchinterwiki.group(1))
                 if get_custom_iw:
                     get_link = get_custom_iw
                     find = re.sub(matchinterwiki.group(1) + ':', '', find)
@@ -221,10 +221,10 @@ async def regex_proc(kwargs: dict, display, nudge=True):
                                         find = matchinterwiki.group(2)
                                         iw = 'w:c:' + matchinterwiki.group(1)
             if find == 'random':
-                msg = await modules.wiki.wikilib.wikilib().random_page(get_link, iw, headers)
+                msg = await modules_o.wiki.wikilib.wikilib().random_page(get_link, iw, headers)
             else:
-                msg = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
-                                                            headers=headers)
+                msg = await modules_o.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw, template=template,
+                                                                  headers=headers)
             print(msg)
             status = msg['status']
             text = (prompt + '\n' if prompt else '') + msg['text']

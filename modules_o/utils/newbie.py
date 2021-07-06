@@ -4,8 +4,8 @@ import re
 import aiohttp
 
 from core.dirty_check import check
-from modules.wiki.database import WikiDB
-from modules.wiki.wikilib import wikilib
+from modules_o.wiki.database import WikiDB
+from modules_o.wiki.wikilib import wikilib
 
 
 async def newbie(table, id):

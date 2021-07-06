@@ -107,6 +107,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                 '\n游戏版本：' + edition + version_name + \
                                 '\n游戏模式：' + game_mode
                         servers.append(bemsg)
+                        servers.append(serip + ':' + port2)
 
         except Exception:
             traceback.print_exc()

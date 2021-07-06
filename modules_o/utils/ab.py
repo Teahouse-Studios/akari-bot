@@ -3,9 +3,9 @@ import json
 import aiohttp
 
 from core.dirty_check import check
-from modules.utils.UTC8 import UTC8
-from modules.wiki.database import WikiDB
-from modules.wiki.wikilib import wikilib
+from modules_o.utils.UTC8 import UTC8
+from modules_o.wiki.database import WikiDB
+from modules_o.wiki.wikilib import wikilib
 
 
 async def ab(table, id):
