@@ -8,7 +8,7 @@ from .admin import *
 from core.decorator import command
 
 
-@command(name='module')
+@command(bind_prefix='module')
 async def config_modules(kwargs: dict):
     """
 ~module <enable/disable> <module/all>"""

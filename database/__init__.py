@@ -5,7 +5,7 @@ import traceback
 
 from graia.application import Group, Friend, Member
 
-from core.template import logger_info
+from core.logger import Logger
 
 dbpath = os.path.abspath('./database/save.db')
 
@@ -199,7 +199,7 @@ class BB:
             id = kwargs[Friend].id
         a = self.c.execute(f"SELECT * FROM time WHERE ID='{id}' and NAME='{name}'").fetchone()
         if a:
-            logger_info(a)
+            Logger.info(a)
             self.c.execute(f"UPDATE time SET TIME=datetime('now') WHERE ID='{id}'")
             self.conn.commit()
         else:
@@ -213,12 +213,12 @@ class BB:
             id = kwargs[Friend].id
         a = self.c.execute(f"SELECT * FROM time WHERE ID='{id}' and NAME='{name}'").fetchone()
         if a:
-            logger_info(a)
-            logger_info(datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S").timestamp())
-            logger_info(datetime.datetime.now().timestamp())
+            Logger.info(a)
+            Logger.info(datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S").timestamp())
+            Logger.info(datetime.datetime.now().timestamp())
             check = (datetime.datetime.strptime(a[2], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
                 hours=8)).timestamp() - datetime.datetime.now().timestamp()
-            logger_info(check)
+            Logger.info(check)
             if check > - delay:
                 return check
             else:

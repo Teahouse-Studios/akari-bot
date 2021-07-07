@@ -7,8 +7,9 @@ from .mcv import mcv, mcbv, mcdv
 
 
 @command(
-    name='mcv',
-    help='~mcv - 查询当前Minecraft Java版启动器内最新版本。')
+    bind_prefix='mcv',
+    help_doc='~mcv - 查询当前Minecraft Java版启动器内最新版本。',
+    alias='m')
 async def mcv_loader(kwargs: dict):
     run = await mcv()
     msgchain = MessageChain.create([Plain(run)])

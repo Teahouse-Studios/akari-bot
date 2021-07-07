@@ -3,14 +3,25 @@ from .elements import Plugin
 from .loader import PluginManager
 
 def command(
-    name: str,
-    alias: Union[str, list, None] = None,
-    help: Union[str, None] = None,
-    self_process: bool = False,
-    autorun: bool = False
+    bind_prefix,
+    alias=None,
+    help_doc='',
+    need_self_process=False,
+    is_admin_function=False,
+    is_base_function=False,
+    is_superuser_function=False,
+    autorun=False
 ):
-    def decorator(func):
-        function = func
-        plugin = Plugin(function=func, name=name)
+    def decorator(function):
+        plugin = Plugin(function,
+                        bind_prefix,
+                        alias,
+                        help_doc,
+                        need_self_process,
+                        is_admin_function,
+                        is_base_function,
+                        is_superuser_function,
+                        autorun)
+        print(Plugin)
         PluginManager.add_plugin(plugin)
     return decorator

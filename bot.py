@@ -8,7 +8,6 @@ from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
-from config import Config
 from core.broadcast import bcc, app
 from core.elements import Target
 from core.loader import Modules
@@ -53,11 +52,11 @@ async def NGroup(event: BotInvitedJoinGroupRequestEvent):
 
 
 @bcc.receiver('ApplicationLaunched')
-async def message_handler(app: GraiaMiraiApplication):
-    rss_list = Modules['rss']
+async def autorun_handler(app: GraiaMiraiApplication):
     gather_list = []
-    for x in rss_list:
-        gather_list.append(asyncio.ensure_future(rss_list[x](app)))
+    for x in Modules:
+        if x.autorun:
+            gather_list.append(asyncio.ensure_future(x.function(app)))
     await asyncio.gather(*gather_list)
 
 

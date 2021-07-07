@@ -3,64 +3,18 @@ import os
 import re
 import traceback
 
-from graia.application.logger import LoggingLogger
+from .logger import Logger
 from .elements import Plugin
 
-DisplayAttributeError = False
 err_prompt = []
 
 
-def logger_info(msg):
-    LoggingLogger().info(msg)
-
-
-class PluginManager:
-    _plugin_list = set()
-
-    @classmethod
-    def add_plugin(cls, plugin: Plugin):
-        PluginManager._plugin_list.add(plugin)
-
-    @classmethod
-    def return_as_dict(cls):
-        d = {}
-        for x in PluginManager._plugin_list:
-            d.update({x.name: x.function})
-        return d
-
-
-class ModulesLoader:
-    def __init__(self):
-        pass
-
-    def load_modules(self):
-        fun_file = None
-        modules_function = {
-            'command': dict,
-            'regex': dict,
-            'options': list,
-            'self_options': list
-        }
-        other_function = {
-            'admin': dict,
-            'essential': dict,
-            'help': dict,
-            'rss': dict,
-            'alias': dict
-        }
-        functions = {}
-        functions.update(modules_function)
-        functions.update(other_function)
-        functions_list = {}
-        functions_list['modules_function'] = []
-        for x in functions:
-            if functions[x] == dict:
-                functions_list[x] = {}
-            if functions[x] == list:
-                functions_list[x] = []
-        load_dir_path = os.path.abspath('./modules/')
-        dir_list = os.listdir(load_dir_path)
-        for file_name in dir_list:
+def load_modules():
+    fun_file = None
+    load_dir_path = os.path.abspath('./modules/')
+    dir_list = os.listdir(load_dir_path)
+    for file_name in dir_list:
+        try:
             file_path = f'{load_dir_path}/{file_name}'
             if os.path.isdir(file_path):
                 if file_name != '__pycache__':
@@ -74,15 +28,29 @@ class ModulesLoader:
                 else:
                     continue
             if fun_file is not None:
-                logger_info('Loading modules.' + fun_file + '...')
+                Logger.info(f'Loading modules.{fun_file}...')
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
-        functions_list["modules_function"] = PluginManager.return_as_dict()
-        logger_info(f'Now we have function = {functions_list["modules_function"]}')
-        return functions_list
+                Logger.info(f'Succeeded loaded modules.{fun_file}!')
+        except:
+            tb = traceback.format_exc()
+            Logger.info(f'Failed to load modules.{fun_file}: {tb}')
+            err_prompt.append(str(tb))
+
+class PluginManager:
+    _plugin_list = set()
+
+    @classmethod
+    def add_plugin(cls, plugin: Plugin):
+        PluginManager._plugin_list.add(plugin)
+
+    @classmethod
+    def return_plugin_list(cls):
+        load_modules()
+        return PluginManager._plugin_list
 
 
-Modules = ModulesLoader().load_modules()
+Modules = PluginManager.return_plugin_list()
 
 loadercache = os.path.abspath('.cache_loader')
 openloadercache = open(loadercache, 'w')

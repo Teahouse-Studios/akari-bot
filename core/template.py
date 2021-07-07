@@ -14,7 +14,7 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
 from core.elements import Target
-from core.loader import logger_info
+from core.logger import Logger
 from core.broadcast import app, bcc
 from database import BotDB as database
 
@@ -190,9 +190,9 @@ async def download_to_cache(link):
 
 async def slk_converter(filepath):
     filepath2 = filepath + '.silk'
-    logger_info('Start encoding voice...')
+    Logger.info('Start encoding voice...')
     os.system('python slk_coder.py ' + filepath)
-    logger_info('Voice encoded.')
+    Logger.info('Voice encoded.')
     return filepath2
 
 

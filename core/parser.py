@@ -4,12 +4,21 @@ import traceback
 from graia.application import Friend
 from graia.application.group import Group
 
-from core.loader import Modules, logger_info
+from core.loader import Modules
+from core.logger import Logger
 from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay, RemoveDuplicateSpace
 from core.utils import remove_ineffective_text
 from database import BotDB as database
 
 command_prefix = ['~', '～']  # 消息前缀
+
+func_prefix = []
+alias = {}
+
+for x in Modules:
+    func_prefix.append(x.bind_prefix)
+    if x.alias is not None:
+        alias.update({x.alias: x.bind_prefix})
 
 
 async def parser(kwargs: dict):
@@ -30,7 +39,7 @@ async def parser(kwargs: dict):
     if display.find('色图来') != -1:  # 双倍快乐给我爬
         return
     if display[0] in command_prefix:  # 检查消息前缀
-        logger_info(kwargs)
+        Logger.info(kwargs)
         command = re.sub(r'^' + display[0], '', display)
         command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
         if len(command_list) > 5:
@@ -43,13 +52,13 @@ async def parser(kwargs: dict):
                 kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
                 kwargs['bot_modules'] = Modules
                 command_first_word = command_spilt[0]
-                if command_first_word in Modules['alias']:
-                    command_spilt[0] = Modules['alias'][command_first_word]
+                if command_first_word in alias:
+                    command_spilt[0] = alias[command_first_word]
                     command = ' '.join(command_spilt)
                     command_spilt = command.split(' ')
                     command_first_word = command_spilt[0]
                     kwargs['trigger_msg'] = command
-                if command_first_word in Modules["modules_function"]:  # 检查触发命令是否在模块列表中
+                if command_first_word in func_prefix:  # 检查触发命令是否在模块列表中
                     if Group in kwargs:
                         await Nudge(kwargs)
                         check_command_enable = database.check_enable_modules(kwargs[Group].id,
