@@ -4,21 +4,13 @@ import traceback
 from graia.application import Friend
 from graia.application.group import Group
 
-from core.loader import Modules
+from core.loader import Modules, ModulesAliases
 from core.logger import Logger
 from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay, RemoveDuplicateSpace
 from core.utils import remove_ineffective_text
 from database import BotDB as database
 
 command_prefix = ['~', '～']  # 消息前缀
-
-func_prefix = []
-alias = {}
-
-for x in Modules:
-    func_prefix.append(x.bind_prefix)
-    if x.alias is not None:
-        alias.update({x.alias: x.bind_prefix})
 
 
 async def parser(kwargs: dict):
@@ -52,30 +44,25 @@ async def parser(kwargs: dict):
                 kwargs['trigger_msg'] = command  # 触发该命令的消息，去除消息前缀
                 kwargs['bot_modules'] = Modules
                 command_first_word = command_spilt[0]
-                if command_first_word in alias:
-                    command_spilt[0] = alias[command_first_word]
+                if command_first_word in ModulesAliases:
+                    command_spilt[0] = ModulesAliases[command_first_word]
                     command = ' '.join(command_spilt)
                     command_spilt = command.split(' ')
                     command_first_word = command_spilt[0]
                     kwargs['trigger_msg'] = command
-                if command_first_word in func_prefix:  # 检查触发命令是否在模块列表中
-                    if Group in kwargs:
-                        await Nudge(kwargs)
-                        check_command_enable = database.check_enable_modules(kwargs[Group].id,
-                                                                             command_first_word)  # 检查群组是否开启模块
-                        #if not check_command_enable:  # 若未开启
-                        #    await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
-                        #    return
-                    await Modules["modules_function"][command_first_word](kwargs)  # 将dict传入下游模块
-                elif command_first_word in Modules['essential']:  # 若触发的对象命令为基础命令
-                    if Group in kwargs:
-                        await Nudge(kwargs)
-                    await Modules['essential'][command_first_word](kwargs)
-                elif command_first_word in Modules['admin']:  # 若触发的对象为超管命令
-                    if database.check_superuser(kwargs):  # 检查是否为超管
-                        await Modules['admin'][command_first_word](kwargs)
-                    else:
-                        await sendMessage(kwargs, '权限不足')
+                if command_first_word in Modules:  # 检查触发命令是否在模块列表中
+                    await Nudge(kwargs)
+                    plugin = Modules[command_first_word]
+                    if plugin.is_superuser_function:
+                        ...
+                    if plugin.is_admin_function:
+                        ...
+                    check_command_enable = database.check_enable_modules(kwargs[Group].id,
+                                                                         command_first_word)  # 检查群组是否开启模块
+                    #if not check_command_enable:  # 若未开启
+                    #    await sendMessage(kwargs, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
+                    #    return
+                await Modules[command_first_word].function(kwargs)  # 将dict传入下游模块
             except Exception as e:
                 traceback.print_exc()
                 await sendMessage(kwargs, '执行命令时发生错误，请报告管理员：\n' + str(e))
