@@ -46,11 +46,28 @@ class PluginManager:
 
     @classmethod
     def return_plugin_list(cls):
-        load_modules()
         return PluginManager._plugin_list
 
+    @classmethod
+    def return_plugin_as_dict(cls):
+        return {x.bind_prefix: x for x in PluginManager._plugin_list}
 
-Modules = PluginManager.return_plugin_list()
+    @classmethod
+    def return_plugin_alias_map(cls):
+        alias_map = {}
+        for x in PluginManager._plugin_list:
+            if isinstance(x.alias, str):
+                alias_map.update({x.alias: x.bind_prefix})
+            if isinstance(x.alias, tuple):
+                for y in x.alias:
+                    alias_map.update({y: x.bind_prefix})
+        return alias_map
+
+
+load_modules()
+Modules = PluginManager.return_plugin_as_dict()
+ModulesAliases = PluginManager.return_plugin_alias_map()
+
 
 loadercache = os.path.abspath('.cache_loader')
 openloadercache = open(loadercache, 'w')
