@@ -22,6 +22,5 @@ def command(
                         is_base_function,
                         is_superuser_function,
                         autorun)
-        print(Plugin)
         PluginManager.add_plugin(plugin)
     return decorator
