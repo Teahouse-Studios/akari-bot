@@ -55,8 +55,8 @@ async def NGroup(event: BotInvitedJoinGroupRequestEvent):
 async def autorun_handler(app: GraiaMiraiApplication):
     gather_list = []
     for x in Modules:
-        if x.autorun:
-            gather_list.append(asyncio.ensure_future(x.function(app)))
+        if Modules[x].autorun:
+            gather_list.append(asyncio.ensure_future(Modules[x].function(app)))
     await asyncio.gather(*gather_list)
 
 
