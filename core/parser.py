@@ -23,13 +23,9 @@ async def parser(kwargs: dict):
     if len(display) == 0:  # 转换后若为空消息则停止执行
         return
     trigger = kwargs_GetTrigger(kwargs)  # 得到触发者来源
-    if trigger == 1143754816:  # 特殊规则
-        display = re.sub('^.*:\n', '', display)
     if database.check_black_list(trigger):  # 检查是否在黑名单
         if not database.check_white_list(trigger):  # 检查是否在白名单
             return  # 在黑名单且不在白名单，给我爪巴
-    if display.find('色图来') != -1:  # 双倍快乐给我爬
-        return
     if display[0] in command_prefix:  # 检查消息前缀
         Logger.info(kwargs)
         command = re.sub(r'^' + display[0], '', display)
