@@ -1,6 +1,6 @@
 from typing import Union, Coroutine, Optional
-from .elements import Plugin
-from .loader import PluginManager
+from .elements import Module
+from .loader import ModulesManager
 
 def command(
     bind_prefix,
@@ -13,7 +13,7 @@ def command(
     autorun=False
 ):
     def decorator(function):
-        plugin = Plugin(function,
+        plugin = Module(function,
                         bind_prefix,
                         alias,
                         help_doc,
@@ -22,5 +22,5 @@ def command(
                         is_base_function,
                         is_superuser_function,
                         autorun)
-        PluginManager.add_plugin(plugin)
+        ModulesManager.add_plugin(plugin)
     return decorator

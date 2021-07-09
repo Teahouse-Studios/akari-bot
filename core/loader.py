@@ -4,7 +4,7 @@ import re
 import traceback
 
 from .logger import Logger
-from .elements import Plugin
+from .elements import Module
 
 err_prompt = []
 
@@ -37,25 +37,25 @@ def load_modules():
             Logger.info(f'Failed to load modules.{fun_file}: {tb}')
             err_prompt.append(str(tb))
 
-class PluginManager:
-    _plugin_list = set()
+class ModulesManager:
+    _modules_list = set()
 
     @classmethod
-    def add_plugin(cls, plugin: Plugin):
-        PluginManager._plugin_list.add(plugin)
+    def add_plugin(cls, plugin: Module):
+        ModulesManager._modules_list.add(plugin)
 
     @classmethod
-    def return_plugin_list(cls):
-        return PluginManager._plugin_list
+    def return_modules_list(cls):
+        return ModulesManager._modules_list
 
     @classmethod
-    def return_plugin_as_dict(cls):
-        return {x.bind_prefix: x for x in PluginManager._plugin_list}
+    def return_modules_list_as_dict(cls):
+        return {x.bind_prefix: x for x in ModulesManager._modules_list}
 
     @classmethod
-    def return_plugin_alias_map(cls):
+    def return_modules_alias_map(cls):
         alias_map = {}
-        for x in PluginManager._plugin_list:
+        for x in ModulesManager._modules_list:
             if isinstance(x.alias, str):
                 alias_map.update({x.alias: x.bind_prefix})
             if isinstance(x.alias, tuple):
@@ -65,8 +65,8 @@ class PluginManager:
 
 
 load_modules()
-Modules = PluginManager.return_plugin_as_dict()
-ModulesAliases = PluginManager.return_plugin_alias_map()
+Modules = ModulesManager.return_modules_list_as_dict()
+ModulesAliases = ModulesManager.return_modules_alias_map()
 
 
 loadercache = os.path.abspath('.cache_loader')

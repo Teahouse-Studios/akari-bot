@@ -11,7 +11,7 @@ class Target(BaseModel):
     target_from: str
 
 
-class Plugin:
+class Module:
     def __init__(self,
                  function,
                  bind_prefix,
