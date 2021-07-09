@@ -52,10 +52,10 @@ async def parser(kwargs: dict):
                     kwargs['trigger_msg'] = command
                 if command_first_word in Modules:  # 检查触发命令是否在模块列表中
                     await Nudge(kwargs)
-                    plugin = Modules[command_first_word]
-                    if plugin.is_superuser_function:
+                    module = Modules[command_first_word]
+                    if module.is_superuser_function:
                         ...
-                    if plugin.is_admin_function:
+                    if module.is_admin_function:
                         ...
                     check_command_enable = database.check_enable_modules(kwargs[Group].id,
                                                                          command_first_word)  # 检查群组是否开启模块
