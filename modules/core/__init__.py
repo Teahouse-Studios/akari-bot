@@ -83,7 +83,7 @@ async def bot_help(kwargs: dict):
                     module.append(x)
         help_msg.append(' | '.join(module))
         print(help_msg)
-        help_msg.append('使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/modules')
+        help_msg.append('使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/\n请向我们捐赠以维持机器人稳定服务：\nhttps://bot.teahou.se/wiki/%E6%8D%90%E8%B5%A0')
         if Group in kwargs:
             help_msg.append('[本消息将在一分钟后撤回]')
         send = await sendMessage(kwargs, '\n'.join(help_msg))
@@ -101,7 +101,7 @@ async def modules_help(kwargs: dict):
         if 'help' in help_list[x]:
             module.append(x)
     help_msg.append(' | '.join(module))
-    help_msg.append('使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
+    help_msg.append('使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/\n请向我们捐赠以维持机器人稳定服务：\nhttps://bot.teahou.se/wiki/%E6%8D%90%E8%B5%A0')
     if Group in kwargs:
         help_msg.append('[本消息将在一分钟后撤回]')
     send = await sendMessage(kwargs, '\n'.join(help_msg))
