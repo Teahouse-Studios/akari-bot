@@ -249,7 +249,7 @@ async def search(kwargs: dict, cmd: list):
         footnotes = f"另有 {result['total_count'] - 5} 个结果未显示。" if item_count_expected == 5 else ''
         msg = f"搜索成功：共 {result['total_count']} 个结果。\n" + '\n'.join(items_out[0:item_count_expected]) + f'\n{footnotes}'
 
-        is_dirty = await dirty_check(msg) or await darkCheck(msg)
+        is_dirty = await dirty_check(msg) or darkCheck(msg)
         if is_dirty:
             msg = 'https://wdf.ink/6OUp'
 
