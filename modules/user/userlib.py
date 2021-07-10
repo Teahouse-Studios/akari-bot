@@ -88,9 +88,10 @@ async def GetUser(wikiurl, username, argv=None):
         Group = trans_user_group(GetUserJson['query']['users'][0]['groups'], GetUserGroupsList)
         Gender = gender(GetUserJson['query']['users'][0]['gender'])
         Registration = UTC8(GetUserJson['query']['users'][0]['registration'], 'full')
-        if await check_central_auth(wikiurl):
+        CentralAuth = await check_central_auth(wikiurl)
+        if CentralAuth:
             GEditcount = str(GetUserCentralAuthData['query']['globaluserinfo']['editcount'])
-            GGroup = trans_user_group(GetUserCentralAuthData['query']['globaluserinfo']['groups'], GetUserGroupsList)
+            GGroup = trans_user_group(GetUserCentralAuthData['query']['globaluserinfo']['groups'], GetUserGroupsList) or '无'
             GHome = GetUserCentralAuthData['query']['globaluserinfo']['home']
         rmuser = re.sub('User:', '', username)
         Blockmessage = ''
@@ -211,7 +212,7 @@ async def GetUser(wikiurl, username, argv=None):
         GlobalAuthData = (
             f'\n全域用户组：{GGroup}\n' +
             f'全域编辑数：{GEditcount}\n' +
-            f'注册wiki：{GHome}')
+            f'注册wiki：{GHome}') if CentralAuth else ''
         return (GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
                 Wikiname + '\n' +
                 f'用户：{User} | 编辑数：{Editcount}\n' +
