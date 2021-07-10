@@ -1,20 +1,21 @@
+import importlib
+import os
+import sys
+import re
+import inspect
+import traceback
+
 from sqlalchemy import Column, Integer, String, Text, Time, TIMESTAMP
-from sqlalchemy.orm import sessionmaker
-from . import orm
+from sqlalchemy.ext.declarative import declarative_base
 
-session = sessionmaker(orm.engine)
-Base = orm.Base
+from core.logger import Logger
 
-class GroupEnabledModules(Base):
-    """群内已打开的模块"""
-    __tablename__ = "GroupEnabledModules"
-    TargetId = Column(String(512), primary_key=True)
-    EnabledModules = Column(Text)
+Base = declarative_base()
 
 
-class FriendEnabledModules(Base):
-    """好友已打开的模块"""
-    __tablename__ = "FriendEnabledModules"
+class EnabledModules(Base):
+    """已打开的模块"""
+    __tablename__ = "EnabledModules"
     TargetId = Column(String(512), primary_key=True)
     EnabledModules = Column(Text)
 
@@ -48,3 +49,21 @@ class CommandTriggerTime(Base):
     __tablename__ = "CommandTriggerTime"
     TargetId = Column(String(512), primary_key=True)
     CommandName = Column(TIMESTAMP, nullable=False)
+
+
+load_dir_path = os.path.abspath('./modules/')
+dir_list = os.listdir(load_dir_path)
+fun_file = None
+for file_name in dir_list:
+    file_path = f'{load_dir_path}/{file_name}'
+    fun_file = None
+    if os.path.isdir(file_path):
+        if file_name != '__pycache__':
+            tablesfile = f'{file_path}/tables.py'
+            if os.path.exists(tablesfile):
+                fun_file = f'{file_name}'
+    if fun_file is not None:
+        Logger.info(f'Loading modules.{fun_file}...')
+        modules = f'modules.{fun_file}.tables'
+        i = importlib.import_module(modules)
+
