@@ -9,7 +9,7 @@ from graia.application.message.elements.internal import Plain
 
 from core.loader import logger_info
 from core.broadcast import bcc
-from database import BotDB
+from database_old import BotDB
 from modules.mcv.mcv import get_data
 
 

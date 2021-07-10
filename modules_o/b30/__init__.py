@@ -4,7 +4,7 @@ from graia.application import MessageChain
 from graia.application.message.elements.internal import Image, Plain
 
 from core.template import sendMessage
-from database import BotDB as database
+from database_old import BotDB as database
 from .getb30 import getb30
 from .initialize import arcb30init
 

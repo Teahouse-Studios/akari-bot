@@ -10,7 +10,7 @@ from graia.scheduler.timers import crontabify
 from core.broadcast import bcc
 from core.template import logger_info
 from core.utils import get_url
-from database import BotDB
+from database_old import BotDB
 
 check_enable_modules_all = BotDB.check_enable_modules_all
 scheduler = GraiaScheduler(bcc.loop, bcc)

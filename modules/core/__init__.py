@@ -4,50 +4,44 @@ from graia.application import Group, MessageChain, Member, Friend
 from graia.application.message.elements.internal import Plain
 
 from core.template import check_permission, revokeMessage
-from .admin import *
+from core.elements import Target
+from core.template import sendMessage, wait_confirm
+from database.utils import BotDBUtil
 from core.decorator import command
 
 
-@command(bind_prefix='module')
+@command(bind_prefix='module', is_base_function=True)
 async def config_modules(kwargs: dict):
     """
 ~module <enable/disable> <module/all>"""
     command = kwargs['trigger_msg'].split(' ')
-    bot_modules = kwargs['bot_modules']
-    function_list = bot_modules['modules_function']
-    friend_function_list = bot_modules['friend_modules_function']
-    alias_list = bot_modules['alias']
-    msg = '命令格式错误。' + config_modules.__doc__
     if not len(command) > 2:
+        msg = '命令格式错误。'
         await sendMessage(kwargs, msg)
         return
     do = command[1]
     command_third_word = command[2]
-    if command_third_word in alias_list:
-        command_third_word = alias_list[command_third_word]
-    if Group in kwargs:
-        if not check_permission(kwargs):
-            await sendMessage(kwargs, '你没有使用该命令的权限。')
-            return
-        if command_third_word == 'all':
-            msglist = []
-            for function in function_list:
-                msg = database.update_modules(do, kwargs[Group].id, function)
-                msglist.append(msg)
-            msg = '\n'.join(msglist)
-        elif command_third_word in function_list:
-            msg = database.update_modules(do, kwargs[Group].id, command_third_word)
-        else:
-            msg = '此模块不存在。'
-    elif Friend in kwargs:
-        if command_third_word in friend_function_list:
-            msg = database.update_modules(do, kwargs[Friend].id, command_third_word, table='friend_permission')
-        else:
-            msg = '此模块不存在。'
-    await sendMessage(kwargs, msg)
+    if command_third_word in kwargs['bot_aliases']:
+        command_third_word = kwargs['bot_aliases'][command_third_word]
+    #if not check_permission(kwargs):
+    #    await sendMessage(kwargs, '你没有使用该命令的权限。')
+    #    return
+    query = BotDBUtil.Module(kwargs)
+    msglist = []
+    if command_third_word == 'all':
+        for function in kwargs['bot_modules']:
+            if query.enable(function):
+                msglist.append(f'成功：打开模块“{function}”')
+    if do in ['enable', 'on']:
+        if query.enable(command_third_word):
+            msglist.append(f'成功：打开模块“{command_third_word}”')
+    if do in ['disable', 'off']:
+        if query.disable(command_third_word):
+            msglist.append(f'成功：关闭模块“{command_third_word}”')
+    if msglist is not None:
+        await sendMessage(kwargs, '\n'.join(msglist))
 
-
-
+"""
 async def bot_help(kwargs: dict):
     help_list = kwargs['bot_modules']['help']
     alias = kwargs['bot_modules']['alias']
@@ -142,4 +136,4 @@ help = {'module': {'help': '~module <enable/disable> <模块名> - 开启/关闭
         'modules': {'help': '~modules - 查询所有可用模块。'},
         'admin_user': {'help': '~admin_user <add/del> <QQ> - 配置群内成员为机器人管理员（无需设置其为群内管理员）'}}
 
-alias = {'enable': 'module enable', 'disable': 'module disable'}
+alias = {'enable': 'module enable', 'disable': 'module disable'}"""

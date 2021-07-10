@@ -1,27 +1,34 @@
 from enum import Enum
-from typing import Coroutine, Any, Optional
-from pydantic import BaseModel
-from pydantic.fields import Field
+from typing import Coroutine, Any, Optional, Callable
 
 
-class Target(BaseModel):
-    id: int
-    senderId: int
-    name: str
-    target_from: str
+class Target:
+    def __init__(self,
+        fromId,
+        fromName,
+        senderId,
+        senderName,
+        msgFrom
+    ):
+        self.fromId = fromId
+        self.fromName = fromName
+        self.senderId = senderId
+        self.senderName = senderName
+        self.msgFrom = msgFrom
+
 
 
 class Module:
     def __init__(self,
-                 function,
-                 bind_prefix,
-                 alias,
-                 help_doc,
-                 need_self_process,
-                 is_admin_function,
-                 is_base_function,
-                 is_superuser_function,
-                 autorun):
+                 function: Callable,
+                 bind_prefix: str,
+                 alias: [str, tuple],
+                 help_doc: str,
+                 need_self_process: bool,
+                 is_admin_function: bool,
+                 is_base_function: bool,
+                 is_superuser_function: bool,
+                 autorun: bool):
         self.function = function
         self.bind_prefix = bind_prefix
         self.alias = alias

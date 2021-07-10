@@ -16,7 +16,7 @@ from graia.broadcast.interrupt.waiter import Waiter
 from core.elements import Target
 from core.logger import Logger
 from core.broadcast import app, bcc
-from database import BotDB as database
+from database_old import BotDB as database
 
 
 async def sendMessage(kwargs: dict, msgchain, Quote=True):

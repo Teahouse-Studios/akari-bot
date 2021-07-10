@@ -9,7 +9,7 @@ import modules_o.wiki.wikilib
 from core.elements import Target
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, \
     slk_converter
-from database import BotDB
+from database_old import BotDB
 from modules_o.wiki.database import WikiDB
 from .getinfobox import get_infobox_pic
 

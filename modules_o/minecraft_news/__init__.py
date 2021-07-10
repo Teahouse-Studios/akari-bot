@@ -10,7 +10,7 @@ from graia.scheduler.timers import every_minute
 
 from core.broadcast import bcc
 from core.template import logger_info
-from database import BotDB
+from database_old import BotDB
 from .database import MD as db
 
 database = db()
