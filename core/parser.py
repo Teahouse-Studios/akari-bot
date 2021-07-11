@@ -8,7 +8,7 @@ from core.loader import Modules, ModulesAliases
 from core.logger import Logger
 from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay, RemoveDuplicateSpace
 from core.utils import remove_ineffective_text
-from database.utils import BotDBUtil
+from database import BotDBUtil
 
 command_prefix = ['~', '～']  # 消息前缀
 

@@ -6,7 +6,7 @@ from graia.application.message.elements.internal import Plain
 from core.template import check_permission, revokeMessage
 from core.elements import Target
 from core.template import sendMessage, wait_confirm
-from database.utils import BotDBUtil
+from database import BotDBUtil
 from core.decorator import command
 
 
