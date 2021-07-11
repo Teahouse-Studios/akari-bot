@@ -1,12 +1,11 @@
 import re
 
-from graia.application import Group, Friend, MessageChain
-from graia.application.message.elements.internal import Image, UploadMethods, Plain
+from graia.application import MessageChain
+from graia.application.message.elements.internal import Image, Plain
 
-from core.elements import Target
+from core.elements.elements import Target
 from core.template import sendMessage
 from modules_o.wiki.database import WikiDB
-from modules_o.wiki.wikilib import wikilib
 from .userlib import GetUser
 
 

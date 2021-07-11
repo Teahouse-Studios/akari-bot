@@ -1,4 +1,3 @@
-import asyncio
 import traceback
 import uuid
 from os.path import abspath
@@ -9,11 +8,10 @@ import filetype as ft
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
-from graia.application.message.elements.internal import Plain, Image, Source
+from graia.application.message.elements.internal import Plain, Source
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
-from core.elements import Target
 from core.logger import Logger
 from core.broadcast import app, bcc
 from database_old import BotDB as database

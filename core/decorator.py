@@ -1,5 +1,4 @@
-from typing import Union, Coroutine, Optional
-from .elements import Module
+from core.elements.elements import Module
 from .loader import ModulesManager
 
 def command(
@@ -22,5 +21,5 @@ def command(
                         is_base_function,
                         is_superuser_function,
                         autorun)
-        ModulesManager.add_plugin(plugin)
+        ModulesManager.add_module(plugin)
     return decorator

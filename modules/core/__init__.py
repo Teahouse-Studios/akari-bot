@@ -1,16 +1,10 @@
-import asyncio
-
-from graia.application import Group, MessageChain, Member, Friend
-from graia.application.message.elements.internal import Plain
-
-from core.template import check_permission, revokeMessage
-from core.elements import Target
-from core.template import sendMessage, wait_confirm
+from core.loader import ModulesManager
+from core.template import sendMessage
 from database import BotDBUtil
 from core.decorator import command
 
 
-@command(bind_prefix='module', is_base_function=True)
+@command('module', is_base_function=True)
 async def config_modules(kwargs: dict):
     """
 ~module <enable/disable> <module/all>"""
@@ -21,15 +15,15 @@ async def config_modules(kwargs: dict):
         return
     do = command[1]
     command_third_word = command[2]
-    if command_third_word in kwargs['bot_aliases']:
-        command_third_word = kwargs['bot_aliases'][command_third_word]
-    #if not check_permission(kwargs):
-    #    await sendMessage(kwargs, '你没有使用该命令的权限。')
+    if command_third_word in ModulesManager.return_modules_alias_map():
+        command_third_word = ModulesManager.return_modules_alias_map()[command_third_word]
+    #if not check_permission(infochain):
+    #    await sendMessage(infochain, '你没有使用该命令的权限。')
     #    return
     query = BotDBUtil.Module(kwargs)
     msglist = []
     if command_third_word == 'all':
-        for function in kwargs['bot_modules']:
+        for function in ModulesManager.return_modules_list_as_dict():
             if query.enable(function):
                 msglist.append(f'成功：打开模块“{function}”')
     if do in ['enable', 'on']:
@@ -42,10 +36,10 @@ async def config_modules(kwargs: dict):
         await sendMessage(kwargs, '\n'.join(msglist))
 
 """
-async def bot_help(kwargs: dict):
-    help_list = kwargs['bot_modules']['help']
-    alias = kwargs['bot_modules']['alias']
-    command = kwargs['trigger_msg'].split(' ')
+async def bot_help(infochain: dict):
+    help_list = infochain['bot_modules']['help']
+    alias = infochain['bot_modules']['alias']
+    command = infochain['trigger_msg'].split(' ')
     if len(command) > 1:
         msg = []
         help_name = command[1]
@@ -57,7 +51,7 @@ async def bot_help(kwargs: dict):
                 if 'depend' in help_list[x]:
                     if help_list[x]['depend'] == help_name:
                         msg.append(help_list[x]['help'])
-            await sendMessage(kwargs, '\n'.join(msg))
+            await sendMessage(infochain, '\n'.join(msg))
     else:
         print(help_list)
         help_msg = []
@@ -70,26 +64,26 @@ async def bot_help(kwargs: dict):
         help_msg.append('模块扩展命令：')
         module = []
         for x in help_list:
-            if Group in kwargs:
-                if database.check_enable_modules(kwargs, x):
+            if Group in infochain:
+                if database.check_enable_modules(infochain, x):
                     if 'help' in help_list[x]:
                         module.append(x)
-            elif Friend in kwargs:
+            elif Friend in infochain:
                 if 'help' in help_list[x]:
                     module.append(x)
         help_msg.append(' | '.join(module))
         print(help_msg)
         help_msg.append('使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
-        if Group in kwargs:
+        if Group in infochain:
             help_msg.append('[本消息将在一分钟后撤回]')
-        send = await sendMessage(kwargs, '\n'.join(help_msg))
-        if Group in kwargs:
+        send = await sendMessage(infochain, '\n'.join(help_msg))
+        if Group in infochain:
             await asyncio.sleep(60)
             await revokeMessage(send)
 
 
-async def modules_help(kwargs: dict):
-    help_list = kwargs['bot_modules']['help']
+async def modules_help(infochain: dict):
+    help_list = infochain['bot_modules']['help']
     help_msg = []
     help_msg.append('当前可用的模块有：')
     module = []
@@ -98,34 +92,34 @@ async def modules_help(kwargs: dict):
             module.append(x)
     help_msg.append(' | '.join(module))
     help_msg.append('使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
-    if Group in kwargs:
+    if Group in infochain:
         help_msg.append('[本消息将在一分钟后撤回]')
-    send = await sendMessage(kwargs, '\n'.join(help_msg))
-    if Group in kwargs:
+    send = await sendMessage(infochain, '\n'.join(help_msg))
+    if Group in infochain:
         await asyncio.sleep(60)
         await revokeMessage(send)
 
 
-async def bot_version(kwargs: dict):
+async def bot_version(infochain: dict):
     version = os.path.abspath('.version')
     openfile = open(version, 'r')
     msg = '当前运行的代码版本号为：' + openfile.read()
-    await sendMessage(kwargs, msg)
+    await sendMessage(infochain, msg)
     openfile.close()
 
 
-async def config_gu(kwargs):
-    if Group in kwargs:
-        if check_permission(kwargs):
-            command = kwargs['trigger_msg'].split(' ')
+async def config_gu(infochain):
+    if Group in infochain:
+        if check_permission(infochain):
+            command = infochain['trigger_msg'].split(' ')
             if len(command) < 3:
-                await sendMessage(kwargs, '命令格式错误。')
+                await sendMessage(infochain, '命令格式错误。')
                 return
             print(command)
             if command[1] == 'add':
-                await sendMessage(kwargs, database.add_group_adminuser(command[2], kwargs[Group].id))
+                await sendMessage(infochain, database.add_group_adminuser(command[2], infochain[Group].id))
             if command[1] == 'del':
-                await sendMessage(kwargs, database.del_group_adminuser(command[2], kwargs[Group].id))
+                await sendMessage(infochain, database.del_group_adminuser(command[2], infochain[Group].id))
 
 
 essential = {'module': config_modules, 'add_base_su': add_base_su, 'help': bot_help,

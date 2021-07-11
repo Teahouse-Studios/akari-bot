@@ -3,11 +3,6 @@ import re
 
 import aiohttp
 
-from core.elements import Target
-from core.template import sendMessage
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Image, Plain
-
 
 async def load_prompt():
     author_cache = os.path.abspath('.cache_restart_author')
@@ -56,4 +51,7 @@ def remove_ineffective_text(prefix, lst):
             duplicated_list.append(x)
     lst = duplicated_list
     return lst
+
+
+def replace_alias_to_correct_name():
 

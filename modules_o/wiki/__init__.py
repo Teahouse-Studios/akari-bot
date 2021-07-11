@@ -6,7 +6,7 @@ from graia.application.message.elements.internal import Image, Voice
 from graia.application.message.elements.internal import Plain
 
 import modules_o.wiki.wikilib
-from core.elements import Target
+from core.elements.elements import Target
 from core.template import sendMessage, check_permission, wait_confirm, revokeMessage, Nudge, download_to_cache, \
     slk_converter
 from database_old import BotDB

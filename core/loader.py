@@ -4,7 +4,7 @@ import re
 import traceback
 
 from .logger import Logger
-from .elements import Module
+from core.elements.elements import Module
 
 err_prompt = []
 
@@ -35,8 +35,8 @@ class ModulesManager:
     _modules_list = set()
 
     @classmethod
-    def add_plugin(cls, plugin: Module):
-        ModulesManager._modules_list.add(plugin)
+    def add_module(cls, module: Module):
+        ModulesManager._modules_list.add(module)
 
     @classmethod
     def return_modules_list(cls):
