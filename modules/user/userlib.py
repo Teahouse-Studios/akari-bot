@@ -87,7 +87,7 @@ async def GetUser(wikiurl, username, argv=None):
         Editcount = str(GetUserJson['query']['users'][0]['editcount'])
         Group = trans_user_group(GetUserJson['query']['users'][0]['groups'], GetUserGroupsList)
         Gender = gender(GetUserJson['query']['users'][0]['gender'])
-        Registration = UTC8(GetUserJson['query']['users'][0]['registration'], 'full') if not None else '未知'
+        Registration = UTC8(GetUserJson['query']['users'][0]['registration'], 'full') if Registration not None else '未知'
         CentralAuth = await check_central_auth(wikiurl)
         if CentralAuth:
             GEditcount = str(GetUserCentralAuthData['query']['globaluserinfo']['editcount'])
