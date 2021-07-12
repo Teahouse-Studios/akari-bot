@@ -19,3 +19,16 @@ class InfoChain:
                  messageChain):
         self.target = target
         self.messageChain = messageChain
+
+
+class Plain:
+    def __init__(self,
+                 text):
+        self.text = text
+
+
+class Image:
+    def __init__(self,
+                 url=None,
+                 path=None):
+        ...

@@ -1,6 +1,6 @@
 from database.orm import session
-from database.tables import EnabledModules
-from core.elements.elements import Target
+from database.tables import EnabledModules, BlackList, WhiteList, WarnList, SuperUser
+from core.elements import Target
 
 
 def convert_list_to_str(lst: list) -> str:
@@ -42,3 +42,13 @@ class BotDBUtil:
                 self.query.EnabledModules = convert_list_to_str(self.enable_modules_list)
                 session.commit()
             return True
+
+    class TargetInfo:
+        def __init__(self, infochain):
+            self.infochain = infochain
+            self.isInBlackList = True if session.query(BlackList).filter_by(TargetId=infochain[Target].fromId).first() is not None else False
+            self.isInWhiteList = True if session.query(WhiteList).filter_by(TargetId=infochain[Target].fromId).first() is not None else False
+            self.isBanned = True if self.isInBlackList and not self.isInWhiteList else False
+            self.isSuperUser = True if session.query(SuperUser).filter_by(TargetId=infochain[Target].fromId).first() is not None else False
+            check_warn = session.query(SuperUser).filter_by(TargetId=infochain[Target].fromId).first()
+            self.Warns = 0 if check_warn is None else check_warn.Frequency

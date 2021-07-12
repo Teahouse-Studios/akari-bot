@@ -51,7 +51,3 @@ def remove_ineffective_text(prefix, lst):
             duplicated_list.append(x)
     lst = duplicated_list
     return lst
-
-
-def replace_alias_to_correct_name():
-

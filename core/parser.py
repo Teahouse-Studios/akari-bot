@@ -20,19 +20,16 @@ async def parser(infochain: dict):
     :return: 无返回
     """
     display = RemoveDuplicateSpace(kwargs_AsDisplay(infochain))  # 将消息转换为一般显示形式
-    if len(display) == 0:  # 转换后若为空消息则停止执行
+    targetInfo = BotDBUtil.TargetInfo(infochain)
+    if targetInfo.isBanned or len(display) == 0:
         return
-    #if BotDBUtil.check_black_list(trigger):  # 检查是否在黑名单
-    #    if not BotDBUtil.check_white_list(trigger):  # 检查是否在白名单
-    #        return  # 在黑名单且不在白名单，给我爪巴
     if display[0] in command_prefix:  # 检查消息前缀
         Logger.info(infochain)
         command = re.sub(r'^' + display[0], '', display)
         command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
-    #    if len(command_list) > 5:
-    #        if not BotDBUtil.check_superuser(infochain):
-    #            await sendMessage(infochain, '你不是本机器人的超级管理员，最多只能并排执行5个命令。')
-    #            return
+        if len(command_list) > 5 and not targetInfo.isSuperUser:
+            await sendMessage(infochain, '你不是本机器人的超级管理员，最多只能并排执行5个命令。')
+            return
         for command in command_list:
             command_spilt = command.split(' ')  # 切割消息
             try:
@@ -48,9 +45,10 @@ async def parser(infochain: dict):
                     await Nudge(infochain)
                     module = Modules[command_first_word]
                     if module.is_superuser_function:
-                        ...
+                        if not targetInfo.isSuperUser:
+                            await sendMessage(infochain, '你没有使用该命令的权限。')
                     if module.is_admin_function:
-                        ...
+
                     if not module.is_base_function:
                         check_command_enable = BotDBUtil.Module(infochain).check_target_enabled_module(command_first_word)  # 检查群组是否开启模块
                         if not check_command_enable:  # 若未开启

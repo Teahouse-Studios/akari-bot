@@ -31,6 +31,7 @@ class WarnList(Base):
     """警告列表"""
     __tablename__ = "WarnList"
     TargetId = Column(String(512), primary_key=True)
+    Frequency = Column(Integer)
 
 
 class SuperUser(Base):
