@@ -1,4 +1,4 @@
-from core.elements.elements import Module
+from core.elements import Module
 from .loader import ModulesManager
 
 def command(

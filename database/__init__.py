@@ -1,5 +1,5 @@
 from database.orm import session
-from database.tables import EnabledModules, BlackList, WhiteList, WarnList, SuperUser
+from database.tables import EnabledModules, BlackList, WhiteList, WarnList, SuperUser, FromAdmin
 from core.elements import Target
 
 
@@ -52,3 +52,60 @@ class BotDBUtil:
             self.isSuperUser = True if session.query(SuperUser).filter_by(TargetId=infochain[Target].fromId).first() is not None else False
             check_warn = session.query(SuperUser).filter_by(TargetId=infochain[Target].fromId).first()
             self.Warns = 0 if check_warn is None else check_warn.Frequency
+
+
+    class SetSenderTarget:
+        def __init__(self, infochain):
+            self.sender = infochain[Target].senderId
+            self.from_ = infochain[Target].fromId
+
+        def to_something(self, table):
+            query = session.query(table).filter_by(TargetId=self.sender).first()
+            if query is None:
+                session.add_all([table])
+                session.commit()
+            return True
+
+        def remove_from_something(self, table):
+            query = session.query(table).filter_by(TargetId=self.sender).first()
+            if query is not None:
+                query.delete()
+                session.commit()
+            return True
+
+        def to_blacklist(self):
+            return True if self.to_something(BlackList(TargetId=self.sender)) else False
+
+        def to_whitelist(self):
+            return True if self.to_something(WhiteList(TargetId=self.sender)) else False
+
+        def to_superuser(self):
+            return True if self.to_something(SuperUser(TargetId=self.sender)) else False
+
+        def to_warnlist(self, freq):
+            return True if self.to_something(WarnList(TargetId=self.sender, Frequency=freq)) else False
+
+        def to_fromadmin(self):
+            return True if self.to_something(FromAdmin(TargetId=self.sender, FromId=self.from_)) else False
+
+        def remove_from_blacklist(self):
+            return True if self.remove_from_something(BlackList) else False
+
+        def remove_from_whitelist(self):
+            return True if self.remove_from_something(WhiteList) else False
+
+        def remove_from_superuser(self):
+            return True if self.remove_from_something(SuperUser) else False
+
+        def remove_from_warnlist(self):
+            return True if self.remove_from_something(WarnList) else False
+
+        def remove_from_fromadmin(self):
+            query = session.query(FromAdmin).filter_by(TargetId=self.sender, FromId=self.from_).first()
+            if query is not None:
+                query.delete()
+                session.commit()
+            return True
+
+
+

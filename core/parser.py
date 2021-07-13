@@ -48,13 +48,13 @@ async def parser(infochain: dict):
                         if not targetInfo.isSuperUser:
                             await sendMessage(infochain, '你没有使用该命令的权限。')
                     if module.is_admin_function:
-
+                        ...
                     if not module.is_base_function:
                         check_command_enable = BotDBUtil.Module(infochain).check_target_enabled_module(command_first_word)  # 检查群组是否开启模块
                         if not check_command_enable:  # 若未开启
                             await sendMessage(infochain, f'此模块未启用，请管理员在群内发送~enable {command_first_word}启用本模块。')
                             return
-                await Modules[command_first_word].function(infochain)  # 将dict传入下游模块
+                    await Modules[command_first_word].function(infochain)  # 将dict传入下游模块
             except Exception as e:
                 traceback.print_exc()
                 await sendMessage(infochain, '执行命令时发生错误，请报告管理员：\n' + str(e))

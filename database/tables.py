@@ -40,6 +40,13 @@ class SuperUser(Base):
     TargetId = Column(String(512), primary_key=True)
 
 
+class FromAdmin(Base):
+    """所属赋予的管理员"""
+    __tablename__ = "FromAdmin"
+    TargetId = Column(String(512), primary_key=True)
+    FromId = Column(String(512))
+
+
 class CommandTriggerTime(Base):
     """命令触发时间"""
     __tablename__ = "CommandTriggerTime"
