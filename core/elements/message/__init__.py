@@ -1,4 +1,4 @@
-class Target:
+class MsgInfo:
     def __init__(self,
         fromId,
         fromName,
@@ -6,8 +6,8 @@ class Target:
         senderName,
         msgFrom
     ):
-        self.fromId = fromId
-        self.fromName = fromName
+        self.targetId = fromId
+        self.targetName = fromName
         self.senderId = senderId
         self.senderName = senderName
         self.msgFrom = msgFrom

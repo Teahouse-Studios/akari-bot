@@ -4,7 +4,7 @@ import re
 import traceback
 
 from .logger import Logger
-from core.elements.elements import Module
+from core.elements import Module
 
 err_prompt = []
 

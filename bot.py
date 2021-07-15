@@ -9,7 +9,7 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
 from core.broadcast import bcc, app
-from core.elements import Target
+from core.elements import MsgInfo
 from core.loader import Modules
 from core.parser import parser
 from core.utils import load_prompt as lp
@@ -30,16 +30,16 @@ write_version.close()
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
     kwargs = {MessageChain: message, Group: group, Member: member,
-              Target: Target(fromId=f'QQ|{group.id}', fromName=group.name, senderId=f'QQ|{member.id}', senderName=member.name,
-                             msgFrom=Group)}
+              MsgInfo: MsgInfo(fromId=f'QQ|{group.id}', fromName=group.name, senderId=f'QQ|{member.id}', senderName=member.name,
+                               msgFrom=Group)}
     await parser(kwargs)
 
 
 @bcc.receiver('FriendMessage')
 async def group_message_handler(message: MessageChain, friend: Friend):
     kwargs = {MessageChain: message, Friend: friend,
-              Target: Target(fromId=friend.id, fromName=friend.nickname, senderId=friend.id, senderName=friend.nickname,
-                             msgFrom=Friend)}
+              MsgInfo: MsgInfo(fromId=friend.id, fromName=friend.nickname, senderId=friend.id, senderName=friend.nickname,
+                               msgFrom=Friend)}
     await parser(kwargs)
 
 
