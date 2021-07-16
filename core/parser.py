@@ -1,12 +1,10 @@
 import re
 import traceback
 
-from graia.application import Friend
-from graia.application.group import Group
-
+from core.elements import MsgInfo
 from core.loader import Modules, ModulesAliases
 from core.logger import Logger
-from core.template import sendMessage, Nudge, kwargs_GetTrigger, kwargs_AsDisplay, RemoveDuplicateSpace
+from core.template import sendMessage, Nudge, kwargs_AsDisplay, RemoveDuplicateSpace
 from core.utils import remove_ineffective_text
 from database import BotDBUtil
 
@@ -20,7 +18,7 @@ async def parser(message: dict):
     :return: 无返回
     """
     display = RemoveDuplicateSpace(kwargs_AsDisplay(message))  # 将消息转换为一般显示形式
-    senderInfo = BotDBUtil.SenderInfo(message)
+    senderInfo = BotDBUtil.SenderInfo(message[MsgInfo].senderId)
     if senderInfo.query.isInBlackList and not senderInfo.query.isInWhiteList or len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
@@ -41,6 +39,8 @@ async def parser(message: dict):
                     command_spilt = command.split(' ')
                     command_first_word = command_spilt[0]
                     message['trigger_msg'] = command
+                if command_first_word == 'ping':
+                    await sendMessage(message, 'pong')
                 if command_first_word in Modules:  # 检查触发命令是否在模块列表中
                     await Nudge(message)
                     module = Modules[command_first_word]
@@ -59,7 +59,7 @@ async def parser(message: dict):
                 traceback.print_exc()
                 await sendMessage(message, '执行命令时发生错误，请报告管理员：\n' + str(e))
     #for regex in Modules['regex']:  # 遍历正则模块列表
-    #    check_command_enable = database.check_enable_modules(message[Group].id,
+    #    check_command_enable = database.check_enable_modules(senderId[Group].id,
     #                                                         regex)  # 检查群组是否打开模块
     #    if check_command_enable:
-    #        await Modules['regex'][regex](message)  # 将整条dict传入下游正则模块
+    #        await Modules['regex'][regex](senderId)  # 将整条dict传入下游正则模块

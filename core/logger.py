@@ -24,29 +24,27 @@ class AbstractLogger(ABC):
         pass
 
 
-class Logger(AbstractLogger):
+class Logginglogger(AbstractLogger):
     def __init__(self, **kwargs) -> None:
         logging.basicConfig(
-            format="[%(asctime)s][%(levelname)s]: %(message)s",
+            format="[Akaribot][%(asctime)s][%(levelname)s]: %(message)s",
             level=logging.INFO if not kwargs.get("debug") else logging.DEBUG,
         )
 
-    @classmethod
-    def info(cls, msg):
+    def info(self, msg):
         return logging.info(msg)
 
-    @classmethod
-    def error(cls, msg):
+    def error(self, msg):
         return logging.error(msg)
 
-    @classmethod
-    def debug(cls, msg):
+    def debug(self, msg):
         return logging.debug(msg)
 
-    @classmethod
-    def warn(cls, msg):
+    def warn(self, msg):
         return logging.warning(msg)
 
-    @classmethod
-    def exception(cls, msg):
+    def exception(self, msg):
         return logging.exception(msg)
+
+
+Logger = Logginglogger()

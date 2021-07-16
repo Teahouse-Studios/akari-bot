@@ -7,7 +7,9 @@ beautifulsoup4
 selenium
 eventlet
 psutil
-gql[all]==3.0.0a5
+gql[all]
 graiax-silkcoder
 html2text
 graia-scheduler
+filetype
+sqlalchemy

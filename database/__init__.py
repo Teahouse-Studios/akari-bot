@@ -44,15 +44,15 @@ class BotDBUtil:
             return True
 
     class SenderInfo:
-        def __init__(self, message):
-            self.message = message
-            self.query = session.query(SenderInfo).filter_by(id=message[MsgInfo].senderId).first()
+        def __init__(self, senderId):
+            self.senderId = senderId
+            self.query = session.query(SenderInfo).filter_by(id=senderId).first()
             if self.query is None:
-                session.add_all([SenderInfo(id=message[MsgInfo].senderId)])
+                session.add_all([SenderInfo(id=senderId)])
                 session.commit()
-                self.query = session.query(SenderInfo).filter_by(id=message[MsgInfo].senderId).first()
+                self.query = session.query(SenderInfo).filter_by(id=senderId).first()
 
-        def edit(self, column: str, value: str):
+        def edit(self, column: str, value):
             setattr(self.query, column, value)
             session.commit()
 
