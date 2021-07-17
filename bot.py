@@ -30,7 +30,7 @@ write_version.close()
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
     kwargs = {MessageChain: message, Group: group, Member: member,
-              MsgInfo: MsgInfo(fromId=f'QQ|{group.id}', fromName=group.name, senderId=f'QQ|{member.id}', senderName=member.name,
+              MsgInfo: MsgInfo(targetId=f'QQ|{group.id}', targetName=group.name, senderId=f'QQ|{member.id}', senderName=member.name,
                                msgFrom=Group)}
     await parser(kwargs)
 
@@ -38,7 +38,7 @@ async def group_message_handler(message: MessageChain, group: Group, member: Mem
 @bcc.receiver('FriendMessage')
 async def group_message_handler(message: MessageChain, friend: Friend):
     kwargs = {MessageChain: message, Friend: friend,
-              MsgInfo: MsgInfo(fromId=friend.id, fromName=friend.nickname, senderId=friend.id, senderName=friend.nickname,
+              MsgInfo: MsgInfo(targetId=friend.id, targetName=friend.nickname, senderId=friend.id, senderName=friend.nickname,
                                msgFrom=Friend)}
     await parser(kwargs)
 
