@@ -12,7 +12,7 @@ import itertools
 
 
 __all__ = ['docopt']
-__version__ = '0.6.2'
+__version__ = '0.6.2modded'
 
 
 class DocoptLanguageError(Exception):
