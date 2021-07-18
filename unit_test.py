@@ -1,7 +1,7 @@
 import asyncio
 import traceback
 
-from core.parser import parser
+from core.parser.parser import parser
 
 while True:
     try:

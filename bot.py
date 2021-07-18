@@ -11,7 +11,7 @@ from graia.application.message.chain import MessageChain
 from core.broadcast import bcc, app
 from core.elements import MsgInfo
 from core.loader import Modules
-from core.parser import parser
+from core.parser.parser import parser
 from core.utils import load_prompt as lp
 
 cache_path = os.path.abspath('./cache/')
