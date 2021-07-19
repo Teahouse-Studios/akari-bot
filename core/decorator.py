@@ -1,15 +1,16 @@
 from core.elements import Module
 from .loader import ModulesManager
 
+
 def command(
-    bind_prefix,
-    alias=None,
-    help_doc='',
-    need_self_process=False,
-    is_admin_function=False,
-    is_base_function=False,
-    is_superuser_function=False,
-    autorun=False
+        bind_prefix,
+        alias=None,
+        help_doc=None,
+        need_self_process=False,
+        is_admin_function=False,
+        is_base_function=False,
+        is_superuser_function=False,
+        autorun=False
 ):
     def decorator(function):
         plugin = Module(function,
@@ -22,4 +23,5 @@ def command(
                         is_superuser_function,
                         autorun)
         ModulesManager.add_module(plugin)
+
     return decorator

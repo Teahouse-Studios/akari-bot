@@ -4,23 +4,25 @@ from database import BotDBUtil
 from core.decorator import command
 
 
-@command('module', is_base_function=True)
-async def config_modules(kwargs: dict):
+@command('module',
+         is_base_function=True,
+         help_doc='<command> (enable|disable) (<module>|all) {开启或关闭一个/所有模块}')
+async def config_modules(message: dict):
     """
 ~module <enable/disable> <module/all>"""
-    command = kwargs['trigger_msg'].split(' ')
-    if not len(command) > 2:
-        msg = '命令格式错误。'
-        await sendMessage(kwargs, msg)
-        return
-    do = command[1]
-    command_third_word = command[2]
+    if message['parsed_msg']['enable']:
+        do = 'enable'
+    elif message['parsed_msg']['disable']:
+         do = 'disable'
+    command_third_word = message['parsed_msg']['<module>']
+    if message['parsed_msg']['all']:
+        command_third_word = 'all'
     if command_third_word in ModulesManager.return_modules_alias_map():
         command_third_word = ModulesManager.return_modules_alias_map()[command_third_word]
     #if not check_permission(message):
     #    await sendMessage(message, '你没有使用该命令的权限。')
     #    return
-    query = BotDBUtil.Module(kwargs)
+    query = BotDBUtil.Module(message)
     msglist = []
     if command_third_word == 'all':
         for function in ModulesManager.return_modules_list_as_dict():
@@ -33,7 +35,7 @@ async def config_modules(kwargs: dict):
         if query.disable(command_third_word):
             msglist.append(f'成功：关闭模块“{command_third_word}”')
     if msglist is not None:
-        await sendMessage(kwargs, '\n'.join(msglist))
+        await sendMessage(message, '\n'.join(msglist))
 
 """
 async def bot_help(message: dict):

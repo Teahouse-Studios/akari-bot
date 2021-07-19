@@ -39,7 +39,7 @@ class Image:
                  url=None,
                  path=None):
         if url is not None:
-            path = asyncio.run(self.get_image())
+            path = asyncio.run(self.get_image(url))
         self.image = path
 
 
