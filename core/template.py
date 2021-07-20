@@ -17,10 +17,10 @@ from core.broadcast import app, bcc
 from database_old import BotDB as database
 
 
-async def sendMessage(kwargs: dict, msgchain, Quote=True):
+async def sendMessage(message: dict, msgchain, Quote=True):
     """
     用于发送一条消息，兼容Group和Friend消息。
-    :param kwargs: 函数传入的dict
+    :param message: 函数传入的dict
     :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
     :param Quote: 是否引用传入dict中的消息（仅对Group消息有效）
     :return: 被发送的消息链
@@ -30,30 +30,30 @@ async def sendMessage(kwargs: dict, msgchain, Quote=True):
             msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
         msgchain = MessageChain.create([Plain(msgchain)])
     QuoteTarget = None
-    if 'TEST' not in kwargs:
+    if 'TEST' not in message:
         if Quote:
-            QuoteTarget = kwargs[MessageChain][Source][0].id
-    if Group in kwargs:
-        send = await app.sendGroupMessage(kwargs[Group], msgchain, quote=QuoteTarget)
+            QuoteTarget = message[MessageChain][Source][0].id
+    if Group in message:
+        send = await app.sendGroupMessage(message[Group], msgchain, quote=QuoteTarget)
         return send
-    if Friend in kwargs:
-        send = await app.sendFriendMessage(kwargs[Friend], msgchain)
+    if Friend in message:
+        send = await app.sendFriendMessage(message[Friend], msgchain)
         return send
-    if 'From' in kwargs:
-        if kwargs['From'] == 'Group':
-            send = await app.sendGroupMessage(kwargs['ID'], msgchain)
+    if 'From' in message:
+        if message['From'] == 'Group':
+            send = await app.sendGroupMessage(message['ID'], msgchain)
             return send
-        if kwargs['From'] == 'Friend':
-            send = await app.sendFriendMessage(kwargs['ID'], msgchain)
+        if message['From'] == 'Friend':
+            send = await app.sendFriendMessage(message['ID'], msgchain)
             return send
-    if 'TEST' in kwargs:
+    if 'TEST' in message:
         print(msgchain.asDisplay())
 
 
-async def wait_confirm(kwargs: dict):
+async def wait_confirm(message: dict):
     """
     一次性模板，用于等待触发对象确认，兼容Group和Friend消息
-    :param kwargs: 函数传入的dict
+    :param message: 函数传入的dict
     :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
     """
     inc = InterruptControl(bcc)
@@ -61,23 +61,23 @@ async def wait_confirm(kwargs: dict):
                        '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
                        '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该',
                        'yes', 'y', 'yeah', 'yep', 'ok', 'okay', '⭐', '√']
-    if Group in kwargs:
+    if Group in message:
         @Waiter.create_using_function([GroupMessage])
         def waiter(waiter_group: Group,
                    waiter_member: Member, waiter_message: MessageChain):
             if all([
-                waiter_group.id == kwargs[Group].id,
-                waiter_member.id == kwargs[Member].id,
+                waiter_group.id == message[Group].id,
+                waiter_member.id == message[Member].id,
             ]):
                 if waiter_message.asDisplay() in confirm_command:
                     return True
                 else:
                     return False
-    if Friend in kwargs:
+    if Friend in message:
         @Waiter.create_using_function([FriendMessage])
         def waiter(waiter_friend: Friend, waiter_message: MessageChain):
             if all([
-                waiter_friend.id == kwargs[Friend].id,
+                waiter_friend.id == message[Friend].id,
             ]):
                 if waiter_message.asDisplay() in confirm_command:
                     return True
@@ -87,43 +87,33 @@ async def wait_confirm(kwargs: dict):
     return await inc.wait(waiter)
 
 
-async def wait_anything(kwargs: dict):
+async def wait_anything(message: dict):
     inc = InterruptControl(bcc)
-    if Group in kwargs:
+    if Group in message:
         @Waiter.create_using_function([GroupMessage])
         def waiter(waiter_group: Group,
                    waiter_member: Member, waiter_message: MessageChain):
             if all([
-                waiter_group.id == kwargs[Group].id,
-                waiter_member.id == kwargs[Member].id,
+                waiter_group.id == message[Group].id,
+                waiter_member.id == message[Member].id,
             ]):
                 return True
-    if Friend in kwargs:
+    if Friend in message:
         @Waiter.create_using_function([FriendMessage])
         def waiter(waiter_friend: Friend, waiter_message: MessageChain):
             if all([
-                waiter_friend.id == kwargs[Friend].id,
+                waiter_friend.id == message[Friend].id,
             ]):
                 return True
 
     return await inc.wait(waiter)
 
 
-def kwargs_GetTrigger(kwargs: dict):
-    if Group in kwargs:  # 若为群组
-        trigger = kwargs[Member].id
-    if Friend in kwargs:  # 若为好友
-        trigger = kwargs[Friend].id
-    if 'TEST' in kwargs:
-        trigger = 0
-    return trigger
-
-
-def kwargs_AsDisplay(kwargs: dict):
-    if 'TEST' in kwargs:
-        display = kwargs['command']
+def kwargs_AsDisplay(message: dict):
+    if 'TEST' in message:
+        display = message['command']
     else:
-        display = kwargs[MessageChain].asDisplay()
+        display = message[MessageChain].asDisplay()
     return display
 
 
@@ -154,19 +144,19 @@ async def revokeMessage(msgchain):
         traceback.print_exc()
 
 
-def check_permission(kwargs):
+def check_permission(message):
     """
     检查对象是否拥有某项权限
-    :param kwargs: 从函数传入的dict
+    :param message: 从函数传入的dict
     :return: 若对象为群主、管理员或机器人超管则为True
     """
-    if Group in kwargs:
-        if str(kwargs[Member].permission) in ['MemberPerm.Administrator',
+    if Group in message:
+        if str(message[Member].permission) in ['MemberPerm.Administrator',
                                               'MemberPerm.Owner'] or database.check_superuser(
-                kwargs) or database.check_group_adminuser(kwargs):
+                message) or database.check_group_adminuser(message):
             return True
-    if Friend in kwargs:
-        if database.check_superuser(kwargs[Friend].id):
+    if Friend in message:
+        if database.check_superuser(message[Friend].id):
             return True
     return False
 

@@ -6,7 +6,8 @@ from core.decorator import command
 
 @command('module',
          is_base_function=True,
-         help_doc='<command> (enable|disable) (<module>|all) {开启或关闭一个/所有模块}')
+         help_doc=('<command> enable (<module>|all) {开启一个或所有模块}',
+                   '<command> disable (<module>|all) {关闭一个或所有模块}'))
 async def config_modules(message: dict):
     """
 ~module <enable/disable> <module/all>"""
