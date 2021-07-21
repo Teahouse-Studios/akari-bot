@@ -1,5 +1,5 @@
 from core.loader import ModulesManager
-from core.template import sendMessage
+from core.template import Template
 from database import BotDBUtil
 from core.decorator import command
 
@@ -36,7 +36,7 @@ async def config_modules(message: dict):
         if query.disable(command_third_word):
             msglist.append(f'成功：关闭模块“{command_third_word}”')
     if msglist is not None:
-        await sendMessage(message, '\n'.join(msglist))
+        await Template.sendMessage(message, '\n'.join(msglist))
 
 """
 async def bot_help(message: dict):

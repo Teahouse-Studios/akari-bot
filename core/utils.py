@@ -1,7 +1,11 @@
 import os
 import re
+import traceback
 
 import aiohttp
+import filetype as ft
+from os.path import abspath
+from core.logger import Logger
 
 
 async def load_prompt():
@@ -9,11 +13,11 @@ async def load_prompt():
     loader_cache = os.path.abspath('.cache_loader')
     if os.path.exists(author_cache):
         import json
-        from core.template import sendMessage
+        from core.bots.graia.template import sendMessage
         open_author_cache = open(author_cache, 'r')
         cache_json = json.loads(open_author_cache.read())
         open_loader_cache = open(loader_cache, 'r')
-        await sendMessage(cache_json, open_loader_cache.read(), Quote=False)
+        await sendMessage(cache_json, open_loader_cache.read(), quote=False)
         open_loader_cache.close()
         open_author_cache.close()
         os.remove(author_cache)
@@ -51,3 +55,36 @@ def remove_ineffective_text(prefix, lst):
             duplicated_list.append(x)
     lst = duplicated_list
     return lst
+
+def RemoveDuplicateSpace(text: str):
+    strip_display_space = text.split(' ')
+    display_list = []  # 清除指令中间多余的空格
+    for x in strip_display_space:
+        if x != '':
+            display_list.append(x)
+    text = ' '.join(display_list)
+    return text
+
+
+async def download_to_cache(link):
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(link) as resp:
+                res = await resp.read()
+                ftt = ft.match(res).extension
+                path = abspath(f'./cache/{str(uuid.uuid4())}.{ftt}')
+                with open(path, 'wb+') as file:
+                    file.write(res)
+                    return path
+    except:
+        traceback.print_exc()
+        return False
+
+
+async def slk_converter(filepath):
+    filepath2 = filepath + '.silk'
+    Logger.info('Start encoding voice...')
+    os.system('python slk_coder.py ' + filepath)
+    Logger.info('Voice encoded.')
+    return filepath2
+

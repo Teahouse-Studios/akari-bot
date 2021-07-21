@@ -34,6 +34,7 @@ class Plain:
         self.text = text
 
 
+
 class Image:
     def __init__(self,
                  url=None,
@@ -41,7 +42,6 @@ class Image:
         if url is not None:
             path = asyncio.run(self.get_image(url))
         self.image = path
-
 
     async def get_image(self, url, headers=None):
         session = await aiohttp_session(headers=headers)

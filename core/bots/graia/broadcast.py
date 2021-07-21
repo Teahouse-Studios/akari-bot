@@ -7,9 +7,9 @@ from config import Config
 from core.logger import Logginglogger
 
 loop = asyncio.get_event_loop()
+
 c = Config
 debug = c('debug_flag')
-
 bcc = Broadcast(loop=loop, debug_flag=debug)
 app = GraiaMiraiApplication(
     broadcast=bcc,
@@ -22,3 +22,4 @@ app = GraiaMiraiApplication(
     ),
     logger=Logginglogger(**({"debug": True} if debug else {}))
 )
+

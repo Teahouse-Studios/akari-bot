@@ -3,7 +3,7 @@ import sys
 import json
 
 from core.elements.elements import Target
-from core.template import sendMessage, wait_confirm
+from core.bots.graia.template import sendMessage, wait_confirm
 from database_old import BotDB as database
 
 
