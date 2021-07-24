@@ -1,5 +1,6 @@
 from core.loader import ModulesManager
 from core.template import Template
+from core.elements import MessageSession
 from database import BotDBUtil
 from core.decorator import command
 
@@ -8,20 +9,20 @@ from core.decorator import command
          is_base_function=True,
          help_doc=('<command> enable (<module>|all) {开启一个或所有模块}',
                    '<command> disable (<module>|all) {关闭一个或所有模块}'))
-async def config_modules(message: dict):
+async def config_modules(message: MessageSession):
     """
 ~module <enable/disable> <module/all>"""
-    if message['parsed_msg']['enable']:
+    if message.parsed_msg['enable']:
         do = 'enable'
-    elif message['parsed_msg']['disable']:
+    elif message.parsed_msg['disable']:
          do = 'disable'
-    command_third_word = message['parsed_msg']['<module>']
-    if message['parsed_msg']['all']:
+    command_third_word = message.parsed_msg['<module>']
+    if message.parsed_msg['all']:
         command_third_word = 'all'
     if command_third_word in ModulesManager.return_modules_alias_map():
         command_third_word = ModulesManager.return_modules_alias_map()[command_third_word]
-    #if not check_permission(message):
-    #    await sendMessage(message, '你没有使用该命令的权限。')
+    #if not check_permission(msg):
+    #    await sendMessage(msg, '你没有使用该命令的权限。')
     #    return
     query = BotDBUtil.Module(message)
     msglist = []
@@ -39,10 +40,10 @@ async def config_modules(message: dict):
         await Template.sendMessage(message, '\n'.join(msglist))
 
 """
-async def bot_help(message: dict):
-    help_list = message['bot_modules']['help']
-    alias = message['bot_modules']['alias']
-    command = message['trigger_msg'].split(' ')
+async def bot_help(msg: dict):
+    help_list = msg['bot_modules']['help']
+    alias = msg['bot_modules']['alias']
+    command = msg['trigger_msg'].split(' ')
     if len(command) > 1:
         msg = []
         help_name = command[1]
@@ -54,7 +55,7 @@ async def bot_help(message: dict):
                 if 'depend' in help_list[x]:
                     if help_list[x]['depend'] == help_name:
                         msg.append(help_list[x]['help'])
-            await sendMessage(message, '\n'.join(msg))
+            await sendMessage(msg, '\n'.join(msg))
     else:
         print(help_list)
         help_msg = []
@@ -67,26 +68,26 @@ async def bot_help(message: dict):
         help_msg.append('模块扩展命令：')
         module = []
         for x in help_list:
-            if Group in message:
-                if database.check_enable_modules(message, x):
+            if Group in msg:
+                if database.check_enable_modules(msg, x):
                     if 'help' in help_list[x]:
                         module.append(x)
-            elif Friend in message:
+            elif Friend in msg:
                 if 'help' in help_list[x]:
                     module.append(x)
         help_msg.append(' | '.join(module))
         print(help_msg)
         help_msg.append('使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
-        if Group in message:
+        if Group in msg:
             help_msg.append('[本消息将在一分钟后撤回]')
-        send = await sendMessage(message, '\n'.join(help_msg))
-        if Group in message:
+        send = await sendMessage(msg, '\n'.join(help_msg))
+        if Group in msg:
             await asyncio.sleep(60)
             await revokeMessage(send)
 
 
-async def modules_help(message: dict):
-    help_list = message['bot_modules']['help']
+async def modules_help(msg: dict):
+    help_list = msg['bot_modules']['help']
     help_msg = []
     help_msg.append('当前可用的模块有：')
     module = []
@@ -95,34 +96,34 @@ async def modules_help(message: dict):
             module.append(x)
     help_msg.append(' | '.join(module))
     help_msg.append('使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/modules/')
-    if Group in message:
+    if Group in msg:
         help_msg.append('[本消息将在一分钟后撤回]')
-    send = await sendMessage(message, '\n'.join(help_msg))
-    if Group in message:
+    send = await sendMessage(msg, '\n'.join(help_msg))
+    if Group in msg:
         await asyncio.sleep(60)
         await revokeMessage(send)
 
 
-async def bot_version(message: dict):
+async def bot_version(msg: dict):
     version = os.path.abspath('.version')
     openfile = open(version, 'r')
     msg = '当前运行的代码版本号为：' + openfile.read()
-    await sendMessage(message, msg)
+    await sendMessage(msg, msg)
     openfile.close()
 
 
-async def config_gu(message):
-    if Group in message:
-        if check_permission(message):
-            command = message['trigger_msg'].split(' ')
+async def config_gu(msg):
+    if Group in msg:
+        if check_permission(msg):
+            command = msg['trigger_msg'].split(' ')
             if len(command) < 3:
-                await sendMessage(message, '命令格式错误。')
+                await sendMessage(msg, '命令格式错误。')
                 return
             print(command)
             if command[1] == 'add':
-                await sendMessage(message, database.add_group_adminuser(command[2], message[Group].id))
+                await sendMessage(msg, database.add_group_adminuser(command[2], msg[Group].id))
             if command[1] == 'del':
-                await sendMessage(message, database.del_group_adminuser(command[2], message[Group].id))
+                await sendMessage(msg, database.del_group_adminuser(command[2], msg[Group].id))
 
 
 essential = {'module': config_modules, 'add_base_su': add_base_su, 'help': bot_help,

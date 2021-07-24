@@ -1,10 +1,5 @@
 import traceback
-import uuid
-from os.path import abspath
-import os
 
-import aiohttp
-import filetype as ft
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
@@ -12,18 +7,17 @@ from graia.application.message.elements.internal import Plain, Image
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
-from core.logger import Logger
-from core.elements import Plain as BPlain, Image as BImage
+from core.elements import Plain as BPlain, Image as BImage, MessageSession
 from core.bots.graia.broadcast import app, bcc
-from database_old import BotDB as database
 
 
 class Template:
-    all_func = ("sendMessage", "waitConfirm", "asDisplay")
-    async def sendMessage(self, message: dict, msgchain, quote=True):
+    all_func = ("sendMessage", "waitConfirm", "asDisplay", "revokeMessage", "checkPermission", "Typing")
+
+    async def sendMessage(self, msg: MessageSession, msgchain, quote=True):
         """
         用于发送一条消息，兼容Group和Friend消息。
-        :param message: 函数传入的dict
+        :param msg: 函数传入的dict
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param quote: 是否引用传入dict中的消息（仅对Group消息有效）
         :return: 被发送的消息链
@@ -42,25 +36,17 @@ class Template:
             if not msgchain_list:
                 msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
             msgchain = MessageChain.create(msgchain_list)
-        if Group in message:
-            send = await app.sendGroupMessage(message[Group], msgchain)
+        if isinstance(msg.session.target, Group):
+            send = await app.sendGroupMessage(msg.session.target, msgchain)
             return send
-        if Friend in message:
-            send = await app.sendFriendMessage(message[Friend], msgchain)
+        if isinstance(msg.session.target, Friend):
+            send = await app.sendFriendMessage(msg.session.target, msgchain)
             return send
-        if 'From' in message:
-            if message['From'] == 'Group':
-                send = await app.sendGroupMessage(message['ID'], msgchain)
-                return send
-            if message['From'] == 'Friend':
-                send = await app.sendFriendMessage(message['ID'], msgchain)
-                return send
 
-
-    async def waitConfirm(self, message: dict):
+    async def waitConfirm(self, msg: MessageSession):
         """
         一次性模板，用于等待触发对象确认，兼容Group和Friend消息
-        :param message: 函数传入的dict
+        :param msg: 函数传入的dict
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         inc = InterruptControl(bcc)
@@ -68,23 +54,23 @@ class Template:
                            '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
                            '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该',
                            'yes', 'y', 'yeah', 'yep', 'ok', 'okay', '⭐', '√']
-        if Group in message:
+        if isinstance(msg.session.target, Group):
             @Waiter.create_using_function([GroupMessage])
             def waiter(waiter_group: Group,
                        waiter_member: Member, waiter_message: MessageChain):
                 if all([
-                    waiter_group.id == message[Group].id,
-                    waiter_member.id == message[Member].id,
+                    waiter_group.id == msg.session.target.id,
+                    waiter_member.id == msg.session.sender.id,
                 ]):
                     if waiter_message.asDisplay() in confirm_command:
                         return True
                     else:
                         return False
-        if Friend in message:
+        if isinstance(msg.session.target, Friend):
             @Waiter.create_using_function([FriendMessage])
             def waiter(waiter_friend: Friend, waiter_message: MessageChain):
                 if all([
-                    waiter_friend.id == message[Friend].id,
+                    waiter_friend.id == msg.session.sender.id,
                 ]):
                     if waiter_message.asDisplay() in confirm_command:
                         return True
@@ -93,50 +79,49 @@ class Template:
 
         return await inc.wait(waiter)
 
-    def asDisplay(self, message: dict):
-        if 'TEST' in message:
-            display = message['command']
-        else:
-            display = message[MessageChain].asDisplay()
+    def asDisplay(self, msg: MessageSession):
+        display = msg.session.message.asDisplay()
         return display
 
-    async def revokeMessage(self, msgchain):
+    async def revokeMessage(self, send_msg):
         """
         用于撤回消息。
-        :param msgchain: 需要撤回的已发送/接收的消息链
+        :param send_msg: 需要撤回的已发送/接收的消息链
         :return: 无返回
         """
         try:
-            if isinstance(msgchain, list):
-                for msg in msgchain:
+            if isinstance(send_msg, list):
+                for msg in send_msg:
                     await app.revokeMessage(msg)
             else:
-                await app.revokeMessage(msgchain)
+                await app.revokeMessage(send_msg)
         except:
             traceback.print_exc()
 
-
-    def checkPermission(self, message):
+    def checkPermission(self, msg: MessageSession):
         """
         检查对象是否拥有某项权限
-        :param message: 从函数传入的dict
+        :param msg: 从函数传入的dict
         :return: 若对象为群主、管理员或机器人超管则为True
         """
-        if Group in message:
-            if str(message[Member].permission) in ['MemberPerm.Administrator',
-                                                  'MemberPerm.Owner'] or database.check_superuser(
-                    message) or database.check_group_adminuser(message):
+        if isinstance(msg.session.target, Group):
+            if str(msg.session.sender.permission) in ['MemberPerm.Administrator', 'MemberPerm.Owner'] \
+                    or msg.target.senderInfo.query.isSuperUser \
+                    or msg.target.senderInfo.check_TargetAdmin(msg.target.targetId):
                 return True
-        if Friend in message:
-            if database.check_superuser(message[Friend].id):
-                return True
+        if isinstance(msg.session.target, Friend):
+            return True
         return False
 
-"""    async def Nudge(kwargs):
-        try:
-            if Group in kwargs:
-                await app.nudge(kwargs[Member])
-            if Friend in kwargs:
-                await app.nudge(kwargs[Friend])
-        except:
-            traceback.print_exc()"""
+    class Typing:
+        def __init__(self, msg: MessageSession):
+            self.msg = msg
+
+        async def __aenter__(self):
+            if isinstance(self.msg.session.target, Group):
+                await app.nudge(self.msg.session.sender)
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+

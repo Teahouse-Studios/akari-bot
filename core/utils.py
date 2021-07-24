@@ -13,7 +13,7 @@ async def load_prompt():
     loader_cache = os.path.abspath('.cache_loader')
     if os.path.exists(author_cache):
         import json
-        from core.bots.graia.template import sendMessage
+        from core.template import sendMessage
         open_author_cache = open(author_cache, 'r')
         cache_json = json.loads(open_author_cache.read())
         open_loader_cache = open(loader_cache, 'r')

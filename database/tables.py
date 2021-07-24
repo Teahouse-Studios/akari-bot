@@ -28,7 +28,8 @@ class SenderInfo(Base):
 class TargetAdmin(Base):
     """所属赋予的管理员"""
     __tablename__ = "TargetAdmin"
-    senderId = Column(String(512), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    senderId = Column(String(512))
     targetId = Column(String(512))
 
 

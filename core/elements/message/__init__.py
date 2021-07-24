@@ -5,27 +5,37 @@ import uuid
 import filetype
 import asyncio
 
+
 class MsgInfo:
+    __slots__ = ["targetId", "senderId", "senderName", "msgFrom", "senderInfo"]
+
     def __init__(self,
-                 targetId,
-                 targetName,
-                 senderId,
-                 senderName,
-                 msgFrom
+                 targetId: [int, str],
+                 senderId: [int, str],
+                 senderName: str,
+                 msgFrom: str
                  ):
         self.targetId = targetId
-        self.targetName = targetName
         self.senderId = senderId
         self.senderName = senderName
         self.msgFrom = msgFrom
 
 
-class InfoChain:
-    def __init__(self,
-                 target,
-                 messageChain):
+class Session:
+    def __init__(self, message, target, sender):
+        self.message = message
         self.target = target
-        self.messageChain = messageChain
+        self.sender = sender
+
+
+class MessageSession:
+    __slots__ = ["target", "session", "trigger_msg", "parsed_msg"]
+
+    def __init__(self,
+                 target: MsgInfo,
+                 session: Session):
+        self.target = target
+        self.session = session
 
 
 class Plain:
