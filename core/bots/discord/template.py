@@ -12,7 +12,7 @@ class Template:
         if isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
-            await msg.session.channel.send(msgchain, reference=msg.session if Quote else None)
+            await msg.session.message.channel.send(msgchain, reference=msg.session.message if Quote else None)
         if isinstance(msgchain, list):
             count = 0
             for x in msgchain:
