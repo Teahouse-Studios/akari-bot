@@ -1,5 +1,5 @@
 import subprocess
-from core.logger import Logginglogger
+import logging
 from queue import Queue, Empty
 from threading import Thread
 import os
@@ -12,6 +12,7 @@ def enqueue_output(out, queue):
 
 
 def run():
+    logging.basicConfig(format="%(msg)s", level=logging.INFO)
     botdir = './core/bots/'
     lst = os.listdir(botdir)
     runlst = []
@@ -35,7 +36,7 @@ def run():
         except Empty:
             pass
         else:
-            Logginglogger(format="[Akaribot]").info(line.decode('utf8'))
+            logging.info(line.decode('utf8')[:-1])
 
         # break when all processes are done.
         if all(p.poll() is not None for p in runlst):
