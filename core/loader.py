@@ -55,6 +55,8 @@ class ModulesManager:
             if isinstance(x.alias, tuple):
                 for y in x.alias:
                     alias_map.update({y: x.bind_prefix})
+            if isinstance(x.alias, dict):
+                alias_map.update(x.alias)
         return alias_map
 
 

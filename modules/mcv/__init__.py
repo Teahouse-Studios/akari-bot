@@ -1,8 +1,5 @@
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain
-
-from core.template import Template
 from core.decorator import command
+from core.elements import MessageSession
 from .mcv import mcv, mcbv, mcdv
 
 
@@ -10,6 +7,6 @@ from .mcv import mcv, mcbv, mcdv
     bind_prefix='mcv',
     help_doc='~mcv {查询当前Minecraft Java版启动器内最新版本。}',
     alias='m')
-async def mcv_loader(kwargs):
+async def mcv_loader(msg: MessageSession):
     run = await mcv()
-    await Template.sendMessage(kwargs, run)
+    await msg.sendMessage(run)

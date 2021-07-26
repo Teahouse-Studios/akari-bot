@@ -2,32 +2,32 @@ import os
 import sys
 import json
 
-from core.elements.elements import Target
-from core.bots.graia.template import sendMessage, wait_confirm
-from database_old import BotDB as database
+from core.decorator import command
+from core.elements import MessageSession
+from database import BotDBUtil
 
 
-async def add_su(kwargs: dict):
-    command = kwargs['trigger_msg'].split(' ')
-    await sendMessage(kwargs, database.add_superuser(command[1]))
+@command('add_su', is_superuser_function=True, help_doc='add_su <user>')
+async def add_su(message: MessageSession):
+    user = message.parsed_msg['<user>']
+    if user:
+        if BotDBUtil.SenderInfo(f'{message.target.senderFrom}|{user}').edit('isSuperUser', True):
+            await message.sendMessage('成功')
 
 
-async def del_su(kwargs: dict):
-    command = kwargs['trigger_msg'].split(' ')
-    await sendMessage(kwargs, database.del_superuser(command[1]))
+@command('del_su', is_superuser_function=True, help_doc='del_su <user>')
+async def del_su(message: MessageSession):
+    user = message.parsed_msg['<user>']
+    if user:
+        if BotDBUtil.SenderInfo(f'{message.target.senderFrom}|{user}').edit('isSuperUser', False):
+            await message.sendMessage('成功')
 
 
-async def add_base_su(kwargs: dict):
-    await sendMessage(kwargs, database.add_superuser('2596322644'))
+"""
+@command('set_modules', is_superuser_function=True, help_doc='set_modules <>')
+async def set_modules(msg: dict):
+    ...
 
-
-async def set_modules(kwargs: dict):
-    command = kwargs['trigger_msg'].split(' ')
-    command_second_word = command[1]
-    command_third_word = command[2]
-    command_forth_word = command[3]
-    msg = database.update_modules(command_second_word, command_third_word, command_forth_word)
-    await sendMessage(kwargs, msg)
 
 
 async def restart_bot(kwargs: dict):
@@ -63,7 +63,9 @@ async def update_and_restart_bot(kwargs: dict):
         await sendMessage(kwargs, result.read())
         python = sys.executable
         os.execl(python, python, *sys.argv)
+"""
 
 
-async def echo_msg(kwargs: dict):
-    await sendMessage(kwargs, kwargs['trigger_msg'])
+@command('echo', is_superuser_function=True, help_doc='echo <msg>')
+async def echo_msg(msg: MessageSession):
+    await msg.sendMessage(msg.parsed_msg['<msg>'])

@@ -33,7 +33,7 @@ class CommandParser:
         else:
             raise InvalidHelpDocTypeError
 
-    def return_formatted_help_doc(self):
+    def return_formatted_help_doc(self) -> str:
         args_raw = self.args_raw
 
         if isinstance(args_raw, str):

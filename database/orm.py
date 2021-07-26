@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from database.tables import *
 
 
-DB_LINK = 'sqlite:///database/save.db'
+DB_LINK = "mysql+pymysql://root:WUyou2004517@localhost:3306/bot"
 
 engine = create_engine(DB_LINK)
 
