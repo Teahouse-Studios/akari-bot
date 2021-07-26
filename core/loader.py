@@ -59,10 +59,19 @@ class ModulesManager:
                 alias_map.update(x.alias)
         return alias_map
 
+    @classmethod
+    def return_regex_modules(cls):
+        d = {}
+        for x in ModulesManager._modules_list:
+            if x.is_regex_function:
+                d.update({x.bind_prefix: x})
+        return d
+
 
 load_modules()
 Modules = ModulesManager.return_modules_list_as_dict()
 ModulesAliases = ModulesManager.return_modules_alias_map()
+ModulesRegex = ModulesManager.return_regex_modules()
 
 
 loadercache = os.path.abspath('.cache_loader')

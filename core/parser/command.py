@@ -50,7 +50,6 @@ class CommandParser:
             raise InvalidHelpDocTypeError
         return args
 
-
     def parse(self, command):
         command = re.sub('“', '"', re.sub('”', '"', command))
         split_command = shlex.split(command)

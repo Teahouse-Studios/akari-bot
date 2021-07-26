@@ -2,7 +2,7 @@ import re
 import traceback
 
 from core.elements import MessageSession
-from core.loader import Modules, ModulesAliases
+from core.loader import Modules, ModulesAliases, ModulesRegex
 from core.logger import Logger
 from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
@@ -33,7 +33,6 @@ async def parser(msg: MessageSession):
             try:
                 msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
                 command_first_word = command_spilt[0]
-                print(ModulesAliases)
                 if command_first_word in ModulesAliases:
                     command_spilt[0] = ModulesAliases[command_first_word]
                     command = ' '.join(command_spilt)
@@ -42,20 +41,20 @@ async def parser(msg: MessageSession):
                     msg.trigger_msg = command
                 if command_first_word in Modules:  # 检查触发命令是否在模块列表中
                     module = Modules[command_first_word]
+                    if module.is_regex_function:
+                        if module.help_doc:
+                            return await msg.sendMessage(CommandParser(module.help_doc).return_formatted_help_doc())
                     if module.is_superuser_function:
                         if not senderInfo.query.isSuperUser:
-                            await msg.sendMessage('你没有使用该命令的权限。')
-                            return
+                            return await msg.sendMessage('你没有使用该命令的权限。')
                     if module.is_admin_function:
                         if not msg.checkPermission():
-                            await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
-                            return
+                            return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                     if not module.is_base_function:
                         check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(
-                            command_first_word)  # 检查群组是否开启模块
+                            command_first_word)  # 是否开启模块
                         if not check_command_enable:  # 若未开启
-                            await msg.sendMessage(f'此模块未启用，请发送~enable {command_first_word}启用本模块。')
-                            return
+                            return await msg.sendMessage(f'此模块未启用，请发送~enable {command_first_word}启用本模块。')
                     help_doc = module.help_doc
                     if help_doc is not None:
                         try:
@@ -63,18 +62,15 @@ async def parser(msg: MessageSession):
                             try:
                                 msg.parsed_msg = cparser.parse(command)
                             except InvalidCommandFormatError:
-                                await msg.sendMessage(f'语法错误。\n' + cparser.return_formatted_help_doc())
-                                return
+                                return await msg.sendMessage(f'语法错误。\n' + cparser.return_formatted_help_doc())
                         except InvalidHelpDocTypeError:
-                            await msg.sendMessage(f'此模块的帮助信息有误，请联系开发者处理。')
-                            return
+                            return await msg.sendMessage(f'此模块的帮助信息有误，请联系开发者处理。')
                     async with msg.Typing(msg):
                         await Modules[command_first_word].function(msg)  # 将dict传入下游模块
             except Exception as e:
                 traceback.print_exc()
                 await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e))
-    # for regex in Modules['regex']:  # 遍历正则模块列表
-    #    check_command_enable = database.check_enable_modules(senderId[Group].id,
-    #                                                         regex)  # 检查群组是否打开模块
-    #    if check_command_enable:
-    #        await Modules['regex'][regex](senderId)  # 将整条dict传入下游正则模块
+    for regex in ModulesRegex:  # 遍历正则模块列表
+        check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(regex)
+        if check_command_enable:
+            await ModulesRegex[regex].function(msg)  # 将整条dict传入下游正则模块

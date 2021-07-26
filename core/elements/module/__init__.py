@@ -1,4 +1,5 @@
 from typing import Callable
+import re
 
 
 class Module:
@@ -11,6 +12,7 @@ class Module:
                  is_admin_function: bool,
                  is_base_function: bool,
                  is_superuser_function: bool,
+                 is_regex_function: bool,
                  autorun: bool):
         self.function = function
         self.bind_prefix = bind_prefix
@@ -20,4 +22,5 @@ class Module:
         self.is_admin_function = is_admin_function
         self.is_base_function = is_base_function
         self.is_superuser_function = is_superuser_function
+        self.is_regex_function = is_regex_function
         self.autorun = autorun

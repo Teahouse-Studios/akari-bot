@@ -10,6 +10,7 @@ def command(
         is_admin_function=False,
         is_base_function=False,
         is_superuser_function=False,
+        is_regex_function=False,
         autorun=False
 ):
     def decorator(function):
@@ -21,6 +22,7 @@ def command(
                         is_admin_function,
                         is_base_function,
                         is_superuser_function,
+                        is_regex_function,
                         autorun)
         ModulesManager.add_module(plugin)
 
