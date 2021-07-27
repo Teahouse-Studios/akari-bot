@@ -24,7 +24,7 @@ class Session:
 
 class MessageSession:
     __slots__ = ("target", "session", "trigger_msg", "parsed_msg",
-                 "sendMessage", "waitConfirm", "checkPermission", "delete", 'asDisplay', "Typing")
+                 "sendMessage", "waitConfirm", "checkPermission", "delete", 'asDisplay', "Typing", "Feature", "checkSuperuser")
 
     def __init__(self,
                  target: MsgInfo,

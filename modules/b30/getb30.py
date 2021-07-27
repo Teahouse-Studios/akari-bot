@@ -6,17 +6,18 @@ import aiohttp
 
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
+from config import Config
 
 
 assets_path = os.path.abspath('./assets/arcaea')
 
 
 async def getb30(usercode):
-    headers = {"User-Agent": "OasisAkari/*"}
+    headers = {"User-Agent": "L1ttl3cT"}
     d = 0
     last5rank = 0
     async with aiohttp.ClientSession() as session:
-        url = "http://127.0.0.1:2333/v2/"
+        url = Config("arcapi_url")
         async with session.get(url + "userbest30?usercode=" + usercode, headers=headers) as resp:
             a = await resp.text()
             loadjson = json.loads(a)

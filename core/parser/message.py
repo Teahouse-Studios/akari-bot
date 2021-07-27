@@ -42,10 +42,12 @@ async def parser(msg: MessageSession):
                 if command_first_word in Modules:  # 检查触发命令是否在模块列表中
                     module = Modules[command_first_word]
                     if isinstance(module, Option):
-                        return await msg.sendMessage(module.help_doc)
+                        return await msg.sendMessage(module.desc)
                     if module.is_regex_function or module.autorun:
-                        if module.help_doc:
+                        if module.help_doc is not None:
                             return await msg.sendMessage(CommandParser(module.help_doc).return_formatted_help_doc())
+                        elif module.desc is not None:
+                            return await msg.sendMessage(module.desc)
                     if module.need_superuser:
                         if not senderInfo.query.isSuperUser:
                             return await msg.sendMessage('你没有使用该命令的权限。')

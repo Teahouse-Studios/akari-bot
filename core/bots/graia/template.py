@@ -12,12 +12,16 @@ from core.bots.graia.broadcast import app, bcc
 
 
 class Template(MessageSession):
-    all_func = ("sendMessage", "waitConfirm", "asDisplay", "delete", "checkPermission", "Typing")
+    all_func = ("Feature", "sendMessage", "waitConfirm", "asDisplay", "delete", "checkPermission", "Typing", "checkSuperUser")
+
+    class Feature:
+        image = True
+        voice = True
 
     async def sendMessage(self, msgchain, quote=True):
         """
         用于发送一条消息，兼容Group和Friend消息。
-        :param msg: 函数传入的dict
+        :param display_msg: 函数传入的dict
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param quote: 是否引用传入dict中的消息（仅对Group消息有效）
         :return: 被发送的消息链
@@ -48,7 +52,7 @@ class Template(MessageSession):
     async def waitConfirm(self):
         """
         一次性模板，用于等待触发对象确认，兼容Group和Friend消息
-        :param msg: 函数传入的dict
+        :param display_msg: 函数传入的dict
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         inc = InterruptControl(bcc)
@@ -99,7 +103,7 @@ class Template(MessageSession):
     def checkPermission(self):
         """
         检查对象是否拥有某项权限
-        :param msg: 从函数传入的dict
+        :param display_msg: 从函数传入的dict
         :return: 若对象为群主、管理员或机器人超管则为True
         """
         if isinstance(self.session.target, Group):
@@ -110,6 +114,9 @@ class Template(MessageSession):
         if isinstance(self.session.target, Friend):
             return True
         return False
+
+    def checkSuperUser(self):
+        return True if self.target.senderInfo.query.isSuperUser else False
 
     class Typing:
         def __init__(self, msg: MessageSession):

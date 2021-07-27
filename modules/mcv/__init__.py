@@ -8,5 +8,4 @@ from .mcv import mcv, mcbv, mcdv
     help_doc='~mcv {查询当前Minecraft Java版启动器内最新版本。}',
     alias='m')
 async def mcv_loader(msg: MessageSession):
-    run = await mcv()
-    await msg.sendMessage(run)
+    await msg.sendMessage(await mcv())

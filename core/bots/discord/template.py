@@ -6,7 +6,11 @@ from core.bots.discord.client import client
 
 
 class Template(MessageSession):
-    all_func = ("sendMessage", "waitConfirm", "asDisplay", "delete", "checkPermission", "Typing")
+    all_func = ("Feature", "sendMessage", "waitConfirm", "asDisplay", "delete", "checkPermission", "Typing", "checkSuperUser")
+
+    class Feature:
+        image = True
+        voice = False
 
     async def sendMessage(self, msgchain, Quote=True):
         if isinstance(msgchain, str):
@@ -47,6 +51,9 @@ class Template(MessageSession):
                 or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
             return True
         return False
+
+    def checkSuperUser(self):
+        return True if self.target.senderInfo.query.isSuperUser else False
 
     def asDisplay(self):
         return self.session.message.content

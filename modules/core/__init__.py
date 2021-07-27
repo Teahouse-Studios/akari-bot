@@ -11,8 +11,8 @@ from core.parser.command import CommandParser
 @command('module',
          is_base_function=True,
          need_admin=True,
-         help_doc=('module enable (<module>|all) {开启一个或所有模块}',
-                   'module disable (<module>|all) {关闭一个或所有模块}'),
+         help_doc=('~module enable (<module>|all) {开启一个或所有模块}',
+                   '~module disable (<module>|all) {关闭一个或所有模块}'),
          alias={'enable': 'module enable', 'disable': 'module disable'}
          )
 async def config_modules(msg: MessageSession):
@@ -41,8 +41,8 @@ async def config_modules(msg: MessageSession):
 
 @command('help',
          is_base_function=True,
-         help_doc=('help {查看所有可用模块}',
-                   'help <module> {查看一个模块的详细信息}')
+         help_doc=('~help {查看所有可用模块}',
+                   '~help <module> {查看一个模块的详细信息}')
          )
 async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
@@ -81,7 +81,7 @@ async def bot_help(msg: MessageSession):
 
 @command('modules',
          is_base_function=True,
-         help_doc='modules {查看所有可用模块}'
+         help_doc='~modules {查看所有可用模块}'
          )
 async def modules_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
@@ -99,7 +99,7 @@ async def modules_help(msg: MessageSession):
 
 @command('version',
          is_base_function=True,
-         help_doc='version {查看机器人的版本号}'
+         help_doc='~version {查看机器人的版本号}'
          )
 async def bot_version(msg: MessageSession):
     version = os.path.abspath('.version')
@@ -112,7 +112,7 @@ async def bot_version(msg: MessageSession):
 @command('admin',
          is_base_function=True,
          need_admin=True,
-         help_doc=('admin add <user>', 'admin del <user>')
+         help_doc=('~admin add <user>', '~admin del <user>')
          )
 async def config_gu(msg: MessageSession):
     if msg.parsed_msg['add']:
@@ -125,10 +125,3 @@ async def config_gu(msg: MessageSession):
         if user:
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").remove_TargetAdmin(msg.target.targetId):
                 await msg.sendMessage("成功")
-
-
-@command('ping', is_base_function=True)
-async def ping(msg: MessageSession):
-    send = await msg.sendMessage('pong')
-    await asyncio.sleep(5)
-    await send.delete()

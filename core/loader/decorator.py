@@ -11,7 +11,8 @@ def command(
         is_base_function=False,
         need_superuser=False,
         is_regex_function=False,
-        autorun=False
+        autorun=False,
+        desc=None
 ):
     def decorator(function):
         plugin = Module(function=function,
@@ -23,7 +24,8 @@ def command(
                         is_base_function=is_base_function,
                         need_superuser=need_superuser,
                         is_regex_function=is_regex_function,
-                        autorun=autorun)
+                        autorun=autorun,
+                        desc=desc)
         ModulesManager.add_module(plugin)
 
     return decorator
