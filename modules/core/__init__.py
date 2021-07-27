@@ -4,21 +4,21 @@ import os
 from core.loader import ModulesManager
 from core.elements import MessageSession
 from database import BotDBUtil
-from core.decorator import command
+from core.loader.decorator import command
 from core.parser.command import CommandParser
 
 
 @command('module',
          is_base_function=True,
-         is_admin_function=True,
+         need_admin=True,
          help_doc=('module enable (<module>|all) {开启一个或所有模块}',
                    'module disable (<module>|all) {关闭一个或所有模块}'),
          alias={'enable': 'module enable', 'disable': 'module disable'}
          )
 async def config_modules(msg: MessageSession):
-    command_third_word = msg.parsed_msg['<module>']
-    if command_third_word in ModulesManager.return_modules_alias_map():
-        command_third_word = ModulesManager.return_modules_alias_map()[command_third_word]
+    module = msg.parsed_msg['<module>']
+    if module in ModulesManager.return_modules_alias_map():
+        module = ModulesManager.return_modules_alias_map()[module]
     query = BotDBUtil.Module(msg)
     msglist = []
     if msg.parsed_msg['enable']:
@@ -26,15 +26,15 @@ async def config_modules(msg: MessageSession):
             for function in ModulesManager.return_modules_list_as_dict():
                 if query.enable(function):
                     msglist.append(f'成功：打开模块“{function}”')
-        elif query.enable(command_third_word):
-            msglist.append(f'成功：打开模块“{command_third_word}”')
+        elif query.enable(module):
+            msglist.append(f'成功：打开模块“{module}”')
     elif msg.parsed_msg['disable']:
         if msg.parsed_msg['all']:
             for function in ModulesManager.return_modules_list_as_dict():
                 if query.disable(function):
                     msglist.append(f'成功：打开模块“{function}”')
-        elif query.disable(command_third_word):
-            msglist.append(f'成功：关闭模块“{command_third_word}”')
+        elif query.disable(module):
+            msglist.append(f'成功：关闭模块“{module}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
 
@@ -111,7 +111,7 @@ async def bot_version(msg: MessageSession):
 
 @command('admin',
          is_base_function=True,
-         is_admin_function=True,
+         need_admin=True,
          help_doc=('admin add <user>', 'admin del <user>')
          )
 async def config_gu(msg: MessageSession):
@@ -125,3 +125,10 @@ async def config_gu(msg: MessageSession):
         if user:
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").remove_TargetAdmin(msg.target.targetId):
                 await msg.sendMessage("成功")
+
+
+@command('ping', is_base_function=True)
+async def ping(msg: MessageSession):
+    send = await msg.sendMessage('pong')
+    await asyncio.sleep(5)
+    await send.delete()

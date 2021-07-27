@@ -3,8 +3,8 @@ import os
 import re
 import traceback
 
-from .logger import Logger
-from core.elements import Module
+from core.logger import Logger
+from core.elements import Module, Option
 
 err_prompt = []
 
@@ -35,7 +35,7 @@ class ModulesManager:
     _modules_list = set()
 
     @classmethod
-    def add_module(cls, module: Module):
+    def add_module(cls, module: [Module, Option]):
         ModulesManager._modules_list.add(module)
 
     @classmethod

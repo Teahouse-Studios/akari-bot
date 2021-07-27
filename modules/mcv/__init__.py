@@ -1,4 +1,4 @@
-from core.decorator import command
+from core.loader.decorator import command
 from core.elements import MessageSession
 from .mcv import mcv, mcbv, mcdv
 

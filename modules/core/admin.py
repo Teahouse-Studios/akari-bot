@@ -1,13 +1,9 @@
-import os
-import sys
-import json
-
-from core.decorator import command
+from core.loader.decorator import command
 from core.elements import MessageSession
 from database import BotDBUtil
 
 
-@command('add_su', is_superuser_function=True, help_doc='add_su <user>')
+@command('add_su', need_superuser=True, help_doc='add_su <user>')
 async def add_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
@@ -15,7 +11,7 @@ async def add_su(message: MessageSession):
             await message.sendMessage('成功')
 
 
-@command('del_su', is_superuser_function=True, help_doc='del_su <user>')
+@command('del_su', need_superuser=True, help_doc='del_su <user>')
 async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
@@ -24,7 +20,7 @@ async def del_su(message: MessageSession):
 
 
 """
-@command('set_modules', is_superuser_function=True, help_doc='set_modules <>')
+@command('set_modules', need_superuser=True, help_doc='set_modules <>')
 async def set_modules(msg: dict):
     ...
 
@@ -66,6 +62,6 @@ async def update_and_restart_bot(kwargs: dict):
 """
 
 
-@command('echo', is_superuser_function=True, help_doc='echo <msg>')
+@command('echo', need_superuser=True, help_doc='echo <msg>')
 async def echo_msg(msg: MessageSession):
     await msg.sendMessage(msg.parsed_msg['<msg>'])

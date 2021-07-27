@@ -1,7 +1,7 @@
 import re
 import traceback
 
-from core.elements import MessageSession
+from core.elements import MessageSession, Option
 from core.loader import Modules, ModulesAliases, ModulesRegex
 from core.logger import Logger
 from core.utils import remove_ineffective_text, RemoveDuplicateSpace
@@ -41,13 +41,15 @@ async def parser(msg: MessageSession):
                     msg.trigger_msg = command
                 if command_first_word in Modules:  # 检查触发命令是否在模块列表中
                     module = Modules[command_first_word]
-                    if module.is_regex_function:
+                    if isinstance(module, Option):
+                        return await msg.sendMessage(module.help_doc)
+                    if module.is_regex_function or module.autorun:
                         if module.help_doc:
                             return await msg.sendMessage(CommandParser(module.help_doc).return_formatted_help_doc())
-                    if module.is_superuser_function:
+                    if module.need_superuser:
                         if not senderInfo.query.isSuperUser:
                             return await msg.sendMessage('你没有使用该命令的权限。')
-                    if module.is_admin_function:
+                    if module.need_admin:
                         if not msg.checkPermission():
                             return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                     if not module.is_base_function:
