@@ -6,8 +6,9 @@ import uuid
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Image as Img
+from core.elements import Image as Img, Plain, MessageSession
+from core.loader.decorator import command
+from core.utils import cache_name
 
 
 
@@ -29,14 +30,15 @@ def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
     # now draw the text over it
     draw.text((x, y), text, font=font, fill=fillcolor)
 
-async def pttimg(kwargs):
-    message = kwargs['trigger_msg']
-    message = re.sub('ptt ', '', message)
+
+@command('ptt', help_doc='~ptt <potential> {生成一张Arcaea Potential图片}')
+async def pttimg(msg: MessageSession):
+    ptt = msg.parsed_msg['<potential>']
     # ptt
-    if message == '--':
+    if ptt == '--':
         ptt = -1
     else:
-        ptt = float(message)
+        ptt = float(ptt)
     if ptt >= 12.50:
         pttimg = 6
     elif ptt >= 12.00:
@@ -92,20 +94,6 @@ async def pttimg(kwargs):
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg, (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
     pttimgr.alpha_composite(ptttext, (0, 0))
-    if __name__ == '__main__':
-        pttimgr.show()
-    else:
-        bytesIO = BytesIO()
-        pttimgr.save(bytesIO, format='PNG')
-        imgchain = MessageChain.create([Img.fromUnsafeBytes(bytesIO.getvalue())])
-        from core.template import sendMessage
-        await sendMessage(kwargs, imgchain)
-
-
-command = {'ptt': pttimg}
-help = {'ptt': {'help': '~ptt <int> - 生成ptt图片。'}}
-
-if __name__ == '__main__':
-    kwargs = {}
-    kwargs['trigger_msg'] = 'ptt -1'
-    asyncio.run(pttimg(kwargs))
+    savepath = cache_name() + '.png'
+    pttimgr.save(savepath)
+    await msg.sendMessage([Img(path=savepath)])

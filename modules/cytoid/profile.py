@@ -1,23 +1,15 @@
 import json
 
-from graia.application import MessageChain, Group, Friend
-from graia.application.message.elements.internal import Plain, Image, UploadMethods
-
-from core.template import sendMessage
 from core.utils import get_url
+from core.elements import MessageSession, Plain, Image
 
 
-async def cytoid_profile(kwargs: dict):
-    if Group in kwargs:
-        mth = UploadMethods.Group
-    if Friend in kwargs:
-        mth = UploadMethods.Friend
-    name = kwargs['trigger_msg']
-    profile_url = 'http://services.cytoid.io/profile/' + name
+async def cytoid_profile(msg: MessageSession):
+    profile_url = 'http://services.cytoid.io/profile/' + msg.parsed_msg['UserID']
     profile = json.loads(await get_url(profile_url))
     if 'statusCode' in profile:
         if profile['statusCode'] == 404:
-            await sendMessage(kwargs, '发生错误：此用户不存在。')
+            await msg.sendMessage('发生错误：此用户不存在。')
             return
     uid = profile['user']['uid']
     nick = profile['user']['name']
@@ -41,5 +33,5 @@ async def cytoid_profile(kwargs: dict):
            f'NextLevelExp: {nextLevelExp}\n' + \
            f'Rating: {rating}\n' + \
            f'Grade: {grade}'
-    msg = MessageChain.create([Image.fromNetworkAddress(avatar, method=mth), Plain(text)])
-    await sendMessage(kwargs, msg)
+    msgchain = [Image(url=avatar), Plain(text)]
+    await msg.sendMessage(msgchain)

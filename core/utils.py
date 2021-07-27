@@ -1,6 +1,7 @@
 import os
 import re
 import traceback
+import uuid
 
 import aiohttp
 import filetype as ft
@@ -8,12 +9,12 @@ from os.path import abspath
 from core.logger import Logger
 
 
+"""
 async def load_prompt():
     author_cache = os.path.abspath('.cache_restart_author')
     loader_cache = os.path.abspath('.cache_loader')
     if os.path.exists(author_cache):
         import json
-        from core.template import sendMessage
         open_author_cache = open(author_cache, 'r')
         cache_json = json.loads(open_author_cache.read())
         open_loader_cache = open(loader_cache, 'r')
@@ -22,7 +23,7 @@ async def load_prompt():
         open_author_cache.close()
         os.remove(author_cache)
         os.remove(loader_cache)
-
+"""
 
 async def get_url(url: str, headers=None):
     async with aiohttp.ClientSession() as session:
@@ -79,6 +80,10 @@ async def download_to_cache(link):
     except:
         traceback.print_exc()
         return False
+
+
+def cache_name():
+    return abspath(f'./cache/{str(uuid.uuid4())}')
 
 
 async def slk_converter(filepath):

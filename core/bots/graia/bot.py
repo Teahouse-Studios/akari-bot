@@ -12,7 +12,6 @@ from core.bots.graia.broadcast import bcc, app
 from core.elements import MsgInfo, MessageSession, Session
 from core.loader import Modules
 from core.parser.message import parser
-from core.utils import load_prompt as lp
 
 
 MessageSession.bind_template(BotTemplate)
@@ -49,11 +48,6 @@ async def autorun_handler(app: GraiaMiraiApplication):
         if Modules[x].autorun:
             gather_list.append(asyncio.ensure_future(Modules[x].function(app)))
     await asyncio.gather(*gather_list)
-
-
-@bcc.receiver('ApplicationLaunched', priority=16)
-async def load_prompt():
-    await lp()
 
 
 if Config('qq_host') and Config('qq_account'):

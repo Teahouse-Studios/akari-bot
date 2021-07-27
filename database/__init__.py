@@ -1,5 +1,7 @@
+import datetime
+
 from database.orm import session
-from database.tables import EnabledModules, SenderInfo, TargetAdmin
+from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
 from core.elements import MsgInfo, MessageSession
 
 
@@ -71,6 +73,27 @@ class BotDBUtil:
         def remove_TargetAdmin(self, targetId):
             query = self.check_TargetAdmin(targetId)
             if query:
-                query.delete()
+                session.delete(query)
                 session.commit()
 
+    class CoolDown:
+        def __init__(self, msg: MessageSession, name):
+            self.msg = msg
+            self.name = name
+            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.targetId), commandName=name).first()
+            self.need_insert = True if self.query is None else False
+
+        def check(self, delay):
+            if not self.need_insert:
+                now = datetime.datetime.now().timestamp() - self.query.timestamp.timestamp()
+                if now > delay:
+                    return 0
+                return now
+            return 0
+
+        def reset(self):
+            if not self.need_insert:
+                session.delete(self.query)
+                session.commit()
+            session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
+            session.commit()

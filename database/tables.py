@@ -1,7 +1,8 @@
 import importlib
 import os
-from sqlalchemy import Column, Integer, String, Text, Time, TIMESTAMP, Boolean
+from sqlalchemy import Column, Integer, String, Text, Time, TIMESTAMP, Boolean, text
 from sqlalchemy.ext.declarative import declarative_base
+import datetime
 
 from core.logger import Logger
 
@@ -36,8 +37,9 @@ class TargetAdmin(Base):
 class CommandTriggerTime(Base):
     """命令触发时间"""
     __tablename__ = "CommandTriggerTime"
-    TargetId = Column(String(512), primary_key=True)
-    CommandName = Column(TIMESTAMP, nullable=False)
+    targetId = Column(String(512), primary_key=True)
+    commandName = Column(String(512))
+    timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
 load_dir_path = os.path.abspath('./modules/')
