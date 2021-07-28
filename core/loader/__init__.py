@@ -63,8 +63,16 @@ class ModulesManager:
     def return_regex_modules(cls):
         d = {}
         for x in ModulesManager._modules_list:
-            if x.is_regex_function:
+            if isinstance(x, Module) and x.is_regex_function:
                 d.update({x.bind_prefix: x})
+        return d
+
+    @classmethod
+    def return_modules_help(cls):
+        d = {}
+        for x in ModulesManager._modules_list:
+            if x.help_doc is not None:
+                d.update({x.bind_prefix: x.help_doc})
         return d
 
 
@@ -72,6 +80,7 @@ load_modules()
 Modules = ModulesManager.return_modules_list_as_dict()
 ModulesAliases = ModulesManager.return_modules_alias_map()
 ModulesRegex = ModulesManager.return_regex_modules()
+ModulesHelp = ModulesManager.return_modules_help()
 
 
 loadercache = os.path.abspath('.cache_loader')

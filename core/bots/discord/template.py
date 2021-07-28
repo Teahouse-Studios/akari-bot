@@ -12,11 +12,11 @@ class Template(MessageSession):
         image = True
         voice = False
 
-    async def sendMessage(self, msgchain, Quote=True):
+    async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
-            send = await self.session.message.channel.send(msgchain, reference=self.session.message if Quote else None)
+            send = await self.session.message.channel.send(msgchain, reference=self.session.message if quote else None)
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot', senderFrom='Discord|Bot'),
                                   session=Session(message=send, target=send.channel, sender=send.author))
         if isinstance(msgchain, list):
@@ -24,9 +24,9 @@ class Template(MessageSession):
             send_list = []
             for x in msgchain:
                 if isinstance(x, Plain):
-                    send = await self.session.message.channel.send(x.text, reference=self.session.message if Quote and count == 0 else None)
+                    send = await self.session.message.channel.send(x.text, reference=self.session.message if quote and count == 0 else None)
                 if isinstance(x, Image):
-                    send = await self.session.message.channel.send(file=discord.File(x.image), reference=self.session.message if Quote and count == 0 else None)
+                    send = await self.session.message.channel.send(file=discord.File(x.image), reference=self.session.message if quote and count == 0 else None)
                 send_list.append(send)
                 count += 1
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot', senderFrom='Discord|Bot'),

@@ -12,7 +12,6 @@ class Plain:
         self.text = text
 
 
-
 class Image:
     def __init__(self,
                  url=None,
@@ -30,3 +29,9 @@ class Image:
             with open(img_path, 'wb+') as image_cache:
                 image_cache.write(raw)
             return img_path
+
+
+class Voice:
+    def __init__(self,
+                 path=None):
+        self.path = path

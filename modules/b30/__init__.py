@@ -25,6 +25,6 @@ async def main(msg: MessageSession):
     else:
         resp = {'text': '请输入好友码！'}
     msgchain = [Plain(resp['text'])]
-    if 'file' in resp:
+    if 'file' in resp and msg.Feature.image:
         msgchain.append(Image(path=resp['file']))
     await msg.sendMessage(msgchain)

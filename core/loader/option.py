@@ -4,6 +4,7 @@ from . import ModulesManager
 
 def add_option(
         bind_prefix,
+        desc=None,
         alias=None,
         help_doc=None,
         need_admin=False,
@@ -13,4 +14,5 @@ def add_option(
                                      help_doc=help_doc,
                                      alias=alias,
                                      need_admin=need_admin,
-                                     need_superuser=need_superuser))
+                                     need_superuser=need_superuser,
+                                     desc=desc))

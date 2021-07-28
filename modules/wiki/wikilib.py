@@ -9,7 +9,8 @@ import aiohttp
 import asyncio
 
 from core import dirty_check
-from .database import WikiDB
+from .dbutils import WikiSiteInfo
+
 
 class wikilib:
     async def get_data(self, url: str, fmt: str, headers=None, ignore_err=False):
@@ -39,9 +40,8 @@ class wikilib:
         query_string = {'action': 'query', 'meta': 'siteinfo',
                         'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         query = self.encode_query_string(query_string)
-        getcacheinfo = WikiDB.get_wikiinfo(link)
-        if getcacheinfo and ((datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
-                hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+        getcacheinfo = WikiSiteInfo(link).get()
+        if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
             return link, json.loads(getcacheinfo[0])['query']['general']['sitename']
         try:
             api = re.match(r'(https?://.*?/api.php$)', link)
@@ -56,24 +56,23 @@ class wikilib:
                 api = m[0]
                 if api.startswith('//'):
                     api = link.split('//')[0] + api
-                getcacheinfo = WikiDB.get_wikiinfo(api)
-                if getcacheinfo and (
-                        (datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
-                            hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+                getcacheinfo = WikiSiteInfo(link).get()
+                if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
                     return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
                 json1 = await self.get_data(api + query, 'json', headers=headers)
-                print(json1)
                 wlink = api
             except TimeoutError:
                 traceback.print_exc()
-                return False, 'Timeout'
+                return False, '错误：尝试建立连接超时。'
             except Exception as e:
                 traceback.print_exc()
                 if e.args == (403, ):
                     return False, '服务器拒绝了机器人的请求。'
+                elif not re.match(r'^(https?://).*', link):
+                    return False, '所给的链接没有指明协议头（链接应以http://或https://开头）。'
                 else:
-                    return False, str(e)
-        WikiDB.update_wikiinfo(wlink, json.dumps(json1))
+                    return False, '此站点也许不是一个有效的Mediawiki：' + str(e)
+        WikiSiteInfo(link).update(json1)
         wikiname = json1['query']['general']['sitename']
         extensions = json1['query']['extensions']
         extlist = []
@@ -121,15 +120,14 @@ class wikilib:
 
     async def get_wiki_info(self, url=None):
         url = url if url is not None else self.wiki_api_endpoint
-        getcacheinfo = WikiDB.get_wikiinfo(url)
-        if getcacheinfo and ((datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
-                hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+        getcacheinfo = WikiSiteInfo(url).get()
+        if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
             return json.loads(getcacheinfo[0])
         query_string = {'action': 'query', 'meta': 'siteinfo',
                         'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         wiki_info_url = url + self.encode_query_string(query_string)
         j = await self.get_data(wiki_info_url, 'json')
-        WikiDB.update_wikiinfo(url, json.dumps(j))
+        WikiSiteInfo(url).update(j)
         return j
 
     async def get_interwiki(self, url=None, iw=None):

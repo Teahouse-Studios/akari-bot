@@ -3,11 +3,11 @@ import traceback
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
-from graia.application.message.elements.internal import Plain, Image, Source
+from graia.application.message.elements.internal import Plain, Image, Source, Voice
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
-from core.elements import Plain as BPlain, Image as BImage, MessageSession, MsgInfo, Session
+from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession, MsgInfo, Session
 from core.bots.graia.broadcast import app, bcc
 
 
@@ -37,6 +37,8 @@ class Template(MessageSession):
                     msgchain_list.append(Plain(x.text))
                 if isinstance(x, BImage):
                     msgchain_list.append(Image.fromLocalFile(x.image))
+                if isinstance(x, BVoice):
+                    msgchain_list.append(Voice().fromLocalFile(filepath=x.path))
             if not msgchain_list:
                 msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
             msgchain = MessageChain.create(msgchain_list)

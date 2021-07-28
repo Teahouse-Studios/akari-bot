@@ -4,7 +4,7 @@ import discord
 
 from core.bots.discord.client import client
 
-from core.elements import MsgInfo, MessageSession, Session
+from core.elements import MsgInfo, MessageSession, Session, Module
 from core.loader import Modules
 from core.bots.discord.template import Template as BotTemplate
 from core.logger import Logger
@@ -19,7 +19,7 @@ async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
     gather_list = []
     for x in Modules:
-        if Modules[x].autorun:
+        if isinstance(x, Module) and Modules[x].autorun:
             gather_list.append(asyncio.ensure_future(Modules[x].function()))
     await asyncio.gather(*gather_list)
 

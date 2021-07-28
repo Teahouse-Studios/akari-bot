@@ -9,7 +9,7 @@ from graia.application import GraiaMiraiApplication
 from config import Config
 from core.bots.graia.template import Template as BotTemplate
 from core.bots.graia.broadcast import bcc, app
-from core.elements import MsgInfo, MessageSession, Session
+from core.elements import MsgInfo, MessageSession, Session, Module
 from core.loader import Modules
 from core.parser.message import parser
 
@@ -45,7 +45,7 @@ async def NGroup(event: BotInvitedJoinGroupRequestEvent):
 async def autorun_handler(app: GraiaMiraiApplication):
     gather_list = []
     for x in Modules:
-        if Modules[x].autorun:
+        if isinstance(x, Module) and Modules[x].autorun:
             gather_list.append(asyncio.ensure_future(Modules[x].function(app)))
     await asyncio.gather(*gather_list)
 

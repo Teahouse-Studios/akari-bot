@@ -1,10 +1,5 @@
-import importlib
-import os
 from sqlalchemy import Column, Integer, String, Text, Time, TIMESTAMP, Boolean, text
 from sqlalchemy.ext.declarative import declarative_base
-import datetime
-
-from core.logger import Logger
 
 Base = declarative_base()
 
@@ -40,21 +35,4 @@ class CommandTriggerTime(Base):
     targetId = Column(String(512), primary_key=True)
     commandName = Column(String(512))
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
-
-
-load_dir_path = os.path.abspath('./modules/')
-dir_list = os.listdir(load_dir_path)
-fun_file = None
-for file_name in dir_list:
-    file_path = f'{load_dir_path}/{file_name}'
-    fun_file = None
-    if os.path.isdir(file_path):
-        if file_name != '__pycache__':
-            tablesfile = f'{file_path}/tables.py'
-            if os.path.exists(tablesfile):
-                fun_file = f'{file_name}'
-    if fun_file is not None:
-        Logger.info(f'Loading modules.{fun_file}...')
-        modules = f'modules.{fun_file}.tables'
-        i = importlib.import_module(modules)
 

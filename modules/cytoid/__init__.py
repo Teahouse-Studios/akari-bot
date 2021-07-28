@@ -1,5 +1,3 @@
-import re
-
 from database import BotDBUtil
 from core.loader.decorator import command
 from core.elements import MessageSession, Image
