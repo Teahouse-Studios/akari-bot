@@ -59,8 +59,8 @@ class WikiTargetInfo:
         return True
 
     def get_headers(self):
-        q = self.query.headers
-        if q is not None:
+        if self.query is not None:
+            q = self.query.headers
             headers = json.loads(q)
         else:
             headers = {'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}

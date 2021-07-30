@@ -9,6 +9,7 @@ from graia.broadcast.interrupt.waiter import Waiter
 
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession, MsgInfo, Session
 from core.bots.graia.broadcast import app, bcc
+from core.elements.others import confirm_command
 
 
 class Template(MessageSession):
@@ -58,10 +59,6 @@ class Template(MessageSession):
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         inc = InterruptControl(bcc)
-        confirm_command = ["是", "对", '确定', '是吧', '大概是',
-                           '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
-                           '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该',
-                           'yes', 'y', 'yeah', 'yep', 'ok', 'okay', '⭐', '√']
         if isinstance(self.session.target, Group):
             @Waiter.create_using_function([GroupMessage])
             def waiter(waiter_group: Group,
