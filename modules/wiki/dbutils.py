@@ -1,8 +1,7 @@
 from core.elements import MessageSession
 
-from .tables import WikiTargetSetInfo, WikiInfo
 import json
-from .orm import session
+from .orm import session, WikiTargetSetInfo, WikiInfo
 
 
 class WikiTargetInfo:
@@ -19,9 +18,8 @@ class WikiTargetInfo:
         return True
 
     def get_start_wiki(self):
-        get = self.query.link
-        if get is not None:
-            return get
+        if self.query is not None:
+            return self.query.link if self.query.link is not None else False
         return False
 
     def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
