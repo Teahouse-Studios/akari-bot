@@ -21,7 +21,7 @@ async def unit_test():
                                                        senderFrom='TEST|Console'),
                                         session=Session(message=m, target='TEST|0', sender='TEST|0')))
         except KeyboardInterrupt:
-            print('已退出。')
+            print('Exited.')
             break
         except Exception:
             traceback.print_exc()
