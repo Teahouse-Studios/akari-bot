@@ -1,11 +1,14 @@
 import asyncio
 import os
+import psutil
+import time
 
 from core.loader import ModulesManager
 from core.elements import MessageSession
 from database import BotDBUtil
 from core.loader.decorator import command
 from core.parser.command import CommandParser
+from core.bots.graia.broadcast import app
 
 
 @command('module',
@@ -108,6 +111,40 @@ async def bot_version(msg: MessageSession):
     await msg.sendMessage(msgs, msgs)
     openfile.close()
 
+@command('version',
+         is_base_function=True,
+         help_doc='~ping {获取机器人信息}'
+         )
+async def ping(msg: MessageSession):
+    checkpermisson = msg.checkSuperUser()
+    result = "Pong!"
+    if checkpermisson:
+        Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        time.sleep(0.5)
+        Cpu_usage = psutil.cpu_percent()
+        RAM = int(psutil.virtual_memory().total / (1024 * 1024))
+        RAM_percent = psutil.virtual_memory().percent
+        Swap = int(psutil.swap_memory().total / (1024 * 1024))
+        Swap_percent = psutil.swap_memory().percent
+        Disk = int(psutil.disk_usage('').used / (1024 * 1024 * 1024))
+        DiskTotal = int(psutil.disk_usage('').total / (1024 * 1024 * 1024))
+        try:
+            GroupList = len(await app.groupList())
+        except Exception:
+            GroupList = '无法获取'
+        try:
+            FriendList = len(await app.friendList())
+        except Exception:
+            FriendList = '无法获取'
+        BFH = r'%'
+        result += (f"\n系统运行时间：{Boot_Start}"
+                  + f"\n当前CPU使用率：{Cpu_usage}{BFH}"
+                  + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
+                  + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
+                  + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
+                  + f"\n已加入QQ群聊：{GroupList}"
+                  + f" | 已添加QQ好友：{FriendList}")
+    await msg.sendMessage(result)
 
 @command('admin',
          is_base_function=True,
