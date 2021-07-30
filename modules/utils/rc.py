@@ -3,16 +3,14 @@ import json
 import aiohttp
 
 from core.dirty_check import check
-from modules_o.utils.UTC8 import UTC8
-from modules_o.wiki.database import WikiDB
-from modules_o.wiki.wikilib import wikilib
+from modules.utils.UTC8 import UTC8
+from modules.wiki.wikilib import wikilib
 
 
-async def rc(table, id):
-    get_wiki_url = WikiDB.get_start_wiki(table, id)
-    pageurl = await wikilib().get_article_path(get_wiki_url) + 'Special:RecentChanges'
-    if get_wiki_url:
-        url = get_wiki_url + '?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
+async def ab(wiki_url):
+    pageurl = await wikilib().get_article_path(wiki_url) + 'Special:RecentChanges'
+    if wiki_url:
+        url = wiki_url + '?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status != 200:
