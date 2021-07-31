@@ -52,7 +52,7 @@ class ModulesManager:
         for x in ModulesManager._modules_list:
             if isinstance(x.alias, str):
                 alias_map.update({x.alias: x.bind_prefix})
-            if isinstance(x.alias, tuple):
+            if isinstance(x.alias, (tuple, list)):
                 for y in x.alias:
                     alias_map.update({y: x.bind_prefix})
             if isinstance(x.alias, dict):
