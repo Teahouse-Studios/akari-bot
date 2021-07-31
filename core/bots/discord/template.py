@@ -3,6 +3,7 @@ import traceback
 import discord
 from core.elements import Plain, Image, MessageSession, MsgInfo, Session
 from core.bots.discord.client import client
+from core.elements.others import confirm_command
 
 
 class Template(MessageSession):
@@ -33,11 +34,6 @@ class Template(MessageSession):
                                   session=Session(message=send_list, target=send.channel, sender=send.author))
 
     async def waitConfirm(self):
-        confirm_command = ["是", "对", '确定', '是吧', '大概是',
-                           '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
-                           '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该',
-                           'yes', 'y', 'yeah', 'yep', 'ok', 'okay', '⭐', '√']
-
         def check(m):
             return m.channel == self.session.message.channel and m.author == self.session.message.author
 
