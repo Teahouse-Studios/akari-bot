@@ -8,7 +8,6 @@ from core.elements import MessageSession
 from database import BotDBUtil
 from core.loader.decorator import command
 from core.parser.command import CommandParser
-from core.bots.graia.broadcast import app
 
 
 @command('module',
@@ -111,6 +110,7 @@ async def bot_version(msg: MessageSession):
     await msg.sendMessage(msgs, msgs)
     openfile.close()
 
+
 @command('version',
          is_base_function=True,
          help_doc='~ping {获取机器人信息}'
@@ -128,6 +128,7 @@ async def ping(msg: MessageSession):
         Swap_percent = psutil.swap_memory().percent
         Disk = int(psutil.disk_usage('').used / (1024 * 1024 * 1024))
         DiskTotal = int(psutil.disk_usage('').total / (1024 * 1024 * 1024))
+        """
         try:
             GroupList = len(await app.groupList())
         except Exception:
@@ -136,15 +137,17 @@ async def ping(msg: MessageSession):
             FriendList = len(await app.friendList())
         except Exception:
             FriendList = '无法获取'
+        """
         BFH = r'%'
         result += (f"\n系统运行时间：{Boot_Start}"
-                  + f"\n当前CPU使用率：{Cpu_usage}{BFH}"
-                  + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
-                  + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
-                  + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
+                   + f"\n当前CPU使用率：{Cpu_usage}{BFH}"
+                   + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
+                   + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
+                   + f"\n磁盘容量：{Disk}G/{DiskTotal}G" """
                   + f"\n已加入QQ群聊：{GroupList}"
-                  + f" | 已添加QQ好友：{FriendList}")
+                  + f" | 已添加QQ好友：{FriendList}" """)
     await msg.sendMessage(result)
+
 
 @command('admin',
          is_base_function=True,
