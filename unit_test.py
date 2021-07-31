@@ -29,6 +29,7 @@ async def unit_test():
                                                        targetFrom='TEST|Console',
                                                        senderFrom='TEST|Console'),
                                         session=Session(message=m, target='TEST|0', sender='TEST|0')))
+            print('----Process end----')
         except KeyboardInterrupt:
             print('Exited.')
             break
