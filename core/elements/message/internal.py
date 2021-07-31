@@ -17,7 +17,8 @@ class Image:
                  url=None,
                  path=None):
         if url is not None:
-            path = asyncio.run(self.get_image(url))
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.get_image(url))
         self.image = path
 
     async def get_image(self, url, headers=None):
