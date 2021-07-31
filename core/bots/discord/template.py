@@ -27,7 +27,7 @@ class Template(MessageSession):
                 if isinstance(x, Plain):
                     send = await self.session.message.channel.send(x.text, reference=self.session.message if quote and count == 0 else None)
                 if isinstance(x, Image):
-                    send = await self.session.message.channel.send(file=discord.File(x.image), reference=self.session.message if quote and count == 0 else None)
+                    send = await self.session.message.channel.send(file=discord.File(await x.get()), reference=self.session.message if quote and count == 0 else None)
                 send_list.append(send)
                 count += 1
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot', senderFrom='Discord|Bot'),

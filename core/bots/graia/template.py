@@ -37,7 +37,7 @@ class Template(MessageSession):
                 if isinstance(x, BPlain):
                     msgchain_list.append(Plain(x.text))
                 if isinstance(x, BImage):
-                    msgchain_list.append(Image.fromLocalFile(x.image))
+                    msgchain_list.append(Image.fromLocalFile(await x.get()))
                 if isinstance(x, BVoice):
                     msgchain_list.append(Voice().fromLocalFile(filepath=x.path))
             if not msgchain_list:
