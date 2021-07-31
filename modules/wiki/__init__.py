@@ -225,7 +225,7 @@ async def regex_proc(msg: MessageSession, display, typing=True):
         if imglist and msg.Feature.image:
             imgchain = []
             for img in imglist:
-                imgchain.append(Image(url=img))
+                imgchain.append(Image(img))
             await msg.sendMessage(imgchain, quote=False)
         if audlist and msg.Feature.voice:
             for aud in audlist:
