@@ -6,7 +6,7 @@ from modules.github.utils import query, time_diff, dirty_check, darkCheck
 
 async def repo(msg: MessageSession):
     try:
-        result = await query('https://api.github.com/repos/' + msg.parsed_msg['name'], 'json')
+        result = await query('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 'json')
         if 'message' in result and result['message'] == 'Not Found':
             raise RuntimeError('此仓库不存在。')
         elif 'message' in result and result['message']:
@@ -38,7 +38,7 @@ async def repo(msg: MessageSession):
         else:
             desc = '\n' + result['description']
 
-        msg = f'''{result['full_name']} ({result['id']}){desc}
+        message = f'''{result['full_name']} ({result['id']}){desc}
 
 Language · {result['language']} | Fork · {result['forks_count']} | Star · {result['stargazers_count']} | Watch · {result['watchers_count']}
 License: {rlicense}
@@ -47,17 +47,17 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 {website}{result['html_url']}'''
 
         if mirror:
-            msg += '\n' + mirror
+            message += '\n' + mirror
 
         if parent:
-            msg += '\n' + parent
+            message += '\n' + parent
 
-        is_dirty = await dirty_check(msg, result['owner']['login']) or darkCheck(msg)
+        is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
         if is_dirty:
-            msg = 'https://wdf.ink/6OUp'
-            await msg.sendMessage([Plain(msg)])
+            message = 'https://wdf.ink/6OUp'
+            await msg.sendMessage([Plain(message)])
         else:
-            await msg.sendMessage([Plain(msg), Image.fromNetworkAddress(f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
+            await msg.sendMessage([Plain(message), Image(path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
     except Exception as e:
         await msg.sendMessage('发生错误：' + str(e))
         traceback.print_exc()

@@ -1,6 +1,3 @@
-import re
-
-
 def hh(w):
     if len(w) > 15:
         w = [w[i:i+15] for i in range(0, len(w), 15)]
