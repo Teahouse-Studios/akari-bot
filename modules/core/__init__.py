@@ -111,7 +111,7 @@ async def bot_version(msg: MessageSession):
     openfile.close()
 
 
-@command('version',
+@command('ping',
          is_base_function=True,
          help_doc='~ping {获取机器人信息}'
          )
@@ -126,8 +126,8 @@ async def ping(msg: MessageSession):
         RAM_percent = psutil.virtual_memory().percent
         Swap = int(psutil.swap_memory().total / (1024 * 1024))
         Swap_percent = psutil.swap_memory().percent
-        Disk = int(psutil.disk_usage('').used / (1024 * 1024 * 1024))
-        DiskTotal = int(psutil.disk_usage('').total / (1024 * 1024 * 1024))
+        Disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
+        DiskTotal = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
         """
         try:
             GroupList = len(await app.groupList())
@@ -143,9 +143,10 @@ async def ping(msg: MessageSession):
                    + f"\n当前CPU使用率：{Cpu_usage}{BFH}"
                    + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
                    + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
-                   + f"\n磁盘容量：{Disk}G/{DiskTotal}G" """
-                  + f"\n已加入QQ群聊：{GroupList}"
-                  + f" | 已添加QQ好友：{FriendList}" """)
+                   + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
+                   #+ f"\n已加入QQ群聊：{GroupList}"
+                   #+ f" | 已添加QQ好友：{FriendList}" """
+        )
     await msg.sendMessage(result)
 
 
