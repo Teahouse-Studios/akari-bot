@@ -11,8 +11,6 @@ from core.logger import Logger
 from core.parser.message import parser
 from config import Config
 
-MessageSession.bind_template(BotTemplate)
-
 
 @client.event
 async def on_ready():
@@ -33,10 +31,10 @@ async def on_message(message):
     target = "DC|Channel"
     if isinstance(message.channel, discord.DMChannel):
         target = "DC|DM|Channel"
-    msg = MessageSession(target=MsgInfo(targetId=f"{target}|{message.channel.id}",
-                                        senderId=f"DC|Client|{message.author.id}",
-                                        senderName=message.author.name, targetFrom=target, senderFrom="DC|Client"),
-                         session=Session(message=message, target=message.channel, sender=message.author))
+    msg = BotTemplate(target=MsgInfo(targetId=f"{target}|{message.channel.id}",
+                                     senderId=f"DC|Client|{message.author.id}",
+                                     senderName=message.author.name, targetFrom=target, senderFrom="DC|Client"),
+                      session=Session(message=message, target=message.channel, sender=message.author))
     await parser(msg)
 
 

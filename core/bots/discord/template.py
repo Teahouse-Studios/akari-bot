@@ -7,8 +7,6 @@ from core.elements.others import confirm_command
 
 
 class Template(MessageSession):
-    all_func = ("Feature", "sendMessage", "waitConfirm", "asDisplay", "delete", "checkPermission", "Typing", "checkSuperUser")
-
     class Feature:
         image = True
         voice = False

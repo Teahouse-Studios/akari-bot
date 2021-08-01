@@ -9,24 +9,21 @@ from graia.application import GraiaMiraiApplication
 from config import Config
 from core.bots.graia.template import Template as BotTemplate
 from core.bots.graia.broadcast import bcc, app
-from core.elements import MsgInfo, MessageSession, Session, Module
+from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
 from core.parser.message import parser
 
 
-MessageSession.bind_template(BotTemplate)
-
-
 @bcc.receiver('GroupMessage')
 async def group_message_handler(message: MessageChain, group: Group, member: Member):
-    msg = MessageSession(target=MsgInfo(targetId=f"QQ|Group|{group.id}", senderId=f'QQ|{member.id}', senderName=member.name,
+    msg = BotTemplate(target=MsgInfo(targetId=f"QQ|Group|{group.id}", senderId=f'QQ|{member.id}', senderName=member.name,
                          targetFrom='QQ|Group', senderFrom="QQ"), session=Session(message=message, target=group, sender=member))
     await parser(msg)
 
 
 @bcc.receiver('FriendMessage')
 async def group_message_handler(message: MessageChain, friend: Friend):
-    msg = MessageSession(target=MsgInfo(targetId=f"QQ|{friend.id}", senderId=f'QQ|{friend.id}', senderName=friend.nickname,
+    msg = BotTemplate(target=MsgInfo(targetId=f"QQ|{friend.id}", senderId=f'QQ|{friend.id}', senderName=friend.nickname,
                          targetFrom='QQ', senderFrom='QQ'), session=Session(message=message, target=friend, sender=friend))
     await parser(msg)
 

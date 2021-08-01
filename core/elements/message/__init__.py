@@ -23,8 +23,7 @@ class Session:
 
 
 class MessageSession:
-    __slots__ = ("target", "session", "trigger_msg", "parsed_msg",
-                 "sendMessage", "waitConfirm", "checkPermission", "delete", 'asDisplay', "Typing", "Feature", "checkSuperuser")
+    __slots__ = ("target", "session", "trigger_msg", "parsed_msg",)
 
     def __init__(self,
                  target: MsgInfo,
@@ -32,10 +31,21 @@ class MessageSession:
         self.target = target
         self.session = session
 
-    @staticmethod
-    def bind_template(template):
-        for x in template.all_func:
-            setattr(MessageSession, x, getattr(template, x))
+    async def sendMessage(self, msgchain, quote=True): ...
 
+    async def waitConfirm(self): ...
 
+    def asDisplay(self): ...
 
+    async def delete(self): ...
+
+    def checkPermission(self): ...
+
+    class Typing:
+        def __init__(self, msg): ...
+
+    def checkSuperUser(self): ...
+
+    class Feature:
+        image = ...
+        voice = ...
