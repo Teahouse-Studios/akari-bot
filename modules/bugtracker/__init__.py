@@ -2,7 +2,7 @@ import re
 
 from core.elements import MessageSession
 from core.loader.decorator import command
-from .bugtracker_new import bugtracker_get
+from .bugtracker import bugtracker_get
 
 
 @command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}')

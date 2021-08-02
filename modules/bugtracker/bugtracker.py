@@ -1,4 +1,5 @@
 import json
+import re
 
 from core.utils import get_url
 
@@ -13,8 +14,15 @@ async def bugtracker_get(MojiraID):
     Version = False
     Link = False
     FixVersion = False
-    json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + str.upper(MojiraID)
+    Translation = False
+    ID = str.upper(MojiraID)
+    json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + ID
     get_json = await get_url(json_url)
+    get_spx = await get_url('https://spx.spgoding.com/bugs')
+    if get_spx:
+        spx = json.loads(get_spx)
+        if ID in spx:
+            Translation = re.sub(r"(\[backcolor=White\]\[font=Monaco,Consolas,'Lucida Console','Courier New',serif\]|\[/font\]\[/backcolor\])", '', spx[ID]['summary'])
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''
@@ -27,7 +35,10 @@ async def bugtracker_get(MojiraID):
             if 'fields' in load_json:
                 fields = load_json['fields']
                 if 'summary' in fields:
-                    Title = Title + fields['summary']
+                    if Translation:
+                        Title = Title + fields['summary'] + f' ({Translation})' if Translation else ''
+                    else:
+                        Title = Title + fields['summary']
                 if 'issuetype' in fields:
                     Type = fields['issuetype']['name']
                 if 'status' in fields:
