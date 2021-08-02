@@ -25,7 +25,7 @@ async def config_modules(msg: MessageSession):
     for module in wait_config:
         if module not in wait_config_list:
             if module in alias:
-                wait_config_list.append(ModulesManager.return_modules_alias_map()[module])
+                wait_config_list.append(alias[module])
             else:
                 wait_config_list.append(module)
     query = BotDBUtil.Module(msg)
@@ -36,7 +36,7 @@ async def config_modules(msg: MessageSession):
             wait_config_list.remove(x)
     if msg.parsed_msg['enable']:
         if msg.parsed_msg['all']:
-            for function in ModulesManager.return_modules_list_as_dict():
+            for function in modules:
                 if query.enable(function):
                     msglist.append(f'成功：打开模块“{function}”')
         else:
@@ -45,7 +45,7 @@ async def config_modules(msg: MessageSession):
                     msglist.append(f'成功：打开模块“{module}”')
     elif msg.parsed_msg['disable']:
         if msg.parsed_msg['all']:
-            for function in ModulesManager.return_modules_list_as_dict():
+            for function in modules:
                 if query.disable(function):
                     msglist.append(f'成功：关闭模块“{function}”')
         else:
