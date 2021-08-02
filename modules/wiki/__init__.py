@@ -8,7 +8,7 @@ from core.loader.option import add_option
 from core.elements import MessageSession, Plain, Image, Voice
 from core.loader import ModulesManager
 
-import modules.wiki.wikilib
+from modules.wiki.wikilib import wikilib
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo, WikiSiteInfo
 from .getinfobox import get_infobox_pic
@@ -46,7 +46,7 @@ async def wiki(msg: MessageSession):
 async def set_start_wiki(msg: MessageSession):
     if not msg.checkPermission():
         return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
-    check = await wikilib.wikilib().check_wiki_available(msg.parsed_msg['<WikiUrl>'])
+    check = await wikilib().check_wiki_available(msg.parsed_msg['<WikiUrl>'])
     if check[0]:
         result = WikiTargetInfo(msg).add_start_wiki(check[0])
         if result:
@@ -63,7 +63,7 @@ async def interwiki(msg: MessageSession):
     url = msg.parsed_msg['<WikiUrl>']
     target = WikiTargetInfo(msg)
     if msg.parsed_msg['add'] or msg.parsed_msg['set']:
-        check = await wikilib.wikilib().check_wiki_available(url,
+        check = await wikilib().check_wiki_available(url,
                                                              headers=target.get_headers())
         if check[0]:
             result = target.config_interwikis(iw, url, let_it=True)
@@ -191,9 +191,9 @@ async def regex_proc(msg: MessageSession, display, typing=True):
                                     find = matchinterwiki.group(2)
                                     iw = 'w:c:' + matchinterwiki.group(1)
         if find == 'random':
-            send_message = await modules.wiki.wikilib.wikilib().random_page(get_link, iw, headers)
+            send_message = await wikilib().random_page(get_link, iw, headers)
         else:
-            send_message = await modules.wiki.wikilib.wikilib().main(get_link, find, interwiki=iw,
+            send_message = await wikilib().main(get_link, find, interwiki=iw,
                                                                      template=template,
                                                                      headers=headers)
         print(send_message)

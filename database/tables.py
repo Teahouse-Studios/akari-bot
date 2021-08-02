@@ -35,4 +35,3 @@ class CommandTriggerTime(Base):
     targetId = Column(String(512), primary_key=True)
     commandName = Column(String(512))
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
-

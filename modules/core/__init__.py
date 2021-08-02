@@ -120,10 +120,12 @@ async def modules_help(msg: MessageSession):
          )
 async def bot_version(msg: MessageSession):
     version = os.path.abspath('.version')
-    openfile = open(version, 'r')
-    msgs = '当前运行的代码版本号为：' + openfile.read()
+    tag = os.path.abspath('.version_tag')
+    open_version = open(version, 'r')
+    open_tag = open(tag, 'r')
+    msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）'
     await msg.sendMessage(msgs, msgs)
-    openfile.close()
+    open_version.close()
 
 
 @command('ping',

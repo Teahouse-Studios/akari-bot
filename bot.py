@@ -16,4 +16,9 @@ write_version = open(version, 'w')
 write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:7])
 write_version.close()
 
+tag = os.path.abspath('.version_tag')
+write_tag = open(tag, 'w')
+write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
+write_tag.close()
+
 run()
