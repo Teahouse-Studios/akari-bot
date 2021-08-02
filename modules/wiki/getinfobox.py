@@ -84,7 +84,9 @@ async def get_infobox_pic(link, pagelink, headers):
             if x.has_attr('style'):
                 x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
 
+        open_file.write('<body class="mw-parser-output">')
         open_file.write(str(find_infobox))
+        open_file.write('</body>')
         if find_infobox.parent.has_attr('style'):
             open_file.write(join_url(link, find_infobox.parent.get('style')))
         open_file.write('<style>span.heimu a.external,\
