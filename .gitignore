@@ -13,6 +13,6 @@ cache/*
 assets/mcversion_jira*
 assets/cytoid-avatar/
 assets/cytoid-cover/
-.version
+.version*
 .cache_loader
 assets/arc**
