@@ -13,3 +13,4 @@ html2text
 graia-scheduler
 filetype
 sqlalchemy
+apscheduler

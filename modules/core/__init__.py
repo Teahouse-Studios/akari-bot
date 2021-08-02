@@ -13,30 +13,45 @@ from core.parser.command import CommandParser
 @command('module',
          is_base_function=True,
          need_admin=True,
-         help_doc=('~module enable (<module>|all) {开启一个或所有模块}',
-                   '~module disable (<module>|all) {关闭一个或所有模块}'),
+         help_doc=('~module enable (<module>...|all) {开启一个/多个或所有模块}',
+                   '~module disable (<module>...|all) {关闭一个/多个或所有模块}'),
          alias={'enable': 'module enable', 'disable': 'module disable'}
          )
 async def config_modules(msg: MessageSession):
-    module = msg.parsed_msg['<module>']
-    if module in ModulesManager.return_modules_alias_map():
-        module = ModulesManager.return_modules_alias_map()[module]
+    alias = ModulesManager.return_modules_alias_map()
+    modules = ModulesManager.return_modules_list_as_dict()
+    wait_config = msg.parsed_msg['<module>']
+    wait_config_list = []
+    for module in wait_config:
+        if module not in wait_config_list:
+            if module in alias:
+                wait_config_list.append(ModulesManager.return_modules_alias_map()[module])
+            else:
+                wait_config_list.append(module)
     query = BotDBUtil.Module(msg)
     msglist = []
+    for x in wait_config_list:
+        if x not in modules:
+            msglist.append(f'失败：“{x}”模块不存在')
+            wait_config_list.remove(x)
     if msg.parsed_msg['enable']:
         if msg.parsed_msg['all']:
             for function in ModulesManager.return_modules_list_as_dict():
                 if query.enable(function):
                     msglist.append(f'成功：打开模块“{function}”')
-        elif query.enable(module):
-            msglist.append(f'成功：打开模块“{module}”')
+        else:
+            if query.enable(wait_config_list):
+                for module in wait_config_list:
+                    msglist.append(f'成功：打开模块“{module}”')
     elif msg.parsed_msg['disable']:
         if msg.parsed_msg['all']:
             for function in ModulesManager.return_modules_list_as_dict():
                 if query.disable(function):
-                    msglist.append(f'成功：打开模块“{function}”')
-        elif query.disable(module):
-            msglist.append(f'成功：关闭模块“{module}”')
+                    msglist.append(f'成功：关闭模块“{function}”')
+        else:
+            if query.disable(wait_config_list):
+                for module in wait_config_list:
+                    msglist.append(f'成功：关闭模块“{module}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
 

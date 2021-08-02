@@ -25,8 +25,13 @@ class BotDBUtil:
             return True if module_name in self.enable_modules_list else False
 
         def enable(self, module_name) -> bool:
-            if module_name not in self.enable_modules_list:
-                self.enable_modules_list.append(module_name)
+            if isinstance(module_name, str):
+                if module_name not in self.enable_modules_list:
+                    self.enable_modules_list.append(module_name)
+            elif isinstance(module_name, (list, tuple)):
+                for x in module_name:
+                    if x not in self.enable_modules_list:
+                        self.enable_modules_list.append(x)
             value = convert_list_to_str(self.enable_modules_list)
             if self.need_insert:
                 table = EnabledModules(targetId=str(self.message.target.targetId),
@@ -38,8 +43,13 @@ class BotDBUtil:
             return True
 
         def disable(self, module_name) -> bool:
-            if module_name in self.enable_modules_list:
-                self.enable_modules_list.remove(module_name)
+            if isinstance(module_name, str):
+                if module_name in self.enable_modules_list:
+                    self.enable_modules_list.remove(module_name)
+            elif isinstance(module_name, (list, tuple)):
+                for x in module_name:
+                    if x in self.enable_modules_list:
+                        self.enable_modules_list.remove(x)
             if not self.need_insert:
                 self.query.enabledModules = convert_list_to_str(self.enable_modules_list)
                 session.commit()
