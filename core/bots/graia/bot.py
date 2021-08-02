@@ -7,7 +7,7 @@ from graia.application.message.chain import MessageChain
 from graia.application import GraiaMiraiApplication
 
 from config import Config
-from core.bots.graia.template import Template as BotTemplate
+from core.bots.graia.message import Template as BotTemplate
 from core.bots.graia.broadcast import bcc, app
 from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
