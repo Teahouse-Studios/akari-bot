@@ -1,3 +1,5 @@
+# 第四次重构正在进行中，详情请见v4-dev分支
+
 # bot
 
 Based on [Graia](https://github.com/GraiaProject/Application).

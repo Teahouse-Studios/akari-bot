@@ -61,6 +61,11 @@ async def get_infobox_pic(link, pagelink, headers):
                 x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
             open_file.write(str(x))
 
+        for x in soup.find_all():
+            if x.has_attr('href'):
+                x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
+            open_file.write(str(x))
+
         def join_url(base, target):
             target = target.split(' ')
             targetlist = []
