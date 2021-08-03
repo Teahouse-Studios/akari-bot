@@ -49,9 +49,7 @@ async def get_infobox_pic(link, pagelink, headers):
         if find_infobox is None:  # 找
             find_infobox = soup.find(class_='skin-infobox')  # 找
         if find_infobox is None:  # 找
-            find_infobox = soup.find(class_='songbox')  # 找 (arcw)
-        if find_infobox is None:  # 找
-            find_infobox = soup.find(class_='songtable')  # 找 (arcw)
+            find_infobox = soup.find(class_='arcaeabox')  # 找 (arcw)
         if find_infobox is None:  # 找
             return False  # 找你妈，不找了<-咱还是回家吧
         Logger.info('Find infobox, start modding...')
@@ -64,6 +62,7 @@ async def get_infobox_pic(link, pagelink, headers):
         for x in soup.find_all():
             if x.has_attr('href'):
                 x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
+        for x in soup.find_all('style'):
             open_file.write(str(x))
 
         def join_url(base, target):
@@ -88,7 +87,9 @@ async def get_infobox_pic(link, pagelink, headers):
             if x.has_attr('style'):
                 x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
 
+        open_file.write('<body class="mw-parser-output">')
         open_file.write(str(find_infobox))
+        open_file.write('</body>')
         if find_infobox.parent.has_attr('style'):
             open_file.write(join_url(link, find_infobox.parent.get('style')))
         open_file.write('<style>span.heimu a.external,\
