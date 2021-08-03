@@ -55,6 +55,16 @@ class BotDBUtil:
                 session.commit()
             return True
 
+        @staticmethod
+        def get_enabled_this(module_name):
+            query = session.query(EnabledModules).filter(EnabledModules.enabledModules.like(f'%{module_name}%'))
+            targetIds = []
+            for x in query:
+                enabled_list = convert_str_to_list(x.enabledModules)
+                if module_name in enabled_list:
+                    targetIds.append(x.targetId)
+            return targetIds
+
     class SenderInfo:
         def __init__(self, senderId):
             self.senderId = senderId
