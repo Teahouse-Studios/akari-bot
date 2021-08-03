@@ -5,10 +5,7 @@ from .client import client
 
 
 class Bot:
-    @staticmethod
-    def bind_template(template):
-        for x in template.all_func:
-            setattr(Bot, x, getattr(template, x))
+    all_func = ("fetch_target",)
 
     @staticmethod
     def fetch_target(targetId):

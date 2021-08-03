@@ -42,7 +42,8 @@ class Template(MessageSession):
                 msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
             msgchain = MessageChain.create(msgchain_list)
         if isinstance(self.session.target, Group):
-            send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id)
+            send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
+                                              if quote and self.session.message else None)
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
                                   session=Session(message=send, target=0, sender=0))
         if isinstance(self.session.target, Friend):

@@ -1,4 +1,4 @@
-from core.elements import MessageSession, Plain, Image as BImage, Session
+from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo
 from PIL import Image
 
 from core.elements.others import confirm_command
@@ -54,4 +54,17 @@ class Template(MessageSession):
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
+
+
+class Bot:
+    all_func = ("fetch_target",)
+
+    @staticmethod
+    def fetch_target(targetId):
+        return MessageSession(target=MsgInfo(targetId=targetId,
+                                                       senderId=targetId,
+                                                       senderName='',
+                                                       targetFrom='TEST|Console',
+                                                       senderFrom='TEST|Console'),
+                                        session=Session(message=False, target=targetId, sender=targetId))
 
