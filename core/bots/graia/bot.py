@@ -9,14 +9,11 @@ from graia.application import GraiaMiraiApplication
 from config import Config
 from core.bots.graia.message import Template as MessageSession
 from core.bots.graia.broadcast import bcc, app
-from core.bots.graia.template import Bot as BotTemplate
-from core import Bot
+from core.bots.graia.bot_func import Bot
 from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
 from core.parser.message import parser
-
-
-Bot.bind_template(BotTemplate)
+from core.scheduler import Scheduler
 
 
 @bcc.receiver('GroupMessage')
@@ -44,12 +41,13 @@ async def NGroup(event: BotInvitedJoinGroupRequestEvent):
 
 
 @bcc.receiver('ApplicationLaunched')
-async def autorun_handler(app: GraiaMiraiApplication):
+async def autorun_handler():
     gather_list = []
     for x in Modules:
-        if isinstance(x, Module) and Modules[x].autorun:
-            gather_list.append(asyncio.ensure_future(Modules[x].function(app)))
+        if isinstance(Modules[x], Module) and Modules[x].autorun:
+            gather_list.append(asyncio.ensure_future(Modules[x].function(Bot)))
     await asyncio.gather(*gather_list)
+    Scheduler.start()
 
 
 if Config('qq_host') and Config('qq_account'):

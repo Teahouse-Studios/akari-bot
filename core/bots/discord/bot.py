@@ -7,14 +7,11 @@ from core.bots.discord.client import client
 from core.elements import MsgInfo, MessageSession, Session, Module
 from core.loader import Modules
 from core.bots.discord.message import Template as MessageSession
-from core.bots.discord.template import Bot as BotTemplate
-from core import Bot
+from core.bots.discord.bot_func import Bot
 from core.logger import Logger
 from core.parser.message import parser
 from config import Config
-
-
-Bot.bind_template(BotTemplate)
+from core.scheduler import Scheduler
 
 
 @client.event
@@ -22,9 +19,10 @@ async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
     gather_list = []
     for x in Modules:
-        if isinstance(x, Module) and Modules[x].autorun:
-            gather_list.append(asyncio.ensure_future(Modules[x].function()))
+        if isinstance(Modules[x], Module) and Modules[x].autorun:
+            gather_list.append(asyncio.ensure_future(Modules[x].function(Bot)))
     await asyncio.gather(*gather_list)
+    Scheduler.start()
 
 
 @client.event

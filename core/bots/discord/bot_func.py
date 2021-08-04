@@ -1,5 +1,5 @@
 import re
-from .message import MessageSession
+from .message import Template
 from core.elements import MsgInfo, Session
 from .client import client
 
@@ -12,6 +12,8 @@ class Bot:
         matchChannel = re.match(r'^(DC|(?:DM\||)Channel)|(.*)', targetId)
         if matchChannel:
             getChannel = client.get_channel(int(matchChannel.group(2)))
-            return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
+            return Template(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
                                           targetFrom=matchChannel.group(1), senderFrom=matchChannel.group(1)),
                                   Session(message=False, target=getChannel, sender=getChannel))
+        else:
+            return False

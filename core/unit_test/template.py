@@ -61,7 +61,7 @@ class Bot:
 
     @staticmethod
     def fetch_target(targetId):
-        return MessageSession(target=MsgInfo(targetId=targetId,
+        return Template(target=MsgInfo(targetId=targetId,
                                                        senderId=targetId,
                                                        senderName='',
                                                        targetFrom='TEST|Console',

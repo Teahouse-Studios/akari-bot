@@ -1,4 +1,4 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
-Scheduler = AsyncIOScheduler
+Scheduler = AsyncIOScheduler()

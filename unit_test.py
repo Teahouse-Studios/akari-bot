@@ -1,4 +1,6 @@
 from config import Config
+from core.elements import Module
+from core.logger import Logger
 
 if not Config('db_path'):
     raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path"\n'
@@ -11,10 +13,12 @@ import asyncio
 import traceback
 import os
 import shutil
+import aioconsole
 
 from core.elements.message import MsgInfo, Session
-from core.unit_test.template import Template
+from core.unit_test.template import Template, Bot
 from core.parser.message import parser
+from core.scheduler import Scheduler
 from core.loader import Modules
 
 cache_path = os.path.abspath('./cache/')
@@ -34,21 +38,38 @@ write_tag = open(tag, 'w')
 write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
 write_tag.close()
 
-async def unit_test():
-    while True:
-        try:
-            m = input('> ')
-            await parser(Template(target=MsgInfo(targetId='TEST|0',
-                                                       senderId='TEST|0',
-                                                       senderName='',
-                                                       targetFrom='TEST|Console',
-                                                       senderFrom='TEST|Console'),
-                                        session=Session(message=m, target='TEST|0', sender='TEST|0')))
-            print('----Process end----')
-        except KeyboardInterrupt:
-            print('Exited.')
-            break
-        except Exception:
-            traceback.print_exc()
 
-asyncio.run(unit_test())
+async def unit_test_scheduler():
+    gather_list = []
+    for x in Modules:
+        if isinstance(Modules[x], Module) and Modules[x].autorun:
+            gather_list.append(asyncio.ensure_future(Modules[x].function(Bot)))
+    await asyncio.gather(*gather_list)
+    Scheduler.start()
+
+
+async def unit_test_command():
+    try:
+        m = await aioconsole.ainput('> ')
+        await parser(Template(target=MsgInfo(targetId='TEST|0',
+                                                   senderId='TEST|0',
+                                                   senderName='',
+                                                   targetFrom='TEST|Console',
+                                                   senderFrom='TEST|Console'),
+                              session=Session(message=m, target='TEST|0', sender='TEST|0')))
+        print('----Process end----')
+        await unit_test_command()
+    except KeyboardInterrupt:
+        print('Exited.')
+    except Exception:
+        traceback.print_exc()
+
+
+async def unit_test():
+    await unit_test_scheduler()
+    await unit_test_command()
+
+loop = asyncio.get_event_loop()
+loop.create_task(unit_test_scheduler())
+loop.create_task(unit_test_command())
+loop.run_forever()
