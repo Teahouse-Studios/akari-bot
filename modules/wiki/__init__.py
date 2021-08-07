@@ -1,16 +1,14 @@
 import json
 import re
 
-from core.utils import slk_converter, download_to_cache
-
-from core.loader.decorator import command
-from core.loader.option import add_option
 from core.elements import MessageSession, Plain, Image, Voice
 from core.loader import ModulesManager
-
-from modules.wiki.wikilib import wikilib
+from core.loader.decorator import command
+from core.loader.option import add_option
+from core.utils import slk_converter, download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo, WikiSiteInfo
+from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
 
 
@@ -64,7 +62,7 @@ async def interwiki(msg: MessageSession):
     target = WikiTargetInfo(msg)
     if msg.parsed_msg['add'] or msg.parsed_msg['set']:
         check = await wikilib().check_wiki_available(url,
-                                                             headers=target.get_headers())
+                                                     headers=target.get_headers())
         if check[0]:
             result = target.config_interwikis(iw, url, let_it=True)
             if result:
@@ -92,8 +90,8 @@ async def set_headers(msg: MessageSession):
     if msg.parsed_msg['show']:
         headers = target.get_headers()
         prompt = f'当前设置了以下标头：\n{json.dumps(headers)}\n如需自定义，请使用~wiki headers set <headers>。\n' \
-              f'格式：\n' \
-              f'~wiki headers set "{{"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}}"'
+                 f'格式：\n' \
+                 f'~wiki headers set "{{"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}}"'
         await msg.sendMessage(prompt)
     elif msg.parsed_msg['add'] or msg.parsed_msg['set']:
         add = target.config_headers(msg.parsed_msg['<Headers>'], let_it=True)
@@ -194,8 +192,8 @@ async def regex_proc(msg: MessageSession, display, typing=True):
             send_message = await wikilib().random_page(get_link, iw, headers)
         else:
             send_message = await wikilib().main(get_link, find, interwiki=iw,
-                                                                     template=template,
-                                                                     headers=headers)
+                                                template=template,
+                                                headers=headers)
         print(send_message)
         status = send_message['status']
         text = (prompt + '\n' if prompt else '') + send_message['text']

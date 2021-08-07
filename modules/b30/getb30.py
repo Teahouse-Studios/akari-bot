@@ -4,10 +4,9 @@ import uuid
 
 import aiohttp
 
+from config import Config
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
-from config import Config
-
 
 assets_path = os.path.abspath('./assets/arcaea')
 

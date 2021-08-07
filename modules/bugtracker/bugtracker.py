@@ -22,7 +22,9 @@ async def bugtracker_get(MojiraID):
     if get_spx:
         spx = json.loads(get_spx)
         if ID in spx:
-            Translation = re.sub(r"(\[backcolor=White\]\[font=Monaco,Consolas,'Lucida Console','Courier New',serif\]|\[/font\]\[/backcolor\])", '', spx[ID]['summary'])
+            Translation = re.sub(
+                r"(\[backcolor=White\]\[font=Monaco,Consolas,'Lucida Console','Courier New',serif\]|\[/font\]\[/backcolor\])",
+                '', spx[ID]['summary'])
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''

@@ -1,15 +1,10 @@
-import asyncio
 import os
-import re
-import traceback
-import uuid
-from io import BytesIO
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
+
 from core.elements import Image as Img, MessageSession
 from core.loader.decorator import command
 from core.utils import cache_name
-
 
 
 def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
@@ -92,7 +87,8 @@ async def pttimg(msg: MessageSession):
                     ptt,
                     '#52495d', 'white', font=font1)
     pttimg_width, pttimg_height = pttimg.size
-    ptttext.alpha_composite(pttimg, (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
+    ptttext.alpha_composite(pttimg,
+                            (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
     pttimgr.alpha_composite(ptttext, (0, 0))
     savepath = cache_name() + '.png'
     pttimgr.save(savepath)

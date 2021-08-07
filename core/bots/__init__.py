@@ -1,8 +1,8 @@
-import subprocess
 import logging
+import os
+import subprocess
 from queue import Queue, Empty
 from threading import Thread
-import os
 
 
 def enqueue_output(out, queue):

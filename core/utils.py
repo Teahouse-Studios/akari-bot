@@ -2,12 +2,12 @@ import os
 import re
 import traceback
 import uuid
+from os.path import abspath
 
 import aiohttp
 import filetype as ft
-from os.path import abspath
-from core.logger import Logger
 
+from core.logger import Logger
 
 """
 async def load_prompt():
@@ -24,6 +24,7 @@ async def load_prompt():
         os.remove(author_cache)
         os.remove(loader_cache)
 """
+
 
 async def get_url(url: str, headers=None):
     async with aiohttp.ClientSession() as session:
@@ -56,6 +57,7 @@ def remove_ineffective_text(prefix, lst):
             duplicated_list.append(x)
     lst = duplicated_list
     return lst
+
 
 def RemoveDuplicateSpace(text: str):
     strip_display_space = text.split(' ')
@@ -92,4 +94,3 @@ async def slk_converter(filepath):
     os.system('python slk_coder.py ' + filepath)
     Logger.info('Voice encoded.')
     return filepath2
-

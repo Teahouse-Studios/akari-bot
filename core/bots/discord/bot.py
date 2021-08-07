@@ -2,15 +2,13 @@ import asyncio
 
 import discord
 
+from config import Config
 from core.bots.discord.client import client
-
+from core.bots.discord.message import MessageSession, FetchTarget
 from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
-from core.bots.discord.message import Template as MessageSession
-from core.bots.discord.bot_func import Bot
 from core.logger import Logger
 from core.parser.message import parser
-from config import Config
 from core.scheduler import Scheduler
 
 
@@ -20,7 +18,7 @@ async def on_ready():
     gather_list = []
     for x in Modules:
         if isinstance(Modules[x], Module) and Modules[x].autorun:
-            gather_list.append(asyncio.ensure_future(Modules[x].function(Bot)))
+            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
     await asyncio.gather(*gather_list)
     Scheduler.start()
 

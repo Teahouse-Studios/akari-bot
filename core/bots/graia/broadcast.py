@@ -22,4 +22,3 @@ app = GraiaMiraiApplication(
     ),
     logger=Logginglogger(**({"debug": True} if debug else {}))
 )
-

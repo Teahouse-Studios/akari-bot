@@ -1,8 +1,8 @@
 import datetime
 
+from core.elements import MessageSession
 from database.orm import session
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
-from core.elements import  MessageSession
 
 
 def convert_list_to_str(lst: list) -> str:
@@ -100,7 +100,8 @@ class BotDBUtil:
         def __init__(self, msg: MessageSession, name):
             self.msg = msg
             self.name = name
-            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.targetId), commandName=name).first()
+            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.targetId),
+                                                                     commandName=name).first()
             self.need_insert = True if self.query is None else False
 
         def check(self, delay):

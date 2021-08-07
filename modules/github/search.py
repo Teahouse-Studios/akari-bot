@@ -1,8 +1,8 @@
 import traceback
 
 from core.elements import MessageSession
-
 from modules.github.utils import query, dirty_check, darkCheck
+
 
 async def search(msg: MessageSession):
     try:
@@ -16,7 +16,8 @@ async def search(msg: MessageSession):
             except TypeError:
                 continue
         footnotes = f"另有 {result['total_count'] - 5} 个结果未显示。" if item_count_expected == 5 else ''
-        message = f"搜索成功：共 {result['total_count']} 个结果。\n" + '\n'.join(items_out[0:item_count_expected]) + f'\n{footnotes}'
+        message = f"搜索成功：共 {result['total_count']} 个结果。\n" + '\n'.join(
+            items_out[0:item_count_expected]) + f'\n{footnotes}'
 
         is_dirty = await dirty_check(message) or await darkCheck(message)
         if is_dirty:

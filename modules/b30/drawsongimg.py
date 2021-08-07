@@ -4,7 +4,6 @@ import time
 
 from PIL import Image, ImageDraw, ImageFont
 
-
 assets_path = os.path.abspath('./assets/arcaea')
 
 

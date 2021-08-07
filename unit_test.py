@@ -1,5 +1,4 @@
 from config import Config
-from core.elements import Module
 
 if not Config('db_path'):
     raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path"\n'
@@ -7,15 +6,15 @@ if not Config('db_path'):
                          '(Also you can fill in the above example directly,'
                          ' bot will automatically create a SQLite database in the "./database/save.db")')
 
-
 import asyncio
 import traceback
 import os
 import shutil
 import aioconsole
 
+from core.elements import Module
 from core.elements.message import MsgInfo, Session
-from core.unit_test.template import Template, Bot
+from core.unit_test.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.loader import Modules
@@ -42,7 +41,7 @@ async def unit_test_scheduler():
     gather_list = []
     for x in Modules:
         if isinstance(Modules[x], Module) and Modules[x].autorun:
-            gather_list.append(asyncio.ensure_future(Modules[x].function(Bot)))
+            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
     await asyncio.gather(*gather_list)
     Scheduler.start()
 
@@ -50,12 +49,12 @@ async def unit_test_scheduler():
 async def unit_test_command():
     try:
         m = await aioconsole.ainput('> ')
-        await parser(Template(target=MsgInfo(targetId='TEST|0',
+        await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
                                                    senderId='TEST|0',
                                                    senderName='',
                                                    targetFrom='TEST|Console',
                                                    senderFrom='TEST|Console'),
-                              session=Session(message=m, target='TEST|0', sender='TEST|0')))
+                                    session=Session(message=m, target='TEST|0', sender='TEST|0')))
         print('----Process end----')
         await unit_test_command()
     except KeyboardInterrupt:
@@ -63,10 +62,6 @@ async def unit_test_command():
     except Exception:
         traceback.print_exc()
 
-
-async def unit_test():
-    await unit_test_scheduler()
-    await unit_test_command()
 
 loop = asyncio.get_event_loop()
 loop.create_task(unit_test_scheduler())

@@ -1,3 +1,4 @@
+import re
 import traceback
 
 from graia.application import MessageChain, GroupMessage, FriendMessage
@@ -7,24 +8,17 @@ from graia.application.message.elements.internal import Plain, Image, Source, Vo
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
-from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession, MsgInfo, Session
 from core.bots.graia.broadcast import app, bcc
+from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session
 from core.elements.others import confirm_command
 
 
-class Template(MessageSession):
+class MessageSession(MS):
     class Feature:
         image = True
         voice = True
 
     async def sendMessage(self, msgchain, quote=True):
-        """
-        用于发送一条消息，兼容Group和Friend消息。
-        :param display_msg: 函数传入的dict
-        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :param quote: 是否引用传入dict中的消息（仅对Group消息有效）
-        :return: 被发送的消息链
-        """
         if isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
@@ -43,20 +37,17 @@ class Template(MessageSession):
             msgchain = MessageChain.create(msgchain_list)
         if isinstance(self.session.target, Group):
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
-                                              if quote and self.session.message else None)
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
-                                  session=Session(message=send, target=0, sender=0))
+            if quote and self.session.message else None)
+            return MessageSession(
+                target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
+                session=Session(message=send, target=0, sender=0))
         if isinstance(self.session.target, Friend):
             send = await app.sendFriendMessage(self.session.target, msgchain)
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
-                                  session=Session(message=send, target=0, sender=0))
+            return MessageSession(
+                target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
+                session=Session(message=send, target=0, sender=0))
 
     async def waitConfirm(self):
-        """
-        一次性模板，用于等待触发对象确认，兼容Group和Friend消息
-        :param display_msg: 函数传入的dict
-        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
-        """
         inc = InterruptControl(bcc)
         if isinstance(self.session.target, Group):
             @Waiter.create_using_function([GroupMessage])
@@ -117,7 +108,7 @@ class Template(MessageSession):
         return True if self.target.senderInfo.query.isSuperUser else False
 
     class Typing:
-        def __init__(self, msg: MessageSession):
+        def __init__(self, msg: MS):
             self.msg = msg
 
         async def __aenter__(self):
@@ -128,3 +119,20 @@ class Template(MessageSession):
             pass
 
 
+class FetchTarget:
+    @staticmethod
+    def fetch_target(targetId):
+        matchTarget = re.match(r'^(QQ|(?:Group\||))(.*)', targetId)
+        if matchTarget:
+            if matchTarget.group(1) == 'QQ|Group':
+                target = app.getGroup(int(matchTarget.group(2)))
+            else:
+                target = app.getFriend(int(matchTarget.group(2)))
+            if target is not None:
+                return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
+                                              targetFrom=matchTarget.group(1), senderFrom=matchTarget.group(1)),
+                                      Session(message=False, target=target, sender=target))
+            else:
+                return False
+        else:
+            return False

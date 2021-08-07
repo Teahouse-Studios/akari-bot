@@ -5,6 +5,7 @@ import aiohttp
 
 from core import dirty_check as dirty
 
+
 def darkCheck(msg: str):
     blacklist = [
         'china-dictatorship'
@@ -24,6 +25,7 @@ def darkCheck(msg: str):
         if msg.find(i) > -1:
             return True
     return False
+
 
 def time_diff(time: str):
     datetimed = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').timestamp()

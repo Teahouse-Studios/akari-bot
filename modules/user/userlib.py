@@ -10,6 +10,7 @@ from .gender import gender
 
 wikilib = wiki()
 
+
 async def get_data(url: str, fmt: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -39,12 +40,15 @@ async def get_user_group(wikiurl):
         groups[name] = x['*']
     return groups
 
+
 async def check_central_auth(wikiurl):
     return 'CentralAuth' in await wikilib.get_enabled_extensions(url=wikiurl)
 
 
 async def get_user_central_auth_data(wikiurl, username):
-    return await get_data(wikiurl + '?action=query&format=json&meta=globaluserinfo&guiprop=editcount%7Cgroups&guiuser=' + username, 'json')
+    return await get_data(
+        wikiurl + '?action=query&format=json&meta=globaluserinfo&guiprop=editcount%7Cgroups&guiuser=' + username,
+        'json')
 
 
 def trans_user_group(user_group: list, group_dict: dict):
@@ -92,7 +96,8 @@ async def GetUser(wikiurl, username, argv=None):
         CentralAuth = await check_central_auth(wikiurl)
         if CentralAuth:
             GEditcount = str(GetUserCentralAuthData['query']['globaluserinfo']['editcount'])
-            GGroup = trans_user_group(GetUserCentralAuthData['query']['globaluserinfo']['groups'], GetUserGroupsList) or '无'
+            GGroup = trans_user_group(GetUserCentralAuthData['query']['globaluserinfo']['groups'],
+                                      GetUserGroupsList) or '无'
             GHome = GetUserCentralAuthData['query']['globaluserinfo']['home']
         rmuser = re.sub('User:', '', username)
         Blockmessage = ''
@@ -211,9 +216,9 @@ async def GetUser(wikiurl, username, argv=None):
         if argv == '-p':
             return f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}[[uimgc:{imagepath}]]'
         GlobalAuthData = (
-            f'\n全域用户组：{GGroup}\n' +
-            f'全域编辑数：{GEditcount}\n' +
-            f'注册wiki：{GHome}') if CentralAuth else ''
+                f'\n全域用户组：{GGroup}\n' +
+                f'全域编辑数：{GEditcount}\n' +
+                f'注册wiki：{GHome}') if CentralAuth else ''
         return (GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')) + '\n' +
                 Wikiname + '\n' +
                 f'用户：{User} | 编辑数：{Editcount}\n' +

@@ -1,5 +1,4 @@
 import asyncio
-import re
 
 from core.dirty_check import check
 from core.elements import MessageSession

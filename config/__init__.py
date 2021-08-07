@@ -1,4 +1,3 @@
-import traceback
 from configparser import ConfigParser
 from os.path import abspath
 

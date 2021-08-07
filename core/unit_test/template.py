@@ -1,6 +1,6 @@
-from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo
 from PIL import Image
 
+from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo
 from core.elements.others import confirm_command
 
 
@@ -12,7 +12,8 @@ class Template(MessageSession):
     async def sendMessage(self, msgchain, quote=True) -> MessageSession:
         if isinstance(msgchain, str):
             print(msgchain)
-            return MessageSession(target=self.target, session=Session(message=msgchain, target='TEST|Console', sender='TEST|Console'))
+            return MessageSession(target=self.target,
+                                  session=Session(message=msgchain, target='TEST|Console', sender='TEST|Console'))
         if isinstance(msgchain, list):
             msg_list = []
             for x in msgchain:
@@ -22,7 +23,8 @@ class Template(MessageSession):
                 if isinstance(x, BImage):
                     img = Image.open(await x.get())
                     img.show()
-            return MessageSession(target=self.target, session=Session(message=str(msg_list), target='TEST|Console', sender='TEST|Console'))
+            return MessageSession(target=self.target,
+                                  session=Session(message=str(msg_list), target='TEST|Console', sender='TEST|Console'))
 
     async def waitConfirm(self):
         c = input('Confirm: ')
@@ -56,15 +58,12 @@ class Template(MessageSession):
             pass
 
 
-class Bot:
-    all_func = ("fetch_target",)
-
+class FetchTarget:
     @staticmethod
     def fetch_target(targetId):
         return Template(target=MsgInfo(targetId=targetId,
-                                                       senderId=targetId,
-                                                       senderName='',
-                                                       targetFrom='TEST|Console',
-                                                       senderFrom='TEST|Console'),
-                                        session=Session(message=False, target=targetId, sender=targetId))
-
+                                       senderId=targetId,
+                                       senderName='',
+                                       targetFrom='TEST|Console',
+                                       senderFrom='TEST|Console'),
+                        session=Session(message=False, target=targetId, sender=targetId))

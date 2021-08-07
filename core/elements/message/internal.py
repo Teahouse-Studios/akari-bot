@@ -1,8 +1,10 @@
-from core.aiohttp import aiohttp
-from config import CachePath
-import uuid
-import filetype
 import re
+import uuid
+
+import filetype
+
+from config import CachePath
+from core.aiohttp import aiohttp
 
 
 class Plain:

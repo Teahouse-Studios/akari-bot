@@ -1,7 +1,7 @@
 # copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
-
 from core.template import sendMessage
+
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 

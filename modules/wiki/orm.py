@@ -1,10 +1,10 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, String, Text, TIMESTAMP, text
+from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
-from config import Config
+from sqlalchemy.orm import sessionmaker
 
+from config import Config
 
 DB_LINK = Config('db_path')
 

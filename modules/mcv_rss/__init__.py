@@ -1,13 +1,13 @@
 import asyncio
-from enum import auto
+import json
 import os
 import traceback
-import json
 
-from core.scheduler import Scheduler
-from core.logger import Logger
-from core.utils import get_url
+from core.elements import FetchTarget
 from core.loader.decorator import command
+from core.logger import Logger
+from core.scheduler import Scheduler
+from core.utils import get_url
 from database import BotDBUtil
 
 
@@ -22,13 +22,9 @@ def getfileversions(path):
 
 
 @command('mcv_rss', autorun=True)
-@command('mcv_jira_rss', autorun=True)
-async def mcv_rss(bot):
-    print(111)
-
+async def mcv_rss(bot: FetchTarget):
     @Scheduler.scheduled_job('interval', seconds=30)
     async def java_main():
-        print(111)
         url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
         try:
             version_file = os.path.abspath('./assets/mcversion.txt')
@@ -70,96 +66,37 @@ async def mcv_rss(bot):
         except Exception:
             traceback.print_exc()
 
-        @Scheduler.scheduled_job('interval', seconds=30)
-        async def java_jira():
-            url = 'https://bugs.mojang.com/rest/api/2/project/10400/versions'
+
+@command('mcv_jira_rss', autorun=True)
+async def mcv_jira_rss(bot: FetchTarget):
+    @Scheduler.scheduled_job('interval', seconds=30)
+    async def java_jira():
+        urls = {'Java版': 'https://bugs.mojang.com/rest/api/2/project/10400/versions',
+                '基岩版': 'https://bugs.mojang.com/rest/api/2/project/10200/versions',
+                'Minecraft Dungeons': 'https://bugs.mojang.com/rest/api/2/project/11901/versions'}
+        for name in urls:
             try:
-                version_file = os.path.abspath('./assets/mcversion_jira.txt')
-                Logger.info('Checking Jira mcv...')
+                version_file = os.path.abspath(f'./assets/mcjira_{name}.txt')
+                Logger.info(f'Checking Jira mcv {name}...')
                 verlist = getfileversions(version_file)
-                file = json.loads(await get_url(url))
-                release = []
+                file = json.loads(await get_url(urls[name]))
+                releases = []
                 for v in file:
                     if not v['archived']:
-                        release.append(v['name'])
-                for x in release:
-                    if x not in verlist:
-                        Logger.info(f'huh, we find {x}.')
+                        releases.append(v['name'])
+                for release in releases:
+                    if release not in verlist:
+                        Logger.info(f'huh, we find {release}.')
+                        verlist.append(release)
                         get_target_id = BotDBUtil.Module.get_enabled_this('mcv_jira_rss')
-                        for x in get_target_id:
-                            fetch = bot.fetch_target(x)
+                        for id_ in get_target_id:
+                            fetch = bot.fetch_target(id_)
                             if fetch:
-                                try:
-                                    await fetch.sendMessage('Jira已更新Java版' + file['latest']['snapshot'] + '。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
+                                send = await fetch.sendMessage(
+                                    f'Jira已更新{name} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
                         addversion = open(version_file, 'a')
-                        addversion.write('\n' + x)
+                        addversion.write('\n' + release)
                         addversion.close()
                 Logger.info('jira mcv checked.')
-            except Exception:
-                traceback.print_exc()
-
-        @Scheduler.scheduled_job('interval', seconds=30)
-        async def bedrock_jira():
-            url = 'https://bugs.mojang.com/rest/api/2/project/10200/versions'
-            try:
-                version_file = os.path.abspath('./assets/mcversion_jira-bedrock.txt')
-                Logger.info('Checking Jira mcv-bedrock...')
-                verlist = getfileversions(version_file)
-                file = json.loads(await get_url(url))
-                release = []
-                for v in file:
-                    if not v['archived']:
-                        release.append(v['name'])
-                for x in release:
-                    if x not in verlist:
-                        Logger.info(f'huh, we find {x}.')
-                        get_target_id = BotDBUtil.Module.get_enabled_this('mcv_jira_rss')
-                        for x in get_target_id:
-                            fetch = bot.fetch_target(x)
-                            if fetch:
-                                try:
-                                    await fetch.sendMessage('Jira已更新基岩版' + file['latest']['snapshot'] + '。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
-                        addversion = open(version_file, 'a')
-                        addversion.write('\n' + x)
-                        addversion.close()
-                Logger.info('jira mcv-bedrock checked.')
-            except Exception:
-                traceback.print_exc()
-
-
-        @Scheduler.scheduled_job('interval', seconds=30)
-        async def bedrock_dungeons():
-            url = 'https://bugs.mojang.com/rest/api/2/project/11901/versions'
-            try:
-                version_file = os.path.abspath('./assets/mcversion_jira-dungeons.txt')
-                Logger.info('Checking Jira mcv-bedrock...')
-                verlist = getfileversions(version_file)
-                file = json.loads(await get_url(url))
-                release = []
-                for v in file:
-                    if not v['archived']:
-                        release.append(v['name'])
-                for x in release:
-                    if x not in verlist:
-                        Logger.info(f'huh, we find {x}.')
-                        get_target_id = BotDBUtil.Module.get_enabled_this('mcv_jira_rss')
-                        for x in get_target_id:
-                            fetch = bot.fetch_target(x)
-                            if fetch:
-                                try:
-                                    await fetch.sendMessage('Jira已更新Dungeons ' + file['latest']['snapshot'] + '。\n（Jira上的信息仅作版本号预览用，不代表商店已更新此版本）')
-                                    await asyncio.sleep(0.5)
-                                except Exception:
-                                    traceback.print_exc()
-                        addversion = open(version_file, 'a')
-                        addversion.write('\n' + x)
-                        addversion.close()
-                Logger.info('jira mcv-dungeons checked.')
             except Exception:
                 traceback.print_exc()

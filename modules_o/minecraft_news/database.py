@@ -1,8 +1,5 @@
-import base64
 import os
-import re
 import sqlite3
-import traceback
 
 dbpath = os.path.abspath('./modules/minecraft_news/save.db')
 
@@ -29,9 +26,9 @@ class MD:
 
         self.c.close()
 
-
     def add_news(self, title, link, desc, image, date):
-        self.c.execute(f"INSERT INTO mc_news (TITLE, LINK, PDESC, IMAGE, PDATE) VALUES (?, ?, ?, ?, ?)", (title, link, desc, image, date))
+        self.c.execute(f"INSERT INTO mc_news (TITLE, LINK, PDESC, IMAGE, PDATE) VALUES (?, ?, ?, ?, ?)",
+                       (title, link, desc, image, date))
         self.conn.commit()
         return
 

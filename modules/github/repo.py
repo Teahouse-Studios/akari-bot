@@ -1,8 +1,8 @@
 import traceback
 
 from core.elements import MessageSession, Image, Plain
-
 from modules.github.utils import query, time_diff, dirty_check, darkCheck
+
 
 async def repo(msg: MessageSession):
     try:
@@ -57,7 +57,8 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             message = 'https://wdf.ink/6OUp'
             await msg.sendMessage([Plain(message)])
         else:
-            await msg.sendMessage([Plain(message), Image(path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
+            await msg.sendMessage([Plain(message), Image(
+                path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
     except Exception as e:
         await msg.sendMessage('发生错误：' + str(e))
         traceback.print_exc()

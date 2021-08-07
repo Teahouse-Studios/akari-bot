@@ -10,7 +10,7 @@ assets/Favicon/*
 assets/cache/*
 save.db
 cache/*
-assets/mcversion_jira*
+assets/mcjira*
 assets/cytoid-avatar/
 assets/cytoid-cover/
 .version*

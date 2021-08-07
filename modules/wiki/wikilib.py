@@ -1,12 +1,12 @@
+import asyncio
 import datetime
 import json
 import re
 import traceback
 import urllib.parse
-import html2text
 
 import aiohttp
-import asyncio
+import html2text
 
 from core import dirty_check
 from .dbutils import WikiSiteInfo
@@ -31,7 +31,6 @@ class wikilib:
                             return await req.text(encoding='unicode-escape')
                 else:
                     raise ValueError(req.status)
-
 
     def encode_query_string(self, kwargs: dict):
         return '?' + urllib.parse.urlencode(kwargs)
@@ -66,7 +65,7 @@ class wikilib:
                 return False, '错误：尝试建立连接超时。'
             except Exception as e:
                 traceback.print_exc()
-                if e.args == (403, ):
+                if e.args == (403,):
                     return False, '服务器拒绝了机器人的请求。'
                 elif not re.match(r'^(https?://).*', link):
                     return False, '所给的链接没有指明协议头（链接应以http://或https://开头）。'
@@ -347,13 +346,13 @@ class wikilib:
 
         if self.page_id == '-1':
             if self.template == True:
-                self.page_name = self.orginpagename = re.sub(r'^Template:', '', self.page_name)
+                self.page_name = self.orginpagename = re.sub(r'^MessageSession:', '', self.page_name)
                 self.template = False
                 if self.interwiki == '':
                     target = ''
                 else:
                     target = self.interwiki + ':'
-                self.template_prompt = f'提示：[{target}Template:{self.page_name}]不存在，已自动回滚搜索页面。\n'
+                self.template_prompt = f'提示：[{target}MessageSession:{self.page_name}]不存在，已自动回滚搜索页面。\n'
                 return await self.step1()
             return await self.page_not_found()
         else:
@@ -372,7 +371,7 @@ class wikilib:
             if len(query_text_name_split) > 1:
                 namespaces = await self.get_namespace()
                 if query_text_name_split[0] in namespaces:
-                    if namespaces[query_text_name_split[0]] == 'Template':
+                    if namespaces[query_text_name_split[0]] == 'MessageSession':
                         get_all_text = await self.get_all_wikitext()
                         try:
                             match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
@@ -480,8 +479,8 @@ class wikilib:
             self.template_prompt = None
             self.headers = headers
             if self.template:
-                if not re.match('^Template:', self.page_name, re.I):
-                    self.page_name = 'Template:' + self.page_name
+                if not re.match('^MessageSession:', self.page_name, re.I):
+                    self.page_name = 'MessageSession:' + self.page_name
             self.page_raw = await self.get_page_link()
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done', 'text': '发生错误：请求页面超时。'}

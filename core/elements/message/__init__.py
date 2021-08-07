@@ -23,6 +23,9 @@ class Session:
 
 
 class MessageSession:
+    """
+    消息会话，囊括了处理一条消息所需要的东西。
+    """
     __slots__ = ("target", "session", "trigger_msg", "parsed_msg",)
 
     def __init__(self,
@@ -85,3 +88,12 @@ class MessageSession:
         """
         image = ...
         voice = ...
+
+
+class FetchTarget:
+    @staticmethod
+    def fetch_target(targetId) -> MessageSession:
+        """
+        尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
+        """
+        ...

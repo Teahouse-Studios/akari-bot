@@ -3,8 +3,8 @@ import os
 import re
 import traceback
 
-from core.logger import Logger
 from core.elements import Module, Option
+from core.logger import Logger
 
 err_prompt = []
 
@@ -30,6 +30,7 @@ def load_modules():
             tb = traceback.format_exc()
             Logger.info(f'Failed to load modules.{fun_file}: \n{tb}')
             err_prompt.append(str(tb))
+
 
 class ModulesManager:
     _modules_list = set()
@@ -81,7 +82,6 @@ Modules = ModulesManager.return_modules_list_as_dict()
 ModulesAliases = ModulesManager.return_modules_alias_map()
 ModulesRegex = ModulesManager.return_regex_modules()
 ModulesHelp = ModulesManager.return_modules_help()
-
 
 loadercache = os.path.abspath('.cache_loader')
 openloadercache = open(loadercache, 'w')

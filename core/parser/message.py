@@ -4,8 +4,8 @@ import traceback
 from core.elements import MessageSession, Option
 from core.loader import Modules, ModulesAliases, ModulesRegex
 from core.logger import Logger
-from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
+from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from database import BotDBUtil
 
 command_prefix = ['~', '～']  # 消息前缀

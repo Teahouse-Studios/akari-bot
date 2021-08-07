@@ -23,11 +23,9 @@ Contributors (roughly in chronological order):
 
 """
 
-import sys
-import re
 import inspect
-
-
+import re
+import sys
 from typing import Any, List, Optional, Tuple, Type, Union, Dict, Callable
 
 __version__ = "0.7.2modded"
@@ -100,12 +98,10 @@ def levenshtein(source: str, target: str) -> int:
 
 
 class DocoptLanguageError(Exception):
-
     """Error in construction of usage-message by developer."""
 
 
 class DocoptExit(SystemExit):
-
     """Exit in case user invoked program with incorrect arguments."""
 
     usage = ""
@@ -162,7 +158,6 @@ TSingleMatch = Tuple[Union[int, None], Union["LeafPattern", None]]
 
 
 class LeafPattern(Pattern):
-
     """Leaf/terminal node of a pattern tree."""
 
     def __repr__(self) -> str:
@@ -174,13 +169,14 @@ class LeafPattern(Pattern):
     def flat(self, *types) -> List["LeafPattern"]:
         return [self] if not types or type(self) in types else []
 
-    def match(self, left: List["LeafPattern"], collected: List["Pattern"] = None) -> Tuple[bool, List["LeafPattern"], List["Pattern"]]:
+    def match(self, left: List["LeafPattern"], collected: List["Pattern"] = None) -> Tuple[
+        bool, List["LeafPattern"], List["Pattern"]]:
         collected = [] if collected is None else collected
         increment: Optional[Any] = None
         pos, match = self.single_match(left)
         if match is None or pos is None:
             return False, left, collected
-        left_ = left[:pos] + left[(pos + 1) :]
+        left_ = left[:pos] + left[(pos + 1):]
         same_name = [a for a in collected if a.name == self.name]
         if type(self.value) == int and len(same_name) > 0:
             if isinstance(same_name[0].value, int):
@@ -204,7 +200,6 @@ class LeafPattern(Pattern):
 
 
 class BranchPattern(Pattern):
-
     """Branch/inner node of a pattern tree."""
 
     def __init__(self, *children) -> None:
@@ -276,7 +271,8 @@ class Command(Argument):
 
 
 class Option(LeafPattern):
-    def __init__(self, short: Optional[str] = None, longer: Optional[str] = None, argcount: int = 0, value: Union[List[str], str, int, None] = False) -> None:
+    def __init__(self, short: Optional[str] = None, longer: Optional[str] = None, argcount: int = 0,
+                 value: Union[List[str], str, int, None] = False) -> None:
         assert argcount in (0, 1)
         self.short, self.longer, self.argcount = short, longer, argcount
         self.value = None if value is False and argcount else value
@@ -333,7 +329,6 @@ class NotRequired(BranchPattern):
 
 
 class OptionsShortcut(NotRequired):
-
     """Marker/placeholder for [options] shortcut."""
 
 
@@ -371,7 +366,8 @@ class Either(BranchPattern):
 
 
 class Tokens(list):
-    def __init__(self, source: Union[List[str], str], error: Union[Type[DocoptExit], Type[DocoptLanguageError]] = DocoptExit) -> None:
+    def __init__(self, source: Union[List[str], str],
+                 error: Union[Type[DocoptExit], Type[DocoptLanguageError]] = DocoptExit) -> None:
         if isinstance(source, list):
             self += source
         else:
@@ -452,7 +448,8 @@ def parse_shorts(tokens: Tokens, options: List[Option], more_magic: bool = False
         de_abbreviated = False
         for transform_name, transform in transformations.items():
             transformed = list(set([transform(o.short) for o in options if o.short]))
-            no_collisions = len([o for o in options if o.short and transformed.count(transform(o.short)) == 1])  # == len(transformed)
+            no_collisions = len(
+                [o for o in options if o.short and transformed.count(transform(o.short)) == 1])  # == len(transformed)
             if no_collisions:
                 similar = [o for o in options if o.short and transform(o.short) == transform(short)]
                 if similar:
@@ -470,7 +467,8 @@ def parse_shorts(tokens: Tokens, options: List[Option], more_magic: bool = False
                     for o in options:
                         if not o.short and o.longer and transform(short) == transform(o.longer[1:3]):
                             similar = [o]
-                            print(f"NB: Corrected {short} to {similar[0].longer} via abbreviation (case change: {transform_name})")
+                            print(
+                                f"NB: Corrected {short} to {similar[0].longer} via abbreviation (case change: {transform_name})")
                             break
                 if len(similar):
                     de_abbreviated = True
@@ -573,7 +571,8 @@ def parse_atom(tokens: Tokens, options: List[Option]) -> List[Pattern]:
         return [Command(tokens.move())]
 
 
-def parse_argv(tokens: Tokens, options: List[Option], options_first: bool = False, more_magic: bool = False) -> List[Pattern]:
+def parse_argv(tokens: Tokens, options: List[Option], options_first: bool = False, more_magic: bool = False) -> List[
+    Pattern]:
     """Parse command-line argument vector.
 
     If options_first:
@@ -651,16 +650,17 @@ class ParsedOptions(dict):
         return "{%s}" % ",\n ".join("%r: %r" % i for i in sorted(self.items()))
 
     def __getattr__(self, name: str) -> Optional[Union[str, bool]]:
-        return self.get(name) or {name: self.get(k) for k in self.keys() if name in [k.lstrip("-"), k.lstrip("<").rstrip(">")]}.get(name)
+        return self.get(name) or {name: self.get(k) for k in self.keys() if
+                                  name in [k.lstrip("-"), k.lstrip("<").rstrip(">")]}.get(name)
 
 
 def docopt(
-    docstring: Optional[str] = None,
-    argvs: Optional[Union[List[str], str]] = None,
-    default_help: bool = True,
-    version: Any = None,
-    options_first: bool = False,
-    more_magic: bool = False,
+        docstring: Optional[str] = None,
+        argvs: Optional[Union[List[str], str]] = None,
+        default_help: bool = True,
+        version: Any = None,
+        options_first: bool = False,
+        more_magic: bool = False,
 ) -> ParsedOptions:
     """Parse `argv` based on command-line interface described in `doc`.
 
@@ -703,7 +703,8 @@ def docopt(
         parent_frame = doc_parent_frame = magic_parent_frame = maybe_frame.f_back
     if not more_magic:  # make sure 'magic' isn't in the calling name
         while not more_magic and magic_parent_frame:
-            imported_as = {v: k for k, v in magic_parent_frame.f_globals.items() if hasattr(v, "__name__") and v.__name__ == docopt.__name__}.get(docopt)
+            imported_as = {v: k for k, v in magic_parent_frame.f_globals.items() if
+                           hasattr(v, "__name__") and v.__name__ == docopt.__name__}.get(docopt)
             if imported_as and "magic" in imported_as:
                 more_magic = True
             else:
@@ -714,7 +715,8 @@ def docopt(
             if not docstring:
                 doc_parent_frame = doc_parent_frame.f_back
         if not docstring:
-            raise DocoptLanguageError("Either __doc__ must be defined in the scope of a parent or passed as the first argument.")
+            raise DocoptLanguageError(
+                "Either __doc__ must be defined in the scope of a parent or passed as the first argument.")
     output_value_assigned = False
     if more_magic and parent_frame:
         import dis
@@ -734,7 +736,8 @@ def docopt(
         raise DocoptLanguageError('More than one "usage:" (case-insensitive).')
     options_pattern = re.compile(r"\n\s*?options:", re.IGNORECASE)
     if options_pattern.search(usage_sections[0]):
-        raise DocoptExit("Warning: options (case-insensitive) was found in usage." "Use a blank line between each section..")
+        raise DocoptExit(
+            "Warning: options (case-insensitive) was found in usage." "Use a blank line between each section..")
     DocoptExit.usage = usage_sections[0]
     options = parse_defaults(docstring)
     pattern = parse_pattern(formal_usage(DocoptExit.usage), options)

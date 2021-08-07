@@ -1,7 +1,7 @@
 import json
 
-from core.utils import get_url
 from core.elements import MessageSession, Plain, Image
+from core.utils import get_url
 
 
 async def cytoid_profile(msg: MessageSession):

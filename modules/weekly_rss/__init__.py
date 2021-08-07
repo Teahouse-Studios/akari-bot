@@ -1,13 +1,14 @@
 import asyncio
 import traceback
+
 from apscheduler.triggers.cron import CronTrigger
 
-from core.scheduler import Scheduler
-from core.logger import Logger
 from core.loader.decorator import command
+from core.logger import Logger
+from core.scheduler import Scheduler
 from database import BotDBUtil
-
 from modules.weekly import get_weekly
+
 
 @command('weekly_rss', autorun=True, help_doc=('{订阅中文 Minecraft Wiki 的每周页面（每周一 8：30 更新）。}'))
 async def mcv_rss(bot):

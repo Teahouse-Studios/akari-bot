@@ -1,6 +1,6 @@
-from core.elements import MessageSession
-
 import json
+
+from core.elements import MessageSession
 from .orm import session, WikiTargetSetInfo, WikiInfo
 
 
