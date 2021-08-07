@@ -34,15 +34,15 @@ class Template(MessageSession):
         return self.session.message
 
     async def delete(self):
-        print(f"(Try to delete {self.session.message}, but I'm a console so I cannot do it :< )")
+        print("(Try to delete {self.session.message}, but I'm a console so I cannot do it :< )")
         return True
 
     def checkPermission(self):
-        print(f"(Try to check your permissions, but this is a unit test environment. Have fun!)")
+        print("(Try to check your permissions, but this is a unit test environment. Have fun!)")
         return True
 
     def checkSuperUser(self):
-        print(f"(Try to check if you are superuser, but this is a unit test environment. Have fun!)")
+        print("(Try to check if you are superuser, but this is a unit test environment. Have fun!)")
         return True
 
     class Typing:

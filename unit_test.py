@@ -1,6 +1,5 @@
 from config import Config
 from core.elements import Module
-from core.logger import Logger
 
 if not Config('db_path'):
     raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path"\n'

@@ -4,7 +4,7 @@ import discord
 
 from core.bots.discord.client import client
 
-from core.elements import MsgInfo, MessageSession, Session, Module
+from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
 from core.bots.discord.message import Template as MessageSession
 from core.bots.discord.bot_func import Bot

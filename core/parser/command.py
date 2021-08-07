@@ -29,7 +29,7 @@ class CommandParser:
                 if match_detail_help:
                     x = match_detail_help.group(1)
                 arglst.append(x)
-            self.args = f'Usage:\n  ' + '\n  '.join(y for y in arglst)
+            self.args = 'Usage:\n  ' + '\n  '.join(y for y in arglst)
         else:
             raise InvalidHelpDocTypeError
 

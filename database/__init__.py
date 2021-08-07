@@ -2,7 +2,7 @@ import datetime
 
 from database.orm import session
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
-from core.elements import MsgInfo, MessageSession
+from core.elements import  MessageSession
 
 
 def convert_list_to_str(lst: list) -> str:

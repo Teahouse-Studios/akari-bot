@@ -70,7 +70,7 @@ class Template(MessageSession):
                         return True
                     else:
                         return False
-        if isinstance(self.session.target, Friend):
+        elif isinstance(self.session.target, Friend):
             @Waiter.create_using_function([FriendMessage])
             def waiter(waiter_friend: Friend, waiter_message: MessageChain):
                 if all([

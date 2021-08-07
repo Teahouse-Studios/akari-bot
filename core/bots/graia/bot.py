@@ -4,7 +4,6 @@ from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinG
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
-from graia.application import GraiaMiraiApplication
 
 from config import Config
 from core.bots.graia.message import Template as MessageSession
@@ -24,7 +23,7 @@ async def group_message_handler(message: MessageChain, group: Group, member: Mem
 
 
 @bcc.receiver('FriendMessage')
-async def group_message_handler(message: MessageChain, friend: Friend):
+async def friend_message_handler(message: MessageChain, friend: Friend):
     msg = MessageSession(target=MsgInfo(targetId=f"QQ|{friend.id}", senderId=f'QQ|{friend.id}', senderName=friend.nickname,
                                         targetFrom='QQ', senderFrom='QQ'), session=Session(message=message, target=friend, sender=friend))
     await parser(msg)

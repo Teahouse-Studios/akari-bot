@@ -66,9 +66,9 @@ async def parser(msg: MessageSession):
                             try:
                                 msg.parsed_msg = cparser.parse(command)
                             except InvalidCommandFormatError:
-                                return await msg.sendMessage(f'语法错误。\n' + cparser.return_formatted_help_doc())
+                                return await msg.sendMessage('语法错误。\n' + cparser.return_formatted_help_doc())
                         except InvalidHelpDocTypeError:
-                            return await msg.sendMessage(f'此模块的帮助信息有误，请联系开发者处理。')
+                            return await msg.sendMessage('此模块的帮助信息有误，请联系开发者处理。')
                     async with msg.Typing(msg):
                         await Modules[command_first_word].function(msg)  # 将dict传入下游模块
             except Exception as e:

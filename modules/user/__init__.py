@@ -1,7 +1,5 @@
 import re
 
-from core.elements import Image, Plain
-
 from modules.wiki.dbutils import WikiTargetInfo
 from core.loader.decorator import command
 from core.elements import Plain, Image, MessageSession

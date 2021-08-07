@@ -6,7 +6,7 @@ import uuid
 from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from core.elements import Image as Img, Plain, MessageSession
+from core.elements import Image as Img, MessageSession
 from core.loader.decorator import command
 from core.utils import cache_name
 
