@@ -1,16 +1,8 @@
 from sqlalchemy import Column, String, Text, TIMESTAMP, text
-from sqlalchemy import create_engine
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
-from config import Config
-
-DB_LINK = Config('db_path')
-
-engine = create_engine(DB_LINK)
-
-session = sessionmaker(engine)()
+from database.orm import engine, session
 
 Base = declarative_base()
 table_prefix = 'module_wiki_'
