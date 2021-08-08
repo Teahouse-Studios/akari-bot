@@ -31,27 +31,27 @@ async def config_modules(msg: MessageSession):
                 wait_config_list.append(module)
     query = BotDBUtil.Module(msg)
     msglist = []
-    for x in wait_config_list:
-        if x not in modules:
-            msglist.append(f'失败：“{x}”模块不存在')
-            wait_config_list.remove(x)
     if msg.parsed_msg['enable']:
-        if msg.parsed_msg['all']:
-            for function in modules:
-                if query.enable(function):
-                    msglist.append(f'成功：打开模块“{function}”')
-        else:
-            if query.enable(wait_config_list):
-                for module in wait_config_list:
+        for module in wait_config_list:
+            if module == 'all':
+                for function in modules:
+                    if query.enable(function):
+                        msglist.append(f'成功：打开模块“{function}”')
+            elif module not in modules:
+                msglist.append(f'失败：“{module}”模块不存在')
+            else:
+                if query.enable(wait_config_list):
                     msglist.append(f'成功：打开模块“{module}”')
     elif msg.parsed_msg['disable']:
-        if msg.parsed_msg['all']:
-            for function in modules:
-                if query.disable(function):
-                    msglist.append(f'成功：关闭模块“{function}”')
-        else:
-            if query.disable(wait_config_list):
-                for module in wait_config_list:
+        for module in wait_config_list:
+            if module == 'all':
+                for function in modules:
+                    if query.disable(function):
+                        msglist.append(f'成功：关闭模块“{function}”')
+            elif module not in modules:
+                msglist.append(f'失败：“{module}”模块不存在')
+            else:
+                if query.disable(wait_config_list):
                     msglist.append(f'成功：关闭模块“{module}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
