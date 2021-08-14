@@ -4,7 +4,7 @@ import os
 import traceback
 
 from core.elements import FetchTarget
-from core import command
+from core.loader.decorator import command
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils import get_url

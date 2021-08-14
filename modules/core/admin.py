@@ -1,5 +1,5 @@
 from core.elements import MessageSession
-from core import command
+from core.loader.decorator import command
 from database import BotDBUtil
 
 

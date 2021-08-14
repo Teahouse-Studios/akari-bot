@@ -3,7 +3,7 @@ import traceback
 
 from apscheduler.triggers.cron import CronTrigger
 
-from core import command
+from core.loader.decorator import command
 from core.logger import Logger
 from core.scheduler import Scheduler
 from database import BotDBUtil

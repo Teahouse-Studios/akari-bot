@@ -1,5 +1,5 @@
 from core.elements import MessageSession, Image
-from core import command
+from core.loader.decorator import command
 from database import BotDBUtil
 from .profile import cytoid_profile
 from .rating import get_rating

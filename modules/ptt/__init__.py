@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 from core.elements import Image as Img, MessageSession
-from core import command
+from core.loader.decorator import command
 from core.utils import cache_name
 
 

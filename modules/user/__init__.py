@@ -1,7 +1,7 @@
 import re
 
 from core.elements import Plain, Image, MessageSession
-from core import command
+from core.loader.decorator import command
 from modules.wiki.dbutils import WikiTargetInfo
 from .userlib import GetUser
 

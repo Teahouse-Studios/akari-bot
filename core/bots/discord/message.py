@@ -28,15 +28,12 @@ class MessageSession(MS):
                 if isinstance(x, Plain):
                     send = await self.session.target.send(x.text, reference=self.session.message if quote and count == 0
                                                                                                     and self.session.message else None)
-                    send_list.append(send)
-                    count += 1
                 if isinstance(x, Image):
                     send = await self.session.target.send(file=discord.File(await x.get()),
                                                           reference=self.session.message if quote and count == 0
                                                                                             and self.session.message else None)
-                    send_list.append(send)
-                    count += 1
-
+                send_list.append(send)
+                count += 1
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
                                                  senderFrom='Discord|Bot'),
                                   session=Session(message=send_list, target=send.channel, sender=send.author))
