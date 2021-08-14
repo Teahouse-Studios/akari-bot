@@ -1,5 +1,5 @@
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core import command
 from .mcv import mcv, mcbv, mcdv
 
 

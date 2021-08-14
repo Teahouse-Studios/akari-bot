@@ -3,8 +3,7 @@ import re
 
 from core.elements import MessageSession, Plain, Image, Voice
 from core.loader import ModulesManager
-from core.loader.decorator import command
-from core.loader.option import add_option
+from core import command, option
 from core.utils import slk_converter, download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo, WikiSiteInfo
@@ -112,7 +111,7 @@ async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 
 
-add_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。')
+option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。')
 
 
 async def regex_proc(msg: MessageSession, display, typing=True):

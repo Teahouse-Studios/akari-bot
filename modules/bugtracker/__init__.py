@@ -1,7 +1,7 @@
 import re
 
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core import command
 from .bugtracker import bugtracker_get
 
 

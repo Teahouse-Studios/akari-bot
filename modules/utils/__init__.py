@@ -1,5 +1,5 @@
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core import command
 from modules.utils import ab, rc, newbie
 from modules.wiki.dbutils import WikiTargetInfo
 
