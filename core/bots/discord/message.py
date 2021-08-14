@@ -45,7 +45,7 @@ class MessageSession(MS):
         msg = await client.wait_for('message', check=check)
         return True if msg.content in confirm_command else False
 
-    def checkPermission(self):
+    async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
                 or isinstance(self.session.message.channel, discord.DMChannel) \
                 or self.target.senderInfo.query.isSuperUser \

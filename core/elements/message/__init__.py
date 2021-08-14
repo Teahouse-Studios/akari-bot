@@ -63,7 +63,7 @@ class MessageSession:
         """
         ...
 
-    def checkPermission(self):
+    async def checkPermission(self):
         """
         用于检查消息发送者在对象内的权限。
         """

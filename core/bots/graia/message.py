@@ -89,7 +89,7 @@ class MessageSession(MS):
         except:
             traceback.print_exc()
 
-    def checkPermission(self):
+    async def checkPermission(self):
         """
         检查对象是否拥有某项权限
         :param display_msg: 从函数传入的dict

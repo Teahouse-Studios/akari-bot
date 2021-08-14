@@ -52,7 +52,7 @@ async def parser(msg: MessageSession):
                         if not senderInfo.query.isSuperUser:
                             return await msg.sendMessage('你没有使用该命令的权限。')
                     if module.need_admin:
-                        if not msg.checkPermission():
+                        if not await msg.checkPermission():
                             return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                     if not module.is_base_function:
                         check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(

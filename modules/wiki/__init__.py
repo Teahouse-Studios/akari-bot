@@ -42,7 +42,7 @@ async def wiki(msg: MessageSession):
 
 
 async def set_start_wiki(msg: MessageSession):
-    if not msg.checkPermission():
+    if not await msg.checkPermission():
         return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     check = await wikilib().check_wiki_available(msg.parsed_msg['<WikiUrl>'])
     if check[0]:
@@ -55,7 +55,7 @@ async def set_start_wiki(msg: MessageSession):
 
 
 async def interwiki(msg: MessageSession):
-    if not msg.checkPermission():
+    if not await msg.checkPermission():
         return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     iw = msg.parsed_msg['<Interwiki>']
     url = msg.parsed_msg['<WikiUrl>']
@@ -84,7 +84,7 @@ async def interwiki(msg: MessageSession):
 
 
 async def set_headers(msg: MessageSession):
-    if not msg.checkPermission():
+    if not await msg.checkPermission():
         return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     target = WikiTargetInfo(msg)
     if msg.parsed_msg['show']:
