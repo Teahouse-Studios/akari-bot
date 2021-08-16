@@ -5,6 +5,7 @@ import psutil
 from graia.application import Group, Friend
 
 from core.template import sendMessage, revokeMessage
+from core.elements import Target
 from database import BotDB as database
 from core.broadcast import app
 from modules.utils.ab import ab
