@@ -1,7 +1,9 @@
+import asyncio
 import re
 import traceback
 
 from core.bots.aiogram.client import dp
+from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session
 from core.elements.others import confirm_command
 from aiogram import types, filters
@@ -33,10 +35,14 @@ class MessageSession(MS):
                         count += 1
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                                  senderFrom='Telegram|Bot'),
-                                  session=Session(message=send_list, target=send.chat.id, sender=send.chat.username))
+                                  session=Session(message=send_list, target=send.chat.id, sender=send.from_user.id))
 
     async def waitConfirm(self):
-        return False
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self.session.sender.id, flag)
+        await flag.wait()
+        return FinishedTasks.get()[self.session.sender.id]
+
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
