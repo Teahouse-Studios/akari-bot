@@ -13,34 +13,22 @@ from modules.utils.rc import rc
 
 
 async def rc_loader(kwargs: dict):
-    if Group in kwargs:
-        table = 'start_wiki_link_group'
-        id = kwargs[Group].id
-    if Friend in kwargs:
-        table = 'start_wiki_link_self'
-        id = kwargs[Friend].id
+    table = 'start_wiki_link_' + kwargs[Target].target_from
+    id = kwargs[Target].id
     msg = await rc(table, id)
     await sendMessage(kwargs, msg)
 
 
 async def ab_loader(kwargs: dict):
-    if Group in kwargs:
-        table = 'start_wiki_link_group'
-        id = kwargs[Group].id
-    if Friend in kwargs:
-        table = 'start_wiki_link_self'
-        id = kwargs[Friend].id
+    table = 'start_wiki_link_' + kwargs[Target].target_from
+    id = kwargs[Target].id
     msg = await ab(table, id)
     send = await sendMessage(kwargs, msg)
 
 
 async def newbie_loader(kwargs: dict):
-    if Group in kwargs:
-        table = 'start_wiki_link_group'
-        id = kwargs[Group].id
-    if Friend in kwargs:
-        table = 'start_wiki_link_self'
-        id = kwargs[Friend].id
+    table = 'start_wiki_link_' + kwargs[Target].target_from
+    id = kwargs[Target].id
     msg = await newbie(table, id)
     await sendMessage(kwargs, msg)
 
