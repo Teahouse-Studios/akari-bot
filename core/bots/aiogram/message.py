@@ -16,7 +16,7 @@ class MessageSession(MS):
 
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
-            send = await self.session.message.answer(msgchain, reply=True if quote else False)
+            send = await self.session.message.answer(msgchain, reply=quote)
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                                  senderFrom='Telegram|Bot'),
                                   session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
@@ -25,12 +25,12 @@ class MessageSession(MS):
             send_list = []
             for x in msgchain:
                 if isinstance(x, Plain):
-                    send = await self.session.message.answer(x.text)
+                    send = await self.session.message.answer(x.text, reply=quote)
                     send_list.append(send)
                     count += 1
                 if isinstance(x, Image):
                     with open(await x.get(), 'rb') as image:
-                        send = await self.session.message.reply_photo(image)
+                        send = await self.session.message.reply_photo(image, reply=quote)
                         send_list.append(send)
                         count += 1
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
@@ -41,7 +41,9 @@ class MessageSession(MS):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self.session.sender.id, flag)
         await flag.wait()
-        return FinishedTasks.get()[self.session.sender.id]
+        if FinishedTasks.get()[self.session.sender.id].text in confirm_command:
+            return True
+        return False
 
 
     async def checkPermission(self):

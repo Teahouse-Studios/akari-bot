@@ -18,7 +18,7 @@ class FinishedTasks:
     _list = {}
 
     @staticmethod
-    def add_task(uid, result: bool):
+    def add_task(uid, result):
         FinishedTasks._list.update({uid: result})
 
     @staticmethod
