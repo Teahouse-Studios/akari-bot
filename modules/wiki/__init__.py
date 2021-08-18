@@ -5,7 +5,7 @@ from core.elements import MessageSession, Plain, Image, Voice
 from core.loader import ModulesManager
 from core.loader.decorator import command
 from core.loader.option import add_option
-from core.utils import slk_converter, download_to_cache
+from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo, WikiSiteInfo
 from modules.wiki.wikilib import wikilib
@@ -227,7 +227,7 @@ async def regex_proc(msg: MessageSession, display, typing=True):
             await msg.sendMessage(imgchain, quote=False)
         if audlist and msg.Feature.voice:
             for aud in audlist:
-                await msg.sendMessage([Voice(path=await slk_converter(await download_to_cache(aud)))], quote=False)
+                await msg.sendMessage([Voice(path=await download_to_cache(aud))], quote=False)
     if urllist != {} and msg.Feature.image:
         print(urllist)
         infoboxchain = []

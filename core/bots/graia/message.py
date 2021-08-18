@@ -11,6 +11,7 @@ from graia.broadcast.interrupt.waiter import Waiter
 from core.bots.graia.broadcast import app, bcc
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session
 from core.elements.others import confirm_command
+from core.utils import slk_converter
 
 
 class MessageSession(MS):
@@ -31,7 +32,7 @@ class MessageSession(MS):
                 if isinstance(x, BImage):
                     msgchain_list.append(Image.fromLocalFile(await x.get()))
                 if isinstance(x, BVoice):
-                    msgchain_list.append(Voice().fromLocalFile(filepath=x.path))
+                    msgchain_list.append(Voice().fromLocalFile(filepath=await slk_converter(x.path)))
             if not msgchain_list:
                 msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
             msgchain = MessageChain.create(msgchain_list)
@@ -122,7 +123,7 @@ class MessageSession(MS):
 class FetchTarget:
     @staticmethod
     def fetch_target(targetId):
-        matchTarget = re.match(r'^(QQ|(?:Group\||))(.*)', targetId)
+        matchTarget = re.match(r'^(QQ\|(?:Group\||))(.*)', targetId)
         if matchTarget:
             if matchTarget.group(1) == 'QQ|Group':
                 target = app.getGroup(int(matchTarget.group(2)))

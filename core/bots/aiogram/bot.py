@@ -1,13 +1,17 @@
+import asyncio
+
 from aiogram.dispatcher.filters import Command
 from aiogram.types import ChatType
 
 from core.bots.aiogram.client import dp
 from aiogram import types, executor
-from core.bots.aiogram.message import MessageSession
-from core.elements import MsgInfo, Session
+from core.bots.aiogram.message import MessageSession, FetchTarget
+from core.elements import MsgInfo, Session, Module
 from core.elements.others import confirm_command
+from core.loader import Modules
 from core.parser.message import parser
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
+from core.scheduler import Scheduler
 
 
 @dp.message_handler()
@@ -18,12 +22,20 @@ async def msg_handler(message: types.Message):
         FinishedTasks.add_task(user_id, message)
         all_tsk[user_id].set()
         MessageTaskManager.del_task(user_id)
-        return
     msg = MessageSession(MsgInfo(targetId=f'Telegram|{message.chat.type}|{message.chat.id}',
                                  senderId=f'Telegram|User|{message.from_user.id}', targetFrom='Telegram',
                                  senderFrom='Telegram', senderName=message.from_user.username),
-                         Session(message=message, target=message.chat, sender=message.from_user))
+                         Session(message=message, target=message.chat.id, sender=message.from_user.id))
     await parser(msg)
 
+
+async def on_startup(dispatcher):
+    gather_list = []
+    for x in Modules:
+        if isinstance(Modules[x], Module) and Modules[x].autorun:
+            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+    await asyncio.gather(*gather_list)
+    Scheduler.start()
+
 if dp:
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

@@ -84,7 +84,7 @@ class MessageSession(MS):
 class FetchTarget:
     @staticmethod
     def fetch_target(targetId):
-        matchChannel = re.match(r'^(DC|(?:DM\||)Channel)|(.*)', targetId)
+        matchChannel = re.match(r'^(DC\|(?:DM\||)Channel)\|(.*)', targetId)
         if matchChannel:
             getChannel = client.get_channel(int(matchChannel.group(2)))
             return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
