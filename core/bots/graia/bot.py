@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
 from graia.application.friend import Friend
@@ -12,6 +13,9 @@ from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
 from core.parser.message import parser
 from core.scheduler import Scheduler
+from core.utils import PrivateAssets
+
+PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
 @bcc.receiver('GroupMessage')

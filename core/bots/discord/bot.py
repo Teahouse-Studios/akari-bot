@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 import discord
 
@@ -10,6 +11,9 @@ from core.loader import Modules
 from core.logger import Logger
 from core.parser.message import parser
 from core.scheduler import Scheduler
+from core.utils import PrivateAssets
+
+PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
 @client.event

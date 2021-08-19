@@ -1,14 +1,12 @@
 import re
 import traceback
 
-from core.elements import MessageSession, Option
+from core.elements import MessageSession, Option, command_prefix
 from core.loader import Modules, ModulesAliases, ModulesRegex
 from core.logger import Logger
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
 from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from database import BotDBUtil
-
-command_prefix = ['~', '～']  # 消息前缀
 
 
 async def parser(msg: MessageSession):
@@ -62,11 +60,11 @@ async def parser(msg: MessageSession):
                     help_doc = module.help_doc
                     if help_doc is not None:
                         try:
-                            cparser = CommandParser(help_doc)
+                            command_parser = CommandParser(help_doc)
                             try:
-                                msg.parsed_msg = cparser.parse(command)
+                                msg.parsed_msg = command_parser.parse(command)
                             except InvalidCommandFormatError:
-                                return await msg.sendMessage('语法错误。\n' + cparser.return_formatted_help_doc())
+                                return await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                         except InvalidHelpDocTypeError:
                             return await msg.sendMessage('此模块的帮助信息有误，请联系开发者处理。')
                     async with msg.Typing(msg):

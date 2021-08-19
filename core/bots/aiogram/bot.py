@@ -1,17 +1,18 @@
 import asyncio
+import os
 
-from aiogram.dispatcher.filters import Command
-from aiogram.types import ChatType
+from aiogram import types, executor
 
 from core.bots.aiogram.client import dp
-from aiogram import types, executor
 from core.bots.aiogram.message import MessageSession, FetchTarget
+from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import MsgInfo, Session, Module
-from core.elements.others import confirm_command
 from core.loader import Modules
 from core.parser.message import parser
-from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.scheduler import Scheduler
+from core.utils import PrivateAssets
+
+PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
 @dp.message_handler()
@@ -36,6 +37,7 @@ async def on_startup(dispatcher):
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
     await asyncio.gather(*gather_list)
     Scheduler.start()
+
 
 if dp:
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

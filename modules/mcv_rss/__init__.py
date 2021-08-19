@@ -7,7 +7,7 @@ from core.elements import FetchTarget
 from core.loader.decorator import command
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.utils import get_url
+from core.utils import get_url, PrivateAssets
 from database import BotDBUtil
 
 
@@ -27,7 +27,7 @@ async def mcv_rss(bot: FetchTarget):
     async def java_main():
         url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
         try:
-            version_file = os.path.abspath('./assets/mcversion.txt')
+            version_file = os.path.abspath(f'{PrivateAssets.path}/mcversion.txt')
             Logger.info('Checking mcv...')
             verlist = getfileversions(version_file)
             file = json.loads(await get_url(url))
@@ -59,7 +59,7 @@ async def mcv_rss(bot: FetchTarget):
                             await asyncio.sleep(0.5)
                         except Exception:
                             traceback.print_exc()
-                addversion = open('./assets/mcversion.txt', 'a')
+                addversion = open(version_file, 'a')
                 addversion.write('\n' + snapshot)
                 addversion.close()
             Logger.info('mcv checked.')
@@ -70,16 +70,17 @@ async def mcv_rss(bot: FetchTarget):
 @command('mcv_jira_rss', autorun=True)
 async def mcv_jira_rss(bot: FetchTarget):
     @Scheduler.scheduled_job('interval', seconds=30)
-    async def java_jira():
-        urls = {'Java版': 'https://bugs.mojang.com/rest/api/2/project/10400/versions',
-                '基岩版': 'https://bugs.mojang.com/rest/api/2/project/10200/versions',
-                'Minecraft Dungeons': 'https://bugs.mojang.com/rest/api/2/project/11901/versions'}
-        for name in urls:
+    async def jira():
+        urls = {'Java': {'url': 'https://bugs.mojang.com/rest/api/2/project/10400/versions', 'display': 'Java版'},
+                'Bedrock': {'url': 'https://bugs.mojang.com/rest/api/2/project/10200/versions', 'display': '基岩版'},
+                'Minecraft Dungeons': {'url': 'https://bugs.mojang.com/rest/api/2/project/11901/versions',
+                                       'display': 'Minecraft Dungeons'}}
+        for url in urls:
             try:
-                version_file = os.path.abspath(f'./assets/mcjira_{name}.txt')
-                Logger.info(f'Checking Jira mcv {name}...')
+                version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_{url}.txt')
+                Logger.info(f'Checking Jira mcv {url}...')
                 verlist = getfileversions(version_file)
-                file = json.loads(await get_url(urls[name]))
+                file = json.loads(await get_url(urls[url]['url']))
                 releases = []
                 for v in file:
                     if not v['archived']:
@@ -93,7 +94,7 @@ async def mcv_jira_rss(bot: FetchTarget):
                             fetch = bot.fetch_target(id_)
                             if fetch:
                                 send = await fetch.sendMessage(
-                                    f'Jira已更新{name} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                                    f'Jira已更新{urls[url]["display"]} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
                         addversion = open(version_file, 'a')
                         addversion.write('\n' + release)
                         addversion.close()

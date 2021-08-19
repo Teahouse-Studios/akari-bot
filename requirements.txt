@@ -15,3 +15,4 @@ filetype
 sqlalchemy
 apscheduler
 aioconsole
+aiogram
