@@ -13,6 +13,7 @@ cache/*
 assets/mcjira*
 assets/cytoid-avatar/
 assets/cytoid-cover/
+core/bots/**/assets
 .version*
 .cache_loader
 assets/arc**
