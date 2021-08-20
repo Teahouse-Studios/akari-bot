@@ -13,6 +13,7 @@ from .database import WikiDB
 
 class wikilib:
     async def get_data(self, url: str, fmt: str, headers=None, ignore_err=False):
+        print(url)
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status == 200 or ignore_err:
