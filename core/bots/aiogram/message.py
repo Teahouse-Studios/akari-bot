@@ -90,7 +90,7 @@ class MessageSession(MS):
 
 class FetchTarget:
     @staticmethod
-    def fetch_target(targetId):
+    async def fetch_target(targetId):
         matchChannel = re.match(r'^(Telegram\|.*?)\|(.*)', targetId)
         if matchChannel:
             return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',

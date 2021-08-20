@@ -122,13 +122,13 @@ class MessageSession(MS):
 
 class FetchTarget:
     @staticmethod
-    def fetch_target(targetId):
+    async def fetch_target(targetId):
         matchTarget = re.match(r'^(QQ\|(?:Group\||))(.*)', targetId)
         if matchTarget:
             if matchTarget.group(1) == 'QQ|Group':
-                target = app.getGroup(int(matchTarget.group(2)))
+                target = await app.getGroup(int(matchTarget.group(2)))
             else:
-                target = app.getFriend(int(matchTarget.group(2)))
+                target = await app.getFriend(int(matchTarget.group(2)))
             if target is not None:
                 return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
                                               targetFrom=matchTarget.group(1), senderFrom=matchTarget.group(1)),

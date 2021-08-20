@@ -23,13 +23,14 @@ from .getinfobox import get_infobox_pic
                            '~wiki headers show {展示当前设置的headers}'),
          alias={'wiki_start_site': 'wiki set'})
 async def wiki_wrapper(msg: MessageSession):
+    print(msg.parsed_msg)
     if msg.parsed_msg is None:
         await msg.sendMessage(ModulesManager.return_modules_help()['wiki'])
         return
     if msg.parsed_msg['set']:
-        if msg.parsed_msg['iw']:
-            await interwiki(msg)
         await set_start_wiki(msg)
+    elif msg.parsed_msg['iw']:
+        await interwiki(msg)
     elif msg.parsed_msg['headers']:
         await set_headers(msg)
     else:
@@ -107,7 +108,7 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@command('wiki_regex', is_regex_function=True, desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]')
+@command('wiki_inline', is_regex_function=True, desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]', alias='wiki_regex')
 async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 

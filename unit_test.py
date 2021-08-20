@@ -10,7 +10,7 @@ import asyncio
 import traceback
 import aioconsole
 
-from core.utils import init_bot
+from init import init_bot
 from core.elements import Module
 from core.elements.message import MsgInfo, Session
 from core.unit_test.template import Template as MessageSession, FetchTarget

@@ -39,7 +39,7 @@ class Template(MessageSession):
         print("(Try to delete {self.session.message}, but I'm a console so I cannot do it :< )")
         return True
 
-    def checkPermission(self):
+    async def checkPermission(self):
         print("(Try to check your permissions, but this is a unit test environment. Have fun!)")
         return True
 

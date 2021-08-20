@@ -15,6 +15,7 @@ from core.utils import PrivateAssets
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
+
 @dp.message_handler()
 async def msg_handler(message: types.Message):
     all_tsk = MessageTaskManager.get()

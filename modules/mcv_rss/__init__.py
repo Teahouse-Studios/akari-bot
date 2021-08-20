@@ -23,12 +23,11 @@ def getfileversions(path):
 
 @command('mcv_rss', autorun=True)
 async def mcv_rss(bot: FetchTarget):
-    @Scheduler.scheduled_job('interval', seconds=30)
+    @Scheduler.scheduled_job('interval', seconds=30, name='mcv_rss')
     async def java_main():
         url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
         try:
             version_file = os.path.abspath(f'{PrivateAssets.path}/mcversion.txt')
-            Logger.info('Checking mcv...')
             verlist = getfileversions(version_file)
             file = json.loads(await get_url(url))
             release = file['latest']['release']
@@ -37,7 +36,7 @@ async def mcv_rss(bot: FetchTarget):
                 Logger.info(f'huh, we find {release}.')
                 get_target_id = BotDBUtil.Module.get_enabled_this('mcv_rss')
                 for x in get_target_id:
-                    fetch = bot.fetch_target(x)
+                    fetch = await bot.fetch_target(x)
                     if fetch:
                         try:
                             await fetch.sendMessage('启动器已更新' + file['latest']['release'] + '正式版。')
@@ -62,14 +61,13 @@ async def mcv_rss(bot: FetchTarget):
                 addversion = open(version_file, 'a')
                 addversion.write('\n' + snapshot)
                 addversion.close()
-            Logger.info('mcv checked.')
         except Exception:
             traceback.print_exc()
 
 
 @command('mcv_jira_rss', autorun=True)
 async def mcv_jira_rss(bot: FetchTarget):
-    @Scheduler.scheduled_job('interval', seconds=30)
+    @Scheduler.scheduled_job('interval', seconds=30, name='mcv_jira_rss')
     async def jira():
         urls = {'Java': {'url': 'https://bugs.mojang.com/rest/api/2/project/10400/versions', 'display': 'Java版'},
                 'Bedrock': {'url': 'https://bugs.mojang.com/rest/api/2/project/10200/versions', 'display': '基岩版'},
@@ -78,7 +76,6 @@ async def mcv_jira_rss(bot: FetchTarget):
         for url in urls:
             try:
                 version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_{url}.txt')
-                Logger.info(f'Checking Jira mcv {url}...')
                 verlist = getfileversions(version_file)
                 file = json.loads(await get_url(urls[url]['url']))
                 releases = []
@@ -91,13 +88,12 @@ async def mcv_jira_rss(bot: FetchTarget):
                         verlist.append(release)
                         get_target_id = BotDBUtil.Module.get_enabled_this('mcv_jira_rss')
                         for id_ in get_target_id:
-                            fetch = bot.fetch_target(id_)
+                            fetch = await bot.fetch_target(id_)
                             if fetch:
                                 send = await fetch.sendMessage(
                                     f'Jira已更新{urls[url]["display"]} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
                         addversion = open(version_file, 'a')
                         addversion.write('\n' + release)
                         addversion.close()
-                Logger.info('jira mcv checked.')
             except Exception:
                 traceback.print_exc()

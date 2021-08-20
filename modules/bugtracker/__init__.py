@@ -29,7 +29,7 @@ async def regex_bugtracker(msg: MessageSession):
             async with msg.Typing(msg):
                 result = await bugtracker_get(q.group(1))
                 return await msg.sendMessage(result)
-    rlink = re.compile(r'https://bugs.mojang.com/browse/(.*?-\d*)')
+    rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')
     findlink = re.findall(rlink, display_msg)
     for link in findlink:
         matchbug = re.match(rlink, link)
