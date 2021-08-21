@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 
 import discord
@@ -25,6 +26,7 @@ async def on_ready():
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
     await asyncio.gather(*gather_list)
     Scheduler.start()
+    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 
 
 @client.event

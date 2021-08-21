@@ -28,7 +28,7 @@ class Logginglogger(AbstractLogger):
     def __init__(self, fmt="[%(asctime)s][%(levelname)s]: %(msg)s", **kwargs):
         logging.basicConfig(
             format=fmt,
-            level=logging.INFO if not kwargs.get("debug") else logging.DEBUG,
+            level=logging.INFO if not kwargs.get("debug") else logging.DEBUG
         )
 
     def info(self, msg):

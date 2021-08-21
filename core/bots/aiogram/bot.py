@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 
 from aiogram import types, executor
@@ -38,6 +39,7 @@ async def on_startup(dispatcher):
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
     await asyncio.gather(*gather_list)
     Scheduler.start()
+    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 
 
 if dp:

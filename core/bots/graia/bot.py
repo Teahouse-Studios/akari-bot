@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 
 from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
@@ -54,6 +55,7 @@ async def autorun_handler():
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
     await asyncio.gather(*gather_list)
     Scheduler.start()
+    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 
 
 if Config('qq_host') and Config('qq_account'):

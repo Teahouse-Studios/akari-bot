@@ -1,3 +1,4 @@
+import sys
 import traceback
 
 from init import init_bot
@@ -6,6 +7,13 @@ import os
 import subprocess
 from queue import Queue, Empty
 from threading import Thread
+import locale
+
+
+encode = 'UTF-8'
+if locale.getdefaultlocale()[1] == 'cp936':
+    encode = 'GBK'
+
 
 def enqueue_output(out, queue):
     for line in iter(out.readline, b''):
@@ -42,8 +50,9 @@ while True:
             x.kill()
     else:
         try:
-            logging.info(line.decode('utf8')[:-1])
+            logging.info(line[:-1].decode(encode))
         except Exception:
+            print(line)
             traceback.print_exc()
 
     # break when all processes are done.
