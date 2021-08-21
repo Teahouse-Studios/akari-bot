@@ -1,5 +1,7 @@
 import os
 import shutil
+from database import BotDBUtil
+from config import Config
 
 
 def init_bot():
@@ -10,12 +12,6 @@ def init_bot():
     else:
         os.mkdir(cache_path)
 
-    version = os.path.abspath('.version')
-    write_version = open(version, 'w')
-    write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:7])
-    write_version.close()
-
-    tag = os.path.abspath('.version_tag')
-    write_tag = open(tag, 'w')
-    write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
-    write_tag.close()
+    base_superuser = Config('base_superuser')
+    if base_superuser:
+        BotDBUtil.SenderInfo(base_superuser).edit('isSuperUser', True)

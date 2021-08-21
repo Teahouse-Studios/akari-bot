@@ -10,10 +10,12 @@ from threading import Thread
 
 encode = 'UTF-8'
 
+
 def enqueue_output(out, queue):
     for line in iter(out.readline, b''):
         queue.put(line)
     out.close()
+
 
 init_bot()
 
@@ -24,7 +26,8 @@ runlst = []
 for x in lst:
     bot = f'{botdir}{x}/bot.py'
     if os.path.exists(bot):
-        p = subprocess.Popen(f'python {bot}', shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=os.path.abspath('.'))
+        p = subprocess.Popen(f'python {bot}', shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             cwd=os.path.abspath('.'))
         runlst.append(p)
 q = Queue()
 threads = []

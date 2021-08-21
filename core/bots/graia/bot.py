@@ -14,9 +14,10 @@ from core.elements import MsgInfo, Session, Module
 from core.loader import Modules
 from core.parser.message import parser
 from core.scheduler import Scheduler
-from core.utils import PrivateAssets
+from core.utils import PrivateAssets, init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+init()
 
 
 @bcc.receiver('GroupMessage')
@@ -56,6 +57,8 @@ async def autorun_handler():
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    await load_prompt(FetchTarget)
+
 
 
 if Config('qq_host') and Config('qq_account'):

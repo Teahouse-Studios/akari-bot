@@ -1,10 +1,13 @@
 import asyncio
+import json
 import os
+import sys
 import time
 
 import psutil
 
 from core.elements import MessageSession
+from core.utils import PrivateAssets
 from core.loader import ModulesManager
 from core.loader.decorator import command
 from core.parser.command import CommandParser
@@ -122,8 +125,8 @@ async def modules_help(msg: MessageSession):
          help_doc='~version {查看机器人的版本号}'
          )
 async def bot_version(msg: MessageSession):
-    version = os.path.abspath('.version')
-    tag = os.path.abspath('.version_tag')
+    version = os.path.abspath(PrivateAssets.path + '/version')
+    tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     open_version = open(version, 'r')
     open_tag = open(tag, 'r')
     msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）'
@@ -186,3 +189,70 @@ async def config_gu(msg: MessageSession):
         if user:
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").remove_TargetAdmin(msg.target.targetId):
                 await msg.sendMessage("成功")
+
+
+@command('add_su', need_superuser=True, help_doc='add_su <user>')
+async def add_su(message: MessageSession):
+    user = message.parsed_msg['<user>']
+    print(message.parsed_msg)
+    if user:
+        if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
+            await message.sendMessage('成功')
+
+
+@command('del_su', need_superuser=True, help_doc='del_su <user>')
+async def del_su(message: MessageSession):
+    user = message.parsed_msg['<user>']
+    if user:
+        if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
+            await message.sendMessage('成功')
+
+
+"""
+@command('set_modules', need_superuser=True, help_doc='set_modules <>')
+async def set_modules(display_msg: dict):
+    ...
+"""
+
+
+@command('restart', need_superuser=True)
+async def restart_bot(msg: MessageSession):
+    await msg.sendMessage('你确定吗？')
+    confirm = await msg.waitConfirm()
+    if confirm:
+        update = os.path.abspath('.cache_restart_author')
+        write_version = open(update, 'w')
+        write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
+        write_version.close()
+        await msg.sendMessage('已执行。')
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+
+@command('update', need_superuser=True)
+async def update_bot(msg: MessageSession):
+    await msg.sendMessage('你确定吗？')
+    confirm = await msg.waitConfirm()
+    if confirm:
+        result = os.popen('git pull', 'r')
+        await msg.sendMessage(result.read()[:-1])
+
+
+@command('update&restart', need_superuser=True)
+async def update_and_restart_bot(msg: MessageSession):
+    await msg.sendMessage('你确定吗？')
+    confirm = await msg.waitConfirm()
+    if confirm:
+        update = os.path.abspath('.cache_restart_author')
+        write_version = open(update, 'w')
+        write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
+        write_version.close()
+        result = os.popen('git pull', 'r')
+        await msg.sendMessage(result.read()[:-1])
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
+
+@command('echo', need_superuser=True, help_doc='echo <display_msg>')
+async def echo_msg(msg: MessageSession):
+    await msg.sendMessage(msg.parsed_msg['<display_msg>'])

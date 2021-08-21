@@ -4,7 +4,7 @@ import traceback
 import discord
 
 from core.bots.discord.client import client
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT
 from core.elements.others import confirm_command
 
 
@@ -81,7 +81,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchTarget:
+class FetchTarget(FT):
     @staticmethod
     async def fetch_target(targetId):
         matchChannel = re.match(r'^(DC\|(?:DM\||)Channel)\|(.*)', targetId)

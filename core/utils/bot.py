@@ -4,11 +4,14 @@ import shutil
 import traceback
 import uuid
 from os.path import abspath
+import json
 
 import aiohttp
 import filetype as ft
 
 from core.logger import Logger
+from core.elements import FetchTarget
+
 
 class PrivateAssets:
     path = ''
@@ -18,6 +21,17 @@ class PrivateAssets:
         if not os.path.exists(path):
             os.mkdir(path)
         PrivateAssets.path = path
+
+
+def init():
+    version = os.path.abspath(PrivateAssets.path + '/version')
+    write_version = open(version, 'w')
+    write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:7])
+    write_version.close()
+    tag = os.path.abspath(PrivateAssets.path + '/version_tag')
+    write_tag = open(tag, 'w')
+    write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
+    write_tag.close()
 
 
 async def get_url(url: str, headers=None):
@@ -53,18 +67,19 @@ async def slk_converter(filepath):
     Logger.info('Voice encoded.')
     return filepath2
 
-"""
-async def load_prompt():
+
+async def load_prompt(bot: FetchTarget):
+    print(111)
     author_cache = os.path.abspath('.cache_restart_author')
     loader_cache = os.path.abspath('.cache_loader')
     if os.path.exists(author_cache):
-        import json
         open_author_cache = open(author_cache, 'r')
-        cache_json = json.loads(open_author_cache.read())
+        author = json.loads(open_author_cache.read())['ID']
         open_loader_cache = open(loader_cache, 'r')
-        await sendMessage(cache_json, open_loader_cache.read(), quote=False)
-        open_loader_cache.close()
-        open_author_cache.close()
-        os.remove(author_cache)
-        os.remove(loader_cache)
-"""
+        m = await bot.fetch_target(author)
+        if m:
+            await m.sendMessage(open_loader_cache.read())
+            open_loader_cache.close()
+            open_author_cache.close()
+            os.remove(author_cache)
+            os.remove(loader_cache)

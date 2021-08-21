@@ -4,7 +4,7 @@ import traceback
 
 from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
 from core.elements.others import confirm_command
 from aiogram import types
 
@@ -88,7 +88,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchTarget:
+class FetchTarget(FT):
     @staticmethod
     async def fetch_target(targetId):
         matchChannel = re.match(r'^(Telegram\|.*?)\|(.*)', targetId)

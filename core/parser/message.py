@@ -49,14 +49,14 @@ async def parser(msg: MessageSession):
                     if module.need_superuser:
                         if not senderInfo.query.isSuperUser:
                             return await msg.sendMessage('你没有使用该命令的权限。')
-                    if module.need_admin:
-                        if not await msg.checkPermission():
-                            return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
-                    if not module.is_base_function:
+                    elif not module.is_base_function:
                         check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(
                             command_first_word)  # 是否开启模块
                         if not check_command_enable:  # 若未开启
                             return await msg.sendMessage(f'此模块未启用，请发送~enable {command_first_word}启用本模块。')
+                    if module.need_admin:
+                        if not await msg.checkPermission():
+                            return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                     help_doc = module.help_doc
                     if help_doc is not None:
                         try:

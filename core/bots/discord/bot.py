@@ -12,9 +12,10 @@ from core.loader import Modules
 from core.logger import Logger
 from core.parser.message import parser
 from core.scheduler import Scheduler
-from core.utils import PrivateAssets
+from core.utils import PrivateAssets, init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+init()
 
 
 @client.event
@@ -27,6 +28,8 @@ async def on_ready():
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    await asyncio.sleep(5)
+    await load_prompt(FetchTarget)
 
 
 @client.event
@@ -35,12 +38,12 @@ async def on_message(message):
     if message.author == client.user:
         return
     Logger.info(str(message) + message.content)
-    target = "DC|Channel"
+    target = "Discord|Channel"
     if isinstance(message.channel, discord.DMChannel):
-        target = "DC|DM|Channel"
+        target = "Discord|DM|Channel"
     msg = MessageSession(target=MsgInfo(targetId=f"{target}|{message.channel.id}",
-                                        senderId=f"DC|Client|{message.author.id}",
-                                        senderName=message.author.name, targetFrom=target, senderFrom="DC|Client"),
+                                        senderId=f"Discord|Client|{message.author.id}",
+                                        senderName=message.author.name, targetFrom=target, senderFrom="Discord|Client"),
                          session=Session(message=message, target=message.channel, sender=message.author))
     await parser(msg)
 

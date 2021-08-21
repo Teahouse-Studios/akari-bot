@@ -15,9 +15,12 @@ def convert_str_to_list(s: str) -> list:
 
 class BotDBUtil:
     class Module:
-        def __init__(self, msg: MessageSession):
-            self.message = msg
-            self.query = session.query(EnabledModules).filter_by(targetId=str(msg.target.targetId)).first()
+        def __init__(self, msg: [MessageSession, str]):
+            if isinstance(msg, MessageSession):
+                self.targetId = str(msg.target.targetId)
+            else:
+                self.targetId = msg
+            self.query = session.query(EnabledModules).filter_by(targetId=self.targetId).first()
             self.enable_modules_list = convert_str_to_list(self.query.enabledModules) if self.query is not None else []
             self.need_insert = True if self.query is None else False
 
@@ -34,7 +37,7 @@ class BotDBUtil:
                         self.enable_modules_list.append(x)
             value = convert_list_to_str(self.enable_modules_list)
             if self.need_insert:
-                table = EnabledModules(targetId=str(self.message.target.targetId),
+                table = EnabledModules(targetId=self.targetId,
                                        enabledModules=value)
                 session.add_all([table])
             else:
@@ -77,6 +80,8 @@ class BotDBUtil:
         def edit(self, column: str, value):
             setattr(self.query, column, value)
             session.commit()
+            session.expire_all()
+            return True
 
         def check_TargetAdmin(self, targetId):
             query = session.query(TargetAdmin).filter_by(senderId=self.senderId, targetId=targetId).first()

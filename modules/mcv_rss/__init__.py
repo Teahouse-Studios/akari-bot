@@ -51,7 +51,7 @@ async def mcv_rss(bot: FetchTarget):
                 Logger.info(f'huh, we find {snapshot}.')
                 get_target_id = BotDBUtil.Module.get_enabled_this('mcv_rss')
                 for x in get_target_id:
-                    fetch = bot.fetch_target(x)
+                    fetch = await bot.fetch_target(x)
                     if fetch:
                         try:
                             await fetch.sendMessage('启动器已更新' + file['latest']['snapshot'] + '快照。')
