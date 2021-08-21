@@ -7,13 +7,8 @@ import os
 import subprocess
 from queue import Queue, Empty
 from threading import Thread
-import locale
-
 
 encode = 'UTF-8'
-if locale.getdefaultlocale()[1] == 'cp936':
-    encode = 'GBK'
-
 
 def enqueue_output(out, queue):
     for line in iter(out.readline, b''):
