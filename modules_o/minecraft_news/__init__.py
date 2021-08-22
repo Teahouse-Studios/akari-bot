@@ -1,21 +1,10 @@
 import asyncio
 import json
 import traceback
+import difflib
 
 import aiohttp
-from core.broadcast import bcc
-from core.template import logger_info
-from database_old import BotDB
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain, Image
-from graia.scheduler import GraiaScheduler
-from graia.scheduler.timers import every_minute
-
-from .database import MD as db
-
-database = db()
-check_enable_modules_all = BotDB.check_enable_modules_all
-scheduler = GraiaScheduler(bcc.loop, bcc)
+from
 
 
 async def start_check_news(app):

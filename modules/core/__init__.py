@@ -176,12 +176,12 @@ async def ping(msg: MessageSession):
 @command('admin',
          is_base_function=True,
          need_admin=True,
-         help_doc=('~admin add <user>', '~admin del <user>')
+         help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}')
          )
 async def config_gu(msg: MessageSession):
     if msg.parsed_msg['add']:
         user = msg.parsed_msg['<user>']
-        if user:
+        if user and not BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").check_TargetAdmin(msg.target.targetId):
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").add_TargetAdmin(msg.target.targetId):
                 await msg.sendMessage("成功")
     if msg.parsed_msg['del']:
@@ -220,7 +220,7 @@ async def restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
-        update = os.path.abspath('.cache_restart_author')
+        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
         write_version = open(update, 'w')
         write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
         write_version.close()
@@ -243,7 +243,7 @@ async def update_and_restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
-        update = os.path.abspath('.cache_restart_author')
+        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
         write_version = open(update, 'w')
         write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
         write_version.close()

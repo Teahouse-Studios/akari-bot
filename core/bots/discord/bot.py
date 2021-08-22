@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import re
 
 import discord
 
@@ -17,7 +18,6 @@ from core.utils import PrivateAssets, init, load_prompt
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
 
-
 @client.event
 async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
@@ -28,7 +28,6 @@ async def on_ready():
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
-    await asyncio.sleep(5)
     await load_prompt(FetchTarget)
 
 

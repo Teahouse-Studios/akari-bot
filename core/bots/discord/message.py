@@ -84,9 +84,9 @@ class MessageSession(MS):
 class FetchTarget(FT):
     @staticmethod
     async def fetch_target(targetId):
-        matchChannel = re.match(r'^(DC\|(?:DM\||)Channel)\|(.*)', targetId)
+        matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)
         if matchChannel:
-            getChannel = client.get_channel(int(matchChannel.group(2)))
+            getChannel = await client.fetch_channel(int(matchChannel.group(2)))
             return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
                                           targetFrom=matchChannel.group(1), senderFrom=matchChannel.group(1)),
                                   Session(message=False, target=getChannel, sender=getChannel))
