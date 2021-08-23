@@ -23,7 +23,7 @@ botdir = './core/bots/'
 lst = os.listdir(botdir)
 runlst = []
 for x in lst:
-    bot = f'{botdir}{x}/bot.py'
+    bot = os.path.abspath(f'{botdir}{x}/bot.py')
     if os.path.exists(bot):
         p = subprocess.Popen(f'python {bot}', shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              cwd=os.path.abspath('.'))
