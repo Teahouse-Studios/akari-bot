@@ -81,7 +81,7 @@ class MessageSession(MS):
             self.msg = msg
 
         async def __aenter__(self):
-            await self.msg.session.target.answer_chat_action('typing')
+            await bot.answer_chat_action(self.msg.session.target, 'typing')
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
