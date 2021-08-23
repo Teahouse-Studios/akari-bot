@@ -23,8 +23,9 @@ def getfileversions(path):
 
 @command('mcv_rss', autorun=True)
 async def mcv_rss(bot: FetchTarget):
-    @Scheduler.scheduled_job('interval', seconds=30, name='mcv_rss')
+    @Scheduler.scheduled_job('interval', seconds=60)
     async def java_main():
+        Logger.info('test')
         url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
         try:
             version_file = os.path.abspath(f'{PrivateAssets.path}/mcversion.txt')
@@ -67,7 +68,7 @@ async def mcv_rss(bot: FetchTarget):
 
 @command('mcv_jira_rss', autorun=True)
 async def mcv_jira_rss(bot: FetchTarget):
-    @Scheduler.scheduled_job('interval', seconds=30, name='mcv_jira_rss')
+    @Scheduler.scheduled_job('interval', seconds=60)
     async def jira():
         urls = {'Java': {'url': 'https://bugs.mojang.com/rest/api/2/project/10400/versions', 'display': 'Java版'},
                 'Bedrock': {'url': 'https://bugs.mojang.com/rest/api/2/project/10200/versions', 'display': '基岩版'},

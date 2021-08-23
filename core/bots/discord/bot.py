@@ -17,18 +17,22 @@ from core.utils import PrivateAssets, init, load_prompt
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
 
+count = 0
 
 @client.event
 async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
-    gather_list = []
-    for x in Modules:
-        if isinstance(Modules[x], Module) and Modules[x].autorun:
-            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
-    await asyncio.gather(*gather_list)
-    Scheduler.start()
-    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
-    await load_prompt(FetchTarget)
+    global count
+    if count == 0:
+        gather_list = []
+        for x in Modules:
+            if isinstance(Modules[x], Module) and Modules[x].autorun:
+                gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+        await asyncio.gather(*gather_list)
+        Scheduler.start()
+        logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+        await load_prompt(FetchTarget)
+        count = 1
 
 
 @client.event

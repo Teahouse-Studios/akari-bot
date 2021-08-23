@@ -12,7 +12,7 @@ from modules.weekly import get_weekly
 
 @command('weekly_rss', autorun=True, help_doc=('{订阅中文 Minecraft Wiki 的每周页面（每周一 8：30 更新）。}'))
 async def weekly_rss(bot):
-    @Scheduler.scheduled_job(CronTrigger.from_crontab('30 8 * * MON'), name='weekly_rss')
+    @Scheduler.scheduled_job(CronTrigger.from_crontab('30 8 * * MON'))
     async def check_weekly():
         Logger.info('Checking MCWZH weekly...')
 
