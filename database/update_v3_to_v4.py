@@ -11,10 +11,10 @@ conn = sqlite3.connect(old_db_link)
 c = conn.cursor()
 friends = c.execute(f"SELECT * FROM friend_permission").fetchall()
 for friend in friends:
-    BotDBUtil.Module(f'QQ|{friend[0]}').enable('|'.split(friend[1]))
+    BotDBUtil.Module(f'QQ|{friend[0]}').enable(friend[1].split('|'))
 groups = c.execute(f"SELECT * FROM group_permission").fetchall()
 for group in groups:
-    BotDBUtil.Module(f'QQ|Group|{group[0]}').enable('|'.split(group[1]))
+    BotDBUtil.Module(f'QQ|Group|{group[0]}').enable(group[1].split('|'))
 group_admins = c.execute(f"SELECT * FROM group_adminuser").fetchall()
 for group_admin in group_admins:
     BotDBUtil.SenderInfo(f'QQ|{group_admin[1]}').add_TargetAdmin(f'QQ|Group|{group_admin[2]}')
