@@ -5,12 +5,16 @@ from .orm import session, WikiTargetSetInfo, WikiInfo
 
 
 class WikiTargetInfo:
-    def __init__(self, msg: MessageSession):
-        self.msg = msg
-        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=msg.target.targetId).first()
+    def __init__(self, msg: [MessageSession, str]):
+        if isinstance(msg, MessageSession):
+            targetId = msg.target.targetId
+        else:
+            targetId = msg
+        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
         if self.query is None:
-            session.add_all([WikiTargetSetInfo(targetId=self.msg.target.targetId, iws='{}', headers='{}')])
+            session.add_all([WikiTargetSetInfo(targetId=targetId, iws='{}', headers='{}')])
             session.commit()
+            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
 
     def add_start_wiki(self, url):
         self.query.link = url
