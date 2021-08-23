@@ -1,6 +1,7 @@
-from graiax import silkcoder
 import asyncio
 import sys
+
+from graiax import silkcoder
 
 filepath = sys.argv[1]
 filepath2 = filepath + '.silk'

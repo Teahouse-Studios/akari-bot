@@ -6,14 +6,14 @@ import zipfile
 
 from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 
-from core.template import sendMessage
+from core.elements import MessageSession
 
 
-async def arcb30init(kwargs):
+async def arcb30init(msg: MessageSession):
     cache = os.path.abspath('./cache')
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
-        await sendMessage(kwargs, '未找到arc.apk！')
+        await msg.sendMessage('未找到arc.apk！')
         return
     assets = os.path.abspath('./assets/arcaea')
     if os.path.exists(assets):
@@ -89,7 +89,7 @@ async def arcb30init(kwargs):
         cd = cd.rotate(180).transpose(Image.FLIP_LEFT_RIGHT)
         cd.save(os.path.abspath(f'{assets}/{ds}.png'))
 
-    await sendMessage(kwargs, '成功初始化！')
+    await msg.sendMessage('成功初始化！')
 
 
 class Rotate(object):

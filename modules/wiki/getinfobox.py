@@ -9,7 +9,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from config import Config
-from core.template import logger_info
+from core.logger import Logger
 
 infobox_render = Config('infobox_render')
 
@@ -18,7 +18,7 @@ async def get_infobox_pic(link, pagelink, headers):
     if not infobox_render:
         return False
     try:
-        logger_info('Starting find infobox..')
+        Logger.info('Starting find infobox..')
         wlink = re.sub(r'api.php', '', link)
         link = re.sub(r'(?:w/|)api.php', '', link)
         try:
@@ -33,7 +33,7 @@ async def get_infobox_pic(link, pagelink, headers):
         url = os.path.abspath(f'./cache/{pagename}.html')
         if os.path.exists(url):
             os.remove(url)
-        logger_info('Downloaded raw.')
+        Logger.info('Downloaded raw.')
         open_file = open(url, 'a', encoding='utf-8')
         find_infobox = soup.find(class_='notaninfobox')  # 我
         if find_infobox is None:  # 找
@@ -52,13 +52,16 @@ async def get_infobox_pic(link, pagelink, headers):
             find_infobox = soup.find(class_='arcaeabox')  # 找 (arcw)
         if find_infobox is None:  # 找
             return False  # 找你妈，不找了<-咱还是回家吧
-        logger_info('Find infobox, start modding...')
+        Logger.info('Find infobox, start modding...')
 
         for x in soup.find_all(rel='stylesheet'):
             if x.has_attr('href'):
                 x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
             open_file.write(str(x))
 
+        for x in soup.find_all():
+            if x.has_attr('href'):
+                x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
         for x in soup.find_all('style'):
             open_file.write(str(x))
 
@@ -89,6 +92,11 @@ async def get_infobox_pic(link, pagelink, headers):
                 x.attrs['class'] = 'image'
                 x.attrs['src'] = x.attrs['data-src']
 
+        for x in find_infobox.find_all(class_='lazyload'):
+            if x.has_attr('class') and x.has_attr('data-src'):
+                x.attrs['class'] = 'image'
+                x.attrs['src'] = x.attrs['data-src']
+
         open_file.write('<body class="mw-parser-output">')
         open_file.write(str(find_infobox))
         open_file.write('</body>')
@@ -110,7 +118,7 @@ a .heimu,\
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
         html = {'content': read_file.read()}
-        logger_info('Start rendering...')
+        Logger.info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
             os.remove(picname)

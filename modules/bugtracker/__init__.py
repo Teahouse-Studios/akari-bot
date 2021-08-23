@@ -1,44 +1,37 @@
 import re
 
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain
-
-from core.template import sendMessage, Nudge
-from .bugtracker_new import bugtracker_get
+from core.elements import MessageSession
+from core.loader.decorator import command
+from .bugtracker import bugtracker_get
 
 
-async def bugtracker(kwargs: dict):
-    msg = kwargs['trigger_msg']
-    msg = re.sub('bug ', '', msg)
-    q = re.match(r'(.*)-(.*)', msg)
-    if q:
-        result = await bugtracker_get(q.group(1) + '-' + q.group(2))
-        msgchain = MessageChain.create([Plain(result)])
-        await sendMessage(kwargs, msgchain)
-
-
-async def regex_bugtracker(kwargs: dict):
-    msg = kwargs[MessageChain].asDisplay()
-    if msg.find('[Webhook]') != -1:
-        return
-    if msg[0] == '!':
-        msg = re.sub('!', '', msg)
-        msg = re.sub('bug ', '', msg)
-        q = re.match(r'(.*)-(.*)', msg)
+@command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}')
+async def bugtracker(msg: MessageSession):
+    mojira_id = msg.parsed_msg['<MojiraID>']
+    if mojira_id:
+        q = re.match(r'(.*-.*)', mojira_id)
         if q:
-            await Nudge(kwargs)
-            result = await bugtracker_get(q.group(1) + '-' + q.group(2))
-            msgchain = MessageChain.create([Plain(result)])
-            await sendMessage(kwargs, msgchain)
-    findlink = re.findall(r'(https://bugs\.mojang\.com/browse/.*?-\d*)', msg)
+            result = await bugtracker_get(q.group(1))
+            await msg.sendMessage(result)
+
+
+@command('bug_regex', desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
+         is_regex_function=True)
+async def regex_bugtracker(msg: MessageSession):
+    display_msg = msg.asDisplay()
+    if display_msg.find('[Webhook]') != -1:
+        return
+    if display_msg[0] == '!':
+        display_msg = re.sub('^!', '', display_msg)
+        display_msg = re.sub('^bug ', '', display_msg)
+        q = re.match(r'(.*-.*)', display_msg)
+        if q:
+            async with msg.Typing(msg):
+                result = await bugtracker_get(q.group(1))
+                return await msg.sendMessage(result)
+    rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')
+    findlink = re.findall(rlink, display_msg)
     for link in findlink:
-        print(link)
-        matchbug = re.match(r'https://bugs\.mojang\.com/browse/(.*?-\d*)', link)
+        matchbug = re.match(rlink, link)
         if matchbug:
-            await sendMessage(kwargs, await bugtracker_get(matchbug.group(1)))
-
-
-command = {'bug': bugtracker}
-regex = {'bug_regex': regex_bugtracker}
-help = {'bug': {'help': '~bug <mojiraid> 查询Mojira上的漏洞编号。'},
-        'bug_regex': {'help': '正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。'}}
+            await msg.sendMessage(await bugtracker_get(matchbug.group(1)))

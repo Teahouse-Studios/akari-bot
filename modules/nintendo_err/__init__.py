@@ -1,7 +1,8 @@
 # copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
-from core.template import sendMessage
+from core.elements import MessageSession
+from core.loader.decorator import command
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
@@ -33,7 +34,7 @@ class ctx:
         if embed:
             msgs = convertdict(embed)
             msglst.append('\n'.join(msgs))
-        await sendMessage(kwargs, '\n'.join(msglst))
+        await kwargs.sendMessage('\n'.join(msglst))
 
 
 class Results:
@@ -123,8 +124,10 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         err = self.fixup_input(err)
         if (meme := self.check_meme(err)) is not None:
             return await ctx.send(kwargs, meme)
-
-        ret = self.fetch(err)
+        try:
+            ret = self.fetch(err)
+        except ValueError:
+            ret = None
 
         if ret:
             embed = discord.Embed(title=ret.get_title())
@@ -292,6 +295,39 @@ invalid for the Wii U.')
             await ctx.send(kwargs, 'This isn\'t a hexadecimal value!')
 
 
-command = {'err': Results().result}
-help = {'err': {
-    'help': '~err <报错码> - 查询任天堂主机系列报错码详细信息。'}}
+@command('err', help_doc='~err <errcode> {解析任天堂系列主机的报错码并给出原因。}')
+async def result(msg: MessageSession):
+    """
+    Displays information on game console result codes, with a fancy embed.
+    0x prefix is not required for hex input.
+
+    Examples:
+      .err 0xD960D02B
+      .err D960D02B
+      .err 022-2634
+      .err 102-2804
+      .err 2168-0002
+      .err 2-ARVHA-0000
+    """
+    results = Results()
+    err = msg.parsed_msg['<errcode>']
+    err = results.fixup_input(err)
+    if (meme := results.check_meme(err)) is not None:
+        return await msg.sendMessage(meme)
+    try:
+        ret = results.fetch(err)
+    except ValueError:
+        ret = None
+
+    if ret:
+        embed = discord.Embed(title=ret.get_title())
+        if ret.extra_description:
+            embed.description = ret.extra_description
+        for field in ret:
+            embed.add_field(name=field.field_name, value=field.message, inline=False)
+
+        embed.color = ret.color
+        embed = embed.to_dict()
+        await ctx.send(msg, embed=embed)
+    else:
+        await ctx.send(msg, f'你输入的代码是无效的，或者此功能不支持你使用的主机。')

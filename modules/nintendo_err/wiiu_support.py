@@ -451,6 +451,7 @@ syserr = Module('system error', {
     103: ResultInfo('The MLC system memory is corrupted.'),
     104: ResultInfo('The SLC system memory is corrupted.'),
     105: ResultInfo('The USB storage is corrupted.'),
+    2713: ResultInfo('The USB Storage device has been disconnected.')
 })
 
 unknown = Module('unknown/misc.', {

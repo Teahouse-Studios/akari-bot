@@ -1,76 +1,57 @@
-import asyncio
+import logging
 import os
-import shutil
+import subprocess
+import traceback
+from queue import Queue, Empty
+from threading import Thread
 
-from graia.application import GraiaMiraiApplication
-from graia.application.event.mirai import NewFriendRequestEvent, BotInvitedJoinGroupRequestEvent
-from graia.application.friend import Friend
-from graia.application.group import Group, Member
-from graia.application.message.chain import MessageChain
+from init import init_bot
 
-from config import Config
-from core.broadcast import bcc, app
-from core.elements import Target
-from core.loader import Modules
-from core.parser import parser
-from core.utils import load_prompt as lp
-from legacy_subbot import newbie
-
-cache_path = os.path.abspath('./cache/')
-if os.path.exists(cache_path):
-    shutil.rmtree(cache_path)
-    os.mkdir(cache_path)
-else:
-    os.mkdir(cache_path)
-
-version = os.path.abspath('.version')
-write_version = open(version, 'w')
-write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:7])
-write_version.close()
+encode = 'UTF-8'
 
 
-@bcc.receiver('GroupMessage')
-async def group_message_handler(message: MessageChain, group: Group, member: Member):
-    kwargs = {MessageChain: message, Group: group, Member: member,
-              Target: Target(id=group.id, senderId=member.id, name=group.name, target_from='Group')}
-    await parser(kwargs)
+def enqueue_output(out, queue):
+    for line in iter(out.readline, b''):
+        queue.put(line)
+    out.close()
 
 
-@bcc.receiver('FriendMessage')
-async def group_message_handler(message: MessageChain, friend: Friend):
-    kwargs = {MessageChain: message, Friend: friend,
-              Target: Target(id=friend.id, senderId=friend.id, name=friend.nickname, target_from='Friend')}
-    await parser(kwargs)
+init_bot()
 
+logging.basicConfig(format="%(msg)s", level=logging.INFO)
+botdir = './core/bots/'
+lst = os.listdir(botdir)
+runlst = []
+for x in lst:
+    bot = f'{botdir}{x}/bot.py'
+    if os.path.exists(bot):
+        p = subprocess.Popen(f'python {bot}', shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             cwd=os.path.abspath('.'))
+        runlst.append(p)
+q = Queue()
+threads = []
+for p in runlst:
+    threads.append(Thread(target=enqueue_output, args=(p.stdout, q)))
 
-@bcc.receiver("NewFriendRequestEvent")
-async def NFriend(event: NewFriendRequestEvent):
-    await event.accept()
+for t in threads:
+    t.daemon = True
+    t.start()
 
+while True:
+    try:
+        line = q.get_nowait()
+    except Empty:
+        pass
+    except KeyboardInterrupt:
+        for x in runlst:
+            x.kill()
+    else:
+        try:
+            logging.info(line[:-1].decode(encode))
+        except Exception:
+            print(line)
+            traceback.print_exc()
 
-@bcc.receiver("BotInvitedJoinGroupRequestEvent")
-async def NGroup(event: BotInvitedJoinGroupRequestEvent):
-    await event.accept()
-
-
-@bcc.receiver('ApplicationLaunched')
-async def message_handler(app: GraiaMiraiApplication):
-    rss_list = Modules['rss']
-    gather_list = []
-    for x in rss_list:
-        gather_list.append(asyncio.ensure_future(rss_list[x](app)))
-    await asyncio.gather(*gather_list)
-
-
-@bcc.receiver('ApplicationLaunched')
-async def legacy_message_handler(app: GraiaMiraiApplication):
-    if Config('account') == '2926887640':
-        await newbie(app)
-
-
-@bcc.receiver('ApplicationLaunched', priority=16)
-async def load_prompt():
-    await lp()
-
-
-app.launch_blocking()
+    # break when all processes are done.
+    if all(p.poll() is not None for p in runlst):
+        break

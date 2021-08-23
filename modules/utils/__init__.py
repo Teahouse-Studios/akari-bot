@@ -1,75 +1,29 @@
-import asyncio
-import time
-
-import psutil
-from graia.application import Group, Friend
-
-from core.template import sendMessage, revokeMessage
-from core.elements import Target
-from database import BotDB as database
-from core.broadcast import app
+from core.elements import MessageSession
+from core.loader.decorator import command
 from modules.utils.ab import ab
 from modules.utils.newbie import newbie
 from modules.utils.rc import rc
+from modules.wiki.dbutils import WikiTargetInfo
 
 
-async def rc_loader(kwargs: dict):
-    table = 'start_wiki_link_' + kwargs[Target].target_from
-    id = kwargs[Target].id
-    msg = await rc(table, id)
-    await sendMessage(kwargs, msg)
+def get_start_wiki(msg: MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    return start_wiki
 
 
-async def ab_loader(kwargs: dict):
-    table = 'start_wiki_link_' + kwargs[Target].target_from
-    id = kwargs[Target].id
-    msg = await ab(table, id)
-    send = await sendMessage(kwargs, msg)
+@command('rc', help_doc='~rc {获取默认wiki的最近更改}')
+async def rc_loader(msg: MessageSession):
+    res = await rc(get_start_wiki(msg))
+    await msg.sendMessage(res)
 
 
-async def newbie_loader(kwargs: dict):
-    table = 'start_wiki_link_' + kwargs[Target].target_from
-    id = kwargs[Target].id
-    msg = await newbie(table, id)
-    await sendMessage(kwargs, msg)
+@command('ab', help_doc='~ab {获取默认wiki的最近滥用日志}')
+async def ab_loader(msg: MessageSession):
+    res = await ab(get_start_wiki(msg))
+    await msg.sendMessage(res)
 
 
-async def ping(kwargs: dict):
-    checkpermisson = database.check_superuser(kwargs)
-    result = "Pong!"
-    if checkpermisson:
-        Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
-        time.sleep(0.5)
-        Cpu_usage = psutil.cpu_percent()
-        RAM = int(psutil.virtual_memory().total / (1024 * 1024))
-        RAM_percent = psutil.virtual_memory().percent
-        Swap = int(psutil.swap_memory().total / (1024 * 1024))
-        Swap_percent = psutil.swap_memory().percent
-        Disk = int(psutil.disk_usage('.').used / (1024 * 1024 * 1024))
-        DiskTotal = int(psutil.disk_usage('.').total / (1024 * 1024 * 1024))
-        try:
-            GroupList = len(await app.groupList())
-        except Exception:
-            GroupList = '无法获取'
-        try:
-            FriendList = len(await app.friendList())
-        except Exception:
-            FriendList = '无法获取'
-        BFH = r'%'
-        result += (f"\n系统运行时间：{Boot_Start}"
-                  + f"\n当前CPU使用率：{Cpu_usage}{BFH}"
-                  + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
-                  + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
-                  + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
-                  + f"\n已加入群聊：{GroupList}"
-                  + f" | 已添加好友：{FriendList}")
-    await sendMessage(kwargs, result)
-
-
-command = {'rc': rc_loader, 'ab': ab_loader, 'newbie': newbie_loader}
-essential = {'ping': ping}
-alias = {'p': 'ping'}
-help = {'rc': {'help': '~rc - 查询Wiki最近更改。'},
-        'ab': {'help': '~ab - 查询Wiki滥用过滤器日志。'},
-        'newbie': {'help': '~newbie - 查询Wiki用户注册日志。'},
-        'ping': {'help': '~ping - PongPongPong', 'essential': True}}
+@command('newbie', help_doc='~newbie {获取默认wiki的新用户}')
+async def newbie_loader(msg: MessageSession):
+    res = await newbie(get_start_wiki(msg))
+    await msg.sendMessage(res)

@@ -189,7 +189,6 @@ async def get_rating(uid, query_type):
 
 
 async def download_cover_thumb(uid):
-    print(uid)
     try:
         d = abspath('./assets/cytoid-cover/' + uid + '/')
         if not os.path.exists(d):

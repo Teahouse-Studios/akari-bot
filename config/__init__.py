@@ -1,4 +1,3 @@
-import traceback
 from configparser import ConfigParser
 from os.path import abspath
 
@@ -23,3 +22,5 @@ class CFG:
 
 
 Config = CFG().config
+CachePath = Config('cache_path')
+DBPath = Config('db_path')

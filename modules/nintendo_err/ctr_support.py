@@ -66,7 +66,9 @@ internet = Module('internet', {
     399: ResultInfo('接受的EULA版本太低。'),
     1099: ResultInfo('给定SSID的接入点未找到。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4249/kw/003-1099'),
-    2001: ResultInfo('DNS未找到，如果你正在使用自定义DNS服务器，请确保设置正确。')
+    1101: ResultInfo('错误的接入点密码或配置不兼容3DS'),
+    2001: ResultInfo('DNS未找到，如果你正在使用自定义DNS服务器，请确保设置正确。'),
+    2103: ResultInfo('常见的连接错误（？')
 })
 
 # Yet another nim hack. Why does this category have so many redundant errors?
@@ -129,6 +131,7 @@ eshop_mint = Module('eshop (mint/api?)', {
     2924: ResultInfo('出现于使用无效的语言设置打开eShop。'),
     3049: ResultInfo('eShop已停服维护。', 'https://support.nintendo.com/networkstatus/'),
     6106: ResultInfo('常见于从eShop重新下载带有非法或无效ticket的软件时。')
+
 })
 
 # 009: errors related to (presumably) the eShop application itself
@@ -147,14 +150,18 @@ eshop_app = Module('eshop (app?)', {
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17014'),
     2995: ResultInfo('这个错误可能出现于下载码输入错误（已激活、失效、输错和区域不对等）。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/13515'),
+    4077: ResultInfo(
+        'Cannot start or continue eShop download. This happens due to insufficient free space being available on the SD Card.'),
     4079: ResultInfo('无法访问内存卡。'),
     4998: ResultInfo('本地内容比服务器的更新，鬼知道为什么会这样。'),
     6106: ResultInfo('NIM的AM报错，可能是坏ticket惹的祸。'),
-    8401: ResultInfo('升级数据错误，删了然后重新下载它。')
+    8401: ResultInfo('升级数据错误，删了然后重新下载它。'),
+    9001: ResultInfo('Caused by trying to download content with low battery percentage.')
 })
 
 # 011: eshop website, or other misc/overlapping errors
 eshop_site = Module('eshop (website?)', {
+    3010: ResultInfo('Server timeout due to user inactivity.'),
     3021: ResultInfo('无法在eShop找到这个应用（错误的区域或者这个东西就根本不存在）'),
     3136: ResultInfo('eShop不可用，等会再试。'),
     6901: ResultInfo('此主机已被任天堂永久封禁（由于某种原因只显示日文）。', is_ban=True)

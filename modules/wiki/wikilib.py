@@ -1,15 +1,16 @@
+import asyncio
 import datetime
 import json
 import re
 import traceback
 import urllib.parse
-import html2text
 
 import aiohttp
-import asyncio
+import html2text
 
 from core import dirty_check
-from .database import WikiDB
+from .dbutils import WikiSiteInfo
+
 
 class wikilib:
     async def get_data(self, url: str, fmt: str, headers=None, ignore_err=False):
@@ -32,7 +33,6 @@ class wikilib:
                 else:
                     raise ValueError(req.status)
 
-
     def encode_query_string(self, kwargs: dict):
         return '?' + urllib.parse.urlencode(kwargs)
 
@@ -40,9 +40,8 @@ class wikilib:
         query_string = {'action': 'query', 'meta': 'siteinfo',
                         'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         query = self.encode_query_string(query_string)
-        getcacheinfo = WikiDB.get_wikiinfo(link)
-        if getcacheinfo and ((datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
-                hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+        getcacheinfo = WikiSiteInfo(link).get()
+        if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
             return link, json.loads(getcacheinfo[0])['query']['general']['sitename']
         try:
             api = re.match(r'(https?://.*?/api.php$)', link)
@@ -58,24 +57,23 @@ class wikilib:
                 api = m[0]
                 if api.startswith('//'):
                     api = link.split('//')[0] + api
-                getcacheinfo = WikiDB.get_wikiinfo(api)
-                if getcacheinfo and (
-                        (datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
-                            hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+                getcacheinfo = WikiSiteInfo(link).get()
+                if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
                     return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
                 json1 = await self.get_data(api + query, 'json', headers=headers)
-                print(json1)
                 wlink = api
             except TimeoutError:
                 traceback.print_exc()
-                return False, 'Timeout'
+                return False, '错误：尝试建立连接超时。'
             except Exception as e:
                 traceback.print_exc()
-                if e.args == (403, ):
+                if e.args == (403,):
                     return False, '服务器拒绝了机器人的请求。'
+                elif not re.match(r'^(https?://).*', link):
+                    return False, '所给的链接没有指明协议头（链接应以http://或https://开头）。'
                 else:
-                    return False, str(e)
-        WikiDB.update_wikiinfo(wlink, json.dumps(json1))
+                    return False, '此站点也许不是一个有效的Mediawiki：' + str(e)
+        WikiSiteInfo(link).update(json1)
         wikiname = json1['query']['general']['sitename']
         extensions = json1['query']['extensions']
         extlist = []
@@ -123,15 +121,14 @@ class wikilib:
 
     async def get_wiki_info(self, url=None):
         url = url if url is not None else self.wiki_api_endpoint
-        getcacheinfo = WikiDB.get_wikiinfo(url)
-        if getcacheinfo and ((datetime.datetime.strptime(getcacheinfo[1], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(
-                hours=8)).timestamp() - datetime.datetime.now().timestamp()) > - 43200:
+        getcacheinfo = WikiSiteInfo(url).get()
+        if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
             return json.loads(getcacheinfo[0])
         query_string = {'action': 'query', 'meta': 'siteinfo',
                         'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         wiki_info_url = url + self.encode_query_string(query_string)
         j = await self.get_data(wiki_info_url, 'json')
-        WikiDB.update_wikiinfo(url, json.dumps(j))
+        WikiSiteInfo(url).update(j)
         return j
 
     async def get_interwiki(self, url=None, iw=None):
@@ -351,13 +348,13 @@ class wikilib:
 
         if self.page_id == '-1':
             if self.template == True:
-                self.page_name = self.orginpagename = re.sub(r'^Template:', '', self.page_name)
+                self.page_name = self.orginpagename = re.sub(r'^MessageSession:', '', self.page_name)
                 self.template = False
                 if self.interwiki == '':
                     target = ''
                 else:
                     target = self.interwiki + ':'
-                self.template_prompt = f'提示：[{target}Template:{self.page_name}]不存在，已自动回滚搜索页面。\n'
+                self.template_prompt = f'提示：[{target}MessageSession:{self.page_name}]不存在，已自动回滚搜索页面。\n'
                 return await self.step1()
             return await self.page_not_found()
         else:
@@ -376,7 +373,7 @@ class wikilib:
             if len(query_text_name_split) > 1:
                 namespaces = await self.get_namespace()
                 if query_text_name_split[0] in namespaces:
-                    if namespaces[query_text_name_split[0]] == 'Template':
+                    if namespaces[query_text_name_split[0]] == 'MessageSession':
                         get_all_text = await self.get_all_wikitext()
                         try:
                             match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
@@ -484,8 +481,8 @@ class wikilib:
             self.template_prompt = None
             self.headers = headers
             if self.template:
-                if not re.match('^Template:', self.page_name, re.I):
-                    self.page_name = 'Template:' + self.page_name
+                if not re.match('^MessageSession:', self.page_name, re.I):
+                    self.page_name = 'MessageSession:' + self.page_name
             self.page_raw = await self.get_page_link()
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done', 'text': '发生错误：请求页面超时。'}

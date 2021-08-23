@@ -5,7 +5,6 @@ import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-
 assets_path = os.path.abspath('./assets/arcaea')
 
 
@@ -50,7 +49,7 @@ def drawb30(Username, b30, r10, ptt, character, path=''):
     # backgroud
     bgimgpath = f'{assets_path}/world/'
     bglist = os.listdir(bgimgpath)
-    bgr = random.randint(0, len(bglist)-1)
+    bgr = random.randint(0, len(bglist) - 1)
     bg = Image.open(bgimgpath + f'/{bglist[bgr]}').convert("RGBA")
     bg = bg.resize((bg.size[0] * 2, bg.size[1] * 2))
     offset = random.randint(0, 1024)

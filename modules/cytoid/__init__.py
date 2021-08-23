@@ -1,37 +1,31 @@
-import re
-
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Image
-
-from core.template import sendMessage
-from database import BotDB as database
+from core.elements import MessageSession, Image
+from core.loader.decorator import command
+from database import BotDBUtil
 from .profile import cytoid_profile
 from .rating import get_rating
 
 
-async def cytoid(kwargs: dict):
-    command = kwargs['trigger_msg']
-    command = re.sub('cytoid ', '', command)
-    command_split = command.split(' ')
-    if command_split[0] == 'profile':
-        kwargs['trigger_msg'] = re.sub(r'^profile ', '', command)
-        await cytoid_profile(kwargs)
-    if command_split[0] in ['b30', 'r30']:
-        c = database.check_time(kwargs, 'cytoidrank', 300)
-        if not c:
-            uid = re.sub(r'^.*?30 ', '', command)
-            img = await get_rating(uid, command_split[0])
+@command('cytoid', help_doc=('~cytoid (b30|r30) <UserID> {查询一个用户的b30/r30记录}',
+                             '~cytoid profile <UserID> {查询一个用户的基本信息}'))
+async def cytoid(msg: MessageSession):
+    if msg.parsed_msg['profile']:
+        await cytoid_profile(msg)
+    if msg.parsed_msg['b30']:
+        query = 'b30'
+    elif msg.parsed_msg['r30']:
+        query = 'r30'
+    else:
+        query = False
+    if query:
+        qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
+        c = qc.check(300)
+        if c == 0:
+            img = await get_rating(msg.parsed_msg['<UserID>'], query)
             if 'path' in img:
-                await sendMessage(kwargs, MessageChain.create([Image.fromLocalFile(img['path'])]))
+                await msg.sendMessage([Image(path=img['path'])])
             if 'text' in img:
-                await sendMessage(kwargs, img['text'])
+                await msg.sendMessage(img['text'])
             if img['status']:
-                database.write_time(kwargs, 'cytoidrank')
+                qc.reset()
         else:
-            await sendMessage(kwargs, f'距离上次执行已过去{int(-c)}秒，本命令的冷却时间为300秒。')
-
-
-command = {'cytoid': cytoid}
-help = {'cytoid': {'help': '~cytoid profile <uid> - 获取一个用户的Cytoid账号信息。\n' +
-                           '~cytoid b30 <uid> - 获取一个用户的Best30信息。\n' +
-                           '~cytoid r30 <uid> - 获取一个用户的Recent30信息。'}}
+            await msg.sendMessage(f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为300秒。')
