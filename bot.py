@@ -1,12 +1,11 @@
-import sys
-import traceback
-
-from init import init_bot
 import logging
 import os
 import subprocess
+import traceback
 from queue import Queue, Empty
 from threading import Thread
+
+from init import init_bot
 
 encode = 'UTF-8'
 

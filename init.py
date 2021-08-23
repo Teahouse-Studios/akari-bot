@@ -1,7 +1,8 @@
 import os
 import shutil
-from database import BotDBUtil
+
 from config import Config
+from database import BotDBUtil
 
 
 def init_bot():

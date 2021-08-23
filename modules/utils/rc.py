@@ -7,7 +7,7 @@ from modules.utils.UTC8 import UTC8
 from modules.wiki.wikilib import wikilib
 
 
-async def ab(wiki_url):
+async def rc(wiki_url):
     pageurl = await wikilib().get_article_path(wiki_url) + 'Special:RecentChanges'
     if wiki_url:
         url = wiki_url + '?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'

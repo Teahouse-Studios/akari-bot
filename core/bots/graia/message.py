@@ -9,7 +9,8 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
 from core.bots.graia.broadcast import app, bcc
-from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, FetchTarget as FT
+from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, \
+    FetchTarget as FT
 from core.elements.others import confirm_command
 from core.utils import slk_converter
 
@@ -87,7 +88,7 @@ class MessageSession(MS):
         """
         try:
             await app.revokeMessage(self.session.message)
-        except:
+        except Exception:
             traceback.print_exc()
 
     async def checkPermission(self):

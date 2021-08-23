@@ -60,6 +60,5 @@ async def autorun_handler():
     await load_prompt(FetchTarget)
 
 
-
 if Config('qq_host') and Config('qq_account'):
     app.launch_blocking()

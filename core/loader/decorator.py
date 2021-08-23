@@ -27,5 +27,6 @@ def command(
                         autorun=autorun,
                         desc=desc)
         ModulesManager.add_module(plugin)
+        return plugin
 
     return decorator

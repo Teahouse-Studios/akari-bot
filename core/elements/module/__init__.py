@@ -40,3 +40,6 @@ class Option:
         self.alias = alias
         self.need_superuser = need_superuser
         self.need_admin = need_admin
+
+
+__all__ = ["Module", "Option"]

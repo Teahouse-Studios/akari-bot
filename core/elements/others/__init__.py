@@ -4,3 +4,5 @@ confirm_command = ["是", "对", '确定', '是吧', '大概是',
                    'yes', 'y', 'yeah', 'yep', 'ok', 'okay', '⭐', '√']
 
 command_prefix = ['~', '～']  # 消息前缀
+
+__all__ = ["confirm_command", "command_prefix"]

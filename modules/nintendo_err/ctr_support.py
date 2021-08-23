@@ -150,7 +150,8 @@ eshop_app = Module('eshop (app?)', {
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17014'),
     2995: ResultInfo('这个错误可能出现于下载码输入错误（已激活、失效、输错和区域不对等）。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/13515'),
-    4077: ResultInfo('Cannot start or continue eShop download. This happens due to insufficient free space being available on the SD Card.'),
+    4077: ResultInfo(
+        'Cannot start or continue eShop download. This happens due to insufficient free space being available on the SD Card.'),
     4079: ResultInfo('无法访问内存卡。'),
     4998: ResultInfo('本地内容比服务器的更新，鬼知道为什么会这样。'),
     6106: ResultInfo('NIM的AM报错，可能是坏ticket惹的祸。'),

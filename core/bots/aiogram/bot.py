@@ -26,7 +26,8 @@ async def msg_handler(message: types.Message):
         all_tsk[user_id].set()
         MessageTaskManager.del_task(user_id)
     msg = MessageSession(MsgInfo(targetId=f'Telegram|{message.chat.type}|{message.chat.id}',
-                                 senderId=f'Telegram|User|{message.from_user.id}', targetFrom=f'Telegram|{message.chat.type}',
+                                 senderId=f'Telegram|User|{message.from_user.id}',
+                                 targetFrom=f'Telegram|{message.chat.type}',
                                  senderFrom='Telegram|User', senderName=message.from_user.username),
                          Session(message=message, target=message.chat.id, sender=message.from_user.id))
     await parser(msg)
@@ -41,7 +42,6 @@ async def on_startup(dispatcher):
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_prompt(FetchTarget)
-
 
 
 if dp:

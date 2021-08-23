@@ -97,3 +97,6 @@ class FetchTarget:
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         ...
+
+
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session"]

@@ -44,6 +44,7 @@ async def unit_test_command():
     except Exception:
         traceback.print_exc()
 
+
 init_bot()
 loop = asyncio.get_event_loop()
 loop.create_task(unit_test_scheduler())

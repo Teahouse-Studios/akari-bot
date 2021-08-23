@@ -6,7 +6,6 @@ from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
 from core.elements.others import confirm_command
-from aiogram import types
 
 
 class MessageSession(MS):
@@ -74,7 +73,7 @@ class MessageSession(MS):
                     await x.delete()
             else:
                 await self.session.message.delete()
-        except:
+        except Exception:
             traceback.print_exc()
 
     class Typing:

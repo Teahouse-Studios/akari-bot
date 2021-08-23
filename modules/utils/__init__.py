@@ -1,6 +1,8 @@
 from core.elements import MessageSession
 from core.loader.decorator import command
-from modules.utils import ab, rc, newbie
+from modules.utils.ab import ab
+from modules.utils.newbie import newbie
+from modules.utils.rc import rc
 from modules.wiki.dbutils import WikiTargetInfo
 
 

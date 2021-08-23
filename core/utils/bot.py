@@ -1,16 +1,14 @@
+import json
 import os
-import re
-import shutil
 import traceback
 import uuid
 from os.path import abspath
-import json
 
 import aiohttp
 import filetype as ft
 
-from core.logger import Logger
 from core.elements import FetchTarget
+from core.logger import Logger
 
 
 class PrivateAssets:
@@ -69,7 +67,6 @@ async def slk_converter(filepath):
 
 
 async def load_prompt(bot: FetchTarget):
-    print(111)
     author_cache = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
     loader_cache = os.path.abspath('.cache_loader')
     if os.path.exists(author_cache):

@@ -3,7 +3,6 @@ import sqlite3
 
 from database import BotDBUtil
 
-
 old_db_link = os.path.abspath('./database/old.db')
 conn = sqlite3.connect(old_db_link)
 c = conn.cursor()

@@ -17,7 +17,8 @@ class MessageSession(MS):
         if isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
-            send = await self.session.target.send(msgchain, reference=self.session.message if quote and self.session.message else None)
+            send = await self.session.target.send(msgchain,
+                                                  reference=self.session.message if quote and self.session.message else None)
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
                                                  senderFrom='Discord|Bot'),
                                   session=Session(message=send, target=send.channel, sender=send.author))
@@ -66,7 +67,7 @@ class MessageSession(MS):
                     await x.delete()
             else:
                 await self.session.message.delete()
-        except:
+        except Exception:
             traceback.print_exc()
 
     class Typing:

@@ -1,5 +1,6 @@
 # copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
+
 from core.elements import MessageSession
 from core.loader.decorator import command
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results

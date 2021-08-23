@@ -1,7 +1,6 @@
 import asyncio
 import json
 import traceback
-import difflib
 
 import aiohttp
 from

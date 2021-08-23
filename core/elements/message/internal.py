@@ -41,3 +41,6 @@ class Voice:
     def __init__(self,
                  path=None):
         self.path = path
+
+
+__all__ = ["Plain", "Image", "Voice"]

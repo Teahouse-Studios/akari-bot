@@ -23,7 +23,6 @@ from .getinfobox import get_infobox_pic
                            '~wiki headers show {展示当前设置的headers}'),
          alias={'wiki_start_site': 'wiki set'})
 async def wiki_wrapper(msg: MessageSession):
-    print(msg.parsed_msg)
     if msg.parsed_msg is None:
         await msg.sendMessage(ModulesManager.return_modules_help()['wiki'])
         return

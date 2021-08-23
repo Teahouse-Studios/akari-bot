@@ -24,7 +24,6 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
     else:
         scoretype = 'D'
     # song ptt
-    realptt = realptt
     if ptt > realptt or ptt < realptt:
         ptt = f'{realptt} > {round(ptt, 4)}'
     else:
