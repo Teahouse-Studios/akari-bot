@@ -25,7 +25,7 @@ runlst = []
 for x in lst:
     bot = os.path.abspath(f'{botdir}{x}/bot.py')
     if os.path.exists(bot):
-        p = subprocess.Popen(f'python {bot}', shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        p = subprocess.Popen(f'python {bot}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              cwd=os.path.abspath('.'))
         runlst.append(p)
 q = Queue()
