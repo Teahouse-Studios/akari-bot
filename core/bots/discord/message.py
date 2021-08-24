@@ -16,7 +16,7 @@ class MessageSession(MS):
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
             if msgchain == '':
-                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
+                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
             send = await self.session.target.send(msgchain,
                                                   reference=self.session.message if quote and self.session.message else None)
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',

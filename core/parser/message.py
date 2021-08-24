@@ -66,12 +66,12 @@ async def parser(msg: MessageSession):
                             except InvalidCommandFormatError:
                                 return await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                         except InvalidHelpDocTypeError:
-                            return await msg.sendMessage('此模块的帮助信息有误，请联系开发者处理。')
+                            return await msg.sendMessage('此模块的帮助信息有误，请联系开发者处理。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
                     async with msg.Typing(msg):
                         await Modules[command_first_word].function(msg)  # 将dict传入下游模块
             except Exception as e:
                 traceback.print_exc()
-                await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e))
+                await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
     for regex in ModulesRegex:  # 遍历正则模块列表
         check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(regex)
         if check_command_enable:

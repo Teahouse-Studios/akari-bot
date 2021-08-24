@@ -23,7 +23,7 @@ class MessageSession(MS):
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
             if msgchain == '':
-                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
+                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
             msgchain = MessageChain.create([Plain(msgchain)])
         if isinstance(msgchain, list):
             msgchain_list = []
@@ -35,7 +35,7 @@ class MessageSession(MS):
                 if isinstance(x, BVoice):
                     msgchain_list.append(Voice().fromLocalFile(filepath=await slk_converter(x.path)))
             if not msgchain_list:
-                msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
+                msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
             msgchain = MessageChain.create(msgchain_list)
         if isinstance(self.session.target, Group):
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id

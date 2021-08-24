@@ -448,7 +448,7 @@ class wikilib:
             return msgs
         except Exception as e:
             traceback.print_exc()
-            return {'status': 'done', 'text': '发生错误：' + str(e)}
+            return {'status': 'done', 'text': '发生错误：' + str(e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
 
     async def main(self, api_endpoint_link, page_name, interwiki=None, template=False, headers=None, tryiw=0):
         print(api_endpoint_link)
@@ -487,9 +487,9 @@ class wikilib:
                     self.page_name = 'MessageSession:' + self.page_name
             self.page_raw = await self.get_page_link()
         except asyncio.exceptions.TimeoutError:
-            return {'status': 'done', 'text': '发生错误：请求页面超时。'}
+            return {'status': 'done', 'text': '发生错误：请求页面超时。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
         except Exception as e:
-            return {'status': 'done', 'text': f'发生错误：{str(e)}'}
+            return {'status': 'done', 'text': f'发生错误：{str(e)}\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
         if 'interwiki' in self.page_raw['query']:
             iwp = self.page_raw['query']['interwiki'][0]
             match_interwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
@@ -512,4 +512,4 @@ class wikilib:
             return await self.step1()
         except Exception as e:
             traceback.print_exc()
-            return f'发生错误：{str(e)}' + '\n'
+            return f'发生错误：{str(e)}' + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=\n'

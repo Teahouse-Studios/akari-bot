@@ -217,7 +217,7 @@ async def regex_proc(msg: MessageSession, display, typing=True):
             if 'url' in send_message:
                 urllist.update({send_message['url']: get_link})
         if status is None:
-            msglist.append(Plain('发生错误：机器人内部代码错误，请联系开发者解决。'))
+            msglist.append(Plain('发生错误：机器人内部代码错误，请联系开发者解决。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
     if msglist:
         await msg.sendMessage(msglist)
         if imglist and msg.Feature.image:

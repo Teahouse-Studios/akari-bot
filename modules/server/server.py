@@ -75,7 +75,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                             servers.append(serip + ':' + port1)
                         except Exception:
                             traceback.print_exc()
-                            servers.append("[JE]\n发生错误：调用API时发生错误。")
+                            servers.append("[JE]\n发生错误：调用API时发生错误。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=")
         except Exception:
             traceback.print_exc()
         if raw:

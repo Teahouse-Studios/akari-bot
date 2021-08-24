@@ -14,7 +14,7 @@ async def ab(wiki_url):
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 if req.status != 200:
-                    return f"请求时发生错误：{req.status}"
+                    return f"请求时发生错误：{req.status}\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title="
                 else:
                     text1 = await req.text()
         file = json.loads(text1)

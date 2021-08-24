@@ -22,7 +22,7 @@ async def main(msg: MessageSession):
         gather_list.append(asyncio.ensure_future(s(msg, f'{msg.parsed_msg["<ServerIP>:<Port>"]}', raw, showplayer, x)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        send = await msg.sendMessage('发生错误：没有找到任何类型的Minecraft服务器。\n[90秒后撤回消息]')
+        send = await msg.sendMessage('发生错误：没有找到任何类型的Minecraft服务器。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=\n[90秒后撤回消息]')
         await asyncio.sleep(90)
         await send.delete()
 
