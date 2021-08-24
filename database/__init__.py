@@ -43,6 +43,7 @@ class BotDBUtil:
             else:
                 self.query.enabledModules = value
             session.commit()
+            session.expire_all()
             return True
 
         def disable(self, module_name) -> bool:
@@ -56,6 +57,7 @@ class BotDBUtil:
             if not self.need_insert:
                 self.query.enabledModules = convert_list_to_str(self.enable_modules_list)
                 session.commit()
+                session.expire_all()
             return True
 
         @staticmethod

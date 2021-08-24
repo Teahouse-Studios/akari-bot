@@ -1,3 +1,5 @@
+import os
+
 from config import Config
 
 if not Config('db_path'):
@@ -17,6 +19,9 @@ from core.unit_test.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.loader import Modules
+from core.utils import PrivateAssets
+
+PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
 async def unit_test_scheduler():

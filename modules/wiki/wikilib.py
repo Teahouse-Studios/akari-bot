@@ -59,7 +59,7 @@ class wikilib:
                 if api.startswith('//'):
                     api = link.split('//')[0] + api
                 Logger.info(api)
-                getcacheinfo = WikiSiteInfo(link).get()
+                getcacheinfo = WikiSiteInfo(api).get()
                 if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
                     return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
                 json1 = await self.get_data(api + query, 'json', headers=headers)
@@ -75,7 +75,7 @@ class wikilib:
                     return False, '所给的链接没有指明协议头（链接应以http://或https://开头）。'
                 else:
                     return False, '此站点也许不是一个有效的Mediawiki：' + str(e)
-        WikiSiteInfo(link).update(json1)
+        WikiSiteInfo(wlink).update(json1)
         wikiname = json1['query']['general']['sitename']
         extensions = json1['query']['extensions']
         extlist = []

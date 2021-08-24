@@ -12,10 +12,11 @@ from core.logger import Logger
 
 
 class PrivateAssets:
-    path = ''
+    path = os.path.abspath('.')
 
     @staticmethod
     def set(path):
+        path = os.path.abspath(path)
         if not os.path.exists(path):
             os.mkdir(path)
         PrivateAssets.path = path

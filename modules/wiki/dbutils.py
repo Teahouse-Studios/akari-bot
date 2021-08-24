@@ -19,6 +19,7 @@ class WikiTargetInfo:
     def add_start_wiki(self, url):
         self.query.link = url
         session.commit()
+        session.expire_all()
         return True
 
     def get_start_wiki(self):
@@ -35,6 +36,7 @@ class WikiTargetInfo:
                 del interwikis[iw]
         self.query.iws = json.dumps(interwikis)
         session.commit()
+        session.expire_all()
         return True
 
     def get_interwikis(self):
