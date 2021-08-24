@@ -11,9 +11,9 @@ table_prefix = 'module_wiki_'
 class WikiTargetSetInfo(Base):
     __tablename__ = table_prefix + 'TargetSetInfo'
     targetId = Column(String(512), primary_key=True)
-    link = Column(Text)
-    iws = Column(Text)
-    headers = Column(Text)
+    link = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
+    iws = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
+    headers = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
 
 
 class WikiInfo(Base):
