@@ -483,8 +483,8 @@ class wikilib:
             self.template_prompt = None
             self.headers = headers
             if self.template:
-                if not re.match('^MessageSession:', self.page_name, re.I):
-                    self.page_name = 'MessageSession:' + self.page_name
+                if not re.match('^Template:', self.page_name, re.I):
+                    self.page_name = 'Template:' + self.page_name
             self.page_raw = await self.get_page_link()
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done', 'text': '发生错误：请求页面超时。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
