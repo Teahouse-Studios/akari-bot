@@ -33,5 +33,6 @@ async def newbie(bot: FetchTarget):
                              'https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers'
                 for x in BotDBUtil.Module.get_enabled_this('__check_newbie__'):
                     fetch = await bot.fetch_target(x)
-                    await fetch.sendMessage(s)
+                    if fetch:
+                        await fetch.sendMessage(s)
                 qq.append(xz['title'])
