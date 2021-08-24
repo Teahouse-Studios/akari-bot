@@ -35,15 +35,17 @@ class MessageSession(MS):
                 if isinstance(x, BVoice):
                     msgchain_list.append(Voice().fromLocalFile(filepath=await slk_converter(x.path)))
             if not msgchain_list:
-                msgchain_list.append(Plain('发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
+                msgchain_list.append(Plain(
+                    '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
             msgchain = MessageChain.create(msgchain_list)
-        if isinstance(self.session.target, Group):
+        print(self.target.targetFrom)
+        if isinstance(self.session.target, Group) or self.target.targetFrom == 'QQ|Group':
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
-            if quote and self.session.message else None)
+                if quote and self.session.message else None)
             return MessageSession(
                 target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
                 session=Session(message=send, target=0, sender=0))
-        if isinstance(self.session.target, Friend):
+        if isinstance(self.session.target, Friend) or self.target.targetFrom == 'QQ':
             send = await app.sendFriendMessage(self.session.target, msgchain)
             return MessageSession(
                 target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
@@ -124,17 +126,11 @@ class MessageSession(MS):
 class FetchTarget(FT):
     @staticmethod
     async def fetch_target(targetId):
-        matchTarget = re.match(r'^(QQ\|(?:Group\||))(.*)', targetId)
+        matchTarget = re.match(r'^((?:QQ\|Group|QQ))\|(.*)', targetId)
         if matchTarget:
-            if matchTarget.group(1) == 'QQ|Group':
-                target = await app.getGroup(int(matchTarget.group(2)))
-            else:
-                target = await app.getFriend(int(matchTarget.group(2)))
-            if target is not None:
-                return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
-                                              targetFrom=matchTarget.group(1), senderFrom=matchTarget.group(1)),
-                                      Session(message=False, target=target, sender=target))
-            else:
-                return False
+            return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
+                                          targetFrom=matchTarget.group(1), senderFrom=matchTarget.group(1)),
+                                  Session(message=False, target=int(matchTarget.group(2)),
+                                          sender=int(matchTarget.group(2))))
         else:
             return False

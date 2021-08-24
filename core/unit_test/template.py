@@ -60,7 +60,7 @@ class Template(MessageSession):
 
 class FetchTarget:
     @staticmethod
-    def fetch_target(targetId):
+    async def fetch_target(targetId):
         return Template(target=MsgInfo(targetId=targetId,
                                        senderId=targetId,
                                        senderName='',
