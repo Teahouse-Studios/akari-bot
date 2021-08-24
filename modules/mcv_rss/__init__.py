@@ -25,7 +25,6 @@ def getfileversions(path):
 async def mcv_rss(bot: FetchTarget):
     @Scheduler.scheduled_job('interval', seconds=60)
     async def java_main():
-        Logger.info('test')
         url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
         try:
             version_file = os.path.abspath(f'{PrivateAssets.path}/mcversion.txt')

@@ -21,7 +21,6 @@ async def newbie(bot: FetchTarget):
     qq = []
     for x in file['query']['logevents'][:]:
         qq.append(x['title'])
-
     @Scheduler.scheduled_job('interval', seconds=60)
     async def check_newbie():
         qqqq = json.loads(await get_url(url))
