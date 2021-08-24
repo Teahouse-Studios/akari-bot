@@ -26,7 +26,7 @@ async def user(msg: MessageSession):
     if match_interwiki:
         get_iw = WikiTargetInfo(msg).get_interwikis()
         if get_iw and match_interwiki.group(1) in get_iw:
-            metaurl = get_iw
+            metaurl = get_iw[match_interwiki.group(1)]
             username = match_interwiki.group(2)
     result = await GetUser(metaurl, username, mode)
     if result:
