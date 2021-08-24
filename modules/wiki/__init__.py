@@ -7,7 +7,7 @@ from core.loader.decorator import command
 from core.loader.option import add_option
 from core.utils import download_to_cache
 from database import BotDBUtil
-from modules.wiki.dbutils import WikiTargetInfo, WikiSiteInfo
+from modules.wiki.dbutils import WikiTargetInfo
 from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
 

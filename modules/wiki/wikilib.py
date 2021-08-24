@@ -9,6 +9,7 @@ import aiohttp
 import html2text
 
 from core import dirty_check
+from core.logger import Logger
 from .dbutils import WikiSiteInfo
 
 
@@ -40,13 +41,13 @@ class wikilib:
         query_string = {'action': 'query', 'meta': 'siteinfo',
                         'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         query = self.encode_query_string(query_string)
-        getcacheinfo = WikiSiteInfo(link).get()
-        if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
-            return link, json.loads(getcacheinfo[0])['query']['general']['sitename']
         try:
             api = re.match(r'(https?://.*?/api.php$)', link)
             wlink = api.group(1)
             json1 = json.loads(await self.get_data(api.group(1) + query, 'json', headers=headers))
+            getcacheinfo = WikiSiteInfo(wlink).get()
+            if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
+                return wlink, json.loads(getcacheinfo[0])['query']['general']['sitename']
         except:
             try:
                 getpage = await self.get_data(link, 'text', headers=headers, ignore_err=True)
@@ -57,7 +58,7 @@ class wikilib:
                 api = m[0]
                 if api.startswith('//'):
                     api = link.split('//')[0] + api
-                print(api)
+                Logger.info(api)
                 getcacheinfo = WikiSiteInfo(link).get()
                 if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
                     return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
