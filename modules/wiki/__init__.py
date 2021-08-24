@@ -163,7 +163,7 @@ async def regex_proc(msg: MessageSession, display, typing=True):
         prompt = False
         if not get_link:
             prompt = '没有指定起始Wiki，已默认指定为中文Minecraft Wiki，可发送~wiki set <域名>来设定自定义起始Wiki。' \
-                     '\n例子：~wiki set https://minecraft.fandom.com/zh/'
+                     '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/'
             get_link = 'https://minecraft.fandom.com/zh/api.php'
         iw = None
         matchinterwiki = re.match(r'(.*?):(.*)', find)

@@ -57,6 +57,7 @@ class wikilib:
                 api = m[0]
                 if api.startswith('//'):
                     api = link.split('//')[0] + api
+                print(api)
                 getcacheinfo = WikiSiteInfo(link).get()
                 if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
                     return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
