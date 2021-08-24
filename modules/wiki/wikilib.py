@@ -350,13 +350,13 @@ class wikilib:
 
         if self.page_id == '-1':
             if self.template == True:
-                self.page_name = self.orginpagename = re.sub(r'^MessageSession:', '', self.page_name)
+                self.page_name = self.orginpagename = re.sub(r'^Template:', '', self.page_name)
                 self.template = False
                 if self.interwiki == '':
                     target = ''
                 else:
                     target = self.interwiki + ':'
-                self.template_prompt = f'提示：[{target}MessageSession:{self.page_name}]不存在，已自动回滚搜索页面。\n'
+                self.template_prompt = f'提示：[{target}Template:{self.page_name}]不存在，已自动回滚搜索页面。\n'
                 return await self.step1()
             return await self.page_not_found()
         else:
@@ -375,7 +375,7 @@ class wikilib:
             if len(query_text_name_split) > 1:
                 namespaces = await self.get_namespace()
                 if query_text_name_split[0] in namespaces:
-                    if namespaces[query_text_name_split[0]] == 'MessageSession':
+                    if namespaces[query_text_name_split[0]] == 'Template':
                         get_all_text = await self.get_all_wikitext()
                         try:
                             match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
