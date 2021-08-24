@@ -38,8 +38,9 @@ async def config_modules(msg: MessageSession):
         for module in wait_config_list:
             if module == 'all':
                 for function in modules:
-                    if query.enable(function):
-                        msglist.append(f'成功：打开模块“{function}”')
+                    if not modules[function].need_superuser:
+                        if query.enable(function):
+                            msglist.append(f'成功：打开模块“{function}”')
             elif module not in modules:
                 msglist.append(f'失败：“{module}”模块不存在')
             else:
