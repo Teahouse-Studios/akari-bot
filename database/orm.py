@@ -6,8 +6,13 @@ from database.tables import *
 
 DB_LINK = Config('db_path')
 
-engine = create_engine(DB_LINK)
+class DBSession:
+    def __init__(self):
+        self.engine = engine = create_engine(DB_LINK)
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+        self.Session = sessionmaker()
+        self.Session.configure(bind=self.engine)
 
-Base.metadata.create_all(bind=engine, checkfirst=True)
-
-session = sessionmaker(engine)()
+    @property
+    def session(self):
+        return self.Session()

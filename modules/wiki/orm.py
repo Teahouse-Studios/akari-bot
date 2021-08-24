@@ -2,10 +2,13 @@ from sqlalchemy import Column, String, Text, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
 
-from database.orm import engine, session
+from database.orm import DBSession
 
 Base = declarative_base()
 table_prefix = 'module_wiki_'
+db = DBSession()
+session = db.session
+engine = db.engine
 
 
 class WikiTargetSetInfo(Base):

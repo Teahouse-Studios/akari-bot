@@ -1,7 +1,7 @@
 import datetime
 
 from core.elements import MessageSession
-from database.orm import session
+from database.orm import DBSession
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
 
 
@@ -13,6 +13,9 @@ def convert_str_to_list(s: str) -> list:
     return s.split('|')
 
 
+session = DBSession().session
+
+
 class BotDBUtil:
     class Module:
         def __init__(self, msg: [MessageSession, str]):
@@ -20,6 +23,7 @@ class BotDBUtil:
                 self.targetId = str(msg.target.targetId)
             else:
                 self.targetId = msg
+
             self.query = session.query(EnabledModules).filter_by(targetId=self.targetId).first()
             self.enable_modules_list = convert_str_to_list(self.query.enabledModules) if self.query is not None else []
             self.need_insert = True if self.query is None else False
