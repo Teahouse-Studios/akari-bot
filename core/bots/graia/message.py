@@ -41,7 +41,7 @@ class MessageSession(MS):
                 msgchain_list.append(Plain(
                     '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
             msgchain = MessageChain.create(msgchain_list)
-        if Config('qq_msg_logging_to_db'):
+        if Config('qq_msg_logging_to_db') and self.session.message:
             LoggerMSG(userid=self.target.senderId, command=self.trigger_msg, msg=msgchain.asDisplay())
         if isinstance(self.session.target, Group) or self.target.targetFrom == 'QQ|Group':
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id

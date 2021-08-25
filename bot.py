@@ -66,4 +66,4 @@ while True:
         if (end - start).total_seconds() > 20:
             slow_mode = True
     else:
-        sleep(0.5)
+        sleep(0.2)
