@@ -16,6 +16,7 @@ async def parser(msg: MessageSession):
     :return: 无返回
     """
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
+    msg.trigger_msg = display
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     if senderInfo.query.isInBlackList and not senderInfo.query.isInWhiteList or len(display) == 0:
