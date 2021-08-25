@@ -20,7 +20,7 @@ async def parser(msg: MessageSession):
     if senderInfo.query.isInBlackList and not senderInfo.query.isInWhiteList or len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
-        Logger.info(msg.session)
+        Logger.info(display)
         command = re.sub(r'^' + display[0], '', display)
         command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
         if len(command_list) > 5 and not senderInfo.query.isSuperUser:

@@ -1,6 +1,7 @@
 import datetime
 
-from core.elements import MessageSession
+from core.elements.message import MessageSession
+from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
 
@@ -13,6 +14,14 @@ def convert_str_to_list(s: str) -> list:
     return s.split('|')
 
 
+class Dict2Object(dict):
+    def __getattr__(self, key):
+        return self.get(key)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+
 session = DBSession().session
 
 
@@ -23,10 +32,21 @@ class BotDBUtil:
                 self.targetId = str(msg.target.targetId)
             else:
                 self.targetId = msg
+            self.need_insert = False
+            self.enable_modules_list = EnabledModulesCache.get_cache(self.targetId)
+            if not self.enable_modules_list:
+                query = self.query_EnabledModules
+                if query is None:
+                    self.need_insert = True
+                    self.enable_modules_list = []
+                else:
+                    query_ = query.enabledModules
+                    self.enable_modules_list = convert_str_to_list(query_)
+                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
 
-            self.query = session.query(EnabledModules).filter_by(targetId=self.targetId).first()
-            self.enable_modules_list = convert_str_to_list(self.query.enabledModules) if self.query is not None else []
-            self.need_insert = True if self.query is None else False
+        @property
+        def query_EnabledModules(self):
+            return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
 
         def check_target_enabled_module(self, module_name) -> bool:
             return True if module_name in self.enable_modules_list else False
@@ -45,9 +65,10 @@ class BotDBUtil:
                                        enabledModules=value)
                 session.add_all([table])
             else:
-                self.query.enabledModules = value
+                self.query_EnabledModules.enabledModules = value
             session.commit()
             session.expire_all()
+            EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
             return True
 
         def disable(self, module_name) -> bool:
@@ -59,9 +80,10 @@ class BotDBUtil:
                     if x in self.enable_modules_list:
                         self.enable_modules_list.remove(x)
             if not self.need_insert:
-                self.query.enabledModules = convert_list_to_str(self.enable_modules_list)
+                self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
                 session.commit()
                 session.expire_all()
+                EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
             return True
 
         @staticmethod
@@ -77,16 +99,27 @@ class BotDBUtil:
     class SenderInfo:
         def __init__(self, senderId):
             self.senderId = senderId
-            self.query = session.query(SenderInfo).filter_by(id=senderId).first()
-            if self.query is None:
-                session.add_all([SenderInfo(id=senderId)])
-                session.commit()
-                self.query = session.query(SenderInfo).filter_by(id=senderId).first()
+            query_cache = SenderInfoCache.get_cache(self.senderId)
+            if query_cache:
+                self.query = Dict2Object(query_cache)
+            else:
+                self.query = self.query_SenderInfo
+                if self.query is None:
+                    session.add_all([SenderInfo(id=senderId)])
+                    session.commit()
+                    self.query = session.query(SenderInfo).filter_by(id=senderId).first()
+                    SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
+
+        @property
+        def query_SenderInfo(self):
+            return session.query(SenderInfo).filter_by(id=self.senderId).first()
 
         def edit(self, column: str, value):
-            setattr(self.query, column, value)
+            query = self.query_SenderInfo
+            setattr(query, column, value)
             session.commit()
             session.expire_all()
+            SenderInfoCache.add_cache(self.senderId, query.__dict__)
             return True
 
         def check_TargetAdmin(self, targetId):
