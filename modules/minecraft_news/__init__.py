@@ -30,7 +30,6 @@ async def start_check_news(bot: FetchTarget):
             title_list.append(o_default_tile)
     @Scheduler.scheduled_job('interval', seconds=600)
     async def check_news():
-        await asyncio.sleep(random.randint(50, 2000))
         user_list = []
         get_all_enabled_user = BotDBUtil.Module.get_enabled_this('minecraft_news')
         for x in get_all_enabled_user:
