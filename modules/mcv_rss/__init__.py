@@ -90,9 +90,13 @@ async def mcv_jira_rss(bot: FetchTarget):
                         for id_ in get_target_id:
                             fetch = await bot.fetch_target(id_)
                             if fetch:
-                                send = await fetch.sendMessage(
-                                    f'Jira已更新{urls[url]["display"]} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
-                                Logger.info(send)
+                                try:
+                                    send = await fetch.sendMessage(
+                                        f'Jira已更新{urls[url]["display"]} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                                    Logger.info(send)
+                                    await asyncio.sleep(0.5)
+                                except Exception:
+                                    traceback.print_exc()
                         addversion = open(version_file, 'a')
                         addversion.write('\n' + release)
                         addversion.close()
