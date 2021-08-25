@@ -10,6 +10,7 @@ import html2text
 
 from core import dirty_check
 from core.logger import Logger
+from core.utils import get_url
 from .dbutils import WikiSiteInfo
 
 

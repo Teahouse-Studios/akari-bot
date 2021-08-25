@@ -6,6 +6,7 @@ from os.path import abspath
 
 import aiohttp
 import filetype as ft
+from aiohttp_retry import ExponentialRetry, RetryClient
 
 from core.elements import FetchTarget
 from core.logger import Logger
@@ -34,7 +35,7 @@ def init():
 
 
 async def get_url(url: str, headers=None):
-    async with aiohttp.ClientSession() as session:
+    async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=3)) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
             text = await req.text()
             return text
@@ -42,7 +43,7 @@ async def get_url(url: str, headers=None):
 
 async def download_to_cache(link):
     try:
-        async with aiohttp.ClientSession() as session:
+        async with RetryClient(retry_options=ExponentialRetry(attempts=3)) as session:
             async with session.get(link) as resp:
                 res = await resp.read()
                 ftt = ft.match(res).extension

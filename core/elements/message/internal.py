@@ -1,10 +1,11 @@
 import re
 import uuid
 
+import aiohttp
 import filetype
+from aiohttp_retry import ExponentialRetry, RetryClient
 
 from config import CachePath
-from core.aiohttp import aiohttp
 
 
 class Plain:
@@ -27,7 +28,7 @@ class Image:
         return self.path
 
     async def get_image(self, url, headers=None):
-        async with aiohttp.ClientSession() as session:
+        async with RetryClient(retry_options=ExponentialRetry(attempts=3)) as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 raw = await req.read()
                 ft = filetype.match(raw).extension

@@ -6,6 +6,7 @@ import json
 import time
 
 import aiohttp
+from aiohttp_retry import RetryClient, ExponentialRetry
 
 from config import Config
 
@@ -68,7 +69,7 @@ async def check(*text):
     sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, hashlib.sha1))
     headers['Authorization'] = sign
     # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
-    async with aiohttp.ClientSession(headers=headers) as session:
+    async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=3)) as session:
         async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
             if resp.status == 200:
                 result = await resp.json()

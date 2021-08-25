@@ -16,3 +16,4 @@ sqlalchemy
 apscheduler
 aioconsole
 aiogram
+aiohttp_retry
