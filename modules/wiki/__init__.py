@@ -64,7 +64,7 @@ async def interwiki(msg: MessageSession):
         check = await wikilib().check_wiki_available(url,
                                                      headers=target.get_headers())
         if check[0]:
-            result = target.config_interwikis(iw, url, let_it=True)
+            result = target.config_interwikis(iw, check[0], let_it=True)
             if result:
                 await msg.sendMessage(f'成功：添加自定义Interwiki\n{iw} -> {check[1]}')
         else:
