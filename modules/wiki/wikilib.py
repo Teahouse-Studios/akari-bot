@@ -52,6 +52,8 @@ class wikilib:
             try:
                 getpage = await self.get_data(link, 'text', headers=headers, ignore_err=True)
                 print(getpage)
+                if getpage.find('<title>Attention Required! | Cloudflare</title>') != -1:
+                    return False, 'CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。'
                 m = re.findall(
                     r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
                     getpage)
