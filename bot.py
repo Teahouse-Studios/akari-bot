@@ -1,9 +1,11 @@
+import datetime
 import logging
 import os
 import subprocess
 import traceback
 from queue import Queue, Empty
 from threading import Thread
+from time import sleep
 
 from init import init_bot
 
@@ -37,6 +39,9 @@ for t in threads:
     t.daemon = True
     t.start()
 
+start = datetime.datetime.now()
+slow_mode = False
+
 while True:
     try:
         line = q.get_nowait()
@@ -55,3 +60,10 @@ while True:
     # break when all processes are done.
     if all(p.poll() is not None for p in runlst):
         break
+
+    if not slow_mode:
+        end = datetime.datetime.now()
+        if (end - start).total_seconds() > 20:
+            slow_mode = True
+    else:
+        sleep(0.5)
