@@ -42,7 +42,7 @@ class BotDBUtil:
                 else:
                     query_ = query.enabledModules
                     self.enable_modules_list = convert_str_to_list(query_)
-                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+                EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
 
         @property
         def query_EnabledModules(self):
@@ -108,7 +108,7 @@ class BotDBUtil:
                     session.add_all([SenderInfo(id=senderId)])
                     session.commit()
                     self.query = session.query(SenderInfo).filter_by(id=senderId).first()
-                    SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
+                SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
 
         @property
         def query_SenderInfo(self):
