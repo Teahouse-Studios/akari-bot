@@ -16,7 +16,7 @@ async def weekly_rss(bot):
     async def check_weekly():
         Logger.info('Checking MCWZH weekly...')
 
-        weekly = get_weekly()
+        weekly = await get_weekly()
         get_target_id = BotDBUtil.Module.get_enabled_this('weekly_rss')
         for x in get_target_id:
             fetch = await bot.fetch_target(x)

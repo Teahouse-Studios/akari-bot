@@ -56,8 +56,8 @@ async def start_check_news(bot: FetchTarget):
                             articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}\n'
                             image = await download_to_cache(webrender + 'source?url=' + baseurl + image)
                             for x in user_list:
-                                await x.sendMessage(articletext)
                                 try:
+                                    await x.sendMessage(articletext)
                                     if image:
                                         await x.sendMessage([Image(image)])
                                 except Exception:
