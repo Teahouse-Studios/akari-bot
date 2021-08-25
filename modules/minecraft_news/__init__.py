@@ -28,6 +28,7 @@ async def start_check_news(bot: FetchTarget):
         for o_article in o_nws:
             o_default_tile = o_article['default_tile']['title']
             title_list.append(o_default_tile)
+    Logger.info(str(title_list))
     @Scheduler.scheduled_job('interval', seconds=600)
     async def check_news():
         user_list = []
@@ -38,7 +39,7 @@ async def start_check_news(bot: FetchTarget):
                 user_list.append(fetch)
         if not user_list:
             return
-        Logger.info('Checking Minecraft news...')
+        Logger.info('Checking Minecraft news...' + str(title_list))
         async with aiohttp.ClientSession() as session:
             async with session.get(get) as resp:
                 status = resp.status
@@ -55,7 +56,12 @@ async def start_check_news(bot: FetchTarget):
                             articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}\n'
                             image = await download_to_cache(webrender + 'source?url=' + baseurl + image)
                             for x in user_list:
-                                await x.sendMessage([Plain(articletext), Image(image)])
+                                await x.sendMessage(articletext)
+                                try:
+                                    if image:
+                                        await x.sendMessage([Image(image)])
+                                except Exception:
+                                    traceback.print_exc()
                     Logger.info('Minecraft news checked.')
                 else:
                     Logger.info('Check minecraft news failed:' + str(status))

@@ -181,12 +181,12 @@ async def ping(msg: MessageSession):
          )
 async def config_gu(msg: MessageSession):
     if msg.parsed_msg['add']:
-        user = msg.parsed_msg['<user>']
+        user = msg.parsed_msg['<UserID>']
         if user and not BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").check_TargetAdmin(msg.target.targetId):
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").add_TargetAdmin(msg.target.targetId):
                 await msg.sendMessage("成功")
     if msg.parsed_msg['del']:
-        user = msg.parsed_msg['<user>']
+        user = msg.parsed_msg['<UserID>']
         if user:
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").remove_TargetAdmin(msg.target.targetId):
                 await msg.sendMessage("成功")

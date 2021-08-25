@@ -14,6 +14,9 @@ from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, Mes
 from core.elements.others import confirm_command
 from core.utils import slk_converter
 
+from config import Config
+from database.logging_message import LoggerMSG
+
 
 class MessageSession(MS):
     class Feature:
@@ -38,6 +41,8 @@ class MessageSession(MS):
                 msgchain_list.append(Plain(
                     '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
             msgchain = MessageChain.create(msgchain_list)
+        if Config('qq_msg_logging_to_db'):
+            LoggerMSG(userid=self.target.senderId, command=self.trigger_msg, msg=msgchain.asDisplay())
         if isinstance(self.session.target, Group) or self.target.targetFrom == 'QQ|Group':
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
                 if quote and self.session.message else None)

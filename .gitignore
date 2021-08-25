@@ -8,7 +8,7 @@ assets/usercard/*
 test*
 assets/Favicon/*
 assets/cache/*
-save.db
+*.db
 cache/*
 assets/mcjira*
 assets/cytoid-avatar/
