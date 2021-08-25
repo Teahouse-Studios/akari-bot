@@ -48,6 +48,9 @@ class BotDBUtil:
         def query_EnabledModules(self):
             return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
 
+        def check_target_enabled_module_list(self) -> list:
+            return self.enable_modules_list
+
         def check_target_enabled_module(self, module_name) -> bool:
             return True if module_name in self.enable_modules_list else False
 

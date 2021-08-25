@@ -90,7 +90,7 @@ async def bot_help(msg: MessageSession):
         help_msg.append('模块扩展命令：')
         module = []
         for x in module_list:
-            if BotDBUtil.Module(msg).check_target_enabled_module(module_list[x].bind_prefix):
+            if x in BotDBUtil.Module(msg).check_target_enabled_module_list():
                 module.append(x)
         help_msg.append(' | '.join(module))
         print(help_msg)

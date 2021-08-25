@@ -17,6 +17,7 @@ async def parser(msg: MessageSession):
     """
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
+    enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     if senderInfo.query.isInBlackList and not senderInfo.query.isInWhiteList or len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
@@ -50,9 +51,7 @@ async def parser(msg: MessageSession):
                         if not senderInfo.query.isSuperUser:
                             return await msg.sendMessage('你没有使用该命令的权限。')
                     elif not module.is_base_function:
-                        check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(
-                            command_first_word)  # 是否开启模块
-                        if not check_command_enable:  # 若未开启
+                        if command_first_word not in enabled_modules_list:  # 若未开启
                             return await msg.sendMessage(f'此模块未启用，请发送~enable {command_first_word}启用本模块。')
                     if module.need_admin:
                         if not await msg.checkPermission():
@@ -73,6 +72,5 @@ async def parser(msg: MessageSession):
                 traceback.print_exc()
                 await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
     for regex in ModulesRegex:  # 遍历正则模块列表
-        check_command_enable = BotDBUtil.Module(msg).check_target_enabled_module(regex)
-        if check_command_enable:
+        if regex in enabled_modules_list:
             await ModulesRegex[regex].function(msg)  # 将整条dict传入下游正则模块
