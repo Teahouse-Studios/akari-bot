@@ -12,15 +12,23 @@ class WikiTargetInfo:
             targetId = msg
         self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
         if self.query is None:
-            session.add_all([WikiTargetSetInfo(targetId=targetId, iws='{}', headers='{}')])
-            session.commit()
+            try:
+                session.add_all([WikiTargetSetInfo(targetId=targetId, iws='{}', headers='{}')])
+                session.commit()
+            except Exception:
+                session.rollback()
+                raise
             self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
 
     def add_start_wiki(self, url):
-        self.query.link = url
-        session.commit()
-        session.expire_all()
-        return True
+        try:
+            self.query.link = url
+            session.commit()
+            session.expire_all()
+            return True
+        except Exception:
+            session.rollback()
+            raise
 
     def get_start_wiki(self):
         if self.query is not None:
@@ -28,16 +36,20 @@ class WikiTargetInfo:
         return False
 
     def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
-        interwikis = json.loads(self.query.iws)
-        if let_it:
-            interwikis[iw] = iwlink
-        else:
-            if iw in interwikis:
-                del interwikis[iw]
-        self.query.iws = json.dumps(interwikis)
-        session.commit()
-        session.expire_all()
-        return True
+        try:
+            interwikis = json.loads(self.query.iws)
+            if let_it:
+                interwikis[iw] = iwlink
+            else:
+                if iw in interwikis:
+                    del interwikis[iw]
+            self.query.iws = json.dumps(interwikis)
+            session.commit()
+            session.expire_all()
+            return True
+        except Exception:
+            session.rollback()
+            raise
 
     def get_interwikis(self):
         q = self.query.iws
@@ -48,19 +60,23 @@ class WikiTargetInfo:
             return False
 
     def config_headers(self, headers, let_it: [bool, None] = True):
-        headers_ = json.loads(self.query.headers)
-        if let_it:
-            for x in headers:
-                headers_[x] = headers[x]
-        elif let_it is None:
-            headers_ = {}
-        else:
-            for x in headers:
-                if x in headers_:
-                    del headers_[x]
-        self.query.headers = json.dumps(headers_)
-        session.commit()
-        return True
+        try:
+            headers_ = json.loads(self.query.headers)
+            if let_it:
+                for x in headers:
+                    headers_[x] = headers[x]
+            elif let_it is None:
+                headers_ = {}
+            else:
+                for x in headers:
+                    if x in headers_:
+                        del headers_[x]
+            self.query.headers = json.dumps(headers_)
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            raise
 
     def get_headers(self):
         if self.query is not None:
@@ -82,9 +98,13 @@ class WikiSiteInfo:
         return False
 
     def update(self, info: dict):
-        if self.query is None:
-            session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))])
-        else:
-            self.query.siteInfo = json.dumps(info)
-        session.commit()
-        return True
+        try:
+            if self.query is None:
+                session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))])
+            else:
+                self.query.siteInfo = json.dumps(info)
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            raise

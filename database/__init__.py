@@ -77,8 +77,6 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-            finally:
-                session.close()
 
         def disable(self, module_name) -> bool:
             try:
@@ -98,8 +96,6 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-            finally:
-                session.close()
 
         @staticmethod
         def get_enabled_this(module_name):
@@ -128,8 +124,6 @@ class BotDBUtil:
                 except Exception:
                     session.rollback()
                     raise
-                finally:
-                    session.close()
 
         @property
         def query_SenderInfo(self):
@@ -146,8 +140,6 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-            finally:
-                session.close()
 
         def check_TargetAdmin(self, targetId):
             query = session.query(TargetAdmin).filter_by(senderId=self.senderId, targetId=targetId).first()
@@ -164,8 +156,6 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-            finally:
-                session.close()
 
         def remove_TargetAdmin(self, targetId):
             try:
@@ -176,8 +166,6 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-            finally:
-                session.close()
 
 
     class CoolDown:
@@ -206,5 +194,3 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-            finally:
-                session.close()
