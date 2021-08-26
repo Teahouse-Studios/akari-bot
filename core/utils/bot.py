@@ -26,7 +26,7 @@ class PrivateAssets:
 def init():
     version = os.path.abspath(PrivateAssets.path + '/version')
     write_version = open(version, 'w')
-    write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:7])
+    write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
     write_version.close()
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     write_tag = open(tag, 'w')
