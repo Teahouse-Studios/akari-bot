@@ -3,6 +3,7 @@ import re
 
 from core.elements import MessageSession, Plain, Image, Voice
 from core.loader import ModulesManager
+from core.parser.command import CommandParser
 from core.loader.decorator import command
 from core.loader.option import add_option
 from core.utils import download_to_cache
@@ -24,7 +25,7 @@ from .getinfobox import get_infobox_pic
          alias={'wiki_start_site': 'wiki set'})
 async def wiki_wrapper(msg: MessageSession):
     if msg.parsed_msg is None:
-        await msg.sendMessage(ModulesManager.return_modules_help()['wiki'])
+        await msg.sendMessage(CommandParser(ModulesManager.return_modules_help()['wiki']).return_formatted_help_doc())
         return
     if msg.parsed_msg['set']:
         await set_start_wiki(msg)

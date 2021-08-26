@@ -1,13 +1,18 @@
 import re
 
 from core.elements import Plain, Image, MessageSession
+from core.loader import ModulesManager
 from core.loader.decorator import command
+from core.parser.command import CommandParser
 from modules.wiki.dbutils import WikiTargetInfo
 from .userlib import GetUser
 
 
 @command('user', ['u'], ('~user <username> [-r | -p] {获取一个MediaWiki用户的信息。（-r - 获取详细信息。-p - 生成一张图片。）}'))
 async def user(msg: MessageSession):
+    if msg.parsed_msg is None:
+        await msg.sendMessage(CommandParser(ModulesManager.return_modules_help()['user']).return_formatted_help_doc())
+        return
     mode = None
     metaurl = None
     username = None
