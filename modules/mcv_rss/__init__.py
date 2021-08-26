@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import traceback
+import random
 
 from core.elements import FetchTarget
 from core.loader.decorator import command
@@ -40,7 +41,7 @@ async def mcv_rss(bot: FetchTarget):
                     if fetch:
                         try:
                             await fetch.sendMessage('启动器已更新' + file['latest']['release'] + '正式版。')
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(random.randint(1, 5))
                         except Exception:
                             traceback.print_exc()
                 addversion = open(version_file, 'a')
@@ -55,7 +56,7 @@ async def mcv_rss(bot: FetchTarget):
                     if fetch:
                         try:
                             await fetch.sendMessage('启动器已更新' + file['latest']['snapshot'] + '快照。')
-                            await asyncio.sleep(1)
+                            await asyncio.sleep(random.randint(1, 5))
                         except Exception:
                             traceback.print_exc()
                 addversion = open(version_file, 'a')
@@ -94,7 +95,7 @@ async def mcv_jira_rss(bot: FetchTarget):
                                     send = await fetch.sendMessage(
                                         f'Jira已更新{urls[url]["display"]} {release}。\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
                                     Logger.info(send)
-                                    await asyncio.sleep(1)
+                                    await asyncio.sleep(random.randint(1, 5))
                                 except Exception:
                                     traceback.print_exc()
                         addversion = open(version_file, 'a')

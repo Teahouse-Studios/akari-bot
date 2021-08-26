@@ -1,4 +1,5 @@
 import asyncio
+import random
 import traceback
 
 from apscheduler.triggers.cron import CronTrigger
@@ -23,7 +24,7 @@ async def weekly_rss(bot):
             if fetch:
                 try:
                     await fetch.sendMessage(weekly[0], weekly[1])
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(random.randint(1, 5))
                 except Exception:
                     traceback.print_exc()
         Logger.info(weekly[0])

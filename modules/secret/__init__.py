@@ -1,5 +1,6 @@
 import asyncio
 import json
+import random
 import traceback
 
 from core.loader.decorator import command
@@ -34,4 +35,5 @@ async def newbie(bot: FetchTarget):
                     fetch = await bot.fetch_target(x)
                     if fetch:
                         await fetch.sendMessage(s)
+                        await asyncio.sleep(random.randint(1, 5))
                 qq.append(xz['title'])

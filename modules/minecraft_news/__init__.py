@@ -60,6 +60,7 @@ async def start_check_news(bot: FetchTarget):
                                     await x.sendMessage(articletext)
                                     if image:
                                         await x.sendMessage([Image(image)])
+                                    await asyncio.sleep(random.randint(1, 5))
                                 except Exception:
                                     traceback.print_exc()
                     Logger.info('Minecraft news checked.')
