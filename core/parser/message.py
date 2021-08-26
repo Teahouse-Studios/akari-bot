@@ -49,7 +49,7 @@ async def parser(msg: MessageSession):
                         elif module.desc is not None:
                             return await msg.sendMessage(module.desc)
                     if module.need_superuser:
-                        if not senderInfo.query.isSuperUser:
+                        if not msg.checkSuperUser():
                             return await msg.sendMessage('你没有使用该命令的权限。')
                     elif not module.is_base_function:
                         if command_first_word not in enabled_modules_list:  # 若未开启

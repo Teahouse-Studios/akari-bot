@@ -35,28 +35,33 @@ async def config_modules(msg: MessageSession):
     query = BotDBUtil.Module(msg)
     msglist = []
     if msg.parsed_msg['enable']:
-        for module in wait_config_list:
-            if module == 'all':
-                for function in modules:
-                    if not modules[function].need_superuser:
-                        if query.enable(function):
-                            msglist.append(f'成功：打开模块“{function}”')
-            elif module not in modules:
-                msglist.append(f'失败：“{module}”模块不存在')
-            else:
-                if query.enable(wait_config_list):
-                    msglist.append(f'成功：打开模块“{module}”')
+        if wait_config_list == ['all']:
+            for function in modules:
+                if not modules[function].need_superuser:
+                    if query.enable(function):
+                        msglist.append(f'成功：打开模块“{function}”')
+        else:
+            for module in wait_config_list:
+                if module not in modules:
+                    msglist.append(f'失败：“{module}”模块不存在')
+                else:
+                    if modules[module].need_superuser and not msg.checkSuperUser():
+                        msglist.append(f'失败：你没有打开“{module}”的权限。')
+                    else:
+                        if query.enable(wait_config_list):
+                            msglist.append(f'成功：打开模块“{module}”')
     elif msg.parsed_msg['disable']:
-        for module in wait_config_list:
-            if module == 'all':
-                for function in modules:
-                    if query.disable(function):
-                        msglist.append(f'成功：关闭模块“{function}”')
-            elif module not in modules:
-                msglist.append(f'失败：“{module}”模块不存在')
-            else:
-                if query.disable(wait_config_list):
-                    msglist.append(f'成功：关闭模块“{module}”')
+        if wait_config_list == ['all']:
+            for function in modules:
+                if query.disable(function):
+                    msglist.append(f'成功：关闭模块“{function}”')
+        else:
+            for module in wait_config_list:
+                if module not in modules:
+                    msglist.append(f'失败：“{module}”模块不存在')
+                else:
+                    if query.disable(wait_config_list):
+                        msglist.append(f'成功：关闭模块“{module}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
 
@@ -95,7 +100,7 @@ async def bot_help(msg: MessageSession):
         help_msg.append(' | '.join(module))
         print(help_msg)
         help_msg.append(
-            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/\n请向我们捐赠以维持机器人稳定服务：\nhttps://bot.teahou.se/wiki/%E6%8D%90%E8%B5%A0')
+            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
         help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
         await asyncio.sleep(60)
@@ -114,7 +119,7 @@ async def modules_help(msg: MessageSession):
         module.append(module_list[x].bind_prefix)
     help_msg.append(' | '.join(module))
     help_msg.append(
-        '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/\n请向我们捐赠以维持机器人稳定服务：\nhttps://bot.teahou.se/wiki/%E6%8D%90%E8%B5%A0')
+        '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
     help_msg.append('[本消息将在一分钟后撤回]')
     send = await msg.sendMessage('\n'.join(help_msg))
     await asyncio.sleep(60)

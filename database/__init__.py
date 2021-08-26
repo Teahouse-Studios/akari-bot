@@ -55,39 +55,51 @@ class BotDBUtil:
             return True if module_name in self.enable_modules_list else False
 
         def enable(self, module_name) -> bool:
-            if isinstance(module_name, str):
-                if module_name not in self.enable_modules_list:
-                    self.enable_modules_list.append(module_name)
-            elif isinstance(module_name, (list, tuple)):
-                for x in module_name:
-                    if x not in self.enable_modules_list:
-                        self.enable_modules_list.append(x)
-            value = convert_list_to_str(self.enable_modules_list)
-            if self.need_insert:
-                table = EnabledModules(targetId=self.targetId,
-                                       enabledModules=value)
-                session.add_all([table])
-            else:
-                self.query_EnabledModules.enabledModules = value
-            session.commit()
-            session.expire_all()
-            EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
-            return True
-
-        def disable(self, module_name) -> bool:
-            if isinstance(module_name, str):
-                if module_name in self.enable_modules_list:
-                    self.enable_modules_list.remove(module_name)
-            elif isinstance(module_name, (list, tuple)):
-                for x in module_name:
-                    if x in self.enable_modules_list:
-                        self.enable_modules_list.remove(x)
-            if not self.need_insert:
-                self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
+            try:
+                if isinstance(module_name, str):
+                    if module_name not in self.enable_modules_list:
+                        self.enable_modules_list.append(module_name)
+                elif isinstance(module_name, (list, tuple)):
+                    for x in module_name:
+                        if x not in self.enable_modules_list:
+                            self.enable_modules_list.append(x)
+                value = convert_list_to_str(self.enable_modules_list)
+                if self.need_insert:
+                    table = EnabledModules(targetId=self.targetId,
+                                           enabledModules=value)
+                    session.add_all([table])
+                else:
+                    self.query_EnabledModules.enabledModules = value
                 session.commit()
                 session.expire_all()
                 EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
-            return True
+                return True
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
+
+        def disable(self, module_name) -> bool:
+            try:
+                if isinstance(module_name, str):
+                    if module_name in self.enable_modules_list:
+                        self.enable_modules_list.remove(module_name)
+                elif isinstance(module_name, (list, tuple)):
+                    for x in module_name:
+                        if x in self.enable_modules_list:
+                            self.enable_modules_list.remove(x)
+                if not self.need_insert:
+                    self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
+                    session.commit()
+                    session.expire_all()
+                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+                return True
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
 
         @staticmethod
         def get_enabled_this(module_name):
@@ -107,23 +119,35 @@ class BotDBUtil:
                 self.query = Dict2Object(query_cache)
             else:
                 self.query = self.query_SenderInfo
-                if self.query is None:
-                    session.add_all([SenderInfo(id=senderId)])
-                    session.commit()
-                    self.query = session.query(SenderInfo).filter_by(id=senderId).first()
-                SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
+                try:
+                    if self.query is None:
+                        session.add_all([SenderInfo(id=senderId)])
+                        session.commit()
+                        self.query = session.query(SenderInfo).filter_by(id=senderId).first()
+                    SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
+                except Exception:
+                    session.rollback()
+                    raise
+                finally:
+                    session.close()
 
         @property
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.senderId).first()
 
         def edit(self, column: str, value):
-            query = self.query_SenderInfo
-            setattr(query, column, value)
-            session.commit()
-            session.expire_all()
-            SenderInfoCache.add_cache(self.senderId, query.__dict__)
-            return True
+            try:
+                query = self.query_SenderInfo
+                setattr(query, column, value)
+                session.commit()
+                session.expire_all()
+                SenderInfoCache.add_cache(self.senderId, query.__dict__)
+                return True
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
 
         def check_TargetAdmin(self, targetId):
             query = session.query(TargetAdmin).filter_by(senderId=self.senderId, targetId=targetId).first()
@@ -132,16 +156,29 @@ class BotDBUtil:
             return False
 
         def add_TargetAdmin(self, targetId):
-            if not self.check_TargetAdmin(targetId):
-                session.add_all([TargetAdmin(senderId=self.senderId, targetId=targetId)])
-                session.commit()
-            return True
+            try:
+                if not self.check_TargetAdmin(targetId):
+                    session.add_all([TargetAdmin(senderId=self.senderId, targetId=targetId)])
+                    session.commit()
+                return True
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
 
         def remove_TargetAdmin(self, targetId):
-            query = self.check_TargetAdmin(targetId)
-            if query:
-                session.delete(query)
-                session.commit()
+            try:
+                query = self.check_TargetAdmin(targetId)
+                if query:
+                    session.delete(query)
+                    session.commit()
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
+
 
     class CoolDown:
         def __init__(self, msg: MessageSession, name):
@@ -160,8 +197,14 @@ class BotDBUtil:
             return 0
 
         def reset(self):
-            if not self.need_insert:
-                session.delete(self.query)
+            try:
+                if not self.need_insert:
+                    session.delete(self.query)
+                    session.commit()
+                session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
                 session.commit()
-            session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
-            session.commit()
+            except Exception:
+                session.rollback()
+                raise
+            finally:
+                session.close()
