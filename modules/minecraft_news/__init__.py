@@ -53,14 +53,14 @@ async def start_check_news(bot: FetchTarget):
                         link = baseurl + article['article_url']
                         if title not in title_list:
                             title_list.append(title)
-                            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}\n'
+                            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
                             image = await download_to_cache(webrender + 'source?url=' + baseurl + image)
                             for x in user_list:
                                 try:
                                     await x.sendMessage(articletext)
                                     if image:
                                         await x.sendMessage([Image(image)])
-                                    await asyncio.sleep(random.randint(1, 5))
+                                    await asyncio.sleep(random.randint(1, 10))
                                 except Exception:
                                     traceback.print_exc()
                     Logger.info('Minecraft news checked.')

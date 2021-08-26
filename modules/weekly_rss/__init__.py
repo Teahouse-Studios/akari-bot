@@ -24,7 +24,7 @@ async def weekly_rss(bot):
             if fetch:
                 try:
                     await fetch.sendMessage(weekly[0], weekly[1])
-                    await asyncio.sleep(random.randint(1, 5))
+                    await asyncio.sleep(random.randint(1, 10))
                 except Exception:
                     traceback.print_exc()
         Logger.info(weekly[0])
