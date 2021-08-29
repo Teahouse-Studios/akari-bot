@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import re
 
 from core.elements import MessageSession, Plain, Image, Voice

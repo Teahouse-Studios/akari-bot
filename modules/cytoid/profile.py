@@ -1,4 +1,4 @@
-import json
+import ujson as json
 
 from core.elements import MessageSession, Plain, Image
 from core.utils import get_url
@@ -33,5 +33,5 @@ async def cytoid_profile(msg: MessageSession):
            f'NextLevelExp: {nextLevelExp}\n' + \
            f'Rating: {rating}\n' + \
            f'Grade: {grade}'
-    msgchain = [Image(url=avatar), Plain(text)]
+    msgchain = [Image(path=avatar), Plain(text)]
     await msg.sendMessage(msgchain)

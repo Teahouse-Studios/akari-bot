@@ -1,4 +1,4 @@
-import json
+import ujson as json
 
 from core.elements import MessageSession
 from .orm import session, WikiTargetSetInfo, WikiInfo

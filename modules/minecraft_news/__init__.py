@@ -1,5 +1,5 @@
 import asyncio
-import json
+import ujson as json
 import traceback
 import aiohttp
 import random

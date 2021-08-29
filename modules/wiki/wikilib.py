@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import json
+import ujson as json
 import re
 import traceback
 import urllib.parse
