@@ -29,6 +29,7 @@ async def start_check_news(bot: FetchTarget):
             o_default_tile = o_article['default_tile']['title']
             title_list.append(o_default_tile)
     Logger.info(str(title_list))
+
     @Scheduler.scheduled_job('interval', seconds=600)
     async def check_news():
         user_list = []
@@ -55,14 +56,9 @@ async def start_check_news(bot: FetchTarget):
                             title_list.append(title)
                             articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
                             image = await download_to_cache(webrender + 'source?url=' + baseurl + image)
-                            for x in user_list:
-                                try:
-                                    await x.sendMessage(articletext)
-                                    if image:
-                                        await x.sendMessage([Image(image)])
-                                    await asyncio.sleep(random.randint(1, 10))
-                                except Exception:
-                                    traceback.print_exc()
+                            await bot.post_message('minecraft_news', articletext, user_list=user_list)
+                            if image:
+                                await bot.post_message('minecraft_news', [Image(image)], user_list=user_list)
                     Logger.info('Minecraft news checked.')
                 else:
                     Logger.info('Check minecraft news failed:' + str(status))

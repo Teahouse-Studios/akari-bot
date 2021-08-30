@@ -1,11 +1,13 @@
 import re
 import traceback
+from typing import List
 
 import discord
 
 from core.bots.discord.client import client
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT
 from core.elements.others import confirm_command
+from database import BotDBUtil
 
 
 class MessageSession(MS):
@@ -84,7 +86,7 @@ class MessageSession(MS):
 
 class FetchTarget(FT):
     @staticmethod
-    async def fetch_target(targetId):
+    async def fetch_target(targetId) -> MessageSession:
         matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)
         if matchChannel:
             getChannel = await client.fetch_channel(int(matchChannel.group(2)))
@@ -93,3 +95,24 @@ class FetchTarget(FT):
                                   Session(message=False, target=getChannel, sender=getChannel))
         else:
             return False
+
+    @staticmethod
+    async def post_message(module_name, message, user_list: List[MessageSession] = None):
+        send_list = []
+        if user_list is not None:
+            for x in user_list:
+                try:
+                    send = await x.sendMessage(message)
+                    send_list.append(send)
+                except Exception:
+                    traceback.print_exc()
+        else:
+            get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
+            for x in get_target_id:
+                fetch = await FetchTarget.fetch_target(x)
+                if fetch:
+                    try:
+                        send = await fetch.sendMessage(message, quote=False)
+                        send_list.append(send)
+                    except Exception:
+                        traceback.print_exc()

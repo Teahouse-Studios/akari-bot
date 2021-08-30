@@ -1,11 +1,13 @@
 import asyncio
 import re
 import traceback
+from typing import List
 
 from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
 from core.elements.others import confirm_command
+from database import BotDBUtil
 
 
 class MessageSession(MS):
@@ -90,7 +92,7 @@ class MessageSession(MS):
 
 class FetchTarget(FT):
     @staticmethod
-    async def fetch_target(targetId):
+    async def fetch_target(targetId) -> MessageSession:
         matchChannel = re.match(r'^(Telegram\|.*?)\|(.*)', targetId)
         if matchChannel:
             return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
@@ -98,3 +100,24 @@ class FetchTarget(FT):
                                   Session(message=False, target=matchChannel.group(2), sender=matchChannel.group(2)))
         else:
             return False
+
+    @staticmethod
+    async def post_message(module_name, message, user_list: List[MessageSession] = None):
+        send_list = []
+        if user_list is not None:
+            for x in user_list:
+                try:
+                    send = await x.sendMessage(message, quote=False)
+                    send_list.append(send)
+                except Exception:
+                    traceback.print_exc()
+        else:
+            get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
+            for x in get_target_id:
+                fetch = await FetchTarget.fetch_target(x)
+                if fetch:
+                    try:
+                        send = await fetch.sendMessage(message, quote=False)
+                        send_list.append(send)
+                    except Exception:
+                        traceback.print_exc()

@@ -1,11 +1,10 @@
 import ujson as json
 import re
 
-from core.elements import MessageSession, Plain, Image, Voice
+from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
 from core.loader.decorator import command
-from core.loader.option import add_option
 from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
@@ -113,7 +112,7 @@ async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 
 
-add_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。')
+ModulesManager.add_module(Option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。'))
 
 
 async def regex_proc(msg: MessageSession, display, typing=True):

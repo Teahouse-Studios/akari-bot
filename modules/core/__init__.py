@@ -6,7 +6,7 @@ import time
 
 import psutil
 
-from core.elements import MessageSession, Module
+from core.elements import MessageSession, Command
 from core.loader import ModulesManager
 from core.loader.decorator import command
 from core.parser.command import CommandParser
@@ -89,7 +89,7 @@ async def bot_help(msg: MessageSession):
         help_msg = ['基础命令：']
         essential = []
         for x in module_list:
-            if isinstance(module_list[x], Module) and module_list[x].is_base_function:
+            if isinstance(module_list[x], Command) and module_list[x].is_base_function:
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
         help_msg.append('模块扩展命令：')

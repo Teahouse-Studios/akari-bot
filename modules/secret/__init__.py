@@ -31,9 +31,5 @@ async def newbie(bot: FetchTarget):
                 if s.find("<吃掉了>") != -1 or s.find("<全部吃掉了>") != -1:
                     s = s + '\n检测到外来信息介入，请前往日志查看所有消息。' \
                              'https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers'
-                for x in BotDBUtil.Module.get_enabled_this('__check_newbie__'):
-                    fetch = await bot.fetch_target(x)
-                    if fetch:
-                        await fetch.sendMessage(s)
-                        await asyncio.sleep(random.randint(1, 5))
+                await bot.post_message('__check_newbie__', s)
                 qq.append(xz['title'])

@@ -13,7 +13,7 @@ import traceback
 import aioconsole
 
 from init import init_bot
-from core.elements import Module
+from core.elements import Command, Schedule
 from core.elements.message import MsgInfo, Session
 from core.unit_test.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
@@ -27,8 +27,10 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 async def unit_test_scheduler():
     gather_list = []
     for x in Modules:
-        if isinstance(Modules[x], Module) and Modules[x].autorun:
+        if isinstance(Modules[x], Command) and Modules[x].autorun:
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+        if isinstance(Modules[x], Schedule):
+            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget])
     await asyncio.gather(*gather_list)
     Scheduler.start()
 

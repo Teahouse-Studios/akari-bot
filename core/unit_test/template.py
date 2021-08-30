@@ -1,6 +1,7 @@
 from PIL import Image
+from typing import List
 
-from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo
+from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT
 from core.elements.others import confirm_command
 
 
@@ -58,7 +59,7 @@ class Template(MessageSession):
             pass
 
 
-class FetchTarget:
+class FetchTarget(FT):
     @staticmethod
     async def fetch_target(targetId):
         return Template(target=MsgInfo(targetId=targetId,
@@ -67,3 +68,16 @@ class FetchTarget:
                                        targetFrom='TEST|Console',
                                        senderFrom='TEST|Console'),
                         session=Session(message=False, target=targetId, sender=targetId))
+
+    @staticmethod
+    async def post_message(module_name, message, user_list: List[MessageSession] = None):
+        if isinstance(message, str):
+            print(message)
+        elif isinstance(message, list):
+            for x in message:
+                if isinstance(x, Plain):
+                    print(x.text)
+                if isinstance(x, BImage):
+                    img = Image.open(await x.get())
+                    img.show()
+        return message

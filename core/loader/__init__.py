@@ -3,7 +3,7 @@ import os
 import re
 import traceback
 
-from core.elements import Module, Option
+from core.elements import Command, Option, Schedule
 from core.logger import Logger
 
 err_prompt = []
@@ -35,20 +35,20 @@ def load_modules():
 class ModulesManager:
     _modules_list = set()
 
-    @classmethod
-    def add_module(cls, module: [Module, Option]):
+    @staticmethod
+    def add_module(module: [Command, Option, Schedule]):
         ModulesManager._modules_list.add(module)
 
-    @classmethod
-    def return_modules_list(cls):
+    @staticmethod
+    def return_modules_list():
         return ModulesManager._modules_list
 
-    @classmethod
-    def return_modules_list_as_dict(cls):
+    @staticmethod
+    def return_modules_list_as_dict():
         return {x.bind_prefix: x for x in ModulesManager._modules_list}
 
-    @classmethod
-    def return_modules_alias_map(cls):
+    @staticmethod
+    def return_modules_alias_map():
         alias_map = {}
         for x in ModulesManager._modules_list:
             if isinstance(x.alias, str):
@@ -60,21 +60,29 @@ class ModulesManager:
                 alias_map.update(x.alias)
         return alias_map
 
-    @classmethod
-    def return_regex_modules(cls):
+    @staticmethod
+    def return_regex_modules():
         d = {}
         for x in ModulesManager._modules_list:
-            if isinstance(x, Module) and x.is_regex_function:
+            if isinstance(x, Command) and x.is_regex_function:
                 d.update({x.bind_prefix: x})
         return d
 
-    @classmethod
-    def return_modules_help(cls):
+    @staticmethod
+    def return_modules_help():
         d = {}
         for x in ModulesManager._modules_list:
             if x.help_doc is not None:
                 d.update({x.bind_prefix: x.help_doc})
         return d
+
+    @staticmethod
+    def return_schedule_function_list():
+        l = []
+        for x in ModulesManager._modules_list:
+            if isinstance(x, Schedule):
+                l.append(x)
+        return l
 
 
 load_modules()

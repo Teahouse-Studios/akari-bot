@@ -1,19 +1,23 @@
 from typing import Callable
+from apscheduler.triggers.combining import AndTrigger, OrTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
 
 
-class Module:
+class Command:
     def __init__(self,
                  function: Callable,
                  bind_prefix: str,
-                 alias: [str, list, tuple],
-                 help_doc: [str, list, tuple, None],
-                 desc: [str, None],
-                 need_self_process: bool,
-                 need_admin: bool,
-                 is_base_function: bool,
-                 need_superuser: bool,
-                 is_regex_function: bool,
-                 autorun: bool):
+                 alias: [str, list, tuple] = None,
+                 help_doc: [str, list, tuple] = None,
+                 desc: str = None,
+                 need_self_process: bool = False,
+                 need_admin: bool = False,
+                 is_base_function: bool = False,
+                 need_superuser: bool = False,
+                 is_regex_function: bool = False,
+                 autorun: bool = False):
         self.function = function
         self.bind_prefix = bind_prefix
         self.alias = alias
@@ -28,12 +32,13 @@ class Module:
 
 
 class Option:
-    def __init__(self, bind_prefix,
-                 desc,
-                 help_doc,
-                 alias,
-                 need_superuser,
-                 need_admin):
+    def __init__(self,
+                 bind_prefix: str,
+                 desc: str = None,
+                 help_doc: [str, list, tuple] = None,
+                 alias: [str, list, tuple] = None,
+                 need_superuser: bool = False,
+                 need_admin: bool = False):
         self.bind_prefix = bind_prefix
         self.help_doc = help_doc
         self.desc = desc
@@ -42,4 +47,25 @@ class Option:
         self.need_admin = need_admin
 
 
-__all__ = ["Module", "Option"]
+class Schedule:
+    def __init__(self,
+                 function: Callable,
+                 trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
+                 bind_prefix: str,
+                 desc: str = None,
+                 help_doc: [str, list, tuple] = None,
+                 alias: [str, list, tuple] = None,
+                 need_superuser: bool = False,
+                 need_admin: bool = False
+                 ):
+        self.function = function
+        self.trigger = trigger
+        self.bind_prefix = bind_prefix
+        self.desc = desc
+        self.help_doc = help_doc
+        self.alias = alias
+        self.need_superuser = need_superuser
+        self.need_admin = need_admin
+
+
+__all__ = ["Command", "Option", "Schedule", "AndTrigger", "OrTrigger", "DateTrigger", "CronTrigger", "IntervalTrigger"]

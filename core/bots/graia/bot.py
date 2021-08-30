@@ -10,7 +10,7 @@ from graia.application.message.chain import MessageChain
 from config import Config
 from core.bots.graia.broadcast import bcc, app
 from core.bots.graia.message import MessageSession, FetchTarget
-from core.elements import MsgInfo, Session, Module
+from core.elements import MsgInfo, Session, Command, Schedule
 from core.loader import Modules
 from core.parser.message import parser
 from core.scheduler import Scheduler
@@ -52,8 +52,10 @@ async def new_group(event: BotInvitedJoinGroupRequestEvent):
 async def autorun_handler():
     gather_list = []
     for x in Modules:
-        if isinstance(Modules[x], Module) and Modules[x].autorun:
+        if isinstance(Modules[x], Command) and Modules[x].autorun:
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+        if isinstance(Modules[x], Schedule):
+            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget])
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)

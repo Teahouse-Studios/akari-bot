@@ -7,6 +7,7 @@ from graia.application.group import Group, Member
 from graia.application.message.elements.internal import Plain, Image, Source, Voice
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
+from typing import List
 
 from core.bots.graia.broadcast import app, bcc
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, \
@@ -15,7 +16,34 @@ from core.elements.others import confirm_command
 from core.utils import slk_converter
 
 from config import Config
+from database import BotDBUtil
 from database.logging_message import LoggerMSG
+
+
+async def msgchain_gen(message) -> MessageChain:
+    if isinstance(message, str):
+        if message == '':
+            message = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+        msgchain = MessageChain.create([Plain(message)])
+    elif isinstance(message, list):
+        msgchain_list = []
+        for x in message:
+            if isinstance(x, BPlain):
+                msgchain_list.append(Plain(x.text))
+            if isinstance(x, BImage):
+                msgchain_list.append(Image.fromLocalFile(await x.get()))
+            if isinstance(x, BVoice):
+                msgchain_list.append(Voice().fromLocalFile(filepath=await slk_converter(x.path)))
+        if not msgchain_list:
+            msgchain_list.append(Plain(
+                '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
+        msgchain = MessageChain.create(msgchain_list)
+    elif isinstance(message, MessageChain):
+        msgchain = message
+    else:
+        msgchain = MessageChain.create([Plain(
+            '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')])
+    return msgchain
 
 
 class MessageSession(MS):
@@ -24,28 +52,12 @@ class MessageSession(MS):
         voice = True
 
     async def sendMessage(self, msgchain, quote=True):
-        if isinstance(msgchain, str):
-            if msgchain == '':
-                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
-            msgchain = MessageChain.create([Plain(msgchain)])
-        if isinstance(msgchain, list):
-            msgchain_list = []
-            for x in msgchain:
-                if isinstance(x, BPlain):
-                    msgchain_list.append(Plain(x.text))
-                if isinstance(x, BImage):
-                    msgchain_list.append(Image.fromLocalFile(await x.get()))
-                if isinstance(x, BVoice):
-                    msgchain_list.append(Voice().fromLocalFile(filepath=await slk_converter(x.path)))
-            if not msgchain_list:
-                msgchain_list.append(Plain(
-                    '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
-            msgchain = MessageChain.create(msgchain_list)
+        msgchain = await msgchain_gen(msgchain)
         if Config('qq_msg_logging_to_db') and self.session.message:
             LoggerMSG(userid=self.target.senderId, command=self.trigger_msg, msg=msgchain.asDisplay())
         if isinstance(self.session.target, Group) or self.target.targetFrom == 'QQ|Group':
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
-                if quote and self.session.message else None)
+            if quote and self.session.message else None)
             return MessageSession(
                 target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
                 session=Session(message=send, target=0, sender=0))
@@ -129,7 +141,7 @@ class MessageSession(MS):
 
 class FetchTarget(FT):
     @staticmethod
-    async def fetch_target(targetId):
+    async def fetch_target(targetId) -> MessageSession:
         matchTarget = re.match(r'^((?:QQ\|Group|QQ))\|(.*)', targetId)
         if matchTarget:
             return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
@@ -138,3 +150,25 @@ class FetchTarget(FT):
                                           sender=int(matchTarget.group(2))))
         else:
             return False
+
+    @staticmethod
+    async def post_message(module_name, message, user_list: List[MessageSession] = None):
+        send_list = []
+        if user_list is not None:
+            for x in user_list:
+                try:
+                    send = await x.sendMessage(message, quote=False)
+                    send_list.append(send)
+                except Exception:
+                    traceback.print_exc()
+        else:
+            get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
+            for x in get_target_id:
+                fetch = await FetchTarget.fetch_target(x)
+                if fetch:
+                    try:
+                        send = await fetch.sendMessage(message, quote=False)
+                        send_list.append(send)
+                    except Exception:
+                        traceback.print_exc()
+        return send_list
