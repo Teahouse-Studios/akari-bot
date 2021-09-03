@@ -7,7 +7,11 @@ from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTrig
 
 
 def convert_list_to_str(lst: list) -> str:
-    return '|'.join(lst)
+    filter_lst = []
+    for x in lst:
+        if x != '':
+            filter_lst.append(x)
+    return '|'.join(filter_lst)
 
 
 def convert_str_to_list(s: str) -> list:
