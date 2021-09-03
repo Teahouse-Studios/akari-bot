@@ -31,4 +31,4 @@ async def get_weekly():
 @command('weekly', help_doc=('~weekly {获取中文 Minecraft Wiki 的每周页面}'))
 async def weekly(msg: MessageSession):
     weekly = await get_weekly()
-    await msg.sendMessage(weekly[0], weekly[1])
+    await msg.sendMessage([weekly[0], weekly[1]])

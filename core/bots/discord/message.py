@@ -116,3 +116,4 @@ class FetchTarget(FT):
                         send_list.append(send)
                     except Exception:
                         traceback.print_exc()
+        return send_list

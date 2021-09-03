@@ -37,7 +37,7 @@ async def config_modules(msg: MessageSession):
     if msg.parsed_msg['enable']:
         if wait_config_list == ['all']:
             for function in modules:
-                if not modules[function].need_superuser:
+                if not modules[function].need_superuser and not modules[function].is_base_function:
                     if query.enable(function):
                         msglist.append(f'成功：打开模块“{function}”')
         else:
@@ -47,6 +47,8 @@ async def config_modules(msg: MessageSession):
                 else:
                     if modules[module].need_superuser and not msg.checkSuperUser():
                         msglist.append(f'失败：你没有打开“{module}”的权限。')
+                    elif modules[module].is_base_function:
+                        msglist.append(f'失败：“{module}”为基础模块。')
                     else:
                         if query.enable(wait_config_list):
                             msglist.append(f'成功：打开模块“{module}”')
@@ -116,7 +118,8 @@ async def modules_help(msg: MessageSession):
     help_msg = ['当前可用的模块有：']
     module = []
     for x in module_list:
-        module.append(module_list[x].bind_prefix)
+        if not module_list[x].is_base_function and not module_list[x].need_superuser:
+            module.append(module_list[x].bind_prefix)
     help_msg.append(' | '.join(module))
     help_msg.append(
         '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')

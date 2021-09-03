@@ -47,7 +47,7 @@ async def mcv_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@schedule('mcv_rss', trigger=IntervalTrigger(seconds=60))
+@schedule('mcv_jira_rss', trigger=IntervalTrigger(seconds=60))
 async def mcv_jira_rss(bot: FetchTarget):
     urls = {'Java': {'url': 'https://bugs.mojang.com/rest/api/2/project/10400/versions', 'display': 'Java版'},
             'Bedrock': {'url': 'https://bugs.mojang.com/rest/api/2/project/10200/versions', 'display': '基岩版'},

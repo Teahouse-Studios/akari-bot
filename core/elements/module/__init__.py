@@ -44,6 +44,8 @@ class Option:
         self.desc = desc
         self.alias = alias
         self.need_superuser = need_superuser
+        self.is_base_function = False
+        self.is_regex_function = False
         self.need_admin = need_admin
 
 
@@ -65,6 +67,8 @@ class Schedule:
         self.help_doc = help_doc
         self.alias = alias
         self.need_superuser = need_superuser
+        self.is_base_function = False
+        self.is_regex_function = False
         self.need_admin = need_admin
 
 
