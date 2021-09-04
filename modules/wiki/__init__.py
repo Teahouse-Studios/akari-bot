@@ -37,7 +37,7 @@ async def wiki_wrapper(msg: MessageSession):
 
 
 async def wiki(msg: MessageSession):
-    command = f'[[{msg.parsed_msg["<PageName>"]}]]'
+    command = f'[[{" ".join(msg.trigger_msg.split(" ")[1:])}]]'
     await regex_proc(msg, command, typing=False)
 
 
