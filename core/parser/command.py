@@ -53,7 +53,10 @@ class CommandParser:
 
     def parse(self, command):
         command = re.sub('“', '"', re.sub('”', '"', command))
-        split_command = shlex.split(command)
+        try:
+            split_command = shlex.split(command)
+        except ValueError:
+            split_command = command.split(' ')
         if len(split_command) == 1:
             return None
         try:
