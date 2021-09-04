@@ -19,5 +19,4 @@ aiogram
 aiohttp_retry
 ujson
 pymysql
-aiogram
 discord.py
