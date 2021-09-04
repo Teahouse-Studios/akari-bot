@@ -12,7 +12,7 @@ async def main(msg: MessageSession):
     friendcode = msg.parsed_msg['<friendcode>']
     if friendcode:
         if friendcode == 'initialize':
-            if msg.checkSuperuser():
+            if msg.checkSuperUser():
                 await arcb30init(msg)
             else:
                 await msg.sendMessage('权限不足')
