@@ -25,7 +25,7 @@ async def msgchain_gen(message) -> MessageChain:
         if message == '':
             message = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
         msgchain = MessageChain.create([Plain(message)])
-    elif isinstance(message, list):
+    elif isinstance(message, (list, tuple)):
         msgchain_list = []
         for x in message:
             if isinstance(x, BPlain):

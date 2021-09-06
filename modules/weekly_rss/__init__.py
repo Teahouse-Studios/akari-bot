@@ -18,5 +18,4 @@ async def weekly_rss(bot: FetchTarget):
 
     weekly = await get_weekly()
     await bot.post_message('weekly_rss', weekly)
-    Logger.info(weekly[0])
     Logger.info('Weekly checked.')
