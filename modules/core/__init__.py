@@ -83,7 +83,7 @@ async def config_modules(msg: MessageSession):
         for m in recommend_modules_list:
             fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + CommandParser(modules[m]).return_formatted_help_doc())
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
-                                        '\n'.join(recommend_modules_list) + '\n' +
+                                        '\n'.join(recommend_modules_list) + '\n\n' +
                                         '\n'.join(fmt_help_doc_list) +
                                         '\n是否一并打开？')
         if confirm:
