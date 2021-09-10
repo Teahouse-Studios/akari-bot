@@ -240,13 +240,10 @@ async def regex_proc(msg: MessageSession, display, typing=True):
     if global_status == 'warn':
         msg.target.senderInfo.edit('warns', int(msg.target.senderInfo.query.warns) + 1)
     if waitmsglist:
-        send = await msg.sendMessage(waitmsglist)
-        wait = await msg.waitConfirm()
+        wait = await msg.waitConfirm(waitmsglist)
         if wait:
             nwaitlist = []
             for waits in waitlist:
                 waits1 = f'[[{waits}]]'
                 nwaitlist.append(waits1)
             await regex_proc(msg, '\n'.join(nwaitlist))
-        else:
-            await send.delete()
