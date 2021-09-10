@@ -133,7 +133,10 @@ class MessageSession(MS):
 
         async def __aenter__(self):
             if isinstance(self.msg.session.target, Group):
-                await app.nudge(self.msg.session.sender)
+                try:
+                    await app.nudge(self.msg.session.sender)
+                except Exception:
+                    traceback.print_exc()
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
