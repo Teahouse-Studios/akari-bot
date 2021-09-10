@@ -5,7 +5,8 @@ from core.loader.decorator import command
 from .bugtracker import bugtracker_get
 
 
-@command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}')
+@command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}',
+         allowed_none=False)
 async def bugtracker(msg: MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:

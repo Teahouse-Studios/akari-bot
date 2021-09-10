@@ -1,14 +1,6 @@
-import asyncio
-import random
-import traceback
-
-from apscheduler.triggers.cron import CronTrigger
-
-from core.loader.decorator import schedule
 from core.elements import CronTrigger, FetchTarget
+from core.loader.decorator import schedule
 from core.logger import Logger
-from core.scheduler import Scheduler
-from database import BotDBUtil
 from modules.weekly import get_weekly
 
 

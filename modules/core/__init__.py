@@ -1,10 +1,10 @@
 import asyncio
-import ujson as json
 import os
 import sys
 import time
 
 import psutil
+import ujson as json
 
 from core.elements import MessageSession, Command
 from core.loader import ModulesManager
@@ -19,7 +19,7 @@ from database import BotDBUtil
          need_admin=True,
          help_doc=('~module enable (<module>...|all) {开启一个/多个或所有模块}',
                    '~module disable (<module>...|all) {关闭一个/多个或所有模块}'),
-         alias={'enable': 'module enable', 'disable': 'module disable'}
+         alias={'enable': 'module enable', 'disable': 'module disable'}, allowed_none=False
          )
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
@@ -34,12 +34,13 @@ async def config_modules(msg: MessageSession):
                 wait_config_list.append(module)
     query = BotDBUtil.Module(msg)
     msglist = []
+    recommend_modules_list = []
     if msg.parsed_msg['enable']:
+        enable_list = []
         if wait_config_list == ['all']:
             for function in modules:
                 if not modules[function].need_superuser and not modules[function].is_base_function:
-                    if query.enable(function):
-                        msglist.append(f'成功：打开模块“{function}”')
+                    enable_list.append(function)
         else:
             for module in wait_config_list:
                 if module not in modules:
@@ -50,22 +51,47 @@ async def config_modules(msg: MessageSession):
                     elif modules[module].is_base_function:
                         msglist.append(f'失败：“{module}”为基础模块。')
                     else:
-                        if query.enable(wait_config_list):
-                            msglist.append(f'成功：打开模块“{module}”')
+                        enable_list.append(module)
+                        recommend = modules[module].recommend_modules
+                        if isinstance(recommend, str):
+                            recommend_modules_list.append(recommend)
+                        if isinstance(recommend, (list, tuple)):
+                            for r in recommend:
+                                recommend_modules_list.append(r)
+        if query.enable(enable_list):
+            for x in enable_list:
+                msglist.append(f'成功：打开模块“{x}”')
     elif msg.parsed_msg['disable']:
+        disable_list = []
         if wait_config_list == ['all']:
             for function in modules:
-                if query.disable(function):
-                    msglist.append(f'成功：关闭模块“{function}”')
+                if not modules[function].need_superuser and not modules[function].is_base_function:
+                    disable_list.append(function)
         else:
             for module in wait_config_list:
                 if module not in modules:
                     msglist.append(f'失败：“{module}”模块不存在')
                 else:
-                    if query.disable(wait_config_list):
-                        msglist.append(f'成功：关闭模块“{module}”')
+                    disable_list.append(module)
+        if query.disable(disable_list):
+            for x in disable_list:
+                msglist.append(f'成功：关闭模块“{x}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
+    if recommend_modules_list:
+        fmt_help_doc_list = []
+        for m in recommend_modules_list:
+            fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + CommandParser(modules[m]).return_formatted_help_doc())
+        confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
+                                        '\n'.join(recommend_modules_list) + '\n' +
+                                        '\n'.join(fmt_help_doc_list) +
+                                        '\n是否一并打开？')
+        if confirm:
+            if query.enable(recommend_modules_list):
+                msglist = []
+                for x in recommend_modules_list:
+                    msglist.append(f'成功：打开模块“{x}”')
+                await msg.sendMessage('\n'.join(msglist))
 
 
 @command('help',
@@ -82,7 +108,7 @@ async def bot_help(msg: MessageSession):
         if help_name in alias:
             help_name = alias[help_name]
         if help_name in module_list:
-            help_ = CommandParser(module_list[help_name].help_doc).return_formatted_help_doc()
+            help_ = CommandParser(module_list[help_name]).return_formatted_help_doc()
             if help_ is not None:
                 msgs.append(help_)
         if msgs:
@@ -185,7 +211,7 @@ async def ping(msg: MessageSession):
 @command('admin',
          is_base_function=True,
          need_admin=True,
-         help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}')
+         help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}'), allowed_none=False
          )
 async def config_gu(msg: MessageSession):
     if msg.parsed_msg['add']:

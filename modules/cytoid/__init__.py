@@ -6,7 +6,8 @@ from .rating import get_rating
 
 
 @command('cytoid', help_doc=('~cytoid (b30|r30) <UserID> {查询一个用户的b30/r30记录}',
-                             '~cytoid profile <UserID> {查询一个用户的基本信息}'))
+                             '~cytoid profile <UserID> {查询一个用户的基本信息}'),
+         allowed_none=False)
 async def cytoid(msg: MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)

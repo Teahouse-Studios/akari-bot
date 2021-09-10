@@ -21,4 +21,5 @@ class SenderInfoCache:
     def get_cache(key):
         return SenderInfoCache._cache.get(key, False)
 
+
 __all__ = ["EnabledModulesCache", "SenderInfoCache"]

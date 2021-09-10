@@ -1,14 +1,12 @@
-import asyncio
-import ujson as json
 import os
 import traceback
-import random
+
+import ujson as json
 
 from core.elements import FetchTarget, IntervalTrigger
 from core.loader.decorator import schedule
 from core.logger import Logger
 from core.utils import get_url, PrivateAssets
-from database import BotDBUtil
 
 
 def getfileversions(path):

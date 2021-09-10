@@ -1,18 +1,21 @@
+from apscheduler.triggers.combining import AndTrigger, OrTrigger
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+
 from core.elements import Command, Option, Schedule
 from core.loader import ModulesManager
 
-from apscheduler.triggers.combining import AndTrigger, OrTrigger
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.date import DateTrigger
+from typing import Union
 
 
 def command(
         bind_prefix: str,
-        alias: [str, list, tuple] = None,
-        help_doc: [str, list, tuple] = None,
+        alias: Union[str, list, tuple, dict] = None,
+        help_doc: Union[str, list, tuple] = None,
+        allowed_none: bool = True,
         desc: str = None,
-        need_self_process: bool = False,
+        recommend_modules: Union[str, list, tuple] = None,
         need_admin: bool = False,
         is_base_function: bool = False,
         need_superuser: bool = False,
@@ -24,11 +27,12 @@ def command(
                          alias=alias,
                          bind_prefix=bind_prefix,
                          help_doc=help_doc,
+                         allowed_none=allowed_none,
                          desc=desc,
+                         recommend_modules=recommend_modules,
                          is_base_function=is_base_function,
                          is_regex_function=is_regex_function,
                          need_admin=need_admin,
-                         need_self_process=need_self_process,
                          need_superuser=need_superuser,
                          autorun=autorun)
         ModulesManager.add_module(module)
@@ -40,8 +44,9 @@ def command(
 def option(
         bind_prefix: str,
         desc: str = None,
-        help_doc: [str, list, tuple] = None,
-        alias: [str, list, tuple] = None,
+        help_doc: Union[str, list, tuple] = None,
+        alias: Union[str, list, tuple, dict] = None,
+        recommend_modules: Union[str, list, tuple] = None,
         need_superuser: bool = False,
         need_admin: bool = False
 ):
@@ -50,6 +55,7 @@ def option(
                         desc=desc,
                         help_doc=help_doc,
                         alias=alias,
+                        recommend_modules=recommend_modules,
                         need_superuser=need_superuser,
                         need_admin=need_admin)
         ModulesManager.add_module(module)
@@ -60,10 +66,11 @@ def option(
 
 def schedule(
         bind_prefix: str,
-        trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
+        trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
         desc: str = None,
-        help_doc: [str, list, tuple] = None,
-        alias: [str, list, tuple] = None,
+        help_doc: Union[str, list, tuple] = None,
+        alias: Union[str, list, tuple, dict] = None,
+        recommend_modules: Union[str, list, tuple] = None,
         need_superuser: bool = False,
         need_admin: bool = False
 ):
@@ -74,6 +81,7 @@ def schedule(
                           desc=desc,
                           help_doc=help_doc,
                           alias=alias,
+                          recommend_modules=recommend_modules,
                           need_superuser=need_superuser,
                           need_admin=need_admin)
         ModulesManager.add_module(module)

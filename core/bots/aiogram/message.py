@@ -10,6 +10,15 @@ from core.elements.others import confirm_command
 from database import BotDBUtil
 
 
+def convert2lst(s) -> list:
+    if isinstance(s, str):
+        return [Plain(s)]
+    elif isinstance(s, list):
+        return s
+    elif isinstance(s, tuple):
+        return list(s)
+
+
 class MessageSession(MS):
     class Feature:
         image = True
@@ -22,33 +31,42 @@ class MessageSession(MS):
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                                  senderFrom='Telegram|Bot'),
                                   session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
-        if isinstance(msgchain, list):
+        if isinstance(msgchain, (list, tuple)):
             count = 0
             send_list = []
             for x in msgchain:
                 if isinstance(x, Plain):
                     send = await bot.send_message(self.session.target, x.text,
-                                                  reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
-                    send_list.append(send)
-                    count += 1
+                                                  reply_to_message_id=self.session.message.message_id if quote
+                                                  and count == 0 and self.session.message else None)
                 if isinstance(x, Image):
                     with open(await x.get(), 'rb') as image:
                         send = await bot.send_photo(self.session.target, image,
-                                                    reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
-                        send_list.append(send)
-                        count += 1
+                                                    reply_to_message_id=self.session.message.message_id if quote
+                                                    and count == 0
+                                                    and self.session.message else None)
                 if isinstance(x, Voice):
                     with open(x.path, 'rb') as voice:
                         send = await bot.send_audio(self.session.target, voice,
-                                                    reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
+                                                    reply_to_message_id=self.session.message.message_id if quote
+                                                    and count == 0 and self.session.message else None)
+                send_list.append(send)
+                count += 1
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                                  senderFrom='Telegram|Bot'),
                                   session=Session(message=send_list, target=send.chat.id, sender=send.from_user.id))
 
-    async def waitConfirm(self):
+    async def waitConfirm(self, msgchain=None, quote=True):
+        send = None
+        if msgchain is not None:
+            msgchain = convert2lst(msgchain)
+            msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
+            send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self.session.sender, flag)
         await flag.wait()
+        if msgchain is not None:
+            await send.delete()
         if FinishedTasks.get()[self.session.sender].text in confirm_command:
             return True
         return False

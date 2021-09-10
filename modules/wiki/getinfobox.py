@@ -1,4 +1,3 @@
-import ujson as json
 import os
 import re
 import traceback
@@ -6,6 +5,7 @@ import uuid
 from urllib.parse import urljoin
 
 import aiohttp
+import ujson as json
 from bs4 import BeautifulSoup
 
 from config import Config

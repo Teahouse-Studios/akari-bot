@@ -1,18 +1,13 @@
-import asyncio
 import ujson as json
-import random
-import traceback
 
+from core.dirty_check import check
+from core.elements import FetchTarget
 from core.loader.decorator import command
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils import get_url
-from core.elements import FetchTarget
-from core.dirty_check import check
-
 from modules.utils.UTC8 import UTC8
 
-from database import BotDBUtil
 
 @command('__check_newbie__', need_superuser=True, autorun=True)
 async def newbie(bot: FetchTarget):

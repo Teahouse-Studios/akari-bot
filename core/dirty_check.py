@@ -5,7 +5,6 @@ import hmac
 import json
 import time
 
-import aiohttp
 from aiohttp_retry import RetryClient, ExponentialRetry
 
 from config import Config

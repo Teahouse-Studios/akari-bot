@@ -295,7 +295,7 @@ invalid for the Wii U.')
             await ctx.send(kwargs, 'This isn\'t a hexadecimal value!')
 
 
-@command('err', help_doc='~err <errcode> {解析任天堂系列主机的报错码并给出原因。}')
+@command('err', help_doc='~err <errcode> {解析任天堂系列主机的报错码并给出原因。}', allowed_none=False)
 async def result(msg: MessageSession):
     """
     Displays information on game console result codes, with a fancy embed.

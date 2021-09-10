@@ -1,9 +1,8 @@
 import ujson as json
 
 from core.elements import MessageSession
-from .orm import WikiTargetSetInfo, WikiInfo
 from database.orm import DBSession
-
+from .orm import WikiTargetSetInfo, WikiInfo
 
 session = DBSession().session
 

@@ -1,7 +1,9 @@
 import re
 import shlex
+from typing import Union
 
 from core.docopt import docopt, DocoptExit
+from core.elements import Command, Option, Schedule
 
 
 class InvalidHelpDocTypeError(BaseException):
@@ -15,11 +17,18 @@ class InvalidCommandFormatError(BaseException):
 
 
 class CommandParser:
-    def __init__(self, args: [str, list, tuple]):
+    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule]):
         """
         Format: https://github.com/jazzband/docopt-ng#usage-pattern-format
         * {} - Detail help information
         """
+        self.desc = False
+        if isinstance(args, (Command, Option, Schedule)):
+            if args.help_doc is not None:
+                args = args.help_doc
+            elif args.desc is not None:
+                args = args.desc
+                self.desc = True
         self.args_raw = args
         if isinstance(args, str):
             args = [args]
@@ -36,7 +45,8 @@ class CommandParser:
 
     def return_formatted_help_doc(self) -> str:
         args_raw = self.args_raw
-
+        if self.desc:
+            return args_raw
         if isinstance(args_raw, str):
             args_raw = [args_raw]
         if isinstance(args_raw, (list, tuple)):
@@ -52,6 +62,8 @@ class CommandParser:
         return args
 
     def parse(self, command):
+        if self.desc:
+            return None
         command = re.sub('“', '"', re.sub('”', '"', command))
         try:
             split_command = shlex.split(command)

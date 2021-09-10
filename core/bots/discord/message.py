@@ -10,6 +10,15 @@ from core.elements.others import confirm_command
 from database import BotDBUtil
 
 
+def convert2lst(s) -> list:
+    if isinstance(s, str):
+        return [Plain(s)]
+    elif isinstance(s, list):
+        return s
+    elif isinstance(s, tuple):
+        return list(s)
+
+
 class MessageSession(MS):
     class Feature:
         image = True
@@ -24,7 +33,7 @@ class MessageSession(MS):
             return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
                                                  senderFrom='Discord|Bot'),
                                   session=Session(message=send, target=send.channel, sender=send.author))
-        if isinstance(msgchain, list):
+        if isinstance(msgchain, (list, tuple)):
             count = 0
             send_list = []
             for x in msgchain:
@@ -41,11 +50,17 @@ class MessageSession(MS):
                                                  senderFrom='Discord|Bot'),
                                   session=Session(message=send_list, target=send.channel, sender=send.author))
 
-    async def waitConfirm(self):
+    async def waitConfirm(self, msgchain=None, quote=True):
         def check(m):
             return m.channel == self.session.message.channel and m.author == self.session.message.author
-
+        send = None
+        if msgchain is not None:
+            msgchain = convert2lst(msgchain)
+            msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
+            send = await self.sendMessage(msgchain, quote)
         msg = await client.wait_for('message', check=check)
+        if msgchain is not None:
+            await send.delete()
         return True if msg.content in confirm_command else False
 
     async def checkPermission(self):

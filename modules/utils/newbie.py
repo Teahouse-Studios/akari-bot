@@ -1,7 +1,7 @@
-import ujson as json
 import re
 
 import aiohttp
+import ujson as json
 
 from core.dirty_check import check
 from modules.wiki.wikilib import wikilib

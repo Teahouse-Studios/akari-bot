@@ -1,10 +1,11 @@
-import ujson as json
 import re
+
+import ujson as json
 
 from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
-from core.parser.command import CommandParser
 from core.loader.decorator import command
+from core.parser.command import CommandParser
 from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
@@ -21,11 +22,10 @@ from .getinfobox import get_infobox_pic
                            '~wiki headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
                            '~wiki headers reset {重置headers}',
                            '~wiki headers show {展示当前设置的headers}'),
-         alias={'wiki_start_site': 'wiki set'})
+         alias={'wiki_start_site': 'wiki set'},
+         recommend_modules='wiki_inline',
+         allowed_none=False)
 async def wiki_wrapper(msg: MessageSession):
-    if msg.parsed_msg is None:
-        await msg.sendMessage(CommandParser(ModulesManager.return_modules_help()['wiki']).return_formatted_help_doc())
-        return
     if msg.parsed_msg['set']:
         await set_start_wiki(msg)
     elif msg.parsed_msg['iw']:

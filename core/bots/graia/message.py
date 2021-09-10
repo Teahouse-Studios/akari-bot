@@ -1,5 +1,8 @@
+import asyncio
+import random
 import re
 import traceback
+from typing import List
 
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
@@ -7,15 +10,13 @@ from graia.application.group import Group, Member
 from graia.application.message.elements.internal import Plain, Image, Source, Voice
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
-from typing import List
 
+from config import Config
 from core.bots.graia.broadcast import app, bcc
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, \
     FetchTarget as FT
 from core.elements.others import confirm_command
 from core.utils import slk_converter
-
-from config import Config
 from database import BotDBUtil
 from database.logging_message import LoggerMSG
 
@@ -57,7 +58,7 @@ class MessageSession(MS):
             LoggerMSG(userid=self.target.senderId, command=self.trigger_msg, msg=msgchain.asDisplay())
         if isinstance(self.session.target, Group) or self.target.targetFrom == 'QQ|Group':
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
-            if quote and self.session.message else None)
+                                              if quote and self.session.message else None)
             return MessageSession(
                 target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
                 session=Session(message=send, target=0, sender=0))
@@ -67,7 +68,11 @@ class MessageSession(MS):
                 target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
                 session=Session(message=send, target=0, sender=0))
 
-    async def waitConfirm(self):
+    async def waitConfirm(self, msgchain=None, quote=True):
+        if msgchain is not None:
+            msgchain = await msgchain_gen(msgchain)
+            msgchain = msgchain.plusWith(MessageChain.create([Plain('（发送“是”或符合确认条件的词语来确认）')]))
+            send = await self.sendMessage(msgchain, quote=quote)
         inc = InterruptControl(bcc)
         if isinstance(self.session.target, Group):
             @Waiter.create_using_function([GroupMessage])
@@ -92,7 +97,10 @@ class MessageSession(MS):
                     else:
                         return False
 
-        return await inc.wait(waiter)
+        wait = await inc.wait(waiter)
+        if msgchain is not None:
+            await send.delete()
+        return wait
 
     def asDisplay(self):
         display = self.session.message.asDisplay()
@@ -172,6 +180,7 @@ class FetchTarget(FT):
                     try:
                         send = await fetch.sendMessage(message, quote=False)
                         send_list.append(send)
+                        await asyncio.sleep(random.randint(1, 10))
                     except Exception:
                         traceback.print_exc()
         return send_list

@@ -1,5 +1,6 @@
-import ujson as json
 import re
+
+import ujson as json
 
 from core.elements import Plain, Image, MessageSession
 from core.loader.decorator import command

@@ -26,7 +26,8 @@ def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
     draw.text((x, y), text, font=font, fill=fillcolor)
 
 
-@command('ptt', help_doc='~ptt <potential> {生成一张Arcaea Potential图片}')
+@command('ptt', help_doc='~ptt <potential> {生成一张Arcaea Potential图片}',
+         allowed_none=False)
 async def pttimg(msg: MessageSession):
     ptt = msg.parsed_msg['<potential>']
     # ptt

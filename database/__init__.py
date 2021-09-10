@@ -4,6 +4,10 @@ from core.elements.message import MessageSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
+from config import Config
+
+
+cache = Config('db_cache')
 
 
 def convert_list_to_str(lst: list) -> str:
@@ -37,7 +41,7 @@ class BotDBUtil:
             else:
                 self.targetId = msg
             self.need_insert = False
-            self.enable_modules_list = EnabledModulesCache.get_cache(self.targetId)
+            self.enable_modules_list = EnabledModulesCache.get_cache(self.targetId) if cache else False
             if not self.enable_modules_list:
                 query = self.query_EnabledModules
                 if query is None:
@@ -46,7 +50,8 @@ class BotDBUtil:
                 else:
                     query_ = query.enabledModules
                     self.enable_modules_list = convert_str_to_list(query_)
-                EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+                if cache:
+                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
 
         @property
         def query_EnabledModules(self):
@@ -76,7 +81,8 @@ class BotDBUtil:
                     self.query_EnabledModules.enabledModules = value
                 session.commit()
                 session.expire_all()
-                EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+                if cache:
+                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
                 return True
             except Exception:
                 session.rollback()
@@ -95,7 +101,8 @@ class BotDBUtil:
                     self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
                     session.commit()
                     session.expire_all()
-                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+                    if cache:
+                        EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
                 return True
             except Exception:
                 session.rollback()
@@ -114,7 +121,7 @@ class BotDBUtil:
     class SenderInfo:
         def __init__(self, senderId):
             self.senderId = senderId
-            query_cache = SenderInfoCache.get_cache(self.senderId)
+            query_cache = SenderInfoCache.get_cache(self.senderId) if cache else False
             if query_cache:
                 self.query = Dict2Object(query_cache)
             else:
@@ -124,7 +131,8 @@ class BotDBUtil:
                         session.add_all([SenderInfo(id=senderId)])
                         session.commit()
                         self.query = session.query(SenderInfo).filter_by(id=senderId).first()
-                    SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
+                    if cache:
+                        SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
                 except Exception:
                     session.rollback()
                     raise
@@ -139,7 +147,8 @@ class BotDBUtil:
                 setattr(query, column, value)
                 session.commit()
                 session.expire_all()
-                SenderInfoCache.add_cache(self.senderId, query.__dict__)
+                if cache:
+                    SenderInfoCache.add_cache(self.senderId, query.__dict__)
                 return True
             except Exception:
                 session.rollback()

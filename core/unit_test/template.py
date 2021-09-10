@@ -1,5 +1,6 @@
-from PIL import Image
 from typing import List
+
+from PIL import Image
 
 from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT
 from core.elements.others import confirm_command
@@ -27,8 +28,12 @@ class Template(MessageSession):
             return MessageSession(target=self.target,
                                   session=Session(message=str(msg_list), target='TEST|Console', sender='TEST|Console'))
 
-    async def waitConfirm(self):
+    async def waitConfirm(self, msgchain=None, quote=True):
+        if msgchain is not None:
+            await self.sendMessage(msgchain)
+            print("（发送“是”或符合确认条件的词语来确认）")
         c = input('Confirm: ')
+        print(c)
         if c in confirm_command:
             return True
         return False

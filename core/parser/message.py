@@ -63,6 +63,8 @@ async def parser(msg: MessageSession):
                             command_parser = CommandParser(help_doc)
                             try:
                                 msg.parsed_msg = command_parser.parse(command)
+                                if msg.parsed_msg is None and not Modules[command_first_word].allowed_none:
+                                    return await msg.sendMessage(command_parser.return_formatted_help_doc())
                             except InvalidCommandFormatError:
                                 return await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                         except InvalidHelpDocTypeError:

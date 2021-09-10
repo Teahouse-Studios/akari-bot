@@ -41,15 +41,16 @@ class MessageSession:
         """
         用于向消息发送者回复消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :param quote: 是否引用传入dict中的消息（仅对Group消息有效）（默认为True）
+        :param quote: 是否引用传入dict中的消息（默认为True）
         :return: 被发送的消息链
         """
         ...
 
-    async def waitConfirm(self):
+    async def waitConfirm(self, msgchain=None, quote=True):
         """
         一次性模板，用于等待触发对象确认。
-        :param display_msg: 函数传入的dict
+        :param msgchain: 需要发送的确认消息，可不填
+        :param quote: 是否引用传入dict中的消息（默认为True）
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         ...

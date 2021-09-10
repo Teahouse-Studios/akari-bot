@@ -1,16 +1,14 @@
-import asyncio
 import ujson as json
-import traceback
 import aiohttp
-import random
+import ujson as json
 
 from config import Config
-from database import BotDBUtil
-from core.utils import get_url, download_to_cache
-from core.scheduler import Scheduler
+from core.elements import FetchTarget, Image
 from core.loader.decorator import command
-from core.elements import FetchTarget, Plain, Image
 from core.logger import Logger
+from core.scheduler import Scheduler
+from core.utils import get_url, download_to_cache
+from database import BotDBUtil
 
 
 @command('minecraft_news', autorun=True)

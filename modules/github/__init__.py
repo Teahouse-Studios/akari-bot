@@ -7,7 +7,8 @@ from modules.github import repo, user, search
         '~github repo <name> {获取 GitHub 仓库信息}',
         '~github user <name> {获取 GitHub 用户或组织信息}',
         '~github org <name> {~github user 的别名}',
-        '~github search <query> {搜索 GitHub 上的仓库}'))
+        '~github search <query> {搜索 GitHub 上的仓库}'),
+         allowed_none=False)
 async def github(msg: MessageSession):
     if msg.parsed_msg['repo']:
         return await repo.repo(msg)

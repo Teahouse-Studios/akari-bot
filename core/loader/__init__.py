@@ -45,7 +45,27 @@ class ModulesManager:
 
     @staticmethod
     def return_modules_list_as_dict():
-        return {x.bind_prefix: x for x in ModulesManager._modules_list}
+        d = {}
+        modules = []
+        recommend_modules = []
+        for alias in ModulesManager.return_modules_alias_map():
+            modules.append(alias)
+        for x in ModulesManager._modules_list:
+            prefix = x.bind_prefix
+            if prefix in d:
+                raise ValueError(f'Duplicate bind prefix "{prefix}"')
+            d.update({prefix: x})
+            modules.append(prefix)
+            recommend = x.recommend_modules
+            if isinstance(recommend, str):
+                recommend_modules.append(recommend)
+            if isinstance(recommend, (list, tuple)):
+                for y in recommend:
+                    recommend_modules.append(y)
+        for rm in recommend_modules:
+            if rm not in modules:
+                raise ValueError(f'Invalid recommend module "{rm}"')
+        return d
 
     @staticmethod
     def return_modules_alias_map():

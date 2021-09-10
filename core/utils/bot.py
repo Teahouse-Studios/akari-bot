@@ -1,4 +1,3 @@
-import ujson as json
 import os
 import traceback
 import uuid
@@ -6,6 +5,7 @@ from os.path import abspath
 
 import aiohttp
 import filetype as ft
+import ujson as json
 from aiohttp_retry import ExponentialRetry, RetryClient
 
 from core.elements import FetchTarget

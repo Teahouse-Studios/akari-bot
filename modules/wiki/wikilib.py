@@ -1,16 +1,15 @@
 import asyncio
 import datetime
-import ujson as json
 import re
 import traceback
 import urllib.parse
 
 import aiohttp
 import html2text
+import ujson as json
 
 from core import dirty_check
 from core.logger import Logger
-from core.utils import get_url
 from .dbutils import WikiSiteInfo
 
 

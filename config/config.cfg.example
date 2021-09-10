@@ -1,6 +1,7 @@
 [cfg]
 cache_path = ./cache/
 db_path = mysql+pymysql://
+db_cache = False
 debug_flag = True
 qq_enable_chat_log = True
 qq_msg_logging_to_db = False

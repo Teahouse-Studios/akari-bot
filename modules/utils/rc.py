@@ -1,6 +1,5 @@
-import ujson as json
-
 import aiohttp
+import ujson as json
 
 from core.dirty_check import check
 from modules.utils.UTC8 import UTC8
