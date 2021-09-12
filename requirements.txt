@@ -20,3 +20,4 @@ aiohttp_retry
 ujson
 pymysql
 discord.py
+tenacity

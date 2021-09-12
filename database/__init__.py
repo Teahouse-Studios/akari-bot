@@ -6,6 +6,7 @@ from database.orm import DBSession
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
 from config import Config
 
+from tenacity import retry, stop_after_attempt
 
 cache = Config('db_cache')
 
@@ -63,6 +64,7 @@ class BotDBUtil:
         def check_target_enabled_module(self, module_name) -> bool:
             return True if module_name in self.enable_modules_list else False
 
+        @retry(stop=stop_after_attempt(3))
         def enable(self, module_name) -> bool:
             try:
                 if isinstance(module_name, str):
@@ -88,6 +90,7 @@ class BotDBUtil:
                 session.rollback()
                 raise
 
+        @retry(stop=stop_after_attempt(3))
         def disable(self, module_name) -> bool:
             try:
                 if isinstance(module_name, str):
@@ -119,6 +122,7 @@ class BotDBUtil:
             return targetIds
 
     class SenderInfo:
+        @retry(stop=stop_after_attempt(3))
         def __init__(self, senderId):
             self.senderId = senderId
             query_cache = SenderInfoCache.get_cache(self.senderId) if cache else False
@@ -141,6 +145,7 @@ class BotDBUtil:
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.senderId).first()
 
+        @retry(stop=stop_after_attempt(3))
         def edit(self, column: str, value):
             try:
                 query = self.query_SenderInfo
@@ -160,6 +165,7 @@ class BotDBUtil:
                 return query
             return False
 
+        @retry(stop=stop_after_attempt(3))
         def add_TargetAdmin(self, targetId):
             try:
                 if not self.check_TargetAdmin(targetId):
@@ -170,6 +176,7 @@ class BotDBUtil:
                 session.rollback()
                 raise
 
+        @retry(stop=stop_after_attempt(3))
         def remove_TargetAdmin(self, targetId):
             try:
                 query = self.check_TargetAdmin(targetId)
@@ -179,7 +186,6 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
-
 
     class CoolDown:
         def __init__(self, msg: MessageSession, name):
@@ -197,6 +203,7 @@ class BotDBUtil:
                 return now
             return 0
 
+        @retry(stop=stop_after_attempt(3))
         def reset(self):
             try:
                 if not self.need_insert:

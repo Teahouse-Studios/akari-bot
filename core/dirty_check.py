@@ -5,7 +5,8 @@ import hmac
 import json
 import time
 
-from aiohttp_retry import RetryClient, ExponentialRetry
+import aiohttp
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
 
@@ -21,6 +22,7 @@ def computeMD5hash(my_string):
     return m.hexdigest()
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(*text):
     accessKeyId = Config("Check_accessKeyId")
     accessKeySecret = Config("Check_accessKeySecret")
@@ -68,7 +70,7 @@ async def check(*text):
     sign = "acs {}:{}".format(accessKeyId, hash_hmac(accessKeySecret, step3, hashlib.sha1))
     headers['Authorization'] = sign
     # 'Authorization': "acs {}:{}".format(accessKeyId, sign)
-    async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=5)) as session:
+    async with aiohttp.ClientSession(headers=headers) as session:
         async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
             if resp.status == 200:
                 result = await resp.json()

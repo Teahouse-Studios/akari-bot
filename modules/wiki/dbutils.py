@@ -4,10 +4,13 @@ from core.elements import MessageSession
 from database.orm import DBSession
 from .orm import WikiTargetSetInfo, WikiInfo
 
+from tenacity import retry, stop_after_attempt
+
 session = DBSession().session
 
 
 class WikiTargetInfo:
+    @retry(stop=stop_after_attempt(3))
     def __init__(self, msg: [MessageSession, str]):
         if isinstance(msg, MessageSession):
             targetId = msg.target.targetId
@@ -23,6 +26,7 @@ class WikiTargetInfo:
                 raise
             self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
 
+    @retry(stop=stop_after_attempt(3))
     def add_start_wiki(self, url):
         try:
             self.query.link = url
@@ -38,6 +42,7 @@ class WikiTargetInfo:
             return self.query.link if self.query.link is not None else False
         return False
 
+    @retry(stop=stop_after_attempt(3))
     def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
         try:
             interwikis = json.loads(self.query.iws)
@@ -62,6 +67,7 @@ class WikiTargetInfo:
         else:
             return False
 
+    @retry(stop=stop_after_attempt(3))
     def config_headers(self, headers, let_it: [bool, None] = True):
         try:
             headers = json.loads(headers)
@@ -101,6 +107,7 @@ class WikiSiteInfo:
             return self.query.siteInfo, self.query.timestamp
         return False
 
+    @retry(stop=stop_after_attempt(3))
     def update(self, info: dict):
         try:
             if self.query is None:
