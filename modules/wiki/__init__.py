@@ -26,7 +26,7 @@ from .getinfobox import get_infobox_pic
          recommend_modules='wiki_inline',
          allowed_none=False)
 async def wiki_wrapper(msg: MessageSession):
-    if msg.parsed_msg['set'] and not msg.parsed_msg['headers']:
+    if msg.parsed_msg['set'] and not msg.parsed_msg['headers'] and not msg.parsed_msg['iw']:
         await set_start_wiki(msg)
     elif msg.parsed_msg['iw']:
         await interwiki(msg)
