@@ -21,10 +21,10 @@ class WikiTargetInfo:
             try:
                 session.add_all([WikiTargetSetInfo(targetId=targetId, iws='{}', headers='{}')])
                 session.commit()
+                self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
             except Exception:
                 session.rollback()
                 raise
-            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
 
     @retry(stop=stop_after_attempt(3))
     def add_start_wiki(self, url):
@@ -98,9 +98,14 @@ class WikiTargetInfo:
 
 
 class WikiSiteInfo:
+    @retry(stop=stop_after_attempt(3))
     def __init__(self, api_link):
-        self.api_link = api_link
-        self.query = session.query(WikiInfo).filter_by(apiLink=api_link).first()
+        try:
+            self.api_link = api_link
+            self.query = session.query(WikiInfo).filter_by(apiLink=api_link).first()
+        except Exception:
+            session.rollback()
+            raise
 
     def get(self):
         if self.query is not None:

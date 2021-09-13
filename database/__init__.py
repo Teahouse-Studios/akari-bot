@@ -36,6 +36,7 @@ session = DBSession().session
 
 class BotDBUtil:
     class Module:
+        @retry(stop=stop_after_attempt(3))
         def __init__(self, msg: [MessageSession, str]):
             if isinstance(msg, MessageSession):
                 self.targetId = str(msg.target.targetId)
@@ -56,7 +57,11 @@ class BotDBUtil:
 
         @property
         def query_EnabledModules(self):
-            return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
+            try:
+                return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
+            except Exception:
+                session.rollback()
+                raise
 
         def check_target_enabled_module_list(self) -> list:
             return self.enable_modules_list
@@ -143,7 +148,11 @@ class BotDBUtil:
 
         @property
         def query_SenderInfo(self):
-            return session.query(SenderInfo).filter_by(id=self.senderId).first()
+            try:
+                return session.query(SenderInfo).filter_by(id=self.senderId).first()
+            except Exception:
+                session.rollback()
+                raise
 
         @retry(stop=stop_after_attempt(3))
         def edit(self, column: str, value):
