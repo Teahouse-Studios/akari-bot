@@ -16,15 +16,15 @@ class WikiTargetInfo:
             targetId = msg.target.targetId
         else:
             targetId = msg
-        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
-        if self.query is None:
-            try:
+        try:
+            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
+            if self.query is None:
                 session.add_all([WikiTargetSetInfo(targetId=targetId, iws='{}', headers='{}')])
                 session.commit()
                 self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
-            except Exception:
-                session.rollback()
-                raise
+        except Exception:
+            session.rollback()
+            raise
 
     @retry(stop=stop_after_attempt(3))
     def add_start_wiki(self, url):
