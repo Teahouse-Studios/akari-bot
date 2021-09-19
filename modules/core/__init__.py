@@ -104,7 +104,6 @@ async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
-    print(ModulesManager.return_modules_developers_map())
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
@@ -124,8 +123,8 @@ async def bot_help(msg: MessageSession):
                     devs = dev_list
             else:
                 devs = ''
-            devs_msg = '\n模块作者：' + devs
-            await msg.sendMessage(doc + devs_msg if devs is not '' else '')
+            devs_msg = '\n模块作者：' + devs if devs is not '' else ''
+            await msg.sendMessage(doc + devs_msg)
     else:
         help_msg = ['基础命令：']
         essential = []
