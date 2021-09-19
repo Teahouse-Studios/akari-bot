@@ -28,7 +28,7 @@ async def get_weekly():
     return msg_list
 
 
-@command('weekly', help_doc=('~weekly {获取中文 Minecraft Wiki 的每周页面}'))
+@command('weekly', help_doc=('~weekly {获取中文 Minecraft Wiki 的每周页面}'), developers=['Dianliang233'])
 async def weekly(msg: MessageSession):
     weekly = await get_weekly()
     await msg.sendMessage(weekly)

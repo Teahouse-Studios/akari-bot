@@ -9,6 +9,7 @@ from .server import server
 @command('server', alias='s', help_doc=('~server <ServerIP>:<Port> {获取Minecraft Java/基岩版服务器motd。}',
                                         '~server <ServerIP>:<Port> [-r] {获取Minecraft Java/基岩版服务器motd。（原始信息）}',
                                         '~server <ServerIP>:<Port> [-p] {获取Minecraft Java/基岩版服务器motd。（包括玩家信息）}'),
+         developers=['_LittleC_', 'OasisAkari'],
          allowed_none=False)
 async def main(msg: MessageSession):
     raw = False

@@ -8,6 +8,7 @@ from modules.github import repo, user, search
         '~github user <name> {获取 GitHub 用户或组织信息}',
         '~github org <name> {~github user 的别名}',
         '~github search <query> {搜索 GitHub 上的仓库}'),
+        developers=['Dianliang233'],
          allowed_none=False)
 async def github(msg: MessageSession):
     if msg.parsed_msg['repo']:

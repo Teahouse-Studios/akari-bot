@@ -9,7 +9,7 @@ from core.utils import get_url
 from modules.utils.UTC8 import UTC8
 
 
-@command('__check_newbie__', need_superuser=True, autorun=True)
+@command('__check_newbie__', need_superuser=True, developers=['OasisAkari'], autorun=True)
 async def newbie(bot: FetchTarget):
     Logger.info('Subbot newbie launched')
     url = 'https://minecraft.fandom.com/zh/api.php?action=query&list=logevents&letype=newusers&format=json'

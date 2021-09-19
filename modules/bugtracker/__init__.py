@@ -6,7 +6,7 @@ from .bugtracker import bugtracker_get
 
 
 @command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}',
-         allowed_none=False)
+         developers=['OasisAkari'], allowed_none=False)
 async def bugtracker(msg: MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:
@@ -17,6 +17,7 @@ async def bugtracker(msg: MessageSession):
 
 
 @command('bug_regex', desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
+         developers=['OasisAkari'],
          is_regex_function=True)
 async def regex_bugtracker(msg: MessageSession):
     display_msg = msg.asDisplay()

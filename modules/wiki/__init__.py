@@ -24,6 +24,7 @@ from .getinfobox import get_infobox_pic
                            '~wiki headers show {展示当前设置的headers}'),
          alias={'wiki_start_site': 'wiki set'},
          recommend_modules='wiki_inline',
+         developers=['OasisAkari'],
          allowed_none=False)
 async def wiki_wrapper(msg: MessageSession):
     if msg.parsed_msg['set'] and not msg.parsed_msg['headers'] and not msg.parsed_msg['iw']:
@@ -107,12 +108,12 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@command('wiki_inline', is_regex_function=True, desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]', alias='wiki_regex')
+@command('wiki_inline', is_regex_function=True, desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]', alias='wiki_regex', developers=['OasisAkari'])
 async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 
 
-ModulesManager.add_module(Option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。'))
+ModulesManager.add_module(Option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari']))
 
 
 async def regex_proc(msg: MessageSession, display, typing=True):

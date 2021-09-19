@@ -11,7 +11,7 @@ from core.utils import get_url, download_to_cache
 from database import BotDBUtil
 
 
-@command('minecraft_news', autorun=True)
+@command('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], autorun=True)
 async def start_check_news(bot: FetchTarget):
     baseurl = 'https://www.minecraft.net'
     url = 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10'
