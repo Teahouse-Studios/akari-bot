@@ -16,6 +16,7 @@ def command(
         allowed_none: bool = True,
         desc: str = None,
         recommend_modules: Union[str, list, tuple] = None,
+        developers: Union[str, list, tuple] = None,
         need_admin: bool = False,
         is_base_function: bool = False,
         need_superuser: bool = False,
@@ -30,6 +31,7 @@ def command(
                          allowed_none=allowed_none,
                          desc=desc,
                          recommend_modules=recommend_modules,
+                         developers=developers,
                          is_base_function=is_base_function,
                          is_regex_function=is_regex_function,
                          need_admin=need_admin,
@@ -47,6 +49,7 @@ def option(
         help_doc: Union[str, list, tuple] = None,
         alias: Union[str, list, tuple, dict] = None,
         recommend_modules: Union[str, list, tuple] = None,
+        developers: Union[str, list, tuple] = None,
         need_superuser: bool = False,
         need_admin: bool = False
 ):
@@ -56,6 +59,7 @@ def option(
                         help_doc=help_doc,
                         alias=alias,
                         recommend_modules=recommend_modules,
+                        developers=developers,
                         need_superuser=need_superuser,
                         need_admin=need_admin)
         ModulesManager.add_module(module)
@@ -71,6 +75,7 @@ def schedule(
         help_doc: Union[str, list, tuple] = None,
         alias: Union[str, list, tuple, dict] = None,
         recommend_modules: Union[str, list, tuple] = None,
+        developers: Union[str, list, tuple] = None,
         need_superuser: bool = False,
         need_admin: bool = False
 ):
@@ -82,6 +87,7 @@ def schedule(
                           help_doc=help_doc,
                           alias=alias,
                           recommend_modules=recommend_modules,
+                          developers=developers,
                           need_superuser=need_superuser,
                           need_admin=need_admin)
         ModulesManager.add_module(module)

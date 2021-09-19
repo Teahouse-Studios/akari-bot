@@ -15,6 +15,7 @@ class Command:
                  allowed_none: bool = True,
                  desc: str = None,
                  recommend_modules: Union[str, list, tuple] = None,
+                 developers: Union[str, list, tuple] = None,
                  need_admin: bool = False,
                  is_base_function: bool = False,
                  need_superuser: bool = False,
@@ -27,6 +28,7 @@ class Command:
         self.allowed_none = allowed_none
         self.desc = desc
         self.recommend_modules = recommend_modules
+        self.developers = developers
         self.need_admin = need_admin
         self.is_base_function = is_base_function
         self.need_superuser = need_superuser
@@ -41,6 +43,7 @@ class Option:
                  help_doc: Union[str, list, tuple] = None,
                  alias: Union[str, list, tuple, dict] = None,
                  recommend_modules: Union[str, list, tuple] = None,
+                 developers: Union[str, list, tuple] = None,
                  need_superuser: bool = False,
                  need_admin: bool = False):
         self.bind_prefix = bind_prefix
@@ -49,6 +52,7 @@ class Option:
         self.alias = alias
         self.allowed_none = True
         self.recommend_modules = recommend_modules
+        self.developers = developers
         self.need_superuser = need_superuser
         self.is_base_function = False
         self.is_regex_function = False
@@ -64,6 +68,7 @@ class Schedule:
                  help_doc: Union[str, list, tuple] = None,
                  alias: Union[str, list, tuple, dict] = None,
                  recommend_modules: Union[str, list, tuple] = None,
+                 developers: Union[str, list, tuple] = None,
                  need_superuser: bool = False,
                  need_admin: bool = False
                  ):
@@ -75,6 +80,7 @@ class Schedule:
         self.allowed_none = True
         self.alias = alias
         self.recommend_modules = recommend_modules
+        self.developers = developers
         self.need_superuser = need_superuser
         self.is_base_function = False
         self.is_regex_function = False

@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 import time
+from typing import List
 
 import psutil
 import ujson as json
@@ -97,11 +98,13 @@ async def config_modules(msg: MessageSession):
 @command('help',
          is_base_function=True,
          help_doc=('~help {查看所有可用模块}',
-                   '~help <module> {查看一个模块的详细信息}')
+                   '~help <module> {查看一个模块的详细信息}'),
          )
 async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
+    developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
+    print(ModulesManager.return_modules_developers_map())
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
@@ -112,7 +115,17 @@ async def bot_help(msg: MessageSession):
             if help_ is not None:
                 msgs.append(help_)
         if msgs:
-            await msg.sendMessage('\n'.join(msgs))
+            doc = '\n'.join(msgs)
+            if help_name in developers:
+                dev_list = developers[help_name]
+                if isinstance(dev_list, (list, tuple)):
+                    devs = '、'.join(developers[help_name]) if developers[help_name] is not None else ''
+                elif isinstance(dev_list, str):
+                    devs = dev_list
+            else:
+                devs = ''
+            devs_msg = '\n模块作者：' + devs
+            await msg.sendMessage(doc + devs_msg if devs is not '' else '')
     else:
         help_msg = ['基础命令：']
         essential = []

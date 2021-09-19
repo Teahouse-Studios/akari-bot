@@ -81,6 +81,14 @@ class ModulesManager:
         return alias_map
 
     @staticmethod
+    def return_modules_developers_map():
+        d = {}
+        for x in ModulesManager._modules_list:
+            if x.developers is not None:
+                d.update({x.bind_prefix: x.developers})
+        return d
+
+    @staticmethod
     def return_regex_modules():
         d = {}
         for x in ModulesManager._modules_list:
