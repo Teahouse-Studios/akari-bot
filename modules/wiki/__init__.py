@@ -1,4 +1,6 @@
 import re
+from sqlalchemy.ext.declarative import api
+from sqlalchemy.sql.expression import false
 
 import ujson as json
 
@@ -11,6 +13,7 @@ from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
 from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
+from .audit import audit_allow, audit_remove, audit_list, audit_query
 
 
 @command('wiki', help_doc=('~wiki <PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
@@ -41,6 +44,16 @@ async def wiki(msg: MessageSession):
     command = f'[[{" ".join(msg.trigger_msg.split(" ")[1:])}]]'
     await regex_proc(msg, command, typing=False)
 
+
+async def check_whitelist(apiLink: str):
+    whitepair = await audit_list()
+    whitelist = []
+    for pair in whitepair:
+        whitelist.append(pair[0])
+    for pattern in whitelist:
+        if re.match(pattern, apiLink) is apiLink:
+            return True
+    return False
 
 async def set_start_wiki(msg: MessageSession):
     if not await msg.checkPermission():
@@ -248,3 +261,36 @@ async def regex_proc(msg: MessageSession, display, typing=True):
                 waits1 = f'[[{waits}]]'
                 nwaitlist.append(waits1)
             await regex_proc(msg, '\n'.join(nwaitlist))
+
+@command('wiki_audit', alias='wa',
+    help_doc=('~wiki_audit allow <apiLinkRegex>', '~wiki_audit deny <apiLinkRegex>', '~wiki_audit query <apiLinkRegex>', '~wiki_audit list', '~wiki_audit <apiLinkRegex>'),
+    developers=('Dianliang233') , need_superuser=True, allowed_none=False)
+async def wiki_audit(msg: MessageSession):
+    req = msg.parsed_msg
+    print(req)
+    op = msg.session.sender
+    api = req['<apiLinkRegex>']
+    if req['deny']:
+        res = await audit_remove(api)
+        if res is False:
+            await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
+        else:
+            await msg.sendMessage('成功删除白名单：' + api)
+    elif req['list']:
+        wiki_pair = await audit_list()
+        wikis = []
+        for pair in wiki_pair:
+            wikis.append(f'{pair[0]}（by {pair[1]}）')
+        await msg.sendMessage('现有白名单：\n' + '\n'.join(wikis))
+    elif req['query']:
+        res = await audit_query(api)
+        if res:
+            await msg.sendMessage(api + '已存在于白名单。')
+        else:
+            await msg.sendMessage(api + '不存在于白名单。')
+    else:
+        res = await audit_allow(api, op)
+        if res is False:
+            await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
+        else:
+            await msg.sendMessage('成功加入白名单：' + api)
