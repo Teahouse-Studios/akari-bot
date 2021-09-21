@@ -97,7 +97,9 @@ async def get_infobox_pic(link, pagelink, headers):
                 x.attrs['class'] = 'image'
                 x.attrs['src'] = x.attrs['data-src']
 
-        open_file.write('<body class="mw-parser-output">')
+        html_lang = soup.find('html').attrs.get('lang')
+
+        open_file.write(f'<body class="mw-parser-output" lang="{html_lang}">')
         open_file.write(str(find_infobox))
         open_file.write('</body>')
         if find_infobox.parent.has_attr('style'):
