@@ -7,6 +7,8 @@ from core.loader.decorator import command
 from core.utils import cache_name
 
 
+assets_path = os.path.abspath('./assets/arcaea')
+
 def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
     x = x + 3
     y = y + 3
@@ -52,10 +54,10 @@ async def pttimg(msg: MessageSession):
         pttimg = 0
     else:
         pttimg = 'off'
-    pttimgr = Image.open(os.path.abspath(f'./assets/ptt/rating_{str(pttimg)}.png'))
+    pttimgr = Image.open(f'{assets_path}/ptt/rating_{str(pttimg)}.png')
     ptttext = Image.new("RGBA", (119, 119))
-    font1 = ImageFont.truetype(os.path.abspath('./assets/Fonts/Exo-SemiBold.ttf'), 49)
-    font2 = ImageFont.truetype(os.path.abspath('./assets/Fonts/Exo-SemiBold.ttf'), 33)
+    font1 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 49)
+    font2 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 33)
     if ptt >= 0:
         rawptt = str(ptt).split('.')
         if len(rawptt) < 2:
