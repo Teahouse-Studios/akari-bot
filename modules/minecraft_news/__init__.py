@@ -47,16 +47,12 @@ async def start_check_news(bot: FetchTarget):
                     for article in nws:
                         default_tile = article['default_tile']
                         title = default_tile['title']
-                        image = baseurl + default_tile['image']['imageURL']
                         desc = default_tile['sub_header']
                         link = baseurl + article['article_url']
                         if title not in title_list:
                             title_list.append(title)
                             articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
-                            image = await download_to_cache(webrender + 'source?url=' + baseurl + image)
                             await bot.post_message('minecraft_news', articletext, user_list=user_list)
-                            if image:
-                                await bot.post_message('minecraft_news', [Image(image)], user_list=user_list)
                     Logger.info('Minecraft news checked.')
                 else:
                     Logger.info('Check minecraft news failed:' + str(status))

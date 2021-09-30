@@ -180,7 +180,7 @@ class FetchTarget(FT):
                     try:
                         send = await fetch.sendMessage(message, quote=False)
                         send_list.append(send)
-                        await asyncio.sleep(random.randint(1, 10))
+                        await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
         return send_list
