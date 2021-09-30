@@ -81,6 +81,15 @@ async def pttimg(msg: MessageSession):
         print(int(int(font1_height) - int(font2_height)))
         text_border(drawptt, font1_width, 16, ptt2,
                     '#52495d', 'white', font=font2)
+    elif ptt == -1:
+        ptt = '--'
+        ptttext_width, ptttext_height = ptttext.size
+        font1_width, font1_height = font1.getsize(ptt)
+        pttimg = Image.new("RGBA", (font1_width + 6, font1_height + 6))
+        drawptt = ImageDraw.Draw(pttimg)
+        text_border(drawptt, 0, 0,
+                    ptt,
+                    '#52495d', 'white', font=font1)
     else:
         return await msg.sendMessage('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
     pttimg_width, pttimg_height = pttimg.size
