@@ -58,14 +58,14 @@ async def pttimg(msg: MessageSession):
     ptttext = Image.new("RGBA", (119, 119))
     font1 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 49)
     font2 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 33)
-    if ptt >= 0:
+    if ptt >= 0 and ptt <= 99.99:
         rawptt = str(ptt).split('.')
         if len(rawptt) < 2:
             ptt1 = rawptt[0]
             ptt2 = '00'
         else:
             ptt1 = rawptt[0]
-            ptt2 = rawptt[1]
+            ptt2 = rawptt[1][:2]
             if len(ptt2) < 2:
                 ptt2 += '0'
         ptttext_width, ptttext_height = ptttext.size
@@ -81,7 +81,7 @@ async def pttimg(msg: MessageSession):
         print(int(int(font1_height) - int(font2_height)))
         text_border(drawptt, font1_width, 16, ptt2,
                     '#52495d', 'white', font=font2)
-    else:
+    elif ptt == -1:
         ptt = '--'
         ptttext_width, ptttext_height = ptttext.size
         font1_width, font1_height = font1.getsize(ptt)
@@ -90,6 +90,8 @@ async def pttimg(msg: MessageSession):
         text_border(drawptt, 0, 0,
                     ptt,
                     '#52495d', 'white', font=font1)
+    else:
+        return await msg.sendMessage('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
