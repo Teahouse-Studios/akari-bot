@@ -1,13 +1,16 @@
+from configparser import SectionProxy
 import ujson as json
 import aiohttp
 import ujson as json
+import traceback
+import os
 
 from config import Config
-from core.elements import FetchTarget, Image
-from core.loader.decorator import command
+from core.elements import FetchTarget, Image, IntervalTrigger
+from core.loader.decorator import command, schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.utils import get_url, download_to_cache
+from core.utils import get_url, download_to_cache, PrivateAssets
 from database import BotDBUtil
 
 
@@ -56,3 +59,39 @@ async def start_check_news(bot: FetchTarget):
                     Logger.info('Minecraft news checked.')
                 else:
                     Logger.info('Check minecraft news failed:' + str(status))
+
+def getfileversions(path):
+    if not os.path.exists(path):
+        a = open(path, 'a')
+        a.close()
+    w = open(path, 'r+')
+    s = w.read().split('\n')
+    w.close()
+    return s
+
+@schedule('feedback_news', developers=['Dianliang233'], trigger=IntervalTrigger(seconds=60))
+async def feedback_news(bot: FetchTarget):
+    sections = [{'name': 'beta', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
+                {'name': 'article', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5'}]
+    for section in sections:
+        try:
+            name = section['name']
+            version_file = os.path.abspath(f'{PrivateAssets.path}/feedback_{name}.txt')
+            alist = getfileversions(version_file)
+            res = json.loads(await get_url(section['url']))
+            articles = []
+            for i in res['articles']:
+                articles.append(i)
+            for article in articles:
+                if article['name'] not in alist:
+                    name = article['name']
+                    link = article['html_url']
+                    Logger.info(f'huh, we find {name}.')
+                    alist.append(name)
+                    await bot.post_message('feedback_news',
+                                                    f'Minecraft Feedback 发布了新的文章：\n{name}\n{link}')
+                    addversion = open(version_file, 'a')
+                    addversion.write('\n' + name)
+                    addversion.close()
+        except Exception:
+            traceback.print_exc()

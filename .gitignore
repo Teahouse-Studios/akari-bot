@@ -11,6 +11,7 @@ assets/cache/*
 *.db
 cache/*
 assets/mcjira*
+assets/feedback_*.txt
 assets/cytoid-avatar/
 assets/cytoid-cover/
 core/bots/**/assets
