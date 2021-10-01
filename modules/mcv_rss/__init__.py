@@ -66,7 +66,7 @@ async def mcv_jira_rss(bot: FetchTarget):
                     verlist.append(release)
                     await bot.post_message('mcv_jira_rss',
                                                   f'Jira已更新{urls[url]["display"]} {release}。'
-                                                  f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                                                  f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
                     addversion = open(version_file, 'a')
                     addversion.write('\n' + release)
                     addversion.close()
