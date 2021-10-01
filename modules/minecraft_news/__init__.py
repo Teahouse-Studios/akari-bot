@@ -79,7 +79,6 @@ async def feedback_news(bot: FetchTarget):
             version_file = os.path.abspath(f'{PrivateAssets.path}/feedback_{name}.txt')
             alist = getfileversions(version_file)
             get = await get_url(section['url'])
-            print(get)
             res = json.loads(get)
             articles = []
             for i in res['articles']:
@@ -97,3 +96,4 @@ async def feedback_news(bot: FetchTarget):
                     addversion.close()
         except Exception:
             traceback.print_exc()
+            print(get)
