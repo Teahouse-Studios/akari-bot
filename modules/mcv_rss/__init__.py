@@ -51,24 +51,71 @@ async def mcv_jira_rss(bot: FetchTarget):
             'Bedrock': {'url': 'https://bugs.mojang.com/rest/api/2/project/10200/versions', 'display': '基岩版'},
             'Minecraft Dungeons': {'url': 'https://bugs.mojang.com/rest/api/2/project/11901/versions',
                                    'display': 'Minecraft Dungeons'}}
-    for url in urls:
-        try:
-            version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_{url}.txt')
-            verlist = getfileversions(version_file)
-            file = json.loads(await get_url(urls[url]['url']))
-            releases = []
-            for v in file:
-                if not v['archived']:
-                    releases.append(v['name'])
-            for release in releases:
-                if release not in verlist:
-                    Logger.info(f'huh, we find {release}.')
-                    verlist.append(release)
-                    await bot.post_message('mcv_jira_rss',
-                                                  f'Jira已更新{urls[url]["display"]} {release}。'
-                                                  f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
-                    addversion = open(version_file, 'a')
-                    addversion.write('\n' + release)
-                    addversion.close()
-        except Exception:
-            traceback.print_exc()
+    try:
+        version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Java.txt')
+        verlist = getfileversions(version_file)
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions'))
+        releases = []
+        for v in file:
+            if not v['archived']:
+                releases.append(v['name'])
+        for release in releases:
+            if release not in verlist:
+                Logger.info(f'huh, we find {release}.')
+                verlist.append(release)
+                await bot.post_message('mcv_jira_rss',
+                                                f'Jira已更新Java版 {release}。'
+                                                f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                addversion = open(version_file, 'a')
+                addversion.write('\n' + release)
+                addversion.close()
+    except Exception:
+        traceback.print_exc()
+
+
+@schedule('mcbv_jira_rss', developers=['OasisAkari', 'Dianliang233'], trigger=IntervalTrigger(seconds=60))
+async def mcbv_jira_rss(bot: FetchTarget):
+    try:
+        version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Bedrock.txt')
+        verlist = getfileversions(version_file)
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions'))
+        releases = []
+        for v in file:
+            if not v['archived']:
+                releases.append(v['name'])
+        for release in releases:
+            if release not in verlist:
+                Logger.info(f'huh, we find {release}.')
+                verlist.append(release)
+                await bot.post_message('mcbv_jira_rss',
+                                                f'Jira已更新基岩版 {release}。'
+                                                f'\n（Jira上的信息仅作版本号预览用，不代表商城已更新此版本）')
+                addversion = open(version_file, 'a')
+                addversion.write('\n' + release)
+                addversion.close()
+    except Exception:
+        traceback.print_exc()
+
+
+@schedule('mcdv_jira_rss', developers=['OasisAkari', 'Dianliang233'], trigger=IntervalTrigger(seconds=60))
+async def mcdv_jira_rss(bot: FetchTarget):
+    try:
+        version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Minecraft Dungeons.txt')
+        verlist = getfileversions(version_file)
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions'))
+        releases = []
+        for v in file:
+            if not v['archived']:
+                releases.append(v['name'])
+        for release in releases:
+            if release not in verlist:
+                Logger.info(f'huh, we find {release}.')
+                verlist.append(release)
+                await bot.post_message('mcdv_jira_rss',
+                                                f'Jira已更新Minecraft Dungeons {release}。'
+                                                f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
+                addversion = open(version_file, 'a')
+                addversion.write('\n' + release)
+                addversion.close()
+    except Exception:
+        traceback.print_exc()
