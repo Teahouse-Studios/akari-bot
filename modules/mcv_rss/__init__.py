@@ -47,10 +47,6 @@ async def mcv_rss(bot: FetchTarget):
 
 @schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'], trigger=IntervalTrigger(seconds=60))
 async def mcv_jira_rss(bot: FetchTarget):
-    urls = {'Java': {'url': 'https://bugs.mojang.com/rest/api/2/project/10400/versions', 'display': 'Java版'},
-            'Bedrock': {'url': 'https://bugs.mojang.com/rest/api/2/project/10200/versions', 'display': '基岩版'},
-            'Minecraft Dungeons': {'url': 'https://bugs.mojang.com/rest/api/2/project/11901/versions',
-                                   'display': 'Minecraft Dungeons'}}
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Java.txt')
         verlist = getfileversions(version_file)
