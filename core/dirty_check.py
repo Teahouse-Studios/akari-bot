@@ -1,3 +1,7 @@
+'''利用阿里云API检查字符串是否合规。
+
+在使用前，应该在配置中填写"Check_accessKeyId"和"Check_accessKeySecret"以便进行鉴权。
+'''
 import base64
 import datetime
 import hashlib
@@ -23,7 +27,12 @@ def computeMD5hash(my_string):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
-async def check(*text):
+async def check(*text) -> str:
+    '''检查字符串是否合规
+    
+    :param text: 字符串（List/Union）。
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
+    '''
     accessKeyId = Config("Check_accessKeyId")
     accessKeySecret = Config("Check_accessKeySecret")
     if not accessKeyId or not accessKeySecret:

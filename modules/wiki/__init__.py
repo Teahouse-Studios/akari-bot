@@ -1,6 +1,4 @@
 import re
-from sqlalchemy.ext.declarative import api
-from sqlalchemy.sql.expression import false
 
 import ujson as json
 
@@ -13,7 +11,7 @@ from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
 from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
-from .audit import audit_allow, audit_remove, audit_list, audit_query
+from .audit import WikiWhitelistError, audit_allow, audit_remove, audit_list, audit_query
 
 
 @command('wiki', help_doc=('~wiki <PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
@@ -45,23 +43,15 @@ async def wiki(msg: MessageSession):
     await regex_proc(msg, command, typing=False)
 
 
-async def check_whitelist(apiLink: str):
-    whitepair = await audit_list()
-    whitelist = []
-    for pair in whitepair:
-        whitelist.append(pair[0])
-    for pattern in whitelist:
-        if re.match(pattern, apiLink) is apiLink:
-            return True
-    return False
-
 async def set_start_wiki(msg: MessageSession):
     if not await msg.checkPermission():
         return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     check = await wikilib().check_wiki_available(msg.parsed_msg['<WikiUrl>'])
     if check[0]:
-        result = WikiTargetInfo(msg).add_start_wiki(check[0])
-        if result:
+        result = await WikiTargetInfo(msg).add_start_wiki(check[0])
+        if result and result is 'whitelist':
+            await msg.sendMessage(f'起始Wiki不在此白名单中：{check[1]}')
+        elif result:
             await msg.sendMessage(f'成功添加起始Wiki：{check[1]}')
     else:
         result = '错误：' + check[1]

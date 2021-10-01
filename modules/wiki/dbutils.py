@@ -1,3 +1,4 @@
+from modules.wiki.audit import WikiWhitelistError, check_whitelist
 import ujson as json
 
 from core.elements import MessageSession
@@ -27,7 +28,9 @@ class WikiTargetInfo:
             raise
 
     @retry(stop=stop_after_attempt(3))
-    def add_start_wiki(self, url):
+    async def add_start_wiki(self, url):
+        if await check_whitelist(url):
+            return 'whitelist'
         try:
             self.query.link = url
             session.commit()
@@ -43,7 +46,9 @@ class WikiTargetInfo:
         return False
 
     @retry(stop=stop_after_attempt(3))
-    def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
+    async def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
+        if not await check_whitelist(iwlink):
+            return 'whitelist'
         try:
             interwikis = json.loads(self.query.iws)
             if let_it:

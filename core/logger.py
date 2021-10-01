@@ -1,3 +1,4 @@
+'''基于logging的日志器。'''
 import logging
 from abc import ABC, abstractmethod
 

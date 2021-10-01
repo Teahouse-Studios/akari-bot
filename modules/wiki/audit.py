@@ -1,3 +1,5 @@
+import re
+
 from .orm import WikiWhitelist
 from database.orm import DBSession
 from tenacity import retry, stop_after_attempt
@@ -49,3 +51,15 @@ async def audit_list():
     except Exception:
         raise
 
+async def check_whitelist(apiLink: str):
+    whitepair = await audit_list()
+    whitelist = []
+    for pair in whitepair:
+        whitelist.append(pair[0])
+    for pattern in whitelist:
+        if re.match(pattern, apiLink):
+            return True
+    return False
+
+class WikiWhitelistError(Exception):
+    '''The wiki is not in the bot whitelist'''
