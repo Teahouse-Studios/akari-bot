@@ -78,7 +78,9 @@ async def feedback_news(bot: FetchTarget):
             name = section['name']
             version_file = os.path.abspath(f'{PrivateAssets.path}/feedback_{name}.txt')
             alist = getfileversions(version_file)
-            res = json.loads(await get_url(section['url']))
+            get = await get_url(section['url'])
+            print(get)
+            res = json.loads(get)
             articles = []
             for i in res['articles']:
                 articles.append(i)
