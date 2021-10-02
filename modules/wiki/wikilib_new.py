@@ -30,6 +30,10 @@ class PageNotFound(Exception):
     pass
 
 
+class WhatAreUDoingError(Exception):
+    pass
+
+
 class WikiInfo:
     def __init__(self,
                  api: str,
@@ -64,10 +68,12 @@ class PageInfo:
     def __init__(self,
                  info: WikiInfo,
                  title: str,
-                 before_title: str,
-                 link: str,
-                 file: Union[str, None],
-                 desc: Union[str, None],
+                 before_title: str = None,
+                 link: str = None,
+                 file: str = None,
+                 desc: str = None,
+                 args: str = None,
+                 interwiki_prefix: str = '',
                  status: bool = True
                  ):
         self.info = info
@@ -76,6 +82,8 @@ class PageInfo:
         self.link = link
         self.file = file
         self.desc = desc
+        self.args = args
+        self.interwiki_prefix = interwiki_prefix
         self.status = status
 
 
@@ -180,7 +188,7 @@ class WikiLib:
         info = self.rearrange_siteinfo(get_json)
         return WikiStatus(available=True, value=info,
                           message='警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
-                      if 'TextExtracts' not in info.extensions else '')
+                          if 'TextExtracts' not in info.extensions else '')
 
     @property
     def fixup_wiki_info(self):
@@ -216,7 +224,18 @@ class WikiLib:
             desc = ''
         if desc in ['...', '…']:
             desc = ''
-        return desc
+        ell = False
+        if len(desc) > 250:
+            desc = desc[0:250]
+            ell = True
+        split_desc = desc.split('\n')
+        for d in split_desc:
+            if d == '':
+                split_desc.remove('')
+        if len(split_desc) > 5:
+            split_desc = split_desc[0:5]
+            ell = True
+        return '\n'.join(split_desc) + '...' if ell else ''
 
     @fixup_wiki_info
     async def get_html_to_text(self, page_name):
@@ -253,26 +272,32 @@ class WikiLib:
         return new_page_name, prompt
 
     @fixup_wiki_info
-    async def parse_page_info(self, title: Union[str, list, tuple], doc_mode=False, tried_iw=0) -> List[PageInfo]:
-        if isinstance(title, str):
-            title = [title]
-        query_list = {}
-        for t in title:
-            split_name = re.split(r'([#?])', t)
-            title = re.sub('_', ' ', split_name[0])
-            query_list.update({title: {'full': t, 'args': ''.join(split_name[1:] if len(split_name) > 1 else None)}})
+    async def parse_page_info(self, title: Union[str, list, tuple, dict], doc_mode=False,
+                              tried_iw=0) -> Dict[str, PageInfo]:
+        if tried_iw > 5:
+            raise WhatAreUDoingError
+        if isinstance(title, (str, list, tuple)):
+            if isinstance(title, str):
+                title = [title]
+            query_list: Dict[str, PageInfo] = {}
+            for t in title:
+                split_name = re.split(r'([#?])', t)
+                title = re.sub('_', ' ', split_name[0])
+                query_list.update({title: PageInfo(info=self.wiki_info, title=title,
+                                                   args=''.join(split_name[1:] if len(split_name) > 1 else None))})
+        else:
+            query_list = title
         query_string = {'action': 'query', 'format': 'json', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
-                        'redirects': 'True', 'titles': '|'.join(n for n in query_list)}
+                        'redirects': 'True', 'titles': '|'.join(query_list[n].title for n in query_list)}
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts:
             query_string.update({'prop': 'info|imageinfo|extracts',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
-        result = []
         get_page = await self.get_json(self.wiki_info.api, query_string)
         query = get_page.get('query')
         if query is None:
-            return []
+            return {}
         redirects_ = query.get('redirects')
         redirects = {}
         if redirects_ is not None:
@@ -286,35 +311,42 @@ class WikiLib:
         interwiki = {}
         if interwiki_ is not None:
             for i in interwiki_:
-                iw_title = re.match(r'' + i['iw'] + ':(.*)', i['title'])
+                iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
+                query_iw = query_list[i['title']]
+                query_iw.title = iw_title.group(1)
+                query_iw.interwiki_prefix += i['iw'] + ':'
                 if i['iw'] not in interwiki:
-                    interwiki[i['iw']] = [iw_title.group(1)]
-                else:
-                    interwiki[i['iw']].append(iw_title.group(1))
+                    interwiki[i['iw']] = {}
+                interwiki[i['iw']].update({i['title']: query_iw})
         if interwiki != {}:
             for i in interwiki:
                 iw_url = self.wiki_info.interwiki[i].substitute({'1': ''})
-                parse_page = await WikiLib(url=iw_url, headers=self.headers).parse_page_info(interwiki[i])
-                result.extend(parse_page)
+                parse_page = await WikiLib(url=iw_url, headers=self.headers).parse_page_info(interwiki[i],
+                                                                                             tried_iw=tried_iw + 1)
+                query_list.update(parse_page)
         pages = query.get('pages')
         if pages is not None:
             for page_id in pages:
                 page_raw = pages[page_id]
                 title = page_raw['title']
                 before_page_title = redirects.get(title)
-                page_args = query_list.get(before_page_title)['args'] if before_page_title is not None \
-                    else query_list.get(title)['args']
+                page_args = query_list.get(before_page_title).args if before_page_title is not None \
+                    else query_list.get(title).args
+                set_query = query_list[before_page_title if before_page_title is not None else title]
                 if int(page_id) < 0:
                     if 'missing' not in page_raw:
-                        full_url = self.wiki_info.articlepath\
-                            .substitute({'1': urllib.parse.quote(title.encode('UTF-8'))}) + page_args \
+                        full_url = self.wiki_info.articlepath \
+                                       .substitute({'1': urllib.parse.quote(title.encode('UTF-8'))}) + page_args \
                             if page_args is not None else ''
-                        result.append(PageInfo(info=self.wiki_info, title=title, before_title=before_page_title,
-                                               link=full_url, file=None, desc=None))
+                        set_query.title = title
+                        set_query.before_title = before_page_title
+                        set_query.link = full_url
                     else:
                         research = await self.research_page(title)
-                        result.append(PageInfo(info=self.wiki_info, title=research[0], before_title=title,
-                                               link='', file=None, desc=research[1], status=False))
+                        set_query.title = research[0]
+                        set_query.before_title = title
+                        set_query.desc = research[1]
+                        set_query.status = False
                 else:
                     page_desc = ''
                     split_title = title.split(':')
@@ -331,7 +363,7 @@ class WikiLib:
                                 get_doc = title + '/doc'
                             get_desc = False
                             get_doc_desc = await self.parse_page_info(get_doc, doc_mode=True)
-                            page_desc = get_doc_desc[0].desc
+                            page_desc = get_doc_desc[get_doc].desc
                     if get_desc:
                         if use_textextracts:
                             raw_desc = page_raw.get('extract')
@@ -343,7 +375,9 @@ class WikiLib:
                     file = ''
                     if 'imageinfo' in page_raw:
                         file = page_raw['imageinfo'][0]['url']
-                    result.append(
-                        PageInfo(info=self.wiki_info, title=title, before_title=before_page_title, link=full_url,
-                                 file=file, desc=page_desc))
-        return result
+                    set_query.title = title
+                    set_query.before_title = before_page_title
+                    set_query.link = full_url
+                    set_query.file = file
+                    set_query.desc = page_desc
+        return query_list
