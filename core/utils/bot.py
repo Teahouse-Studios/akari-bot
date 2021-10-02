@@ -34,11 +34,19 @@ def init():
     write_tag.close()
 
 
-async def get_url(url: str, headers=None):
+async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None):
     async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=3)) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
-            text = await req.text()
-            return text
+            if status_code and req.status != status_code:
+                raise ValueError(req.status)
+            if fmt is not None:
+                if hasattr(req, fmt):
+                    return await getattr(req, fmt)()
+                else:
+                    raise ValueError(f"NoSuchMethod: {fmt}")
+            else:
+                text = await req.text()
+                return text
 
 
 async def download_to_cache(link):
