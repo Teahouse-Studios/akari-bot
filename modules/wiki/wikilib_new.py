@@ -37,9 +37,9 @@ class WhatAreUDoingError(Exception):
 class WikiInfo:
     def __init__(self,
                  api: str,
-                 articlepath: StrTemplate,
+                 articlepath: str,
                  extensions: list,
-                 interwiki: Dict[str, StrTemplate],
+                 interwiki: dict,
                  realurl: str,
                  name: str,
                  namespaces: list,
@@ -90,7 +90,7 @@ class PageInfo:
 class WikiLib:
     def __init__(self, url, headers=None):
         self.url = url
-        self.wiki_info = WikiInfo(api='', articlepath=StrTemplate(''), extensions=[], interwiki={}, realurl='', name='',
+        self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
                                   namespaces=[], namespaces_local={})
         self.headers = headers
 
@@ -132,9 +132,9 @@ class WikiLib:
         interwiki_map = info['query']['interwikimap']
         interwiki_dict = {}
         for interwiki in interwiki_map:
-            interwiki_dict[interwiki['prefix']] = StrTemplate(interwiki['url'])
+            interwiki_dict[interwiki['prefix']] = interwiki['url']
 
-        return WikiInfo(articlepath=StrTemplate(real_url + info['query']['general']['articlepath']),
+        return WikiInfo(articlepath=real_url + info['query']['general']['articlepath'],
                         extensions=ext_list,
                         name=info['query']['general']['sitename'],
                         realurl=real_url,
@@ -291,6 +291,9 @@ class WikiLib:
         if redirects_ is not None:
             for r in redirects_:
                 redirects[r['to']] = r['from']
+        for x in query_list:
+            if query_list[x].before_title is not None:
+                redirects[query_list[x].title] = query_list[x].before_title
         normalized_ = query.get('normalized')
         if normalized_ is not None:
             for n in normalized_:
@@ -302,16 +305,11 @@ class WikiLib:
                 iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
                 query_iw = query_list[i['title']]
                 query_iw.title = iw_title.group(1)
+                query_iw.before_title = i['title']
                 query_iw.interwiki_prefix += i['iw'] + ':'
                 if i['iw'] not in interwiki:
                     interwiki[i['iw']] = {}
                 interwiki[i['iw']].update({i['title']: query_iw})
-        if interwiki != {}:
-            for i in interwiki:
-                iw_url = self.wiki_info.interwiki[i].substitute({'1': ''})
-                parse_page = await WikiLib(url=iw_url, headers=self.headers).parse_page_info(interwiki[i],
-                                                                                             tried_iw=tried_iw + 1)
-                query_list.update(parse_page)
         pages = query.get('pages')
         if pages is not None:
             for page_id in pages:
@@ -323,8 +321,7 @@ class WikiLib:
                 set_query = query_list[before_page_title if before_page_title is not None else title]
                 if int(page_id) < 0:
                     if 'missing' not in page_raw:
-                        full_url = self.wiki_info.articlepath \
-                                       .substitute({'1': urllib.parse.quote(title.encode('UTF-8'))}) + page_args \
+                        full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath)\
                             if page_args is not None else ''
                         set_query.title = title
                         set_query.before_title = before_page_title
@@ -368,4 +365,10 @@ class WikiLib:
                     set_query.link = full_url
                     set_query.file = file
                     set_query.desc = page_desc
+        if interwiki != {}:
+            for i in interwiki:
+                iw_url = re.sub(r'\$1', '', self.wiki_info.interwiki[i])
+                parse_page = await WikiLib(url=iw_url, headers=self.headers).parse_page_info(interwiki[i],
+                                                                                             tried_iw=tried_iw + 1)
+                query_list.update(parse_page)
         return query_list
