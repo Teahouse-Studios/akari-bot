@@ -39,7 +39,7 @@ class WikiInfo:
                  api: str,
                  articlepath: StrTemplate,
                  extensions: list,
-                 interwiki: Dict[StrTemplate],
+                 interwiki: Dict[str, StrTemplate],
                  realurl: str,
                  name: str,
                  namespaces: list,
@@ -96,7 +96,7 @@ class WikiLib:
 
     @staticmethod
     def encode_query_string(kwargs: dict):
-        return '?' + urllib.parse.urlencode(kwargs)
+        return urllib.parse.urlencode(kwargs)
 
     async def get_json(self, api, args: dict = None) -> dict:
         if args is not None:
@@ -127,21 +127,18 @@ class WikiLib:
             except Exception:
                 traceback.print_exc()
         for x in info['query']['namespacealiases']:
-            try:
-                nsa = info['query']['namespacealiases'][x]
-                if '*' in nsa:
-                    namespaces.append('*')
-            except Exception:
-                traceback.print_exc()
+            if '*' in x:
+                namespaces.append(x['*'])
         interwiki_map = info['query']['interwikimap']
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki['prefix']] = StrTemplate(interwiki['url'])
+
         return WikiInfo(articlepath=StrTemplate(real_url + info['query']['general']['articlepath']),
                         extensions=ext_list,
                         name=info['query']['general']['sitename'],
                         realurl=real_url,
-                        api=real_url + info['query']['general']['script'],
+                        api=real_url + info['query']['general']['scriptpath'] + '/api.php',
                         namespaces=namespaces,
                         namespaces_local=namespaces_local,
                         interwiki=interwiki_dict)
@@ -190,22 +187,13 @@ class WikiLib:
                           message='警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
                           if 'TextExtracts' not in info.extensions else '')
 
-    @property
-    def fixup_wiki_info(self):
-        def decorate(func):
-            @functools.wraps(func)
-            async def wrapper(*args, **kwargs):
-                if self.wiki_info is None:
-                    wiki_info = await self.check_wiki_available()
-                    if wiki_info.available:
-                        self.wiki_info = wiki_info.value
-                    else:
-                        raise InvalidWikiError(wiki_info.message if wiki_info.message != '' else '')
-                return await func(*args, **kwargs)
-
-            return wrapper
-
-        return decorate
+    async def fixup_wiki_info(self):
+        if self.wiki_info.api == '':
+            wiki_info = await self.check_wiki_available()
+            if wiki_info.available:
+                self.wiki_info = wiki_info.value
+            else:
+                raise InvalidWikiError(wiki_info.message if wiki_info.message != '' else '')
 
     @staticmethod
     def parse_text(text):
@@ -235,10 +223,10 @@ class WikiLib:
         if len(split_desc) > 5:
             split_desc = split_desc[0:5]
             ell = True
-        return '\n'.join(split_desc) + '...' if ell else ''
+        return '\n'.join(split_desc) + ('...' if ell else '')
 
-    @fixup_wiki_info
     async def get_html_to_text(self, page_name):
+        await self.fixup_wiki_info()
         query_string = {'action': 'parse', 'page': page_name, 'prop': 'text',
                         'format': 'json'}
         get_parse = await self.get_json(self.wiki_info.api, query_string)
@@ -248,8 +236,8 @@ class WikiLib:
         h.ignore_tables = True
         return h.handle(get_parse['parse']['text']['*'])
 
-    @fixup_wiki_info
     async def get_wikitext(self, page_name):
+        await self.fixup_wiki_info()
         try:
             query_string = {'action': 'parse', 'page': page_name, 'prop': 'wikitext', 'format': 'json'}
             load_desc = await self.get_json(self.wiki_info.api, query_string)
@@ -259,8 +247,8 @@ class WikiLib:
             desc = ''
         return desc
 
-    @fixup_wiki_info
     async def research_page(self, page_name: str):
+        await self.fixup_wiki_info()
         query_string = {'action': 'query', 'list': 'search', 'srsearch': page_name, 'srwhat': 'text',
                         'srlimit': '1', 'srenablerewrites': '', 'format': 'json'}
         get_page = await self.get_json(self.wiki_info.api, query_string)
@@ -271,9 +259,9 @@ class WikiLib:
             prompt += f'\n提示：此Wiki上找不到“{title_split[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
         return new_page_name, prompt
 
-    @fixup_wiki_info
     async def parse_page_info(self, title: Union[str, list, tuple, dict], doc_mode=False,
                               tried_iw=0) -> Dict[str, PageInfo]:
+        await self.fixup_wiki_info()
         if tried_iw > 5:
             raise WhatAreUDoingError
         if isinstance(title, (str, list, tuple)):
@@ -284,7 +272,7 @@ class WikiLib:
                 split_name = re.split(r'([#?])', t)
                 title = re.sub('_', ' ', split_name[0])
                 query_list.update({title: PageInfo(info=self.wiki_info, title=title,
-                                                   args=''.join(split_name[1:] if len(split_name) > 1 else None))})
+                                                   args=''.join(split_name[1:]) if len(split_name) > 1 else None)})
         else:
             query_list = title
         query_string = {'action': 'query', 'format': 'json', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
@@ -371,7 +359,7 @@ class WikiLib:
                                 page_desc = self.parse_text(raw_desc)
                         else:
                             page_desc = self.parse_text(await self.get_html_to_text(title))
-                    full_url = page_raw['fullurl'] + page_args if page_args is not None else ''
+                    full_url = page_raw['fullurl'] + (page_args if page_args is not None else '')
                     file = ''
                     if 'imageinfo' in page_raw:
                         file = page_raw['imageinfo'][0]['url']
