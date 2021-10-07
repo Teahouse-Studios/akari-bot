@@ -10,7 +10,7 @@ import ujson as json
 from core.elements import MessageSession, Command
 from core.loader import ModulesManager
 from core.loader.decorator import command
-from core.parser.command import CommandParser
+from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from core.utils import PrivateAssets
 from database import BotDBUtil
 
@@ -83,7 +83,11 @@ async def config_modules(msg: MessageSession):
     if recommend_modules_list:
         fmt_help_doc_list = []
         for m in recommend_modules_list:
-            fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + CommandParser(modules[m]).return_formatted_help_doc())
+            try:
+                hdoc = CommandParser(modules[m]).return_formatted_help_doc()
+                fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + hdoc)
+            except InvalidHelpDocTypeError:
+                pass
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
                                         '\n'.join(recommend_modules_list) + '\n\n' +
                                         '\n'.join(fmt_help_doc_list) +
@@ -125,7 +129,7 @@ async def bot_help(msg: MessageSession):
                     devs = dev_list
             else:
                 devs = ''
-            devs_msg = '\n模块作者：' + devs if devs is not '' else ''
+            devs_msg = '\n模块作者：' + devs if devs != '' else ''
             await msg.sendMessage(doc + devs_msg)
     else:
         help_msg = ['基础命令：']

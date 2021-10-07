@@ -59,7 +59,7 @@ class MessageSession(MS):
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
             send = await self.sendMessage(msgchain, quote)
         msg = await client.wait_for('message', check=check)
-        if msgchain is not None:
+        if send is not None:
             await send.delete()
         return True if msg.content in confirm_command else False
 
