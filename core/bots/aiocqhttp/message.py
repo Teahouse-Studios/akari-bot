@@ -10,6 +10,7 @@ from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
 from core.elements.others import confirm_command
 from database import BotDBUtil
+import html
 
 
 def convert2lst(s) -> list:
@@ -82,7 +83,8 @@ class MessageSession(MS):
         return True if self.target.senderInfo.query.isSuperUser else False
 
     def asDisplay(self):
-        return self.session.message.message
+
+        return html.unescape(self.session.message.message)
 
     async def delete(self):
         try:
