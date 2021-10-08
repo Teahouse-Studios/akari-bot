@@ -1,12 +1,10 @@
-from configparser import SectionProxy
-import ujson as json
 import aiohttp
 import ujson as json
 import traceback
 import os
 
 from config import Config
-from core.elements import FetchTarget, Image, IntervalTrigger
+from core.elements import FetchTarget, IntervalTrigger
 from core.loader.decorator import command, schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
@@ -33,12 +31,8 @@ async def start_check_news(bot: FetchTarget):
 
     @Scheduler.scheduled_job('interval', seconds=600)
     async def check_news():
-        user_list = []
         get_all_enabled_user = BotDBUtil.Module.get_enabled_this('minecraft_news')
-        for x in get_all_enabled_user:
-            fetch = await bot.fetch_target(x)
-            if fetch:
-                user_list.append(fetch)
+        user_list = await bot.fetch_target_list(get_all_enabled_user)
         if not user_list:
             return
         Logger.info('Checking Minecraft news...' + str(title_list))
@@ -60,6 +54,7 @@ async def start_check_news(bot: FetchTarget):
                 else:
                     Logger.info('Check minecraft news failed:' + str(status))
 
+
 def getfileversions(path):
     if not os.path.exists(path):
         a = open(path, 'a')
@@ -68,6 +63,7 @@ def getfileversions(path):
     s = w.read().split('\n')
     w.close()
     return s
+
 
 @schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'], trigger=IntervalTrigger(seconds=60))
 async def feedback_news(bot: FetchTarget):

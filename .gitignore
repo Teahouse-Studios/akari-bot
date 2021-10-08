@@ -15,6 +15,7 @@ assets/feedback_*.txt
 assets/cytoid-avatar/
 assets/cytoid-cover/
 core/bots/**/assets
+core/unused_bots/**/assets
 .version*
 .cache_loader
 assets/arc**

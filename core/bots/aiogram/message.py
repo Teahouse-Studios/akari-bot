@@ -120,6 +120,15 @@ class FetchTarget(FT):
             return False
 
     @staticmethod
+    async def fetch_target_list(targetList: list) -> List[MessageSession]:
+        lst = []
+        for x in targetList:
+            fet = await FetchTarget.fetch_target(x)
+            if fet:
+                lst.append(fet)
+        return lst
+
+    @staticmethod
     async def post_message(module_name, message, user_list: List[MessageSession] = None):
         send_list = []
         if user_list is not None:

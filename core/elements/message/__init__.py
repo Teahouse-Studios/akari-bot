@@ -103,6 +103,13 @@ class FetchTarget:
         ...
 
     @staticmethod
+    async def fetch_target_list(targetList: list) -> List[MessageSession]:
+        """
+        尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
+        """
+        ...
+
+    @staticmethod
     async def post_message(module_name, message, user_list: List[MessageSession] = None):
         """
         尝试向开启此模块的对象发送一条消息。

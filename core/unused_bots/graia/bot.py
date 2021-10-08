@@ -8,8 +8,8 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 
 from config import Config
-from core.bots.graia.broadcast import bcc, app
-from core.bots.graia.message import MessageSession, FetchTarget
+from core.unused_bots.graia.broadcast import bcc, app
+from core.unused_bots.graia.message import MessageSession, FetchTarget
 from core.elements import MsgInfo, Session, Command, Schedule
 from core.loader import Modules
 from core.parser.message import parser
