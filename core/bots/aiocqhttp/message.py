@@ -51,7 +51,7 @@ class MessageSession(MS):
         return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='QQ|Bot',
                                              senderFrom='QQ|Bot'),
                               session=Session(message=send,
-                                              target=str(self.session.target),
+                                              target=self.session.target,
                                               sender=self.session.sender))
 
     async def waitConfirm(self, msgchain=None, quote=True):
