@@ -28,6 +28,7 @@ async def startup():
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    bot.logger.setLevel(logging.WARNING)
     await load_prompt(FetchTarget)
 
 

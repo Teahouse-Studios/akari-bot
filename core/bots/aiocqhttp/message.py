@@ -101,6 +101,8 @@ class MessageSession(MS):
             self.msg = msg
 
         async def __aenter__(self):
+            if self.msg.target.targetFrom == 'QQ|Group':
+                await bot.send_group_msg(group_id=self.msg.session.target, message=f'[CQ:poke,qq={self.msg.session.sender}]')
             #await bot.answer_chat_action(self.msg.session.target, 'typing')
             pass
 
