@@ -4,7 +4,7 @@ import traceback
 from typing import List
 from pathlib import Path
 
-from aiocqhttp import Message, MessageSegment, Event
+from aiocqhttp import MessageSegment
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
@@ -32,17 +32,19 @@ class MessageSession(MS):
         if quote:
             msg = MessageSegment.reply(self.session.message.message_id)
         if isinstance(msgchain, str):
-            msg = msg + MessageSegment.text(msgchain)
-        if isinstance(msgchain, (list, tuple)):
-            count = 0
+            msg = msg + (MessageSegment.text(msgchain) if msgchain != '' else '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
+                                                                              '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+        elif isinstance(msgchain, (list, tuple)):
             for x in msgchain:
                 if isinstance(x, Plain):
                     msg = msg + MessageSegment.text(x.text)
-                if isinstance(x, Image):
+                elif isinstance(x, Image):
                     msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
-                if isinstance(x, Voice):
+                elif isinstance(x, Voice):
                     msg = msg + MessageSegment.record(Path(x.path).as_uri())
-                count += 1
+        else:
+            msg = msg + MessageSegment.text('发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。'
+                                            '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
         if self.target.targetFrom == 'QQ|Group':
             send = await bot.send_group_msg(group_id=self.session.target, message=msg)
         else:

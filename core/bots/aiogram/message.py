@@ -26,35 +26,41 @@ class MessageSession(MS):
 
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
+            if msgchain == '':
+                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
             send = await bot.send_message(self.session.target, msgchain,
                                           reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
-                                                 senderFrom='Telegram|Bot'),
-                                  session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
-        if isinstance(msgchain, (list, tuple)):
+        elif isinstance(msgchain, (list, tuple)):
             count = 0
-            send_list = []
+            send = []
             for x in msgchain:
                 if isinstance(x, Plain):
-                    send = await bot.send_message(self.session.target, x.text,
+                    send_ = await bot.send_message(self.session.target, x.text,
                                                   reply_to_message_id=self.session.message.message_id if quote
                                                   and count == 0 and self.session.message else None)
-                if isinstance(x, Image):
+                elif isinstance(x, Image):
                     with open(await x.get(), 'rb') as image:
-                        send = await bot.send_photo(self.session.target, image,
+                        send_ = await bot.send_photo(self.session.target, image,
                                                     reply_to_message_id=self.session.message.message_id if quote
                                                     and count == 0
                                                     and self.session.message else None)
-                if isinstance(x, Voice):
+                elif isinstance(x, Voice):
                     with open(x.path, 'rb') as voice:
-                        send = await bot.send_audio(self.session.target, voice,
+                        send_ = await bot.send_audio(self.session.target, voice,
                                                     reply_to_message_id=self.session.message.message_id if quote
                                                     and count == 0 and self.session.message else None)
-                send_list.append(send)
+                else:
+                    send_ = False
+                if send_:
+                    send.append(send_)
                 count += 1
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
+        else:
+            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+            send = await bot.send_message(self.session.target, msgchain,
+                                          reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
+        return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                                  senderFrom='Telegram|Bot'),
-                                  session=Session(message=send_list, target=send.chat.id, sender=send.from_user.id))
+                              session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
 
     async def waitConfirm(self, msgchain=None, quote=True):
         send = None

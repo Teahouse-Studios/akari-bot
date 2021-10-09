@@ -30,29 +30,35 @@ class MessageSession(MS):
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
             send = await self.session.target.send(msgchain,
                                                   reference=self.session.message if quote and self.session.message else None)
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
-                                                 senderFrom='Discord|Bot'),
-                                  session=Session(message=send, target=send.channel, sender=send.author))
-        if isinstance(msgchain, (list, tuple)):
+        elif isinstance(msgchain, (list, tuple)):
             count = 0
-            send_list = []
+            send = []
             for x in msgchain:
                 if isinstance(x, Plain):
-                    send = await self.session.target.send(x.text, reference=self.session.message if quote and count == 0
-                                                                                                    and self.session.message else None)
-                if isinstance(x, Image):
-                    send = await self.session.target.send(file=discord.File(await x.get()),
-                                                          reference=self.session.message if quote and count == 0
-                                                                                            and self.session.message else None)
-                send_list.append(send)
+                    send_ = await self.session.target.send(x.text,
+                                                           reference=self.session.message if quote and count == 0
+                                                                                             and self.session.message else None)
+                elif isinstance(x, Image):
+                    send_ = await self.session.target.send(file=discord.File(await x.get()),
+                                                           reference=self.session.message if quote and count == 0
+                                                                                             and self.session.message else None)
+                else:
+                    send_ = False
+                if send_:
+                    send.append(send_)
                 count += 1
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
-                                                 senderFrom='Discord|Bot'),
-                                  session=Session(message=send_list, target=send.channel, sender=send.author))
+        else:
+            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+            send = await self.session.target.send(msgchain,
+                                                  reference=self.session.message if quote and self.session.message else None)
+        return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
+                                             senderFrom='Discord|Bot'),
+                              session=Session(message=send, target=send.channel, sender=send.author))
 
     async def waitConfirm(self, msgchain=None, quote=True):
         def check(m):
             return m.channel == self.session.message.channel and m.author == self.session.message.author
+
         send = None
         if msgchain is not None:
             msgchain = convert2lst(msgchain)
