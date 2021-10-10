@@ -30,21 +30,23 @@ class Logginglogger(AbstractLogger):
             format=fmt,
             level=logging.INFO if not kwargs.get("debug") else logging.DEBUG
         )
+        self.log = logging.getLogger('akaribot.logger')
+        self.log.setLevel(logging.INFO)
 
     def info(self, msg):
-        return logging.info(msg)
+        return self.log.info(msg)
 
     def error(self, msg):
-        return logging.error(msg)
+        return self.log.error(msg)
 
     def debug(self, msg):
-        return logging.debug(msg)
+        return self.log.debug(msg)
 
     def warn(self, msg):
-        return logging.warning(msg)
+        return self.log.warning(msg)
 
     def exception(self, msg):
-        return logging.exception(msg)
+        return self.log.exception(msg)
 
 
 Logger = Logginglogger()

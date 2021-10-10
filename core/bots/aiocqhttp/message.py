@@ -9,6 +9,7 @@ from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
 from core.elements.others import confirm_command
+from core.logger import Logger
 from database import BotDBUtil
 import html
 
@@ -45,6 +46,7 @@ class MessageSession(MS):
         else:
             msg = msg + MessageSegment.text('发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。'
                                             '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+        Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         if self.target.targetFrom == 'QQ|Group':
             send = await bot.send_group_msg(group_id=self.session.target, message=msg)
         else:

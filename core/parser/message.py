@@ -22,7 +22,7 @@ async def parser(msg: MessageSession):
     if senderInfo.query.isInBlackList and not senderInfo.query.isInWhiteList or len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
-        Logger.info(display)
+        Logger.info(f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
         command = re.sub(r'^' + display[0], '', display)
         command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
         if len(command_list) > 5 and not senderInfo.query.isSuperUser:
@@ -72,7 +72,7 @@ async def parser(msg: MessageSession):
                     async with msg.Typing(msg):
                         await Modules[command_first_word].function(msg)  # 将dict传入下游模块
             except Exception as e:
-                traceback.print_exc()
+                Logger.error(traceback.format_exc())
                 await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
     for regex in ModulesRegex:  # 遍历正则模块列表
         if regex in enabled_modules_list:
