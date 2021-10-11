@@ -23,6 +23,7 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = False
+        forward = False
 
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):

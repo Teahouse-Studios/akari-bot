@@ -2,9 +2,8 @@ import re
 
 
 def UTC8(str1, outtype):
-    print(str1)
     if str1 in ['infinity', 'infinite']:
-        return ('无限期')
+        return '无限期'
     else:
         q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', str1)
         if not q:

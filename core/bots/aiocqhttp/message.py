@@ -27,6 +27,7 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = True
+        forward = True
 
     async def sendMessage(self, msgchain, quote=True):
         msg = MessageSegment.text('')
@@ -88,6 +89,10 @@ class MessageSession(MS):
     def asDisplay(self):
 
         return html.unescape(self.session.message.message)
+
+    async def fake_forward_msg(self, nodelist):
+        if self.target.targetFrom == 'QQ|Group':
+            await bot.call_action('send_group_forward_msg', group_id=self.session.target, messages=nodelist)
 
     async def delete(self):
         try:

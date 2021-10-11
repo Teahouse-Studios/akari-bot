@@ -10,6 +10,7 @@ class Template(MessageSession):
     class Feature:
         image = True
         voice = False
+        forward = False
 
     async def sendMessage(self, msgchain, quote=True) -> MessageSession:
         if isinstance(msgchain, str):

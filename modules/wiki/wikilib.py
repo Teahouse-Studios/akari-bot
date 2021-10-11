@@ -10,7 +10,7 @@ import ujson as json
 
 from core import dirty_check
 from core.logger import Logger
-from .dbutils import WikiSiteInfo
+from modules.wiki.dbutils import WikiSiteInfo
 
 
 class wikilib:
@@ -109,6 +109,7 @@ class wikilib:
         if not self.danger_wiki_check():
             return False
         check = await dirty_check.check(text)
+        check = '\n'.join(check)
         print(check)
         if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
             return True

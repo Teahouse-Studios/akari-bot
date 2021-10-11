@@ -73,6 +73,12 @@ class MessageSession:
         """
         ...
 
+    async def fake_forward_msg(self, nodelist):
+        """
+        用于发送假转发消息（QQ）。
+        """
+        ...
+
     class Typing:
         def __init__(self, msg):
             """
@@ -92,6 +98,7 @@ class MessageSession:
         """
         image = ...
         voice = ...
+        forward = ...
 
 
 class FetchTarget:

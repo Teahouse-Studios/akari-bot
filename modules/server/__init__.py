@@ -32,7 +32,8 @@ async def main(msg: MessageSession):
 async def s(msg: MessageSession, address, raw, showplayer, mode):
     sendmsg = await server(address, raw, showplayer, mode)
     if sendmsg != '':
-        sendmsg = await check(sendmsg)
+        sendmsg = await  check(sendmsg)
+        sendmsg = '\n'.join(sendmsg)
         send = await msg.sendMessage(sendmsg + '\n[90秒后撤回消息]')
         await asyncio.sleep(90)
         await send.delete()

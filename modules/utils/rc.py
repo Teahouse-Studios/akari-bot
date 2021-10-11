@@ -7,8 +7,8 @@ from modules.wiki.wikilib import wikilib
 
 
 async def rc(wiki_url):
-    pageurl = await wikilib().get_article_path(wiki_url) + 'Special:RecentChanges'
     if wiki_url:
+        pageurl = await wikilib().get_article_path(wiki_url) + 'Special:RecentChanges'
         url = wiki_url + '?action=query&list=recentchanges&rcprop=title|user|timestamp&rctype=edit|new&format=json'
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -20,10 +20,8 @@ async def rc(wiki_url):
         d = []
         for x in file['query']['recentchanges'][:5]:
             d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
-        m = '\n'.join(d)
-        print(m)
-        y = await check(m)
-        print(y)
+        y = await check(*d)
+        y = '\n'.join(y)
         if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
             msg = f'{pageurl}\n{y}\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。'
         else:

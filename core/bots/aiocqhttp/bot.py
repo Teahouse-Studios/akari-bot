@@ -7,13 +7,14 @@ from core.bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from aiocqhttp import Event
 
-from core.elements import MsgInfo, Session, Command, Schedule
+from core.elements import MsgInfo, Session, Command, Schedule, EnableDirtyWordCheck
 from core.loader import Modules
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.utils import PrivateAssets, init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+EnableDirtyWordCheck.status = True
 init()
 
 
