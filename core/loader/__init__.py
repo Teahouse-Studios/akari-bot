@@ -69,6 +69,9 @@ class ModulesManager:
 
     @staticmethod
     def return_modules_alias_map():
+        """
+        返回每个别名映射到的模块
+        """
         alias_map = {}
         for x in ModulesManager._modules_list:
             if isinstance(x.alias, str):
@@ -79,6 +82,22 @@ class ModulesManager:
             if isinstance(x.alias, dict):
                 alias_map.update(x.alias)
         return alias_map
+
+    @staticmethod
+    def return_modules_alias_list():
+        """
+        返回每个模块的别名列表
+        """
+        alias_list = {}
+        for x in ModulesManager._modules_list:
+            if x.bind_prefix not in alias_list:
+                alias_list.update({x.bind_prefix: []})
+            if isinstance(x.alias, (str, dict)):
+                alias_list[x.bind_prefix].append(x.alias)
+            if isinstance(x.alias, (tuple, list)):
+                for y in x.alias:
+                    alias_list[x.bind_prefix].append(y)
+        return alias_list
 
     @staticmethod
     def return_modules_developers_map():
