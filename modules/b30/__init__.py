@@ -13,10 +13,9 @@ async def main(msg: MessageSession):
     if friendcode:
         if friendcode == 'initialize':
             if msg.checkSuperUser():
-                await arcb30init(msg)
+                return await arcb30init(msg)
             else:
-                await msg.sendMessage('权限不足')
-                return
+                return await msg.sendMessage('权限不足')
         else:
             if not os.path.exists(assets):
                 resp = {'text': '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~b30 initialize初始化资源。'}

@@ -29,7 +29,7 @@ class MessageSession:
     """
     消息会话，囊括了处理一条消息所需要的东西。
     """
-    __slots__ = ("target", "session", "trigger_msg", "parsed_msg",)
+    __slots__ = ("target", "session", "trigger_msg", "parsed_msg", "matched_msg",)
 
     def __init__(self,
                  target: MsgInfo,

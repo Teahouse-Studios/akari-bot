@@ -2,8 +2,9 @@ import importlib
 import os
 import re
 import traceback
+from typing import Dict, Union
 
-from core.elements import Command, Option, Schedule
+from core.elements import Command, Option, Schedule, RegexCommand
 from core.logger import Logger
 
 err_prompt = []
@@ -36,7 +37,7 @@ class ModulesManager:
     _modules_list = set()
 
     @staticmethod
-    def add_module(module: [Command, Option, Schedule]):
+    def add_module(module: [Command, Option, Schedule, RegexCommand]):
         ModulesManager._modules_list.add(module)
 
     @staticmethod
@@ -111,16 +112,8 @@ class ModulesManager:
     def return_regex_modules():
         d = {}
         for x in ModulesManager._modules_list:
-            if isinstance(x, Command) and x.is_regex_function:
+            if isinstance(x, RegexCommand):
                 d.update({x.bind_prefix: x})
-        return d
-
-    @staticmethod
-    def return_modules_help():
-        d = {}
-        for x in ModulesManager._modules_list:
-            if x.help_doc is not None:
-                d.update({x.bind_prefix: x.help_doc})
         return d
 
     @staticmethod
@@ -133,10 +126,9 @@ class ModulesManager:
 
 
 load_modules()
-Modules = ModulesManager.return_modules_list_as_dict()
-ModulesAliases = ModulesManager.return_modules_alias_map()
+Modules: Union[Dict[str, Command], Dict[str, Option], Dict[str, Schedule], Dict[str, RegexCommand]] = ModulesManager.return_modules_list_as_dict()
+ModulesAliases: Dict[str, RegexCommand] = ModulesManager.return_modules_alias_map()
 ModulesRegex = ModulesManager.return_regex_modules()
-ModulesHelp = ModulesManager.return_modules_help()
 
 loadercache = os.path.abspath('.cache_loader')
 openloadercache = open(loadercache, 'w')

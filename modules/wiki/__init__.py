@@ -1,11 +1,11 @@
 import re
+from typing import Union
 
 import ujson as json
 
 from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
-from core.loader.decorator import command
-from core.parser.command import CommandParser
+from core.loader.decorator import command, regex
 from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
@@ -108,7 +108,9 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@command('wiki_inline', is_regex_function=True, desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]', alias='wiki_regex', developers=['OasisAkari'])
+@regex('wiki_inline', pattern=r'\[\[.*?]]|{{.*?}}', mode='M',
+       desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
+       alias='wiki_regex', developers=['OasisAkari'])
 async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 
@@ -117,8 +119,8 @@ ModulesManager.add_module(Option('wiki_fandom_addon', desc='为Fandom定制的�
 
 
 async def regex_proc(msg: MessageSession, display, typing=True):
-    mains = re.findall(r'\[\[(.*?)\]\]', display, re.I)
-    templates = re.findall(r'\{\{(.*?)\}\}', display, re.I)
+    mains = re.findall(r'\[\[(.*?)]]', display, re.I)
+    templates = re.findall(r'{{(.*?)}}', display, re.I)
     find_dict = {}
     global_status = 'done'
     site_lock = False
@@ -248,3 +250,11 @@ async def regex_proc(msg: MessageSession, display, typing=True):
                 waits1 = f'[[{waits}]]'
                 nwaitlist.append(waits1)
             await regex_proc(msg, '\n'.join(nwaitlist))
+
+
+"""async def query_page(msg: MessageSession, title: Union[str, list, tuple]):
+    target = WikiTargetInfo(msg)
+    for t in title:
+        match_interwiki = re.match(r'(.*?):(.*)', t)
+
+"""

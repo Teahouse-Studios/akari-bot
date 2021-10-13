@@ -1,7 +1,7 @@
 import re
 
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core.loader.decorator import command, regex
 from .bugtracker import bugtracker_get
 
 
@@ -16,24 +16,17 @@ async def bugtracker(msg: MessageSession):
             await msg.sendMessage(result)
 
 
-@command('bug_regex', desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
-         developers=['OasisAkari'],
-         is_regex_function=True)
+@regex('bug_regex', pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M',
+       desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
+       developers=['OasisAkari'])
 async def regex_bugtracker(msg: MessageSession):
-    display_msg = msg.asDisplay()
-    if display_msg.find('[Webhook]') != -1:
-        return
-    if display_msg[0] == '!':
-        display_msg = re.sub('^!', '', display_msg)
-        display_msg = re.sub('^bug ', '', display_msg)
-        q = re.match(r'(.*-.*)', display_msg)
-        if q:
-            async with msg.Typing(msg):
-                result = await bugtracker_get(q.group(1))
-                return await msg.sendMessage(result)
-    rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')
+    result = await bugtracker_get(msg.matched_msg.group(1) + '-' + msg.matched_msg.group(2))
+    return await msg.sendMessage(result)
+
+
+"""rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')
     findlink = re.findall(rlink, display_msg)
     for link in findlink:
         matchbug = re.match(rlink, link)
         if matchbug:
-            await msg.sendMessage(await bugtracker_get(matchbug.group(1)))
+            await msg.sendMessage(await bugtracker_get(matchbug.group(1)))"""

@@ -9,7 +9,7 @@ from modules.maimai.libraries.maimai_best_40 import generate
 
 
 from core.elements import Plain, Image as BImage, MessageSession
-from core.loader.decorator import command
+from core.loader.decorator import command, regex as command_regex
 
 
 def song_txt(music: Music):
@@ -47,11 +47,10 @@ async def _(msg: MessageSession):
     await msg.sendMessage(s.strip())
 
 
-@command('maimai_random_music_regex1', is_regex_function=True, desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲')
+@command_regex('maimai_random_music_regex1', pattern=r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)",
+               desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲')
 async def _(msg: MessageSession):
-    level_labels = ['绿', '黄', '红', '紫', '白']
-    regex = "随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)"
-    res = re.match(regex, msg.asDisplay())
+    res = msg.matched_msg
     if res:
         try:
             if res.groups()[0] == "dx":
@@ -75,81 +74,75 @@ async def _(msg: MessageSession):
             await msg.sendMessage("随机命令错误，请检查语法")
 
 
-@command('maimai_random_music_regex2', is_regex_function=True, desc='XXXmaimaiXXX什么 随机一首歌')
+@command_regex('maimai_random_music_regex2', pattern=r".*maimai.*什么", desc='XXXmaimaiXXX什么 随机一首歌')
 async def _(msg: MessageSession):
-    if re.match(r".*maimai.*什么", msg.asDisplay()):
-        await msg.sendMessage(song_txt(total_list.random()))
+    await msg.sendMessage(song_txt(total_list.random()))
 
 
-@command('maimai_search_music_regex', is_regex_function=True, desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
+@command_regex('maimai_search_music_regex', pattern=r"查歌(.+)", desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
 async def _(msg: MessageSession):
-    regex = "查歌(.+)"
-    name = re.match(regex, msg.asDisplay())
-    if name:
-        name = name.groups()[0].strip()
-        if name == "":
-            return
-        res = total_list.filter(title_search=name)
-        if len(res) == 0:
-            await msg.sendMessage("没有找到这样的乐曲。")
-        elif len(res) < 50:
-            search_result = ""
-            for music in sorted(res, key = lambda i: int(i['id'])):
-                search_result += f"{music['id']}. {music['title']}\n"
-            return await msg.sendMessage([Plain(search_result.strip())])
-        else:
-            await msg.sendMessage(f"结果过多（{len(res)} 条），请缩小查询范围。")
+    name = msg.matched_msg.groups()[0].strip()
+    if name == "":
+        return
+    res = total_list.filter(title_search=name)
+    if len(res) == 0:
+        await msg.sendMessage("没有找到这样的乐曲。")
+    elif len(res) < 50:
+        search_result = ""
+        for music in sorted(res, key = lambda i: int(i['id'])):
+            search_result += f"{music['id']}. {music['title']}\n"
+        return await msg.sendMessage([Plain(search_result.strip())])
+    else:
+        await msg.sendMessage(f"结果过多（{len(res)} 条），请缩小查询范围。")
 
 
-@command('maimai_query_chart_regex', is_regex_function=True, desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
+@command_regex('maimai_query_chart_regex', pattern=r"([绿黄红紫白]?)id([0-9]+)",
+               desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
 async def _(message: MessageSession):
-    regex = "([绿黄红紫白]?)id([0-9]+)"
-    groups = re.match(regex, message.asDisplay())
-    if groups:
-        groups = groups.groups()
-        level_labels = ['绿', '黄', '红', '紫', '白']
-        if groups[0] != "":
-            try:
-                level_index = level_labels.index(groups[0])
-                level_name = ['Basic', 'Advanced', 'Expert', 'Master', 'Re: MASTER']
-                name = groups[1]
-                music = total_list.by_id(name)
-                chart = music['charts'][level_index]
-                ds = music['ds'][level_index]
-                level = music['level'][level_index]
-                file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
-                if len(chart['notes']) == 4:
-                    msg = f'''{level_name[level_index]} {level}({ds})
-    TAP: {chart['notes'][0]}
-    HOLD: {chart['notes'][1]}
-    SLIDE: {chart['notes'][2]}
-    BREAK: {chart['notes'][3]}
-    谱师: {chart['charter']}'''
-                else:
-                    msg = f'''{level_name[level_index]} {level}({ds})
-    TAP: {chart['notes'][0]}
-    HOLD: {chart['notes'][1]}
-    SLIDE: {chart['notes'][2]}
-    TOUCH: {chart['notes'][3]}
-    BREAK: {chart['notes'][4]}
-    谱师: {chart['charter']}'''
-                await message.sendMessage([Plain(f"{music['id']}. {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
-            except Exception:
-                await message.sendMessage("未找到该谱面")
-        else:
+    groups = message.matched_msg.groups()
+    level_labels = ['绿', '黄', '红', '紫', '白']
+    if groups[0] != "":
+        try:
+            level_index = level_labels.index(groups[0])
+            level_name = ['Basic', 'Advanced', 'Expert', 'Master', 'Re: MASTER']
             name = groups[1]
             music = total_list.by_id(name)
-            try:
-                file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
-                await message.sendMessage([Plain(f"{music['id']}. {music['title']}\n"),
-                                                 BImage(f"{file}"),
-                                                 Plain(f"艺术家: {music['basic_info']['artist']}\n"
-                                                       f"分类: {music['basic_info']['genre']}\n"
-                                                       f"BPM: {music['basic_info']['bpm']}\n"
-                                                       f"版本: {music['basic_info']['from']}\n"
-                                                       f"难度: {'/'.join(music['level'])}")])
-            except Exception:
-                await message.sendMessage("未找到该乐曲")
+            chart = music['charts'][level_index]
+            ds = music['ds'][level_index]
+            level = music['level'][level_index]
+            file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
+            if len(chart['notes']) == 4:
+                msg = f'''{level_name[level_index]} {level}({ds})
+TAP: {chart['notes'][0]}
+HOLD: {chart['notes'][1]}
+SLIDE: {chart['notes'][2]}
+BREAK: {chart['notes'][3]}
+谱师: {chart['charter']}'''
+            else:
+                msg = f'''{level_name[level_index]} {level}({ds})
+TAP: {chart['notes'][0]}
+HOLD: {chart['notes'][1]}
+SLIDE: {chart['notes'][2]}
+TOUCH: {chart['notes'][3]}
+BREAK: {chart['notes'][4]}
+谱师: {chart['charter']}'''
+            await message.sendMessage([Plain(f"{music['id']}. {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
+        except Exception:
+            await message.sendMessage("未找到该谱面")
+    else:
+        name = groups[1]
+        music = total_list.by_id(name)
+        try:
+            file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
+            await message.sendMessage([Plain(f"{music['id']}. {music['title']}\n"),
+                                             BImage(f"{file}"),
+                                             Plain(f"艺术家: {music['basic_info']['artist']}\n"
+                                                   f"分类: {music['basic_info']['genre']}\n"
+                                                   f"BPM: {music['basic_info']['bpm']}\n"
+                                                   f"版本: {music['basic_info']['from']}\n"
+                                                   f"难度: {'/'.join(music['level'])}")])
+        except Exception:
+            await message.sendMessage("未找到该乐曲")
 
 
 wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练手法', '打旧框', '干饭', '抓绝赞', '收歌']
@@ -186,22 +179,19 @@ for t in tmp:
             music_aliases[arr[i].lower()].append(arr[0])
 
 
-@command('maimai_find_song_regex', is_regex_function=True, desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
+@command_regex('maimai_find_song_regex', pattern=r"(.+)是什么歌", desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
 async def _(msg: MessageSession):
-    regex = "(.+)是什么歌"
-    name = re.match(regex, msg.asDisplay())
-    if name:
-        name = name.groups()[0].strip().lower()
-        if name not in music_aliases:
-            await msg.sendMessage("未找到此歌曲\n舞萌 DX 歌曲别名收集计划：https://docs.qq.com/sheet/DQ0pvUHh6b1hjcGpl")
-            return
-        result_set = music_aliases[name]
-        if len(result_set) == 1:
-            music = total_list.by_title(result_set[0])
-            await msg.sendMessage([Plain('您要找的是不是')] + song_txt(music))
-        else:
-            s = '\n'.join(result_set)
-            await msg.sendMessage(f"您要找的可能是以下歌曲中的其中一首：\n{ s }")
+    name = msg.matched_msg.groups()[0].strip().lower()
+    if name not in music_aliases:
+        await msg.sendMessage("未找到此歌曲\n舞萌 DX 歌曲别名收集计划：https://docs.qq.com/sheet/DQ0pvUHh6b1hjcGpl")
+        return
+    result_set = music_aliases[name]
+    if len(result_set) == 1:
+        music = total_list.by_title(result_set[0])
+        await msg.sendMessage([Plain('您要找的是不是')] + song_txt(music))
+    else:
+        s = '\n'.join(result_set)
+        await msg.sendMessage(f"您要找的可能是以下歌曲中的其中一首：\n{ s }")
 
 
 @command('maimai_scoreline', alias='分数线', help_doc=('~maimai_scoreline <难度+歌曲id> <分数线>', '~maimai_scoreline 帮助'))

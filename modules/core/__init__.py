@@ -41,7 +41,9 @@ async def config_modules(msg: MessageSession):
         enable_list = []
         if wait_config_list == ['all']:
             for function in modules:
-                if not modules[function].need_superuser and not modules[function].is_base_function:
+                if not modules[function].need_superuser:
+                    if isinstance(modules[function], Command) and modules[function].is_base_function:
+                        continue
                     enable_list.append(function)
         else:
             for module in wait_config_list:
@@ -50,7 +52,7 @@ async def config_modules(msg: MessageSession):
                 else:
                     if modules[module].need_superuser and not msg.checkSuperUser():
                         msglist.append(f'失败：你没有打开“{module}”的权限。')
-                    elif modules[module].is_base_function:
+                    elif isinstance(modules[module], Command) and modules[module].is_base_function:
                         msglist.append(f'失败：“{module}”为基础模块。')
                     else:
                         enable_list.append(module)
@@ -110,6 +112,7 @@ async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
+    modules_alias = ModulesManager.return_modules_alias_list()
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
@@ -121,12 +124,25 @@ async def bot_help(msg: MessageSession):
                 msgs.append(help_)
         if msgs:
             doc = '\n'.join(msgs)
+            if help_name in modules_alias:
+                malias = []
+                for a in modules_alias[help_name]:
+                    if isinstance(modules_alias[help_name][a], dict):
+                        malias.append(f'{a} -> {modules_alias[help_name][a]}')
+                    elif isinstance(modules_alias[help_name][a], str):
+                        malias.append(f'{a} -> {help_name}')
+                    else:
+                        malias.append('<数据类型错误，请联系开发者解决>')
+                if malias:
+                    doc += '\n命令别名：\n' + '\n'.join(malias)
             if help_name in developers:
                 dev_list = developers[help_name]
                 if isinstance(dev_list, (list, tuple)):
                     devs = '、'.join(developers[help_name]) if developers[help_name] is not None else ''
                 elif isinstance(dev_list, str):
                     devs = dev_list
+                else:
+                    devs = '<数据类型错误，请联系开发者解决>'
             else:
                 devs = ''
             devs_msg = '\n模块作者：' + devs if devs != '' else ''
