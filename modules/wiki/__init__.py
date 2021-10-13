@@ -118,7 +118,7 @@ async def regex_wiki(msg: MessageSession):
 ModulesManager.add_module(Option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari']))
 
 
-async def regex_proc(msg: MessageSession, display, typing=True):
+async def regex_proc(msg: MessageSession, display):
     mains = re.findall(r'\[\[(.*?)]]', display, re.I)
     templates = re.findall(r'{{(.*?)}}', display, re.I)
     find_dict = {}
@@ -146,9 +146,6 @@ async def regex_proc(msg: MessageSession, display, typing=True):
                     find_dict.update({template: 'template'})
     if find_dict == {}:
         return
-    if typing:
-        async with msg.Typing(msg):
-            pass
     waitlist = []
     imglist = []
     audlist = []
