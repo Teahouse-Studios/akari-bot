@@ -11,7 +11,7 @@ from config import Config
 from core.unused_bots.graia.broadcast import bcc, app
 from core.unused_bots.graia.message import MessageSession, FetchTarget
 from core.elements import MsgInfo, Session, Command, Schedule
-from core.loader import Modules
+from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.utils import PrivateAssets, init, load_prompt
@@ -51,6 +51,7 @@ async def new_group(event: BotInvitedJoinGroupRequestEvent):
 @bcc.receiver('ApplicationLaunched')
 async def autorun_handler():
     gather_list = []
+    Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
         if isinstance(Modules[x], Command) and Modules[x].autorun:
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))

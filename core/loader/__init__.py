@@ -2,17 +2,17 @@ import importlib
 import os
 import re
 import traceback
-from typing import Dict, Union
+from typing import Dict, Union, List, Set
 
 from core.elements import Command, Option, Schedule, RegexCommand, StartUp
 from core.logger import Logger
-
-err_prompt = []
+from core.utils import PrivateAssets
 
 load_dir_path = os.path.abspath('./modules/')
 
 
 def load_modules():
+    err_prompt = []
     fun_file = None
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:
@@ -31,21 +31,29 @@ def load_modules():
             tb = traceback.format_exc()
             Logger.info(f'Failed to load modules.{fun_file}: \n{tb}')
             err_prompt.append(str(tb))
+    loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
+    openloadercache = open(loadercache, 'w')
+    if err_prompt:
+        err_prompt = re.sub('  File "<frozen importlib.*?>", .*?\n', '', '\n'.join(err_prompt))
+        openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + err_prompt)
+    else:
+        openloadercache.write('所有模块已正确加载。')
+    openloadercache.close()
 
 
 class ModulesManager:
     _modules_list = set()
 
     @staticmethod
-    def add_module(module: [Command, Option, Schedule, RegexCommand]):
+    def add_module(module: [Command, Option, Schedule, RegexCommand, StartUp]):
         ModulesManager._modules_list.add(module)
 
     @staticmethod
-    def return_modules_list():
+    def return_modules_list() -> Set[Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         return ModulesManager._modules_list
 
     @staticmethod
-    def return_modules_list_as_dict():
+    def return_modules_list_as_dict() -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         d = {}
         modules = []
         recommend_modules = []
@@ -69,7 +77,7 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_modules_alias_map():
+    def return_modules_alias_map() -> Dict[str, str]:
         """
         返回每个别名映射到的模块
         """
@@ -85,7 +93,7 @@ class ModulesManager:
         return alias_map
 
     @staticmethod
-    def return_modules_alias_list():
+    def return_modules_alias_list() -> Dict[str, list]:
         """
         返回每个模块的别名列表
         """
@@ -101,15 +109,18 @@ class ModulesManager:
         return alias_list
 
     @staticmethod
-    def return_modules_developers_map():
+    def return_modules_developers_map() -> Dict[str, list]:
         d = {}
         for x in ModulesManager._modules_list:
             if x.developers is not None:
-                d.update({x.bind_prefix: x.developers})
+                if isinstance(x.developers, str):
+                    d.update({x.bind_prefix: [x.developers]})
+                elif isinstance(x.developers, (tuple, list)):
+                    d.update({x.bind_prefix: x.developers})
         return d
 
     @staticmethod
-    def return_regex_modules():
+    def return_regex_modules() -> Dict[str, RegexCommand]:
         d = {}
         for x in ModulesManager._modules_list:
             if isinstance(x, RegexCommand):
@@ -117,24 +128,9 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_schedule_function_list():
+    def return_schedule_function_list() -> List[Schedule]:
         l = []
         for x in ModulesManager._modules_list:
             if isinstance(x, Schedule):
                 l.append(x)
         return l
-
-
-load_modules()
-Modules: Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]] = ModulesManager.return_modules_list_as_dict()
-ModulesAliases: Dict[str, RegexCommand] = ModulesManager.return_modules_alias_map()
-ModulesRegex = ModulesManager.return_regex_modules()
-
-loadercache = os.path.abspath('.cache_loader')
-openloadercache = open(loadercache, 'w')
-if err_prompt:
-    err_prompt = re.sub('  File "<frozen importlib.*?>", .*?\n', '', '\n'.join(err_prompt))
-    openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + err_prompt)
-else:
-    openloadercache.write('所有模块已正确加载。')
-openloadercache.close()

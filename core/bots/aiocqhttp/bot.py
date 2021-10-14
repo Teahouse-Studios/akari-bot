@@ -8,7 +8,7 @@ from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from aiocqhttp import Event
 
 from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck
-from core.loader import Modules
+from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.utils import PrivateAssets, init, load_prompt
@@ -21,6 +21,7 @@ init()
 @bot.on_startup
 async def startup():
     gather_list = []
+    Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
         if isinstance(Modules[x], StartUp):
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))

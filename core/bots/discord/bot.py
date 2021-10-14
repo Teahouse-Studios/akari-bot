@@ -8,7 +8,7 @@ from config import Config
 from core.bots.discord.client import client
 from core.bots.discord.message import MessageSession, FetchTarget
 from core.elements import MsgInfo, Session, Schedule, StartUp
-from core.loader import Modules
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import parser
 from core.scheduler import Scheduler
@@ -25,6 +25,7 @@ async def on_ready():
     global count
     if count == 0:
         gather_list = []
+        Modules = ModulesManager.return_modules_list_as_dict()
         for x in Modules:
             if isinstance(Modules[x], StartUp):
                 gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))

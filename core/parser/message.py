@@ -2,11 +2,16 @@ import re
 import traceback
 
 from core.elements import MessageSession, Command, Option, Schedule, command_prefix
-from core.loader import Modules, ModulesAliases, ModulesRegex
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
 from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from database import BotDBUtil
+
+
+Modules = ModulesManager.return_modules_list_as_dict()
+ModulesAliases = ModulesManager.return_modules_alias_map()
+ModulesRegex = ModulesManager.return_regex_modules()
 
 
 async def parser(msg: MessageSession):
@@ -15,6 +20,13 @@ async def parser(msg: MessageSession):
     :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
     :return: 无返回
     """
+    global Modules
+    global ModulesAliases
+    global ModulesRegex
+    if Modules == {}:
+        Modules = ModulesManager.return_modules_list_as_dict()
+        ModulesAliases = ModulesManager.return_modules_alias_map()
+        ModulesRegex = ModulesManager.return_regex_modules()
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
     msg.trigger_msg = display
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)

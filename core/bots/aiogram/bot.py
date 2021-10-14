@@ -8,7 +8,7 @@ from core.bots.aiogram.client import dp
 from core.bots.aiogram.message import MessageSession, FetchTarget
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import MsgInfo, Session, StartUp, Schedule
-from core.loader import Modules
+from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.utils import PrivateAssets, init, load_prompt
@@ -35,6 +35,7 @@ async def msg_handler(message: types.Message):
 
 async def on_startup(dispatcher):
     gather_list = []
+    Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
         if isinstance(Modules[x], StartUp):
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))

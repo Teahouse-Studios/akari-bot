@@ -20,3 +20,4 @@ core/unused_bots/**/assets
 .version*
 .cache_loader
 assets/arc**
+assets/version*
