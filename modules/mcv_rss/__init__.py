@@ -3,10 +3,10 @@ import traceback
 
 import ujson as json
 
-from core.elements import FetchTarget, IntervalTrigger
+from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.decorator import on_schedule
 from core.logger import Logger
-from core.utils import get_url, PrivateAssets
+from core.utils import get_url
 
 
 def getfileversions(path):

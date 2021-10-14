@@ -6,11 +6,10 @@ import time
 import psutil
 import ujson as json
 
-from core.elements import MessageSession, Command
+from core.elements import MessageSession, Command, PrivateAssets
 from core.loader import ModulesManager
 from core.decorator import on_command
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
-from core.utils import PrivateAssets
 from database import BotDBUtil
 
 

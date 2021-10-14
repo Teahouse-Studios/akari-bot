@@ -4,11 +4,11 @@ import traceback
 import os
 
 from config import Config
-from core.elements import FetchTarget, IntervalTrigger
+from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.decorator import on_startup, on_schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.utils import get_url, PrivateAssets
+from core.utils import get_url
 from database import BotDBUtil
 
 
