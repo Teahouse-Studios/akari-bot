@@ -1,11 +1,10 @@
 import re
-from typing import Union
 
 import ujson as json
 
 from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
-from core.loader.decorator import command, regex
+from core.decorator import command, regex
 from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo

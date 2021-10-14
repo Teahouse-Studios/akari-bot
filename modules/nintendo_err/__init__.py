@@ -2,7 +2,7 @@
 import discord
 
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core.decorator import command
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 

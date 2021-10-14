@@ -9,7 +9,7 @@ from modules.maimai.libraries.maimai_best_40 import generate
 
 
 from core.elements import Plain, Image as BImage, MessageSession
-from core.loader.decorator import command, regex as command_regex
+from core.decorator import command, regex as command_regex
 
 
 def song_txt(music: Music):

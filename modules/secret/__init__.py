@@ -2,7 +2,7 @@ import ujson as json
 
 from core.dirty_check import check
 from core.elements import FetchTarget
-from core.loader.decorator import command
+from core.decorator import command
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils import get_url

@@ -5,10 +5,10 @@ import os
 
 from config import Config
 from core.elements import FetchTarget, IntervalTrigger
-from core.loader.decorator import command, schedule
+from core.decorator import command, schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.utils import get_url, download_to_cache, PrivateAssets
+from core.utils import get_url, PrivateAssets
 from database import BotDBUtil
 
 

@@ -3,7 +3,7 @@ import re
 import ujson as json
 
 from core.elements import Plain, Image, MessageSession
-from core.loader.decorator import command
+from core.decorator import command
 from core.utils import get_url
 
 

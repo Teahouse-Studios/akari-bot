@@ -4,7 +4,7 @@ import traceback
 import ujson as json
 
 from core.elements import FetchTarget, IntervalTrigger
-from core.loader.decorator import schedule
+from core.decorator import schedule
 from core.logger import Logger
 from core.utils import get_url, PrivateAssets
 

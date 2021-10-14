@@ -2,14 +2,13 @@ import asyncio
 import os
 import sys
 import time
-from typing import List
 
 import psutil
 import ujson as json
 
 from core.elements import MessageSession, Command
 from core.loader import ModulesManager
-from core.loader.decorator import command
+from core.decorator import command
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from core.utils import PrivateAssets
 from database import BotDBUtil

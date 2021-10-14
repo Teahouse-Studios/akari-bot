@@ -1,5 +1,5 @@
 from core.elements import CronTrigger, FetchTarget
-from core.loader.decorator import schedule
+from core.decorator import schedule
 from core.logger import Logger
 from modules.weekly import get_weekly
 

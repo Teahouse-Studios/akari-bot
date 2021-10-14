@@ -1,7 +1,7 @@
 import re
 
 from core.elements import MessageSession
-from core.loader.decorator import command, regex
+from core.decorator import command, regex
 from .bugtracker import bugtracker_get
 
 

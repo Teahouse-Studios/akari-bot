@@ -1,5 +1,5 @@
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core.decorator import command
 from modules.utils.ab import ab
 from modules.utils.newbie import newbie
 from modules.utils.rc import rc

@@ -1,7 +1,7 @@
 import os
 
 from core.elements import MessageSession, Plain, Image
-from core.loader.decorator import command
+from core.decorator import command
 from .getb30 import getb30
 from .initialize import arcb30init
 
