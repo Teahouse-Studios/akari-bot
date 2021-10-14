@@ -91,7 +91,6 @@ class Schedule:
                  recommend_modules: Union[str, list, tuple] = None,
                  developers: Union[str, list, tuple] = None,
                  need_superuser: bool = False,
-                 need_admin: bool = False
                  ):
         self.function = function
         self.trigger = trigger
@@ -101,8 +100,26 @@ class Schedule:
         self.recommend_modules = recommend_modules
         self.developers = developers
         self.need_superuser = need_superuser
-        self.need_admin = need_admin
 
 
-__all__ = ["Command", "RegexCommand", "Option", "Schedule", "AndTrigger", "OrTrigger", "DateTrigger",
+class StartUp:
+    def __init__(self,
+                 function: Callable,
+                 bind_prefix: str,
+                 desc: str = None,
+                 alias: Union[str, list, tuple, dict] = None,
+                 recommend_modules: Union[str, list, tuple] = None,
+                 developers: Union[str, list, tuple] = None,
+                 need_superuser: bool = False,
+                 ):
+        self.function = function
+        self.bind_prefix = bind_prefix
+        self.desc = desc
+        self.alias = alias
+        self.recommend_modules = recommend_modules
+        self.developers = developers
+        self.need_superuser = need_superuser
+
+
+__all__ = ["Command", "RegexCommand", "Option", "Schedule", "StartUp", "AndTrigger", "OrTrigger", "DateTrigger",
            "CronTrigger", "IntervalTrigger"]

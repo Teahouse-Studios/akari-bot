@@ -4,7 +4,7 @@ import re
 import traceback
 from typing import Dict, Union
 
-from core.elements import Command, Option, Schedule, RegexCommand
+from core.elements import Command, Option, Schedule, RegexCommand, StartUp
 from core.logger import Logger
 
 err_prompt = []
@@ -126,7 +126,7 @@ class ModulesManager:
 
 
 load_modules()
-Modules: Union[Dict[str, Command], Dict[str, Option], Dict[str, Schedule], Dict[str, RegexCommand]] = ModulesManager.return_modules_list_as_dict()
+Modules: Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]] = ModulesManager.return_modules_list_as_dict()
 ModulesAliases: Dict[str, RegexCommand] = ModulesManager.return_modules_alias_map()
 ModulesRegex = ModulesManager.return_regex_modules()
 

@@ -1,14 +1,13 @@
 import re
+from typing import Union
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.elements import Command, RegexCommand, Option, Schedule
+from core.elements import Command, RegexCommand, Option, Schedule, StartUp
 from core.loader import ModulesManager
-
-from typing import Union
 
 
 def on_command(
@@ -40,6 +39,7 @@ def on_command(
     :param autorun: 将此命令设为自动启动类型，设为自动启动类型后将会在机器人运行时自动运行，同时禁用命令处理功能。
     :return: 此类型的模块。
     """
+
     def decorator(function):
         module = Command(function=function,
                          alias=alias,
@@ -60,17 +60,17 @@ def on_command(
 
 
 def on_regex(
-         bind_prefix: str,
-         pattern: str,
-         mode: str = "M",
-         flags: re.RegexFlag = 0,
-         recommend_modules: Union[str, list, tuple] = None,
-         alias: Union[str, list, tuple, dict] = None,
-         desc: str = None,
-         developers: Union[str, list, tuple] = None,
-         need_admin: bool = False,
-         is_base_function: bool = False,
-         need_superuser: bool = False):
+        bind_prefix: str,
+        pattern: str,
+        mode: str = "M",
+        flags: re.RegexFlag = 0,
+        recommend_modules: Union[str, list, tuple] = None,
+        alias: Union[str, list, tuple, dict] = None,
+        desc: str = None,
+        developers: Union[str, list, tuple] = None,
+        need_admin: bool = False,
+        is_base_function: bool = False,
+        need_superuser: bool = False):
     """
 
     :param bind_prefix: 绑定的命令前缀。
@@ -87,6 +87,7 @@ def on_regex(
     :param need_superuser: 将此命令设为机器人的超级管理员才可执行。
     :return: 此类型的模块。
     """
+
     def decorator(function):
         module = RegexCommand(function=function,
                               bind_prefix=bind_prefix,
@@ -127,6 +128,7 @@ def on_option(
     :param need_superuser: 将此命令设为机器人的超级管理员才可执行。
     :return: 此类型的模块。
     """
+
     def decorator(function):
         module = Option(bind_prefix=bind_prefix,
                         desc=desc,
@@ -149,7 +151,6 @@ def on_schedule(
         recommend_modules: Union[str, list, tuple] = None,
         developers: Union[str, list, tuple] = None,
         need_superuser: bool = False,
-        need_admin: bool = False
 ):
     """
 
@@ -159,10 +160,10 @@ def on_schedule(
     :param desc: 此命令的简介。
     :param recommend_modules: 推荐打开的其他模块。
     :param developers: 模块作者。
-    :param need_admin: 此命令是否需要群聊管理员权限。
     :param need_superuser: 将此命令设为机器人的超级管理员才可执行。
     :return: 此类型的模块。
     """
+
     def decorator(function):
         module = Schedule(function=function,
                           trigger=trigger,
@@ -171,8 +172,40 @@ def on_schedule(
                           alias=alias,
                           recommend_modules=recommend_modules,
                           developers=developers,
-                          need_superuser=need_superuser,
-                          need_admin=need_admin)
+                          need_superuser=need_superuser)
+        ModulesManager.add_module(module)
+        return module
+
+    return decorator
+
+
+def on_startup(
+        bind_prefix: str,
+        desc: str = None,
+        alias: Union[str, list, tuple, dict] = None,
+        recommend_modules: Union[str, list, tuple] = None,
+        developers: Union[str, list, tuple] = None,
+        need_superuser: bool = False,
+):
+    """
+
+    :param bind_prefix: 绑定的命令前缀。
+    :param alias: 此命令的别名。
+    :param desc: 此命令的简介。
+    :param recommend_modules: 推荐打开的其他模块。
+    :param developers: 模块作者。
+    :param need_superuser: 将此命令设为机器人的超级管理员才可执行。
+    :return: 此类型的模块。
+    """
+
+    def decorator(function):
+        module = StartUp(function=function,
+                         bind_prefix=bind_prefix,
+                         desc=desc,
+                         alias=alias,
+                         recommend_modules=recommend_modules,
+                         developers=developers,
+                         need_superuser=need_superuser)
         ModulesManager.add_module(module)
         return module
 

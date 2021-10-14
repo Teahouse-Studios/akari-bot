@@ -5,14 +5,14 @@ import os
 
 from config import Config
 from core.elements import FetchTarget, IntervalTrigger
-from core.decorator import on_command, on_schedule
+from core.decorator import on_startup, on_schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils import get_url, PrivateAssets
 from database import BotDBUtil
 
 
-@on_command('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'], autorun=True)
+@on_startup('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'])
 async def start_check_news(bot: FetchTarget):
     baseurl = 'https://www.minecraft.net'
     url = 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10'

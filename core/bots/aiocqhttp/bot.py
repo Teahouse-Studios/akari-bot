@@ -7,7 +7,7 @@ from core.bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from aiocqhttp import Event
 
-from core.elements import MsgInfo, Session, Command, Schedule, EnableDirtyWordCheck
+from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck
 from core.loader import Modules
 from core.parser.message import parser
 from core.scheduler import Scheduler
@@ -22,9 +22,9 @@ init()
 async def startup():
     gather_list = []
     for x in Modules:
-        if isinstance(Modules[x], Command) and Modules[x].autorun:
+        if isinstance(Modules[x], StartUp):
             gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
-        if isinstance(Modules[x], Schedule):
+        elif isinstance(Modules[x], Schedule):
             Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget])
     await asyncio.gather(*gather_list)
     Scheduler.start()
