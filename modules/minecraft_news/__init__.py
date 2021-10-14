@@ -5,7 +5,7 @@ import os
 
 from config import Config
 from core.elements import FetchTarget, IntervalTrigger
-from core.decorator import on_command, schedule
+from core.decorator import on_command, on_schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils import get_url, PrivateAssets
@@ -65,7 +65,7 @@ def getfileversions(path):
     return s
 
 
-@schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'], trigger=IntervalTrigger(seconds=300))
+@on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'], trigger=IntervalTrigger(seconds=300))
 async def feedback_news(bot: FetchTarget):
     sections = [{'name': 'beta', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
                 {'name': 'article', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5'}]

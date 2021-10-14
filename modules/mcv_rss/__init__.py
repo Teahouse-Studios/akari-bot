@@ -4,7 +4,7 @@ import traceback
 import ujson as json
 
 from core.elements import FetchTarget, IntervalTrigger
-from core.decorator import schedule
+from core.decorator import on_schedule
 from core.logger import Logger
 from core.utils import get_url, PrivateAssets
 
@@ -19,7 +19,7 @@ def getfileversions(path):
     return s
 
 
-@schedule('mcv_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcv_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
 async def mcv_rss(bot: FetchTarget):
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     try:
@@ -45,7 +45,7 @@ async def mcv_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
 async def mcv_jira_rss(bot: FetchTarget):
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Java.txt')
@@ -69,7 +69,7 @@ async def mcv_jira_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@schedule('mcbv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcbv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
 async def mcbv_jira_rss(bot: FetchTarget):
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Bedrock.txt')
@@ -93,7 +93,7 @@ async def mcbv_jira_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@schedule('mcdv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcdv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'], trigger=IntervalTrigger(seconds=60))
 async def mcdv_jira_rss(bot: FetchTarget):
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Minecraft Dungeons.txt')

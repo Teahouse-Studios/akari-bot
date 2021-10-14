@@ -107,7 +107,7 @@ def on_regex(
     return decorator
 
 
-def option(
+def on_option(
         bind_prefix: str,
         desc: str = None,
         alias: Union[str, list, tuple, dict] = None,
@@ -141,7 +141,7 @@ def option(
     return decorator
 
 
-def schedule(
+def on_schedule(
         bind_prefix: str,
         trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
         desc: str = None,
