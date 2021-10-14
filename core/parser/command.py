@@ -45,6 +45,7 @@ class CommandParser:
             self.args = 'Usage:\n  ' + '\n  '.join(y for y in arglst)
         else:
             raise InvalidHelpDocTypeError
+        self.args_raw = args
 
     def return_formatted_help_doc(self) -> str:
         args_raw = self.args_raw
