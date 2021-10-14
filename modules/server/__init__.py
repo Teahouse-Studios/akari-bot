@@ -2,15 +2,15 @@ import asyncio
 
 from core.dirty_check import check
 from core.elements import MessageSession
-from core.decorator import command
+from core.decorator import on_command
 from .server import server
 
 
-@command('server', alias='s', help_doc=('~server <ServerIP>:<Port> {获取Minecraft Java/基岩版服务器motd。}',
+@on_command('server', alias='s', help_doc=('~server <ServerIP>:<Port> {获取Minecraft Java/基岩版服务器motd。}',
                                         '~server <ServerIP>:<Port> [-r] {获取Minecraft Java/基岩版服务器motd。（原始信息）}',
                                         '~server <ServerIP>:<Port> [-p] {获取Minecraft Java/基岩版服务器motd。（包括玩家信息）}'),
-         developers=['_LittleC_', 'OasisAkari'],
-         allowed_none=False)
+            developers=['_LittleC_', 'OasisAkari'],
+            allowed_none=False)
 async def main(msg: MessageSession):
     raw = False
     showplayer = False

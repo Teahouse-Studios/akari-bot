@@ -1,12 +1,12 @@
 import os
 
 from core.elements import MessageSession, Plain, Image
-from core.decorator import command
+from core.decorator import on_command
 from .getb30 import getb30
 from .initialize import arcb30init
 
 
-@command('b30', help_doc='~b30 <friendcode>', developers=['OasisAkari'])
+@on_command('b30', help_doc='~b30 <friendcode>', developers=['OasisAkari'])
 async def main(msg: MessageSession):
     assets = os.path.abspath('assets/arcaea')
     friendcode = msg.parsed_msg['<friendcode>']

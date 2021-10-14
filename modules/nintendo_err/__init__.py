@@ -2,7 +2,7 @@
 import discord
 
 from core.elements import MessageSession
-from core.decorator import command
+from core.decorator import on_command
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
@@ -295,7 +295,7 @@ invalid for the Wii U.')
             await ctx.send(kwargs, 'This isn\'t a hexadecimal value!')
 
 
-@command('err', help_doc='~err <errcode> {解析任天堂系列主机的报错码并给出原因。}', developers=['OasisAkari', 'kurisu'], allowed_none=False)
+@on_command('err', help_doc='~err <errcode> {解析任天堂系列主机的报错码并给出原因。}', developers=['OasisAkari', 'kurisu'], allowed_none=False)
 async def result(msg: MessageSession):
     """
     Displays information on game console result codes, with a fancy embed.

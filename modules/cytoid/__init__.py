@@ -1,14 +1,14 @@
 from core.elements import MessageSession, Image
-from core.decorator import command
+from core.decorator import on_command
 from database import BotDBUtil
 from .profile import cytoid_profile
 from .rating import get_rating
 
 
-@command('cytoid', help_doc=('~cytoid (b30|r30) <UserID> {查询一个用户的b30/r30记录}',
+@on_command('cytoid', help_doc=('~cytoid (b30|r30) <UserID> {查询一个用户的b30/r30记录}',
                              '~cytoid profile <UserID> {查询一个用户的基本信息}'),
-         developers=['OasisAkari'],
-         allowed_none=False)
+            developers=['OasisAkari'],
+            allowed_none=False)
 async def cytoid(msg: MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)

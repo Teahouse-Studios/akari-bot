@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 from core.elements import Image as Img, MessageSession
-from core.decorator import command
+from core.decorator import on_command
 from core.utils import cache_name
 
 
@@ -28,9 +28,9 @@ def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
     draw.text((x, y), text, font=font, fill=fillcolor)
 
 
-@command('ptt', help_doc='~ptt <potential> {生成一张Arcaea Potential图片}',
-         developers=['OasisAkari'],
-         allowed_none=False)
+@on_command('ptt', help_doc='~ptt <potential> {生成一张Arcaea Potential图片}',
+            developers=['OasisAkari'],
+            allowed_none=False)
 async def pttimg(msg: MessageSession):
     ptt = msg.parsed_msg['<potential>']
     # ptt

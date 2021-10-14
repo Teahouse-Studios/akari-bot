@@ -11,7 +11,7 @@ from core.loader import ModulesManager
 from typing import Union
 
 
-def command(
+def on_command(
         bind_prefix: str,
         alias: Union[str, list, tuple, dict] = None,
         help_doc: Union[str, list, tuple] = None,

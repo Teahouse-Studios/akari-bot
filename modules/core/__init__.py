@@ -8,20 +8,20 @@ import ujson as json
 
 from core.elements import MessageSession, Command
 from core.loader import ModulesManager
-from core.decorator import command
+from core.decorator import on_command
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from core.utils import PrivateAssets
 from database import BotDBUtil
 
 
-@command('module',
-         is_base_function=True,
-         need_admin=True,
-         help_doc=('~module enable (<module>...|all) {开启一个/多个或所有模块}',
+@on_command('module',
+            is_base_function=True,
+            need_admin=True,
+            help_doc=('~module enable (<module>...|all) {开启一个/多个或所有模块}',
                    '~module disable (<module>...|all) {关闭一个/多个或所有模块}'),
-         alias={'enable': 'module enable', 'disable': 'module disable'},
-         developers=['OasisAkari'], allowed_none=False
-         )
+            alias={'enable': 'module enable', 'disable': 'module disable'},
+            developers=['OasisAkari'], allowed_none=False
+            )
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules = ModulesManager.return_modules_list_as_dict()
@@ -101,12 +101,12 @@ async def config_modules(msg: MessageSession):
                 await msg.sendMessage('\n'.join(msglist))
 
 
-@command('help',
-         is_base_function=True,
-         help_doc=('~help {查看所有可用模块}',
+@on_command('help',
+            is_base_function=True,
+            help_doc=('~help {查看所有可用模块}',
                    '~help <module> {查看一个模块的详细信息}'),
-         developers=['OasisAkari', 'Dianliang233'],
-         )
+            developers=['OasisAkari', 'Dianliang233'],
+            )
 async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     developers = ModulesManager.return_modules_developers_map()
@@ -168,11 +168,11 @@ async def bot_help(msg: MessageSession):
         await send.delete()
 
 
-@command('modules',
-         is_base_function=True,
-         help_doc='~modules {查看所有可用模块}',
-         developers=['OasisAkari']
-         )
+@on_command('modules',
+            is_base_function=True,
+            help_doc='~modules {查看所有可用模块}',
+            developers=['OasisAkari']
+            )
 async def modules_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     help_msg = ['当前可用的模块有：']
@@ -192,11 +192,11 @@ async def modules_help(msg: MessageSession):
     await send.delete()
 
 
-@command('version',
-         is_base_function=True,
-         help_doc='~version {查看机器人的版本号}',
-         developers=['OasisAkari', 'Dianliang233']
-         )
+@on_command('version',
+            is_base_function=True,
+            help_doc='~version {查看机器人的版本号}',
+            developers=['OasisAkari', 'Dianliang233']
+            )
 async def bot_version(msg: MessageSession):
     version = os.path.abspath(PrivateAssets.path + '/version')
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
@@ -207,11 +207,11 @@ async def bot_version(msg: MessageSession):
     open_version.close()
 
 
-@command('ping',
-         is_base_function=True,
-         help_doc='~ping {获取机器人信息}',
-         developers=['OasisAkari']
-         )
+@on_command('ping',
+            is_base_function=True,
+            help_doc='~ping {获取机器人信息}',
+            developers=['OasisAkari']
+            )
 async def ping(msg: MessageSession):
     checkpermisson = msg.checkSuperUser()
     result = "Pong!"
@@ -247,12 +247,12 @@ async def ping(msg: MessageSession):
     await msg.sendMessage(result)
 
 
-@command('admin',
-         is_base_function=True,
-         need_admin=True,
-         help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}'),
-         developers=['OasisAkari'], allowed_none=False
-         )
+@on_command('admin',
+            is_base_function=True,
+            need_admin=True,
+            help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}'),
+            developers=['OasisAkari'], allowed_none=False
+            )
 async def config_gu(msg: MessageSession):
     if msg.parsed_msg['add']:
         user = msg.parsed_msg['<UserID>']
@@ -266,7 +266,7 @@ async def config_gu(msg: MessageSession):
                 await msg.sendMessage("成功")
 
 
-@command('add_su', developers=['OasisAkari'], need_superuser=True, help_doc='add_su <user>')
+@on_command('add_su', developers=['OasisAkari'], need_superuser=True, help_doc='add_su <user>')
 async def add_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     print(message.parsed_msg)
@@ -275,7 +275,7 @@ async def add_su(message: MessageSession):
             await message.sendMessage('成功')
 
 
-@command('del_su', developers=['OasisAkari'], need_superuser=True, help_doc='del_su <user>')
+@on_command('del_su', developers=['OasisAkari'], need_superuser=True, help_doc='del_su <user>')
 async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
@@ -284,13 +284,13 @@ async def del_su(message: MessageSession):
 
 
 """
-@command('set_modules', need_superuser=True, help_doc='set_modules <>')
+@on_command('set_modules', need_superuser=True, help_doc='set_modules <>')
 async def set_modules(display_msg: dict):
     ...
 """
 
 
-@command('restart', developers=['OasisAkari'], need_superuser=True)
+@on_command('restart', developers=['OasisAkari'], need_superuser=True)
 async def restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
@@ -304,7 +304,7 @@ async def restart_bot(msg: MessageSession):
         os.execl(python, python, *sys.argv)
 
 
-@command('update', developers=['OasisAkari'], need_superuser=True)
+@on_command('update', developers=['OasisAkari'], need_superuser=True)
 async def update_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
@@ -313,7 +313,7 @@ async def update_bot(msg: MessageSession):
         await msg.sendMessage(result.read()[:-1])
 
 
-@command('update&restart', developers=['OasisAkari'], need_superuser=True)
+@on_command('update&restart', developers=['OasisAkari'], need_superuser=True)
 async def update_and_restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
@@ -328,6 +328,6 @@ async def update_and_restart_bot(msg: MessageSession):
         os.execl(python, python, *sys.argv)
 
 
-@command('echo', developers=['OasisAkari'], need_superuser=True, help_doc='echo <display_msg>')
+@on_command('echo', developers=['OasisAkari'], need_superuser=True, help_doc='echo <display_msg>')
 async def echo_msg(msg: MessageSession):
     await msg.sendMessage(msg.parsed_msg['<display_msg>'])

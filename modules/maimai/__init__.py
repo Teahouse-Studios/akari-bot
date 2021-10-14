@@ -9,7 +9,7 @@ from modules.maimai.libraries.maimai_best_40 import generate
 
 
 from core.elements import Plain, Image as BImage, MessageSession
-from core.decorator import command, regex as command_regex
+from core.decorator import on_command, regex as command_regex
 
 
 def song_txt(music: Music):
@@ -31,8 +31,8 @@ def inner_level_q(ds1, ds2=None):
     return result_set
 
 
-@command('maimai_inner_level', alias=['定数查歌'],
-         help_doc=['~maimai_inner_level <定数>',
+@on_command('maimai_inner_level', alias=['定数查歌'],
+            help_doc=['~maimai_inner_level <定数>',
                    '~maimai_inner_level <定数下限> <定数上限>'])
 async def _(msg: MessageSession):
     if msg.parsed_msg['<定数>'] is not None:
@@ -148,7 +148,7 @@ BREAK: {chart['notes'][4]}
 wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练手法', '打旧框', '干饭', '抓绝赞', '收歌']
 
 
-@command('maimai_today', alias=['今日舞萌', '今日mai'], desc='查看今天的舞萌运势')
+@on_command('maimai_today', alias=['今日舞萌', '今日mai'], desc='查看今天的舞萌运势')
 async def _(msg: MessageSession):
     qq = int(msg.session.sender)
     h = hash(qq)
@@ -194,7 +194,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f"您要找的可能是以下歌曲中的其中一首：\n{ s }")
 
 
-@command('maimai_scoreline', alias='分数线', help_doc=('~maimai_scoreline <难度+歌曲id> <分数线>', '~maimai_scoreline 帮助'))
+@on_command('maimai_scoreline', alias='分数线', help_doc=('~maimai_scoreline <难度+歌曲id> <分数线>', '~maimai_scoreline 帮助'))
 async def _(msg: MessageSession):
     r = "([绿黄红紫白])(id)?([0-9]+)"
     arg1 = msg.parsed_msg['<难度+歌曲id>']
@@ -241,7 +241,7 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
             await msg.sendMessage("格式错误，输入“分数线 帮助”以查看帮助信息")
 
 
-@command('maimai_b40', help_doc='~maimai_b40 <username>')
+@on_command('maimai_b40', help_doc='~maimai_b40 <username>')
 async def _(msg: MessageSession):
     username = msg.parsed_msg['<username>']
     if username == "":

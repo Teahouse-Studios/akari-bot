@@ -1,12 +1,12 @@
 import re
 
 from core.elements import MessageSession
-from core.decorator import command, regex
+from core.decorator import on_command, regex
 from .bugtracker import bugtracker_get
 
 
-@command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}',
-         developers=['OasisAkari'], allowed_none=False)
+@on_command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}',
+            developers=['OasisAkari'], allowed_none=False)
 async def bugtracker(msg: MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:

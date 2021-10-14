@@ -3,7 +3,7 @@ import re
 import ujson as json
 
 from core.elements import Plain, Image, MessageSession
-from core.decorator import command
+from core.decorator import on_command
 from core.utils import get_url
 
 
@@ -28,7 +28,7 @@ async def get_weekly():
     return msg_list
 
 
-@command('weekly', help_doc=('~weekly {获取中文 Minecraft Wiki 的每周页面}'), developers=['Dianliang233'])
+@on_command('weekly', help_doc=('~weekly {获取中文 Minecraft Wiki 的每周页面}'), developers=['Dianliang233'])
 async def weekly(msg: MessageSession):
     weekly = await get_weekly()
     await msg.sendMessage(weekly)

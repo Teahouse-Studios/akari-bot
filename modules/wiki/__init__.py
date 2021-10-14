@@ -4,7 +4,7 @@ import ujson as json
 
 from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
-from core.decorator import command, regex
+from core.decorator import on_command, regex
 from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
@@ -12,7 +12,7 @@ from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
 
 
-@command('wiki', help_doc=('~wiki <PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
+@on_command('wiki', help_doc=('~wiki <PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
                            '~wiki set <WikiUrl> {设置起始查询Wiki}',
                            '~wiki iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}',
                            '~wiki iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}',
@@ -21,10 +21,10 @@ from .getinfobox import get_infobox_pic
                            '~wiki headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
                            '~wiki headers reset {重置headers}',
                            '~wiki headers show {展示当前设置的headers}'),
-         alias={'wiki_start_site': 'wiki set'},
-         recommend_modules='wiki_inline',
-         developers=['OasisAkari'],
-         allowed_none=False)
+            alias={'wiki_start_site': 'wiki set'},
+            recommend_modules='wiki_inline',
+            developers=['OasisAkari'],
+            allowed_none=False)
 async def wiki_wrapper(msg: MessageSession):
     if msg.parsed_msg['set'] and not msg.parsed_msg['headers'] and not msg.parsed_msg['iw']:
         await set_start_wiki(msg)
