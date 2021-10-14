@@ -4,7 +4,7 @@ import ujson as json
 
 from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
-from core.decorator import on_command, regex
+from core.decorator import on_command, on_regex
 from core.utils import download_to_cache
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
@@ -107,9 +107,9 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@regex('wiki_inline', pattern=r'\[\[.*?]]|{{.*?}}', mode='M',
-       desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
-       alias='wiki_regex', developers=['OasisAkari'])
+@on_regex('wiki_inline', pattern=r'\[\[.*?]]|{{.*?}}', mode='M',
+          desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
+          alias='wiki_regex', developers=['OasisAkari'])
 async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 

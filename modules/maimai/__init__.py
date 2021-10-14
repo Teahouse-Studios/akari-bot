@@ -9,7 +9,7 @@ from modules.maimai.libraries.maimai_best_40 import generate
 
 
 from core.elements import Plain, Image as BImage, MessageSession
-from core.decorator import on_command, regex as command_regex
+from core.decorator import on_command, on_regex
 
 
 def song_txt(music: Music):
@@ -47,7 +47,7 @@ async def _(msg: MessageSession):
     await msg.sendMessage(s.strip())
 
 
-@command_regex('maimai_random_music_regex1', pattern=r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)",
+@on_regex('maimai_random_music_regex1', pattern=r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)",
                desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲')
 async def _(msg: MessageSession):
     res = msg.matched_msg
@@ -74,12 +74,12 @@ async def _(msg: MessageSession):
             await msg.sendMessage("随机命令错误，请检查语法")
 
 
-@command_regex('maimai_random_music_regex2', pattern=r".*maimai.*什么", desc='XXXmaimaiXXX什么 随机一首歌')
+@on_regex('maimai_random_music_regex2', pattern=r".*maimai.*什么", desc='XXXmaimaiXXX什么 随机一首歌')
 async def _(msg: MessageSession):
     await msg.sendMessage(song_txt(total_list.random()))
 
 
-@command_regex('maimai_search_music_regex', pattern=r"查歌(.+)", desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
+@on_regex('maimai_search_music_regex', pattern=r"查歌(.+)", desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
 async def _(msg: MessageSession):
     name = msg.matched_msg.groups()[0].strip()
     if name == "":
@@ -96,7 +96,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f"结果过多（{len(res)} 条），请缩小查询范围。")
 
 
-@command_regex('maimai_query_chart_regex', pattern=r"([绿黄红紫白]?)id([0-9]+)",
+@on_regex('maimai_query_chart_regex', pattern=r"([绿黄红紫白]?)id([0-9]+)",
                desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
@@ -179,7 +179,7 @@ for t in tmp:
             music_aliases[arr[i].lower()].append(arr[0])
 
 
-@command_regex('maimai_find_song_regex', pattern=r"(.+)是什么歌", desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
+@on_regex('maimai_find_song_regex', pattern=r"(.+)是什么歌", desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
 async def _(msg: MessageSession):
     name = msg.matched_msg.groups()[0].strip().lower()
     if name not in music_aliases:

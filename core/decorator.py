@@ -59,7 +59,7 @@ def on_command(
     return decorator
 
 
-def regex(
+def on_regex(
          bind_prefix: str,
          pattern: str,
          mode: str = "M",

@@ -1,7 +1,7 @@
 import re
 
 from core.elements import MessageSession
-from core.decorator import on_command, regex
+from core.decorator import on_command, on_regex
 from .bugtracker import bugtracker_get
 
 
@@ -16,9 +16,9 @@ async def bugtracker(msg: MessageSession):
             await msg.sendMessage(result)
 
 
-@regex('bug_regex', pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M',
-       desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
-       developers=['OasisAkari'])
+@on_regex('bug_regex', pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M',
+          desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
+          developers=['OasisAkari'])
 async def regex_bugtracker(msg: MessageSession):
     result = await bugtracker_get(msg.matched_msg.group(1) + '-' + msg.matched_msg.group(2))
     return await msg.sendMessage(result)
