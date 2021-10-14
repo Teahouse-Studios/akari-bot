@@ -179,8 +179,11 @@ async def modules_help(msg: MessageSession):
     help_msg = ['当前可用的模块有：']
     module = []
     for x in module_list:
-        if not module_list[x].is_base_function and not module_list[x].need_superuser:
-            module.append(module_list[x].bind_prefix)
+        if x[0] == '_':
+            continue
+        if isinstance(module_list[x], Command) and module_list[x].is_base_function and module_list[x].need_superuser:
+            continue
+        module.append(module_list[x].bind_prefix)
     help_msg.append(' | '.join(module))
     help_msg.append(
         '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
