@@ -7,12 +7,12 @@ import discord
 from config import Config
 from core.bots.discord.client import client
 from core.bots.discord.message import MessageSession, FetchTarget
-from core.elements import MsgInfo, Session, Schedule, StartUp
+from core.elements import MsgInfo, Session, Schedule, StartUp, PrivateAssets
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import parser
 from core.scheduler import Scheduler
-from core.utils import PrivateAssets, init, load_prompt
+from core.utils import init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
