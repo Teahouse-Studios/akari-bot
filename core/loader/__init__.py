@@ -4,9 +4,8 @@ import re
 import traceback
 from typing import Dict, Union, List, Set
 
-from core.elements import Command, Option, Schedule, RegexCommand, StartUp
+from core.elements import Command, Option, Schedule, RegexCommand, StartUp, PrivateAssets
 from core.logger import Logger
-from core.utils import PrivateAssets
 
 load_dir_path = os.path.abspath('./modules/')
 

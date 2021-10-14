@@ -8,20 +8,9 @@ import filetype as ft
 import ujson as json
 from aiohttp_retry import ExponentialRetry, RetryClient
 
-from core.elements import FetchTarget
+from core.elements import FetchTarget, PrivateAssets
 from core.logger import Logger
 from core.loader import load_modules
-
-
-class PrivateAssets:
-    path = os.path.abspath('.')
-
-    @staticmethod
-    def set(path):
-        path = os.path.abspath(path)
-        if not os.path.exists(path):
-            os.mkdir(path)
-        PrivateAssets.path = path
 
 
 def init():
