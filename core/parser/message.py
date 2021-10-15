@@ -93,8 +93,11 @@ async def parser(msg: MessageSession):
             msg.matched_msg = False
             if regex_module.mode.upper() in ['M', 'MATCH']:
                 msg.matched_msg = re.match(regex_module.pattern, display, flags=regex_module.flags)
+                if msg.matched_msg is not None:
+                    async with msg.Typing(msg):
+                        await regex_module.function(msg)  # 将msg传入下游模块
             elif regex_module.mode.upper() in ['A', 'FINDALL']:
                 msg.matched_msg = re.findall(regex_module.pattern, display, flags=regex_module.flags)
-            if msg.matched_msg or msg.matched_msg is not None:
-                async with msg.Typing(msg):
-                    await regex_module.function(msg)  # 将msg传入下游模块
+                if msg.matched_msg:
+                    async with msg.Typing(msg):
+                        await regex_module.function(msg)  # 将msg传入下游模块
