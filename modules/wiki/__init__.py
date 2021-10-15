@@ -21,7 +21,7 @@ from .getinfobox import get_infobox_pic
                               'headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
                               'headers reset {重置headers}',
                               'headers show {展示当前设置的headers}'),
-            alias={'wiki_start_site': 'wiki set'},
+            alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
             recommend_modules='wiki_inline',
             developers=['OasisAkari'],
             allowed_none=False)
