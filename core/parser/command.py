@@ -26,7 +26,7 @@ class CommandParser:
         if isinstance(args, Command):
             if args.help_doc is not None:
                 args = args.help_doc
-            if args.desc is not None:
+            elif args.desc is not None:
                 args = args.desc
                 self.desc = True
         if isinstance(args, (Option, Schedule, StartUp, RegexCommand)):
