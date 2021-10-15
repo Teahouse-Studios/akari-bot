@@ -5,7 +5,7 @@ from core.decorator import on_command, on_regex
 from .bugtracker import bugtracker_get
 
 
-@on_command('bug', alias='b', help_doc='~bug <MojiraID> {查询Mojira上的漏洞编号内容}',
+@on_command('bug', alias='b', help_doc='<MojiraID> {查询Mojira上的漏洞编号内容}',
             developers=['OasisAkari'], allowed_none=False)
 async def bugtracker(msg: MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']

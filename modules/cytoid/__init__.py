@@ -5,8 +5,8 @@ from .profile import cytoid_profile
 from .rating import get_rating
 
 
-@on_command('cytoid', help_doc=('~cytoid (b30|r30) <UserID> {查询一个用户的b30/r30记录}',
-                             '~cytoid profile <UserID> {查询一个用户的基本信息}'),
+@on_command('cytoid', help_doc=('(b30|r30) <UserID> {查询一个用户的b30/r30记录}',
+                             'profile <UserID> {查询一个用户的基本信息}'),
             developers=['OasisAkari'],
             allowed_none=False)
 async def cytoid(msg: MessageSession):

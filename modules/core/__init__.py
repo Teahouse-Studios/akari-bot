@@ -16,8 +16,8 @@ from database import BotDBUtil
 @on_command('module',
             is_base_function=True,
             need_admin=True,
-            help_doc=('~module enable (<module>...|all) {开启一个/多个或所有模块}',
-                   '~module disable (<module>...|all) {关闭一个/多个或所有模块}'),
+            help_doc=('enable (<module>...|all) {开启一个/多个或所有模块}',
+                      'disable (<module>...|all) {关闭一个/多个或所有模块}'),
             alias={'enable': 'module enable', 'disable': 'module disable'},
             developers=['OasisAkari'], allowed_none=False
             )
@@ -102,15 +102,14 @@ async def config_modules(msg: MessageSession):
 
 @on_command('help',
             is_base_function=True,
-            help_doc=('~help {查看所有可用模块}',
-                   '~help <module> {查看一个模块的详细信息}'),
+            help_doc=('{查看所有可用模块}',
+                      '<module> {查看一个模块的详细信息}'),
             developers=['OasisAkari', 'Dianliang233'],
             )
 async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
-    modules_alias = ModulesManager.return_modules_alias_list()
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
@@ -122,17 +121,13 @@ async def bot_help(msg: MessageSession):
                 msgs.append(help_)
         if msgs:
             doc = '\n'.join(msgs)
-            if help_name in modules_alias:
-                malias = []
-                for a in modules_alias[help_name]:
-                    if isinstance(modules_alias[help_name][a], dict):
-                        malias.append(f'{a} -> {modules_alias[help_name][a]}')
-                    elif isinstance(modules_alias[help_name][a], str):
-                        malias.append(f'{a} -> {help_name}')
-                    else:
-                        malias.append('<数据类型错误，请联系开发者解决>')
-                if malias:
-                    doc += '\n命令别名：\n' + '\n'.join(malias)
+            module_alias = ModulesManager.return_module_alias(help_name)
+            malias = []
+            for a in module_alias:
+                for b in module_alias[a]:
+                    malias.append(f'{b} -> {a}')
+            if malias:
+                doc += '\n命令别名：\n' + '\n'.join(malias)
             if help_name in developers:
                 dev_list = developers[help_name]
                 if isinstance(dev_list, (list, tuple)):
@@ -169,7 +164,7 @@ async def bot_help(msg: MessageSession):
 
 @on_command('modules',
             is_base_function=True,
-            help_doc='~modules {查看所有可用模块}',
+            desc='查看所有可用模块',
             developers=['OasisAkari']
             )
 async def modules_help(msg: MessageSession):
@@ -193,7 +188,7 @@ async def modules_help(msg: MessageSession):
 
 @on_command('version',
             is_base_function=True,
-            help_doc='~version {查看机器人的版本号}',
+            desc='查看机器人的版本号',
             developers=['OasisAkari', 'Dianliang233']
             )
 async def bot_version(msg: MessageSession):
@@ -208,7 +203,7 @@ async def bot_version(msg: MessageSession):
 
 @on_command('ping',
             is_base_function=True,
-            help_doc='~ping {获取机器人信息}',
+            desc='获取机器人状态',
             developers=['OasisAkari']
             )
 async def ping(msg: MessageSession):
@@ -249,7 +244,7 @@ async def ping(msg: MessageSession):
 @on_command('admin',
             is_base_function=True,
             need_admin=True,
-            help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}'),
+            help_doc=('add <UserID> {设置成员为机器人管理员}', 'del <UserID> {取消成员的机器人管理员}'),
             developers=['OasisAkari'], allowed_none=False
             )
 async def config_gu(msg: MessageSession):
@@ -265,7 +260,7 @@ async def config_gu(msg: MessageSession):
                 await msg.sendMessage("成功")
 
 
-@on_command('add_su', developers=['OasisAkari'], need_superuser=True, help_doc='add_su <user>')
+@on_command('add_su', developers=['OasisAkari'], need_superuser=True, help_doc='<user>')
 async def add_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     print(message.parsed_msg)
@@ -274,7 +269,7 @@ async def add_su(message: MessageSession):
             await message.sendMessage('成功')
 
 
-@on_command('del_su', developers=['OasisAkari'], need_superuser=True, help_doc='del_su <user>')
+@on_command('del_su', developers=['OasisAkari'], need_superuser=True, help_doc='<user>')
 async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
@@ -327,6 +322,6 @@ async def update_and_restart_bot(msg: MessageSession):
         os.execl(python, python, *sys.argv)
 
 
-@on_command('echo', developers=['OasisAkari'], need_superuser=True, help_doc='echo <display_msg>')
+@on_command('echo', developers=['OasisAkari'], need_superuser=True, help_doc='<display_msg>')
 async def echo_msg(msg: MessageSession):
     await msg.sendMessage(msg.parsed_msg['<display_msg>'])

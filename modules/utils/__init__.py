@@ -13,7 +13,7 @@ def get_start_wiki(msg: MessageSession):
     return start_wiki
 
 
-@on_command('rc', help_doc='~rc {获取默认wiki的最近更改}', developers=['OasisAkari'])
+@on_command('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])
 async def rc_loader(msg: MessageSession):
     start_wiki = get_start_wiki(msg)
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
@@ -24,7 +24,7 @@ async def rc_loader(msg: MessageSession):
         await msg.sendMessage(res)
 
 
-@on_command('ab', help_doc='~ab {获取默认wiki的最近滥用日志}', developers=['OasisAkari'])
+@on_command('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
 async def ab_loader(msg: MessageSession):
     start_wiki = get_start_wiki(msg)
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
@@ -35,7 +35,7 @@ async def ab_loader(msg: MessageSession):
         await msg.sendMessage(res)
 
 
-@on_command('newbie', help_doc='~newbie {获取默认wiki的新用户}', developers=['OasisAkari'])
+@on_command('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
 async def newbie_loader(msg: MessageSession):
     res = await newbie(get_start_wiki(msg))
     await msg.sendMessage(res)

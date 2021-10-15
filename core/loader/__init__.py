@@ -84,27 +84,44 @@ class ModulesManager:
         for x in ModulesManager._modules_list:
             if isinstance(x.alias, str):
                 alias_map.update({x.alias: x.bind_prefix})
+            if isinstance(x.alias, dict):
+                x.alias = [x.alias]
             if isinstance(x.alias, (tuple, list)):
                 for y in x.alias:
-                    alias_map.update({y: x.bind_prefix})
-            if isinstance(x.alias, dict):
-                alias_map.update(x.alias)
+                    if isinstance(y, dict):
+                        for z in y:
+                            alias_map.update({z: y[z]})
+                    elif isinstance(y, str):
+                        alias_map.update({y: x.bind_prefix})
+                    else:
+                        raise ValueError(f'Unknown alias elements type: {y}')
         return alias_map
 
     @staticmethod
-    def return_modules_alias_list() -> Dict[str, list]:
+    def return_module_alias(module_name) -> Dict[str, list]:
         """
-        返回每个模块的别名列表
+        返回此模块的别名列表
         """
         alias_list = {}
-        for x in ModulesManager._modules_list:
-            if x.bind_prefix not in alias_list:
-                alias_list.update({x.bind_prefix: []})
-            if isinstance(x.alias, (str, dict)):
-                alias_list[x.bind_prefix].append(x.alias)
-            if isinstance(x.alias, (tuple, list)):
-                for y in x.alias:
-                    alias_list[x.bind_prefix].append(y)
+        module = ModulesManager.return_modules_list_as_dict()[module_name]
+        if module.alias is None:
+            return alias_list
+        for x in module.alias:
+            if module.bind_prefix not in alias_list:
+                alias_list.update({module.bind_prefix: []})
+            if isinstance(x, str):
+                alias_list[module.bind_prefix].append(x)
+            if isinstance(x, dict):
+                x = [x]
+            if isinstance(x, (tuple, list)):
+                for y in x:
+                    if isinstance(y, str):
+                        alias_list[module.bind_prefix].append(x)
+                    if isinstance(y, dict):
+                        for z in y:
+                            if z not in alias_list:
+                                alias_list.update({z: []})
+                            alias_list[z].append(y[z])
         return alias_list
 
     @staticmethod

@@ -4,10 +4,10 @@ from modules.github import repo, user, search
 
 
 @on_command('github', alias=['gh'], help_doc=(
-        '~github repo <name> {获取 GitHub 仓库信息}',
-        '~github user <name> {获取 GitHub 用户或组织信息}',
-        '~github org <name> {~github user 的别名}',
-        '~github search <query> {搜索 GitHub 上的仓库}'),
+        'repo <name> {获取 GitHub 仓库信息}',
+        'user <name> {获取 GitHub 用户或组织信息}',
+        'org <name> {~github user 的别名}',
+        'search <query> {搜索 GitHub 上的仓库}'),
             developers=['Dianliang233'],
             allowed_none=False)
 async def github(msg: MessageSession):

@@ -1,7 +1,7 @@
 import re
 import traceback
 
-from core.elements import MessageSession, Command, Option, Schedule, command_prefix
+from core.elements import MessageSession, Command, Option, Schedule, StartUp, command_prefix
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
@@ -54,7 +54,7 @@ async def parser(msg: MessageSession):
                     msg.trigger_msg = command
                 if command_first_word in Modules:  # 检查触发命令是否在模块列表中
                     module = Modules[command_first_word]
-                    if isinstance(module, (Option, Schedule)) or module.autorun:
+                    if isinstance(module, (Option, Schedule, StartUp)):
                         if module.desc is not None:
                             return await msg.sendMessage(module.desc)
                         return
@@ -68,10 +68,9 @@ async def parser(msg: MessageSession):
                         if module.need_admin:
                             if not await msg.checkPermission():
                                 return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
-                        help_doc = module.help_doc
-                        if help_doc is not None:
+                        if module.help_doc is not None:
                             try:
-                                command_parser = CommandParser(help_doc)
+                                command_parser = CommandParser(module)
                                 try:
                                     msg.parsed_msg = command_parser.parse(command)
                                     if msg.parsed_msg is None and not Modules[command_first_word].allowed_none:

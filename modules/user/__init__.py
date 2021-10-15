@@ -6,7 +6,7 @@ from modules.wiki.dbutils import WikiTargetInfo
 from .userlib import GetUser
 
 
-@on_command('user', alias=['u'], help_doc='~user <username> [-r|-p] {获取一个MediaWiki用户的信息。（-r - 获取详细信息。-p - 生成一张图片。）}',
+@on_command('user', alias=['u'], help_doc='<username> [-r|-p] {获取一个MediaWiki用户的信息。（-r - 获取详细信息。-p - 生成一张图片。）}',
             developers=['OasisAkari'],
             allowed_none=False)
 async def user(msg: MessageSession):

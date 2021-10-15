@@ -12,15 +12,15 @@ from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
 
 
-@on_command('wiki', help_doc=('~wiki <PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
-                           '~wiki set <WikiUrl> {设置起始查询Wiki}',
-                           '~wiki iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}',
-                           '~wiki iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}',
-                           '~wiki iw list {展示当前设置的Interwiki}',
-                           '~wiki headers (add|set) <Headers> {添加自定义headers}',
-                           '~wiki headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
-                           '~wiki headers reset {重置headers}',
-                           '~wiki headers show {展示当前设置的headers}'),
+@on_command('wiki', help_doc=('<PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
+                              'set <WikiUrl> {设置起始查询Wiki}',
+                              'iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}',
+                              'iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}',
+                              'iw list {展示当前设置的Interwiki}',
+                              'headers (add|set) <Headers> {添加自定义headers}',
+                              'headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
+                              'headers reset {重置headers}',
+                              'headers show {展示当前设置的headers}'),
             alias={'wiki_start_site': 'wiki set'},
             recommend_modules='wiki_inline',
             developers=['OasisAkari'],
@@ -216,7 +216,8 @@ async def regex_proc(msg: MessageSession, display):
             if 'url' in send_message:
                 urllist.update({send_message['url']: get_link})
         if status is None:
-            msglist.append(Plain('发生错误：机器人内部代码错误，请联系开发者解决。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
+            msglist.append(Plain(
+                '发生错误：机器人内部代码错误，请联系开发者解决。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
     if msglist:
         await msg.sendMessage(msglist)
         if imglist and msg.Feature.image:

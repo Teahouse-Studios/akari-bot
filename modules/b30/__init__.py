@@ -6,7 +6,7 @@ from .getb30 import getb30
 from .initialize import arcb30init
 
 
-@on_command('b30', help_doc='~b30 <friendcode>', developers=['OasisAkari'])
+@on_command('b30', help_doc='<friendcode> {查询一个Arcaea用户的b30列表}', developers=['OasisAkari'])
 async def main(msg: MessageSession):
     assets = os.path.abspath('assets/arcaea')
     friendcode = msg.parsed_msg['<friendcode>']
