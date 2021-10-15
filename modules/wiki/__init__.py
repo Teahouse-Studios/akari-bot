@@ -107,7 +107,7 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@on_regex('wiki_inline', pattern=r'\[\[.*?]]|{{.*?}}', mode='M',
+@on_regex('wiki_inline', pattern=r'\[\[.*?]]|{{.*?}}', mode='A',
           desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
           alias='wiki_regex', developers=['OasisAkari'])
 async def regex_wiki(msg: MessageSession):
