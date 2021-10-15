@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 
+from config import Config
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
@@ -57,4 +58,5 @@ async def _(event: Event):
     return {'approve': True}
 
 
-bot.run(host='127.0.0.1', port=11901, debug=False)
+host, port = Config('qq_host').split(':')
+bot.run(host=host, port=port, debug=False)
