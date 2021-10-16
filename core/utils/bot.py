@@ -17,11 +17,17 @@ def init():
     load_modules()
     version = os.path.abspath(PrivateAssets.path + '/version')
     write_version = open(version, 'w')
-    write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
+    try:
+        write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
+    except Exception:
+        write_version.write('Not a git repo')
     write_version.close()
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     write_tag = open(tag, 'w')
-    write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
+    try:
+        write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
+    except Exception:
+        write_version.write('Not a git repo')
     write_tag.close()
 
 
