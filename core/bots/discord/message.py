@@ -54,7 +54,7 @@ class MessageSession(MS):
                                                   reference=self.session.message if quote and self.session.message else None)
         return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
                                              senderFrom='Discord|Bot'),
-                              session=Session(message=send, target=send.channel, sender=send.author))
+                              session=Session(message=send, target=self.session.target, sender=self.session.sender))
 
     async def waitConfirm(self, msgchain=None, quote=True):
         def check(m):
