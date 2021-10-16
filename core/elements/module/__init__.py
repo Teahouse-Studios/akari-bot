@@ -19,8 +19,7 @@ class Command:
                  developers: Union[str, list, tuple] = None,
                  need_admin: bool = False,
                  is_base_function: bool = False,
-                 need_superuser: bool = False,
-                 autorun: bool = False):
+                 need_superuser: bool = False):
         self.function = function
         self.bind_prefix = bind_prefix
         self.alias = alias
@@ -32,7 +31,6 @@ class Command:
         self.need_admin = need_admin
         self.is_base_function = is_base_function
         self.need_superuser = need_superuser
-        self.autorun = autorun
 
 
 class RegexCommand:

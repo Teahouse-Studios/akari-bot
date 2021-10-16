@@ -2,14 +2,14 @@ import ujson as json
 
 from core.dirty_check import check
 from core.elements import FetchTarget
-from core.decorator import on_command
+from core.decorator import on_startup
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils import get_url
 from modules.utils.UTC8 import UTC8
 
 
-@on_command('__check_newbie__', need_superuser=True, developers=['OasisAkari'], autorun=True)
+@on_startup('__check_newbie__', need_superuser=True, developers=['OasisAkari'])
 async def newbie(bot: FetchTarget):
     Logger.info('Subbot newbie launched')
     url = 'https://minecraft.fandom.com/zh/api.php?action=query&list=logevents&letype=newusers&format=json'

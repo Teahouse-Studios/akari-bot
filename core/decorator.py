@@ -20,8 +20,7 @@ def on_command(
         developers: Union[str, list, tuple] = None,
         need_admin: bool = False,
         is_base_function: bool = False,
-        need_superuser: bool = False,
-        autorun: bool = False
+        need_superuser: bool = False
 ):
     """
 
@@ -36,7 +35,6 @@ def on_command(
     :param need_admin: 此命令是否需要群聊管理员权限。
     :param is_base_function: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param need_superuser: 将此命令设为机器人的超级管理员才可执行。
-    :param autorun: 将此命令设为自动启动类型，设为自动启动类型后将会在机器人运行时自动运行，同时禁用命令处理功能。
     :return: 此类型的模块。
     """
 
@@ -51,8 +49,7 @@ def on_command(
                          developers=developers,
                          is_base_function=is_base_function,
                          need_admin=need_admin,
-                         need_superuser=need_superuser,
-                         autorun=autorun)
+                         need_superuser=need_superuser)
         ModulesManager.add_module(module)
         return module
 
