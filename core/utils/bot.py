@@ -27,7 +27,7 @@ def init():
     try:
         write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
     except Exception:
-        write_tag.write('Not a git repo')
+        write_tag.write('v4.?.?')
     write_tag.close()
 
 
