@@ -13,6 +13,9 @@ from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.utils import init, load_prompt
+from database import BotDBUtil
+from database.logging_message import UnfriendlyActions
+
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
@@ -55,8 +58,36 @@ async def _(event: Event):
 
 @bot.on('request.friend')
 async def _(event: Event):
+    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlackList:
+        return {'approve': False}
     return {'approve': True}
 
 
-host, port = Config('qq_host').split(':')
-bot.run(host=host, port=port, debug=False)
+@bot.on_notice('group_ban')
+async def _(event: Event):
+    if event.user_id == int(Config("qq_account")):
+        if event.duration >= 259200:
+            result = True
+        else:
+            result = UnfriendlyActions(targetId=event.group_id, senderId=event.operator_id).add_and_check('mute')
+        if result:
+            await bot.call_action('set_group_leave', group_id=event.group_id)
+            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlackList', True)
+            await bot.call_action('delete_friend', friend_id=event.operator_id)
+
+
+"""
+@bot.on_message('group')
+async def _(event: Event):
+    result = BotDBUtil.isGroupInWhiteList(f'QQ|Group|{str(event.group_id)}')
+    if not result:
+        await bot.send(event=event, message='此群不在白名单中，已自动退群。'
+                                            '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
+        await bot.call_action('set_group_leave', group_id=event.group_id)
+"""
+
+
+qq_host = Config("qq_host")
+if qq_host:
+    host, port = qq_host.split(':')
+    bot.run(host=host, port=port, debug=False)
