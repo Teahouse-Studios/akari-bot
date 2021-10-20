@@ -6,6 +6,7 @@ from core.elements import MessageSession, Plain, Image, Voice, Option
 from core.loader import ModulesManager
 from core.decorator import on_command, on_regex
 from core.utils import download_to_cache
+from core.exceptions import AbuseWarning
 from database import BotDBUtil
 from modules.wiki.dbutils import WikiTargetInfo
 from modules.wiki.wikilib import wikilib
@@ -145,6 +146,8 @@ async def regex_proc(msg: MessageSession, display):
                     find_dict.update({template: 'template'})
     if find_dict == {}:
         return
+    if len(find_dict) > 15:
+        raise AbuseWarning('一次性查询的页面超出15个。')
     waitlist = []
     imglist = []
     audlist = []
@@ -218,6 +221,8 @@ async def regex_proc(msg: MessageSession, display):
         if status is None:
             msglist.append(Plain(
                 '发生错误：机器人内部代码错误，请联系开发者解决。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
+    if global_status == 'warn':
+        raise AbuseWarning('使机器人重定向页面的次数过多。')
     if msglist:
         await msg.sendMessage(msglist)
         if imglist and msg.Feature.image:
@@ -237,8 +242,6 @@ async def regex_proc(msg: MessageSession, display):
                 infoboxchain.append(Image(path=get_infobox))
         if infoboxchain:
             await msg.sendMessage(infoboxchain, quote=False)
-    if global_status == 'warn':
-        msg.target.senderInfo.edit('warns', int(msg.target.senderInfo.query.warns) + 1)
     if waitmsglist:
         wait = await msg.waitConfirm(waitmsglist)
         if wait:

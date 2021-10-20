@@ -6,6 +6,7 @@ from database.tables import *
 
 DB_LINK = Config('db_path')
 
+
 class DBSession:
     def __init__(self):
         self.engine = engine = create_engine(DB_LINK)

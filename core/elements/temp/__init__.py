@@ -1,3 +1,6 @@
+from typing import Union
+
+
 class EnabledModulesCache:
     _cache = {}
 
@@ -18,7 +21,7 @@ class SenderInfoCache:
         SenderInfoCache._cache[key] = value
 
     @staticmethod
-    def get_cache(key):
+    def get_cache(key) -> Union[dict, bool]:
         return SenderInfoCache._cache.get(key, False)
 
 

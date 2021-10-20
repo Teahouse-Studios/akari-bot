@@ -51,7 +51,6 @@ class wikilib:
         except:
             try:
                 getpage = await self.get_data(link, 'text', headers=headers, ignore_err=True)
-                print(getpage)
                 if getpage.find('<title>Attention Required! | Cloudflare</title>') != -1:
                     return False, 'CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。'
                 m = re.findall(
@@ -496,7 +495,7 @@ class wikilib:
         if 'interwiki' in self.page_raw['query']:
             iwp = self.page_raw['query']['interwiki'][0]
             match_interwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
-            if tryiw <= 5:
+            if tryiw <= 10:
                 iw_list = await self.get_interwiki(self.wiki_api_endpoint)
                 interwiki_link = iw_list[iwp['iw']]
                 check = await self.check_wiki_available(interwiki_link)
@@ -508,7 +507,7 @@ class wikilib:
                     return {'status': 'done',
                             'text': f'发生错误：指向的interwiki或许不是一个有效的MediaWiki。{interwiki_link}{match_interwiki.group(1)}'}
             else:
-                return {'status': 'warn', 'text': '警告：尝试重定向已超过5次，继续尝试将有可能导致你被机器人加入黑名单。'}
+                return {'status': 'warn', 'text': '警告：尝试重定向已超过10次，继续尝试将有可能导致你被机器人加入黑名单。'}
         if 'redirects' in self.page_raw['query']:
             self.page_name = self.page_raw['query']['redirects'][0]['to']
         try:

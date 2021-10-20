@@ -31,7 +31,6 @@ def init():
     write_tag.close()
 
 
-
 async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None):
     async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=3)) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
