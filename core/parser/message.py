@@ -175,6 +175,7 @@ async def parser(msg: MessageSession):
             await warn_target(msg, str(e))
             temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                      'ts': datetime.now().timestamp()}
+            return 
         except Exception:
             Logger.error(traceback.format_exc())
         ExecutionLockList.remove(msg)
