@@ -2,7 +2,7 @@ import re
 import traceback
 from datetime import datetime
 
-from core.elements import MessageSession, Command, Option, Schedule, StartUp, command_prefix
+from core.elements import MessageSession, Command, Option, Schedule, StartUp, command_prefix, ExecutionLockList
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
@@ -81,6 +81,10 @@ async def parser(msg: MessageSession):
                 command_first_word = command_spilt[0]
                 msg.trigger_msg = command
             if command_first_word in Modules:  # 检查触发命令是否在模块列表中
+                if not ExecutionLockList.check(msg):
+                    ExecutionLockList.add(msg)
+                else:
+                    return await msg.sendMessage('您有命令正在执行，请稍后再试。')
                 try:
                     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
                     if is_temp_banned is not None:
@@ -101,30 +105,36 @@ async def parser(msg: MessageSession):
                     module = Modules[command_first_word]
                     if isinstance(module, (Option, Schedule, StartUp)):
                         if module.desc is not None:
-                            return await msg.sendMessage(module.desc)
-                        return
+                            await msg.sendMessage(module.desc)
+                        continue
                     if isinstance(module, Command):
                         if module.need_superuser:
                             if not msg.checkSuperUser():
-                                return await msg.sendMessage('你没有使用该命令的权限。')
+                                await msg.sendMessage('你没有使用该命令的权限。')
+                                continue
                         elif not module.is_base_function:
                             if command_first_word not in enabled_modules_list:  # 若未开启
-                                return await msg.sendMessage(f'此模块未启用，请发送~enable {command_first_word}启用本模块。')
-                        if module.need_admin:
+                                await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
+                                continue
+                        elif module.need_admin:
                             if not await msg.checkPermission():
-                                return await msg.sendMessage('此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
+                                await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
+                                continue
                         if module.help_doc is not None:
                             try:
                                 command_parser = CommandParser(module)
                                 try:
                                     msg.parsed_msg = command_parser.parse(command)
                                     if msg.parsed_msg is None and not Modules[command_first_word].allowed_none:
-                                        return await msg.sendMessage(command_parser.return_formatted_help_doc())
+                                        await msg.sendMessage(command_parser.return_formatted_help_doc())
+                                        continue
                                 except InvalidCommandFormatError:
-                                    return await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
+                                    await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
+                                    continue
                             except InvalidHelpDocTypeError:
-                                return await msg.sendMessage(
-                                    '此模块的帮助信息有误，请联系开发者处理。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+                                await msg.sendMessage(
+                                    f'{command_first_word}模块的帮助信息有误，请联系开发者处理。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+                                continue
                         async with msg.Typing(msg):
                             await Modules[command_first_word].function(msg)  # 将msg传入下游模块
                 except AbuseWarning as e:
@@ -136,6 +146,8 @@ async def parser(msg: MessageSession):
                     Logger.error(traceback.format_exc())
                     await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(
                         e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+                    continue
+            ExecutionLockList.remove(msg)
     for regex in ModulesRegex:  # 遍历正则模块列表
         try:
             if regex in enabled_modules_list:
@@ -144,11 +156,19 @@ async def parser(msg: MessageSession):
                 if regex_module.mode.upper() in ['M', 'MATCH']:
                     msg.matched_msg = re.match(regex_module.pattern, display, flags=regex_module.flags)
                     if msg.matched_msg is not None:
+                        if not ExecutionLockList.check(msg):
+                            ExecutionLockList.add(msg)
+                        else:
+                            return await msg.sendMessage('您有命令正在执行，请稍后再试。')
                         async with msg.Typing(msg):
                             await regex_module.function(msg)  # 将msg传入下游模块
                 elif regex_module.mode.upper() in ['A', 'FINDALL']:
                     msg.matched_msg = re.findall(regex_module.pattern, display, flags=regex_module.flags)
                     if msg.matched_msg:
+                        if not ExecutionLockList.check(msg):
+                            ExecutionLockList.add(msg)
+                        else:
+                            return await msg.sendMessage('您有命令正在执行，请稍后再试。')
                         async with msg.Typing(msg):
                             await regex_module.function(msg)  # 将msg传入下游模块
         except AbuseWarning as e:
@@ -157,3 +177,4 @@ async def parser(msg: MessageSession):
                                                      'ts': datetime.now().timestamp()}
         except Exception:
             Logger.error(traceback.format_exc())
+        ExecutionLockList.remove(msg)
