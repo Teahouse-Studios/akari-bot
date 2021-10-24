@@ -1,5 +1,5 @@
 from typing import List
-
+import asyncio
 
 class MsgInfo:
     __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom"]
@@ -90,6 +90,9 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
+        ...
+
+    async def sleep(self, s):
         ...
 
     class Feature:

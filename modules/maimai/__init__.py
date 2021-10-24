@@ -7,9 +7,8 @@ from modules.maimai.libraries.maimaidx_music import *
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
 
-
 from core.elements import Plain, Image as BImage, MessageSession
-from core.decorator import on_command, on_regex
+from core.component import on_command, on_regex
 
 
 def song_txt(music: Music):
@@ -25,15 +24,17 @@ def inner_level_q(ds1, ds2=None):
         music_data = total_list.filter(ds=(ds1, ds2))
     else:
         music_data = total_list.filter(ds=ds1)
-    for music in sorted(music_data, key = lambda i: int(i['id'])):
+    for music in sorted(music_data, key=lambda i: int(i['id'])):
         for i in music.diff:
             result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
     return result_set
 
 
-@on_command('maimai_inner_level', alias=['定数查歌'],
-            help_doc=['~maimai_inner_level <定数>',
-                   '~maimai_inner_level <定数下限> <定数上限>'])
+innlevel = on_command('maimai_inner_level', alias=['定数查歌'])
+
+
+@innlevel.handle(['~maimai_inner_level <定数>',
+                  '~maimai_inner_level <定数下限> <定数上限>'])
 async def _(msg: MessageSession):
     if msg.parsed_msg['<定数>'] is not None:
         result_set = inner_level_q(float(msg.parsed_msg['<定数>']))
@@ -47,8 +48,11 @@ async def _(msg: MessageSession):
     await msg.sendMessage(s.strip())
 
 
-@on_regex('maimai_random_music_regex1', pattern=r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)",
-               desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲')
+mrgex1 = on_regex('maimai_random_music_regex1',
+                  desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲')
+
+
+@mrgex1.handle(r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)")
 async def _(msg: MessageSession):
     res = msg.matched_msg
     if res:
@@ -74,12 +78,18 @@ async def _(msg: MessageSession):
             await msg.sendMessage("随机命令错误，请检查语法")
 
 
-@on_regex('maimai_random_music_regex2', pattern=r".*maimai.*什么", desc='XXXmaimaiXXX什么 随机一首歌')
+mrgex2 = on_regex('maimai_random_music_regex2', desc='XXXmaimaiXXX什么 随机一首歌')
+
+
+@mrgex2.handle(r".*maimai.*什么", )
 async def _(msg: MessageSession):
     await msg.sendMessage(song_txt(total_list.random()))
 
 
-@on_regex('maimai_search_music_regex', pattern=r"查歌(.+)", desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
+msrgex = on_regex('maimai_search_music_regex', desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
+
+
+@msrgex.handle(r"查歌(.+)")
 async def _(msg: MessageSession):
     name = msg.matched_msg.groups()[0].strip()
     if name == "":
@@ -89,15 +99,18 @@ async def _(msg: MessageSession):
         await msg.sendMessage("没有找到这样的乐曲。")
     elif len(res) < 50:
         search_result = ""
-        for music in sorted(res, key = lambda i: int(i['id'])):
+        for music in sorted(res, key=lambda i: int(i['id'])):
             search_result += f"{music['id']}. {music['title']}\n"
         return await msg.sendMessage([Plain(search_result.strip())])
     else:
         await msg.sendMessage(f"结果过多（{len(res)} 条），请缩小查询范围。")
 
 
-@on_regex('maimai_query_chart_regex', pattern=r"([绿黄红紫白]?)id([0-9]+)",
-               desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
+mqrgex = on_regex('maimai_query_chart_regex',
+                  desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
+
+
+@msrgex.handle(r"([绿黄红紫白]?)id([0-9]+)")
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     level_labels = ['绿', '黄', '红', '紫', '白']
@@ -135,20 +148,22 @@ BREAK: {chart['notes'][4]}
         try:
             file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
             await message.sendMessage([Plain(f"{music['id']}. {music['title']}\n"),
-                                             BImage(f"{file}"),
-                                             Plain(f"艺术家: {music['basic_info']['artist']}\n"
-                                                   f"分类: {music['basic_info']['genre']}\n"
-                                                   f"BPM: {music['basic_info']['bpm']}\n"
-                                                   f"版本: {music['basic_info']['from']}\n"
-                                                   f"难度: {'/'.join(music['level'])}")])
+                                       BImage(f"{file}"),
+                                       Plain(f"艺术家: {music['basic_info']['artist']}\n"
+                                             f"分类: {music['basic_info']['genre']}\n"
+                                             f"BPM: {music['basic_info']['bpm']}\n"
+                                             f"版本: {music['basic_info']['from']}\n"
+                                             f"难度: {'/'.join(music['level'])}")])
         except Exception:
             await message.sendMessage("未找到该乐曲")
 
 
 wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练手法', '打旧框', '干饭', '抓绝赞', '收歌']
 
+today = on_command('maimai_today', alias=['今日舞萌', '今日mai'], desc='查看今天的舞萌运势')
 
-@on_command('maimai_today', alias=['今日舞萌', '今日mai'], desc='查看今天的舞萌运势')
+
+@today.handle()
 async def _(msg: MessageSession):
     qq = int(msg.session.sender)
     h = hash(qq)
@@ -178,8 +193,10 @@ for t in tmp:
         if arr[i] != "":
             music_aliases[arr[i].lower()].append(arr[0])
 
+mfsrgx = on_regex('maimai_find_song_regex', desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
 
-@on_regex('maimai_find_song_regex', pattern=r"(.+)是什么歌", desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
+
+@mfsrgx.handle(r"(.+)是什么歌")
 async def _(msg: MessageSession):
     name = msg.matched_msg.groups()[0].strip().lower()
     if name not in music_aliases:
@@ -191,10 +208,13 @@ async def _(msg: MessageSession):
         await msg.sendMessage([Plain('您要找的是不是')] + song_txt(music))
     else:
         s = '\n'.join(result_set)
-        await msg.sendMessage(f"您要找的可能是以下歌曲中的其中一首：\n{ s }")
+        await msg.sendMessage(f"您要找的可能是以下歌曲中的其中一首：\n{s}")
 
 
-@on_command('maimai_scoreline', alias='分数线', help_doc=('~maimai_scoreline <难度+歌曲id> <分数线>', '~maimai_scoreline 帮助'))
+sline = on_command('maimai_scoreline', alias='分数线')
+
+
+@sline.handle(['<难度+歌曲id> <分数线>', '帮助'])
 async def _(msg: MessageSession):
     r = "([绿黄红紫白])(id)?([0-9]+)"
     arg1 = msg.parsed_msg['<难度+歌曲id>']
@@ -241,7 +261,10 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
             await msg.sendMessage("格式错误，输入“分数线 帮助”以查看帮助信息")
 
 
-@on_command('maimai_b40', help_doc='~maimai_b40 <username>')
+b40 = on_command('maimai_b40')
+
+
+@b40.handle('<username>')
 async def _(msg: MessageSession):
     username = msg.parsed_msg['<username>']
     if username == "":

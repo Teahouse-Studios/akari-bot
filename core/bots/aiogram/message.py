@@ -5,7 +5,8 @@ from typing import List
 
 from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
+    ExecutionLockList
 from core.elements.others import confirm_command
 from database import BotDBUtil
 
@@ -64,6 +65,7 @@ class MessageSession(MS):
                               session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
 
     async def waitConfirm(self, msgchain=None, quote=True):
+        ExecutionLockList.remove(self)
         send = None
         if msgchain is not None:
             msgchain = convert2lst(msgchain)
@@ -92,6 +94,10 @@ class MessageSession(MS):
 
     def asDisplay(self):
         return self.session.message.text
+
+    async def sleep(self, s):
+        ExecutionLockList.remove(self)
+        await asyncio.sleep(s)
 
     async def delete(self):
         try:

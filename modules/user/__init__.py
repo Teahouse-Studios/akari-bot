@@ -1,14 +1,15 @@
 import re
 
 from core.elements import Plain, Image, MessageSession
-from core.decorator import on_command
+from core.component import on_command
 from modules.wiki.dbutils import WikiTargetInfo
 from .userlib import GetUser
 
+usr = on_command('user', alias=['u'],
+                 developers=['OasisAkari'])
 
-@on_command('user', alias=['u'], help_doc='<username> [-r|-p] {获取一个MediaWiki用户的信息。（-r - 获取详细信息。-p - 生成一张图片。）}',
-            developers=['OasisAkari'],
-            allowed_none=False)
+
+@usr.handle('<username> [-r|-p] {获取一个MediaWiki用户的信息。（-r - 获取详细信息。-p - 生成一张图片。）}')
 async def user(msg: MessageSession):
     mode = None
     metaurl = None

@@ -1,12 +1,15 @@
 import os
 
 from core.elements import MessageSession, Plain, Image
-from core.decorator import on_command
+from core.component import on_command
 from .getb30 import getb30
 from .initialize import arcb30init
 
 
-@on_command('b30', help_doc='<friendcode> {查询一个Arcaea用户的b30列表}', developers=['OasisAkari'])
+b30 = on_command('b30', developers=['OasisAkari'])
+
+
+@b30.handle('<friendcode> {查询一个Arcaea用户的b30列表}')
 async def main(msg: MessageSession):
     assets = os.path.abspath('assets/arcaea')
     friendcode = msg.parsed_msg['<friendcode>']

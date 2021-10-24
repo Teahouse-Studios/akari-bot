@@ -94,13 +94,9 @@ class WikiLib:
                                   namespaces=[], namespaces_local={})
         self.headers = headers
 
-    @staticmethod
-    def encode_query_string(kwargs: dict):
-        return urllib.parse.urlencode(kwargs)
-
-    async def get_json(self, api, args: dict = None) -> dict:
-        if args is not None:
-            api = api + '?' + self.encode_query_string(args)
+    async def get_json(self, api, **kwargs) -> dict:
+        if kwargs is not None:
+            api = api + '?' + urllib.parse.urlencode(kwargs)
         return await get_url(api, status_code=200, headers=self.headers, fmt="json")
 
     def rearrange_siteinfo(self, info: Union[dict, str]) -> WikiInfo:
@@ -144,8 +140,6 @@ class WikiLib:
                         interwiki=interwiki_dict)
 
     async def check_wiki_available(self):
-        query_string = {'action': 'query', 'meta': 'siteinfo',
-                        'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
         try:
             api_match = re.match(r'(https?://.*?/url.php$)', self.url)
             wiki_api_link = api_match.group(1)
@@ -178,7 +172,11 @@ class WikiLib:
                               value=self.rearrange_siteinfo(get_cache_info),
                               message='')
         try:
-            get_json = await self.get_json(wiki_api_link, query_string)
+            get_json = await self.get_json(wiki_api_link,
+                                           action='query',
+                                           meta='siteinfo',
+                                           siprop='general|namespaces|namespacealiases|interwikimap|extensions',
+                                           format='json')
         except Exception as e:
             return WikiStatus(available=False, value=False, message='从API获取信息时出错：' + str(e))
         DBSiteInfo(wiki_api_link).update(get_json)
@@ -227,9 +225,11 @@ class WikiLib:
 
     async def get_html_to_text(self, page_name):
         await self.fixup_wiki_info()
-        query_string = {'action': 'parse', 'page': page_name, 'prop': 'text',
-                        'format': 'json'}
-        get_parse = await self.get_json(self.wiki_info.api, query_string)
+        get_parse = await self.get_json(self.wiki_info.api,
+                                        action='parse',
+                                        page=page_name,
+                                        prop='text',
+                                        format='json')
         h = html2text.HTML2Text()
         h.ignore_links = True
         h.ignore_images = True
@@ -239,8 +239,11 @@ class WikiLib:
     async def get_wikitext(self, page_name):
         await self.fixup_wiki_info()
         try:
-            query_string = {'action': 'parse', 'page': page_name, 'prop': 'wikitext', 'format': 'json'}
-            load_desc = await self.get_json(self.wiki_info.api, query_string)
+            load_desc = await self.get_json(self.wiki_info.api,
+                                            action='parse',
+                                            page=page_name,
+                                            prop='wikitext',
+                                            format='json')
             desc = load_desc['parse']['wikitext']['*']
         except Exception:
             traceback.print_exc()
@@ -249,9 +252,14 @@ class WikiLib:
 
     async def research_page(self, page_name: str):
         await self.fixup_wiki_info()
-        query_string = {'action': 'query', 'list': 'search', 'srsearch': page_name, 'srwhat': 'text',
-                        'srlimit': '1', 'srenablerewrites': '', 'format': 'json'}
-        get_page = await self.get_json(self.wiki_info.api, query_string)
+        get_page = await self.get_json(self.wiki_info.api,
+                                       action='query',
+                                       list='search',
+                                       srsearch=page_name,
+                                       srwhat='text',
+                                       srlimit='1',
+                                       srenablerewrites=True,
+                                       format='json')
         new_page_name = get_page['query']['search'][0]['title'] if len(get_page['query']['search']) > 0 else None
         prompt = ''
         title_split = page_name.split(':')
@@ -275,6 +283,7 @@ class WikiLib:
                                                    args=''.join(split_name[1:]) if len(split_name) > 1 else None)})
         else:
             query_list = title
+        print(query_list)
         query_string = {'action': 'query', 'format': 'json', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
                         'redirects': 'True', 'titles': '|'.join(query_list[n].title for n in query_list)}
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
@@ -282,7 +291,7 @@ class WikiLib:
             query_string.update({'prop': 'info|imageinfo|extracts',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
-        get_page = await self.get_json(self.wiki_info.api, query_string)
+        get_page = await self.get_json(self.wiki_info.api, **query_string)
         query = get_page.get('query')
         if query is None:
             return {}
@@ -303,13 +312,17 @@ class WikiLib:
         if interwiki_ is not None:
             for i in interwiki_:
                 iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
-                query_iw = query_list[i['title']]
+                query_iw_redirect = redirects.get(i['title'])
+                if query_iw_redirect is not None:
+                    query_iw = query_list[query_iw_redirect]
+                else:
+                    query_iw = query_list[i['title']]
                 query_iw.title = iw_title.group(1)
-                query_iw.before_title = i['title']
+                query_iw.before_title = i['title'] if query_iw.before_title is None else query_iw.before_title
                 query_iw.interwiki_prefix += i['iw'] + ':'
                 if i['iw'] not in interwiki:
                     interwiki[i['iw']] = {}
-                interwiki[i['iw']].update({i['title']: query_iw})
+                interwiki[i['iw']].update({i['title'] if query_iw.before_title is None else query_iw.before_title: query_iw})
         pages = query.get('pages')
         if pages is not None:
             for page_id in pages:
@@ -321,7 +334,7 @@ class WikiLib:
                 set_query = query_list[before_page_title if before_page_title is not None else title]
                 if int(page_id) < 0:
                     if 'missing' not in page_raw:
-                        full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath)\
+                        full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + (page_args if page_args is not None else '')
                         set_query.title = title
                         set_query.before_title = before_page_title

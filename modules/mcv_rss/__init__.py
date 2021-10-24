@@ -4,7 +4,7 @@ import traceback
 import ujson as json
 
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
-from core.decorator import on_schedule
+from core.component import on_schedule
 from core.logger import Logger
 from core.utils import get_url
 
@@ -19,7 +19,11 @@ def getfileversions(path):
     return s
 
 
-@on_schedule('mcv_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcv_rss',
+             developers=['OasisAkari', 'Dianliang233'],
+             recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
+             trigger=IntervalTrigger(seconds=60),
+             desc='启用后当Minecraft启动器更新时将会自动推送消息。')
 async def mcv_rss(bot: FetchTarget):
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     try:
@@ -45,7 +49,10 @@ async def mcv_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@on_schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'],
+             recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
+             trigger=IntervalTrigger(seconds=60),
+             desc='启用后当Jira更新Java版时将会自动推送消息。')
 async def mcv_jira_rss(bot: FetchTarget):
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Java.txt')
@@ -69,7 +76,11 @@ async def mcv_jira_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@on_schedule('mcbv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcbv_jira_rss',
+             developers=['OasisAkari', 'Dianliang233'],
+             recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'],
+             trigger=IntervalTrigger(seconds=60),
+             desc='启用后当Jira更新基岩版时将会自动推送消息。')
 async def mcbv_jira_rss(bot: FetchTarget):
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Bedrock.txt')
@@ -93,7 +104,11 @@ async def mcbv_jira_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@on_schedule('mcdv_jira_rss', developers=['OasisAkari', 'Dianliang233'], recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'], trigger=IntervalTrigger(seconds=60))
+@on_schedule('mcdv_jira_rss',
+             developers=['OasisAkari', 'Dianliang233'],
+             recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'],
+             trigger=IntervalTrigger(seconds=60),
+             desc='启用后当Jira更新Dungeons版本时将会自动推送消息。')
 async def mcdv_jira_rss(bot: FetchTarget):
     try:
         version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Minecraft Dungeons.txt')

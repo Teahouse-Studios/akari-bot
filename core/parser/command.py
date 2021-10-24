@@ -1,10 +1,10 @@
 import re
 import shlex
+import traceback
 from typing import Union
 
 from core.docopt import docopt, DocoptExit
 from core.elements import Command, Option, Schedule, StartUp, RegexCommand, command_prefix
-
 
 command_prefix_first = command_prefix[0]
 
@@ -20,39 +20,37 @@ class InvalidCommandFormatError(BaseException):
 
 
 class CommandParser:
-    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule, StartUp, RegexCommand]):
+    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule, StartUp, RegexCommand], prefix=None):
         """
         Format: https://github.com/jazzband/docopt-ng#usage-pattern-format
         * {} - Detail help information
         """
-        self.desc = False
-        self.bind_prefix = None
+        self.bind_prefix = prefix
+        self.origin_template = args
         if isinstance(args, Command):
             self.bind_prefix = args.bind_prefix
-            if args.help_doc is not None:
-                args = args.help_doc
-            elif args.desc is not None:
-                args = args.desc
-                self.desc = True
+            help_doc_list = []
+            none_doc = True
+            for match in args.match_list.set:
+                if match.help_doc is not None:
+                    print(match.help_doc)
+                    none_doc = False
+                    help_doc_list = help_doc_list + match.help_doc
+            if not none_doc:
+                args = help_doc_list
             else:
                 args = None
-        elif isinstance(args, (Option, Schedule, StartUp, RegexCommand)):
-            self.bind_prefix = args.bind_prefix
-            if args.desc is not None:
-                args = args.desc
-                self.desc = True
-            else:
-                args = None
+        elif isinstance(args, (Schedule, StartUp, Option, RegexCommand)):
+            args = None
         if args is None:
-            self.args = args
+            self.args = None
             return
         if isinstance(args, str):
             args = [args]
             self.args_raw = args
-        if self.desc:
-            self.args = args
-            return
-        if isinstance(args, (list, tuple)):
+        elif isinstance(args, tuple):
+            args = list(args)
+        if isinstance(args, list):
             arglst_raw = []
             arglst = []
             for x in args:
@@ -74,11 +72,7 @@ class CommandParser:
         if self.args is None:
             return '（此模块没有帮助信息）'
         args_raw = self.args_raw
-        if isinstance(args_raw, str):
-            args_raw = [args_raw]
-        if self.desc:
-            return '说明：\n' + '\n  '.join(y for y in args_raw)
-        if isinstance(args_raw, (list, tuple)):
+        if isinstance(args_raw, list):
             arglst = []
             for x in args_raw:
                 if x[0] not in command_prefix:
@@ -93,16 +87,48 @@ class CommandParser:
         return args
 
     def parse(self, command):
-        if self.desc or self.args is None:
+        if self.args is None:
             return None
-        command = re.sub('“', '"', re.sub('”', '"', command))
+        command = re.sub(r'[“”]', '"', command)
         try:
             split_command = shlex.split(command)
         except ValueError:
             split_command = command.split(' ')
-        if len(split_command) == 1:
-            return None
         try:
-            return docopt(self.args, argvs=split_command[1:], default_help=False)
+            if not isinstance(self.origin_template, Command):
+                if len(split_command) == 1:
+                    return None
+                return docopt(self.args, argvs=split_command[1:], default_help=False)
+            else:
+                if len(split_command) == 1:
+                    for match in self.origin_template.match_list.set:
+                        if match.help_doc is None:
+                            return match, None
+                    raise InvalidCommandFormatError
+                else:
+                    base_match = docopt(self.args, argvs=split_command[1:], default_help=False)
+                    print(base_match)
+                    for match in self.origin_template.match_list.set:
+                        if match.help_doc is None:
+                            continue
+                        try:
+                            sub_args = CommandParser(match.help_doc, prefix=self.bind_prefix).args
+                            if sub_args is not None:
+                                get_parse = docopt(sub_args,
+                                                   argvs=split_command[1:], default_help=False)
+                            else:
+                                continue
+                        except DocoptExit:
+                            continue
+                        print(get_parse)
+                        correct = True
+                        for g in get_parse:
+                            if g not in base_match or get_parse[g] != base_match[g]:
+                                correct = False
+                        if correct:
+                            return match, get_parse
+
+
         except DocoptExit:
+            traceback.print_exc()
             raise InvalidCommandFormatError

@@ -7,7 +7,8 @@ from pathlib import Path
 from aiocqhttp import MessageSegment
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
+    ExecutionLockList
 from core.elements.others import confirm_command
 from core.logger import Logger
 from database import BotDBUtil
@@ -61,6 +62,7 @@ class MessageSession(MS):
 
     async def waitConfirm(self, msgchain=None, quote=True):
         send = None
+        ExecutionLockList.remove(self)
         if msgchain is not None:
             msgchain = convert2lst(msgchain)
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
@@ -93,6 +95,10 @@ class MessageSession(MS):
         if self.target.targetFrom == 'QQ|Group':
             await bot.call_action('send_group_forward_msg', group_id=self.session.target, messages=nodelist)
 
+    async def sleep(self, s):
+        ExecutionLockList.remove(self)
+        await asyncio.sleep(s)
+
     async def delete(self):
         try:
             if isinstance(self.session.message, list):
@@ -111,7 +117,6 @@ class MessageSession(MS):
         async def __aenter__(self):
             if self.msg.target.targetFrom == 'QQ|Group':
                 await bot.send_group_msg(group_id=self.msg.session.target, message=f'[CQ:poke,qq={self.msg.session.sender}]')
-            #await bot.answer_chat_action(self.msg.session.target, 'typing')
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):

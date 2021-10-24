@@ -2,9 +2,8 @@ import re
 
 import ujson as json
 
-from core.elements import MessageSession, Plain, Image, Voice, Option
-from core.loader import ModulesManager
-from core.decorator import on_command, on_regex
+from core.elements import MessageSession, Plain, Image, Voice
+from core.component import on_command, on_regex, on_option
 from core.utils import download_to_cache
 from core.exceptions import AbuseWarning
 from database import BotDBUtil
@@ -12,39 +11,20 @@ from modules.wiki.dbutils import WikiTargetInfo
 from modules.wiki.wikilib import wikilib
 from .getinfobox import get_infobox_pic
 
-
-@on_command('wiki', help_doc=('<PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}',
-                              'set <WikiUrl> {设置起始查询Wiki}',
-                              'iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}',
-                              'iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}',
-                              'iw list {展示当前设置的Interwiki}',
-                              'headers (add|set) <Headers> {添加自定义headers}',
-                              'headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
-                              'headers reset {重置headers}',
-                              'headers show {展示当前设置的headers}'),
-            alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
-            recommend_modules='wiki_inline',
-            developers=['OasisAkari'],
-            allowed_none=False)
-async def wiki_wrapper(msg: MessageSession):
-    if msg.parsed_msg['set'] and not msg.parsed_msg['headers'] and not msg.parsed_msg['iw']:
-        await set_start_wiki(msg)
-    elif msg.parsed_msg['iw']:
-        await interwiki(msg)
-    elif msg.parsed_msg['headers']:
-        await set_headers(msg)
-    else:
-        await wiki(msg)
+wiki = on_command('wiki',
+                  alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
+                  recommend_modules='wiki_inline',
+                  developers=['OasisAkari'])
 
 
-async def wiki(msg: MessageSession):
+@wiki.handle('<PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}')
+async def _(msg: MessageSession):
     command = f'[[{" ".join(msg.trigger_msg.split(" ")[1:])}]]'
     await regex_proc(msg, command)
 
 
+@wiki.handle('set <WikiUrl> {设置起始查询Wiki}', required_admin=True)
 async def set_start_wiki(msg: MessageSession):
-    if not await msg.checkPermission():
-        return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     check = await wikilib().check_wiki_available(msg.parsed_msg['<WikiUrl>'])
     if check[0]:
         result = WikiTargetInfo(msg).add_start_wiki(check[0])
@@ -55,9 +35,10 @@ async def set_start_wiki(msg: MessageSession):
         await msg.sendMessage(result)
 
 
+@wiki.handle(['iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}',
+              'iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}',
+              'iw list {展示当前设置的Interwiki}', ], required_admin=True)
 async def interwiki(msg: MessageSession):
-    if not await msg.checkPermission():
-        return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     iw = msg.parsed_msg['<Interwiki>']
     url = msg.parsed_msg['<WikiUrl>']
     target = WikiTargetInfo(msg)
@@ -84,9 +65,11 @@ async def interwiki(msg: MessageSession):
             await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
 
 
+@wiki.handle(['headers (add|set) <Headers> {添加自定义headers}',
+              'headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
+              'headers reset {重置headers}',
+              'headers show {展示当前设置的headers}'], required_admin=True)
 async def set_headers(msg: MessageSession):
-    if not await msg.checkPermission():
-        return await msg.sendMessage('你没有使用该命令的权限，请联系管理员进行操作。')
     target = WikiTargetInfo(msg)
     if msg.parsed_msg['show']:
         headers = target.get_headers()
@@ -108,14 +91,17 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@on_regex('wiki_inline', pattern=r'\[\[.*?]]|{{.*?}}', mode='A',
-          desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
-          alias='wiki_regex', developers=['OasisAkari'])
+winline = on_regex('wiki_inline',
+                   desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
+                   alias='wiki_regex', developers=['OasisAkari'])
+
+
+@winline.handle(r'\[\[.*?]]|{{.*?}}', mode='A')
 async def regex_wiki(msg: MessageSession):
     await regex_proc(msg, msg.asDisplay())
 
 
-ModulesManager.add_module(Option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari']))
+on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari'])
 
 
 async def regex_proc(msg: MessageSession, display):

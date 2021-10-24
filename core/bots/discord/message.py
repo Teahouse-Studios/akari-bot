@@ -1,3 +1,4 @@
+import asyncio
 import re
 import traceback
 from typing import List
@@ -5,7 +6,7 @@ from typing import List
 import discord
 
 from core.bots.discord.client import client
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList
 from core.elements.others import confirm_command
 from database import BotDBUtil
 
@@ -57,6 +58,7 @@ class MessageSession(MS):
                               session=Session(message=send, target=self.session.target, sender=self.session.sender))
 
     async def waitConfirm(self, msgchain=None, quote=True):
+        ExecutionLockList.remove(self)
         def check(m):
             return m.channel == self.session.message.channel and m.author == self.session.message.author
 
@@ -83,6 +85,10 @@ class MessageSession(MS):
 
     def asDisplay(self):
         return self.session.message.content
+
+    async def sleep(self, s):
+        ExecutionLockList.remove(self)
+        await asyncio.sleep(s)
 
     async def delete(self):
         try:

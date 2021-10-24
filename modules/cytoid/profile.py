@@ -5,7 +5,7 @@ from core.utils import get_url
 
 
 async def cytoid_profile(msg: MessageSession):
-    profile_url = 'http://services.cytoid.io/profile/' + msg.parsed_msg['UserID']
+    profile_url = 'http://services.cytoid.io/profile/' + msg.parsed_msg['<UserID>']
     profile = json.loads(await get_url(profile_url))
     if 'statusCode' in profile:
         if profile['statusCode'] == 404:

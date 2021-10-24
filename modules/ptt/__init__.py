@@ -3,11 +3,11 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 from core.elements import Image as Img, MessageSession
-from core.decorator import on_command
+from core.component import on_command
 from core.utils import cache_name
 
-
 assets_path = os.path.abspath('./assets/arcaea')
+
 
 def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
     x = x + 3
@@ -28,9 +28,11 @@ def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
     draw.text((x, y), text, font=font, fill=fillcolor)
 
 
-@on_command('ptt', help_doc='<potential> {生成一张Arcaea Potential图片}',
-            developers=['OasisAkari'],
-            allowed_none=False)
+p = on_command('ptt',
+               developers=['OasisAkari'])
+
+
+@p.handle('<potential> {生成一张Arcaea Potential图片}')
 async def pttimg(msg: MessageSession):
     ptt = msg.parsed_msg['<potential>']
     # ptt
