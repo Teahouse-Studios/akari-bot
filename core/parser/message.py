@@ -121,7 +121,7 @@ async def parser(msg: MessageSession):
                         if not await msg.checkPermission():
                             await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                             continue
-                    if module.match_list is None:
+                    if module.match_list.set is None:
                         await msg.sendMessage(f'发生错误：{command_first_word}未绑定任何命令，，请联系开发者处理。'
                                               f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=。')
                         continue
