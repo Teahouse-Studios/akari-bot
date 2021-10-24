@@ -401,7 +401,7 @@ class wikilib:
             print(desc)
             fin_page_name = geturl_pagename
             try:
-                section = re.match(r'.*(\#.*)', self.page_name)
+                section = re.match(r'.*(#.*)', self.page_name)
                 if section:
                     fin_page_name = geturl_pagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
                     full_url = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
@@ -491,6 +491,7 @@ class wikilib:
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done', 'text': '发生错误：请求页面超时。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
         except Exception as e:
+            traceback.print_exc()
             return {'status': 'done', 'text': f'发生错误：{str(e)}\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
         if 'interwiki' in self.page_raw['query']:
             iwp = self.page_raw['query']['interwiki'][0]

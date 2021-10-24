@@ -3,6 +3,8 @@ import ujson as json
 import traceback
 import os
 
+from urllib.parse import quote
+
 from config import Config
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.component import on_startup, on_schedule
@@ -15,7 +17,7 @@ from database import BotDBUtil
 @on_startup('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'], desc='开启后将会推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
     baseurl = 'https://www.minecraft.net'
-    url = 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10'
+    url = quote('https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10')
     webrender = Config('infobox_render')
     get = webrender + 'source?url=' + url
     if not webrender:
