@@ -74,7 +74,9 @@ class PageInfo:
                  desc: str = None,
                  args: str = None,
                  interwiki_prefix: str = '',
-                 status: bool = True
+                 status: bool = True,
+                 before_page_property='page',
+                 page_property='page'
                  ):
         self.info = info
         self.title = title
@@ -85,6 +87,8 @@ class PageInfo:
         self.args = args
         self.interwiki_prefix = interwiki_prefix
         self.status = status
+        self.before_page_property = before_page_property
+        self.page_property = page_property
 
 
 class WikiLib:
@@ -263,8 +267,9 @@ class WikiLib:
         new_page_name = get_page['query']['search'][0]['title'] if len(get_page['query']['search']) > 0 else None
         prompt = ''
         title_split = page_name.split(':')
-        if title_split[0] not in self.wiki_info.namespaces:
-            prompt += f'\n提示：此Wiki上找不到“{title_split[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
+        print(title_split, len(title_split))
+        if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces:
+            prompt += f'提示：此Wiki上找不到“{title_split[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
         return new_page_name, prompt
 
     async def parse_page_info(self, title: Union[str, list, tuple, dict], doc_mode=False,
@@ -279,11 +284,24 @@ class WikiLib:
             for t in title:
                 split_name = re.split(r'([#?])', t)
                 title = re.sub('_', ' ', split_name[0])
+                arg_list = []
+                quote_code = False
+                for a in split_name[1:]:
+                    if a[0] == '#':
+                        quote_code = True
+                    if a[0] == '?':
+                        quote_code = False
+                    if quote_code:
+                        arg_list.append(urllib.parse.quote(a))
+                    else:
+                        arg_list.append(a)
                 query_list.update({title: PageInfo(info=self.wiki_info, title=title,
-                                                   args=''.join(split_name[1:]) if len(split_name) > 1 else None)})
+                                                   args=''.join(arg_list) if len(split_name) > 1 else None)})
         else:
             query_list = title
         print(query_list)
+        for x in query_list:
+            print(x, query_list[x].__dict__)
         query_string = {'action': 'query', 'format': 'json', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
                         'redirects': 'True', 'titles': '|'.join(query_list[n].title for n in query_list)}
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
@@ -303,10 +321,14 @@ class WikiLib:
         for x in query_list:
             if query_list[x].before_title is not None:
                 redirects[query_list[x].title] = query_list[x].before_title
+        print(redirects)
         normalized_ = query.get('normalized')
         if normalized_ is not None:
             for n in normalized_:
-                redirects[n['to']] = n['from']
+                if n['from'] in redirects:
+                    redirects[n['to']] = redirects[n['from']]
+                else:
+                    redirects[n['to']] = n['from']
         interwiki_ = query.get('interwiki')
         interwiki = {}
         if interwiki_ is not None:
@@ -322,13 +344,16 @@ class WikiLib:
                 query_iw.interwiki_prefix += i['iw'] + ':'
                 if i['iw'] not in interwiki:
                     interwiki[i['iw']] = {}
-                interwiki[i['iw']].update({i['title'] if query_iw.before_title is None else query_iw.before_title: query_iw})
+                interwiki[i['iw']].update(
+                    {i['title'] if query_iw.before_title is None else query_iw.before_title: query_iw})
         pages = query.get('pages')
         if pages is not None:
             for page_id in pages:
                 page_raw = pages[page_id]
                 title = page_raw['title']
                 before_page_title = redirects.get(title)
+                print(before_page_title)
+                print(query_list.get(before_page_title), query_list.get(title))
                 page_args = query_list.get(before_page_title).args if before_page_title is not None \
                     else query_list.get(title).args
                 set_query = query_list[before_page_title if before_page_title is not None else title]
@@ -340,16 +365,30 @@ class WikiLib:
                         set_query.before_title = before_page_title
                         set_query.link = full_url
                     else:
-                        research = await self.research_page(title)
-                        set_query.title = research[0]
-                        set_query.before_title = title
-                        set_query.desc = research[1]
-                        set_query.status = False
+                        split_title = title.split(':')
+                        if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                            rstitle = ':'.join(split_title[1:])
+                            research = await self.parse_page_info(rstitle)
+                            rsresult = research[rstitle]
+                            set_query.title = rsresult.title
+                            set_query.link = rsresult.link
+                            set_query.desc = rsresult.desc
+                            set_query.file = rsresult.file
+                            set_query.before_title = title
+                            set_query.before_page_property = 'template'
+                            set_query.status = rsresult.status
+                        else:
+                            research = await self.research_page(title)
+                            set_query.title = research[0]
+                            set_query.before_title = title
+                            set_query.desc = research[1]
+                            set_query.status = False
                 else:
                     page_desc = ''
                     split_title = title.split(':')
                     get_desc = True
-                    if not doc_mode and len(split_title) > 1 and split_title in self.wiki_info.namespaces_local \
+                    if not doc_mode and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
                             and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
                         get_all_text = await self.get_wikitext(title)
                         match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
@@ -362,6 +401,7 @@ class WikiLib:
                             get_desc = False
                             get_doc_desc = await self.parse_page_info(get_doc, doc_mode=True)
                             page_desc = get_doc_desc[get_doc].desc
+                            set_query.before_page_property = set_query.page_property = 'template'
                     if get_desc:
                         if use_textextracts:
                             raw_desc = page_raw.get('extract')
