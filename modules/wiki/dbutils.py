@@ -1,3 +1,5 @@
+from typing import Union
+
 import ujson as json
 
 from core.elements import MessageSession
@@ -37,10 +39,9 @@ class WikiTargetInfo:
             session.rollback()
             raise
 
-    def get_start_wiki(self):
+    def get_start_wiki(self) -> Union[str, None]:
         if self.query is not None:
-            return self.query.link if self.query.link is not None else False
-        return False
+            return self.query.link if self.query.link is not None else None
 
     @retry(stop=stop_after_attempt(3))
     def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
@@ -59,13 +60,13 @@ class WikiTargetInfo:
             session.rollback()
             raise
 
-    def get_interwikis(self):
+    def get_interwikis(self) -> dict:
         q = self.query.iws
         if q is not None:
             iws = json.loads(q)
             return iws
         else:
-            return False
+            return {}
 
     @retry(stop=stop_after_attempt(3))
     def config_headers(self, headers, let_it: [bool, None] = True):
