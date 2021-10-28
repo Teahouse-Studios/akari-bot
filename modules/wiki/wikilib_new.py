@@ -75,8 +75,9 @@ class PageInfo:
                  args: str = None,
                  interwiki_prefix: str = '',
                  status: bool = True,
-                 before_page_property='page',
-                 page_property='page'
+                 before_page_property: str = 'page',
+                 page_property: str = 'page',
+                 invalid_namespace: bool = False
                  ):
         self.info = info
         self.title = title
@@ -89,6 +90,7 @@ class PageInfo:
         self.status = status
         self.before_page_property = before_page_property
         self.page_property = page_property
+        self.invalid_namespace = invalid_namespace
 
 
 class WikiLib:
@@ -265,12 +267,12 @@ class WikiLib:
                                        srenablerewrites=True,
                                        format='json')
         new_page_name = get_page['query']['search'][0]['title'] if len(get_page['query']['search']) > 0 else None
-        prompt = ''
         title_split = page_name.split(':')
         print(title_split, len(title_split))
+        is_invalid_namespace = False
         if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces:
-            prompt += f'提示：此Wiki上找不到“{title_split[0]}”名字空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
-        return new_page_name, prompt
+            is_invalid_namespace = True
+        return new_page_name, is_invalid_namespace
 
     async def parse_page_info(self, title: Union[str, list, tuple, dict], doc_mode=False,
                               tried_iw=0) -> Dict[str, PageInfo]:
@@ -382,7 +384,7 @@ class WikiLib:
                             research = await self.research_page(title)
                             set_query.title = research[0]
                             set_query.before_title = title
-                            set_query.desc = research[1]
+                            set_query.invalid_namespace = research[1]
                             set_query.status = False
                 else:
                     page_desc = ''
