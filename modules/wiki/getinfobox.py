@@ -2,6 +2,7 @@ import os
 import re
 import traceback
 import uuid
+from typing import Union
 from urllib.parse import urljoin
 
 import aiohttp
@@ -14,7 +15,7 @@ from core.logger import Logger
 infobox_render = Config('infobox_render')
 
 
-async def get_infobox_pic(link, pagelink, headers):
+async def get_infobox_pic(link, page_link, headers) -> Union[str, bool]:
     if not infobox_render:
         return False
     try:
@@ -23,7 +24,7 @@ async def get_infobox_pic(link, pagelink, headers):
         link = re.sub(r'(?:w/|)api.php', '', link)
         try:
             async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.get(pagelink, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
         except:
             traceback.print_exc()

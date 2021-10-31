@@ -1,8 +1,6 @@
 import datetime
-import functools
 import traceback
 from typing import Union, Dict, List
-from string import Template as StrTemplate
 
 import html2text
 import ujson as json

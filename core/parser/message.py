@@ -134,7 +134,6 @@ async def parser(msg: MessageSession):
                             command_parser = CommandParser(module)
                             try:
                                 parsed_msg = command_parser.parse(command)
-                                print(parsed_msg)
                                 submodule = parsed_msg[0]
                                 msg.parsed_msg = parsed_msg[1]
                                 if submodule.required_superuser:
@@ -199,6 +198,7 @@ async def parser(msg: MessageSession):
                                 return await msg.sendMessage('您有命令正在执行，请稍后再试。')
                             async with msg.Typing(msg):
                                 await rfunc.function(msg)  # 将msg传入下游模块
+                    ExecutionLockList.remove(msg)
         except AbuseWarning as e:
             await warn_target(msg, str(e))
             temp_ban_counter[msg.target.senderId] = {'count': 1,

@@ -33,7 +33,6 @@ class CommandParser:
             none_doc = True
             for match in args.match_list.set:
                 if match.help_doc is not None:
-                    print(match.help_doc)
                     none_doc = False
                     help_doc_list = help_doc_list + match.help_doc
             if not none_doc:
@@ -107,7 +106,6 @@ class CommandParser:
                     raise InvalidCommandFormatError
                 else:
                     base_match = docopt(self.args, argvs=split_command[1:], default_help=False)
-                    print(base_match)
                     for match in self.origin_template.match_list.set:
                         if match.help_doc is None:
                             continue
@@ -120,7 +118,6 @@ class CommandParser:
                                 continue
                         except DocoptExit:
                             continue
-                        print(get_parse)
                         correct = True
                         for g in get_parse:
                             if g not in base_match or get_parse[g] != base_match[g]:
