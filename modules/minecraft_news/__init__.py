@@ -14,49 +14,6 @@ from core.utils import get_url
 from database import BotDBUtil
 
 
-@on_startup('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'], desc='开启后将会推送来自Minecraft官网的新闻。')
-async def start_check_news(bot: FetchTarget):
-    baseurl = 'https://www.minecraft.net'
-    url = quote('https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10')
-    webrender = Config('infobox_render')
-    get = webrender + 'source?url=' + url
-    if not webrender:
-        return
-    getpage = await get_url(get)
-    title_list = []
-    if getpage:
-        o_nws = json.loads(getpage)['article_grid']
-        for o_article in o_nws:
-            o_default_tile = o_article['default_tile']['title']
-            title_list.append(o_default_tile)
-    Logger.info(str(title_list))
-
-    @Scheduler.scheduled_job('interval', seconds=600)
-    async def check_news():
-        get_all_enabled_user = BotDBUtil.Module.get_enabled_this('minecraft_news')
-        user_list = await bot.fetch_target_list(get_all_enabled_user)
-        if not user_list:
-            return
-        Logger.info('Checking Minecraft news...' + str(title_list))
-        async with aiohttp.ClientSession() as session:
-            async with session.get(get) as resp:
-                status = resp.status
-                if status == 200:
-                    nws = json.loads(await resp.read())['article_grid']
-                    for article in nws:
-                        default_tile = article['default_tile']
-                        title = default_tile['title']
-                        desc = default_tile['sub_header']
-                        link = baseurl + article['article_url']
-                        if title not in title_list:
-                            title_list.append(title)
-                            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
-                            await bot.post_message('minecraft_news', articletext, user_list=user_list)
-                    Logger.info('Minecraft news checked.')
-                else:
-                    Logger.info('Check minecraft news failed:' + str(status))
-
-
 def getfileversions(path):
     if not os.path.exists(path):
         a = open(path, 'a')
@@ -65,6 +22,34 @@ def getfileversions(path):
     s = w.read().split('\n')
     w.close()
     return s
+
+
+@on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft官网的新闻。')
+async def start_check_news(bot: FetchTarget):
+    Logger.info('Checking Minecraft news...')
+    file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
+    baseurl = 'https://www.minecraft.net'
+    url = quote('https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10')
+    webrender = Config('infobox_render')
+    get = webrender + 'source?url=' + url
+    if not webrender:
+        return
+    getpage = await get_url(get)
+    if getpage:
+        alist = getfileversions(file_)
+        o_nws = json.loads(getpage)['article_grid']
+        for o_article in o_nws:
+            default_tile = o_article['default_tile']
+            title = default_tile['title']
+            desc = default_tile['sub_header']
+            link = baseurl + o_article['article_url']
+            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
+            if title not in alist:
+                await bot.post_message('minecraft_news', articletext)
+                addversion = open(file_, 'a')
+                addversion.write('\n' + title)
+                addversion.close()
+    Logger.info('Minecraft news checked.')
 
 
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。')
