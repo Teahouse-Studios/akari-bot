@@ -13,13 +13,14 @@ import traceback
 import aioconsole
 
 from init import init_bot
-from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets
+from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
 from core.unit_test.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.loader import ModulesManager
 from core.utils import init
 
+EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
 

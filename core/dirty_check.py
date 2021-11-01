@@ -54,6 +54,8 @@ async def check(*text) -> list:
     if not accessKeyId or not accessKeySecret or not EnableDirtyWordCheck.status:
         Logger.warn('Dirty words filter was disabled, skip.')
         return list(text)
+    if not text:
+        return []
     query_list = {}
     count = 0
     for t in text:
@@ -125,9 +127,10 @@ async def check(*text) -> list:
                 else:
                     raise ValueError(await resp.text())
     results = []
+    print(query_list)
     for x in query_list:
         for y in query_list[x]:
-            results.append(y)
+            results.append(query_list[x][y])
     return results
 
 

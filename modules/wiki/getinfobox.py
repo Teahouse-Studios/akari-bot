@@ -16,7 +16,7 @@ infobox_render = Config('infobox_render')
 
 
 async def get_infobox_pic(link, page_link, headers) -> Union[str, bool]:
-    if not infobox_render:
+    if not infobox_render or page_link == 'https://wdf.ink/6OUp':
         return False
     try:
         Logger.info('Starting find infobox..')

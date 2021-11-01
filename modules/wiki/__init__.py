@@ -96,43 +96,57 @@ async def set_headers(msg: MessageSession):
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
             
 
-aud = command('wiki_audit', alias='wa',
-              developers=('Dianliang233') , need_superuser=True)
+aud = on_command('wiki_audit', alias='wa',
+                 developers=['Dianliang233'], required_superuser=True)
 
-@aud.handle(['allow <apiLinkRegex>',
-             'deny <apiLinkRegex>',
-             'query <apiLinkRegex>',
-             'list',
-             '~wiki_audit <apiLinkRegex>'])
-async def wiki_audit(msg: MessageSession):
+
+@aud.handle('allow <apiLinkRegex>')
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
     req = msg.parsed_msg
-    print(req)
     op = msg.session.sender
     api = req['<apiLinkRegex>']
-    if req['deny']:
-        res = await audit_remove(api)
-        if res is False:
-            await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
-        else:
-            await msg.sendMessage('成功删除白名单：' + api)
-    elif req['list']:
-        wiki_pair = await audit_list()
-        wikis = []
-        for pair in wiki_pair:
-            wikis.append(f'{pair[0]}（by {pair[1]}）')
-        await msg.sendMessage('现有白名单：\n' + '\n'.join(wikis))
-    elif req['query']:
-        res = await audit_query(api)
-        if res:
-            await msg.sendMessage(api + '已存在于白名单。')
-        else:
-            await msg.sendMessage(api + '不存在于白名单。')
+    res = audit_allow(api, op)
+    if res is False:
+        await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
     else:
-        res = await audit_allow(api, op)
-        if res is False:
-            await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
-        else:
+        check = await WikiLib(api, headers=target.get_headers()).check_wiki_available()
+        if check.available:
             await msg.sendMessage('成功加入白名单：' + api)
+        else:
+            result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+            await msg.sendMessage(result)
+
+
+@aud.handle('deny <apiLinkRegex>')
+async def _(msg: MessageSession):
+    req = msg.parsed_msg
+    api = req['<apiLinkRegex>']
+    res = audit_remove(api)
+    if not res:
+        await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
+    else:
+        await msg.sendMessage('成功删除白名单：' + api)
+
+
+@aud.handle('query <apiLinkRegex>')
+async def _(msg: MessageSession):
+    req = msg.parsed_msg
+    api = req['<apiLinkRegex>']
+    res = audit_query(api)
+    if res:
+        await msg.sendMessage(api + '已存在于白名单。')
+    else:
+        await msg.sendMessage(api + '不存在于白名单。')
+
+
+@aud.handle('list')
+async def _(msg: MessageSession):
+    wiki_pair = audit_list()
+    wikis = []
+    for pair in wiki_pair:
+        wikis.append(f'{pair[0]}（by {pair[1]}）')
+    await msg.sendMessage('现有白名单：\n' + '\n'.join(wikis))
 
 
 on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari'])

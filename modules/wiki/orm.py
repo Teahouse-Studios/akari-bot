@@ -25,9 +25,11 @@ class WikiInfo(Base):
     siteInfo = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
+
 class WikiWhitelist(Base):
     __tablename__ = table_prefix + 'WikiWhitelist'
     apiLinkRegex = Column(String(512), primary_key=True)
     operator = Column(String(512))
+
 
 Base.metadata.create_all(bind=engine, checkfirst=True)

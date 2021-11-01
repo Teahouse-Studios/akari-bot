@@ -9,7 +9,10 @@ import urllib.parse
 
 from core.logger import Logger
 from core.utils import get_url
-from modules.wiki.dbutils import WikiSiteInfo as DBSiteInfo
+from core.dirty_check import check
+
+from .dbutils import WikiSiteInfo as DBSiteInfo
+from .audit import check_whitelist
 
 
 class InvalidPageIDError(Exception):
@@ -41,7 +44,8 @@ class WikiInfo:
                  realurl: str,
                  name: str,
                  namespaces: list,
-                 namespaces_local: dict):
+                 namespaces_local: dict,
+                 in_whitelist: bool):
         self.api = api
         self.articlepath = articlepath
         self.extensions = extensions
@@ -50,6 +54,7 @@ class WikiInfo:
         self.name = name
         self.namespaces = namespaces
         self.namespaces_local = namespaces_local
+        self.in_whitelist = in_whitelist
 
 
 class WikiStatus:
@@ -95,7 +100,7 @@ class WikiLib:
     def __init__(self, url, headers=None):
         self.url = url
         self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
-                                  namespaces=[], namespaces_local={})
+                                  namespaces=[], namespaces_local={}, in_whitelist=False)
         self.headers = headers
 
     async def get_json(self, api, **kwargs) -> dict:
@@ -133,15 +138,16 @@ class WikiLib:
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki['prefix']] = interwiki['url']
-
+        api_url = real_url + info['query']['general']['scriptpath'] + '/api.php'
         return WikiInfo(articlepath=real_url + info['query']['general']['articlepath'],
                         extensions=ext_list,
                         name=info['query']['general']['sitename'],
                         realurl=real_url,
-                        api=real_url + info['query']['general']['scriptpath'] + '/api.php',
+                        api=api_url,
                         namespaces=namespaces,
                         namespaces_local=namespaces_local,
-                        interwiki=interwiki_dict)
+                        interwiki=interwiki_dict,
+                        in_whitelist=check_whitelist(api_url))
 
     async def check_wiki_available(self):
         try:
@@ -391,4 +397,20 @@ class WikiLib:
                     t = page_info.title
                     if tried_iw == 0:
                         page_info.title = page_info.interwiki_prefix + t
+        if not self.wiki_info.in_whitelist:
+            checklist = []
+            if page_info.title is not None:
+                checklist.append(page_info.title)
+            if page_info.before_title is not None:
+                checklist.append(page_info.before_title)
+            if page_info.desc is not None:
+                checklist.append(page_info.desc)
+            chk = await check(*checklist)
+            for x in chk:
+                print(x)
+                if x.find("<吃掉了>") != -1 or x.find("<全部吃掉了>") != -1:
+                    page_info.status = True
+                    page_info.before_title = '?'
+                    page_info.title = '¿'
+                    page_info.link = 'https://wdf.ink/6OUp'
         return page_info

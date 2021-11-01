@@ -37,7 +37,7 @@ def init() -> None:
 
 
 async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None):
-      '''利用AioHttp获取指定url的内容。
+    '''利用AioHttp获取指定url的内容。
     
     :param url: 需要获取的url。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
@@ -58,7 +58,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                 return text
 
 
-async def download_to_cache(link: str) -> Union[str, False]:
+async def download_to_cache(link: str) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
     
     :param link: 需要获取的link。
