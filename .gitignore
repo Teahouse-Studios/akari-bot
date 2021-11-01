@@ -21,3 +21,4 @@ core/unused_bots/**/assets
 .cache_loader
 assets/arc**
 assets/version*
+assets/mcnews.txt
