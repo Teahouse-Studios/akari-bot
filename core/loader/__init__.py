@@ -2,16 +2,17 @@ import importlib
 import os
 import re
 import traceback
+from typing import Dict, Union, List, Set
 
-from core.elements import Command, Option, Schedule
+from core.elements import Command, Option, Schedule, RegexCommand, StartUp, PrivateAssets
+from core.elements.module.meta import Meta
 from core.logger import Logger
-
-err_prompt = []
 
 load_dir_path = os.path.abspath('./modules/')
 
 
 def load_modules():
+    err_prompt = []
     fun_file = None
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:
@@ -30,100 +31,117 @@ def load_modules():
             tb = traceback.format_exc()
             Logger.info(f'Failed to load modules.{fun_file}: \n{tb}')
             err_prompt.append(str(tb))
+    loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
+    openloadercache = open(loadercache, 'w')
+    if err_prompt:
+        err_prompt = re.sub('  File "<frozen importlib.*?>", .*?\n', '', '\n'.join(err_prompt))
+        openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + err_prompt)
+    else:
+        openloadercache.write('所有模块已正确加载。')
+    openloadercache.close()
 
 
 class ModulesManager:
-    _modules_list = set()
+    modules: Dict[str, Union[Command, Option, Schedule, RegexCommand, StartUp]] = {}
 
     @staticmethod
-    def add_module(module: [Command, Option, Schedule]):
-        ModulesManager._modules_list.add(module)
+    def add_module(module: [Command, Option, Schedule, RegexCommand, StartUp]):
+        if module.bind_prefix not in ModulesManager.modules:
+            ModulesManager.modules.update({module.bind_prefix: module})
+        else:
+            raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
 
     @staticmethod
-    def return_modules_list():
-        return ModulesManager._modules_list
+    def bind_to_module(bind_prefix: str, meta):
+        if bind_prefix in ModulesManager.modules:
+            ModulesManager.modules[bind_prefix].match_list.add(meta)
 
     @staticmethod
-    def return_modules_list_as_dict():
-        d = {}
-        modules = []
-        recommend_modules = []
-        for alias in ModulesManager.return_modules_alias_map():
-            modules.append(alias)
-        for x in ModulesManager._modules_list:
-            prefix = x.bind_prefix
-            if prefix in d:
-                raise ValueError(f'Duplicate bind prefix "{prefix}"')
-            d.update({prefix: x})
-            modules.append(prefix)
-            recommend = x.recommend_modules
-            if isinstance(recommend, str):
-                recommend_modules.append(recommend)
-            if isinstance(recommend, (list, tuple)):
-                for y in recommend:
-                    recommend_modules.append(y)
-        for rm in recommend_modules:
-            if rm not in modules:
-                raise ValueError(f'Invalid recommend module "{rm}"')
-        return d
+    def return_modules_list_as_dict() -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
+        return ModulesManager.modules
 
     @staticmethod
-    def return_modules_alias_map():
+    def return_modules_alias_map() -> Dict[str, str]:
+        """
+        返回每个别名映射到的模块
+        """
         alias_map = {}
-        for x in ModulesManager._modules_list:
-            if isinstance(x.alias, str):
-                alias_map.update({x.alias: x.bind_prefix})
-            if isinstance(x.alias, (tuple, list)):
-                for y in x.alias:
-                    alias_map.update({y: x.bind_prefix})
-            if isinstance(x.alias, dict):
-                alias_map.update(x.alias)
+        modules = ModulesManager.return_modules_list_as_dict()
+        for m in modules:
+            module = modules[m]
+            if isinstance(module.alias, str):
+                alias_map.update({module.alias: module.bind_prefix})
+            if isinstance(module.alias, dict):
+                module.alias = [module.alias]
+            if isinstance(module.alias, (tuple, list)):
+                for y in module.alias:
+                    if isinstance(y, dict):
+                        for z in y:
+                            alias_map.update({z: y[z]})
+                    elif isinstance(y, str):
+                        alias_map.update({y: module.bind_prefix})
+                    else:
+                        raise ValueError(f'Unknown alias elements type: {y}')
         return alias_map
 
     @staticmethod
-    def return_modules_developers_map():
+    def return_module_alias(module_name) -> Dict[str, list]:
+        """
+        返回此模块的别名列表
+        """
+        alias_list = {}
+        module = ModulesManager.return_modules_list_as_dict()[module_name]
+        if module.alias is None:
+            return alias_list
+        if isinstance(module.alias, str):
+            alias_list.update({module.bind_prefix: [module.alias]})
+        if isinstance(module.alias, (list, tuple)):
+            for x in module.alias:
+                if module.bind_prefix not in alias_list:
+                    alias_list.update({module.bind_prefix: []})
+
+                if isinstance(x, dict):
+                    x = [x]
+                if isinstance(x, (tuple, list)):
+                    for y in x:
+                        if isinstance(y, str):
+                            alias_list[module.bind_prefix].append(x)
+                        if isinstance(y, dict):
+                            for z in y:
+                                if z not in alias_list:
+                                    alias_list.update({z: []})
+                                alias_list[z].append(y[z])
+        return alias_list
+
+    @staticmethod
+    def return_modules_developers_map() -> Dict[str, list]:
         d = {}
-        for x in ModulesManager._modules_list:
-            if x.developers is not None:
-                d.update({x.bind_prefix: x.developers})
+        modules = ModulesManager.return_modules_list_as_dict()
+        for m in modules:
+            module = modules[m]
+            if module.developers is not None:
+                if isinstance(module.developers, str):
+                    d.update({module.bind_prefix: [module.developers]})
+                elif isinstance(module.developers, (tuple, list)):
+                    d.update({module.bind_prefix: module.developers})
         return d
 
     @staticmethod
-    def return_regex_modules():
+    def return_regex_modules() -> Dict[str, RegexCommand]:
         d = {}
-        for x in ModulesManager._modules_list:
-            if isinstance(x, Command) and x.is_regex_function:
-                d.update({x.bind_prefix: x})
+        modules = ModulesManager.return_modules_list_as_dict()
+        for m in modules:
+            module = modules[m]
+            if isinstance(module, RegexCommand):
+                d.update({module.bind_prefix: module})
         return d
 
     @staticmethod
-    def return_modules_help():
-        d = {}
-        for x in ModulesManager._modules_list:
-            if x.help_doc is not None:
-                d.update({x.bind_prefix: x.help_doc})
-        return d
-
-    @staticmethod
-    def return_schedule_function_list():
+    def return_schedule_function_list() -> List[Schedule]:
         l = []
-        for x in ModulesManager._modules_list:
-            if isinstance(x, Schedule):
-                l.append(x)
+        modules = ModulesManager.return_modules_list_as_dict()
+        for m in modules:
+            module = modules[m]
+            if isinstance(m, Schedule):
+                l.append(m)
         return l
-
-
-load_modules()
-Modules = ModulesManager.return_modules_list_as_dict()
-ModulesAliases = ModulesManager.return_modules_alias_map()
-ModulesRegex = ModulesManager.return_regex_modules()
-ModulesHelp = ModulesManager.return_modules_help()
-
-loadercache = os.path.abspath('.cache_loader')
-openloadercache = open(loadercache, 'w')
-if err_prompt:
-    err_prompt = re.sub('  File "<frozen importlib.*?>", .*?\n', '', '\n'.join(err_prompt))
-    openloadercache.write('加载模块中发生了以下错误，对应模块未加载：\n' + err_prompt)
-else:
-    openloadercache.write('所有模块已正确加载。')
-openloadercache.close()

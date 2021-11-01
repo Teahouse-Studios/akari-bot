@@ -5,7 +5,8 @@ from typing import List
 
 from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
+    ExecutionLockList
 from core.elements.others import confirm_command
 from database import BotDBUtil
 
@@ -23,40 +24,48 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = True
+        forward = False
 
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
+            if msgchain == '':
+                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
             send = await bot.send_message(self.session.target, msgchain,
                                           reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
-                                                 senderFrom='Telegram|Bot'),
-                                  session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
-        if isinstance(msgchain, (list, tuple)):
+        elif isinstance(msgchain, (list, tuple)):
             count = 0
-            send_list = []
+            send = []
             for x in msgchain:
                 if isinstance(x, Plain):
-                    send = await bot.send_message(self.session.target, x.text,
+                    send_ = await bot.send_message(self.session.target, x.text,
                                                   reply_to_message_id=self.session.message.message_id if quote
                                                   and count == 0 and self.session.message else None)
-                if isinstance(x, Image):
+                elif isinstance(x, Image):
                     with open(await x.get(), 'rb') as image:
-                        send = await bot.send_photo(self.session.target, image,
+                        send_ = await bot.send_photo(self.session.target, image,
                                                     reply_to_message_id=self.session.message.message_id if quote
                                                     and count == 0
                                                     and self.session.message else None)
-                if isinstance(x, Voice):
+                elif isinstance(x, Voice):
                     with open(x.path, 'rb') as voice:
-                        send = await bot.send_audio(self.session.target, voice,
+                        send_ = await bot.send_audio(self.session.target, voice,
                                                     reply_to_message_id=self.session.message.message_id if quote
                                                     and count == 0 and self.session.message else None)
-                send_list.append(send)
+                else:
+                    send_ = False
+                if send_:
+                    send.append(send_)
                 count += 1
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
+        else:
+            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+            send = await bot.send_message(self.session.target, msgchain,
+                                          reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
+        return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                                  senderFrom='Telegram|Bot'),
-                                  session=Session(message=send_list, target=send.chat.id, sender=send.from_user.id))
+                              session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
 
     async def waitConfirm(self, msgchain=None, quote=True):
+        ExecutionLockList.remove(self)
         send = None
         if msgchain is not None:
             msgchain = convert2lst(msgchain)
@@ -73,7 +82,7 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderInfo.check_TargetAdmin(
-                self.target.targetId):
+                self.target.targetId) or self.target.senderInfo.query.isSuperUser:
             return True
         admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
         if self.session.sender in admins:
@@ -85,6 +94,10 @@ class MessageSession(MS):
 
     def asDisplay(self):
         return self.session.message.text
+
+    async def sleep(self, s):
+        ExecutionLockList.remove(self)
+        await asyncio.sleep(s)
 
     async def delete(self):
         try:
@@ -118,6 +131,15 @@ class FetchTarget(FT):
                                   Session(message=False, target=matchChannel.group(2), sender=matchChannel.group(2)))
         else:
             return False
+
+    @staticmethod
+    async def fetch_target_list(targetList: list) -> List[MessageSession]:
+        lst = []
+        for x in targetList:
+            fet = await FetchTarget.fetch_target(x)
+            if fet:
+                lst.append(fet)
+        return lst
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[MessageSession] = None):

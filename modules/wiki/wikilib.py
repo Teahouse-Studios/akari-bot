@@ -10,7 +10,7 @@ import ujson as json
 
 from core import dirty_check
 from core.logger import Logger
-from .dbutils import WikiSiteInfo
+from modules.wiki.dbutils import WikiSiteInfo
 
 
 class wikilib:
@@ -51,7 +51,6 @@ class wikilib:
         except:
             try:
                 getpage = await self.get_data(link, 'text', headers=headers, ignore_err=True)
-                print(getpage)
                 if getpage.find('<title>Attention Required! | Cloudflare</title>') != -1:
                     return False, 'CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。'
                 m = re.findall(
@@ -109,6 +108,7 @@ class wikilib:
         if not self.danger_wiki_check():
             return False
         check = await dirty_check.check(text)
+        check = '\n'.join(check)
         print(check)
         if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
             return True
@@ -401,7 +401,7 @@ class wikilib:
             print(desc)
             fin_page_name = geturl_pagename
             try:
-                section = re.match(r'.*(\#.*)', self.page_name)
+                section = re.match(r'.*(#.*)', self.page_name)
                 if section:
                     fin_page_name = geturl_pagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
                     full_url = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
@@ -491,11 +491,12 @@ class wikilib:
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done', 'text': '发生错误：请求页面超时。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
         except Exception as e:
+            traceback.print_exc()
             return {'status': 'done', 'text': f'发生错误：{str(e)}\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
         if 'interwiki' in self.page_raw['query']:
             iwp = self.page_raw['query']['interwiki'][0]
             match_interwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
-            if tryiw <= 5:
+            if tryiw <= 10:
                 iw_list = await self.get_interwiki(self.wiki_api_endpoint)
                 interwiki_link = iw_list[iwp['iw']]
                 check = await self.check_wiki_available(interwiki_link)
@@ -507,7 +508,7 @@ class wikilib:
                     return {'status': 'done',
                             'text': f'发生错误：指向的interwiki或许不是一个有效的MediaWiki。{interwiki_link}{match_interwiki.group(1)}'}
             else:
-                return {'status': 'warn', 'text': '警告：尝试重定向已超过5次，继续尝试将有可能导致你被机器人加入黑名单。'}
+                return {'status': 'warn', 'text': '警告：尝试重定向已超过10次，继续尝试将有可能导致你被机器人加入黑名单。'}
         if 'redirects' in self.page_raw['query']:
             self.page_name = self.page_raw['query']['redirects'][0]['to']
         try:

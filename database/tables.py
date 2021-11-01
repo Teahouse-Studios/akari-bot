@@ -37,4 +37,9 @@ class CommandTriggerTime(Base):
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
-__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime"]
+class GroupWhiteList(Base):
+    __tablename__ = "GroupWhiteList"
+    targetId = Column(String(512), primary_key=True)
+
+
+__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupWhiteList"]

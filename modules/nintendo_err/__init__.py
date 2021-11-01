@@ -2,13 +2,13 @@
 import discord
 
 from core.elements import MessageSession
-from core.loader.decorator import command
+from core.component import on_command
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
-class ctx:
+class Action:
     @classmethod
-    async def send(cls, kwargs, msg=False, embed=False):
+    async def send(cls, kwargs, msg=None, embed=False):
         def convertdict(ele: dict):
             emsglst = []
             if 'title' in ele:
@@ -25,7 +25,7 @@ class ctx:
             return emsglst
 
         msglst = []
-        if msg:
+        if msg is not None:
             if isinstance(msg, dict):
                 msgs = convertdict(msg)
                 msglst.append('\n'.join(msgs))
@@ -123,7 +123,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         err = ' '.join(kwargs['trigger_msg'].split(' ')[1:])
         err = self.fixup_input(err)
         if (meme := self.check_meme(err)) is not None:
-            return await ctx.send(kwargs, meme)
+            return await Action.send(kwargs, meme)
         try:
             ret = self.fetch(err)
         except ValueError:
@@ -138,9 +138,9 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
 
             embed.color = ret.color
             embed = embed.to_dict()
-            await ctx.send(kwargs, embed=embed)
+            await Action.send(kwargs, embed=embed)
         else:
-            await ctx.send(kwargs, f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
+            await Action.send(kwargs, f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
 
     async def nxerr(self, kwargs):
         """
@@ -156,7 +156,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         err = ' '.join(kwargs['trigger_msg'].split(' ')[1:])
         err = self.fixup_input(err)
         if (meme := self.check_meme(err)) is not None:
-            return await ctx.send(kwargs, meme)
+            return await Action.send(kwargs, meme)
 
         ret = None
 
@@ -172,9 +172,9 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
 
             embed.color = ret.color
             embed = embed.to_dict()
-            await ctx.send(kwargs, embed=embed)
+            await Action.send(kwargs, embed=embed)
         else:
-            await ctx.send(kwargs, f'The code you entered is \
+            await Action.send(kwargs, f'The code you entered is \
 invalid for the switch.')
 
     async def ctrerr(self, kwargs):
@@ -189,7 +189,7 @@ invalid for the switch.')
         """
         err = ' '.join(kwargs['trigger_msg'].split(' ')[1:])
         if (meme := self.check_meme(err)) is not None:
-            return await ctx.send(kwargs, meme)
+            return await Action.send(kwargs, meme)
 
         ret = None
 
@@ -207,9 +207,9 @@ invalid for the switch.')
 
             embed.color = ret.color
             embed = embed.to_dict()
-            await ctx.send(kwargs, embed=embed)
+            await Action.send(kwargs, embed=embed)
         else:
-            await ctx.send(kwargs, f'The code you entered is \
+            await Action.send(kwargs, f'The code you entered is \
 invalid for the 3DS.')
 
     async def cafeerr(self, kwargs):
@@ -227,7 +227,7 @@ invalid for the 3DS.')
         err = ' '.join(kwargs['trigger_msg'].split(' ')[1:])
         err = self.fixup_input(err)
         if (meme := self.check_meme(err)) is not None:
-            return await ctx.send(kwargs, meme)
+            return await Action.send(kwargs, meme)
 
         ret = None
 
@@ -245,9 +245,9 @@ invalid for the 3DS.')
 
             embed.color = ret.color
             embed = embed.to_dict()
-            await ctx.send(kwargs, embed=embed)
+            await Action.send(kwargs, embed=embed)
         else:
-            await ctx.send(kwargs, f'The code you entered is \
+            await Action.send(kwargs, f'The code you entered is \
 invalid for the Wii U.')
 
     async def cmderr2hex(self, kwargs):
@@ -259,7 +259,7 @@ invalid for the Wii U.')
         """
         err = ' '.join(kwargs['trigger_msg'].split(' ')[1:])
         error = self.fixup_input(err)
-        await ctx.send(kwargs, self.err2hex(error))
+        await Action.send(kwargs, self.err2hex(error))
 
     async def cmdhex2err(self, kwargs):
         """
@@ -270,7 +270,7 @@ invalid for the Wii U.')
         """
         err = ' '.join(kwargs['trigger_msg'].split(' ')[1:])
         error = self.fixup_input(err)
-        await ctx.send(kwargs, self.hex2err(error))
+        await Action.send(kwargs, self.hex2err(error))
 
     async def hexinfo(self, kwargs):
         """
@@ -288,14 +288,17 @@ invalid for the Wii U.')
                 embed.add_field(name="Description", value=desc, inline=False)
                 embed = embed.to_dict()
 
-                await ctx.send(kwargs, embed=embed)
+                await Action.send(kwargs, embed=embed)
             else:
-                await ctx.send(kwargs, 'This isn\'t a 3DS result code.')
+                await Action.send(kwargs, 'This isn\'t a 3DS result code.')
         else:
-            await ctx.send(kwargs, 'This isn\'t a hexadecimal value!')
+            await Action.send(kwargs, 'This isn\'t a hexadecimal value!')
 
 
-@command('err', help_doc='~err <errcode> {解析任天堂系列主机的报错码并给出原因。}', developers=['OasisAkari', 'kurisu'], allowed_none=False)
+e = on_command('err', developers=['OasisAkari', 'kurisu'])
+
+
+@e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')
 async def result(msg: MessageSession):
     """
     Displays information on game console result codes, with a fancy embed.
@@ -328,6 +331,6 @@ async def result(msg: MessageSession):
 
         embed.color = ret.color
         embed = embed.to_dict()
-        await ctx.send(msg, embed=embed)
+        await Action.send(msg, embed=embed)
     else:
-        await ctx.send(msg, f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
+        await Action.send(msg, f'你输入的代码是无效的，或者此功能不支持你使用的主机。')

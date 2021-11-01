@@ -3,7 +3,7 @@ import datetime
 from core.elements.message import MessageSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
-from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime
+from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime, GroupWhiteList
 from config import Config
 
 from tenacity import retry, stop_after_attempt
@@ -223,3 +223,19 @@ class BotDBUtil:
             except Exception:
                 session.rollback()
                 raise
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3))
+    def isGroupInWhiteList(targetId):
+        try:
+            session.expire_all()
+            query = session.query(GroupWhiteList).filter_by(targetId=targetId).first()
+            if query is not None:
+                return True
+            return False
+        except Exception:
+            session.rollback()
+            raise
+
+
+__all__ = ["BotDBUtil"]

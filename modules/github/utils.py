@@ -61,6 +61,7 @@ async def dirty_check(text, *whitelist_check):
     if whitelist_check in whitelist:
         return False
     check = await dirty.check(text)
+    check = '\n'.join(check)
     print(check)
     if check.find('<吃掉了>') != -1 or check.find('<全部吃掉了>') != -1:
         return True

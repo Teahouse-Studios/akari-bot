@@ -1,5 +1,5 @@
 from typing import List
-
+import asyncio
 
 class MsgInfo:
     __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom"]
@@ -29,7 +29,7 @@ class MessageSession:
     """
     消息会话，囊括了处理一条消息所需要的东西。
     """
-    __slots__ = ("target", "session", "trigger_msg", "parsed_msg",)
+    __slots__ = ("target", "session", "trigger_msg", "parsed_msg", "matched_msg",)
 
     def __init__(self,
                  target: MsgInfo,
@@ -73,6 +73,12 @@ class MessageSession:
         """
         ...
 
+    async def fake_forward_msg(self, nodelist):
+        """
+        用于发送假转发消息（QQ）。
+        """
+        ...
+
     class Typing:
         def __init__(self, msg):
             """
@@ -86,17 +92,28 @@ class MessageSession:
         """
         ...
 
+    async def sleep(self, s):
+        ...
+
     class Feature:
         """
         此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断（如QQ支持消息类型的语音而Discord不支持）
         """
         image = ...
         voice = ...
+        forward = ...
 
 
 class FetchTarget:
     @staticmethod
     async def fetch_target(targetId) -> MessageSession:
+        """
+        尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
+        """
+        ...
+
+    @staticmethod
+    async def fetch_target_list(targetList: list) -> List[MessageSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """

@@ -7,12 +7,12 @@ import discord
 from config import Config
 from core.bots.discord.client import client
 from core.bots.discord.message import MessageSession, FetchTarget
-from core.elements import MsgInfo, Session, Command, Schedule
-from core.loader import Modules
+from core.elements import MsgInfo, Session, Schedule, StartUp, PrivateAssets
+from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import parser
 from core.scheduler import Scheduler
-from core.utils import PrivateAssets, init, load_prompt
+from core.utils import init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
@@ -25,8 +25,9 @@ async def on_ready():
     global count
     if count == 0:
         gather_list = []
+        Modules = ModulesManager.return_modules_list_as_dict()
         for x in Modules:
-            if isinstance(Modules[x], Command) and Modules[x].autorun:
+            if isinstance(Modules[x], StartUp):
                 gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
             if isinstance(Modules[x], Schedule):
                 Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget])

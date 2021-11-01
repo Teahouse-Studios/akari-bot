@@ -1,0 +1,2 @@
+class AbuseWarning(Exception):
+    pass

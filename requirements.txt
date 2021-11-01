@@ -21,3 +21,4 @@ ujson
 pymysql
 discord.py
 tenacity
+aiocqhttp

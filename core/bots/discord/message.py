@@ -1,3 +1,4 @@
+import asyncio
 import re
 import traceback
 from typing import List
@@ -5,7 +6,7 @@ from typing import List
 import discord
 
 from core.bots.discord.client import client
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList
 from core.elements.others import confirm_command
 from database import BotDBUtil
 
@@ -23,6 +24,7 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = False
+        forward = False
 
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):
@@ -30,36 +32,43 @@ class MessageSession(MS):
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
             send = await self.session.target.send(msgchain,
                                                   reference=self.session.message if quote and self.session.message else None)
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
-                                                 senderFrom='Discord|Bot'),
-                                  session=Session(message=send, target=send.channel, sender=send.author))
-        if isinstance(msgchain, (list, tuple)):
+        elif isinstance(msgchain, (list, tuple)):
             count = 0
-            send_list = []
+            send = []
             for x in msgchain:
                 if isinstance(x, Plain):
-                    send = await self.session.target.send(x.text, reference=self.session.message if quote and count == 0
-                                                                                                    and self.session.message else None)
-                if isinstance(x, Image):
-                    send = await self.session.target.send(file=discord.File(await x.get()),
-                                                          reference=self.session.message if quote and count == 0
-                                                                                            and self.session.message else None)
-                send_list.append(send)
+                    send_ = await self.session.target.send(x.text,
+                                                           reference=self.session.message if quote and count == 0
+                                                                                             and self.session.message else None)
+                elif isinstance(x, Image):
+                    send_ = await self.session.target.send(file=discord.File(await x.get()),
+                                                           reference=self.session.message if quote and count == 0
+                                                                                             and self.session.message else None)
+                else:
+                    send_ = False
+                if send_:
+                    send.append(send_)
                 count += 1
-            return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
-                                                 senderFrom='Discord|Bot'),
-                                  session=Session(message=send_list, target=send.channel, sender=send.author))
+        else:
+            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+            send = await self.session.target.send(msgchain,
+                                                  reference=self.session.message if quote and self.session.message else None)
+        return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
+                                             senderFrom='Discord|Bot'),
+                              session=Session(message=send, target=self.session.target, sender=self.session.sender))
 
     async def waitConfirm(self, msgchain=None, quote=True):
+        ExecutionLockList.remove(self)
         def check(m):
             return m.channel == self.session.message.channel and m.author == self.session.message.author
+
         send = None
         if msgchain is not None:
             msgchain = convert2lst(msgchain)
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
             send = await self.sendMessage(msgchain, quote)
         msg = await client.wait_for('message', check=check)
-        if msgchain is not None:
+        if send is not None:
             await send.delete()
         return True if msg.content in confirm_command else False
 
@@ -76,6 +85,10 @@ class MessageSession(MS):
 
     def asDisplay(self):
         return self.session.message.content
+
+    async def sleep(self, s):
+        ExecutionLockList.remove(self)
+        await asyncio.sleep(s)
 
     async def delete(self):
         try:
@@ -110,6 +123,15 @@ class FetchTarget(FT):
                                   Session(message=False, target=getChannel, sender=getChannel))
         else:
             return False
+
+    @staticmethod
+    async def fetch_target_list(targetList: list) -> List[MessageSession]:
+        lst = []
+        for x in targetList:
+            fet = await FetchTarget.fetch_target(x)
+            if fet:
+                lst.append(fet)
+        return lst
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[MessageSession] = None):

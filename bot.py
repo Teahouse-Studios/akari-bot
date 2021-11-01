@@ -40,7 +40,6 @@ for t in threads:
     t.start()
 
 start = datetime.datetime.now()
-slow_mode = False
 
 while True:
     try:
@@ -61,9 +60,4 @@ while True:
     if all(p.poll() is not None for p in runlst):
         break
 
-    if not slow_mode:
-        end = datetime.datetime.now()
-        if (end - start).total_seconds() > 20:
-            slow_mode = True
-    else:
-        sleep(0.01)
+    sleep(0.001)

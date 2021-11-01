@@ -2,59 +2,60 @@ import asyncio
 import os
 import sys
 import time
-from typing import List
 
 import psutil
 import ujson as json
 
-from core.elements import MessageSession, Command
+from core.elements import MessageSession, Command, PrivateAssets
 from core.loader import ModulesManager
-from core.loader.decorator import command
-from core.parser.command import CommandParser
-from core.utils import PrivateAssets
+from core.component import on_command
+from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from database import BotDBUtil
 
+module = on_command('module',
+                    base=True,
+                    alias={'enable': 'module enable', 'disable': 'module disable'},
+                    developers=['OasisAkari'],
+                    required_admin=True
+                    )
 
-@command('module',
-         is_base_function=True,
-         need_admin=True,
-         help_doc=('~module enable (<module>...|all) {开启一个/多个或所有模块}',
-                   '~module disable (<module>...|all) {关闭一个/多个或所有模块}'),
-         alias={'enable': 'module enable', 'disable': 'module disable'},
-         developers=['OasisAkari'], allowed_none=False
-         )
+
+@module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
+                'disable (<module>...|all) {关闭一个/多个或所有模块}'])
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
-    modules = ModulesManager.return_modules_list_as_dict()
+    modules_ = ModulesManager.return_modules_list_as_dict()
     wait_config = msg.parsed_msg['<module>']
     wait_config_list = []
-    for module in wait_config:
-        if module not in wait_config_list:
-            if module in alias:
-                wait_config_list.append(alias[module])
+    for module_ in wait_config:
+        if module_ not in wait_config_list:
+            if module_ in alias:
+                wait_config_list.append(alias[module_])
             else:
-                wait_config_list.append(module)
+                wait_config_list.append(module_)
     query = BotDBUtil.Module(msg)
     msglist = []
     recommend_modules_list = []
     if msg.parsed_msg['enable']:
         enable_list = []
         if wait_config_list == ['all']:
-            for function in modules:
-                if not modules[function].need_superuser and not modules[function].is_base_function:
+            for function in modules_:
+                if not modules_[function].required_superuser:
+                    if isinstance(modules_[function], Command) and modules_[function].base:
+                        continue
                     enable_list.append(function)
         else:
-            for module in wait_config_list:
-                if module not in modules:
-                    msglist.append(f'失败：“{module}”模块不存在')
+            for module_ in wait_config_list:
+                if module_ not in modules_:
+                    msglist.append(f'失败：“{module_}”模块不存在')
                 else:
-                    if modules[module].need_superuser and not msg.checkSuperUser():
-                        msglist.append(f'失败：你没有打开“{module}”的权限。')
-                    elif modules[module].is_base_function:
-                        msglist.append(f'失败：“{module}”为基础模块。')
+                    if modules_[module_].required_superuser and not msg.checkSuperUser():
+                        msglist.append(f'失败：你没有打开“{module_}”的权限。')
+                    elif isinstance(modules_[module_], Command) and modules_[module_].base:
+                        msglist.append(f'失败：“{module_}”为基础模块。')
                     else:
-                        enable_list.append(module)
-                        recommend = modules[module].recommend_modules
+                        enable_list.append(module_)
+                        recommend = modules_[module_].recommend_modules
                         if isinstance(recommend, str):
                             recommend_modules_list.append(recommend)
                         if isinstance(recommend, (list, tuple)):
@@ -66,15 +67,15 @@ async def config_modules(msg: MessageSession):
     elif msg.parsed_msg['disable']:
         disable_list = []
         if wait_config_list == ['all']:
-            for function in modules:
-                if not modules[function].need_superuser and not modules[function].is_base_function:
+            for function in modules_:
+                if not modules_[function].required_superuser and not modules_[function].base:
                     disable_list.append(function)
         else:
-            for module in wait_config_list:
-                if module not in modules:
-                    msglist.append(f'失败：“{module}”模块不存在')
+            for module_ in wait_config_list:
+                if module_ not in modules_:
+                    msglist.append(f'失败：“{module_}”模块不存在')
                 else:
-                    disable_list.append(module)
+                    disable_list.append(module_)
         if query.disable(disable_list):
             for x in disable_list:
                 msglist.append(f'成功：关闭模块“{x}”')
@@ -83,7 +84,11 @@ async def config_modules(msg: MessageSession):
     if recommend_modules_list:
         fmt_help_doc_list = []
         for m in recommend_modules_list:
-            fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + CommandParser(modules[m]).return_formatted_help_doc())
+            try:
+                hdoc = CommandParser(modules_[m]).return_formatted_help_doc()
+                fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + hdoc)
+            except InvalidHelpDocTypeError:
+                pass
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
                                         '\n'.join(recommend_modules_list) + '\n\n' +
                                         '\n'.join(fmt_help_doc_list) +
@@ -96,12 +101,13 @@ async def config_modules(msg: MessageSession):
                 await msg.sendMessage('\n'.join(msglist))
 
 
-@command('help',
-         is_base_function=True,
-         help_doc=('~help {查看所有可用模块}',
-                   '~help <module> {查看一个模块的详细信息}'),
-         developers=['OasisAkari', 'Dianliang233'],
-         )
+hlp = on_command('help',
+                 base=True,
+                 developers=['OasisAkari', 'Dianliang233'],
+                 )
+
+
+@hlp.handle('<module> {查看一个模块的详细信息}')
 async def bot_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     developers = ModulesManager.return_modules_developers_map()
@@ -112,90 +118,121 @@ async def bot_help(msg: MessageSession):
         if help_name in alias:
             help_name = alias[help_name]
         if help_name in module_list:
-            help_ = CommandParser(module_list[help_name]).return_formatted_help_doc()
-            if help_ is not None:
-                msgs.append(help_)
+            module_ = module_list[help_name]
+            if module_.desc is not None:
+                msgs.append(module_.desc)
+            help_ = CommandParser(module_list[help_name])
+            if help_.args is not None:
+                msgs.append(help_.return_formatted_help_doc())
         if msgs:
             doc = '\n'.join(msgs)
+            module_alias = ModulesManager.return_module_alias(help_name)
+            malias = []
+            for a in module_alias:
+                for b in module_alias[a]:
+                    malias.append(f'{b} -> {a}')
+            if malias:
+                doc += '\n命令别名：\n' + '\n'.join(malias)
             if help_name in developers:
                 dev_list = developers[help_name]
                 if isinstance(dev_list, (list, tuple)):
                     devs = '、'.join(developers[help_name]) if developers[help_name] is not None else ''
                 elif isinstance(dev_list, str):
                     devs = dev_list
+                else:
+                    devs = '<数据类型错误，请联系开发者解决>'
             else:
                 devs = ''
-            devs_msg = '\n模块作者：' + devs if devs is not '' else ''
+            devs_msg = '\n模块作者：' + devs if devs != '' else ''
             await msg.sendMessage(doc + devs_msg)
-    else:
-        help_msg = ['基础命令：']
-        essential = []
-        for x in module_list:
-            if isinstance(module_list[x], Command) and module_list[x].is_base_function:
-                essential.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(essential))
-        help_msg.append('模块扩展命令：')
-        module = []
-        for x in module_list:
-            if x in BotDBUtil.Module(msg).check_target_enabled_module_list():
-                module.append(x)
-        help_msg.append(' | '.join(module))
-        print(help_msg)
-        help_msg.append(
-            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
-        help_msg.append('[本消息将在一分钟后撤回]')
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await asyncio.sleep(60)
-        await send.delete()
+        else:
+            await msg.sendMessage('此模块可能不存在，请检查输入。')
+
+@hlp.handle()
+async def _(msg: MessageSession):
+    module_list = ModulesManager.return_modules_list_as_dict()
+    developers = ModulesManager.return_modules_developers_map()
+    alias = ModulesManager.return_modules_alias_map()
+    help_msg = ['基础命令：']
+    essential = []
+    for x in module_list:
+        if isinstance(module_list[x], Command) and module_list[x].base:
+            essential.append(module_list[x].bind_prefix)
+    help_msg.append(' | '.join(essential))
+    help_msg.append('模块扩展命令：')
+    module_ = []
+    for x in module_list:
+        if x in BotDBUtil.Module(msg).check_target_enabled_module_list():
+            module_.append(x)
+    help_msg.append(' | '.join(module_))
+    print(help_msg)
+    help_msg.append(
+        '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
+    help_msg.append('[本消息将在一分钟后撤回]')
+    send = await msg.sendMessage('\n'.join(help_msg))
+    await msg.sleep(60)
+    await send.delete()
 
 
-@command('modules',
-         is_base_function=True,
-         help_doc='~modules {查看所有可用模块}',
-         developers=['OasisAkari']
-         )
+modules = on_command('modules',
+                     base=True,
+                     desc='查看所有可用模块',
+                     developers=['OasisAkari']
+                     )
+
+
+@modules.handle()
 async def modules_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     help_msg = ['当前可用的模块有：']
-    module = []
+    module_ = []
     for x in module_list:
-        if not module_list[x].is_base_function and not module_list[x].need_superuser:
-            module.append(module_list[x].bind_prefix)
-    help_msg.append(' | '.join(module))
+        if x[0] == '_':
+            continue
+        if isinstance(module_list[x], Command) and module_list[x].base and module_list[x]\
+                .required_superuser:
+            continue
+        module_.append(module_list[x].bind_prefix)
+    help_msg.append(' | '.join(module_))
     help_msg.append(
         '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
     help_msg.append('[本消息将在一分钟后撤回]')
     send = await msg.sendMessage('\n'.join(help_msg))
-    await asyncio.sleep(60)
+    await msg.sleep(60)
     await send.delete()
 
 
-@command('version',
-         is_base_function=True,
-         help_doc='~version {查看机器人的版本号}',
-         developers=['OasisAkari', 'Dianliang233']
-         )
+version = on_command('version',
+                     base=True,
+                     desc='查看机器人的版本号',
+                     developers=['OasisAkari', 'Dianliang233']
+                     )
+
+
+@version.handle()
 async def bot_version(msg: MessageSession):
-    version = os.path.abspath(PrivateAssets.path + '/version')
+    ver = os.path.abspath(PrivateAssets.path + '/version')
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
-    open_version = open(version, 'r')
+    open_version = open(ver, 'r')
     open_tag = open(tag, 'r')
     msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）'
     await msg.sendMessage(msgs, msgs)
     open_version.close()
 
 
-@command('ping',
-         is_base_function=True,
-         help_doc='~ping {获取机器人信息}',
-         developers=['OasisAkari']
-         )
-async def ping(msg: MessageSession):
+ping = on_command('ping',
+                  base=True,
+                  desc='获取机器人状态',
+                  developers=['OasisAkari']
+                  )
+
+
+@ping.handle()
+async def _(msg: MessageSession):
     checkpermisson = msg.checkSuperUser()
     result = "Pong!"
     if checkpermisson:
         Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
-        time.sleep(0.5)
         Cpu_usage = psutil.cpu_percent()
         RAM = int(psutil.virtual_memory().total / (1024 * 1024))
         RAM_percent = psutil.virtual_memory().percent
@@ -225,12 +262,14 @@ async def ping(msg: MessageSession):
     await msg.sendMessage(result)
 
 
-@command('admin',
-         is_base_function=True,
-         need_admin=True,
-         help_doc=('~admin add <UserID> {设置成员为机器人管理员}', '~admin del <UserID> {取消成员的机器人管理员}'),
-         developers=['OasisAkari'], allowed_none=False
-         )
+admin = on_command('admin',
+                   base=True,
+                   required_admin=True,
+                   developers=['OasisAkari']
+                   )
+
+
+@admin.handle(['add <UserID> {设置成员为机器人管理员}', 'del <UserID> {取消成员的机器人管理员}'])
 async def config_gu(msg: MessageSession):
     if msg.parsed_msg['add']:
         user = msg.parsed_msg['<UserID>']
@@ -244,7 +283,10 @@ async def config_gu(msg: MessageSession):
                 await msg.sendMessage("成功")
 
 
-@command('add_su', developers=['OasisAkari'], need_superuser=True, help_doc='add_su <user>')
+asu = on_command('add_su', developers=['OasisAkari'], required_superuser=True)
+
+
+@asu.handle('<user>')
 async def add_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     print(message.parsed_msg)
@@ -253,7 +295,10 @@ async def add_su(message: MessageSession):
             await message.sendMessage('成功')
 
 
-@command('del_su', developers=['OasisAkari'], need_superuser=True, help_doc='del_su <user>')
+dsu = on_command('del_su', developers=['OasisAkari'], required_superuser=True)
+
+
+@dsu.handle('<user>')
 async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
@@ -262,13 +307,15 @@ async def del_su(message: MessageSession):
 
 
 """
-@command('set_modules', need_superuser=True, help_doc='set_modules <>')
+@on_command('set_modules', required_superuser=True, help_doc='set_modules <>')
 async def set_modules(display_msg: dict):
     ...
 """
 
+rst = on_command('restart', developers=['OasisAkari'], required_superuser=True)
 
-@command('restart', developers=['OasisAkari'], need_superuser=True)
+
+@rst.handle()
 async def restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
@@ -282,7 +329,10 @@ async def restart_bot(msg: MessageSession):
         os.execl(python, python, *sys.argv)
 
 
-@command('update', developers=['OasisAkari'], need_superuser=True)
+upd = on_command('update', developers=['OasisAkari'], required_superuser=True)
+
+
+@upd.handle()
 async def update_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
@@ -291,7 +341,10 @@ async def update_bot(msg: MessageSession):
         await msg.sendMessage(result.read()[:-1])
 
 
-@command('update&restart', developers=['OasisAkari'], need_superuser=True)
+upds = on_command('update&restart', developers=['OasisAkari'], required_superuser=True)
+
+
+@upds.handle()
 async def update_and_restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
@@ -306,6 +359,9 @@ async def update_and_restart_bot(msg: MessageSession):
         os.execl(python, python, *sys.argv)
 
 
-@command('echo', developers=['OasisAkari'], need_superuser=True, help_doc='echo <display_msg>')
-async def echo_msg(msg: MessageSession):
+echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
+
+
+@echo.handle('<display_msg>')
+async def _(msg: MessageSession):
     await msg.sendMessage(msg.parsed_msg['<display_msg>'])

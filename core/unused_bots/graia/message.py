@@ -1,5 +1,4 @@
 import asyncio
-import random
 import re
 import traceback
 from typing import List
@@ -12,7 +11,7 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
 from config import Config
-from core.bots.graia.broadcast import app, bcc
+from core.unused_bots.graia.broadcast import app, bcc
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, \
     FetchTarget as FT
 from core.elements.others import confirm_command
@@ -180,7 +179,7 @@ class FetchTarget(FT):
                     try:
                         send = await fetch.sendMessage(message, quote=False)
                         send_list.append(send)
-                        await asyncio.sleep(random.randint(1, 10))
+                        await asyncio.sleep(0.5)
                     except Exception:
                         traceback.print_exc()
         return send_list

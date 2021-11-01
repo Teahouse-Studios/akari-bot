@@ -1,20 +1,23 @@
-import ujson as json
 import aiohttp
 import ujson as json
+import traceback
+import os
+
+from urllib.parse import quote
 
 from config import Config
-from core.elements import FetchTarget, Image
-from core.loader.decorator import command
+from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
+from core.component import on_startup, on_schedule
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.utils import get_url, download_to_cache
+from core.utils import get_url
 from database import BotDBUtil
 
 
-@command('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], autorun=True)
+@on_startup('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'], desc='开启后将会推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
     baseurl = 'https://www.minecraft.net'
-    url = 'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10'
+    url = quote('https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10')
     webrender = Config('infobox_render')
     get = webrender + 'source?url=' + url
     if not webrender:
@@ -30,12 +33,8 @@ async def start_check_news(bot: FetchTarget):
 
     @Scheduler.scheduled_job('interval', seconds=600)
     async def check_news():
-        user_list = []
         get_all_enabled_user = BotDBUtil.Module.get_enabled_this('minecraft_news')
-        for x in get_all_enabled_user:
-            fetch = await bot.fetch_target(x)
-            if fetch:
-                user_list.append(fetch)
+        user_list = await bot.fetch_target_list(get_all_enabled_user)
         if not user_list:
             return
         Logger.info('Checking Minecraft news...' + str(title_list))
@@ -47,16 +46,52 @@ async def start_check_news(bot: FetchTarget):
                     for article in nws:
                         default_tile = article['default_tile']
                         title = default_tile['title']
-                        image = baseurl + default_tile['image']['imageURL']
                         desc = default_tile['sub_header']
                         link = baseurl + article['article_url']
                         if title not in title_list:
                             title_list.append(title)
                             articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
-                            image = await download_to_cache(webrender + 'source?url=' + baseurl + image)
                             await bot.post_message('minecraft_news', articletext, user_list=user_list)
-                            if image:
-                                await bot.post_message('minecraft_news', [Image(image)], user_list=user_list)
                     Logger.info('Minecraft news checked.')
                 else:
                     Logger.info('Check minecraft news failed:' + str(status))
+
+
+def getfileversions(path):
+    if not os.path.exists(path):
+        a = open(path, 'a')
+        a.close()
+    w = open(path, 'r+')
+    s = w.read().split('\n')
+    w.close()
+    return s
+
+
+@on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。')
+async def feedback_news(bot: FetchTarget):
+    sections = [{'name': 'beta', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
+                {'name': 'article', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5'}]
+    for section in sections:
+        try:
+            name = section['name']
+            version_file = os.path.abspath(f'{PrivateAssets.path}/feedback_{name}.txt')
+            alist = getfileversions(version_file)
+            get = await get_url(section['url'])
+            res = json.loads(get)
+            articles = []
+            for i in res['articles']:
+                articles.append(i)
+            for article in articles:
+                if article['name'] not in alist:
+                    name = article['name']
+                    link = article['html_url']
+                    Logger.info(f'huh, we find {name}.')
+                    alist.append(name)
+                    await bot.post_message('feedback_news',
+                                                    f'Minecraft Feedback 发布了新的文章：\n{name}\n{link}')
+                    addversion = open(version_file, 'a')
+                    addversion.write('\n' + name)
+                    addversion.close()
+        except Exception:
+            traceback.print_exc()
+            print(get)
