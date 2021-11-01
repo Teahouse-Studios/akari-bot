@@ -1,7 +1,12 @@
 import re
 
 
-def remove_ineffective_text(prefix, lst):
+def remove_ineffective_text(prefix: str, lst: list) -> list:
+    '''删除命令首尾的空格和换行以及重复命令。
+    
+    :param prefix: 机器人的命令前缀。
+    :param lst: 字符串（List/Union）。
+    :returns: 净化后的字符串。'''
     remove_list = ['\n', ' ']  # 首尾需要移除的东西
     for x in remove_list:
         list_cache = []
@@ -27,7 +32,11 @@ def remove_ineffective_text(prefix, lst):
     return lst
 
 
-def RemoveDuplicateSpace(text: str):
+def RemoveDuplicateSpace(text: str) -> str:
+    '''删除命令中间多余的空格。
+
+    :param text: 字符串。
+    :returns: 净化后的字符串。'''
     strip_display_space = text.split(' ')
     display_list = []  # 清除指令中间多余的空格
     for x in strip_display_space:

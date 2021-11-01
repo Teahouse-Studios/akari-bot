@@ -15,6 +15,7 @@ from database import BotDBUtil
 from .dbutils import WikiTargetInfo
 from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo
 from .getinfobox import get_infobox_pic
+from .audit import WikiWhitelistError, audit_allow, audit_remove, audit_list, audit_query
 
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
@@ -93,6 +94,45 @@ async def set_headers(msg: MessageSession):
         reset = target.config_headers('', let_it=None)
         if reset:
             await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+            
+
+aud = command('wiki_audit', alias='wa',
+              developers=('Dianliang233') , need_superuser=True)
+
+@aud.handle(['allow <apiLinkRegex>',
+             'deny <apiLinkRegex>',
+             'query <apiLinkRegex>',
+             'list',
+             '~wiki_audit <apiLinkRegex>'])
+async def wiki_audit(msg: MessageSession):
+    req = msg.parsed_msg
+    print(req)
+    op = msg.session.sender
+    api = req['<apiLinkRegex>']
+    if req['deny']:
+        res = await audit_remove(api)
+        if res is False:
+            await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
+        else:
+            await msg.sendMessage('成功删除白名单：' + api)
+    elif req['list']:
+        wiki_pair = await audit_list()
+        wikis = []
+        for pair in wiki_pair:
+            wikis.append(f'{pair[0]}（by {pair[1]}）')
+        await msg.sendMessage('现有白名单：\n' + '\n'.join(wikis))
+    elif req['query']:
+        res = await audit_query(api)
+        if res:
+            await msg.sendMessage(api + '已存在于白名单。')
+        else:
+            await msg.sendMessage(api + '不存在于白名单。')
+    else:
+        res = await audit_allow(api, op)
+        if res is False:
+            await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
+        else:
+            await msg.sendMessage('成功加入白名单：' + api)
 
 
 on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari'])
