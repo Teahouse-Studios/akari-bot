@@ -1,5 +1,5 @@
 from typing import List
-import asyncio
+
 
 class MsgInfo:
     __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom"]

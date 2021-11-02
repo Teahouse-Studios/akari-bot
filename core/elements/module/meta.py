@@ -30,11 +30,13 @@ class RegexMeta:
                  pattern: str = None,
                  mode: str = None,
                  flags: re.RegexFlag = 0,
+                 show_typing: bool = True,
                  ):
         self.function = function
         self.pattern = pattern
         self.mode = mode
         self.flags = flags
+        self.show_typing = show_typing
 
 
 class ScheduleMeta:

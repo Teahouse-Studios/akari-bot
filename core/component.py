@@ -32,12 +32,13 @@ class Bind:
         def __init__(self, bind_prefix):
             self.bind_prefix = bind_prefix
 
-        def handle(self, pattern: str, mode: str = "M", flags: re.RegexFlag = 0):
+        def handle(self, pattern: str, mode: str = "M", flags: re.RegexFlag = 0, show_typing: bool = True):
             def decorator(function):
                 ModulesManager.bind_to_module(self.bind_prefix, RegexMeta(function=function,
                                                                           pattern=pattern,
                                                                           mode=mode,
-                                                                          flags=flags))
+                                                                          flags=flags,
+                                                                          show_typing=show_typing))
 
             return decorator
 

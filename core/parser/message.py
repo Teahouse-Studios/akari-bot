@@ -180,24 +180,31 @@ async def parser(msg: MessageSession):
                 regex_module = ModulesRegex[regex]
                 for rfunc in regex_module.match_list.set:
                     msg.matched_msg = False
+                    matched = False
                     if rfunc.mode.upper() in ['M', 'MATCH']:
                         msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
                         if msg.matched_msg is not None:
-                            if not ExecutionLockList.check(msg):
-                                ExecutionLockList.add(msg)
-                            else:
-                                return await msg.sendMessage('您有命令正在执行，请稍后再试。')
-                            async with msg.Typing(msg):
-                                await rfunc.function(msg)  # 将msg传入下游模块
+                            matched = True
                     elif rfunc.mode.upper() in ['A', 'FINDALL']:
                         msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
                         if msg.matched_msg:
-                            if not ExecutionLockList.check(msg):
-                                ExecutionLockList.add(msg)
-                            else:
-                                return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                            matched = True
+                    if matched:
+                        if regex_module.required_superuser:
+                            if not msg.checkSuperUser():
+                                continue
+                        elif regex_module.required_admin:
+                            if not await msg.checkPermission():
+                                continue
+                        if not ExecutionLockList.check(msg):
+                            ExecutionLockList.add(msg)
+                        else:
+                            return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                        if rfunc.show_typing:
                             async with msg.Typing(msg):
                                 await rfunc.function(msg)  # 将msg传入下游模块
+                        else:
+                            await rfunc.function(msg)  # 将msg传入下游模块
                     ExecutionLockList.remove(msg)
         except AbuseWarning as e:
             await warn_target(msg, str(e))

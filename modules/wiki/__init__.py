@@ -177,7 +177,18 @@ async def _(msg: MessageSession):
         await query_pages(msg, query_list)
 
 
-async def query_pages(msg: MessageSession, title: Union[str, list, tuple]):
+@wiki_inline.handle(r'\<(.*?)>', mode='A', flags=re.I, show_typing=False)
+async def _(msg: MessageSession):
+    query_list = []
+    print(msg.matched_msg)
+    for x in msg.matched_msg:
+        if x != '' and x not in query_list and x[0] != '#':
+            query_list.append('MediaWiki:' + x)
+    if query_list:
+        await query_pages(msg, query_list, allow_research=False)
+
+
+async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True):
     target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()
@@ -278,19 +289,20 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple]):
                 else:
                     plain_slice = []
                     wait_plain_slice = []
-                    if display_title is not None and display_before_title is not None:
-                        wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
-                        wait_list.append(display_title)
-                    elif r.before_title is not None:
-                        plain_slice.append(f'提示：找不到[{display_before_title}]。')
-                    if r.invalid_namespace and r.before_title is not None:
-                        s = r.before_title.split(":")
-                        if len(s) > 1:
-                            plain_slice.append(f'此Wiki上没有名为{s[0]}的名字空间，请检查拼写后再试。')
-                    if plain_slice:
-                        msg_list.append(Plain('\n'.join(plain_slice)))
-                    if wait_plain_slice:
-                        wait_msg_list.append(Plain('\n'.join(wait_plain_slice)))
+                    if allow_research:
+                        if display_title is not None and display_before_title is not None:
+                            wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                            wait_list.append(display_title)
+                        elif r.before_title is not None:
+                            plain_slice.append(f'提示：找不到[{display_before_title}]。')
+                        if r.invalid_namespace and r.before_title is not None:
+                            s = r.before_title.split(":")
+                            if len(s) > 1:
+                                plain_slice.append(f'此Wiki上没有名为{s[0]}的名字空间，请检查拼写后再试。')
+                        if plain_slice:
+                            msg_list.append(Plain('\n'.join(plain_slice)))
+                        if wait_plain_slice:
+                            wait_msg_list.append(Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except Exception:
@@ -305,7 +317,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple]):
                 if get_infobox:
                     infobox_msg_list.append(Image(get_infobox))
         if infobox_msg_list:
-            await msg.sendMessage(infobox_msg_list)
+            await msg.sendMessage(infobox_msg_list, quote=False)
     if wait_msg_list:
         confirm = await msg.waitConfirm(wait_msg_list)
         if confirm and wait_list:
