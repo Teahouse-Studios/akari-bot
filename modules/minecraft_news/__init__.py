@@ -4,14 +4,13 @@ import traceback
 import os
 
 from urllib.parse import quote
+from datetime import datetime, timedelta
 
 from config import Config
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.component import on_startup, on_schedule
 from core.logger import Logger
-from core.scheduler import Scheduler
 from core.utils import get_url
-from database import BotDBUtil
 
 
 def getfileversions(path):
@@ -45,7 +44,10 @@ async def start_check_news(bot: FetchTarget):
             link = baseurl + o_article['article_url']
             articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
             if title not in alist:
-                await bot.post_message('minecraft_news', articletext)
+                publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
+                now = datetime.now()
+                if now - publish_date < timedelta(days=2):
+                    await bot.post_message('minecraft_news', articletext)
                 addversion = open(file_, 'a')
                 addversion.write('\n' + title)
                 addversion.close()
