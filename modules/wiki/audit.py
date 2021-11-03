@@ -53,6 +53,7 @@ def audit_list():
     try:
         return session.query(WikiWhitelist.apiLinkRegex, WikiWhitelist.operator)
     except Exception:
+        session.rollback()
         raise
 
 
