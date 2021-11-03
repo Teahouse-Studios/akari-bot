@@ -34,6 +34,16 @@ class Dict2Object(dict):
 session = DBSession().session
 
 
+def auto_rollback_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            session.rollback()
+            raise e
+    return wrapper
+
+
 class BotDBUtil:
     class Module:
         @retry(stop=stop_after_attempt(3))
@@ -56,12 +66,9 @@ class BotDBUtil:
                     EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
 
         @property
+        @auto_rollback_error
         def query_EnabledModules(self):
-            try:
-                return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
-            except Exception:
-                session.rollback()
-                raise
+            return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
 
         def check_target_enabled_module_list(self) -> list:
             return self.enable_modules_list
@@ -70,51 +77,45 @@ class BotDBUtil:
             return True if module_name in self.enable_modules_list else False
 
         @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def enable(self, module_name) -> bool:
-            try:
-                if isinstance(module_name, str):
-                    if module_name not in self.enable_modules_list:
-                        self.enable_modules_list.append(module_name)
-                elif isinstance(module_name, (list, tuple)):
-                    for x in module_name:
-                        if x not in self.enable_modules_list:
-                            self.enable_modules_list.append(x)
-                value = convert_list_to_str(self.enable_modules_list)
-                if self.need_insert:
-                    table = EnabledModules(targetId=self.targetId,
-                                           enabledModules=value)
-                    session.add_all([table])
-                else:
-                    self.query_EnabledModules.enabledModules = value
+            if isinstance(module_name, str):
+                if module_name not in self.enable_modules_list:
+                    self.enable_modules_list.append(module_name)
+            elif isinstance(module_name, (list, tuple)):
+                for x in module_name:
+                    if x not in self.enable_modules_list:
+                        self.enable_modules_list.append(x)
+            value = convert_list_to_str(self.enable_modules_list)
+            if self.need_insert:
+                table = EnabledModules(targetId=self.targetId,
+                                       enabledModules=value)
+                session.add_all([table])
+            else:
+                self.query_EnabledModules.enabledModules = value
+            session.commit()
+            session.expire_all()
+            if cache:
+                EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+            return True
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def disable(self, module_name) -> bool:
+            if isinstance(module_name, str):
+                if module_name in self.enable_modules_list:
+                    self.enable_modules_list.remove(module_name)
+            elif isinstance(module_name, (list, tuple)):
+                for x in module_name:
+                    if x in self.enable_modules_list:
+                        self.enable_modules_list.remove(x)
+            if not self.need_insert:
+                self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
                 session.commit()
                 session.expire_all()
                 if cache:
                     EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
-                return True
-            except Exception:
-                session.rollback()
-                raise
-
-        @retry(stop=stop_after_attempt(3))
-        def disable(self, module_name) -> bool:
-            try:
-                if isinstance(module_name, str):
-                    if module_name in self.enable_modules_list:
-                        self.enable_modules_list.remove(module_name)
-                elif isinstance(module_name, (list, tuple)):
-                    for x in module_name:
-                        if x in self.enable_modules_list:
-                            self.enable_modules_list.remove(x)
-                if not self.need_insert:
-                    self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
-                    session.commit()
-                    session.expire_all()
-                    if cache:
-                        EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
-                return True
-            except Exception:
-                session.rollback()
-                raise
+            return True
 
         @staticmethod
         def get_enabled_this(module_name):
@@ -128,6 +129,7 @@ class BotDBUtil:
 
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def __init__(self, senderId):
             self.senderId = senderId
             query_cache = SenderInfoCache.get_cache(self.senderId) if cache else False
@@ -135,39 +137,31 @@ class BotDBUtil:
                 self.query = Dict2Object(query_cache)
             else:
                 self.query = self.query_SenderInfo
-                try:
-                    if self.query is None:
-                        session.add_all([SenderInfo(id=senderId)])
-                        session.commit()
-                        self.query = session.query(SenderInfo).filter_by(id=senderId).first()
-                    if cache:
-                        SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
-                except Exception:
-                    session.rollback()
-                    raise
+                if self.query is None:
+                    session.add_all([SenderInfo(id=senderId)])
+                    session.commit()
+                    self.query = session.query(SenderInfo).filter_by(id=senderId).first()
+                if cache:
+                    SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
 
         @property
+        @auto_rollback_error
         def query_SenderInfo(self):
-            try:
-                return session.query(SenderInfo).filter_by(id=self.senderId).first()
-            except Exception:
-                session.rollback()
-                raise
+            return session.query(SenderInfo).filter_by(id=self.senderId).first()
 
         @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def edit(self, column: str, value):
-            try:
-                query = self.query_SenderInfo
-                setattr(query, column, value)
-                session.commit()
-                session.expire_all()
-                if cache:
-                    SenderInfoCache.add_cache(self.senderId, query.__dict__)
-                return True
-            except Exception:
-                session.rollback()
-                raise
+            query = self.query_SenderInfo
+            setattr(query, column, value)
+            session.commit()
+            session.expire_all()
+            if cache:
+                SenderInfoCache.add_cache(self.senderId, query.__dict__)
+            return True
 
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def check_TargetAdmin(self, targetId):
             query = session.query(TargetAdmin).filter_by(senderId=self.senderId, targetId=targetId).first()
             if query is not None:
@@ -175,28 +169,24 @@ class BotDBUtil:
             return False
 
         @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def add_TargetAdmin(self, targetId):
-            try:
-                if not self.check_TargetAdmin(targetId):
-                    session.add_all([TargetAdmin(senderId=self.senderId, targetId=targetId)])
-                    session.commit()
-                return True
-            except Exception:
-                session.rollback()
-                raise
+            if not self.check_TargetAdmin(targetId):
+                session.add_all([TargetAdmin(senderId=self.senderId, targetId=targetId)])
+                session.commit()
+            return True
 
         @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def remove_TargetAdmin(self, targetId):
-            try:
-                query = self.check_TargetAdmin(targetId)
-                if query:
-                    session.delete(query)
-                    session.commit()
-            except Exception:
-                session.rollback()
-                raise
+            query = self.check_TargetAdmin(targetId)
+            if query:
+                session.delete(query)
+                session.commit()
 
     class CoolDown:
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def __init__(self, msg: MessageSession, name):
             self.msg = msg
             self.name = name
@@ -213,29 +203,23 @@ class BotDBUtil:
             return 0
 
         @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def reset(self):
-            try:
-                if not self.need_insert:
-                    session.delete(self.query)
-                    session.commit()
-                session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
+            if not self.need_insert:
+                session.delete(self.query)
                 session.commit()
-            except Exception:
-                session.rollback()
-                raise
+            session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
+            session.commit()
 
     @staticmethod
     @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
     def isGroupInWhiteList(targetId):
-        try:
-            session.expire_all()
-            query = session.query(GroupWhiteList).filter_by(targetId=targetId).first()
-            if query is not None:
-                return True
-            return False
-        except Exception:
-            session.rollback()
-            raise
+        session.expire_all()
+        query = session.query(GroupWhiteList).filter_by(targetId=targetId).first()
+        if query is not None:
+            return True
+        return False
 
 
-__all__ = ["BotDBUtil"]
+__all__ = ["BotDBUtil", "auto_rollback_error", "session"]
