@@ -185,7 +185,7 @@ async def _(msg: MessageSession):
         if x != '' and x not in query_list and x[0] != '#':
             query_list.append('MediaWiki:' + x)
     if query_list:
-        await query_pages(msg, query_list, allow_research=False)
+        await query_pages(msg, query_list, allow_research=False, check_length=False)
 
 
 async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True, check_length=True):
