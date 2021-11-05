@@ -68,6 +68,10 @@ action = \
                 'protect': '保护了%s页面',
                 'unprotect': '取消保护了%s页面',
             },
+        'rights':
+            {
+                'rights': '更改了%s用户的权限'
+            },
         'tag':
             {'update': '更新了%s'},
         "thanks":
