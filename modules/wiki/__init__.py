@@ -188,7 +188,7 @@ async def _(msg: MessageSession):
         await query_pages(msg, query_list, allow_research=False)
 
 
-async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True):
+async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True, check_length=True):
     target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()
@@ -200,8 +200,9 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if isinstance(title, str):
         title = [title]
-    if len(title) > 15:
-        raise AbuseWarning('一次性查询的页面超出15个。')
+    if check_length:
+        if len(title) > 15:
+            raise AbuseWarning('一次性查询的页面超出15个。')
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
     for t in title:
         if t[0] == ':':

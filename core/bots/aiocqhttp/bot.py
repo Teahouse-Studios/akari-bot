@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import re
 
 from config import Config
 from core.bots.aiocqhttp.client import bot
@@ -15,7 +16,6 @@ from core.scheduler import Scheduler
 from core.utils import init, load_prompt
 from database import BotDBUtil
 from database.logging_message import UnfriendlyActions
-
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
@@ -40,6 +40,9 @@ async def startup():
 
 @bot.on_message
 async def _(event: Event):
+    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml version=.*>.*?', event.message)
+    if filter_msg:
+        return
     all_tsk = MessageTaskManager.get()
     user_id = event.user_id
     if user_id in all_tsk:
@@ -85,7 +88,6 @@ async def _(event: Event):
                                             '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
         await bot.call_action('set_group_leave', group_id=event.group_id)
 """
-
 
 qq_host = Config("qq_host")
 if qq_host:
