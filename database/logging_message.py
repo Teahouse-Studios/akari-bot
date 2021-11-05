@@ -3,6 +3,7 @@ import ujson as json
 from sqlalchemy import create_engine, Column, String, Text, Integer, TIMESTAMP, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from tenacity import retry, stop_after_attempt
 
 Base = declarative_base()
 
@@ -49,12 +50,24 @@ class MSGDBSession:
 session = MSGDBSession().session
 
 
+def auto_rollback_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            session.rollback()
+            raise e
+    return wrapper
+
+
 def LoggerMSG(userid, command, msg):
     session.add_all([MSG(targetId=userid, command=command, message=msg)])
     session.commit()
 
 
 class DirtyWordCache:
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
     def __init__(self, query_word):
         self.query_word = query_word
         self.query = session.query(DirtyFilterTable).filter_by(desc=self.query_word).first()
@@ -66,6 +79,8 @@ class DirtyWordCache:
             session.commit()
             self.need_insert = True
 
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
     def update(self, result: dict):
         session.add_all([DirtyFilterTable(desc=self.query_word, result=json.dumps(result))])
         session.commit()
@@ -82,6 +97,8 @@ class UnfriendlyActions:
         self.targetId = targetId
         self.senderId = senderId
 
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
     def check_mute(self) -> bool:
         """
 
@@ -108,6 +125,8 @@ class UnfriendlyActions:
                 return True
         return False
 
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
     def add_and_check(self, action='default') -> bool:
         """
 
