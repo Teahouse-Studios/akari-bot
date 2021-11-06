@@ -6,6 +6,7 @@ assets/mcversion.txt
 mcvrss.txt
 assets/usercard/*
 test*
+!tests/
 assets/Favicon/*
 assets/cache/*
 *.db
@@ -22,3 +23,4 @@ core/unused_bots/**/assets
 assets/arc**
 assets/version*
 assets/mcnews.txt
+.vscode
