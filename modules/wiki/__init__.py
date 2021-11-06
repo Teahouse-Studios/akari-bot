@@ -185,10 +185,10 @@ async def _(msg: MessageSession):
         if x != '' and x not in query_list and x[0] != '#':
             query_list.append(x)
     if query_list:
-        await query_pages(msg, query_list, allow_research=False, check_length=False, mediawiki=True)
+        await query_pages(msg, query_list, mediawiki=True)
 
 
-async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True, check_length=True,
+async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                       template=False, mediawiki=False):
     target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
@@ -201,9 +201,8 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if isinstance(title, str):
         title = [title]
-    if check_length:
-        if len(title) > 15:
-            raise AbuseWarning('一次性查询的页面超出15个。')
+    if len(title) > 15:
+        raise AbuseWarning('一次性查询的页面超出15个。')
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
     for t in title:
         if t[0] == ':':
@@ -258,6 +257,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow
                 tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(rd)))
             query = await asyncio.gather(*tasks)
             for result in query:
+                print(result)
                 r: PageInfo = result
                 iw_prefix = iw_prefix
                 display_title = None
@@ -295,20 +295,19 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow
                 else:
                     plain_slice = []
                     wait_plain_slice = []
-                    if allow_research:
-                        if display_title is not None and display_before_title is not None:
-                            wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
-                            wait_list.append(display_title)
-                        elif r.before_title is not None:
-                            plain_slice.append(f'提示：找不到[{display_before_title}]。')
-                        if r.invalid_namespace and r.before_title is not None:
-                            s = r.before_title.split(":")
-                            if len(s) > 1:
-                                plain_slice.append(f'此Wiki上没有名为{s[0]}的名字空间，请检查拼写后再试。')
-                        if plain_slice:
-                            msg_list.append(Plain('\n'.join(plain_slice)))
-                        if wait_plain_slice:
-                            wait_msg_list.append(Plain('\n'.join(wait_plain_slice)))
+                    if display_title is not None and display_before_title is not None:
+                        wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                        wait_list.append(display_title)
+                    elif r.before_title is not None:
+                        plain_slice.append(f'提示：找不到[{display_before_title}]。')
+                    if r.invalid_namespace and r.before_title is not None:
+                        s = r.before_title.split(":")
+                        if len(s) > 1:
+                            plain_slice.append(f'此Wiki上没有名为{s[0]}的名字空间，请检查拼写后再试。')
+                    if plain_slice:
+                        msg_list.append(Plain('\n'.join(plain_slice)))
+                    if wait_plain_slice:
+                        wait_msg_list.append(Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except Exception:
