@@ -188,7 +188,6 @@ async def _(msg: MessageSession):
         await query_pages(msg, query_list, mediawiki=True)
 
 
-
 async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                       template=False, mediawiki=False):
     target = WikiTargetInfo(msg)
