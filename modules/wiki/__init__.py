@@ -177,7 +177,7 @@ async def _(msg: MessageSession):
         await query_pages(msg, query_list, template=True)
 
 
-@wiki_inline.handle(r'≺(.*?)≻', mode='A', flags=re.I, show_typing=False)
+@wiki_inline.handle(r'≺(.*?)≻|⧼(.*?)⧽', mode='A', flags=re.I, show_typing=False)
 async def _(msg: MessageSession):
     query_list = []
     print(msg.matched_msg)
@@ -186,6 +186,7 @@ async def _(msg: MessageSession):
             query_list.append(x)
     if query_list:
         await query_pages(msg, query_list, mediawiki=True)
+
 
 
 async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
