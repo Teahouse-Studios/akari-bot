@@ -40,7 +40,7 @@ async def startup():
 
 @bot.on_message
 async def _(event: Event):
-    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml version=.*>.*?', event.message)
+    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml.*?>.*?', event.message)
     if filter_msg:
         return
     all_tsk = MessageTaskManager.get()
