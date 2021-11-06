@@ -325,7 +325,7 @@ class WikiLib:
                 page_raw = pages[page_id]
                 title = page_raw['title']
                 if int(page_id) < 0:
-                    if 'missing' not in page_raw:
+                    if 'missing' not in page_raw and 'known' not in page_raw:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
                         page_info.link = full_url
