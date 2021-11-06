@@ -17,7 +17,7 @@ from core.loader import load_modules
 
 
 def init() -> None:
-    '''初始化机器人。仅用于bot.py与unit_test.py。'''
+    '''初始化机器人。仅用于bot.py与console.py。'''
     load_modules()
     version = os.path.abspath(PrivateAssets.path + '/version')
     write_version = open(version, 'w')
