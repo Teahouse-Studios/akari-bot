@@ -51,9 +51,13 @@ async def check(*text) -> list:
     '''
     accessKeyId = Config("Check_accessKeyId")
     accessKeySecret = Config("Check_accessKeySecret")
+    text = list(text)
     if not accessKeyId or not accessKeySecret or not EnableDirtyWordCheck.status:
         Logger.warn('Dirty words filter was disabled, skip.')
-        return list(text)
+        return text
+    for x in text:
+        if x == '':
+            text.remove(x)
     if not text:
         return []
     query_list = {}

@@ -235,7 +235,10 @@ async def download_avatar_thumb(link, id):
 def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
                   havecover=True):
     if havecover:
-        img = Image.open(coverpath)
+        try:
+            img = Image.open(coverpath)
+        except:
+            img = Image.new('RGBA', (384, 240), 'black')
     else:
         img = Image.new('RGBA', (384, 240), 'black')
     img = img.convert('RGBA')
