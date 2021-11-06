@@ -238,6 +238,7 @@ def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score,
         try:
             img = Image.open(coverpath)
         except:
+            os.remove(coverpath)
             img = Image.new('RGBA', (384, 240), 'black')
     else:
         img = Image.new('RGBA', (384, 240), 'black')
