@@ -172,23 +172,24 @@ async def _(msg: MessageSession):
     print(msg.matched_msg)
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
-            query_list.append('Template:' + x)
+            query_list.append(x)
     if query_list:
-        await query_pages(msg, query_list)
+        await query_pages(msg, query_list, template=True)
 
 
-@wiki_inline.handle(r'\<(.*?)>', mode='A', flags=re.I, show_typing=False)
+@wiki_inline.handle(r'≺(.*?)≻', mode='A', flags=re.I, show_typing=False)
 async def _(msg: MessageSession):
     query_list = []
     print(msg.matched_msg)
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#':
-            query_list.append('MediaWiki:' + x)
+            query_list.append(x)
     if query_list:
-        await query_pages(msg, query_list, allow_research=False, check_length=False)
+        await query_pages(msg, query_list, allow_research=False, check_length=False, mediawiki=True)
 
 
-async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True, check_length=True):
+async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow_research=True, check_length=True,
+                      template=False, mediawiki=False):
     target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()
@@ -250,6 +251,10 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple], allow
         try:
             tasks = []
             for rd in ready_for_query_pages:
+                if template:
+                    rd = f'Template:{rd}'
+                if mediawiki:
+                    rd = f'MediaWiki:{rd}'
                 tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(rd)))
             query = await asyncio.gather(*tasks)
             for result in query:
