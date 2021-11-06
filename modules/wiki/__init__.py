@@ -182,8 +182,9 @@ async def _(msg: MessageSession):
     query_list = []
     print(msg.matched_msg)
     for x in msg.matched_msg:
-        if x != '' and x not in query_list and x[0] != '#':
-            query_list.append(x)
+        for y in x:
+            if y != '' and y not in query_list and y[0] != '#':
+                query_list.append(y)
     if query_list:
         await query_pages(msg, query_list, mediawiki=True)
 
@@ -205,6 +206,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
         raise AbuseWarning('一次性查询的页面超出15个。')
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
     for t in title:
+        print(t)
         if t[0] == ':':
             if len(t) > 1:
                 query_task[start_wiki]['query'].append(t[1:])
