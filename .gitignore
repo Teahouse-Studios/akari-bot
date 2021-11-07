@@ -5,8 +5,6 @@ config/*.cfg
 assets/mcversion.txt
 mcvrss.txt
 assets/usercard/*
-test*
-!tests/
 assets/Favicon/*
 assets/cache/*
 *.db
@@ -24,3 +22,4 @@ assets/arc**
 assets/version*
 assets/mcnews.txt
 .vscode
+cov.xml
