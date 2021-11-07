@@ -318,7 +318,6 @@ class WikiLib:
                 if n['from'] == title:
                     page_info.before_title = n['from']
                     page_info.title = n['to']
-
         pages: Dict[str, dict] = query.get('pages')
         if pages is not None:
             for page_id in pages:

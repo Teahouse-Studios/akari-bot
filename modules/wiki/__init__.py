@@ -16,6 +16,7 @@ from .dbutils import WikiTargetInfo
 from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo
 from .getinfobox import get_infobox_pic
 from .audit import WikiWhitelistError, audit_allow, audit_remove, audit_list, audit_query
+from .htmltable import image_table_render
 
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
@@ -35,66 +36,99 @@ async def set_start_wiki(msg: MessageSession):
     if check.available:
         result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
         if result:
-            await msg.sendMessage(f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else ''))
+            await msg.sendMessage(
+                f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else ''))
     else:
         result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
 
 
-@wiki.handle(['iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}',
-              'iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}',
-              'iw list {展示当前设置的Interwiki}', ], required_admin=True)
+@wiki.handle('iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}', required_admin=True)
 async def _(msg: MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     url = msg.parsed_msg['<WikiUrl>']
     target = WikiTargetInfo(msg)
-    if msg.parsed_msg['add'] or msg.parsed_msg['set']:
-        check = await WikiLib(url, headers=target.get_headers()).check_wiki_available()
-        if check.available:
-            result = target.config_interwikis(iw, check.value.api, let_it=True)
-            if result:
-                await msg.sendMessage(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
-        else:
-            result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
-            await msg.sendMessage(result)
-    elif msg.parsed_msg['del'] or msg.parsed_msg['delete'] or msg.parsed_msg['remove'] or msg.parsed_msg['rm']:
-        result = target.config_interwikis(iw, let_it=False)
+    check = await WikiLib(url, headers=target.get_headers()).check_wiki_available()
+    if check.available:
+        result = target.config_interwikis(iw, check.value.api, let_it=True)
         if result:
-            await msg.sendMessage(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
-    elif msg.parsed_msg['list']:
-        query = target.get_interwikis()
-        if query != {}:
+            await msg.sendMessage(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
+    else:
+        result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        await msg.sendMessage(result)
+
+
+@wiki.handle('iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}', required_admin=True)
+async def _(msg: MessageSession):
+    iw = msg.parsed_msg['<Interwiki>']
+    target = WikiTargetInfo(msg)
+    result = target.config_interwikis(iw, let_it=False)
+    if result:
+        await msg.sendMessage(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
+
+
+@wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}'])
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    query = target.get_interwikis()
+    if query != {}:
+        columns = [[x, query[x]] for x in query]
+        img = await image_table_render(columns, headers=['Interwiki', 'Url'])
+        if img:
+            await msg.sendMessage([Image(img), Plain(f'使用~wiki iw get <Interwiki> 可以获取interwiki对应的链接。')])
+        else:
             result = '当前设置了以下Interwiki：\n' + '\n'.join([f'{x}: {query[x]}' for x in query])
             await msg.sendMessage(result)
-        else:
-            await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
+    else:
+        await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
 
 
-@wiki.handle(['headers (add|set) <Headers> {添加自定义headers}',
-              'headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}',
-              'headers reset {重置headers}',
-              'headers show {展示当前设置的headers}'], required_admin=True)
-async def set_headers(msg: MessageSession):
+@wiki.handle('iw get <Interwiki> {获取设置的Interwiki对应的api地址}')
+async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
-    if msg.parsed_msg['show']:
-        headers = target.get_headers()
-        prompt = f'当前设置了以下标头：\n{json.dumps(headers)}\n如需自定义，请使用~wiki headers set <headers>。\n' \
-                 f'格式：\n' \
-                 f'~wiki headers set "{{"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}}"'
-        await msg.sendMessage(prompt)
-    elif msg.parsed_msg['add'] or msg.parsed_msg['set']:
-        add = target.config_headers(msg.parsed_msg['<Headers>'], let_it=True)
-        if add:
-            await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
-    elif msg.parsed_msg['del'] or msg.parsed_msg['delete'] or msg.parsed_msg['remove'] or msg.parsed_msg['rm']:
-        delete = target.config_headers([msg.parsed_msg['<HeaderHey>']], let_it=False)
-        if delete:
-            await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
-    elif msg.parsed_msg['reset']:
-        reset = target.config_headers('', let_it=None)
-        if reset:
-            await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
-            
+    query = target.get_interwikis()
+    if query != {}:
+        if msg.parsed_msg['<Interwiki>'] in query:
+            await msg.sendMessage(query[msg.parsed_msg['<Interwiki>']])
+        else:
+            await msg.sendMessage(f'未找到Interwiki：{msg.parsed_msg["<Interwiki>"]}')
+    else:
+        await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
+
+
+@wiki.handle(['headers show {展示当前设置的headers}', 'headers list {headers show 的别名}'])
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    headers = target.get_headers()
+    prompt = f'当前设置了以下标头：\n{json.dumps(headers)}\n如需自定义，请使用~wiki headers set <headers>。\n' \
+             f'格式：\n' \
+             f'~wiki headers set {{"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}}'
+    await msg.sendMessage(prompt)
+
+
+@wiki.handle('headers (add|set) <Headers> {添加自定义headers}', required_admin=True)
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    add = target.config_headers(" ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
+    if add:
+        await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+
+
+@wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}', required_admin=True)
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    delete = target.config_headers([msg.parsed_msg['<HeaderHey>']], let_it=False)
+    if delete:
+        await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+
+
+@wiki.handle('headers reset {重置headers}', required_admin=True)
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    reset = target.config_headers('', let_it=None)
+    if reset:
+        await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+
 
 aud = on_command('wiki_audit', alias='wa',
                  developers=['Dianliang233'], required_superuser=True)
