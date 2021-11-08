@@ -29,7 +29,7 @@ async def start_check_news(bot: FetchTarget):
     file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
     baseurl = 'https://www.minecraft.net'
     url = quote('https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize=10')
-    webrender = Config('infobox_render')
+    webrender = Config('web_render')
     get = webrender + 'source?url=' + url
     if not webrender:
         return

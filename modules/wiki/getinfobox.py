@@ -12,11 +12,11 @@ from bs4 import BeautifulSoup
 from config import Config
 from core.logger import Logger
 
-infobox_render = Config('infobox_render')
+web_render = Config('web_render')
 
 
 async def get_infobox_pic(link, page_link, headers) -> Union[str, bool]:
-    if not infobox_render or page_link == 'https://wdf.ink/6OUp':
+    if not web_render or page_link == 'https://wdf.ink/6OUp':
         return False
     try:
         Logger.info('Starting find infobox..')
@@ -126,7 +126,7 @@ a .heimu,\
         if os.path.exists(picname):
             os.remove(picname)
         async with aiohttp.ClientSession() as session:
-            async with session.post(infobox_render, headers={
+            async with session.post(web_render, headers={
                 'Content-Type': 'application/json',
             }, data=json.dumps(html)) as resp:
                 with open(picname, 'wb+') as jpg:

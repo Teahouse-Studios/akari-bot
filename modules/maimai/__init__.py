@@ -30,7 +30,7 @@ def inner_level_q(ds1, ds2=None):
     return result_set
 
 
-innlevel = on_command('maimai_inner_level', alias=['定数查歌'])
+innlevel = on_command('maimai_inner_level', alias=['定数查歌'], developers=['mai-bot', 'OasisAkari'])
 
 
 @innlevel.handle(['~maimai_inner_level <定数>',
@@ -49,7 +49,7 @@ async def _(msg: MessageSession):
 
 
 mrgex1 = on_regex('maimai_random_music_regex1',
-                  desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲')
+                  desc='随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲', developers=['mai-bot', 'OasisAkari'])
 
 
 @mrgex1.handle(r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)")
@@ -78,7 +78,7 @@ async def _(msg: MessageSession):
             await msg.sendMessage("随机命令错误，请检查语法")
 
 
-mrgex2 = on_regex('maimai_random_music_regex2', desc='XXXmaimaiXXX什么 随机一首歌')
+mrgex2 = on_regex('maimai_random_music_regex2', desc='XXXmaimaiXXX什么 随机一首歌', developers=['mai-bot', 'OasisAkari'])
 
 
 @mrgex2.handle(r".*maimai.*什么", )
@@ -86,7 +86,7 @@ async def _(msg: MessageSession):
     await msg.sendMessage(song_txt(total_list.random()))
 
 
-msrgex = on_regex('maimai_search_music_regex', desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
+msrgex = on_regex('maimai_search_music_regex', desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲', developers=['mai-bot', 'OasisAkari'])
 
 
 @msrgex.handle(r"查歌(.+)")
@@ -107,7 +107,7 @@ async def _(msg: MessageSession):
 
 
 mqrgex = on_regex('maimai_query_chart_regex',
-                  desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
+                  desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息', developers=['mai-bot', 'OasisAkari'])
 
 
 @msrgex.handle(r"([绿黄红紫白]?)id([0-9]+)")
@@ -160,7 +160,7 @@ BREAK: {chart['notes'][4]}
 
 wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练手法', '打旧框', '干饭', '抓绝赞', '收歌']
 
-today = on_command('maimai_today', alias=['今日舞萌', '今日mai'], desc='查看今天的舞萌运势')
+today = on_command('maimai_today', alias=['今日舞萌', '今日mai'], desc='查看今天的舞萌运势', developers=['mai-bot', 'OasisAkari'])
 
 
 @today.handle()
@@ -193,7 +193,7 @@ for t in tmp:
         if arr[i] != "":
             music_aliases[arr[i].lower()].append(arr[0])
 
-mfsrgx = on_regex('maimai_find_song_regex', desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲')
+mfsrgx = on_regex('maimai_find_song_regex', desc='<歌曲别名>是什么歌 查询乐曲别名对应的乐曲', developers=['mai-bot', 'OasisAkari'])
 
 
 @mfsrgx.handle(r"(.+)是什么歌")
@@ -211,7 +211,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f"您要找的可能是以下歌曲中的其中一首：\n{s}")
 
 
-sline = on_command('maimai_scoreline', alias='分数线')
+sline = on_command('maimai_scoreline', alias='分数线', developers=['mai-bot', 'OasisAkari'])
 
 
 @sline.handle(['<难度+歌曲id> <分数线>', '帮助'])
@@ -261,7 +261,7 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
             await msg.sendMessage("格式错误，输入“分数线 帮助”以查看帮助信息")
 
 
-b40 = on_command('maimai_b40')
+b40 = on_command('maimai_b40', developers=['mai-bot', 'OasisAkari'])
 
 
 @b40.handle('<username>')

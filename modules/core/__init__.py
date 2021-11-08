@@ -6,9 +6,10 @@ import time
 import psutil
 import ujson as json
 
-from core.elements import MessageSession, Command, PrivateAssets
+from core.elements import MessageSession, Command, PrivateAssets, Image, Plain
 from core.loader import ModulesManager
 from core.component import on_command
+from core.utils.image_table import ImageTable, image_table_render, web_render
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from database import BotDBUtil
 
@@ -148,30 +149,86 @@ async def bot_help(msg: MessageSession):
         else:
             await msg.sendMessage('此模块可能不存在，请检查输入。')
 
+
 @hlp.handle()
 async def _(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
+    target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     developers = ModulesManager.return_modules_developers_map()
-    alias = ModulesManager.return_modules_alias_map()
-    help_msg = ['基础命令：']
-    essential = []
-    for x in module_list:
-        if isinstance(module_list[x], Command) and module_list[x].base:
-            essential.append(module_list[x].bind_prefix)
-    help_msg.append(' | '.join(essential))
-    help_msg.append('模块扩展命令：')
-    module_ = []
-    for x in module_list:
-        if x in BotDBUtil.Module(msg).check_target_enabled_module_list():
-            module_.append(x)
-    help_msg.append(' | '.join(module_))
-    print(help_msg)
-    help_msg.append(
-        '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
-    help_msg.append('[本消息将在一分钟后撤回]')
-    send = await msg.sendMessage('\n'.join(help_msg))
-    await msg.sleep(60)
-    await send.delete()
+    legacy_help = False
+    if web_render and msg.Feature.image:
+        tables = []
+        essential = []
+        m = []
+        for x in module_list:
+            module_ = module_list[x]
+            appends = [module_.bind_prefix]
+            help_ = CommandParser(module_)
+            doc_ = []
+            if module_.desc is not None:
+                doc_.append(module_.desc)
+            if help_.args is not None:
+                doc_.append(help_.return_formatted_help_doc())
+            doc = '\n'.join(doc_)
+            appends.append(doc)
+            module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
+            malias = []
+            for a in module_alias:
+                for b in module_alias[a]:
+                    malias.append(f'{b} -> {a}')
+            if malias:
+                appends.append('\n'.join(malias))
+            else:
+                appends.append('')
+            if x in developers:
+                dev_list = developers[x]
+                if isinstance(dev_list, (list, tuple)):
+                    devs = '、'.join(developers[x]) if developers[x] is not None else ''
+                elif isinstance(dev_list, str):
+                    devs = dev_list
+                else:
+                    devs = '<数据类型错误，请联系开发者解决>'
+            else:
+                devs = ''
+            appends.append(devs)
+            if isinstance(module_, Command) and module_.base:
+                essential.append(appends)
+            if x in target_enabled_list:
+                m.append(appends)
+        if essential:
+            tables.append(ImageTable(essential, ['基础模块列表', '帮助信息', '命令别名', '作者']))
+        if m:
+            tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
+        if tables:
+            render = await image_table_render(tables)
+            if render:
+                await msg.sendMessage([Image(render),
+                                       Plain('使用~modules查看所有的可用模块。'
+                                             '\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')])
+            else:
+                legacy_help = True
+    else:
+        legacy_help = True
+    if legacy_help:
+        help_msg = ['基础命令：']
+        essential = []
+        for x in module_list:
+            if isinstance(module_list[x], Command) and module_list[x].base:
+                essential.append(module_list[x].bind_prefix)
+        help_msg.append(' | '.join(essential))
+        help_msg.append('模块扩展命令：')
+        module_ = []
+        for x in module_list:
+            if x in target_enabled_list:
+                module_.append(x)
+        help_msg.append(' | '.join(module_))
+        print(help_msg)
+        help_msg.append(
+            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
+        help_msg.append('[本消息将在一分钟后撤回]')
+        send = await msg.sendMessage('\n'.join(help_msg))
+        await msg.sleep(60)
+        await send.delete()
 
 
 modules = on_command('modules',
@@ -184,22 +241,77 @@ modules = on_command('modules',
 @modules.handle()
 async def modules_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
-    help_msg = ['当前可用的模块有：']
-    module_ = []
-    for x in module_list:
-        if x[0] == '_':
-            continue
-        if isinstance(module_list[x], Command) and module_list[x].base and module_list[x]\
-                .required_superuser:
-            continue
-        module_.append(module_list[x].bind_prefix)
-    help_msg.append(' | '.join(module_))
-    help_msg.append(
-        '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
-    help_msg.append('[本消息将在一分钟后撤回]')
-    send = await msg.sendMessage('\n'.join(help_msg))
-    await msg.sleep(60)
-    await send.delete()
+    target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
+    developers = ModulesManager.return_modules_developers_map()
+    legacy_help = False
+    if web_render and msg.Feature.image:
+        tables = []
+        m = []
+        for x in module_list:
+            module_ = module_list[x]
+            if x[0] == '_':
+                continue
+            if isinstance(module_, Command) and module_.base and module_ \
+                    .required_superuser:
+                continue
+            appends = [module_.bind_prefix]
+            help_ = CommandParser(module_)
+            doc_ = []
+            if module_.desc is not None:
+                doc_.append(module_.desc)
+            if help_.args is not None:
+                doc_.append(help_.return_formatted_help_doc())
+            doc = '\n'.join(doc_)
+            appends.append(doc)
+            module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
+            malias = []
+            for a in module_alias:
+                for b in module_alias[a]:
+                    malias.append(f'{b} -> {a}')
+            if malias:
+                appends.append('\n'.join(malias))
+            else:
+                appends.append('')
+            if x in developers:
+                dev_list = developers[x]
+                if isinstance(dev_list, (list, tuple)):
+                    devs = '、'.join(developers[x]) if developers[x] is not None else ''
+                elif isinstance(dev_list, str):
+                    devs = dev_list
+                else:
+                    devs = '<数据类型错误，请联系开发者解决>'
+            else:
+                devs = ''
+            appends.append(devs)
+            if x in target_enabled_list:
+                m.append(appends)
+        if m:
+            tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
+        if tables:
+            render = await image_table_render(tables)
+            if render:
+                await msg.sendMessage([Image(render)])
+            else:
+                legacy_help = True
+    else:
+        legacy_help = True
+    if legacy_help:
+        help_msg = ['当前可用的模块有：']
+        module_ = []
+        for x in module_list:
+            if x[0] == '_':
+                continue
+            if isinstance(module_list[x], Command) and module_list[x].base and module_list[x] \
+                    .required_superuser:
+                continue
+            module_.append(module_list[x].bind_prefix)
+        help_msg.append(' | '.join(module_))
+        help_msg.append(
+            '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
+        help_msg.append('[本消息将在一分钟后撤回]')
+        send = await msg.sendMessage('\n'.join(help_msg))
+        await msg.sleep(60)
+        await send.delete()
 
 
 version = on_command('version',

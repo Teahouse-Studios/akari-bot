@@ -10,13 +10,13 @@ import ujson as json
 from core.elements import MessageSession, Plain, Image, Voice
 from core.component import on_command, on_regex, on_option
 from core.utils import download_to_cache
+from core.utils.image_table import image_table_render, ImageTable
 from core.exceptions import AbuseWarning
 from database import BotDBUtil
 from .dbutils import WikiTargetInfo
 from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo
 from .getinfobox import get_infobox_pic
 from .audit import WikiWhitelistError, audit_allow, audit_remove, audit_list, audit_query
-from .htmltable import image_table_render
 
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
@@ -67,13 +67,17 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
 
 
-@wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}'])
+@wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}',
+              'iw (list|show) legacy {展示当前设置的Interwiki（旧版）}'])
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
     if query != {}:
-        columns = [[x, query[x]] for x in query]
-        img = await image_table_render(columns, headers=['Interwiki', 'Url'])
+        if not msg.parsed_msg['legacy'] and msg.Feature.image:
+            columns = [[x, query[x]] for x in query]
+            img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
+        else:
+            img = False
         if img:
             await msg.sendMessage([Image(img), Plain(f'使用~wiki iw get <Interwiki> 可以获取interwiki对应的链接。')])
         else:
@@ -278,7 +282,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
     msg_list = []
     wait_msg_list = []
     wait_list = []
-    infobox_render_list = []
+    web_render_list = []
     for q in query_task:
         current_task = query_task[q]
         ready_for_query_pages = current_task['query']
@@ -327,7 +331,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                                     msg_list.append(Voice(dl))
                     else:
                         if msg.Feature.image and r.link is not None:
-                            infobox_render_list.append({r.link: r.info.realurl})
+                            web_render_list.append({r.link: r.info.realurl})
                 else:
                     plain_slice = []
                     wait_plain_slice = []
@@ -350,9 +354,9 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
             traceback.print_exc()
     if msg_list:
         await msg.sendMessage(msg_list)
-    if infobox_render_list:
+    if web_render_list and msg.Feature.image:
         infobox_msg_list = []
-        for i in infobox_render_list:
+        for i in web_render_list:
             for ii in i:
                 get_infobox = await get_infobox_pic(i[ii], ii, headers)
                 if get_infobox:

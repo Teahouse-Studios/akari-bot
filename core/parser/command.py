@@ -80,7 +80,7 @@ class CommandParser:
                 if match_detail_help:
                     x = f'{match_detail_help.group(1)}- {match_detail_help.group(2)}'
                 arglst.append(x)
-            args = f'用法：\n  ' + '\n  '.join(y for y in arglst)
+            args = '\n'.join(y for y in arglst)
         else:
             raise InvalidHelpDocTypeError
         return args

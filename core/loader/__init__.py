@@ -5,7 +5,6 @@ import traceback
 from typing import Dict, Union, List, Set
 
 from core.elements import Command, Option, Schedule, RegexCommand, StartUp, PrivateAssets
-from core.elements.module.meta import Meta
 from core.logger import Logger
 
 load_dir_path = os.path.abspath('./modules/')
@@ -105,12 +104,12 @@ class ModulesManager:
                 if isinstance(x, (tuple, list)):
                     for y in x:
                         if isinstance(y, str):
-                            alias_list[module.bind_prefix].append(x)
+                            alias_list[module.bind_prefix].append(y)
                         if isinstance(y, dict):
                             for z in y:
-                                if z not in alias_list:
-                                    alias_list.update({z: []})
-                                alias_list[z].append(y[z])
+                                if y[z] not in alias_list:
+                                    alias_list.update({y[z]: []})
+                                alias_list[y[z]].append(z)
         return alias_list
 
     @staticmethod

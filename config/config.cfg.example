@@ -13,6 +13,6 @@ dc_token =
 base_superuser = QQ|2596322644
 Check_accessKeyId =
 Check_accessKeySecret =
-infobox_render =
+web_render =
 arcapi_url =
 tg_token =
