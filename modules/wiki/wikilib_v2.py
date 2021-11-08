@@ -97,7 +97,7 @@ class PageInfo:
 
 
 class WikiLib:
-    def __init__(self, url, headers=None):
+    def __init__(self, url: str, headers=None):
         self.url = url
         self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
                                   namespaces=[], namespaces_local={}, in_whitelist=False)
@@ -171,11 +171,14 @@ class WikiLib:
             except Exception as e:
                 traceback.print_exc()
                 if e.args == (403,):
-                    return WikiStatus(available=False, value=False, message='服务器拒绝了机器人的请求。')
+                    message = '服务器拒绝了机器人的请求。'
                 elif not re.match(r'^(https?://).*', self.url):
-                    return WikiStatus(available=False, value=False, message='所给的链接没有指明协议头（链接应以http://或https://开头）。')
+                    message = '所给的链接没有指明协议头（链接应以http://或https://开头）。'
                 else:
-                    return WikiStatus(available=False, value=False, message='此站点也许不是一个有效的Mediawiki：' + str(e))
+                    message = '此站点也许不是一个有效的Mediawiki：' + str(e)
+                if self.url.find('moegirl.org.cn') != -1:
+                    message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
+                return WikiStatus(available=False, value=False, message=message)
         get_cache_info = DBSiteInfo(wiki_api_link).get()
         if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
             return WikiStatus(available=True,
