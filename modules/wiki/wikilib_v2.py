@@ -151,7 +151,7 @@ class WikiLib:
 
     async def check_wiki_available(self):
         try:
-            api_match = re.match(r'(https?://.*?/url.php$)', self.url)
+            api_match = re.match(r'(https?://.*?/api.php$)', self.url)
             wiki_api_link = api_match.group(1)
         except Exception:
             try:
