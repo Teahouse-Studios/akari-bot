@@ -182,7 +182,7 @@ class WikiLib:
         get_cache_info = DBSiteInfo(wiki_api_link).get()
         if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
             return WikiStatus(available=True,
-                              value=self.rearrange_siteinfo(get_cache_info),
+                              value=self.rearrange_siteinfo(get_cache_info[0]),
                               message='')
         try:
             get_json = await self.get_json(wiki_api_link,
