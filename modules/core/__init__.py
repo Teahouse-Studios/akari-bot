@@ -283,8 +283,7 @@ async def modules_help(msg: MessageSession):
             else:
                 devs = ''
             appends.append(devs)
-            if x in target_enabled_list:
-                m.append(appends)
+            m.append(appends)
         if m:
             tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
         if tables:
