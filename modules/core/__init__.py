@@ -251,8 +251,8 @@ async def modules_help(msg: MessageSession):
             module_ = module_list[x]
             if x[0] == '_':
                 continue
-            if isinstance(module_, Command) and module_.base and module_ \
-                    .required_superuser:
+            if isinstance(module_, Command) and (module_.base or module_ \
+                    .required_superuser):
                 continue
             appends = [module_.bind_prefix]
             help_ = CommandParser(module_)
@@ -300,8 +300,8 @@ async def modules_help(msg: MessageSession):
         for x in module_list:
             if x[0] == '_':
                 continue
-            if isinstance(module_list[x], Command) and module_list[x].base and module_list[x] \
-                    .required_superuser:
+            if isinstance(module_list[x], Command) and (module_list[x].base or module_list[x] \
+                    .required_superuser):
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
