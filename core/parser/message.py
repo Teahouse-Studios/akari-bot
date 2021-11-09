@@ -2,7 +2,7 @@ import re
 import traceback
 from datetime import datetime
 
-from core.elements import MessageSession, Command, command_prefix, ExecutionLockList
+from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand
 from core.exceptions import AbuseWarning
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -13,7 +13,7 @@ from database import BotDBUtil
 
 Modules = ModulesManager.return_modules_list_as_dict()
 ModulesAliases = ModulesManager.return_modules_alias_map()
-ModulesRegex = ModulesManager.return_regex_modules()
+ModulesRegex = ModulesManager.return_specified_type_modules(RegexCommand)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -55,7 +55,7 @@ async def parser(msg: MessageSession):
     if ModulesAliases == {}:
         ModulesAliases = ModulesManager.return_modules_alias_map()
     if ModulesRegex == {}:
-        ModulesRegex = ModulesManager.return_regex_modules()
+        ModulesRegex = ModulesManager.return_specified_type_modules(RegexCommand)
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
     msg.trigger_msg = display
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)

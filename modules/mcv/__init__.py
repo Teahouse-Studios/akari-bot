@@ -7,7 +7,7 @@ m = on_command(
     desc='查询当前Minecraft Java版启动器内最新版本。',
     alias='m',
     developers=['OasisAkari', 'Dianliang233'],
-    recommend_modules='mcbv')
+    recommend_modules=['mcbv', 'mcdv'])
 
 
 @m.handle()

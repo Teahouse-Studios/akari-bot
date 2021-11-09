@@ -46,6 +46,18 @@ class ModulesManager:
     @staticmethod
     def add_module(module: [Command, Option, Schedule, RegexCommand, StartUp]):
         if module.bind_prefix not in ModulesManager.modules:
+            if isinstance(module.alias, str):
+                module.alias = {module.alias: module.bind_prefix}
+            elif isinstance(module.alias, (tuple, list)):
+                module.alias = {x: module.bind_prefix for x in module.alias}
+            if isinstance(module.recommend_modules, str):
+                module.recommend_modules = [module.recommend_modules]
+            elif isinstance(module.recommend_modules, tuple):
+                module.recommend_modules = list(module.recommend_modules)
+            if isinstance(module.developers, str):
+                module.developers = [module.developers]
+            elif isinstance(module.developers, tuple):
+                module.developers = list(module.developers)
             ModulesManager.modules.update({module.bind_prefix: module})
         else:
             raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
@@ -64,23 +76,12 @@ class ModulesManager:
         """
         返回每个别名映射到的模块
         """
-        alias_map = {}
         modules = ModulesManager.return_modules_list_as_dict()
+        alias_map = {}
         for m in modules:
             module = modules[m]
-            if isinstance(module.alias, str):
-                alias_map.update({module.alias: module.bind_prefix})
-            if isinstance(module.alias, dict):
-                module.alias = [module.alias]
-            if isinstance(module.alias, (tuple, list)):
-                for y in module.alias:
-                    if isinstance(y, dict):
-                        for z in y:
-                            alias_map.update({z: y[z]})
-                    elif isinstance(y, str):
-                        alias_map.update({y: module.bind_prefix})
-                    else:
-                        raise ValueError(f'Unknown alias elements type: {y}')
+            if module.alias is not None:
+                alias_map.update(module.alias)
         return alias_map
 
     @staticmethod
@@ -88,29 +89,10 @@ class ModulesManager:
         """
         返回此模块的别名列表
         """
-        alias_list = {}
         module = ModulesManager.return_modules_list_as_dict()[module_name]
         if module.alias is None:
-            return alias_list
-        if isinstance(module.alias, str):
-            alias_list.update({module.bind_prefix: [module.alias]})
-        if isinstance(module.alias, (list, tuple)):
-            for x in module.alias:
-                if module.bind_prefix not in alias_list:
-                    alias_list.update({module.bind_prefix: []})
-
-                if isinstance(x, dict):
-                    x = [x]
-                if isinstance(x, (tuple, list)):
-                    for y in x:
-                        if isinstance(y, str):
-                            alias_list[module.bind_prefix].append(y)
-                        if isinstance(y, dict):
-                            for z in y:
-                                if y[z] not in alias_list:
-                                    alias_list.update({y[z]: []})
-                                alias_list[y[z]].append(z)
-        return alias_list
+            return {}
+        return module.alias
 
     @staticmethod
     def return_modules_developers_map() -> Dict[str, list]:
@@ -119,28 +101,16 @@ class ModulesManager:
         for m in modules:
             module = modules[m]
             if module.developers is not None:
-                if isinstance(module.developers, str):
-                    d.update({module.bind_prefix: [module.developers]})
-                elif isinstance(module.developers, (tuple, list)):
-                    d.update({module.bind_prefix: module.developers})
+                d.update({m: module.developers})
         return d
 
     @staticmethod
-    def return_regex_modules() -> Dict[str, RegexCommand]:
+    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option])\
+            -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()
         for m in modules:
             module = modules[m]
-            if isinstance(module, RegexCommand):
+            if isinstance(module, module_type):
                 d.update({module.bind_prefix: module})
         return d
-
-    @staticmethod
-    def return_schedule_function_list() -> List[Schedule]:
-        l = []
-        modules = ModulesManager.return_modules_list_as_dict()
-        for m in modules:
-            module = modules[m]
-            if isinstance(m, Schedule):
-                l.append(m)
-        return l

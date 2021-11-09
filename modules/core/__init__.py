@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 import time
+import traceback
 
 import psutil
 import ujson as json
@@ -41,10 +42,11 @@ async def config_modules(msg: MessageSession):
         enable_list = []
         if wait_config_list == ['all']:
             for function in modules_:
-                if not modules_[function].required_superuser:
-                    if isinstance(modules_[function], Command) and modules_[function].base:
-                        continue
-                    enable_list.append(function)
+                if function[0] == '_':
+                    continue
+                if isinstance(modules_[function], Command) and (modules_[function].base or modules_[function].required_superuser):
+                    continue
+                enable_list.append(function)
         else:
             for module_ in wait_config_list:
                 if module_ not in modules_:
@@ -69,8 +71,11 @@ async def config_modules(msg: MessageSession):
         disable_list = []
         if wait_config_list == ['all']:
             for function in modules_:
-                if not modules_[function].required_superuser and not modules_[function].base:
-                    disable_list.append(function)
+                if function[0] == '_':
+                    continue
+                if isinstance(modules_[function], Command) and (modules_[function].base or modules_[function].required_superuser):
+                    continue
+                disable_list.append(function)
         else:
             for module_ in wait_config_list:
                 if module_ not in modules_:
@@ -87,7 +92,10 @@ async def config_modules(msg: MessageSession):
         for m in recommend_modules_list:
             try:
                 hdoc = CommandParser(modules_[m]).return_formatted_help_doc()
-                fmt_help_doc_list.append(f'模块{m}的帮助信息：\n' + hdoc)
+                fmt_help_doc_list.append(f'模块{m}的帮助信息：')
+                if modules_[m].desc is not None:
+                    fmt_help_doc_list.append(modules_[m].desc)
+                fmt_help_doc_list.append(hdoc)
             except InvalidHelpDocTypeError:
                 pass
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
@@ -155,60 +163,46 @@ async def _(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     developers = ModulesManager.return_modules_developers_map()
-    legacy_help = False
+    legacy_help = True
     if web_render and msg.Feature.image:
-        tables = []
-        essential = []
-        m = []
-        for x in module_list:
-            module_ = module_list[x]
-            appends = [module_.bind_prefix]
-            help_ = CommandParser(module_)
-            doc_ = []
-            if module_.desc is not None:
-                doc_.append(module_.desc)
-            if help_.args is not None:
-                doc_.append(help_.return_formatted_help_doc())
-            doc = '\n'.join(doc_)
-            appends.append(doc)
-            module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
-            malias = []
-            for a in module_alias:
-                for b in module_alias[a]:
-                    malias.append(f'{b} -> {a}')
-            if malias:
-                appends.append('\n'.join(malias))
-            else:
-                appends.append('')
-            if x in developers:
-                dev_list = developers[x]
-                if isinstance(dev_list, (list, tuple)):
-                    devs = '、'.join(developers[x]) if developers[x] is not None else ''
-                elif isinstance(dev_list, str):
-                    devs = dev_list
-                else:
-                    devs = '<数据类型错误，请联系开发者解决>'
-            else:
-                devs = ''
-            appends.append(devs)
-            if isinstance(module_, Command) and module_.base:
-                essential.append(appends)
-            if x in target_enabled_list:
-                m.append(appends)
-        if essential:
-            tables.append(ImageTable(essential, ['基础模块列表', '帮助信息', '命令别名', '作者']))
-        if m:
-            tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
-        if tables:
-            render = await image_table_render(tables)
-            if render:
-                await msg.sendMessage([Image(render),
-                                       Plain('使用~modules查看所有的可用模块。'
-                                             '\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')])
-            else:
-                legacy_help = True
-    else:
-        legacy_help = True
+        try:
+            tables = []
+            essential = []
+            m = []
+            for x in module_list:
+                module_ = module_list[x]
+                appends = [module_.bind_prefix]
+                help_ = CommandParser(module_)
+                doc_ = []
+                if module_.desc is not None:
+                    doc_.append(module_.desc)
+                if help_.args is not None:
+                    doc_.append(help_.return_formatted_help_doc())
+                doc = '\n'.join(doc_)
+                appends.append(doc)
+                module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
+                malias = []
+                for a in module_alias:
+                    malias.append(f'{a} -> {module_alias[a]}')
+                appends.append('\n'.join(malias) if malias else '')
+                appends.append('、'.join(developers[x]) if developers.get(x) is not None else '')
+                if isinstance(module_, Command) and module_.base:
+                    essential.append(appends)
+                if x in target_enabled_list:
+                    m.append(appends)
+            if essential:
+                tables.append(ImageTable(essential, ['基础模块列表', '帮助信息', '命令别名', '作者']))
+            if m:
+                tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
+            if tables:
+                render = await image_table_render(tables)
+                if render:
+                    legacy_help = False
+                    await msg.sendMessage([Image(render),
+                                           Plain('使用~modules查看所有的可用模块。'
+                                                 '\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')])
+        except Exception:
+            traceback.print_exc()
     if legacy_help:
         help_msg = ['基础命令：']
         essential = []
@@ -243,65 +237,49 @@ async def modules_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict()
     target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     developers = ModulesManager.return_modules_developers_map()
-    legacy_help = False
+    legacy_help = True
     if web_render and msg.Feature.image:
-        tables = []
-        m = []
-        for x in module_list:
-            module_ = module_list[x]
-            if x[0] == '_':
-                continue
-            if isinstance(module_, Command) and (module_.base or module_ \
-                    .required_superuser):
-                continue
-            appends = [module_.bind_prefix]
-            help_ = CommandParser(module_)
-            doc_ = []
-            if module_.desc is not None:
-                doc_.append(module_.desc)
-            if help_.args is not None:
-                doc_.append(help_.return_formatted_help_doc())
-            doc = '\n'.join(doc_)
-            appends.append(doc)
-            module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
-            malias = []
-            for a in module_alias:
-                for b in module_alias[a]:
-                    malias.append(f'{b} -> {a}')
-            if malias:
-                appends.append('\n'.join(malias))
-            else:
-                appends.append('')
-            if x in developers:
-                dev_list = developers[x]
-                if isinstance(dev_list, (list, tuple)):
-                    devs = '、'.join(developers[x]) if developers[x] is not None else ''
-                elif isinstance(dev_list, str):
-                    devs = dev_list
-                else:
-                    devs = '<数据类型错误，请联系开发者解决>'
-            else:
-                devs = ''
-            appends.append(devs)
-            m.append(appends)
-        if m:
-            tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
-        if tables:
-            render = await image_table_render(tables)
-            if render:
-                await msg.sendMessage([Image(render)])
-            else:
-                legacy_help = True
-    else:
-        legacy_help = True
+        try:
+            tables = []
+            m = []
+            for x in module_list:
+                module_ = module_list[x]
+                if x[0] == '_':
+                    continue
+                if isinstance(module_, Command) and (module_.base or module_.required_superuser):
+                    continue
+                appends = [module_.bind_prefix]
+                help_ = CommandParser(module_)
+                doc_ = []
+                if module_.desc is not None:
+                    doc_.append(module_.desc)
+                if help_.args is not None:
+                    doc_.append(help_.return_formatted_help_doc())
+                doc = '\n'.join(doc_)
+                appends.append(doc)
+                module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
+                malias = []
+                for a in module_alias:
+                    malias.append(f'{a} -> {module_alias[a]}')
+                appends.append('\n'.join(malias) if malias else '')
+                appends.append('、'.join(developers[x]) if developers.get(x) is not None else '')
+                m.append(appends)
+            if m:
+                tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
+            if tables:
+                render = await image_table_render(tables)
+                if render:
+                    legacy_help = False
+                    await msg.sendMessage([Image(render)])
+        except Exception:
+            traceback.print_exc()
     if legacy_help:
         help_msg = ['当前可用的模块有：']
         module_ = []
         for x in module_list:
             if x[0] == '_':
                 continue
-            if isinstance(module_list[x], Command) and (module_list[x].base or module_list[x] \
-                    .required_superuser):
+            if isinstance(module_list[x], Command) and (module_list[x].base or module_list[x].required_superuser):
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
