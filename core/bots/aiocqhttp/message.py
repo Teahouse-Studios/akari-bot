@@ -32,7 +32,6 @@ class MessageSession(MS):
 
     async def sendMessage(self, msgchain, quote=True):
         msg = MessageSegment.text('')
-        msg.clear()
         if quote:
             msg = MessageSegment.reply(self.session.message.message_id)
         if isinstance(msgchain, str):
