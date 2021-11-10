@@ -11,9 +11,9 @@ from core.utils import get_url
 
 def getfileversions(path):
     if not os.path.exists(path):
-        a = open(path, 'a')
+        a = open(path, 'a', encoding='utf-8')
         a.close()
-    w = open(path, 'r+')
+    w = open(path, 'r+', encoding='utf-8')
     s = w.read().split('\n')
     w.close()
     return s
@@ -35,14 +35,14 @@ async def mcv_rss(bot: FetchTarget):
         if release not in verlist:
             Logger.info(f'huh, we find {release}.')
             await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['release'] + '正式版。')
-            addversion = open(version_file, 'a')
+            addversion = open(version_file, 'a', encoding='utf-8')
             addversion.write('\n' + release)
             addversion.close()
             verlist = getfileversions(version_file)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
             await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['snapshot'] + '快照。')
-            addversion = open(version_file, 'a')
+            addversion = open(version_file, 'a', encoding='utf-8')
             addversion.write('\n' + snapshot)
             addversion.close()
     except Exception:
@@ -69,7 +69,7 @@ async def mcv_jira_rss(bot: FetchTarget):
                 await bot.post_message('mcv_jira_rss',
                                                 f'Jira已更新Java版 {release}。'
                                                 f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
-                addversion = open(version_file, 'a')
+                addversion = open(version_file, 'a', encoding='utf-8')
                 addversion.write('\n' + release)
                 addversion.close()
     except Exception:
@@ -97,7 +97,7 @@ async def mcbv_jira_rss(bot: FetchTarget):
                 await bot.post_message('mcbv_jira_rss',
                                                 f'Jira已更新基岩版 {release}。'
                                                 f'\n（Jira上的信息仅作版本号预览用，不代表商城已更新此版本）')
-                addversion = open(version_file, 'a')
+                addversion = open(version_file, 'a', encoding='utf-8')
                 addversion.write('\n' + release)
                 addversion.close()
     except Exception:
@@ -125,7 +125,7 @@ async def mcdv_jira_rss(bot: FetchTarget):
                 await bot.post_message('mcdv_jira_rss',
                                                 f'Jira已更新Minecraft Dungeons {release}。'
                                                 f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
-                addversion = open(version_file, 'a')
+                addversion = open(version_file, 'a', encoding='utf-8')
                 addversion.write('\n' + release)
                 addversion.close()
     except Exception:
