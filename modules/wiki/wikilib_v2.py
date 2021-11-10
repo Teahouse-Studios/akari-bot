@@ -415,4 +415,5 @@ class WikiLib:
                     page_info.before_title = '?'
                     page_info.title = '¿'
                     page_info.link = 'https://wdf.ink/6OUp'
+                    page_info.desc = None
         return page_info
