@@ -103,6 +103,7 @@ async def config_modules(msg: MessageSession):
                                         '\n'.join(fmt_help_doc_list) +
                                         '\n是否一并打开？')
         if confirm:
+            query = BotDBUtil.Module(msg)
             if query.enable(recommend_modules_list):
                 msglist = []
                 for x in recommend_modules_list:
