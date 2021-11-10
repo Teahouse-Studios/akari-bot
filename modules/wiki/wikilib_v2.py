@@ -105,7 +105,7 @@ class WikiLib:
 
     async def get_json(self, api, **kwargs) -> dict:
         if kwargs is not None:
-            api = api + '?' + urllib.parse.urlencode(kwargs)
+            api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
         return await get_url(api, status_code=200, headers=self.headers, fmt="json")
 
     def rearrange_siteinfo(self, info: Union[dict, str]) -> WikiInfo:
@@ -188,8 +188,7 @@ class WikiLib:
             get_json = await self.get_json(wiki_api_link,
                                            action='query',
                                            meta='siteinfo',
-                                           siprop='general|namespaces|namespacealiases|interwikimap|extensions',
-                                           format='json')
+                                           siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
             return WikiStatus(available=False, value=False, message='从API获取信息时出错：' + str(e))
         DBSiteInfo(wiki_api_link).update(get_json)
@@ -241,8 +240,7 @@ class WikiLib:
         get_parse = await self.get_json(self.wiki_info.api,
                                         action='parse',
                                         page=page_name,
-                                        prop='text',
-                                        format='json')
+                                        prop='text')
         h = html2text.HTML2Text()
         h.ignore_links = True
         h.ignore_images = True
@@ -255,8 +253,7 @@ class WikiLib:
             load_desc = await self.get_json(self.wiki_info.api,
                                             action='parse',
                                             page=page_name,
-                                            prop='wikitext',
-                                            format='json')
+                                            prop='wikitext')
             desc = load_desc['parse']['wikitext']['*']
         except Exception:
             traceback.print_exc()
@@ -271,8 +268,7 @@ class WikiLib:
                                        srsearch=page_name,
                                        srwhat='text',
                                        srlimit='1',
-                                       srenablerewrites=True,
-                                       format='json')
+                                       srenablerewrites=True)
         new_page_name = get_page['query']['search'][0]['title'] if len(get_page['query']['search']) > 0 else None
         title_split = page_name.split(':')
         print(title_split, len(title_split))
@@ -283,6 +279,13 @@ class WikiLib:
 
     async def parse_page_info(self, title: str, doc_mode=False,
                               tried_iw=0, iw_prefix='') -> PageInfo:
+        """
+        :param title: 页面标题
+        :param doc_mode: 是否为文档模式
+        :param tried_iw: 尝试iw跳转的次数
+        :param iw_prefix: iw前缀
+        :return:
+        """
         await self.fixup_wiki_info()
         if tried_iw > 5:
             raise WhatAreUDoingError
@@ -300,7 +303,7 @@ class WikiLib:
             else:
                 arg_list.append(a)
         page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=iw_prefix)
-        query_string = {'action': 'query', 'format': 'json', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
+        query_string = {'action': 'query', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
                         'redirects': 'True', 'titles': title}
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts:
@@ -327,7 +330,14 @@ class WikiLib:
                 page_raw = pages[page_id]
                 title = page_raw['title']
                 if int(page_id) < 0:
-                    if 'missing' not in page_raw or 'known' in page_raw:
+                    if 'invalid' in page_raw:
+                        rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
+                                     page_raw['invalidreason'])
+                        rs = '发生错误：“' + rs1 + '”。'
+                        rs = re.sub('".”', '"”', rs)
+                        page_info.desc = rs
+                        page_info.status = False
+                    elif 'missing' not in page_raw or 'known' in page_raw:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
                         page_info.link = full_url
@@ -417,3 +427,13 @@ class WikiLib:
                     page_info.link = 'https://wdf.ink/6OUp'
                     page_info.desc = None
         return page_info
+
+    async def random_page(self) -> PageInfo:
+        """
+        获取随机页面
+        :return: 页面信息
+        """
+        await self.fixup_wiki_info()
+        random_url = await self.get_json(self.wiki_info.api, action='query', list='random')
+        page_title = random_url['query']['random'][0]['title']
+        return await self.parse_page_info(page_title)

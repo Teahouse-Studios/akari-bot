@@ -24,7 +24,7 @@ wiki = on_command('wiki',
                   developers=['OasisAkari'])
 
 
-@wiki.handle('<PageName> {搜索一个Wiki页面，若搜索random则随机一个页面。}')
+@wiki.handle('<PageName> {搜索一个Wiki页面，若搜索“随机页面”则随机一个页面。}')
 async def _(msg: MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'])
 
@@ -290,14 +290,17 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if template:
-                    rd = f'Template:{rd}'
-                if mediawiki:
-                    rd = f'MediaWiki:{rd}'
-                tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(rd)))
+                if rd == '随机页面':
+                    tasks.append(asyncio.create_task(WikiLib(q, headers).random_page()))
+                else:
+                    if template:
+                        rd = f'Template:{rd}'
+                    if mediawiki:
+                        rd = f'MediaWiki:{rd}'
+                    tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(rd)))
             query = await asyncio.gather(*tasks)
             for result in query:
-                print(result)
+                print(result.__dict__)
                 r: PageInfo = result
                 iw_prefix = iw_prefix
                 display_title = None
@@ -340,6 +343,8 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                         wait_list.append(display_title)
                     elif r.before_title is not None:
                         plain_slice.append(f'提示：找不到[{display_before_title}]。')
+                    if r.desc is not None:
+                        plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
                         s = r.before_title.split(":")
                         if len(s) > 1:
