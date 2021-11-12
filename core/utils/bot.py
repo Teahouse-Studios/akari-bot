@@ -35,7 +35,7 @@ def init() -> None:
     write_tag.close()
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False):
     """利用AioHttp获取指定url的内容。
 
@@ -62,7 +62,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                 return text
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def download_to_cache(link: str) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
     
