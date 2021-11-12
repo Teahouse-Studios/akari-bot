@@ -103,9 +103,11 @@ class WikiLib:
                                   namespaces=[], namespaces_local={}, in_whitelist=False)
         self.headers = headers
 
-    async def get_json(self, api, **kwargs) -> dict:
+    async def get_json_from_api(self, api, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
+        else:
+            raise ValueError('kwargs is None')
         return await get_url(api, status_code=200, headers=self.headers, fmt="json")
 
     def rearrange_siteinfo(self, info: Union[dict, str]) -> WikiInfo:
@@ -185,10 +187,10 @@ class WikiLib:
                               value=self.rearrange_siteinfo(get_cache_info[0]),
                               message='')
         try:
-            get_json = await self.get_json(wiki_api_link,
-                                           action='query',
-                                           meta='siteinfo',
-                                           siprop='general|namespaces|namespacealiases|interwikimap|extensions')
+            get_json = await self.get_json_from_api(wiki_api_link,
+                                                    action='query',
+                                                    meta='siteinfo',
+                                                    siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
             return WikiStatus(available=False, value=False, message='从API获取信息时出错：' + str(e))
         DBSiteInfo(wiki_api_link).update(get_json)
@@ -204,6 +206,11 @@ class WikiLib:
                 self.wiki_info = wiki_info.value
             else:
                 raise InvalidWikiError(wiki_info.message if wiki_info.message != '' else '')
+
+    async def get_json(self, **kwargs) -> dict:
+        await self.fixup_wiki_info()
+        api = self.wiki_info.api
+        return await self.get_json_from_api(api, **kwargs)
 
     @staticmethod
     def parse_text(text):
@@ -237,8 +244,7 @@ class WikiLib:
 
     async def get_html_to_text(self, page_name):
         await self.fixup_wiki_info()
-        get_parse = await self.get_json(self.wiki_info.api,
-                                        action='parse',
+        get_parse = await self.get_json(action='parse',
                                         page=page_name,
                                         prop='text')
         h = html2text.HTML2Text()
@@ -250,8 +256,7 @@ class WikiLib:
     async def get_wikitext(self, page_name):
         await self.fixup_wiki_info()
         try:
-            load_desc = await self.get_json(self.wiki_info.api,
-                                            action='parse',
+            load_desc = await self.get_json(action='parse',
                                             page=page_name,
                                             prop='wikitext')
             desc = load_desc['parse']['wikitext']['*']
@@ -262,8 +267,7 @@ class WikiLib:
 
     async def research_page(self, page_name: str):
         await self.fixup_wiki_info()
-        get_page = await self.get_json(self.wiki_info.api,
-                                       action='query',
+        get_page = await self.get_json(action='query',
                                        list='search',
                                        srsearch=page_name,
                                        srwhat='text',
@@ -289,6 +293,8 @@ class WikiLib:
         await self.fixup_wiki_info()
         if tried_iw > 5:
             raise WhatAreUDoingError
+        if title == '':
+            return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info)
         split_name = re.split(r'([#?])', title)
         title = re.sub('_', ' ', split_name[0])
         arg_list = []
@@ -310,7 +316,7 @@ class WikiLib:
             query_string.update({'prop': 'info|imageinfo|extracts',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
-        get_page = await self.get_json(self.wiki_info.api, **query_string)
+        get_page = await self.get_json(**query_string)
         query = get_page.get('query')
         redirects_: List[Dict[str, str]] = query.get('redirects')
         if redirects_ is not None:
@@ -404,11 +410,13 @@ class WikiLib:
                                                                                                     tried_iw=tried_iw + 1,
                                                                                                     iw_prefix=iw_prefix)
                     page_info = iw_query
-                    page_info.before_title = title
-
-                    t = page_info.title
-                    if tried_iw == 0:
-                        page_info.title = page_info.interwiki_prefix + t
+                    if iw_query.title == '':
+                        page_info.title = title
+                    else:
+                        page_info.before_title = title
+                        t = page_info.title
+                        if tried_iw == 0:
+                            page_info.title = page_info.interwiki_prefix + t
         if not self.wiki_info.in_whitelist:
             checklist = []
             if page_info.title is not None:
@@ -434,6 +442,6 @@ class WikiLib:
         :return: 页面信息
         """
         await self.fixup_wiki_info()
-        random_url = await self.get_json(self.wiki_info.api, action='query', list='random')
+        random_url = await self.get_json(action='query', list='random')
         page_title = random_url['query']['random'][0]['title']
         return await self.parse_page_info(page_title)
