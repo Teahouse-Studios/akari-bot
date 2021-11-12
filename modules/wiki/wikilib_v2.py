@@ -223,6 +223,8 @@ class WikiLib:
             desc = '\n'.join(desc_list)
             desc_end = re.findall(r'(.*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc, re.S | re.M)
             if desc_end:
+                if re.findall(r'[({\[>\"\'《【‘“]', desc_end[0]):
+                    desc_end = re.findall(r'(.*?[)}\]>\"\'》】’”].*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc, re.S | re.M)
                 desc = desc_end[0]
         except Exception:
             traceback.print_exc()
