@@ -3,7 +3,6 @@ from io import BytesIO
 
 from PIL import ImageFont, ImageDraw, Image
 
-
 path = 'assets/maimai/static/high_eq_image.png'
 fontpath = "assets/maimai/static/msyh.ttc"
 

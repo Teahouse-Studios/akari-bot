@@ -1,14 +1,14 @@
-import aiohttp
 import ujson as json
-import traceback
 import os
-
-from urllib.parse import quote
+import traceback
 from datetime import datetime, timedelta
+from urllib.parse import quote
+
+import ujson as json
 
 from config import Config
+from core.component import on_schedule
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
-from core.component import on_startup, on_schedule
 from core.logger import Logger
 from core.utils import get_url
 
@@ -27,12 +27,14 @@ class Article:
     count = 10
 
 
-@on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'], recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft官网的新闻。')
+@on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
+             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
     Logger.info('Checking Minecraft news...')
     file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
     baseurl = 'https://www.minecraft.net'
-    url = quote(f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize={Article.count}')
+    url = quote(
+        f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize={Article.count}')
     webrender = Config('web_render')
     get = webrender + 'source?url=' + url
     if not webrender:
@@ -60,10 +62,13 @@ async def start_check_news(bot: FetchTarget):
     Logger.info('Minecraft news checked.')
 
 
-@on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。')
+@on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
+             trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。')
 async def feedback_news(bot: FetchTarget):
-    sections = [{'name': 'beta', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
-                {'name': 'article', 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5'}]
+    sections = [{'name': 'beta',
+                 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
+                {'name': 'article',
+                 'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5'}]
     for section in sections:
         try:
             name = section['name']
@@ -81,7 +86,7 @@ async def feedback_news(bot: FetchTarget):
                     Logger.info(f'huh, we find {name}.')
                     alist.append(name)
                     await bot.post_message('feedback_news',
-                                                    f'Minecraft Feedback 发布了新的文章：\n{name}\n{link}')
+                                           f'Minecraft Feedback 发布了新的文章：\n{name}\n{link}')
                     addversion = open(version_file, 'a', encoding='utf-8')
                     addversion.write('\n' + name)
                     addversion.close()

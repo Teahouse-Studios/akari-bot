@@ -11,10 +11,10 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter
 
 from config import Config
-from core.unused_bots.graia.broadcast import app, bcc
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, \
     FetchTarget as FT
 from core.elements.others import confirm_command
+from core.unused_bots.graia.broadcast import app, bcc
 from core.utils import slk_converter
 from database import BotDBUtil
 from database.logging_message import LoggerMSG
@@ -57,7 +57,7 @@ class MessageSession(MS):
             LoggerMSG(userid=self.target.senderId, command=self.trigger_msg, msg=msgchain.asDisplay())
         if isinstance(self.session.target, Group) or self.target.targetFrom == 'QQ|Group':
             send = await app.sendGroupMessage(self.session.target, msgchain, quote=self.session.message[Source][0].id
-                                              if quote and self.session.message else None)
+            if quote and self.session.message else None)
             return MessageSession(
                 target=MsgInfo(targetId=0, senderId=0, targetFrom='QQ|Bot', senderFrom="QQ|Bot", senderName=''),
                 session=Session(message=send, target=0, sender=0))

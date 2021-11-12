@@ -25,5 +25,6 @@ async def search(msg: MessageSession):
 
         await msg.sendMessage(message)
     except Exception as error:
-        await msg.sendMessage('发生错误：' + str(error) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+        await msg.sendMessage('发生错误：' + str(
+            error) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
         traceback.print_exc()

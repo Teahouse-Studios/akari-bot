@@ -3,8 +3,8 @@ import traceback
 
 import ujson as json
 
-from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.component import on_schedule
+from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.logger import Logger
 from core.utils import get_url
 
@@ -67,8 +67,8 @@ async def mcv_jira_rss(bot: FetchTarget):
                 Logger.info(f'huh, we find {release}.')
                 verlist.append(release)
                 await bot.post_message('mcv_jira_rss',
-                                                f'Jira已更新Java版 {release}。'
-                                                f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                                       f'Jira已更新Java版 {release}。'
+                                       f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
                 addversion = open(version_file, 'a', encoding='utf-8')
                 addversion.write('\n' + release)
                 addversion.close()
@@ -95,8 +95,8 @@ async def mcbv_jira_rss(bot: FetchTarget):
                 Logger.info(f'huh, we find {release}.')
                 verlist.append(release)
                 await bot.post_message('mcbv_jira_rss',
-                                                f'Jira已更新基岩版 {release}。'
-                                                f'\n（Jira上的信息仅作版本号预览用，不代表商城已更新此版本）')
+                                       f'Jira已更新基岩版 {release}。'
+                                       f'\n（Jira上的信息仅作版本号预览用，不代表商城已更新此版本）')
                 addversion = open(version_file, 'a', encoding='utf-8')
                 addversion.write('\n' + release)
                 addversion.close()
@@ -123,8 +123,8 @@ async def mcdv_jira_rss(bot: FetchTarget):
                 Logger.info(f'huh, we find {release}.')
                 verlist.append(release)
                 await bot.post_message('mcdv_jira_rss',
-                                                f'Jira已更新Minecraft Dungeons {release}。'
-                                                f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
+                                       f'Jira已更新Minecraft Dungeons {release}。'
+                                       f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
                 addversion = open(version_file, 'a', encoding='utf-8')
                 addversion.write('\n' + release)
                 addversion.close()

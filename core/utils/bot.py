@@ -11,9 +11,8 @@ import ujson as json
 from aiohttp_retry import ExponentialRetry, RetryClient
 
 from core.elements import FetchTarget, PrivateAssets
-from core.logger import Logger
-        
 from core.loader import load_modules
+from core.logger import Logger
 
 
 def init() -> None:
@@ -35,15 +34,14 @@ def init() -> None:
     write_tag.close()
 
 
-
 async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None):
-    '''利用AioHttp获取指定url的内容。
-    
+    """利用AioHttp获取指定url的内容。
+
     :param url: 需要获取的url。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
     :param headers: 请求时使用的http头。
     :returns: 指定url的内容（字符串）。
-    '''
+    """
     async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=3)) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
             if status_code and req.status != status_code:

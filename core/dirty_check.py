@@ -11,11 +11,11 @@ import time
 
 import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
+
+from config import Config
 from core.elements import EnableDirtyWordCheck
 from core.logger import Logger
 from database.logging_message import DirtyWordCache
-
-from config import Config
 
 
 def hash_hmac(key, code, sha1):
@@ -30,16 +30,20 @@ def computeMD5hash(my_string):
 
 
 def parse_data(result: dict):
+    print(result)
     original_content = content = result['content']
+    status = True
     for itemResult in result['results']:
         if itemResult['suggestion'] == 'block':
             for itemDetail in itemResult['details']:
                 if 'contexts' in itemDetail:
                     for itemContext in itemDetail["contexts"]:
                         content = content.replace(itemContext['context'], '<吃掉了>')
+                        status = False
                 else:
                     content = "<全部吃掉了>"
-    return {original_content: content}
+                    status = False
+    return {'content': content, 'status': status, 'original': original_content}
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
@@ -47,7 +51,7 @@ async def check(*text) -> list:
     '''检查字符串是否合规
     
     :param text: 字符串（List/Union）。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'，结构为[{'审核后的字符串': 处理结果（True/False，默认为True）}]
     '''
     accessKeyId = Config("Check_accessKeyId")
     accessKeySecret = Config("Check_accessKeySecret")
@@ -55,26 +59,34 @@ async def check(*text) -> list:
     if not accessKeyId or not accessKeySecret or not EnableDirtyWordCheck.status:
         Logger.warn('Dirty words filter was disabled, skip.')
         return text
-    for x in text:
-        if x == '':
-            text.remove(x)
     if not text:
         return []
     query_list = {}
     count = 0
     for t in text:
-        query_list.update({count: {t: False}})
+        if t == '':
+            query_list.update({count: {t: {'content': t, 'status': True, 'original': t}}})
+        else:
+            query_list.update({count: {t: False}})
         count += 1
-    for q in query_list:
-        for pq in query_list[q]:
-            cache = DirtyWordCache(pq)
-            if not cache.need_insert:
-                query_list.update({q: parse_data(cache.get())})
-    call_api_list = {}
+    print(query_list)
     for q in query_list:
         for pq in query_list[q]:
             if not query_list[q][pq]:
-                call_api_list.update({pq: q})
+                cache = DirtyWordCache(pq)
+                if not cache.need_insert:
+                    query_list.update({q: {pq: parse_data(cache.get())}})
+    call_api_list = {}
+    for q in query_list:
+        print(q)
+        for pq in query_list[q]:
+            print(pq)
+            if not query_list[q][pq]:
+                if pq not in call_api_list:
+                    call_api_list.update({pq: []})
+                print(call_api_list)
+                call_api_list[pq].append(q)
+    print(call_api_list)
     call_api_list_ = [x for x in call_api_list]
     if call_api_list_:
         body = {
@@ -126,15 +138,13 @@ async def check(*text) -> list:
                     print(result)
                     for item in result['data']:
                         content = item['content']
-                        query_list.update({call_api_list[content]: parse_data(item)})
+                        for n in call_api_list[content]:
+                            query_list.update({n: parse_data(item)})
                         DirtyWordCache(content).update(item)
                 else:
                     raise ValueError(await resp.text())
     results = []
     print(query_list)
     for x in query_list:
-        for y in query_list[x]:
-            results.append(query_list[x][y])
+        results.append(query_list[x])
     return results
-
-

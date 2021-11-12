@@ -1,8 +1,8 @@
 import asyncio
 
+from core.component import on_command
 from core.dirty_check import check
 from core.elements import MessageSession
-from core.component import on_command
 from .server import server
 
 s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
@@ -34,8 +34,8 @@ async def s(msg: MessageSession, address, raw, showplayer, mode):
     sendmsg = await server(address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
-        sendmsg = '\n'.join(sendmsg)
-        send = await msg.sendMessage(sendmsg + '\n[90秒后撤回消息]')
-        await msg.sleep(90)
-        await send.delete()
+        for x in sendmsg:
+            send = await msg.sendMessage(x['content'] + '\n[90秒后撤回消息]')
+            await msg.sleep(90)
+            await send.delete()
     return sendmsg

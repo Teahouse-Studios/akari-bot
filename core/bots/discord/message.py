@@ -59,6 +59,7 @@ class MessageSession(MS):
 
     async def waitConfirm(self, msgchain=None, quote=True):
         ExecutionLockList.remove(self)
+
         def check(m):
             return m.channel == self.session.message.channel and m.author == self.session.message.author
 

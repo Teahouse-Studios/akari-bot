@@ -3,12 +3,12 @@ import logging
 import os
 import re
 
+from aiocqhttp import Event
+
 from config import Config
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
-from aiocqhttp import Event
-
 from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck, PrivateAssets
 from core.loader import ModulesManager
 from core.parser.message import parser

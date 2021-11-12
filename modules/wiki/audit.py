@@ -1,8 +1,9 @@
 import re
 
-from .orm import WikiWhitelist
-from database import auto_rollback_error, session
 from tenacity import retry, stop_after_attempt
+
+from database import auto_rollback_error, session
+from .orm import WikiWhitelist
 
 
 @retry(stop=stop_after_attempt(3))

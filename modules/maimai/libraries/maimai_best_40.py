@@ -1,13 +1,12 @@
 # Author: xyb, Diving_Fish
-import asyncio
-import os
 import math
+import os
 from typing import Optional, Dict, List
 
 import aiohttp
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from modules.maimai.libraries.maimaidx_music import total_list
 
+from modules.maimai.libraries.maimaidx_music import total_list
 
 scoreRank = 'D C B BB BBB A AA AAA S S+ SS SS+ SSS SSS+'.split(' ')
 combo = ' FC FC+ AP AP+'.split(' ')
@@ -15,8 +14,8 @@ diffs = 'Basic Advanced Expert Master Re:Master'.split(' ')
 
 
 class ChartInfo(object):
-    def __init__(self, idNum:str, diff:int, tp:str, achievement:float, ra:int, comboId:int, scoreId:int,
-                 title:str, ds:float, lv:str):
+    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, scoreId: int,
+                 title: str, ds: float, lv: str):
         self.idNum = idNum
         self.diff = diff
         self.tp = tp
@@ -57,20 +56,19 @@ class ChartInfo(object):
         )
 
 
-
 class BestList(object):
 
-    def __init__(self, size:int):
+    def __init__(self, size: int):
         self.data = []
         self.size = size
 
-    def push(self, elem:ChartInfo):
+    def push(self, elem: ChartInfo):
         if len(self.data) >= self.size and elem < self.data[-1]:
             return
         self.data.append(elem)
         self.data.sort()
         self.data.reverse()
-        while(len(self.data) > self.size):
+        while (len(self.data) > self.size):
             del self.data[-1]
 
     def pop(self):
@@ -88,7 +86,7 @@ class BestList(object):
 
 class DrawBest(object):
 
-    def __init__(self, sdBest:BestList, dxBest:BestList, userName:str, playerRating:int, musicRating:int):
+    def __init__(self, sdBest: BestList, dxBest: BestList, userName: str, playerRating: int, musicRating: int):
         self.sdBest = sdBest
         self.dxBest = dxBest
         self.userName = self._stringQ2B(userName)
@@ -115,7 +113,7 @@ class DrawBest(object):
             inside_code = 0x0020
         else:
             inside_code -= 0xfee0
-        if inside_code < 0x0020 or inside_code > 0x7e: #转完之后不是半角字符返回原来的字符
+        if inside_code < 0x0020 or inside_code > 0x7e:  # 转完之后不是半角字符返回原来的字符
             return uchar
         return chr(inside_code)
 
@@ -138,13 +136,13 @@ class DrawBest(object):
                 return wid
         return 1
 
-    def _coloumWidth(self, s:str):
+    def _coloumWidth(self, s: str):
         res = 0
         for ch in s:
             res += self._getCharWidth(ord(ch))
         return res
 
-    def _changeColumnWidth(self, s:str, len:int) -> str:
+    def _changeColumnWidth(self, s: str, len: int) -> str:
         res = 0
         sList = []
         for ch in s:
@@ -153,7 +151,7 @@ class DrawBest(object):
                 sList.append(ch)
         return ''.join(sList)
 
-    def _resizePic(self, img:Image.Image, time:float):
+    def _resizePic(self, img: Image.Image, time: float):
         return img.resize((int(img.size[0] * time), int(img.size[1] * time)))
 
     def _findRaPic(self) -> str:
@@ -178,7 +176,7 @@ class DrawBest(object):
             num = '09'
         return f'UI_CMN_DXRating_S_{num}.png'
 
-    def _drawRating(self, ratingBaseImg:Image.Image):
+    def _drawRating(self, ratingBaseImg: Image.Image):
         COLOUMS_RATING = [86, 100, 115, 130, 145]
         theRa = self.playerRating
         i = 4
@@ -191,7 +189,7 @@ class DrawBest(object):
             i = i - 1
         return ratingBaseImg
 
-    def _drawBestList(self, img:Image.Image, sdBest:BestList, dxBest:BestList):
+    def _drawBestList(self, img: Image.Image, sdBest: BestList, dxBest: BestList):
         itemW = 164
         itemH = 88
         Color = [(69, 193, 36), (255, 186, 1), (255, 90, 102), (134, 49, 200), (217, 197, 233)]
@@ -227,7 +225,8 @@ class DrawBest(object):
             rankImg = self._resizePic(rankImg, 0.3)
             temp.paste(rankImg, (88, 28), rankImg.split()[3])
             if chartInfo.comboId:
-                comboImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{comboPic[chartInfo.comboId]}_S.png').convert('RGBA')
+                comboImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{comboPic[chartInfo.comboId]}_S.png').convert(
+                    'RGBA')
                 comboImg = self._resizePic(comboImg, 0.45)
                 temp.paste(comboImg, (119, 27), comboImg.split()[3])
             font = ImageFont.truetype('assets/maimai/static/adobe_simhei.otf', 12, encoding='utf-8')
@@ -356,7 +355,7 @@ class DrawBest(object):
         return self.img
 
 
-def computeRa(ds: float, achievement:float) -> int:
+def computeRa(ds: float, achievement: float) -> int:
     baseRa = 15.0
     if achievement >= 50 and achievement < 60:
         baseRa = 5.0
@@ -389,7 +388,8 @@ def computeRa(ds: float, achievement:float) -> int:
 
 
 async def generate(payload: Dict) -> (Optional[Image.Image], bool):
-    async with aiohttp.request("POST", "https://www.diving-fish.com/api/maimaidxprober/query/player", json=payload) as resp:
+    async with aiohttp.request("POST", "https://www.diving-fish.com/api/maimaidxprober/query/player",
+                               json=payload) as resp:
         if resp.status == 400:
             return None, 400
         if resp.status == 403:
@@ -403,5 +403,6 @@ async def generate(payload: Dict) -> (Optional[Image.Image], bool):
             sd_best.push(ChartInfo.from_json(c))
         for c in dx:
             dx_best.push(ChartInfo.from_json(c))
-        pic = DrawBest(sd_best, dx_best, obj["nickname"], obj["rating"] + obj["additional_rating"], obj["rating"]).getDir()
+        pic = DrawBest(sd_best, dx_best, obj["nickname"], obj["rating"] + obj["additional_rating"],
+                       obj["rating"]).getDir()
         return pic, 0

@@ -1,4 +1,5 @@
 import datetime
+
 import ujson as json
 from sqlalchemy import create_engine, Column, String, Text, Integer, TIMESTAMP, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -6,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt
 
 Base = declarative_base()
-
 
 DB_LINK = 'sqlite:///database/msg.db'
 
@@ -57,6 +57,7 @@ def auto_rollback_error(func):
         except Exception as e:
             session.rollback()
             raise e
+
     return wrapper
 
 
@@ -135,4 +136,3 @@ class UnfriendlyActions:
         session.add_all([UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action)])
         session.commit()
         return self.check_mute()
-

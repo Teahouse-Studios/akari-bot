@@ -19,6 +19,7 @@ init()
 
 count = 0
 
+
 @client.event
 async def on_ready():
     Logger.info('Logged on as ' + str(client.user))

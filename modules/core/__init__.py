@@ -1,4 +1,3 @@
-import asyncio
 import os
 import sys
 import time
@@ -7,11 +6,11 @@ import traceback
 import psutil
 import ujson as json
 
+from core.component import on_command
 from core.elements import MessageSession, Command, PrivateAssets, Image, Plain
 from core.loader import ModulesManager
-from core.component import on_command
-from core.utils.image_table import ImageTable, image_table_render, web_render
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
+from core.utils.image_table import ImageTable, image_table_render, web_render
 from database import BotDBUtil
 
 module = on_command('module',
@@ -44,7 +43,8 @@ async def config_modules(msg: MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if isinstance(modules_[function], Command) and (modules_[function].base or modules_[function].required_superuser):
+                if isinstance(modules_[function], Command) and (
+                        modules_[function].base or modules_[function].required_superuser):
                     continue
                 enable_list.append(function)
         else:
@@ -73,7 +73,8 @@ async def config_modules(msg: MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if isinstance(modules_[function], Command) and (modules_[function].base or modules_[function].required_superuser):
+                if isinstance(modules_[function], Command) and (
+                        modules_[function].base or modules_[function].required_superuser):
                     continue
                 disable_list.append(function)
         else:

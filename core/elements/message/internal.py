@@ -1,11 +1,12 @@
 import re
 import uuid
+from os.path import abspath
+
 import aiohttp
 import filetype
-
-from os.path import abspath
 from PIL import Image as PImage
 from aiohttp_retry import ExponentialRetry, RetryClient
+
 from config import CachePath
 
 

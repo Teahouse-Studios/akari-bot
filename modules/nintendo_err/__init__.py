@@ -1,8 +1,8 @@
 # copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
-from core.elements import MessageSession
 from core.component import on_command
+from core.elements import MessageSession
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 

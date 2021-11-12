@@ -2,7 +2,7 @@ import importlib
 import os
 import re
 import traceback
-from typing import Dict, Union, List, Set
+from typing import Dict, Union
 
 from core.elements import Command, Option, Schedule, RegexCommand, StartUp, PrivateAssets
 from core.logger import Logger
@@ -105,7 +105,7 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option])\
+    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option]) \
             -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()

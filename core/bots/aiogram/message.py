@@ -38,19 +38,19 @@ class MessageSession(MS):
             for x in msgchain:
                 if isinstance(x, Plain):
                     send_ = await bot.send_message(self.session.target, x.text,
-                                                  reply_to_message_id=self.session.message.message_id if quote
-                                                  and count == 0 and self.session.message else None)
+                                                   reply_to_message_id=self.session.message.message_id if quote
+                                                                                                          and count == 0 and self.session.message else None)
                 elif isinstance(x, Image):
                     with open(await x.get(), 'rb') as image:
                         send_ = await bot.send_photo(self.session.target, image,
-                                                    reply_to_message_id=self.session.message.message_id if quote
-                                                    and count == 0
-                                                    and self.session.message else None)
+                                                     reply_to_message_id=self.session.message.message_id if quote
+                                                                                                            and count == 0
+                                                                                                            and self.session.message else None)
                 elif isinstance(x, Voice):
                     with open(x.path, 'rb') as voice:
                         send_ = await bot.send_audio(self.session.target, voice,
-                                                    reply_to_message_id=self.session.message.message_id if quote
-                                                    and count == 0 and self.session.message else None)
+                                                     reply_to_message_id=self.session.message.message_id if quote
+                                                                                                            and count == 0 and self.session.message else None)
                 else:
                     send_ = False
                 if send_:
@@ -61,7 +61,7 @@ class MessageSession(MS):
             send = await bot.send_message(self.session.target, msgchain,
                                           reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
         return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
-                                                 senderFrom='Telegram|Bot'),
+                                             senderFrom='Telegram|Bot'),
                               session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
 
     async def waitConfirm(self, msgchain=None, quote=True):
@@ -114,7 +114,7 @@ class MessageSession(MS):
             self.msg = msg
 
         async def __aenter__(self):
-            #await bot.answer_chat_action(self.msg.session.target, 'typing')
+            # await bot.answer_chat_action(self.msg.session.target, 'typing')
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):

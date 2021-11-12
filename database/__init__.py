@@ -1,12 +1,12 @@
 import datetime
 
+from tenacity import retry, stop_after_attempt
+
+from config import Config
 from core.elements.message import MessageSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
 from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime, GroupWhiteList
-from config import Config
-
-from tenacity import retry, stop_after_attempt
 
 cache = Config('db_cache')
 
@@ -41,6 +41,7 @@ def auto_rollback_error(func):
         except Exception as e:
             session.rollback()
             raise e
+
     return wrapper
 
 

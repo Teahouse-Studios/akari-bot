@@ -1,14 +1,12 @@
 import re
-
 from collections import defaultdict
 
-from modules.maimai.libraries.tool import hash
-from modules.maimai.libraries.maimaidx_music import *
+from core.component import on_command, on_regex
+from core.elements import Plain, Image as BImage, MessageSession
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
-
-from core.elements import Plain, Image as BImage, MessageSession
-from core.component import on_command, on_regex
+from modules.maimai.libraries.maimaidx_music import *
+from modules.maimai.libraries.tool import hash
 
 
 def song_txt(music: Music):

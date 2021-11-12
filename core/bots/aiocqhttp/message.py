@@ -1,10 +1,12 @@
 import asyncio
+import html
 import re
 import traceback
-from typing import List
 from pathlib import Path
+from typing import List
 
 from aiocqhttp import MessageSegment
+
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
@@ -12,7 +14,6 @@ from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, 
 from core.elements.others import confirm_command
 from core.logger import Logger
 from database import BotDBUtil
-import html
 
 
 def convert2lst(s) -> list:
@@ -83,7 +84,8 @@ class MessageSession(MS):
         if self.target.targetFrom == 'QQ' or self.target.senderInfo.check_TargetAdmin(
                 self.target.targetId) or self.target.senderInfo.query.isSuperUser:
             return True
-        get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target, user_id=self.session.sender)
+        get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
+                                                user_id=self.session.sender)
         if get_member_info['role'] in ['owner', 'admin']:
             return True
         return False
@@ -119,7 +121,8 @@ class MessageSession(MS):
 
         async def __aenter__(self):
             if self.msg.target.targetFrom == 'QQ|Group':
-                await bot.send_group_msg(group_id=self.msg.session.target, message=f'[CQ:poke,qq={self.msg.session.sender}]')
+                await bot.send_group_msg(group_id=self.msg.session.target,
+                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):

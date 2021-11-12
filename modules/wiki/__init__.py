@@ -1,22 +1,26 @@
-import traceback
 import asyncio
-import filetype
 import re
-
+import traceback
 from typing import Union
 
+import filetype
 import ujson as json
 
-from core.elements import MessageSession, Plain, Image, Voice
 from core.component import on_command, on_regex, on_option
+from core.elements import MessageSession, Plain, Image, Voice
+from core.exceptions import AbuseWarning
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
-from core.exceptions import AbuseWarning
 from database import BotDBUtil
-from .dbutils import WikiTargetInfo
-from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo
-from .getinfobox import get_infobox_pic
 from .audit import WikiWhitelistError, audit_allow, audit_remove, audit_list, audit_query
+from .dbutils import WikiTargetInfo
+from .getinfobox import get_infobox_pic
+from .utils.ab import ab
+from .utils.ab_qq import ab_qq
+from .utils.newbie import newbie
+from .utils.rc import rc
+from .utils.rc_qq import rc_qq
+from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError
 
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
@@ -355,6 +359,8 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                         wait_msg_list.append(Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
+        except InvalidWikiError as e:
+            await msg.sendMessage(f'发生错误：' + str(e))
         except Exception:
             traceback.print_exc()
     if msg_list:
@@ -372,3 +378,47 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
         confirm = await msg.waitConfirm(wait_msg_list)
         if confirm and wait_list:
             await query_pages(msg, wait_list)
+
+
+rc_ = on_command('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])
+
+
+@rc_.handle()
+async def rc_loader(msg: MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    if start_wiki is None:
+        return await msg.sendMessage('未设置起始wiki。')
+    if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
+        nodelist = await rc_qq(start_wiki)
+        await msg.fake_forward_msg(nodelist)
+    else:
+        res = await rc(start_wiki)
+        await msg.sendMessage(res)
+
+
+a = on_command('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
+
+
+@a.handle()
+async def ab_loader(msg: MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    if start_wiki is None:
+        return await msg.sendMessage('未设置起始wiki。')
+    if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
+        nodelist = await ab_qq(start_wiki)
+        await msg.fake_forward_msg(nodelist)
+    else:
+        res = await ab(start_wiki)
+        await msg.sendMessage(res)
+
+
+n = on_command('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
+
+
+@n.handle()
+async def newbie_loader(msg: MessageSession):
+    start_wiki = WikiTargetInfo(msg).get_start_wiki()
+    if start_wiki is None:
+        return await msg.sendMessage('未设置起始wiki。')
+    res = await newbie(start_wiki)
+    await msg.sendMessage(res)

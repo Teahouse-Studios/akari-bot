@@ -1,18 +1,18 @@
+import asyncio
 import datetime
+import re
 import traceback
+import urllib.parse
 from typing import Union, Dict, List
 
 import html2text
 import ujson as json
-import re
-import urllib.parse
 
+from core.dirty_check import check
 from core.logger import Logger
 from core.utils import get_url
-from core.dirty_check import check
-
-from .dbutils import WikiSiteInfo as DBSiteInfo
 from .audit import check_whitelist
+from .dbutils import WikiSiteInfo as DBSiteInfo
 
 
 class InvalidPageIDError(Exception):
@@ -168,7 +168,7 @@ class WikiLib:
                     api_match = self.url.split('//')[0] + api_match
                 Logger.info(api_match)
                 wiki_api_link = api_match
-            except TimeoutError:
+            except (TimeoutError, asyncio.TimeoutError):
                 return WikiStatus(available=False, value=False, message='错误：尝试建立连接超时。')
             except Exception as e:
                 traceback.print_exc()
@@ -192,6 +192,7 @@ class WikiLib:
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
+            traceback.print_exc()
             return WikiStatus(available=False, value=False, message='从API获取信息时出错：' + str(e))
         DBSiteInfo(wiki_api_link).update(get_json)
         info = self.rearrange_siteinfo(get_json)
@@ -292,7 +293,14 @@ class WikiLib:
         :param iw_prefix: iw前缀
         :return:
         """
-        await self.fixup_wiki_info()
+        try:
+            await self.fixup_wiki_info()
+        except InvalidWikiError as e:
+            if self.url.find('$1') != -1:
+                link = self.url.replace('$1', title)
+            else:
+                link = self.url + title
+            return PageInfo(title=title, link=link, desc='发生错误：' + str(e), info=self.wiki_info)
         if tried_iw > 5:
             raise WhatAreUDoingError
         if title == '':
@@ -430,7 +438,7 @@ class WikiLib:
             chk = await check(*checklist)
             for x in chk:
                 print(x)
-                if x.find("<吃掉了>") != -1 or x.find("<全部吃掉了>") != -1:
+                if not x['status']:
                     page_info.status = True
                     page_info.before_title = '?'
                     page_info.title = '¿'

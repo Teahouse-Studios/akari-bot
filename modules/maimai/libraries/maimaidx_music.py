@@ -1,7 +1,6 @@
-import json
 import random
-from typing import Dict, List, Optional, Union, Tuple, Any
 from copy import deepcopy
+from typing import Dict, List, Optional, Union, Tuple, Any
 
 import requests
 

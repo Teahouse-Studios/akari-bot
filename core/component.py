@@ -7,8 +7,8 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.elements import Command, RegexCommand, Option, Schedule, StartUp
-from core.loader import ModulesManager
 from core.elements.module.meta import *
+from core.loader import ModulesManager
 
 
 class Bind:

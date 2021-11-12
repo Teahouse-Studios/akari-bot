@@ -87,7 +87,7 @@ async def get_infobox_pic(link, page_link, headers) -> Union[str, bool]:
                 x.attrs['srcset'] = join_url(link, x.get('srcset'))
             if x.has_attr('style'):
                 x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
-                
+
         for x in find_infobox.find_all(class_='lazyload'):
             if x.has_attr('class') and x.has_attr('data-src'):
                 x.attrs['class'] = 'image'
