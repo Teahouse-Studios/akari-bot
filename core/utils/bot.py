@@ -49,7 +49,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
             if log:
-                Logger.info(req.read())
+                Logger.info(await req.read())
             if status_code and req.status != status_code:
                 raise ValueError(req.status)
             if fmt is not None:
