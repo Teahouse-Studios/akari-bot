@@ -103,12 +103,12 @@ class WikiLib:
                                   namespaces=[], namespaces_local={}, in_whitelist=False)
         self.headers = headers
 
-    async def get_json_from_api(self, api, **kwargs) -> dict:
+    async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
         else:
             raise ValueError('kwargs is None')
-        return await get_url(api, status_code=200, headers=self.headers, fmt="json")
+        return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
 
     def rearrange_siteinfo(self, info: Union[dict, str]) -> WikiInfo:
         if isinstance(info, str):
@@ -187,13 +187,16 @@ class WikiLib:
                               value=self.rearrange_siteinfo(get_cache_info[0]),
                               message='')
         try:
-            get_json = await self.get_json_from_api(wiki_api_link,
+            get_json = await self.get_json_from_api(wiki_api_link, log=True,
                                                     action='query',
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
             traceback.print_exc()
-            return WikiStatus(available=False, value=False, message='从API获取信息时出错：' + str(e))
+            message = '从API获取信息时出错：' + str(e)
+            if self.url.find('moegirl.org.cn') != -1:
+                message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
+            return WikiStatus(available=False, value=False, message=message)
         DBSiteInfo(wiki_api_link).update(get_json)
         info = self.rearrange_siteinfo(get_json)
         return WikiStatus(available=True, value=info,
@@ -296,10 +299,9 @@ class WikiLib:
         try:
             await self.fixup_wiki_info()
         except InvalidWikiError as e:
+            link = None
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
-            else:
-                link = self.url + title
             return PageInfo(title=title, link=link, desc='发生错误：' + str(e), info=self.wiki_info)
         if tried_iw > 5:
             raise WhatAreUDoingError

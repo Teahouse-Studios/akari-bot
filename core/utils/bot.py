@@ -8,7 +8,8 @@ from typing import Union
 import aiohttp
 import filetype as ft
 import ujson as json
-from aiohttp_retry import ExponentialRetry, RetryClient
+
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.elements import FetchTarget, PrivateAssets
 from core.loader import load_modules
@@ -34,16 +35,21 @@ def init() -> None:
     write_tag.close()
 
 
-async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None):
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
+async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
     :param headers: 请求时使用的http头。
+    :param fmt: 指定返回的格式。
+    :param log: 是否输出日志。
     :returns: 指定url的内容（字符串）。
     """
-    async with RetryClient(headers=headers, retry_options=ExponentialRetry(attempts=3)) as session:
+    async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
+            if log:
+                Logger.info(req.read())
             if status_code and req.status != status_code:
                 raise ValueError(req.status)
             if fmt is not None:
@@ -56,13 +62,14 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                 return text
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def download_to_cache(link: str) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
     
     :param link: 需要获取的link。
     :returns: 文件的相对路径，若获取失败则返回False。'''
     try:
-        async with RetryClient(retry_options=ExponentialRetry(attempts=3)) as session:
+        async with aiohttp.ClientSession() as session:
             async with session.get(link) as resp:
                 res = await resp.read()
                 ftt = ft.match(res).extension
