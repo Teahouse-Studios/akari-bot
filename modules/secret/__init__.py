@@ -25,6 +25,7 @@ async def newbie(bot: FetchTarget):
             if xz['title'] not in qq:
                 prompt = UTC8(xz['timestamp'], 'onlytime') + '新增新人：\n' + xz['title']
                 s = await check(prompt)
+                Logger.info(s)
                 for z in s:
                     s = z['content']
                     if not z['status']:
