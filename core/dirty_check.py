@@ -69,7 +69,6 @@ async def check(*text) -> list:
         else:
             query_list.update({count: {t: False}})
         count += 1
-    print(query_list)
     for q in query_list:
         for pq in query_list[q]:
             if not query_list[q][pq]:
@@ -78,15 +77,12 @@ async def check(*text) -> list:
                     query_list.update({q: {pq: parse_data(cache.get())}})
     call_api_list = {}
     for q in query_list:
-        print(q)
         for pq in query_list[q]:
-            print(pq)
             if not query_list[q][pq]:
                 if pq not in call_api_list:
                     call_api_list.update({pq: []})
                 print(call_api_list)
                 call_api_list[pq].append(q)
-    print(call_api_list)
     call_api_list_ = [x for x in call_api_list]
     if call_api_list_:
         body = {
@@ -139,12 +135,14 @@ async def check(*text) -> list:
                     for item in result['data']:
                         content = item['content']
                         for n in call_api_list[content]:
-                            query_list.update({n: parse_data(item)})
+                            print(n)
+                            query_list.update({n: {content: parse_data(item)}})
                         DirtyWordCache(content).update(item)
                 else:
                     raise ValueError(await resp.text())
     results = []
     print(query_list)
     for x in query_list:
-        results.append(query_list[x])
+        for y in query_list[x]:
+            results.append(query_list[x][y])
     return results
