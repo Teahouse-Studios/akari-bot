@@ -58,7 +58,10 @@ async def check(*text) -> list:
     text = list(text)
     if not accessKeyId or not accessKeySecret or not EnableDirtyWordCheck.status:
         Logger.warn('Dirty words filter was disabled, skip.')
-        return text
+        query_list = []
+        for t in text:
+            query_list.append({'content': t, 'status': True, 'original': t})
+        return query_list
     if not text:
         return []
     query_list = {}
