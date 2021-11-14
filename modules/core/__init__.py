@@ -456,3 +456,18 @@ echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
 @echo.handle('<display_msg>')
 async def _(msg: MessageSession):
     await msg.sendMessage(msg.parsed_msg['<display_msg>'])
+
+
+tog = on_command('toggle', developers=['OasisAkari'], base=True)
+
+
+@tog.handle('typing {切换是否展示输入提示}')
+async def _(msg: MessageSession):
+    target = BotDBUtil.SenderInfo(msg.target.senderId)
+    state = target.query.disable_typing
+    if not state:
+        target.edit('disable_typing', True)
+        await msg.sendMessage('成功关闭输入提示。')
+    else:
+        target.edit('disable_typing', False)
+        await msg.sendMessage('成功打开输入提示。')

@@ -19,6 +19,7 @@ class SenderInfo(Base):
     isInWhiteList = Column(Boolean, default=False)
     isSuperUser = Column(Boolean, default=False)
     warns = Column(Integer, default='0')
+    disable_typing = Column(Boolean, default=False)
 
 
 class TargetAdmin(Base):

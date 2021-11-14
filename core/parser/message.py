@@ -145,8 +145,11 @@ async def parser(msg: MessageSession):
                                         await msg.sendMessage(
                                             f'此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                                         continue
-                                async with msg.Typing(msg):
-                                    await parsed_msg[0].function(msg)  # 将msg传入下游模块
+                                if not senderInfo.query.disable_typing:
+                                    async with msg.Typing(msg):
+                                        await parsed_msg[0].function(msg)  # 将msg传入下游模块
+                                else:
+                                    await parsed_msg[0].function(msg)
                             except InvalidCommandFormatError:
                                 await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                                 continue
@@ -160,8 +163,11 @@ async def parser(msg: MessageSession):
                         msg.parsed_msg = None
                         for func in module.match_list.set:
                             if func.help_doc is None:
-                                async with msg.Typing(msg):
-                                    await func.function(msg)  # 将msg传入下游模块
+                                if not senderInfo.query.disable_typing:
+                                    async with msg.Typing(msg):
+                                        await func.function(msg)  # 将msg传入下游模块
+                                else:
+                                    await func.function(msg)
                 except AbuseWarning as e:
                     await warn_target(msg, str(e))
                     temp_ban_counter[msg.target.senderId] = {'count': 1,
@@ -200,7 +206,7 @@ async def parser(msg: MessageSession):
                             ExecutionLockList.add(msg)
                         else:
                             return await msg.sendMessage('您有命令正在执行，请稍后再试。')
-                        if rfunc.show_typing:
+                        if rfunc.show_typing and not senderInfo.query.disable_typing:
                             async with msg.Typing(msg):
                                 await rfunc.function(msg)  # 将msg传入下游模块
                         else:
