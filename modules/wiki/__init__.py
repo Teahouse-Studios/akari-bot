@@ -203,7 +203,7 @@ async def _(msg: MessageSession):
     query_list = []
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#':
-            query_list.append(x)
+            query_list.append(x.split(":")[0])
     if query_list:
         await query_pages(msg, query_list)
 
@@ -214,7 +214,7 @@ async def _(msg: MessageSession):
     print(msg.matched_msg)
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
-            query_list.append(x)
+            query_list.append(x.split(":")[0])
     if query_list:
         await query_pages(msg, query_list, template=True)
 
