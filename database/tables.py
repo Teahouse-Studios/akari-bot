@@ -15,8 +15,8 @@ class SenderInfo(Base):
     """发送者信息"""
     __tablename__ = "SenderInfo"
     id = Column(String(512), primary_key=True)
-    isInBlackList = Column(Boolean, default=False)
-    isInWhiteList = Column(Boolean, default=False)
+    isInBlockList = Column(Boolean, default=False)
+    isInAllowList = Column(Boolean, default=False)
     isSuperUser = Column(Boolean, default=False)
     warns = Column(Integer, default='0')
     disable_typing = Column(Boolean, default=False)
@@ -38,9 +38,9 @@ class CommandTriggerTime(Base):
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
-class GroupWhiteList(Base):
-    __tablename__ = "GroupWhiteList"
+class GroupAllowList(Base):
+    __tablename__ = "GroupAllowList"
     targetId = Column(String(512), primary_key=True)
 
 
-__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupWhiteList"]
+__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList"]

@@ -60,7 +60,7 @@ async def parser(msg: MessageSession):
     msg.trigger_msg = display
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
-    if senderInfo.query.isInBlackList and not senderInfo.query.isInWhiteList or len(display) == 0:
+    if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList or len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
         if len(display) <= 1:

@@ -6,7 +6,7 @@ from config import Config
 from core.elements.message import MessageSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
-from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime, GroupWhiteList
+from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList
 
 cache = Config('db_cache')
 
@@ -215,9 +215,9 @@ class BotDBUtil:
     @staticmethod
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
-    def isGroupInWhiteList(targetId):
+    def isGroupInAllowList(targetId):
         session.expire_all()
-        query = session.query(GroupWhiteList).filter_by(targetId=targetId).first()
+        query = session.query(GroupAllowList).filter_by(targetId=targetId).first()
         if query is not None:
             return True
         return False

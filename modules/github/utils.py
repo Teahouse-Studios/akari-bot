@@ -48,8 +48,8 @@ def time_diff(time: str):
     return diff
 
 
-async def dirty_check(text, *whitelist_check):
-    whitelist = [
+async def dirty_check(text, *allowlist_check):
+    allowlist = [
         'Teahouse-Studios',
         'Dianliang233',
         'OasisAkari',
@@ -58,7 +58,7 @@ async def dirty_check(text, *whitelist_check):
         'XxLittleCxX',
         'lakejason0'
     ]
-    if whitelist_check in whitelist:
+    if allowlist_check in allowlist:
         return False
     check = await dirty.check(text)
     for x in check:

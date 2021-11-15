@@ -12,8 +12,7 @@ from core.exceptions import AbuseWarning
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
 from database import BotDBUtil
-from .audit import WikiWhitelistError, audit_allow, audit_remove, audit_list, audit_query
-from .dbutils import WikiTargetInfo
+from .dbutils import WikiTargetInfo, Audit
 from .getinfobox import get_infobox_pic
 from .utils.ab import ab
 from .utils.ab_qq import ab_qq
@@ -148,7 +147,7 @@ async def _(msg: MessageSession):
     req = msg.parsed_msg
     op = msg.session.sender
     api = req['<apiLinkRegex>']
-    res = audit_allow(api, op)
+    res = Audit(api).add_to_AllowList(op)
     if res is False:
         await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
     else:
@@ -164,7 +163,7 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     req = msg.parsed_msg
     api = req['<apiLinkRegex>']
-    res = audit_remove(api)
+    res = Audit(api).remove_from_AllowList()
     if not res:
         await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
     else:
@@ -175,7 +174,7 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     req = msg.parsed_msg
     api = req['<apiLinkRegex>']
-    res = audit_query(api)
+    res = Audit(api).inAllowList
     if res:
         await msg.sendMessage(api + '已存在于白名单。')
     else:
@@ -184,7 +183,7 @@ async def _(msg: MessageSession):
 
 @aud.handle('list')
 async def _(msg: MessageSession):
-    wiki_pair = audit_list()
+    wiki_pair = Audit.get_audit_list()
     wikis = []
     for pair in wiki_pair:
         wikis.append(f'{pair[0]}（by {pair[1]}）')

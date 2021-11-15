@@ -61,7 +61,7 @@ async def _(event: Event):
 
 @bot.on('request.friend')
 async def _(event: Event):
-    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlackList:
+    if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlockList:
         return {'approve': False}
     return {'approve': True}
 
@@ -82,14 +82,14 @@ async def _(event: Event):
             result = UnfriendlyActions(targetId=event.group_id, senderId=event.operator_id).add_and_check('mute')
         if result:
             await bot.call_action('set_group_leave', group_id=event.group_id)
-            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlackList', True)
+            BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
             await bot.call_action('delete_friend', friend_id=event.operator_id)
 
 
 """
 @bot.on_message('group')
 async def _(event: Event):
-    result = BotDBUtil.isGroupInWhiteList(f'QQ|Group|{str(event.group_id)}')
+    result = BotDBUtil.isGroupInAllowList(f'QQ|Group|{str(event.group_id)}')
     if not result:
         await bot.send(event=event, message='此群不在白名单中，已自动退群。'
                                             '\n如需申请白名单，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')

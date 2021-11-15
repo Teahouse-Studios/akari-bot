@@ -26,8 +26,8 @@ class WikiInfo(Base):
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
-class WikiWhitelist(Base):
-    __tablename__ = table_prefix + 'WikiWhitelist'
+class WikiAllowList(Base):
+    __tablename__ = table_prefix + 'WikiAllowList'
     apiLinkRegex = Column(String(512), primary_key=True)
     operator = Column(String(512))
 

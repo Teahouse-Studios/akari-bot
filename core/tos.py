@@ -15,6 +15,6 @@ async def warn_target(msg: MessageSession, reason=None):
     if current_warns == 5:
         warn_template.append(f'这是对你的最后一次警告。')
     if current_warns > 5:
-        msg.target.senderInfo.edit('isInBlackList', True)
+        msg.target.senderInfo.edit('isInBlockList', True)
         return
     await msg.sendMessage('\n'.join(warn_template))

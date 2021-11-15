@@ -11,8 +11,7 @@ import ujson as json
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils import get_url
-from .audit import check_whitelist
-from .dbutils import WikiSiteInfo as DBSiteInfo
+from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 
 class InvalidPageIDError(Exception):
@@ -45,7 +44,7 @@ class WikiInfo:
                  name: str,
                  namespaces: list,
                  namespaces_local: dict,
-                 in_whitelist: bool):
+                 in_allowlist: bool):
         self.api = api
         self.articlepath = articlepath
         self.extensions = extensions
@@ -54,7 +53,7 @@ class WikiInfo:
         self.name = name
         self.namespaces = namespaces
         self.namespaces_local = namespaces_local
-        self.in_whitelist = in_whitelist
+        self.in_allowlist = in_allowlist
 
 
 class WikiStatus:
@@ -100,7 +99,7 @@ class WikiLib:
     def __init__(self, url: str, headers=None):
         self.url = url
         self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
-                                  namespaces=[], namespaces_local={}, in_whitelist=False)
+                                  namespaces=[], namespaces_local={}, in_allowlist=False)
         self.headers = headers
 
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
@@ -149,7 +148,7 @@ class WikiLib:
                         namespaces=namespaces,
                         namespaces_local=namespaces_local,
                         interwiki=interwiki_dict,
-                        in_whitelist=check_whitelist(api_url))
+                        in_allowlist=Audit(api_url).inAllowList)
 
     async def check_wiki_available(self):
         try:
@@ -429,7 +428,7 @@ class WikiLib:
                         t = page_info.title
                         if tried_iw == 0:
                             page_info.title = page_info.interwiki_prefix + t
-        if not self.wiki_info.in_whitelist:
+        if not self.wiki_info.in_allowlist:
             checklist = []
             if page_info.title is not None:
                 checklist.append(page_info.title)

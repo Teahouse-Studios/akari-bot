@@ -1,11 +1,11 @@
 from typing import Union
+
 import ujson as json
+from tenacity import retry, stop_after_attempt
 
 from core.elements import MessageSession
 from database import session, auto_rollback_error
-from .orm import WikiTargetSetInfo, WikiInfo
-
-from tenacity import retry, stop_after_attempt
+from .orm import WikiTargetSetInfo, WikiInfo, WikiAllowList
 
 
 class WikiTargetInfo:
@@ -104,3 +104,38 @@ class WikiSiteInfo:
             self.query.siteInfo = json.dumps(info)
         session.commit()
         return True
+
+
+class Audit:
+    def __init__(self, api_link):
+        self.api_link = api_link
+
+    @property
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def inAllowList(self) -> bool:
+        session.expire_all()
+        return True if session.query(WikiAllowList).filter_by(apiLinkRegex=self.api_link).first() else False
+
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def add_to_AllowList(self, op) -> bool:
+        if self.inAllowList:
+            return False
+        session.add_all([WikiAllowList(apiLinkRegex=self.api_link, operator=op)])
+        session.commit()
+        session.expire_all()
+        return True
+
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def remove_from_AllowList(self) -> bool:
+        if not self.inAllowList:
+            return False
+        session.query(WikiAllowList).filter_by(apiLinkRegex=self.api_link).first().delete()
+        session.expire_all()
+        return True
+
+    @staticmethod
+    def get_audit_list() -> list:
+        return session.query(WikiAllowList.apiLinkRegex, WikiAllowList.operator)
