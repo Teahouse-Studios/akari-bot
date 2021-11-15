@@ -115,14 +115,14 @@ class Audit:
     @auto_rollback_error
     def inAllowList(self) -> bool:
         session.expire_all()
-        return True if session.query(WikiAllowList).filter_by(apiLinkRegex=self.api_link).first() else False
+        return True if session.query(WikiAllowList).filter_by(apiLink=self.api_link).first() else False
 
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
     def add_to_AllowList(self, op) -> bool:
         if self.inAllowList:
             return False
-        session.add_all([WikiAllowList(apiLinkRegex=self.api_link, operator=op)])
+        session.add_all([WikiAllowList(apiLink=self.api_link, operator=op)])
         session.commit()
         session.expire_all()
         return True
@@ -132,10 +132,10 @@ class Audit:
     def remove_from_AllowList(self) -> bool:
         if not self.inAllowList:
             return False
-        session.query(WikiAllowList).filter_by(apiLinkRegex=self.api_link).first().delete()
+        session.query(WikiAllowList).filter_by(apiLink=self.api_link).first().delete()
         session.expire_all()
         return True
 
     @staticmethod
     def get_audit_list() -> list:
-        return session.query(WikiAllowList.apiLinkRegex, WikiAllowList.operator)
+        return session.query(WikiAllowList.apiLink, WikiAllowList.operator)

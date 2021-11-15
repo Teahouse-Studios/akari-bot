@@ -28,7 +28,7 @@ class WikiInfo(Base):
 
 class WikiAllowList(Base):
     __tablename__ = table_prefix + 'WikiAllowList'
-    apiLinkRegex = Column(String(512), primary_key=True)
+    apiLink = Column(String(512), primary_key=True)
     operator = Column(String(512))
 
 

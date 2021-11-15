@@ -141,12 +141,12 @@ aud = on_command('wiki_audit', alias='wa',
                  developers=['Dianliang233'], required_superuser=True)
 
 
-@aud.handle('allow <apiLinkRegex>')
+@aud.handle('allow <apiLink>')
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     req = msg.parsed_msg
     op = msg.session.sender
-    api = req['<apiLinkRegex>']
+    api = req['<apiLink>']
     res = Audit(api).add_to_AllowList(op)
     if res is False:
         await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
@@ -159,10 +159,10 @@ async def _(msg: MessageSession):
             await msg.sendMessage(result)
 
 
-@aud.handle('deny <apiLinkRegex>')
+@aud.handle('deny <apiLink>')
 async def _(msg: MessageSession):
     req = msg.parsed_msg
-    api = req['<apiLinkRegex>']
+    api = req['<apiLink>']
     res = Audit(api).remove_from_AllowList()
     if not res:
         await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
@@ -170,10 +170,10 @@ async def _(msg: MessageSession):
         await msg.sendMessage('成功删除白名单：' + api)
 
 
-@aud.handle('query <apiLinkRegex>')
+@aud.handle('query <apiLink>')
 async def _(msg: MessageSession):
     req = msg.parsed_msg
-    api = req['<apiLinkRegex>']
+    api = req['<apiLink>']
     res = Audit(api).inAllowList
     if res:
         await msg.sendMessage(api + '已存在于白名单。')
