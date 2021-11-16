@@ -8,6 +8,7 @@ from aiocqhttp import Event
 from config import Config
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.message import MessageSession, FetchTarget
+from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck, PrivateAssets
 from core.loader import ModulesManager
@@ -38,7 +39,7 @@ async def startup():
     await load_prompt(FetchTarget)
 
 
-@bot.on_message
+@bot.on_message('group', 'private')
 async def _(event: Event):
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml.*?>.*?', event.message)
     if filter_msg:
@@ -56,6 +57,24 @@ async def _(event: Event):
                                  senderFrom='QQ', senderName=''), Session(message=event,
                                                                           target=event.group_id if event.detail_type == 'group' else event.user_id,
                                                                           sender=event.user_id))
+    await parser(msg)
+
+
+@bot.on_message('guild')
+async def _(event):
+    all_tsk = MessageTaskManager.guild_get()
+    tiny_id = event.user_id
+    if tiny_id in all_tsk:
+        FinishedTasks.add_guild_task(tiny_id, event.message)
+        all_tsk[tiny_id].set()
+        MessageTaskManager.del_guild_task(tiny_id)
+    msg = MessageSessionGuild(MsgInfo(targetId=f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}',
+                                      senderId=f'QQ|Tiny|{str(event.user_id)}',
+                                      targetFrom='QQ|Guild',
+                                      senderFrom='QQ|Tiny', senderName=''),
+                              Session(message=event,
+                                      target=f'{str(event.guild_id)}|{str(event.channel_id)}',
+                                      sender=event.user_id))
     await parser(msg)
 
 

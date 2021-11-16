@@ -221,7 +221,8 @@ async def _(msg: MessageSession):
         print(help_msg)
         help_msg.append(
             '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
-        help_msg.append('[本消息将在一分钟后撤回]')
+        if msg.Feature.delete:
+            help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()
@@ -287,7 +288,8 @@ async def modules_help(msg: MessageSession):
         help_msg.append(' | '.join(module_))
         help_msg.append(
             '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
-        help_msg.append('[本消息将在一分钟后撤回]')
+        if msg.Feature.delete:
+            help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()

@@ -25,6 +25,7 @@ class MessageSession(MS):
         image = True
         voice = False
         forward = False
+        delete = True
 
     async def sendMessage(self, msgchain, quote=True):
         if isinstance(msgchain, str):

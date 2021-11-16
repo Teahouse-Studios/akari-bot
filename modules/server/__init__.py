@@ -35,7 +35,10 @@ async def s(msg: MessageSession, address, raw, showplayer, mode):
     if sendmsg != '':
         sendmsg = await check(sendmsg)
         for x in sendmsg:
-            send = await msg.sendMessage(x['content'] + '\n[90秒后撤回消息]')
+            m = x['content']
+            if msg.Feature.delete:
+                m += '\n[90秒后撤回消息]'
+            send = await msg.sendMessage(m)
             await msg.sleep(90)
             await send.delete()
     return sendmsg
