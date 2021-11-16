@@ -211,7 +211,7 @@ class FetchTarget(FT):
                         guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x)
-                Logger.info(fetch.__dict__)
+                Logger.info(fetch)
                 if fetch:
                     if fetch.target.targetFrom == 'QQ|Group':
                         if fetch.session.target not in group_list:
