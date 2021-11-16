@@ -22,7 +22,7 @@
 链接：<https://t.me/oasisakaribot>，支持私聊和群聊。
 
 #### Discord
-暂不开放邀请。
+[点击此链接](https://discord.com/oauth2/authorize?client_id=879379218209861712&scope=bot&permissions=259846044864)
 
 #### QQ
 目前QQ上稳定运行的小可实例为小可三号机，支持直接添加好友私聊。关于群聊，由于腾讯相关限制，请[在此提交](https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=1234.md&title=)入群申请。
