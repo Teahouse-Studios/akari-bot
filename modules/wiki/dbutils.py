@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Union
 
 import ujson as json
@@ -102,6 +103,7 @@ class WikiSiteInfo:
             session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))])
         else:
             self.query.siteInfo = json.dumps(info)
+            self.query.timestamp = datetime.now()
         session.commit()
         return True
 
