@@ -66,7 +66,7 @@ class MessageSession(MS):
                                           reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
         return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
                                              senderFrom='Telegram|Bot'),
-                              session=Session(message=send, target=send.chat.id, sender=send.from_user.id))
+                              session=Session(message=send, target=send, sender=send))
 
     async def waitConfirm(self, msgchain=None, quote=True):
         ExecutionLockList.remove(self)
