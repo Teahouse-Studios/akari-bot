@@ -32,4 +32,10 @@ class WikiAllowList(Base):
     operator = Column(String(512))
 
 
+class WikiBlockList(Base):
+    __tablename__ = table_prefix + 'WikiBlockList'
+    apiLink = Column(String(512), primary_key=True)
+    operator = Column(String(512))
+
+
 Base.metadata.create_all(bind=engine, checkfirst=True)

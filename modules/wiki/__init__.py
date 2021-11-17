@@ -37,10 +37,13 @@ async def set_start_wiki(msg: MessageSession):
     target = WikiTargetInfo(msg)
     check = await WikiLib(msg.parsed_msg['<WikiUrl>'], headers=target.get_headers()).check_wiki_available()
     if check.available:
-        result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
-        if result:
-            await msg.sendMessage(
-                f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else ''))
+        if not check.value.in_blocklist or check.value.in_allowlist:
+            result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
+            if result:
+                await msg.sendMessage(
+                    f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else ''))
+        else:
+            await msg.sendMessage(f'错误：{check.value.name}处于黑名单中。')
     else:
         result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
@@ -53,9 +56,12 @@ async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     check = await WikiLib(url, headers=target.get_headers()).check_wiki_available()
     if check.available:
-        result = target.config_interwikis(iw, check.value.api, let_it=True)
-        if result:
-            await msg.sendMessage(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
+        if not check.value.in_blocklist or check.value.in_allowlist:
+            result = target.config_interwikis(iw, check.value.api, let_it=True)
+            if result:
+                await msg.sendMessage(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
+        else:
+            await msg.sendMessage(f'错误：{check.value.name}处于黑名单中。')
     else:
         result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
@@ -138,56 +144,114 @@ async def _(msg: MessageSession):
 
 
 aud = on_command('wiki_audit', alias='wa',
-                 developers=['Dianliang233'], required_superuser=True)
+                 developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
 
-@aud.handle('allow <apiLink>')
+@aud.handle(['allow <apiLink>', 'block <apiLink>'])
 async def _(msg: MessageSession):
-    target = WikiTargetInfo(msg)
     req = msg.parsed_msg
     op = msg.session.sender
     api = req['<apiLink>']
-    res = Audit(api).add_to_AllowList(op)
-    if res is False:
-        await msg.sendMessage('失败，此wiki已经存在于白名单中：' + api)
-    else:
-        check = await WikiLib(api, headers=target.get_headers()).check_wiki_available()
-        if check.available:
-            await msg.sendMessage('成功加入白名单：' + api)
+    check = await WikiLib(api).check_wiki_available()
+    if check.available:
+        api = check.value.api
+        if req['allow']:
+            res = Audit(api).add_to_AllowList(op)
+            list_name = '白'
         else:
-            result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
-            await msg.sendMessage(result)
+            res = Audit(api).add_to_BlockList(op)
+            list_name = '黑'
+        if not res:
+            await msg.sendMessage(f'失败，此wiki已经存在于{list_name}名单中：' + api)
+        else:
+            await msg.sendMessage(f'成功加入{list_name}名单：' + api)
+    else:
+        result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        await msg.sendMessage(result)
 
 
-@aud.handle('deny <apiLink>')
+@aud.handle(['deny <apiLink>', 'unblock <apiLink>'])
 async def _(msg: MessageSession):
     req = msg.parsed_msg
     api = req['<apiLink>']
-    res = Audit(api).remove_from_AllowList()
-    if not res:
-        await msg.sendMessage('失败，此wiki不存在于白名单中：' + api)
+    check = await WikiLib(api).check_wiki_available()
+    if check:
+        api = check.value.api
+        if req['deny']:
+            res = Audit(api).remove_from_AllowList()
+            list_name = '白'
+        else:
+            res = Audit(api).remove_from_BlockList()
+            list_name = '黑'
+        if not res:
+            await msg.sendMessage(f'失败，此wiki不存在于{list_name}名单中：' + api)
+        else:
+            await msg.sendMessage(f'成功从{list_name}名单删除：' + api)
     else:
-        await msg.sendMessage('成功删除白名单：' + api)
+        result = '错误：无法查询此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        await msg.sendMessage(result)
 
 
 @aud.handle('query <apiLink>')
 async def _(msg: MessageSession):
     req = msg.parsed_msg
     api = req['<apiLink>']
-    res = Audit(api).inAllowList
-    if res:
-        await msg.sendMessage(api + '已存在于白名单。')
+    check = await WikiLib(api).check_wiki_available()
+    if check:
+        api = check.value.api
+        audit = Audit(api)
+        allow = audit.inAllowList
+        block = audit.inBlockList
+        msg_list = []
+        if allow:
+            msg_list.append(api + '已存在于白名单。')
+        if block:
+            msg_list.append(api + '已存在于黑名单。')
+        if msg_list:
+            msg_list.append('优先级：白名单 > 黑名单')
+            await msg.sendMessage('\n'.join(msg_list))
+        else:
+            await msg.sendMessage(api + '不存在于任何名单。')
     else:
-        await msg.sendMessage(api + '不存在于白名单。')
+        result = '错误：无法查询此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        await msg.sendMessage(result)
 
 
 @aud.handle('list')
 async def _(msg: MessageSession):
-    wiki_pair = Audit.get_audit_list()
-    wikis = []
-    for pair in wiki_pair:
-        wikis.append(f'{pair[0]}（by {pair[1]}）')
-    await msg.sendMessage('现有白名单：\n' + '\n'.join(wikis))
+    allow_list = Audit.get_allow_list()
+    block_list = Audit.get_block_list()
+    legacy = True
+    if msg.Feature.image:
+        send_msgs = []
+        allow_columns = [[x[0], x[1]] for x in allow_list]
+        if allow_columns:
+            allow_table = ImageTable(data=allow_columns, headers=['APILink', 'Operator'])
+            if allow_table:
+                allow_image = await image_table_render(allow_table)
+                if allow_image:
+                    send_msgs.append(Plain('现有白名单：'))
+                    send_msgs.append(Image(allow_image))
+        block_columns = [[x[0], x[1]] for x in block_list]
+        if block_columns:
+            block_table = ImageTable(data=block_columns, headers=['APILink', 'Operator'])
+            if block_table:
+                block_image = await image_table_render(block_table)
+                if block_image:
+                    send_msgs.append(Plain('现有黑名单：'))
+                    send_msgs.append(Image(block_image))
+        if send_msgs:
+            await msg.sendMessage(send_msgs)
+            legacy = False
+    if legacy:
+        wikis = []
+        wikis.append('现有白名单：')
+        for al in allow_list:
+            wikis.append(f'{al[0]}（by {al[1]}）')
+        wikis.append('现有黑名单：')
+        for bl in block_list:
+            wikis.append(f'{bl[0]}（by {bl[1]}）')
+        await msg.sendMessage('\n'.join(wikis))
 
 
 on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari'])
@@ -321,7 +385,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                             plain_slice.append(f'（重定向[{display_before_title}] -> [{display_title}]）')
                     if r.link is not None:
                         plain_slice.append(r.link)
-                    if r.desc is not None:
+                    if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
@@ -346,7 +410,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                         wait_list.append(display_title)
                     elif r.before_title is not None:
                         plain_slice.append(f'提示：找不到[{display_before_title}]。')
-                    if r.desc is not None:
+                    if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
                         s = r.before_title.split(":")

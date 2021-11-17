@@ -44,7 +44,8 @@ class WikiInfo:
                  name: str,
                  namespaces: list,
                  namespaces_local: dict,
-                 in_allowlist: bool):
+                 in_allowlist: bool,
+                 in_blocklist: bool):
         self.api = api
         self.articlepath = articlepath
         self.extensions = extensions
@@ -54,6 +55,7 @@ class WikiInfo:
         self.namespaces = namespaces
         self.namespaces_local = namespaces_local
         self.in_allowlist = in_allowlist
+        self.in_blocklist = in_blocklist
 
 
 class WikiStatus:
@@ -99,7 +101,7 @@ class WikiLib:
     def __init__(self, url: str, headers=None):
         self.url = url
         self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
-                                  namespaces=[], namespaces_local={}, in_allowlist=False)
+                                  namespaces=[], namespaces_local={}, in_allowlist=False, in_blocklist=False)
         self.headers = headers
 
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
@@ -140,6 +142,7 @@ class WikiLib:
         for interwiki in interwiki_map:
             interwiki_dict[interwiki['prefix']] = interwiki['url']
         api_url = real_url + info['query']['general']['scriptpath'] + '/api.php'
+        audit = Audit(api_url)
         return WikiInfo(articlepath=real_url + info['query']['general']['articlepath'],
                         extensions=ext_list,
                         name=info['query']['general']['sitename'],
@@ -148,7 +151,8 @@ class WikiLib:
                         namespaces=namespaces,
                         namespaces_local=namespaces_local,
                         interwiki=interwiki_dict,
-                        in_allowlist=Audit(api_url).inAllowList)
+                        in_allowlist=audit.inAllowList,
+                        in_blocklist=audit.inBlockList)
 
     async def check_wiki_available(self):
         try:
@@ -302,6 +306,9 @@ class WikiLib:
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
             return PageInfo(title=title, link=link, desc='发生错误：' + str(e), info=self.wiki_info)
+        ban = False
+        if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
+            ban = True
         if tried_iw > 5:
             raise WhatAreUDoingError
         if title == '':
@@ -440,11 +447,13 @@ class WikiLib:
             for x in chk:
                 print(x)
                 if not x['status']:
-                    page_info.status = True
-                    page_info.before_title = '?'
-                    page_info.title = '¿'
-                    page_info.link = 'https://wdf.ink/6OUp'
-                    page_info.desc = None
+                    ban = True
+        if ban:
+            page_info.status = True
+            page_info.before_title = '?'
+            page_info.title = '¿'
+            page_info.link = 'https://wdf.ink/6OUp'
+            page_info.desc = None
         return page_info
 
     async def random_page(self) -> PageInfo:

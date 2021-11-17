@@ -6,7 +6,7 @@ from tenacity import retry, stop_after_attempt
 
 from core.elements import MessageSession
 from database import session, auto_rollback_error
-from .orm import WikiTargetSetInfo, WikiInfo, WikiAllowList
+from .orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList
 
 
 class WikiTargetInfo:
@@ -119,6 +119,13 @@ class Audit:
         session.expire_all()
         return True if session.query(WikiAllowList).filter_by(apiLink=self.api_link).first() else False
 
+    @property
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def inBlockList(self) -> bool:
+        session.expire_all()
+        return True if session.query(WikiBlockList).filter_by(apiLink=self.api_link).first() else False
+
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
     def add_to_AllowList(self, op) -> bool:
@@ -134,10 +141,39 @@ class Audit:
     def remove_from_AllowList(self) -> bool:
         if not self.inAllowList:
             return False
-        session.query(WikiAllowList).filter_by(apiLink=self.api_link).first().delete()
+        session.delete(session.query(WikiAllowList).filter_by(apiLink=self.api_link).first())
+        session.commit()
+        session.expire_all()
+        return True
+
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def add_to_BlockList(self, op) -> bool:
+        if self.inBlockList:
+            return False
+        session.add_all([WikiBlockList(apiLink=self.api_link, operator=op)])
+        session.commit()
+        session.expire_all()
+        return True
+
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def remove_from_BlockList(self) -> bool:
+        if not self.inBlockList:
+            return False
+        session.delete(session.query(WikiBlockList).filter_by(apiLink=self.api_link).first())
+        session.commit()
         session.expire_all()
         return True
 
     @staticmethod
-    def get_audit_list() -> list:
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def get_allow_list() -> list:
         return session.query(WikiAllowList.apiLink, WikiAllowList.operator)
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def get_block_list() -> list:
+        return session.query(WikiBlockList.apiLink, WikiBlockList.operator)
