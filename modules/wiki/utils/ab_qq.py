@@ -55,4 +55,5 @@ async def ab_qq(wiki_url):
                     "content": [{"type": "text", "data": {"text": x}}],
                 }
             })
+    print(nodelist)
     return nodelist

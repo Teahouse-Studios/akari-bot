@@ -451,10 +451,17 @@ async def rc_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
         return await msg.sendMessage('未设置起始wiki。')
+    legacy = True
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
-        nodelist = await rc_qq(start_wiki)
-        await msg.fake_forward_msg(nodelist)
-    else:
+        try:
+            nodelist = await rc_qq(start_wiki)
+            await msg.fake_forward_msg(nodelist)
+            legacy = False
+        except Exception:
+            traceback.print_exc()
+            await msg.sendMessage('无法发送转发消息，已自动回滚至传统样式。')
+            legacy = True
+    if legacy:
         res = await rc(start_wiki)
         await msg.sendMessage(res)
 
@@ -467,10 +474,17 @@ async def ab_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
         return await msg.sendMessage('未设置起始wiki。')
+    legacy = True
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
-        nodelist = await ab_qq(start_wiki)
-        await msg.fake_forward_msg(nodelist)
-    else:
+        try:
+            nodelist = await ab_qq(start_wiki)
+            await msg.fake_forward_msg(nodelist)
+            legacy = False
+        except Exception:
+            traceback.print_exc()
+            await msg.sendMessage('无法发送转发消息，已自动回滚至传统样式。')
+            legacy = True
+    if legacy:
         res = await ab(start_wiki)
         await msg.sendMessage(res)
 

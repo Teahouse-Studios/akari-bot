@@ -18,7 +18,7 @@ class WikiTargetInfo:
             if msg.target.targetFrom != 'QQ|Guild':
                 targetId = msg.target.targetId
             else:
-                targetId = re.match(r'QQ\|Guild\|(.*?)\|.*', msg.target.targetId).group(1)
+                targetId = re.match(r'(QQ\|Guild\|.*?)\|.*', msg.target.targetId).group(1)
         else:
             targetId = msg
         self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()

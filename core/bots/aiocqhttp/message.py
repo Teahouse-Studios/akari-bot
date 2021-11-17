@@ -103,7 +103,7 @@ class MessageSession(MS):
 
     async def fake_forward_msg(self, nodelist):
         if self.target.targetFrom == 'QQ|Group':
-            await bot.call_action('send_group_forward_msg', group_id=self.session.target, messages=nodelist)
+            await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def sleep(self, s):
         ExecutionLockList.remove(self)

@@ -90,4 +90,5 @@ async def rc_qq(wiki_url):
                     "content": [{"type": "text", "data": {"text": x}}],
                 }
             })
+    print(nodelist)
     return nodelist
