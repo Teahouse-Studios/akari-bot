@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Union
 
@@ -14,7 +15,10 @@ class WikiTargetInfo:
     @auto_rollback_error
     def __init__(self, msg: [MessageSession, str]):
         if isinstance(msg, MessageSession):
-            targetId = msg.target.targetId
+            if msg.target.targetFrom != 'QQ|Guild':
+                targetId = msg.target.targetId
+            else:
+                targetId = re.match(r'QQ\|Guild\|(.*?)\|.*', msg.target.targetId).group(1)
         else:
             targetId = msg
         self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
