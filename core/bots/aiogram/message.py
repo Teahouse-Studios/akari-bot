@@ -8,6 +8,7 @@ from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList
 from core.elements.others import confirm_command
+from core.secret_check import Secret
 from database import BotDBUtil
 
 
@@ -28,6 +29,8 @@ class MessageSession(MS):
         delete = True
 
     async def sendMessage(self, msgchain, quote=True):
+        if Secret.find(msgchain):
+            return await self.sendMessage('https://wdf.ink/6Oup')
         if isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='

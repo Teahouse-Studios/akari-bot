@@ -10,6 +10,7 @@ from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, ExecutionLockList
 from core.elements.others import confirm_command
 from core.logger import Logger
+from core.secret_check import Secret
 
 
 def convert2lst(s) -> list:
@@ -32,6 +33,8 @@ class MessageSession(MS):
         msg = MessageSegment.text('')
         # if quote:
         #    msg = MessageSegment.reply(self.session.message.message_id)
+        if Secret.find(msgchain):
+            return await self.sendMessage('https://wdf.ink/6Oup')
         if isinstance(msgchain, str):
             msg = msg + (MessageSegment.text(msgchain if msgchain != '' else
                                              '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'

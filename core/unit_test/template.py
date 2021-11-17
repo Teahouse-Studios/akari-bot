@@ -4,6 +4,7 @@ from PIL import Image
 
 from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT
 from core.elements.others import confirm_command
+from core.secret_check import Secret
 
 
 class Template(MessageSession):
@@ -13,6 +14,8 @@ class Template(MessageSession):
         forward = False
 
     async def sendMessage(self, msgchain, quote=True) -> MessageSession:
+        if Secret.find(msgchain):
+            return await self.sendMessage('https://wdf.ink/6Oup')
         if isinstance(msgchain, str):
             print(msgchain)
             return MessageSession(target=self.target,

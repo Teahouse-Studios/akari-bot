@@ -13,6 +13,7 @@ from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGu
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList
 from core.elements.others import confirm_command
+from core.secret_check import Secret
 from core.logger import Logger
 from database import BotDBUtil
 
@@ -37,6 +38,8 @@ class MessageSession(MS):
         msg = MessageSegment.text('')
         if quote:
             msg = MessageSegment.reply(self.session.message.message_id)
+        if Secret.find(msgchain):
+            return await self.sendMessage('https://wdf.ink/6Oup')
         if isinstance(msgchain, str):
             msg = msg + (MessageSegment.text(msgchain if msgchain != '' else
                                              '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
