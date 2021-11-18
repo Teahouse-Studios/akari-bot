@@ -119,6 +119,8 @@ class BotDBUtil:
             return True
 
         @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
         def get_enabled_this(module_name):
             query = session.query(EnabledModules).filter(EnabledModules.enabledModules.like(f'%{module_name}%'))
             targetIds = []
