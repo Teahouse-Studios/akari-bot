@@ -36,7 +36,7 @@ class MessageSession(MS):
 
     async def sendMessage(self, msgchain, quote=True):
         msg = MessageSegment.text('')
-        if quote:
+        if quote and self.target.targetFrom == 'QQ|Group':
             msg = MessageSegment.reply(self.session.message.message_id)
         if Secret.find(msgchain):
             return await self.sendMessage('https://wdf.ink/6Oup')
