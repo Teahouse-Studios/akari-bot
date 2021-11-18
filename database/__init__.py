@@ -148,6 +148,7 @@ class BotDBUtil:
                     SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
 
         @property
+        @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def query_SenderInfo(self):
             return session.query(SenderInfo).filter_by(id=self.senderId).first()
