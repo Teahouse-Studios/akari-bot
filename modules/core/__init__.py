@@ -31,7 +31,7 @@ async def _(msg: MessageSession):
 
 @module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
                 'enable global (<module>...|all) {开启一个/多个或所有模块（应用到所有频道）}',
-                'disable (<module>...|all) {关闭一个/多个或所有模块}'
+                'disable (<module>...|all) {关闭一个/多个或所有模块}',
                 'disable global (<module>...|all) {关闭一个/多个或所有模块（应用到所有频道）}'],
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
