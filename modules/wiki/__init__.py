@@ -378,7 +378,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                     display_before_title = iw_prefix + r.before_title
                 if r.status:
                     plain_slice = []
-                    if display_before_title is not None:
+                    if display_before_title is not None and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
                             plain_slice.append(f'（[{display_before_title}]不存在，已自动重定向至[{display_title}]）')
                         else:
