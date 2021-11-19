@@ -60,7 +60,7 @@ class CommandParser:
                     if split not in [command_prefix_first + self.bind_prefix, self.bind_prefix]:
                         x = f'{command_prefix_first}{self.bind_prefix} {x}'
                 arglst_raw.append(x)
-                match_detail_help = re.match('(.*){.*}$', x, re.M)
+                match_detail_help = re.match('(.*){.*}$', x, re.M | re.S)
                 if match_detail_help:
                     x = match_detail_help.group(1)
                 arglst.append(x)
@@ -78,7 +78,7 @@ class CommandParser:
             for x in args_raw:
                 if x[0] not in command_prefix:
                     x = command_prefix_first + x
-                match_detail_help = re.match('(.*){(.*)}$', x, re.M)
+                match_detail_help = re.match('(.*){(.*)}$', x, re.M | re.S)
                 if match_detail_help:
                     x = f'{match_detail_help.group(1)}- {match_detail_help.group(2)}'
                 arglst.append(x)
