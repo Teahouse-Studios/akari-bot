@@ -60,10 +60,19 @@ async def _(event: Event):
     await parser(msg)
 
 
+class GuildAccountInfo:
+    tiny_id = None
+
+
 @bot.on_message('guild')
 async def _(event):
-    all_tsk = MessageTaskManager.guild_get()
+    if GuildAccountInfo.tiny_id is None:
+        profile = await bot.call_action('get_guild_service_profile')
+        GuildAccountInfo.tiny_id = profile['tiny_id']
     tiny_id = event.user_id
+    if tiny_id == GuildAccountInfo.tiny_id:
+        return
+    all_tsk = MessageTaskManager.guild_get()
     if tiny_id in all_tsk:
         FinishedTasks.add_guild_task(tiny_id, event.message)
         all_tsk[tiny_id].set()
