@@ -30,7 +30,7 @@ async def _(msg: MessageSession):
 
 
 @module.handle(['enable (<module>...|all) [-g] {开启一个/多个或所有模块}',
-                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为频道内全局操作}'],
+                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为文字频道内全局操作}'],
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
     await config_modules(msg)
@@ -81,7 +81,7 @@ async def config_modules(msg: MessageSession):
                 query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
-                msglist.append(f'成功：为所有频道打开“{x}”模块')
+                msglist.append(f'成功：为所有文字频道打开“{x}”模块')
         else:
             if query.enable(enable_list):
                 for x in enable_list:
@@ -119,7 +119,7 @@ async def config_modules(msg: MessageSession):
                 query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
                 query.disable(disable_list)
             for x in disable_list:
-                msglist.append(f'成功：为所有频道关闭“{x}”模块')
+                msglist.append(f'成功：为所有文字频道关闭“{x}”模块')
         else:
             if query.disable(disable_list):
                 for x in disable_list:
