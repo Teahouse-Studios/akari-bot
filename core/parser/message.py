@@ -103,7 +103,8 @@ async def parser(msg: MessageSession):
                                                              f'距离解封时间还有{str(int(300 - ban_time))}秒。')
                             else:
                                 return await warn_target(msg)
-                    await msg_counter(msg, command)
+                    if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module':
+                        await msg_counter(msg, command)
                     module = Modules[command_first_word]
                     if not isinstance(module, Command):
                         if module.desc is not None:
