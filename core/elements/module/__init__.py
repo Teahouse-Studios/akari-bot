@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Union, Dict, List
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -18,14 +18,26 @@ class Command:
                  required_admin: bool = False,
                  base: bool = False,
                  required_superuser: bool = False):
-        self.bind_prefix = bind_prefix
-        self.alias = alias
-        self.desc = desc
-        self.recommend_modules = recommend_modules
-        self.developers = developers
-        self.required_admin = required_admin
-        self.base = base
-        self.required_superuser = required_superuser
+        self.bind_prefix: str = bind_prefix
+        if isinstance(alias, str):
+            alias = {alias: bind_prefix}
+        elif isinstance(alias, (tuple, list)):
+            alias = {x: bind_prefix for x in alias}
+        self.alias: Dict[str, str] = alias
+        self.desc: str = desc
+        if isinstance(recommend_modules, str):
+            recommend_modules = [recommend_modules]
+        elif isinstance(recommend_modules, tuple):
+            recommend_modules = list(recommend_modules)
+        self.recommend_modules: List[str] = recommend_modules
+        if isinstance(developers, str):
+            developers = [developers]
+        elif isinstance(developers, tuple):
+            developers = list(developers)
+        self.developers: List[str] = developers
+        self.required_admin: bool = required_admin
+        self.base: bool = base
+        self.required_superuser: bool = required_superuser
         self.match_list = CommandMatches()
 
 
@@ -39,14 +51,26 @@ class RegexCommand:
                  required_admin: bool = False,
                  base: bool = False,
                  required_superuser: bool = False):
-        self.bind_prefix = bind_prefix
-        self.alias = alias
-        self.desc = desc
-        self.recommend_modules = recommend_modules
-        self.developers = developers
-        self.required_admin = required_admin
-        self.base = base
-        self.required_superuser = required_superuser
+        self.bind_prefix: str = bind_prefix
+        if isinstance(alias, str):
+            alias = {alias: bind_prefix}
+        elif isinstance(alias, (tuple, list)):
+            alias = {x: bind_prefix for x in alias}
+        self.alias: Dict[str, str] = alias
+        self.desc: str = desc
+        if isinstance(recommend_modules, str):
+            recommend_modules = [recommend_modules]
+        elif isinstance(recommend_modules, tuple):
+            recommend_modules = list(recommend_modules)
+        self.recommend_modules: List[str] = recommend_modules
+        if isinstance(developers, str):
+            developers = [developers]
+        elif isinstance(developers, tuple):
+            developers = list(developers)
+        self.developers: List[str] = developers
+        self.required_admin: bool = required_admin
+        self.base: bool = base
+        self.required_superuser: bool = required_superuser
         self.match_list = RegexMatches()
 
 
@@ -59,13 +83,25 @@ class Option:
                  developers: Union[str, list, tuple] = None,
                  required_superuser: bool = False,
                  required_admin: bool = False):
-        self.bind_prefix = bind_prefix
-        self.desc = desc
-        self.alias = alias
-        self.recommend_modules = recommend_modules
-        self.developers = developers
-        self.required_superuser = required_superuser
-        self.required_admin = required_admin
+        self.bind_prefix: str = bind_prefix
+        if isinstance(alias, str):
+            alias = {alias: bind_prefix}
+        elif isinstance(alias, (tuple, list)):
+            alias = {x: bind_prefix for x in alias}
+        self.alias: Dict[str, str] = alias
+        self.desc: str = desc
+        if isinstance(recommend_modules, str):
+            recommend_modules = [recommend_modules]
+        elif isinstance(recommend_modules, tuple):
+            recommend_modules = list(recommend_modules)
+        self.recommend_modules: List[str] = recommend_modules
+        if isinstance(developers, str):
+            developers = [developers]
+        elif isinstance(developers, tuple):
+            developers = list(developers)
+        self.developers: List[str] = developers
+        self.required_admin: bool = required_admin
+        self.required_superuser: bool = required_superuser
         self.match_list = None
 
 
@@ -80,14 +116,26 @@ class Schedule:
                  developers: Union[str, list, tuple] = None,
                  required_superuser: bool = False,
                  ):
-        self.function = function
-        self.trigger = trigger
-        self.bind_prefix = bind_prefix
-        self.desc = desc
-        self.alias = alias
-        self.recommend_modules = recommend_modules
-        self.developers = developers
-        self.required_superuser = required_superuser
+        self.function: Callable = function
+        self.trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger] = trigger
+        self.bind_prefix: str = bind_prefix
+        self.desc: str = desc
+        if isinstance(alias, str):
+            alias = {alias: bind_prefix}
+        elif isinstance(alias, (tuple, list)):
+            alias = {x: bind_prefix for x in alias}
+        self.alias: Dict[str, str] = alias
+        if isinstance(recommend_modules, str):
+            recommend_modules = [recommend_modules]
+        elif isinstance(recommend_modules, tuple):
+            recommend_modules = list(recommend_modules)
+        self.recommend_modules: List[str] = recommend_modules
+        if isinstance(developers, str):
+            developers = [developers]
+        elif isinstance(developers, tuple):
+            developers = list(developers)
+        self.developers: List[str] = developers
+        self.required_superuser: bool = required_superuser
 
 
 class StartUp:
@@ -100,13 +148,25 @@ class StartUp:
                  developers: Union[str, list, tuple] = None,
                  required_superuser: bool = False,
                  ):
-        self.function = function
-        self.bind_prefix = bind_prefix
-        self.desc = desc
-        self.alias = alias
-        self.recommend_modules = recommend_modules
+        self.function: Callable = function
+        self.bind_prefix: str = bind_prefix
+        self.desc: str = desc
+        if isinstance(alias, str):
+            alias = {alias: bind_prefix}
+        elif isinstance(alias, (tuple, list)):
+            alias = {x: bind_prefix for x in alias}
+        self.alias: Dict[str, str] = alias
+        if isinstance(recommend_modules, str):
+            recommend_modules = [recommend_modules]
+        elif isinstance(recommend_modules, tuple):
+            recommend_modules = list(recommend_modules)
+        self.recommend_modules: List[str] = recommend_modules
+        if isinstance(developers, str):
+            developers = [developers]
+        elif isinstance(developers, tuple):
+            developers = list(developers)
         self.developers = developers
-        self.required_superuser = required_superuser
+        self.required_superuser: bool = required_superuser
 
 
 __all__ = ["Command", "RegexCommand", "Option", "Schedule", "StartUp", "AndTrigger", "OrTrigger", "DateTrigger",

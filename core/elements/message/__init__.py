@@ -79,6 +79,12 @@ class MessageSession:
         """
         ...
 
+    async def get_text_channel_list(self):
+        """
+        用于获取子文字频道列表（QQ）。
+        """
+        ...
+
     class Typing:
         def __init__(self, msg):
             """

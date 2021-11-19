@@ -17,7 +17,6 @@ class Secret:
 
     @staticmethod
     def find(message: Union[str, List]):
-        print(Secret.list)
         if isinstance(message, str):
             for secret in Secret.list:
                 if message.upper().find(secret.upper()) != -1:

@@ -12,7 +12,8 @@ class CommandMeta:
                  function: Callable = None,
                  help_doc: Union[str, list, tuple] = None,
                  required_admin: bool = False,
-                 required_superuser: bool = False
+                 required_superuser: bool = False,
+                 available_for: Union[str, list, tuple] = '*',
                  ):
         self.function = function
         if isinstance(help_doc, str):
@@ -22,6 +23,11 @@ class CommandMeta:
         self.help_doc: list = help_doc
         self.required_admin = required_admin
         self.required_superuser = required_superuser
+        if isinstance(available_for, str):
+            available_for = [available_for]
+        elif isinstance(available_for, tuple):
+            available_for = list(available_for)
+        self.available_for = available_for
 
 
 class RegexMeta:

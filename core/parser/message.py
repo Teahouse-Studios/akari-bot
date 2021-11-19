@@ -127,12 +127,12 @@ async def parser(msg: MessageSession):
                                               f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=。')
                         continue
                     none_doc = True
-                    for func in module.match_list.set:
+                    for func in module.match_list.get(msg.target.targetFrom):
                         if func.help_doc is not None:
                             none_doc = False
                     if not none_doc:
                         try:
-                            command_parser = CommandParser(module)
+                            command_parser = CommandParser(module, msg=msg)
                             try:
                                 parsed_msg = command_parser.parse(command)
                                 submodule = parsed_msg[0]

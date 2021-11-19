@@ -46,18 +46,6 @@ class ModulesManager:
     @staticmethod
     def add_module(module: [Command, Option, Schedule, RegexCommand, StartUp]):
         if module.bind_prefix not in ModulesManager.modules:
-            if isinstance(module.alias, str):
-                module.alias = {module.alias: module.bind_prefix}
-            elif isinstance(module.alias, (tuple, list)):
-                module.alias = {x: module.bind_prefix for x in module.alias}
-            if isinstance(module.recommend_modules, str):
-                module.recommend_modules = [module.recommend_modules]
-            elif isinstance(module.recommend_modules, tuple):
-                module.recommend_modules = list(module.recommend_modules)
-            if isinstance(module.developers, str):
-                module.developers = [module.developers]
-            elif isinstance(module.developers, tuple):
-                module.developers = list(module.developers)
             ModulesManager.modules.update({module.bind_prefix: module})
         else:
             raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
@@ -85,7 +73,7 @@ class ModulesManager:
         return alias_map
 
     @staticmethod
-    def return_module_alias(module_name) -> Dict[str, list]:
+    def return_module_alias(module_name) -> Dict[str, str]:
         """
         返回此模块的别名列表
         """

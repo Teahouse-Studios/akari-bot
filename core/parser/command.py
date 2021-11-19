@@ -4,7 +4,7 @@ import traceback
 from typing import Union
 
 from core.docopt import docopt, DocoptExit
-from core.elements import Command, Option, Schedule, StartUp, RegexCommand, command_prefix
+from core.elements import Command, Option, Schedule, StartUp, RegexCommand, command_prefix, MessageSession
 
 command_prefix_first = command_prefix[0]
 
@@ -20,18 +20,20 @@ class InvalidCommandFormatError(BaseException):
 
 
 class CommandParser:
-    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule, StartUp, RegexCommand], prefix=None):
+    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule, StartUp, RegexCommand], prefix=None,
+                 msg: MessageSession = None):
         """
         Format: https://github.com/jazzband/docopt-ng#usage-pattern-format
         * {} - Detail help information
         """
         self.bind_prefix = prefix
         self.origin_template = args
+        self.msg: Union[MessageSession, None] = msg
         if isinstance(args, Command):
             self.bind_prefix = args.bind_prefix
             help_doc_list = []
             none_doc = True
-            for match in args.match_list.set:
+            for match in (args.match_list.set if self.msg is None else args.match_list.get(self.msg.target.targetFrom)):
                 if match.help_doc is not None:
                     none_doc = False
                     help_doc_list = help_doc_list + match.help_doc
@@ -100,13 +102,15 @@ class CommandParser:
                 return docopt(self.args, argvs=split_command[1:], default_help=False)
             else:
                 if len(split_command) == 1:
-                    for match in self.origin_template.match_list.set:
+                    for match in (self.origin_template.match_list.set if self.msg is None else
+                    self.origin_template.match_list.get(self.msg.target.targetFrom)):
                         if match.help_doc is None:
                             return match, None
                     raise InvalidCommandFormatError
                 else:
                     base_match = docopt(self.args, argvs=split_command[1:], default_help=False)
-                    for match in self.origin_template.match_list.set:
+                    for match in (self.origin_template.match_list.set if self.msg is None else
+                    self.origin_template.match_list.get(self.msg.target.targetFrom)):
                         if match.help_doc is None:
                             continue
                         try:

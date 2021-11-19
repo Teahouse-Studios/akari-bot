@@ -19,12 +19,14 @@ class Bind:
         def handle(self,
                    help_doc: str = None,
                    required_admin: bool = False,
-                   required_superuser: bool = False):
+                   required_superuser: bool = False,
+                   available_for: Union[str, list, tuple] = '*'):
             def decorator(function):
                 ModulesManager.bind_to_module(self.bind_prefix, CommandMeta(function=function,
                                                                             help_doc=help_doc,
                                                                             required_admin=required_admin,
-                                                                            required_superuser=required_superuser))
+                                                                            required_superuser=required_superuser,
+                                                                            available_for=available_for))
 
             return decorator
 

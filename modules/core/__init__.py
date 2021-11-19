@@ -22,7 +22,22 @@ module = on_command('module',
 
 
 @module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
-                'disable (<module>...|all) {关闭一个/多个或所有模块}'])
+                'disable (<module>...|all) {关闭一个/多个或所有模块}'],
+               available_for=['QQ|Group', 'QQ', 'Discord|Channel', 'Discord|DM|Channel', 'Telegram|private',
+                              'Telegram|group', 'Telegram|supergroup', 'Telegram|channel', 'TEST|Console'])
+async def _(msg: MessageSession):
+    await config_modules(msg)
+
+
+@module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
+                'enable global (<module>...|all) {开启一个/多个或所有模块（应用到所有频道）}',
+                'disable (<module>...|all) {关闭一个/多个或所有模块}'
+                'disable global (<module>...|all) {关闭一个/多个或所有模块（应用到所有频道）}'],
+               available_for=['QQ|Guild'])
+async def _(msg: MessageSession):
+    await config_modules(msg)
+
+
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict()
@@ -37,6 +52,7 @@ async def config_modules(msg: MessageSession):
     query = BotDBUtil.Module(msg)
     msglist = []
     recommend_modules_list = []
+    recommend_modules_help_doc_list = []
     if msg.parsed_msg['enable']:
         enable_list = []
         if wait_config_list == ['all']:
@@ -59,14 +75,30 @@ async def config_modules(msg: MessageSession):
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
-                        if isinstance(recommend, str):
-                            recommend_modules_list.append(recommend)
-                        if isinstance(recommend, (list, tuple)):
-                            for r in recommend:
-                                recommend_modules_list.append(r)
-        if query.enable(enable_list):
+                        for r in recommend:
+                            recommend_modules_list.append(r)
+        if 'global' in msg.parsed_msg and msg.parsed_msg['global']:
+            get_all_channel = await msg.get_text_channel_list()
+            for x in get_all_channel:
+                query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
+                query.enable(enable_list)
             for x in enable_list:
-                msglist.append(f'成功：打开模块“{x}”')
+                msglist.append(f'成功：为所有频道打开“{x}”模块')
+        else:
+            if query.enable(enable_list):
+                for x in enable_list:
+                    msglist.append(f'成功：打开模块“{x}”')
+        if recommend_modules_list:
+            for m in recommend_modules_list:
+                if m not in enable_list:
+                    try:
+                        hdoc = CommandParser(modules_[m], msg=msg).return_formatted_help_doc()
+                        recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
+                        if modules_[m].desc is not None:
+                            recommend_modules_help_doc_list.append(modules_[m].desc)
+                        recommend_modules_help_doc_list.append(hdoc)
+                    except InvalidHelpDocTypeError:
+                        pass
     elif msg.parsed_msg['disable']:
         disable_list = []
         if wait_config_list == ['all']:
@@ -83,25 +115,23 @@ async def config_modules(msg: MessageSession):
                     msglist.append(f'失败：“{module_}”模块不存在')
                 else:
                     disable_list.append(module_)
-        if query.disable(disable_list):
+        if 'global' in msg.parsed_msg and msg.parsed_msg['global']:
+            get_all_channel = await msg.get_text_channel_list()
+            for x in get_all_channel:
+                query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
+                query.disable(disable_list)
             for x in disable_list:
-                msglist.append(f'成功：关闭模块“{x}”')
+                msglist.append(f'成功：为所有频道关闭“{x}”模块')
+        else:
+            if query.disable(disable_list):
+                for x in disable_list:
+                    msglist.append(f'成功：关闭模块“{x}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
-    if recommend_modules_list:
-        fmt_help_doc_list = []
-        for m in recommend_modules_list:
-            try:
-                hdoc = CommandParser(modules_[m]).return_formatted_help_doc()
-                fmt_help_doc_list.append(f'模块{m}的帮助信息：')
-                if modules_[m].desc is not None:
-                    fmt_help_doc_list.append(modules_[m].desc)
-                fmt_help_doc_list.append(hdoc)
-            except InvalidHelpDocTypeError:
-                pass
+    if recommend_modules_help_doc_list and ('global' not in msg.parsed_msg or not msg.parsed_msg['global']):
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
                                         '\n'.join(recommend_modules_list) + '\n\n' +
-                                        '\n'.join(fmt_help_doc_list) +
+                                        '\n'.join(recommend_modules_help_doc_list) +
                                         '\n是否一并打开？')
         if confirm:
             query = BotDBUtil.Module(msg)
@@ -132,7 +162,7 @@ async def bot_help(msg: MessageSession):
             module_ = module_list[help_name]
             if module_.desc is not None:
                 msgs.append(module_.desc)
-            help_ = CommandParser(module_list[help_name])
+            help_ = CommandParser(module_list[help_name], msg=msg)
             if help_.args is not None:
                 msgs.append(help_.return_formatted_help_doc())
         if msgs:
@@ -140,8 +170,7 @@ async def bot_help(msg: MessageSession):
             module_alias = ModulesManager.return_module_alias(help_name)
             malias = []
             for a in module_alias:
-                for b in module_alias[a]:
-                    malias.append(f'{b} -> {a}')
+                malias.append(f'{a} -> {module_alias[a]}')
             if malias:
                 doc += '\n命令别名：\n' + '\n'.join(malias)
             if help_name in developers:
@@ -174,7 +203,7 @@ async def _(msg: MessageSession):
             for x in module_list:
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_)
+                help_ = CommandParser(module_, msg=msg)
                 doc_ = []
                 if module_.desc is not None:
                     doc_.append(module_.desc)
