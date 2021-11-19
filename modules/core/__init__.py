@@ -29,10 +29,8 @@ async def _(msg: MessageSession):
     await config_modules(msg)
 
 
-@module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
-                'enable global (<module>...|all) {开启一个/多个或所有模块（应用到所有频道）}',
-                'disable (<module>...|all) {关闭一个/多个或所有模块}',
-                'disable global (<module>...|all) {关闭一个/多个或所有模块（应用到所有频道）}'],
+@module.handle(['enable (<module>...|all) [-g] {开启一个/多个或所有模块}',
+                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为频道内全局操作}'],
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
     await config_modules(msg)
@@ -77,7 +75,7 @@ async def config_modules(msg: MessageSession):
                         recommend = modules_[module_].recommend_modules
                         for r in recommend:
                             recommend_modules_list.append(r)
-        if 'global' in msg.parsed_msg and msg.parsed_msg['global']:
+        if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
                 query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
@@ -115,7 +113,7 @@ async def config_modules(msg: MessageSession):
                     msglist.append(f'失败：“{module_}”模块不存在')
                 else:
                     disable_list.append(module_)
-        if 'global' in msg.parsed_msg and msg.parsed_msg['global']:
+        if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
                 query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
@@ -128,7 +126,7 @@ async def config_modules(msg: MessageSession):
                     msglist.append(f'成功：关闭模块“{x}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
-    if recommend_modules_help_doc_list and ('global' not in msg.parsed_msg or not msg.parsed_msg['global']):
+    if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
                                         '\n'.join(recommend_modules_list) + '\n\n' +
                                         '\n'.join(recommend_modules_help_doc_list) +
