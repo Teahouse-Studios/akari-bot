@@ -98,7 +98,7 @@ class MessageSession(MS):
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)
         get_channels_info = await bot.call_action('get_guild_channel_list', guild_id=match_guild.group(1), no_cache=True)
         lst = []
-        for m in get_channels_info['channels']:
+        for m in get_channels_info:
             if m['channel_type'] == 1:
                 lst.append(f'{m["owner_guild_id"]}|{m["channel_id"]}')
         return lst
