@@ -6,6 +6,8 @@ from core.component import on_command
 from core.elements import Plain, Image, MessageSession
 from core.utils import get_url
 
+from .teahouse import get_rss as get_teahouse_rss
+
 
 async def get_weekly():
     result = json.loads(await get_url(
@@ -34,4 +36,10 @@ wky = on_command('weekly', developers=['Dianliang233'], desc='获取中文 Minec
 @wky.handle()
 async def _(msg: MessageSession):
     weekly = await get_weekly()
+    await msg.sendMessage(weekly)
+
+
+@wky.handle('teahouse {获取茶馆周报}')
+async def _(msg: MessageSession):
+    weekly = await get_teahouse_rss()
     await msg.sendMessage(weekly)

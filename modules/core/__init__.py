@@ -73,8 +73,9 @@ async def config_modules(msg: MessageSession):
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
-                        for r in recommend:
-                            recommend_modules_list.append(r)
+                        if recommend is not None:
+                            for r in recommend:
+                                recommend_modules_list.append(r)
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:

@@ -24,3 +24,4 @@ discord.py
 tenacity
 aiocqhttp
 tabulate
+feedparser
