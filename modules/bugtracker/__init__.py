@@ -24,8 +24,10 @@ rbug = on_regex('bug_regex',
 
 @rbug.handle(pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M')
 async def regex_bugtracker(msg: MessageSession):
-    result = await bugtracker_get(msg.matched_msg.group(1) + '-' + msg.matched_msg.group(2))
-    return await msg.sendMessage(result)
+    matched_msg = msg.matched_msg
+    if len(matched_msg.group(1)) < 10 and len(matched_msg.group(2)) < 10:
+        result = await bugtracker_get(matched_msg.group(1) + '-' + matched_msg.group(2))
+        return await msg.sendMessage(result)
 
 
 """rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')
