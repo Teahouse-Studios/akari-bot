@@ -431,7 +431,7 @@ async def del_su(message: MessageSession):
 @on_command('set_modules', required_superuser=True, help_doc='set_modules <>')
 async def set_modules(display_msg: dict):
     ...
-"""
+
 
 rst = on_command('restart', developers=['OasisAkari'], required_superuser=True)
 
@@ -478,6 +478,8 @@ async def update_and_restart_bot(msg: MessageSession):
         await msg.sendMessage(result.read()[:-1])
         python = sys.executable
         os.execl(python, python, *sys.argv)
+        
+"""
 
 
 echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
