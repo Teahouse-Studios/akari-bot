@@ -260,6 +260,7 @@ class WikiLib:
         h.ignore_links = True
         h.ignore_images = True
         h.ignore_tables = True
+        h.single_line_break = True
         return h.handle(get_parse['parse']['text']['*'])
 
     async def get_wikitext(self, page_name):
