@@ -1,7 +1,4 @@
 import datetime
-import traceback
-
-import aiohttp
 
 from core import dirty_check as dirty
 
@@ -65,16 +62,3 @@ async def dirty_check(text, *allowlist_check):
         if not x['status']:
             return True
     return False
-
-
-async def query(url: str, fmt: str):
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                if hasattr(req, fmt):
-                    return await getattr(req, fmt)()
-                else:
-                    raise ValueError(f"NoSuchMethod: {fmt}")
-        except Exception:
-            traceback.print_exc()
-            return False

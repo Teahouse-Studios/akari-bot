@@ -1,12 +1,13 @@
 import traceback
 
 from core.elements import MessageSession, Image, Plain
-from modules.github.utils import query, time_diff, dirty_check, darkCheck
+from core.utils.bot import get_url
+from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
 async def repo(msg: MessageSession):
     try:
-        result = await query('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 'json')
+        result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
             raise RuntimeError('此仓库不存在。')
         elif 'message' in result and result['message']:

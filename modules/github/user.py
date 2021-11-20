@@ -1,12 +1,13 @@
 import traceback
 
 from core.elements import MessageSession
-from modules.github.utils import query, time_diff, dirty_check, darkCheck
+from core.utils.bot import get_url
+from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
 async def user(msg: MessageSession):
     try:
-        result = await query('https://api.github.com/users/' + msg.parsed_msg['<name>'], 'json')
+        result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], fmt='json')
         optional = []
         if 'hireable' in result and result['hireable'] is True:
             optional.append('Hireable')

@@ -25,3 +25,4 @@ tenacity
 aiocqhttp
 tabulate
 feedparser
+requests
