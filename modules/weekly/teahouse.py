@@ -11,5 +11,5 @@ async def get_rss():
                         status_code=200, fmt='text')
     feed = feedparser.parse(url)['entries'][-1]
     title = feed['title']
-    summary = html2text.html2text(feed['summary'])
+    summary = html2text.html2text(feed['summary'], baseurl='https://lakeus.xyz')
     return title + '\n' + summary
