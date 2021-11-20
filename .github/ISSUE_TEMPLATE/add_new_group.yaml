@@ -1,0 +1,54 @@
+name: Bug Report
+description: File a bug report
+title: "[NEW]: "
+labels: ["New"]
+assignees:
+  - OasisAkari
+body:
+  - type: markdown
+    attributes:
+      value: |
+        你好哇！感谢您使用小可，想必您一定想要让小可为您的QQ群聊或者频道效劳吧？填写下方的表单，让我们马上开始。
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 开始之前……
+      description: 让我们看看你的登机牌准备好了吗
+      options:
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahou.se/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahou.se/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
+          required: true
+        - label: 我已事先添加当前机器人的账号 `2314163511` 为好友，且已发送群聊邀请/频道通行证至机器人。
+  - type: dropdown
+    id: group-type
+    attributes:
+      label: QQ群组类型
+      description: 你要申请加入什么样的QQ群组？是老掉牙的群还是最新潮流的QQ频道（beta）？
+      options:
+        - QQ群
+        - QQ频道（beta）
+    validations:
+      required: true
+  - type: input
+    id: qq-id
+    attributes:
+      label: QQ号
+      description: 您的QQ号，您必须为本群/频道的群主或管理员才能申请让机器人加群。
+      placeholder: e.g. 10000
+    validations:
+      required: true
+  - type: input
+    id: group-id
+    attributes:
+      label: QQ群
+      description: 您想要让机器人加入的群的群号，如您要申请的是频道，请将通行证发送给机器人，然后在此处备注即可。
+      placeholder: e.g. 1000000
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: 备注
+      description: 你还想告诉我们什么？
+      placeholder: 什么都可以哦，没有就算了吧。
+    validations:
+      required: flase
