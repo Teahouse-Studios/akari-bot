@@ -51,4 +51,4 @@ body:
       description: 你还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
-      required: flase
+      required: false
