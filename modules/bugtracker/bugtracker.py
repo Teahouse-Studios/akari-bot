@@ -62,7 +62,7 @@ async def bugtracker_get(MojiraID):
                             print(fields['fixVersions'])
                             FixVersion = fields['fixVersions'][0]['name']
     else:
-        return '发生错误：获取Json失败。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+        return '发生错误：获取Json失败。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
     msglist = []
     if errmsg != '':
         msglist.append(errmsg)

@@ -43,5 +43,5 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
         await msg.sendMessage(message)
     except Exception as error:
         await msg.sendMessage('发生错误：' + str(
-            error) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+            error) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
         traceback.print_exc()

@@ -450,7 +450,7 @@ class wikilib:
         except Exception as e:
             traceback.print_exc()
             return {'status': 'done', 'text': '发生错误：' + str(
-                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
+                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'}
 
     async def main(self, api_endpoint_link, page_name, interwiki=None, template=False, headers=None, tryiw=0):
         print(api_endpoint_link)
@@ -490,11 +490,11 @@ class wikilib:
             self.page_raw = await self.get_page_link()
         except asyncio.exceptions.TimeoutError:
             return {'status': 'done',
-                    'text': '发生错误：请求页面超时。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
+                    'text': '发生错误：请求页面超时。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'}
         except Exception as e:
             traceback.print_exc()
             return {'status': 'done',
-                    'text': f'发生错误：{str(e)}\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='}
+                    'text': f'发生错误：{str(e)}\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'}
         if 'interwiki' in self.page_raw['query']:
             iwp = self.page_raw['query']['interwiki'][0]
             match_interwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
@@ -517,4 +517,4 @@ class wikilib:
             return await self.step1()
         except Exception as e:
             traceback.print_exc()
-            return f'发生错误：{str(e)}' + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=\n'
+            return f'发生错误：{str(e)}' + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+\n'

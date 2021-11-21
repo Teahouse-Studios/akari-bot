@@ -231,4 +231,4 @@ async def GetUser(wikiurl, username, argv=None):
         else:
             traceback.print_exc()
             return '发生错误：' + str(
-                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'

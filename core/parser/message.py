@@ -63,7 +63,7 @@ async def parser(msg: MessageSession):
     if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList or len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
-        if len(display) <= 1:
+        if len(display) <= 1 or (display[0] == '~' and display[1] == '~'):
             return
         Logger.info(
             f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
@@ -124,7 +124,7 @@ async def parser(msg: MessageSession):
                             continue
                     if not module.match_list.set:
                         await msg.sendMessage(f'发生错误：{command_first_word}未绑定任何命令，，请联系开发者处理。'
-                                              f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=。')
+                                              f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+。')
                         continue
                     none_doc = True
                     for func in module.match_list.get(msg.target.targetFrom):
@@ -158,7 +158,7 @@ async def parser(msg: MessageSession):
                             traceback.print_exc()
                             await msg.sendMessage(
                                 f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'
-                                f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+                                f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
                             continue
                     else:
                         msg.parsed_msg = None
@@ -177,7 +177,7 @@ async def parser(msg: MessageSession):
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(
-                        e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+                        e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
                     continue
         ExecutionLockList.remove(msg)
 

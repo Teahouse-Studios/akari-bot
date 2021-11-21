@@ -33,7 +33,7 @@ class MessageSession(MS):
             return await self.sendMessage('https://wdf.ink/6Oup')
         if isinstance(msgchain, str):
             if msgchain == '':
-                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
             send = await bot.send_message(self.session.target, msgchain,
                                           reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
         elif isinstance(msgchain, (list, tuple)):
@@ -61,7 +61,7 @@ class MessageSession(MS):
                     send.append(send_)
                 count += 1
         else:
-            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='
+            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
             send = await bot.send_message(self.session.target, msgchain,
                                           reply_to_message_id=self.session.message.message_id if quote and self.session.message else None)
         return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',

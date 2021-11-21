@@ -43,7 +43,7 @@ class MessageSession(MS):
         if isinstance(msgchain, str):
             msg = msg + (MessageSegment.text(msgchain if msgchain != '' else
                                              '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
-                                             '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
+                                             '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'))
         elif isinstance(msgchain, (list, tuple)):
             count = 0
             for x in msgchain:
@@ -56,7 +56,7 @@ class MessageSession(MS):
                 count += 1
         else:
             msg = msg + MessageSegment.text('发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。'
-                                            '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+                                            '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         if self.target.targetFrom == 'QQ|Group':
             send = await bot.send_group_msg(group_id=self.session.target, message=msg)

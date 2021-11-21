@@ -12,6 +12,7 @@ class Template(MessageSession):
         image = True
         voice = False
         forward = False
+        delete = True
 
     async def sendMessage(self, msgchain, quote=True) -> MessageSession:
         if Secret.find(msgchain):
