@@ -1,0 +1,53 @@
+name: 功能建议
+description: 提出新的建议
+title: "[FEATURE]: "
+labels: ["enhancement"]
+assignees:
+  - OasisAkari
+body:
+  - type: markdown
+    attributes:
+      value: |
+        想要让小可做更多事情？欢迎提出建议！
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 开始之前……
+      description: 让我们看看你的登机牌准备好了吗
+      options:
+        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的建议，确定没有人提出过此建议
+          required: true
+        - label: 如果建议与第三方资源有关，我已经准备好可利用的API接口
+          required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: 建议描述
+      description: 请描述你的建议
+      placeholder: 建议给小可添加 GitHub 搜索功能。
+    validations:
+      required: true
+  - type: textarea
+    id: reproducing
+    attributes:
+      label: 实现方法
+      description: 你认为可以实现的方法
+      placeholder: 查询 GitHub API。
+    validations:
+      required: false
+  - type: input
+    id: api
+    attributes:
+      label: 接口
+      description: 你是否有便于实现这个功能的接口链接/文档？
+      placeholder: https://docs.github.com/cn/rest/reference/search
+    validations:
+      required: false
+  - type: textarea
+    id: other
+    attributes:
+      label: 备注
+      description: 你还想告诉我们什么？
+      placeholder: 什么都可以哦，没有就算了吧。
+    validations:
+      required: false
