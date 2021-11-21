@@ -1,0 +1,100 @@
+name: 报告漏洞
+description: 发现机器人的功能出现问题
+title: "[BUG]: "
+labels: ["bug"]
+assignees:
+  - OasisAkari
+body:
+  - type: markdown
+    attributes:
+      value: |
+        看起来出了些问题……对不起！请在下方描述一下到底什么出错了。
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 开始之前……
+      description: 让我们看看你的登机牌准备好了吗
+      options:
+        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法
+          required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 聊天平台
+      description: 小可在哪个平台出错了？
+      options:
+        - Discord
+        - Telegram
+        - QQ群
+        - QQ频道
+        - 开发者控制台
+        - 所有平台均有此问题
+    validations:
+      required: true
+  - type: input
+    id: user-id
+    attributes:
+      label: 用户ID
+      description: 您的QQ号/Telegram ID/Discord handle
+      placeholder: e.g. QQ 10000/TG @Dll233/DC Dianliang233#1230
+    validations:
+      required: true
+  - type: input
+    id: group-id
+    attributes:
+      label: 群组ID
+      description: 您的群组的QQ群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接
+      placeholder: e.g. QQ 1000000/TG <https://t.me/fandom_zh>/DC 683236421687050252/DC <https://discord.gg/kK5Ttan>
+    validations:
+      required: true
+  - type: textarea
+    id: throw
+    attributes:
+      label: 错误信息
+      description: 请复制粘贴机器人的报错信息（若有）
+      placeholder: |
+        发生错误：object bool can't be used in 'await' expression
+        错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: 错误描述
+      description: 请描述你遇到的具体问题
+      placeholder: 我正在执行 `~github search 小可`，但是却弹出了这个信息。
+    validations:
+      required: true
+  - type: textarea
+    id: reproducing
+    attributes:
+      label: 复现方法
+      description: 你是如何触发这个错误的
+      placeholder: |
+        1. 执行 `~github search 小可`
+        2. 报错
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 本应发生的结果
+      description: 你认为本应发生的结果
+      placeholder: 返回 GitHub 上“小可”的搜索结果
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图
+      description: 如果有截图的话，在这里上传吧
+    validations:
+      required: false
+  - type: textarea
+    id: other
+    attributes:
+      label: 备注
+      description: 你还想告诉我们什么？
+      placeholder: 什么都可以哦，没有就算了吧。
+    validations:
+      required: false
