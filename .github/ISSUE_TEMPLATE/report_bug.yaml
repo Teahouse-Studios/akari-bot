@@ -1,5 +1,5 @@
-name: 加入新群/频道
-description: 让机器人加入一个新群/频道
+name: 报告漏洞
+description: 发现机器人的功能出现问题
 title: "[BUG]: "
 labels: ["bug"]
 assignees:
