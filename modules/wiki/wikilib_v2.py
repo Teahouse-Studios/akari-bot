@@ -423,17 +423,19 @@ class WikiLib:
             for i in interwiki_:
                 if i['title'] == title:
                     iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
-                    iw_title = iw_title.group(1) + page_info.args
+                    iw_title = iw_title.group(1)
                     iw_prefix += i['iw'] + ':'
                     iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']]).parse_page_info(iw_title,
                                                                                                     tried_iw=tried_iw + 1,
                                                                                                     iw_prefix=iw_prefix)
+                    before_page_info = page_info
                     page_info = iw_query
                     if iw_query.title == '':
                         page_info.title = title
                     else:
-                        page_info.before_title = title
-                        t = page_info.title
+                        page_info.before_title = title + urllib.parse.unquote(before_page_info.args)
+                        t = page_info.title + urllib.parse.unquote(before_page_info.args)
+                        page_info.link += before_page_info.args
                         if tried_iw == 0:
                             page_info.title = page_info.interwiki_prefix + t
         if not self.wiki_info.in_allowlist:
