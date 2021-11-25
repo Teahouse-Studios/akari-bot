@@ -176,6 +176,7 @@ async def parser(msg: MessageSession):
                     return
                 except Exception as e:
                     Logger.error(traceback.format_exc())
+                    ExecutionLockList.remove(msg)
                     await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(
                         e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
                     continue
