@@ -155,7 +155,7 @@ async def _(msg: MessageSession):
     check = await WikiLib(api).check_wiki_available()
     if check.available:
         api = check.value.api
-        if req['allow']:
+        if req['trust']:
             res = Audit(api).add_to_AllowList(op)
             list_name = '白'
         else:
@@ -177,7 +177,7 @@ async def _(msg: MessageSession):
     check = await WikiLib(api).check_wiki_available()
     if check:
         api = check.value.api
-        if req['deny']:
+        if req['distrust']:
             res = Audit(api).remove_from_AllowList()
             list_name = '白'
         else:
