@@ -147,7 +147,7 @@ aud = on_command('wiki_audit', alias='wa',
                  developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
 
-@aud.handle(['allow <apiLink>', 'block <apiLink>'])
+@aud.handle(['trust <apiLink>', 'block <apiLink>'])
 async def _(msg: MessageSession):
     req = msg.parsed_msg
     op = msg.session.sender
@@ -170,7 +170,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(result)
 
 
-@aud.handle(['deny <apiLink>', 'unblock <apiLink>'])
+@aud.handle(['distrust <apiLink>', 'unblock <apiLink>'])
 async def _(msg: MessageSession):
     req = msg.parsed_msg
     api = req['<apiLink>']
