@@ -186,6 +186,12 @@ async def parser(msg: MessageSession):
         try:
             if regex in enabled_modules_list:
                 regex_module = ModulesRegex[regex]
+                if regex_module.required_superuser:
+                    if not msg.checkSuperUser():
+                        continue
+                elif regex_module.required_admin:
+                    if not await msg.checkPermission():
+                        continue
                 for rfunc in regex_module.match_list.set:
                     msg.matched_msg = False
                     matched = False
