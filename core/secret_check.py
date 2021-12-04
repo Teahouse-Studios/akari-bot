@@ -39,7 +39,8 @@ def load_secret():
     options = cp.options(section)
     for option in options:
         value = cp.get(section, option)
-        Secret.add(value.upper())
+        if value != '':
+            Secret.add(value.upper())
     try:
         ip = requests.get('https://api.ip.sb/ip', timeout=10)
         if ip:
