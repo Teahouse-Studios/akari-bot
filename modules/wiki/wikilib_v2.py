@@ -433,9 +433,12 @@ class WikiLib:
                     if iw_query.title == '':
                         page_info.title = title
                     else:
-                        page_info.before_title = title + urllib.parse.unquote(before_page_info.args)
-                        t = page_info.title + urllib.parse.unquote(before_page_info.args)
-                        page_info.link += before_page_info.args
+                        page_info.before_title = title
+                        t = page_info.title
+                        if before_page_info.args is not None:
+                            page_info.before_title += urllib.parse.unquote(before_page_info.args)
+                            t += urllib.parse.unquote(before_page_info.args)
+                            page_info.link += before_page_info.args
                         if tried_iw == 0:
                             page_info.title = page_info.interwiki_prefix + t
         if not self.wiki_info.in_allowlist:
