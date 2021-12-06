@@ -17,7 +17,7 @@ async def getb30(usercode):
     last5rank = 0
     async with aiohttp.ClientSession() as session:
         url = Config("arcapi_url")
-        async with session.get(url + "userbest30?usercode=" + usercode, headers=headers) as resp:
+        async with session.get(url + "user/best30?usercode=" + usercode, headers=headers) as resp:
             a = await resp.text()
             loadjson = json.loads(a)
             if loadjson["status"] == 0:
@@ -33,7 +33,7 @@ async def getb30(usercode):
                 last5list = ''
                 for x in loadjson["content"]["best30_list"]:
                     d = d + 1
-                    async with session.get(url + "songinfo?songname=" + x['song_id'], headers=headers) as name:
+                    async with session.get(url + "song/info?songname=" + x['song_id'], headers=headers) as name:
                         b = await name.text()
                         loadname = json.loads(b)
                         if x['difficulty'] == 0:
@@ -74,7 +74,7 @@ async def getb30(usercode):
                     score = scores[last5['song_id'] + difficulty]
                     last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt} -> {round(ptt, 4)}\n'
                 print(last5list)
-                async with session.get(url + "userinfo?usercode=" + usercode, headers=headers) as resp:
+                async with session.get(url + "user/info?usercode=" + usercode, headers=headers) as resp:
                     userinfo = await resp.text()
                     loaduserjson = json.loads(userinfo)
                     username = loaduserjson['content']['name']
