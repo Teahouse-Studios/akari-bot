@@ -10,7 +10,6 @@ eventlet
 psutil
 gql[all]
 graiax-silkcoder
-html2text
 graia-scheduler
 filetype
 sqlalchemy

@@ -5,7 +5,7 @@ import traceback
 import urllib.parse
 from typing import Union, Dict, List
 
-import html2text
+import core.html2text as html2text
 import ujson as json
 
 from core.dirty_check import check
