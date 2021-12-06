@@ -55,4 +55,4 @@ async def get_info(usercode):
     elif get_["status"] == -6:
         return [Plain('[-6] 没有游玩记录。')]
     else:
-        return {'text': '查询失败。' + str(get_)}
+        return [Plain('查询失败。' + str(get_))]
