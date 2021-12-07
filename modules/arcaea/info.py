@@ -12,14 +12,20 @@ api_url = Config("arcapi_url")
 
 async def get_info(usercode):
     headers = {"User-Agent": "L1ttl3cT"}
-    get_ = await get_url(api_url + "user/info?usercode=" + usercode + '&recent=1', headers=headers, fmt='json')
+    try:
+        get_ = await get_url(api_url + "user/info?usercode=" + usercode + '&recent=1', headers=headers, fmt='json')
+    except Exception:
+        return [Plain('查询失败。')]
     print(get_)
     if get_["status"] == 0:
         recent = get_['content']["recent_score"]
         if len(recent) < 0:
             return [Plain('此用户无游玩记录。')]
         recent = recent[0]
-        get_songinfo = await get_url(api_url + "song/info?songname=" + recent['song_id'], headers=headers, fmt='json')
+        try:
+            get_songinfo = await get_url(api_url + "song/info?songname=" + recent['song_id'], headers=headers, fmt='json')
+        except:
+            return [Plain('查询失败。')]
         difficulty = '???'
         if recent['difficulty'] == 0:
             difficulty = 'PST'
@@ -38,7 +44,10 @@ async def get_info(usercode):
         pure = recent['perfect_count']
         far = recent['near_count']
         lost = recent['miss_count']
-        get_userinfo = await get_url(api_url + "user/info?usercode=" + usercode, headers=headers, fmt='json')
+        try:
+            get_userinfo = await get_url(api_url + "user/info?usercode=" + usercode, headers=headers, fmt='json')
+        except:
+            return [Plain('查询失败。')]
         username = get_userinfo['content']['name']
         usrptt = int(get_userinfo['content']['rating']) / 100
         return [Plain(f'{username}（{usrptt}）的最近游玩记录：\n'
