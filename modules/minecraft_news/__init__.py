@@ -1,6 +1,6 @@
-import ujson as json
 import os
 import traceback
+import random
 from datetime import datetime, timedelta
 from urllib.parse import quote
 
@@ -25,16 +25,38 @@ def getfileversions(path):
 
 class Article:
     count = 10
+    tags = ['minecraft:article/news', 'minecraft:article/insider', 'minecraft:article/culture',
+            'minecraft:article/merch', 'minecraft:stockholm/news', 'minecraft:stockholm/guides',
+            'minecraft:stockholm/deep-dives', 'minecraft:stockholm/merch', 'minecraft:stockholm/events',
+            'minecraft:stockholm/minecraft-builds', 'minecraft:stockholm/marketplace']
+
+    @staticmethod
+    def random_tags():
+        tags = Article.tags
+        long = len(tags)
+        m = long // 2
+        random_tags = []
+
+        def random_choice():
+            c = random.choice(tags)
+            if c not in random_tags:
+                random_tags.append(c)
+            else:
+                random_choice()
+
+        for _ in range(m):
+            random_choice()
+        return random_tags
 
 
 @on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
-             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft官网的新闻。')
+             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60), desc='开启后将会推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
     Logger.info('Checking Minecraft news...')
     file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
     baseurl = 'https://www.minecraft.net'
     url = quote(
-        f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath=minecraft:article/news,minecraft:article/insider,minecraft:article/culture,minecraft:article/merch,minecraft:stockholm/news,minecraft:stockholm/guides,minecraft:stockholm/deep-dives,minecraft:stockholm/merch,minecraft:stockholm/events,minecraft:stockholm/minecraft-builds,minecraft:stockholm/marketplace&offset=0&pageSize={Article.count}')
+        f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
     webrender = Config('web_render')
     get = webrender + 'source?url=' + url
     if not webrender:
