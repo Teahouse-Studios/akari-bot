@@ -50,7 +50,7 @@ class Article:
 
 
 @on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
-             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=150), desc='开启后将会推送来自Minecraft官网的新闻。')
+             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60), desc='开启后将会推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
     Logger.info('Checking Minecraft news...')
     file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
