@@ -52,7 +52,6 @@ class Article:
 @on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
              recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60), desc='开启后将会推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
-    Logger.info('Checking Minecraft news...')
     file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
     baseurl = 'https://www.minecraft.net'
     url = quote(
@@ -81,7 +80,6 @@ async def start_check_news(bot: FetchTarget):
                 addversion = open(file_, 'a', encoding='utf-8')
                 addversion.write('\n' + title)
                 addversion.close()
-    Logger.info('Minecraft news checked.')
 
 
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
