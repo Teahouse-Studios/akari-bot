@@ -10,6 +10,14 @@ arc = on_command('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关�
                  alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
 
 
+@arc.handle()
+async def _(msg: MessageSession):
+    """
+    查询Arcaea B30
+    """
+    await msg.sendMessage('BotArcAPI暂时无法调用，请过一段时间再试。')
+
+"""
 @arc.handle('b30 <friendcode> {查询一个Arcaea用户的b30列表}')
 async def _(msg: MessageSession):
     assets = os.path.abspath('assets/arcaea')
@@ -41,3 +49,4 @@ async def _(msg: MessageSession):
 @arc.handle('initialize', required_superuser=True)
 async def _(msg: MessageSession):
     return await arcb30init(msg)
+"""
