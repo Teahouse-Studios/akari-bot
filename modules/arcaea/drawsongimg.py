@@ -52,11 +52,9 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
     songimg.alpha_composite(difficultyimg.convert("RGBA"), (277, 0))
     drawtext = ImageDraw.Draw(songimg)
     drawtext.text((20, 115), '#' + str(rank), '#ffffff', font=font)
-    namesplit = re.findall(r'.?.?.?.?.?.?.?.?.?.?.?.?.?.?', name)
-    if namesplit[1]:
-        name = namesplit[0] + '...'
-    else:
-        name = namesplit[0]
+    name_length = len(name)
+    if name_length > 14:
+        name = name[0:14] + '...'
     drawtext.text((20, 1), name, '#ffffff', font=font)
     score = re.sub(',', "'", format(score, ','))
     score = score.split("'")
