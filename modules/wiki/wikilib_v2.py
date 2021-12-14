@@ -338,7 +338,8 @@ class WikiLib:
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
         if query is None:
-            return PageInfo(title=title, link=None, desc='发生错误：API未返回任何内容。', info=self.wiki_info)
+            return PageInfo(title=title, link=None, desc='发生错误：API未返回任何内容，请联系此站点管理员获取原因。',
+                            info=self.wiki_info)
         redirects_: List[Dict[str, str]] = query.get('redirects')
         if redirects_ is not None:
             for r in redirects_:

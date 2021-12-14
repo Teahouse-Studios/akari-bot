@@ -424,8 +424,6 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except InvalidWikiError as e:
             await msg.sendMessage(f'发生错误：' + str(e))
-        except Exception:
-            traceback.print_exc()
     if msg_list:
         await msg.sendMessage(msg_list)
     if web_render_list and msg.Feature.image:
