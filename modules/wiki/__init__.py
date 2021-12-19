@@ -143,7 +143,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
-@wiki.handle('prefix set <prefix> {设置查询自动添加前缀}')
+@wiki.handle('prefix set <prefix> {设置查询自动添加前缀}', required_admin=True)
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     prefix = msg.parsed_msg['<prefix>']
@@ -152,7 +152,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f'成功更新请求时所使用的前缀：{prefix}')
 
 
-@wiki.handle('prefix reset {重置查询自动添加的前缀}')
+@wiki.handle('prefix reset {重置查询自动添加的前缀}', required_admin=True)
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     set_prefix = target.del_prefix()
