@@ -143,6 +143,23 @@ async def _(msg: MessageSession):
         await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
+@wiki.handle('prefix set <prefix> {设置查询自动添加前缀}')
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    prefix = msg.parsed_msg['<prefix>']
+    set_prefix = target.set_prefix(prefix)
+    if set_prefix:
+        await msg.sendMessage(f'成功更新请求时所使用的前缀：{prefix}')
+
+
+@wiki.handle('prefix reset {重置查询自动添加的前缀}')
+async def _(msg: MessageSession):
+    target = WikiTargetInfo(msg)
+    set_prefix = target.del_prefix()
+    if set_prefix:
+        await msg.sendMessage(f'成功重置请求时所使用的前缀。')
+
+
 aud = on_command('wiki_audit', alias='wa',
                  developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
@@ -295,11 +312,12 @@ async def _(msg: MessageSession):
 
 
 async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
-                      template=False, mediawiki=False):
+                      template=False, mediawiki=False, useprefix=True):
     target = WikiTargetInfo(msg)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()
     headers = target.get_headers()
+    prefix = target.get_prefix()
     enabled_fandom_addon = BotDBUtil.Module(msg).check_target_enabled_module('wiki_fandom_addon')
     if start_wiki is None:
         await msg.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
@@ -311,7 +329,8 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
         raise AbuseWarning('一次性查询的页面超出15个。')
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
     for t in title:
-        print(t)
+        if prefix is not None and useprefix:
+            t = prefix + t
         if t[0] == ':':
             if len(t) > 1:
                 query_task[start_wiki]['query'].append(t[1:])
@@ -444,7 +463,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
     if wait_msg_list:
         confirm = await msg.waitConfirm(wait_msg_list)
         if confirm and wait_list:
-            await query_pages(msg, wait_list)
+            await query_pages(msg, wait_list, useprefix=False)
 
 
 rc_ = on_command('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])

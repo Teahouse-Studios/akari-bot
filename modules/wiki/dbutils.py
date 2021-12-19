@@ -87,6 +87,23 @@ class WikiTargetInfo:
             headers = {'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
         return headers
 
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def set_prefix(self, prefix: str):
+        self.query.prefix = prefix
+        session.commit()
+        return True
+
+    @retry(stop=stop_after_attempt(3))
+    @auto_rollback_error
+    def del_prefix(self):
+        self.query.prefix = None
+        session.commit()
+        return True
+
+    def get_prefix(self):
+        return self.query.prefix
+
 
 class WikiSiteInfo:
     @retry(stop=stop_after_attempt(3))

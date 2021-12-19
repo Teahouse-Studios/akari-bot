@@ -17,6 +17,7 @@ class WikiTargetSetInfo(Base):
     link = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     iws = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     headers = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
+    prefix = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
 
 
 class WikiInfo(Base):
