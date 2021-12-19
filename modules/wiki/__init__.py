@@ -341,6 +341,12 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                                 if get_link not in query_task:
                                     query_task[get_link] = {'query': [], 'iw_prefix': iw}
                                 query_task[get_link]['query'].append(find)
+                            else:
+                                query_task[start_wiki]['query'].append(t)
+                        else:
+                            query_task[start_wiki]['query'].append(t)
+                    else:
+                        query_task[start_wiki]['query'].append(t)
                 else:
                     query_task[start_wiki]['query'].append(t)
             else:
