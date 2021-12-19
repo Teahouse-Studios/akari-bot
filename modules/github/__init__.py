@@ -5,6 +5,13 @@ from modules.github import repo, user, search
 github = on_command('github', alias=['gh'], developers=['Dianliang233'])
 
 
+@github.handle('<name> {尝试自动识别并区分 repo/user}')
+async def _(msg: MessageSession):
+    if '/' in msg.parsed_msg['<name>']:
+        await repo.repo(msg)
+    else:
+        await user.user(msg)
+
 @github.handle('repo <name> {获取 GitHub 仓库信息}')
 async def _(msg: MessageSession):
     await repo.repo(msg)

@@ -30,10 +30,10 @@ async def user(msg: MessageSession):
 
         optional_text = '\n' + ' | '.join(optional)
         message = f'''{result['login']} aka {result['name']} ({result['id']}){bio}
-    
+
 Type · {result['type']} | Follower · {result['followers']} | Following · {result['following']} | Repo · {result['public_repos']} | Gist · {result['public_gists']}{optional_text}
 Account Created {time_diff(result['created_at'])} ago | Latest activity {time_diff(result['updated_at'])} ago
-    
+
 {result['html_url']}'''
 
         is_dirty = await dirty_check(message, result['login']) or darkCheck(message)
@@ -42,6 +42,9 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
 
         await msg.sendMessage(message)
     except Exception as error:
-        await msg.sendMessage('发生错误：' + str(
-            error) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
-        traceback.print_exc()
+        if result['message'] == 'Not Found':
+            await msg.sendMessage('发生错误：查无此人，请检查拼写是否正确。')
+        else:
+            await msg.sendMessage('发生错误：' + str(
+                error) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
+            traceback.print_exc()

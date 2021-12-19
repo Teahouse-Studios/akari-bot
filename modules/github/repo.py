@@ -61,6 +61,9 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             await msg.sendMessage([Plain(message), Image(
                 path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
     except Exception as e:
-        await msg.sendMessage('发生错误：' + str(
-            e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
-        traceback.print_exc()
+        if result['message'] == 'Not Found':
+            await msg.sendMessage('发生错误：查无此人，请检查拼写是否正确。')
+        else:
+            await msg.sendMessage('发生错误：' + str(
+                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
+            traceback.print_exc()
