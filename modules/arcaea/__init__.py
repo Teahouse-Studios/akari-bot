@@ -50,4 +50,4 @@ async def _(msg: MessageSession):
     webrender = Config('web_render')
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200, fmt='json')
     if resp:
-        await msg.sendMessage(Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}'))
+        await msg.sendMessage([Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}')])
