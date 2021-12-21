@@ -12,7 +12,7 @@ assets_path = os.path.abspath('./assets/arcaea')
 
 
 async def getb30(usercode):
-    headers = {"User-Agent": "L1ttl3cT"}
+    headers = {"User-Agent": Config('arcapi_agent')}
     d = 0
     last5rank = 0
     async with aiohttp.ClientSession() as session:

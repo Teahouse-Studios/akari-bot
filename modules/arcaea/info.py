@@ -11,7 +11,7 @@ api_url = Config("arcapi_url")
 
 
 async def get_info(usercode):
-    headers = {"User-Agent": "L1ttl3cT"}
+    headers = {"User-Agent": Config('arcapi_agent')}
     try:
         get_ = await get_url(api_url + "user/info?usercode=" + usercode + '&recent=1', headers=headers, fmt='json')
     except Exception:
