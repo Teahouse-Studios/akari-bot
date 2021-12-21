@@ -1,5 +1,6 @@
 import os
 
+from config import Config
 from core.component import on_command
 from core.elements import MessageSession, Plain, Image
 from core.utils import get_url
@@ -46,6 +47,7 @@ async def _(msg: MessageSession):
 
 @arc.handle('download {获取最新版本的游戏apk}')
 async def _(msg: MessageSession):
-    resp = await get_url('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200, fmt='json')
+    webrender = Config('web_render')
+    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200, fmt='json')
     if resp:
         await msg.sendMessage(Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}'))
