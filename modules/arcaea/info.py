@@ -52,7 +52,7 @@ async def get_info(usercode):
         usrptt = int(get_userinfo['content']['rating']) / 100
         return [Plain(f'{username}（{usrptt}）的最近游玩记录：\n'
                       f'{trackname}（{difficulty}）\n'
-                      f'得分：{score}\n'
+                      f'Score：{score}\n'
                       f'Pure：{pure}（{shiny_pure}）\n'
                       f'Far：{far}\n'
                       f'Lost：{lost}\n'
