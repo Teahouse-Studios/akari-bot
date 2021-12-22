@@ -142,7 +142,7 @@ async def parser(msg: MessageSession):
                         try:
                             command_parser = CommandParser(module, msg=msg)
                             try:
-                                parsed_msg = command_parser.parse(command)
+                                parsed_msg = command_parser.parse(msg.trigger_msg)
                                 submodule = parsed_msg[0]
                                 msg.parsed_msg = parsed_msg[1]
                                 if submodule.required_superuser:
