@@ -123,7 +123,7 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage('你没有使用该命令的权限。')
                             continue
                     elif not module.base:
-                        if command_first_word not in enabled_modules_list or not sudo:  # 若未开启
+                        if command_first_word not in enabled_modules_list and not sudo:  # 若未开启
                             await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
                             continue
                     elif module.required_admin:
