@@ -80,6 +80,14 @@ async def parser(msg: MessageSession):
             command_spilt = command.split(' ')  # 切割消息
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_spilt[0].lower()
+            sudo = False
+            if command_first_word == 'sudo':
+                if not msg.checkSuperUser():
+                    return await msg.sendMessage('你不是本机器人的超级管理员，无法使用sudo命令。')
+                sudo = True
+                del command_spilt[0]
+                command_first_word = command_spilt[0].lower()
+                msg.trigger_msg = ' '.join(command_spilt)
             if command_first_word in ModulesAliases:
                 command_spilt[0] = ModulesAliases[command_first_word]
                 command = ' '.join(command_spilt)
@@ -115,7 +123,7 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage('你没有使用该命令的权限。')
                             continue
                     elif not module.base:
-                        if command_first_word not in enabled_modules_list:  # 若未开启
+                        if command_first_word not in enabled_modules_list or not sudo:  # 若未开启
                             await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
                             continue
                     elif module.required_admin:
@@ -123,7 +131,7 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                             continue
                     if not module.match_list.set:
-                        await msg.sendMessage(f'发生错误：{command_first_word}未绑定任何命令，，请联系开发者处理。'
+                        await msg.sendMessage(f'发生错误：{command_first_word}未绑定任何命令，请联系开发者处理。'
                                               f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+。')
                         continue
                     none_doc = True
