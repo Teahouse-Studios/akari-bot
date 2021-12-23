@@ -440,7 +440,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                     if r.invalid_namespace and r.before_title is not None:
                         s = r.before_title.split(":")
                         if len(s) > 1:
-                            wait_plain_slice.append(f'此Wiki上没有名为{s[0]}的命名空间，请检查拼写后再试。')
+                            plain_slice.append(f'此Wiki上没有名为{s[0]}的命名空间，请检查拼写后再试。')
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if wait_plain_slice:

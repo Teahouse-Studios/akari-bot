@@ -112,7 +112,7 @@ async def parser(msg: MessageSession):
                             else:
                                 return await warn_target(msg)
                     if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module':
-                        await msg_counter(msg, command)
+                        await msg_counter(msg, msg.trigger_msg)
                     module = Modules[command_first_word]
                     if not isinstance(module, Command):
                         if module.desc is not None:
