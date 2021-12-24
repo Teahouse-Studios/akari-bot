@@ -32,10 +32,11 @@ async def user(msg: MessageSession):
             metaurl = get_iw[match_interwiki.group(1)]
             username = match_interwiki.group(2)
     result = await GetUser(metaurl, username, mode)
+    print(result)
     if result:
         matchimg = re.match('.*\[\[uimgc:(.*)]]', result)
         if matchimg:
-            imgchain = [Image(path=matchimg.group(1))]
+            imgchain = Image(path=matchimg.group(1))
             result = re.sub('\[\[uimgc:.*]]', '', result)
             msgchain = [Plain(result)]
             msgchain = msgchain.append(imgchain)
