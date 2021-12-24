@@ -34,12 +34,10 @@ async def user(msg: MessageSession):
     result = await GetUser(metaurl, username, mode)
     print(result)
     if result:
-        matchimg = re.match('.*\[\[uimgc:(.*)]]', result)
+        matchimg = re.match('(.*)\[\[uimgc:(.*)]]', result)
         if matchimg:
-            imgchain = Image(path=matchimg.group(1))
-            result = re.sub('\[\[uimgc:.*]]', '', result)
-            msgchain = [Plain(result)]
-            msgchain = msgchain.append(imgchain)
+            msgchain = [Plain(matchimg.group(1)), Image(matchimg.group(2))]
         else:
             msgchain = [Plain(result)]
+        print(msgchain)
         await msg.sendMessage(msgchain)
