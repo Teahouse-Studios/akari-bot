@@ -15,14 +15,15 @@ async def rc_qq(wiki_url):
                                 rclimit=99,
                                 rctype='edit|new|log'
                                 )
-    pageurl = wiki.wiki_info.articlepath.replace("$1", 'Special:RecentChanges')
+    pageurl = wiki.wiki_info.articlepath
+
     nodelist = [{
         "type": "node",
         "data": {
             "name": f"最近更改地址",
             "uin": qq_account,
             "content": [
-                {"type": "text", "data": {"text": pageurl}}]
+                {"type": "text", "data": {"text": pageurl.replace("$1", 'Special:RecentChanges')}}]
         }
     }]
     rclist = []
