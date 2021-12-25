@@ -44,7 +44,6 @@ async def on_message(message):
     # don't respond to ourselves
     if message.author == client.user:
         return
-    Logger.info(str(message) + message.content)
     target = "Discord|Channel"
     if isinstance(message.channel, discord.DMChannel):
         target = "Discord|DM|Channel"
