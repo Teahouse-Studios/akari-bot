@@ -53,7 +53,13 @@ async def _(msg: MessageSession):
 
 @arc.handle('initialize', required_superuser=True)
 async def _(msg: MessageSession):
-    return await arcb30init(msg)
+    assets_apk = os.path.abspath('./assets/arc.apk')
+    if not os.path.exists(assets_apk):
+        await msg.sendMessage('未找到arc.apk！')
+        return
+    result = await arcb30init()
+    if result:
+        await msg.sendMessage('成功初始化！')
 
 
 @arc.handle('download {获取最新版本的游戏apk}')

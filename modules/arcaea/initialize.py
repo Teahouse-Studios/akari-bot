@@ -9,12 +9,11 @@ from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 from core.elements import MessageSession
 
 
-async def arcb30init(msg: MessageSession):
+async def arcb30init():
     cache = os.path.abspath('./cache')
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
-        await msg.sendMessage('未找到arc.apk！')
-        return
+        return False
     assets = os.path.abspath('./assets/arcaea')
     if os.path.exists(assets):
         shutil.rmtree(assets)
@@ -25,41 +24,55 @@ async def arcb30init(msg: MessageSession):
             fz.extract(file, cache)
     copysongpath = cache + '/assets/songs'
     songdirs = os.listdir(copysongpath)
+    jacket_output = os.path.abspath('./cache/jacket_output/')
+    if not os.path.exists(jacket_output):
+        os.makedirs(jacket_output)
     for file in songdirs:
         filename = os.path.abspath(f'{copysongpath}/{file}')
+        print(filename)
         if os.path.isdir(filename):
-            output = os.path.abspath('./cache/songoutput/')
-            if not os.path.exists(output):
-                os.makedirs(output)
             file = re.sub('dl_', '', file)
-            filename = filename + '/base.jpg'
-            if os.path.exists(filename):
-                shutil.copy(filename, f'{output}/{file}.jpg')
+            filename_base = filename + '/base.jpg'
+            if os.path.exists(filename_base):
+                shutil.copy(filename_base, f'{jacket_output}/{file}.jpg')
+            filename_0 = filename + '/0.jpg'
+            if os.path.exists(filename_0):
+                shutil.copy(filename_0, f'{jacket_output}/{file}_0.jpg')
+            filename_1 = filename + '/1.jpg'
+            if os.path.exists(filename_1):
+                shutil.copy(filename_1, f'{jacket_output}/{file}_1.jpg')
+            filename_2 = filename + '/2.jpg'
+            if os.path.exists(filename_2):
+                shutil.copy(filename_2, f'{jacket_output}/{file}_2.jpg')
+            filename_3 = filename + '/3.jpg'
+            if os.path.exists(filename_3):
+                shutil.copy(filename_3, f'{jacket_output}/{file}_3.jpg')
 
-    files = os.listdir(output)
-    outputpath = os.path.abspath('./cache/bluroutput')
-    if not os.path.exists(outputpath):
-        os.makedirs(outputpath)
+    shutil.copytree(jacket_output, assets + '/jacket')
+    files = os.listdir(jacket_output)
+    bluroutputpath = os.path.abspath('./cache/bluroutput')
+    if not os.path.exists(bluroutputpath):
+        os.makedirs(bluroutputpath)
 
     for file in files:
-        img = Image.open(f'{output}/{file}')
+        img = Image.open(f'{jacket_output}/{file}')
         img2 = img.filter(ImageFilter.GaussianBlur(radius=2))
         downlight = ImageEnhance.Brightness(img2)
         d2 = downlight.enhance(0.65)
-        if not os.path.exists(outputpath):
-            os.makedirs(outputpath)
-        d2.save(f'{outputpath}/{file}')
+        if not os.path.exists(bluroutputpath):
+            os.makedirs(bluroutputpath)
+        d2.save(f'{bluroutputpath}/{file}')
 
-    files = os.listdir(outputpath)
-    songimgdir = assets + '/songimg'
-    if not os.path.exists(songimgdir):
-        os.makedirs(songimgdir)
+    files = os.listdir(bluroutputpath)
+    b30background_imgdir = assets + '/b30background_img'
+    if not os.path.exists(b30background_imgdir):
+        os.makedirs(b30background_imgdir)
 
     for file in files:
-        img = Image.open(os.path.abspath(f'{outputpath}/{file}'))
+        img = Image.open(os.path.abspath(f'{bluroutputpath}/{file}'))
         img1 = img.resize((325, 325))
         img2 = img1.crop((0, 62, 325, 263))
-        img2.save(os.path.abspath(f'{songimgdir}/{file}'))
+        img2.save(os.path.abspath(f'{b30background_imgdir}/{file}'))
 
     shutil.copytree(cache + '/assets/char', assets + '/char')
     shutil.copytree(cache + '/assets/Fonts', assets + '/Fonts')
@@ -89,7 +102,7 @@ async def arcb30init(msg: MessageSession):
         cd = cd.rotate(180).transpose(Image.FLIP_LEFT_RIGHT)
         cd.save(os.path.abspath(f'{assets}/{ds}.png'))
 
-    await msg.sendMessage('成功初始化！')
+    return True
 
 
 class Rotate(object):

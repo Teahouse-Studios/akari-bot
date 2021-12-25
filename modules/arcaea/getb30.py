@@ -1,3 +1,4 @@
+import asyncio
 import os
 import uuid
 
@@ -32,32 +33,38 @@ async def getb30(usercode):
                 ptts = {}
                 scores = {}
                 last5list = ''
+                run_lst = []
                 for x in loadjson["content"]["best30_list"]:
                     d = d + 1
-                    async with session.get(url + "song/info?songname=" + x['song_id'], headers=headers) as name:
-                        b = await name.text()
-                        loadname = json.loads(b)
-                        if x['difficulty'] == 0:
-                            difficulty = 'PST'
-                        if x['difficulty'] == 1:
-                            difficulty = 'PRS'
-                        if x['difficulty'] == 2:
-                            difficulty = 'FTR'
-                        if x['difficulty'] == 3:
-                            difficulty = 'BYD'
-                        trackname = loadname['content']['title_localized']['en']
-                        tracknames[x['song_id'] + difficulty] = trackname + f' ({difficulty})'
-                        imgpath = f'{assets_path}/songimg/{x["song_id"]}.jpg'
-                        realptt = loadname['content']['difficulties'][x['difficulty']]['ratingReal']
-                        realptts[x['song_id'] + difficulty] = realptt
-                        ptt = x['rating']
-                        ptts[x['song_id'] + difficulty] = ptt
-                        score = x['score']
-                        scores[x['song_id'] + difficulty] = score
-                        if not os.path.exists(imgpath):
-                            imgpath = f'{assets_path}/songimg/random.jpg'
-                        dsimg(os.path.abspath(imgpath), d, trackname, x['difficulty'], score, ptt, realptt,
-                              x['perfect_count'], x['near_count'], x['miss_count'], x['time_played'], newdir)
+
+                    async def draw_jacket(x, d):
+                        async with session.get(url + "song/info?songname=" + x['song_id'], headers=headers) as name:
+                            loadname = await name.json()
+                            if x['difficulty'] == 0:
+                                difficulty = 'PST'
+                            if x['difficulty'] == 1:
+                                difficulty = 'PRS'
+                            if x['difficulty'] == 2:
+                                difficulty = 'FTR'
+                            if x['difficulty'] == 3:
+                                difficulty = 'BYD'
+                            trackname = loadname['content']['title_localized']['en']
+                            tracknames[x['song_id'] + difficulty] = trackname + f' ({difficulty})'
+                            imgpath = f'{assets_path}/songimg/{x["song_id"]}_{str(x["difficulty"])}.jpg'
+                            if not os.path.exists(imgpath):
+                                imgpath = f'{assets_path}/songimg/{x["song_id"]}.jpg'
+                            realptt = loadname['content']['difficulties'][x['difficulty']]['ratingReal']
+                            realptts[x['song_id'] + difficulty] = realptt
+                            ptt = x['rating']
+                            ptts[x['song_id'] + difficulty] = ptt
+                            score = x['score']
+                            scores[x['song_id'] + difficulty] = score
+                            if not os.path.exists(imgpath):
+                                imgpath = f'{assets_path}/songimg/random.jpg'
+                            dsimg(os.path.abspath(imgpath), d, trackname, x['difficulty'], score, ptt, realptt,
+                                  x['perfect_count'], x['near_count'], x['miss_count'], x['time_played'], newdir)
+                    run_lst.append(draw_jacket(x, d))
+                await asyncio.gather(*run_lst)
                 print(tracknames)
                 for last5 in loadjson["content"]["best30_list"][-5:]:
                     last5rank += 1
