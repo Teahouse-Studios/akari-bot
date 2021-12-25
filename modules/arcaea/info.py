@@ -52,13 +52,13 @@ async def get_info(usercode):
             return [Plain('查询失败。')]
         username = get_userinfo['content']['name']
         usrptt = int(get_userinfo['content']['rating']) / 100
-        result = [Plain(f'{username}（{usrptt}）的最近游玩记录：\n'
-                        f'{trackname}（{difficulty}）\n'
-                        f'Score：{score}\n'
-                        f'Pure：{pure}（{shiny_pure}）\n'
-                        f'Far：{far}\n'
-                        f'Lost：{lost}\n'
-                        f'Potential：{realptt} -> {ptt}')]
+        result = [Plain(f'{username} (Ptt: {usrptt})的最近游玩记录：\n'
+                        f'{trackname} ({difficulty})\n'
+                        f'Score: {score}\n'
+                        f'Pure: {pure} ({shiny_pure})\n'
+                        f'Far: {far}\n'
+                        f'Lost: {lost}\n'
+                        f'Potential: {realptt} -> {ptt}')]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         return result
