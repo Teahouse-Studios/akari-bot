@@ -24,12 +24,15 @@ logging.basicConfig(format="%(msg)s", level=logging.INFO)
 botdir = './core/bots/'
 lst = os.listdir(botdir)
 runlst = []
+pidlst = []
 for x in lst:
     bot = os.path.abspath(f'{botdir}{x}/bot.py')
     if os.path.exists(bot):
         p = subprocess.Popen(f'python {bot}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              cwd=os.path.abspath('.'))
         runlst.append(p)
+        pidlst.append(p.pid)
+
 q = Queue()
 threads = []
 for p in runlst:
@@ -41,23 +44,25 @@ for t in threads:
 
 start = datetime.datetime.now()
 
-while True:
-    try:
-        line = q.get_nowait()
-    except Empty:
-        pass
-    except KeyboardInterrupt:
-        for x in runlst:
-            x.kill()
-    else:
+try:
+    while True:
         try:
-            logging.info(line[:-1].decode(encode))
-        except Exception:
-            print(line)
-            traceback.print_exc()
+            line = q.get_nowait()
+        except Empty:
+            pass
+        else:
+            try:
+                logging.info(line[:-1].decode(encode))
+            except Exception:
+                print(line)
+                traceback.print_exc()
 
-    # break when all processes are done.
-    if all(p.poll() is not None for p in runlst):
-        break
+        # break when all processes are done.
+        if all(p.poll() is not None for p in runlst):
+            break
 
-    sleep(0.001)
+        sleep(0.001)
+except KeyboardInterrupt:
+    for x in pidlst:
+        os.kill(x, 9)
+        
