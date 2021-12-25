@@ -55,8 +55,8 @@ async def rc_qq(wiki_url):
             if comment == '':
                 comment = '（无摘要内容）'
             t.append(comment)
-            t.append(
-                f"{pageurl}{urllib.parse.quote(title_checked_map[x['title']])}?oldid={x['old_revid']}&diff={x['revid']}")
+            t.append(pageurl.replace('$1',
+                                     f"{urllib.parse.quote(title_checked_map[x['title']])}?oldid={x['old_revid']}&diff={x['revid']}"))
         if x['type'] == 'new':
             r = ''
             if 'redirect' in x:
@@ -79,7 +79,7 @@ async def rc_qq(wiki_url):
             if 'target_title' in params:
                 t.append('对象页面：' + params['target_title'])
             if x['revid'] != 0:
-                t.append(f"{pageurl}{urllib.parse.quote(title_checked_map[x['title']])}")
+                t.append(pageurl.replace("$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))
         rclist.append('\n'.join(t))
     for x in rclist:
         nodelist.append(
