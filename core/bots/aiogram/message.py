@@ -7,6 +7,7 @@ from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList
+from core.elements.message.internal import Embed
 from core.elements.others import confirm_command
 from core.secret_check import Secret
 from database import BotDBUtil
@@ -31,6 +32,10 @@ class MessageSession(MS):
     async def sendMessage(self, msgchain, quote=True):
         if Secret.find(msgchain):
             return await self.sendMessage('https://wdf.ink/6Oup')
+        if isinstance(msgchain, (Plain, Image, Voice)):
+            msgchain = [msgchain]
+        if isinstance(msgchain, Embed):
+            msgchain = msgchain.to_msgchain()
         if isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
@@ -43,18 +48,30 @@ class MessageSession(MS):
                 if isinstance(x, Plain):
                     send_ = await bot.send_message(self.session.target, x.text,
                                                    reply_to_message_id=self.session.message.message_id if quote
-                                                                                                          and count == 0 and self.session.message else None)
+                                                   and count == 0 and self.session.message else None)
                 elif isinstance(x, Image):
                     with open(await x.get(), 'rb') as image:
                         send_ = await bot.send_photo(self.session.target, image,
                                                      reply_to_message_id=self.session.message.message_id if quote
-                                                                                                            and count == 0
-                                                                                                            and self.session.message else None)
+                                                     and count == 0
+                                                     and self.session.message else None)
                 elif isinstance(x, Voice):
                     with open(x.path, 'rb') as voice:
                         send_ = await bot.send_audio(self.session.target, voice,
                                                      reply_to_message_id=self.session.message.message_id if quote
-                                                                                                            and count == 0 and self.session.message else None)
+                                                     and count == 0 and self.session.message else None)
+                elif isinstance(x, Embed):
+                    chains = x.to_msgchain()
+                    for y in chains:
+                        if isinstance(y, Plain):
+                            send_ = await bot.send_message(self.session.target, y.text,
+                                                           reply_to_message_id=self.session.message.message_id if quote
+                                                           and count == 0 and self.session.message else None)
+                        elif isinstance(y, Image):
+                            with open(await y.get(), 'rb') as image:
+                                send_ = await bot.send_photo(self.session.target, image,
+                                                             reply_to_message_id=self.session.message.message_id if quote
+                                                             and count == 0 and self.session.message else None)
                 else:
                     send_ = False
                 if send_:

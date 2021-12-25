@@ -17,11 +17,17 @@ class Bind:
             self.bind_prefix = bind_prefix
 
         def handle(self,
-                   help_doc: str = None,
+                   help_doc: Union[str, list, tuple] = None,
+                   *docs,
                    required_admin: bool = False,
                    required_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*'):
             def decorator(function):
+                nonlocal help_doc
+                if isinstance(help_doc, str):
+                    help_doc = [help_doc]
+                if docs:
+                    help_doc += docs
                 ModulesManager.bind_to_module(self.bind_prefix, CommandMeta(function=function,
                                                                             help_doc=help_doc,
                                                                             required_admin=required_admin,

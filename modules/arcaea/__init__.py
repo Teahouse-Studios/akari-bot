@@ -83,7 +83,7 @@ async def _(msg: MessageSession):
         await msg.sendMessage(result)
 
 
-@arc.handle(['rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}'])
+@arc.handle('rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}')
 async def _(msg: MessageSession):
     if msg.parsed_msg['free']:
         resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')

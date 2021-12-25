@@ -1,6 +1,7 @@
 import re
 import uuid
 from os.path import abspath
+from typing import List
 
 import aiohttp
 import filetype
@@ -50,4 +51,63 @@ class Voice:
         self.path = path
 
 
-__all__ = ["Plain", "Image", "Voice"]
+class EmbedField:
+    def __init__(self,
+                 name: str = None,
+                 value: str = None,
+                 inline: bool = False):
+        self.name = name
+        self.value = value
+        self.inline = inline
+
+
+class Embed:
+    def __init__(self,
+                 title: str = None,
+                 description: str = None,
+                 url: str = None,
+                 timestamp: float = None,
+                 color: int = None,
+                 # image: Image = None,
+                 # thumbnail: Image = None,
+                 author: str = None,
+                 footer: str = None,
+                 fields: List[EmbedField] = None):
+        self.title = title
+        self.description = description
+        self.url = url
+        self.timestamp = timestamp
+        self.color = color
+        # self.image = image
+        # self.thumbnail = thumbnail
+        self.author = author
+        self.footer = footer
+        self.fields = fields
+
+    def to_msgchain(self):
+        text_lst = []
+        if self.title is not None:
+            text_lst.append(self.title)
+        if self.description is not None:
+            text_lst.append(self.description)
+        if self.url is not None:
+            text_lst.append(self.url)
+        if self.fields is not None:
+            for f in self.fields:
+                if f.inline:
+                    text_lst.append(f"{f.name}: {f.value}")
+                else:
+                    text_lst.append(f"{f.name}:\n{f.value}")
+        if self.author is not None:
+            text_lst.append("作者：" + self.author)
+        if self.footer is not None:
+            text_lst.append(self.footer)
+        msgchain = []
+        if text_lst:
+            msgchain.append(Plain('\n'.join(text_lst)))
+        # if self.image is not None:
+        #    msgchain.append(self.image)
+        return msgchain
+
+
+__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField"]

@@ -1,12 +1,16 @@
 import asyncio
+import datetime
 import re
 import traceback
 from typing import List
 
 import discord
+from pathlib import Path
 
 from core.bots.discord.client import client
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList, \
+    Voice
+from core.elements.message.internal import Embed, EmbedField
 from core.elements.others import confirm_command
 from core.secret_check import Secret
 from database import BotDBUtil
@@ -21,6 +25,27 @@ def convert2lst(s) -> list:
         return list(s)
 
 
+async def convert_embed(embed: Embed) -> discord.Embed:
+    if isinstance(embed, Embed):
+        embeds = discord.Embed(title=embed.title if embed.title is not None else discord.Embed.Empty,
+                               description=embed.description if embed.description is not None else discord.Embed.Empty,
+                               color=embed.color if embed.color is not None else discord.Embed.Empty,
+                               url=embed.url if embed.url is not None else discord.Embed.Empty,
+                               timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty,)
+        """        if embed.image is not None:
+            embeds.set_image(url=Path(await embed.image.get()).as_uri())"""
+        if embed.thumbnail is not None:
+            embeds.set_thumbnail(url=Path(await embed.thumbnail.get()).as_uri())
+        if embed.author is not None:
+            embeds.set_author(name=embed.author)
+        if embed.footer is not None:
+            embeds.set_footer(text=embed.footer)
+        if embed.fields is not None:
+            for field in embed.fields:
+                embeds.add_field(name=field.name, value=field.value, inline=field.inline)
+        return embeds
+
+
 class MessageSession(MS):
     class Feature:
         image = True
@@ -31,7 +56,12 @@ class MessageSession(MS):
     async def sendMessage(self, msgchain, quote=True):
         if Secret.find(msgchain):
             return await self.sendMessage('https://wdf.ink/6Oup')
-        if isinstance(msgchain, str):
+        if isinstance(msgchain, (Plain, Image, Voice)):
+            msgchain = [msgchain]
+        if isinstance(msgchain, Embed):
+            send = await self.session.target.send(embed=await convert_embed(msgchain),
+                                                  reference=self.session.message if quote and self.session.message else None)
+        elif isinstance(msgchain, str):
             if msgchain == '':
                 msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
             send = await self.session.target.send(msgchain,
@@ -46,6 +76,10 @@ class MessageSession(MS):
                                                                                              and self.session.message else None)
                 elif isinstance(x, Image):
                     send_ = await self.session.target.send(file=discord.File(await x.get()),
+                                                           reference=self.session.message if quote and count == 0
+                                                                                             and self.session.message else None)
+                elif isinstance(x, Embed):
+                    send_ = await self.session.target.send(embed=await convert_embed(x),
                                                            reference=self.session.message if quote and count == 0
                                                                                              and self.session.message else None)
                 else:

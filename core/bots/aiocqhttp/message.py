@@ -12,6 +12,7 @@ from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList
+from core.elements.message.internal import Embed
 from core.elements.others import confirm_command
 from core.secret_check import Secret
 from core.logger import Logger
@@ -40,6 +41,10 @@ class MessageSession(MS):
             msg = MessageSegment.reply(self.session.message.message_id)
         if Secret.find(msgchain):
             return await self.sendMessage('https://wdf.ink/6Oup')
+        if isinstance(msgchain, (Plain, Image, Voice)):
+            msgchain = [msgchain]
+        if isinstance(msgchain, Embed):
+            msgchain = msgchain.to_msgchain()
         if isinstance(msgchain, str):
             msg = msg + (MessageSegment.text(msgchain if msgchain != '' else
                                              '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
@@ -53,6 +58,13 @@ class MessageSession(MS):
                     msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
                 elif isinstance(x, Voice):
                     msg = msg + MessageSegment.record(Path(x.path).as_uri())
+                elif isinstance(x, Embed):
+                    chains = x.to_msgchain()
+                    for y in chains:
+                        if isinstance(y, Plain):
+                            msg = msg + MessageSegment.text(('\n' if count != 0 else '') + y.text)
+                        elif isinstance(y, Image):
+                            msg = msg + MessageSegment.image(Path(await y.get()).as_uri())
                 count += 1
         else:
             msg = msg + MessageSegment.text('发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。'
