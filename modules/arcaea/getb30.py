@@ -50,9 +50,9 @@ async def getb30(usercode):
                                 difficulty = 'BYD'
                             trackname = loadname['content']['title_localized']['en']
                             tracknames[x['song_id'] + difficulty] = trackname + f' ({difficulty})'
-                            imgpath = f'{assets_path}/songimg/{x["song_id"]}_{str(x["difficulty"])}.jpg'
+                            imgpath = f'{assets_path}/b30background_img/{x["song_id"]}_{str(x["difficulty"])}.jpg'
                             if not os.path.exists(imgpath):
-                                imgpath = f'{assets_path}/songimg/{x["song_id"]}.jpg'
+                                imgpath = f'{assets_path}/b30background_img/{x["song_id"]}.jpg'
                             realptt = loadname['content']['difficulties'][x['difficulty']]['ratingReal']
                             realptts[x['song_id'] + difficulty] = realptt
                             ptt = x['rating']
@@ -60,7 +60,7 @@ async def getb30(usercode):
                             score = x['score']
                             scores[x['song_id'] + difficulty] = score
                             if not os.path.exists(imgpath):
-                                imgpath = f'{assets_path}/songimg/random.jpg'
+                                imgpath = f'{assets_path}/b30background_img/random.jpg'
                             dsimg(os.path.abspath(imgpath), d, trackname, x['difficulty'], score, ptt, realptt,
                                   x['perfect_count'], x['near_count'], x['miss_count'], x['time_played'], newdir)
                     run_lst.append(draw_jacket(x, d))
