@@ -5,7 +5,6 @@ from core.elements import Plain, Image
 
 from core.utils.bot import get_url
 
-
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("arcapi_url")
 
@@ -23,7 +22,8 @@ async def get_info(usercode):
             return [Plain('此用户无游玩记录。')]
         recent = recent[0]
         try:
-            get_songinfo = await get_url(api_url + "song/info?songname=" + recent['song_id'], headers=headers, fmt='json')
+            get_songinfo = await get_url(api_url + "song/info?songname=" + recent['song_id'], headers=headers,
+                                         fmt='json')
         except:
             return [Plain('查询失败。')]
         difficulty = '???'
@@ -36,7 +36,9 @@ async def get_info(usercode):
         if recent['difficulty'] == 3:
             difficulty = 'BYD'
         trackname = get_songinfo['content']['title_localized']['en']
-        imgpath = f'{assets_path}/songimg/{recent["song_id"]}.jpg'
+        imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
+        if not os.path.exists(imgpath):
+            imgpath = f'{assets_path}/jacket/{recent["song_id"]}.jpg'
         realptt = get_songinfo['content']['difficulties'][recent['difficulty']]['ratingReal']
         ptt = recent['rating']
         score = recent['score']
@@ -50,13 +52,16 @@ async def get_info(usercode):
             return [Plain('查询失败。')]
         username = get_userinfo['content']['name']
         usrptt = int(get_userinfo['content']['rating']) / 100
-        return [Plain(f'{username}（{usrptt}）的最近游玩记录：\n'
-                      f'{trackname}（{difficulty}）\n'
-                      f'Score：{score}\n'
-                      f'Pure：{pure}（{shiny_pure}）\n'
-                      f'Far：{far}\n'
-                      f'Lost：{lost}\n'
-                      f'Potential：{realptt} -> {ptt}'), Image(imgpath)]
+        result = [Plain(f'{username}（{usrptt}）的最近游玩记录：\n'
+                        f'{trackname}（{difficulty}）\n'
+                        f'Score：{score}\n'
+                        f'Pure：{pure}（{shiny_pure}）\n'
+                        f'Far：{far}\n'
+                        f'Lost：{lost}\n'
+                        f'Potential：{realptt} -> {ptt}')]
+        if os.path.exists(imgpath):
+            result.append(Image(imgpath))
+        return result
     elif get_["status"] == -1:
         return [Plain('[-1] 非法的好友码。')]
     elif get_["status"] == -4:
