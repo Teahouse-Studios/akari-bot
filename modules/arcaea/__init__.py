@@ -11,6 +11,8 @@ from .initialize import arcb30init
 
 arc = on_command('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关内容。',
                  alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
+webrender = Config('web_render')
+assets_path = os.path.abspath('./assets/arcaea')
 
 
 @arc.handle('b30 <friendcode> {查询一个Arcaea用户的b30列表}')
@@ -64,7 +66,33 @@ async def _(msg: MessageSession):
 
 @arc.handle('download {获取最新版本的游戏apk}')
 async def _(msg: MessageSession):
-    webrender = Config('web_render')
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200, fmt='json')
     if resp:
         await msg.sendMessage([Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}')])
+
+
+@arc.handle('random {随机一首曲子}')
+async def _(msg: MessageSession):
+    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
+    if resp:
+        value = resp["value"][0]
+        image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
+        result = [Plain(value["title"]["en"])]
+        if os.path.exists(image):
+            result.append(Image(path=image))
+        await msg.sendMessage(result)
+
+
+@arc.handle(['rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}'])
+async def _(msg: MessageSession):
+    if msg.parsed_msg['free']:
+        resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
+    else:
+        resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/paid/', 200, fmt='json')
+    if resp:
+        r = []
+        rank = 0
+        for x in resp['value']:
+            rank += 1
+            r.append(f'{rank}. {x["title"]["en"]} ({x["status"]})')
+        await msg.sendMessage('\n'.join(r))
