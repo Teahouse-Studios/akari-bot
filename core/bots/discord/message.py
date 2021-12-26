@@ -33,9 +33,9 @@ async def convert_embed(embed: Embed) -> discord.Embed:
                                url=embed.url if embed.url is not None else discord.Embed.Empty,
                                timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty,)
         """        if embed.image is not None:
-            embeds.set_image(url=Path(await embed.image.get()).as_uri())"""
+            embeds.set_image(url=Path(await embed.image.get()).as_uri())
         if embed.thumbnail is not None:
-            embeds.set_thumbnail(url=Path(await embed.thumbnail.get()).as_uri())
+            embeds.set_thumbnail(url=Path(await embed.thumbnail.get()).as_uri())"""
         if embed.author is not None:
             embeds.set_author(name=embed.author)
         if embed.footer is not None:
