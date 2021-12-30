@@ -490,6 +490,14 @@ async def _(msg: MessageSession):
     await msg.sendMessage(msg.parsed_msg['<display_msg>'])
 
 
+say = on_command('say', developers=['OasisAkari'], required_superuser=True)
+
+
+@say.handle('<display_msg>')
+async def _(msg: MessageSession):
+    await msg.sendMessage(msg.parsed_msg['<display_msg>'], quote=False)
+
+
 tog = on_command('toggle', developers=['OasisAkari'], base=True)
 
 
