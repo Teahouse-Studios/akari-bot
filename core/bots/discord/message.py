@@ -2,17 +2,15 @@ import asyncio
 import datetime
 import re
 import traceback
-from typing import List
+from typing import List, Union
 
 import discord
-from pathlib import Path
 
 from core.bots.discord.client import client
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList, \
-    Voice
-from core.elements.message.internal import Embed, EmbedField
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList
+from core.elements.message.chain import MessageChain
+from core.elements.message.internal import Embed
 from core.elements.others import confirm_command
-from core.secret_check import Secret
 from database import BotDBUtil
 
 
@@ -31,7 +29,8 @@ async def convert_embed(embed: Embed) -> discord.Embed:
                                description=embed.description if embed.description is not None else discord.Embed.Empty,
                                color=embed.color if embed.color is not None else discord.Embed.Empty,
                                url=embed.url if embed.url is not None else discord.Embed.Empty,
-                               timestamp=datetime.datetime.fromtimestamp(embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty,)
+                               timestamp=datetime.datetime.fromtimestamp(
+                                   embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty, )
         """        if embed.image is not None:
             embeds.set_image(url=Path(await embed.image.get()).as_uri())
         if embed.thumbnail is not None:
@@ -54,43 +53,29 @@ class MessageSession(MS):
         delete = True
 
     async def sendMessage(self, msgchain, quote=True):
-        if Secret.find(msgchain):
+        msgchain = MessageChain(msgchain)
+        if not msgchain.is_safe:
             return await self.sendMessage('https://wdf.ink/6Oup')
-        if isinstance(msgchain, (Plain, Image, Voice)):
-            msgchain = [msgchain]
-        if isinstance(msgchain, Embed):
-            send = await self.session.target.send(embed=await convert_embed(msgchain),
-                                                  reference=self.session.message if quote and self.session.message else None)
-        elif isinstance(msgchain, str):
-            if msgchain == '':
-                msgchain = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
-            send = await self.session.target.send(msgchain,
-                                                  reference=self.session.message if quote and self.session.message else None)
-        elif isinstance(msgchain, (list, tuple)):
-            count = 0
-            send = []
-            for x in msgchain:
-                if isinstance(x, Plain):
-                    send_ = await self.session.target.send(x.text,
-                                                           reference=self.session.message if quote and count == 0
-                                                                                             and self.session.message else None)
-                elif isinstance(x, Image):
-                    send_ = await self.session.target.send(file=discord.File(await x.get()),
-                                                           reference=self.session.message if quote and count == 0
-                                                                                             and self.session.message else None)
-                elif isinstance(x, Embed):
-                    send_ = await self.session.target.send(embed=await convert_embed(x),
-                                                           reference=self.session.message if quote and count == 0
-                                                                                             and self.session.message else None)
-                else:
-                    send_ = False
-                if send_:
-                    send.append(send_)
-                count += 1
-        else:
-            msgchain = '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
-            send = await self.session.target.send(msgchain,
-                                                  reference=self.session.message if quote and self.session.message else None)
+        count = 0
+        send = []
+        for x in msgchain.asSendable():
+            if isinstance(x, Plain):
+                send_ = await self.session.target.send(x.text,
+                                                       reference=self.session.message if quote and count == 0
+                                                                                         and self.session.message else None)
+            elif isinstance(x, Image):
+                send_ = await self.session.target.send(file=discord.File(await x.get()),
+                                                       reference=self.session.message if quote and count == 0
+                                                                                         and self.session.message else None)
+            elif isinstance(x, Embed):
+                send_ = await self.session.target.send(embed=await convert_embed(x),
+                                                       reference=self.session.message if quote and count == 0
+                                                                                         and self.session.message else None)
+            else:
+                send_ = False
+            if send_:
+                send.append(send_)
+            count += 1
         return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Discord|Bot',
                                              senderFrom='Discord|Bot'),
                               session=Session(message=send, target=self.session.target, sender=self.session.sender))
@@ -153,7 +138,7 @@ class MessageSession(MS):
 
 class FetchTarget(FT):
     @staticmethod
-    async def fetch_target(targetId) -> MessageSession:
+    async def fetch_target(targetId) -> Union[MessageSession, bool]:
         matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)
         if matchChannel:
             getChannel = await client.fetch_channel(int(matchChannel.group(2)))

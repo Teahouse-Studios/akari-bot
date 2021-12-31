@@ -8,9 +8,9 @@ from aiocqhttp import MessageSegment
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, ExecutionLockList
+from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
 from core.logger import Logger
-from core.secret_check import Secret
 
 
 def convert2lst(s) -> list:
@@ -33,25 +33,18 @@ class MessageSession(MS):
         msg = MessageSegment.text('')
         # if quote:
         #    msg = MessageSegment.reply(self.session.message.message_id)
-        if Secret.find(msgchain):
+        msgchain = MessageChain(msgchain)
+        if not msgchain.is_safe:
             return await self.sendMessage('https://wdf.ink/6Oup')
-        if isinstance(msgchain, str):
-            msg = msg + (MessageSegment.text(msgchain if msgchain != '' else
-                                             '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
-                                             '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title='))
-        elif isinstance(msgchain, (list, tuple)):
-            count = 0
-            for x in msgchain:
-                if isinstance(x, Plain):
-                    msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
-                elif isinstance(x, Image):
-                    msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
-                # elif isinstance(x, Voice):
-                #    msg = msg + MessageSegment.record(Path(x.path).as_uri())
-                count += 1
-        else:
-            msg = msg + MessageSegment.text('发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。'
-                                            '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=5678.md&title=')
+        count = 0
+        for x in msgchain.asSendable(embed=False):
+            if isinstance(x, Plain):
+                msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
+            elif isinstance(x, Image):
+                msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
+            # elif isinstance(x, Voice):
+            #    msg = msg + MessageSegment.record(Path(x.path).as_uri())
+            count += 1
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         Logger.info(self.session.target)
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)

@@ -1,4 +1,9 @@
 import os
+from configparser import ConfigParser
+from os.path import abspath
+import traceback
+
+import requests
 
 confirm_command = ["是", "对", '确定', '是吧', '大概是',
                    '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
@@ -23,4 +28,47 @@ class PrivateAssets:
         PrivateAssets.path = path
 
 
-__all__ = ["confirm_command", "command_prefix", "EnableDirtyWordCheck", "PrivateAssets"]
+class Secret:
+    list = []
+
+    @staticmethod
+    def add(secret):
+        Secret.list.append(secret)
+
+
+class ErrorMessage:
+    def __init__(self, error_message):
+        self.error_message = '发生错误：' + error_message \
+                             + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
+
+    def __str__(self):
+        return self.error_message
+
+    def __repr__(self):
+        return self.error_message
+
+
+def load_secret():
+    config_filename = 'config.cfg'
+    config_path = abspath('./config/' + config_filename)
+    cp = ConfigParser()
+    cp.read(config_path)
+    section = cp.sections()[0]
+    options = cp.options(section)
+    for option in options:
+        value = cp.get(section, option)
+        if value != '':
+            Secret.add(value.upper())
+    try:
+        ip = requests.get('https://api.ip.sb/ip', timeout=10)
+        if ip:
+            Secret.add(ip.text.replace('\n', ''))
+    except:
+        traceback.print_exc()
+        pass
+
+
+load_secret()
+
+
+__all__ = ["confirm_command", "command_prefix", "EnableDirtyWordCheck", "PrivateAssets", "Secret", "ErrorMessage"]

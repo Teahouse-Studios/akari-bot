@@ -375,6 +375,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
     wait_msg_list = []
     wait_list = []
     web_render_list = []
+    dl_list = []
     for q in query_task:
         current_task = query_task[q]
         ready_for_query_pages = current_task['query']
@@ -415,15 +416,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if r.file is not None:
-                        dl = await download_to_cache(r.file)
-                        guess_type = filetype.guess(dl)
-                        if guess_type is not None:
-                            if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
-                                if msg.Feature.image:
-                                    msg_list.append(Image(dl))
-                            elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
-                                if msg.Feature.voice:
-                                    msg_list.append(Voice(dl))
+                        dl_list.append(r.file)
                     else:
                         if msg.Feature.image and r.link is not None:
                             web_render_list.append({r.link: r.info.realurl})
@@ -460,6 +453,17 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                     infobox_msg_list.append(Image(get_infobox))
         if infobox_msg_list:
             await msg.sendMessage(infobox_msg_list, quote=False)
+    if dl_list:
+        for f in dl_list:
+            dl = await download_to_cache(f)
+            guess_type = filetype.guess(dl)
+            if guess_type is not None:
+                if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
+                    if msg.Feature.image:
+                        await msg.sendMessage(Image(dl), quote=False)
+                elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
+                    if msg.Feature.voice:
+                        await msg.sendMessage(Voice(dl), quote=False)
     if wait_msg_list:
         confirm = await msg.waitConfirm(wait_msg_list)
         if confirm and wait_list:

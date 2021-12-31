@@ -44,7 +44,7 @@ class ModulesManager:
     modules: Dict[str, Union[Command, Option, Schedule, RegexCommand, StartUp]] = {}
 
     @staticmethod
-    def add_module(module: [Command, Option, Schedule, RegexCommand, StartUp]):
+    def add_module(module: Union[Command, Option, Schedule, RegexCommand, StartUp]):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
         else:

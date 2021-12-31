@@ -4,7 +4,8 @@ from PIL import Image
 
 from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, Voice, Embed
 from core.elements.others import confirm_command
-from core.secret_check import Secret
+from core.elements.message.chain import MessageChain
+from core.logger import Logger
 
 
 class Template(MessageSession):
@@ -15,33 +16,17 @@ class Template(MessageSession):
         delete = True
 
     async def sendMessage(self, msgchain, quote=True) -> MessageSession:
-        if Secret.find(msgchain):
-            return await self.sendMessage('https://wdf.ink/6Oup')
-        if isinstance(msgchain, (Plain, BImage, Voice)):
-            msgchain = [msgchain]
-        if isinstance(msgchain, Embed):
-            msgchain = msgchain.to_msgchain()
-        if isinstance(msgchain, str):
-            print(msgchain)
-            return MessageSession(target=self.target,
-                                  session=Session(message=msgchain, target='TEST|Console', sender='TEST|Console'))
-        if isinstance(msgchain, list):
-            msg_list = []
-            for x in msgchain:
-                if isinstance(x, Plain):
-                    print(x.text)
-                    msg_list.append(x.text)
-                if isinstance(x, BImage):
-                    img = Image.open(await x.get())
-                    img.show()
-                if isinstance(x, Embed):
-                    chains = x.to_msgchain()
-                    for y in chains:
-                        if isinstance(y, Plain):
-                            print(y.text)
-                        if isinstance(y, BImage):
-                            img = Image.open(await y.get())
-                            img.show()
+        Logger.info(msgchain)
+        msgchain = MessageChain(msgchain)
+        Logger.info(msgchain)
+        msg_list = []
+        for x in msgchain.asSendable(embed=False):
+            if isinstance(x, Plain):
+                print(x.text)
+                msg_list.append(x.text)
+            if isinstance(x, BImage):
+                img = Image.open(await x.get())
+                img.show()
             return MessageSession(target=self.target,
                                   session=Session(message=str(msg_list), target='TEST|Console', sender='TEST|Console'))
 

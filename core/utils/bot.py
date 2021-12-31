@@ -98,7 +98,7 @@ async def slk_converter(filepath: str) -> str:
     return filepath2
 
 
-async def load_prompt(bot: FetchTarget) -> None:
+async def load_prompt(bot) -> None:
     author_cache = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
     loader_cache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
     if os.path.exists(author_cache):

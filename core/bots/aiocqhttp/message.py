@@ -12,9 +12,8 @@ from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList
-from core.elements.message.internal import Embed
+from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
-from core.secret_check import Secret
 from core.logger import Logger
 from database import BotDBUtil
 
@@ -39,36 +38,18 @@ class MessageSession(MS):
         msg = MessageSegment.text('')
         if quote and self.target.targetFrom == 'QQ|Group':
             msg = MessageSegment.reply(self.session.message.message_id)
-        if Secret.find(msgchain):
+        msgchain = MessageChain(msgchain)
+        if not msgchain.is_safe:
             return await self.sendMessage('https://wdf.ink/6Oup')
-        if isinstance(msgchain, (Plain, Image, Voice)):
-            msgchain = [msgchain]
-        if isinstance(msgchain, Embed):
-            msgchain = msgchain.to_msgchain()
-        if isinstance(msgchain, str):
-            msg = msg + (MessageSegment.text(msgchain if msgchain != '' else
-                                             '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。'
-                                             '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'))
-        elif isinstance(msgchain, (list, tuple)):
-            count = 0
-            for x in msgchain:
-                if isinstance(x, Plain):
-                    msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
-                elif isinstance(x, Image):
-                    msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
-                elif isinstance(x, Voice):
-                    msg = msg + MessageSegment.record(Path(x.path).as_uri())
-                elif isinstance(x, Embed):
-                    chains = x.to_msgchain()
-                    for y in chains:
-                        if isinstance(y, Plain):
-                            msg = msg + MessageSegment.text(('\n' if count != 0 else '') + y.text)
-                        elif isinstance(y, Image):
-                            msg = msg + MessageSegment.image(Path(await y.get()).as_uri())
-                count += 1
-        else:
-            msg = msg + MessageSegment.text('发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。'
-                                            '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
+        count = 0
+        for x in msgchain.asSendable(embed=False):
+            if isinstance(x, Plain):
+                msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
+            elif isinstance(x, Image):
+                msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
+            elif isinstance(x, Voice):
+                msg = msg + MessageSegment.record(Path(x.path).as_uri())
+            count += 1
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         if self.target.targetFrom == 'QQ|Group':
             send = await bot.send_group_msg(group_id=self.session.target, message=msg)
