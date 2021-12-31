@@ -59,7 +59,7 @@ class MessageChain:
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
-                value.append(x.to_msgchain())
+                value += x.to_msgchain()
             else:
                 value.append(x)
         return value
