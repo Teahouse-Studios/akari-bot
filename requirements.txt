@@ -1,5 +1,4 @@
 pillow
-ffmpy
 aiohttp
 beautifulsoup4
 psutil
@@ -17,4 +16,3 @@ tenacity
 aiocqhttp
 tabulate
 feedparser
-requests
