@@ -1,5 +1,6 @@
 import json
 import re
+from core.elements.others import ErrorMessage
 
 from core.utils import get_url
 
@@ -31,7 +32,7 @@ async def mcbv():
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions'))
     except (ConnectionError, OSError):  # Probably...
-        return "发生错误：土豆熟了"
+        return ErrorMessage('土豆熟了')
     beta = []
     release = []
     for v in data:
@@ -50,7 +51,7 @@ async def mcdv():
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions'))
     except (ConnectionError, OSError):  # Probably...
-        return "发生错误：土豆熟了"
+        return ErrorMessage('土豆熟了')
     release = []
     for v in data:
         if not v['archived']:

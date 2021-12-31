@@ -4,6 +4,8 @@ import traceback
 import aiohttp
 import ujson as json
 
+from core.elements.others import ErrorMessage
+
 
 async def server(address, raw=False, showplayer=False, mode='j'):
     matchObj = re.match(r'(.*):(.*)', address, re.M | re.I)
@@ -75,8 +77,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                             servers.append(serip + ':' + port1)
                         except Exception:
                             traceback.print_exc()
-                            servers.append(
-                                "[JE]\n发生错误：调用API时发生错误。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+")
+                            servers.append(ErrorMessage("JE查询调用API时发生错误。"))
         except Exception:
             traceback.print_exc()
         if raw:

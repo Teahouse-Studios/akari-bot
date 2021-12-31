@@ -1,6 +1,7 @@
 import traceback
 
 from core.elements import MessageSession, Image, Plain
+from core.elements.others import ErrorMessage
 from core.utils.bot import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
@@ -64,6 +65,5 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         if result['message'] == 'Not Found':
             await msg.sendMessage('发生错误：查无此人，请检查拼写是否正确。')
         else:
-            await msg.sendMessage('发生错误：' + str(
-                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
+            await msg.sendMessage(ErrorMessage(str(e)))
             traceback.print_exc()

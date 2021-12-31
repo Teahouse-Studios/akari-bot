@@ -12,7 +12,7 @@ from graia.broadcast.interrupt.waiter import Waiter
 
 from config import Config
 from core.elements import Plain as BPlain, Image as BImage, Voice as BVoice, MessageSession as MS, MsgInfo, Session, \
-    FetchTarget as FT
+    FetchTarget as FT, ErrorMessage
 from core.elements.others import confirm_command
 from core.unused_bots.graia.broadcast import app, bcc
 from core.utils import slk_converter
@@ -23,7 +23,7 @@ from database.logging_message import LoggerMSG
 async def msgchain_gen(message) -> MessageChain:
     if isinstance(message, str):
         if message == '':
-            message = '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
+            message = ErrorMessage('机器人尝试发送空文本消息，请联系机器人开发者解决问题。')
         msgchain = MessageChain.create([Plain(message)])
     elif isinstance(message, (list, tuple)):
         msgchain_list = []
@@ -35,14 +35,12 @@ async def msgchain_gen(message) -> MessageChain:
             if isinstance(x, BVoice):
                 msgchain_list.append(Voice().fromLocalFile(filepath=await slk_converter(x.path)))
         if not msgchain_list:
-            msgchain_list.append(Plain(
-                '发生错误：机器人尝试发送空文本消息，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'))
+            msgchain_list.append(Plain(ErrorMessage('机器人尝试发送空文本消息，请联系机器人开发者解决问题。')))
         msgchain = MessageChain.create(msgchain_list)
     elif isinstance(message, MessageChain):
         msgchain = message
     else:
-        msgchain = MessageChain.create([Plain(
-            '发生错误：机器人尝试发送非法消息链，请联系机器人开发者解决问题。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')])
+        msgchain = MessageChain.create([Plain(ErrorMessage('机器人尝试发送非法消息链，请联系机器人开发者解决问题。'))])
     return msgchain
 
 

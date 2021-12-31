@@ -1,4 +1,5 @@
 import json
+from core.elements.others import ErrorMessage
 
 from core.utils import get_url
 
@@ -62,7 +63,7 @@ async def bugtracker_get(MojiraID):
                             print(fields['fixVersions'])
                             FixVersion = fields['fixVersions'][0]['name']
     else:
-        return '发生错误：获取Json失败。\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
+        return ErrorMessage('获取Json失败。')
     msglist = []
     if errmsg != '':
         msglist.append(errmsg)

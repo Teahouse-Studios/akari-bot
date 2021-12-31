@@ -24,8 +24,7 @@ async def main(msg: MessageSession):
             msg, f'{msg.parsed_msg["<ServerIP>:<Port>"]}', msg.parsed_msg['-r'], msg.parsed_msg['-p'], x, enabled_addon)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        msg_ = '发生错误：没有找到任何类型的Minecraft服务器。' \
-              '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
+        msg_ = '发生错误：没有找到任何类型的Minecraft服务器。'
         if msg.Feature.delete and not enabled_addon:
             msg_ += '[90秒后撤回消息]'
         send = await msg.sendMessage(msg_)

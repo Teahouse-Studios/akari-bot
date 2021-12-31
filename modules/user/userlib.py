@@ -3,6 +3,7 @@ import traceback
 import urllib.parse
 
 import aiohttp
+from core.elements.others import ErrorMessage
 
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.wikilib import wikilib as wiki
@@ -230,5 +231,4 @@ async def GetUser(wikiurl, username, argv=None):
             return '没有找到此用户。'
         else:
             traceback.print_exc()
-            return '发生错误：' + str(
-                e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'
+            return ErrorMessage(str(e))

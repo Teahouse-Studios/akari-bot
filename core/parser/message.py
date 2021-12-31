@@ -2,7 +2,7 @@ import re
 import traceback
 from datetime import datetime
 
-from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand
+from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
 from core.exceptions import AbuseWarning
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -131,8 +131,7 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                             continue
                     if not module.match_list.set:
-                        await msg.sendMessage(f'发生错误：{command_first_word}未绑定任何命令，请联系开发者处理。'
-                                              f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+。')
+                        await msg.sendMessage(ErrorMessage(f'{command_first_word}未绑定任何命令，请联系开发者处理。'))
                         continue
                     none_doc = True
                     for func in module.match_list.get(msg.target.targetFrom):
@@ -164,9 +163,7 @@ async def parser(msg: MessageSession):
                                 continue
                         except InvalidHelpDocTypeError:
                             traceback.print_exc()
-                            await msg.sendMessage(
-                                f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'
-                                f'\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
+                            await msg.sendMessage(ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
                             continue
                     else:
                         msg.parsed_msg = None
@@ -185,8 +182,7 @@ async def parser(msg: MessageSession):
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     ExecutionLockList.remove(msg)
-                    await msg.sendMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(
-                        e) + '\n错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+')
+                    await msg.sendMessage(ErrorMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e)))
                     continue
         ExecutionLockList.remove(msg)
 
