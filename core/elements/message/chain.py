@@ -2,12 +2,16 @@ from .internal import Plain, Image, Voice, Embed
 from core.elements.others import Secret, ErrorMessage
 from typing import Union, List, Tuple
 
+from ...logger import Logger
+
 
 class MessageChain:
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed]],
                                        Tuple[Union[Plain, Image, Voice, Embed]],
                                        Plain, Image, Voice, Embed]):
         self.value = []
+        if isinstance(elements, ErrorMessage):
+            elements = str(elements)
         if isinstance(elements, str):
             if elements != '':
                 self.value.append(Plain(elements))
@@ -18,7 +22,9 @@ class MessageChain:
             self.value.append(elements)
         elif isinstance(elements, (list, tuple)):
             for e in elements:
-                if isinstance(e, (Plain, Image, Voice, Embed)):
+                if isinstance(e, ErrorMessage):
+                    self.value.append(str(e))
+                elif isinstance(e, (Plain, Image, Voice, Embed)):
                     self.value.append(e)
                 else:
                     self.value.append(
@@ -26,6 +32,7 @@ class MessageChain:
         elif isinstance(elements, MessageChain):
             self.value = elements.value
         else:
+            Logger.error(f'Unexpected message type: {elements.__dict__}')
             self.value.append(
                 Plain(ErrorMessage('机器人尝试发送非法消息链，请联系机器人开发者解决问题。')))
 

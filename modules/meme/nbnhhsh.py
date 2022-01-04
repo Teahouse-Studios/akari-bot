@@ -1,3 +1,5 @@
+import traceback
+
 import ujson as json
 
 from core.utils import post_url
@@ -10,6 +12,7 @@ async def nbnhhsh(term: str):
     try:
         url = 'https://lab.magiconch.com/api/nbnhhsh/guess' + term
         text = await post_url(url, data={'text': term})
+        print(text)
         data = json.loads(text)['data']
         result = data[0]
         if 'trans' in result:
@@ -22,5 +25,6 @@ async def nbnhhsh(term: str):
             return f'[nbnhhsh]（{count}个结果，AI 猜测）：{"、".join(inputting)}'
         else:
             return '[nbnhhsh] 没有找到相关结果。'
-    except:
+    except Exception:
+        traceback.print_exc()
         return '[nbnhhsh] 查询出错。'
