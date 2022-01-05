@@ -128,6 +128,8 @@ class MessageSession(MS):
 
 
 class FetchTarget(FT):
+    name = 'QQ'
+
     @staticmethod
     async def fetch_target(targetId) -> Union[MessageSession, bool]:
         matchTarget = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', targetId)

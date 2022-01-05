@@ -62,10 +62,10 @@ def UTC8(str1, outtype):
             if mi != 0:
                 h = h - 24
         if outtype == 'onlytimenoutc':
-            return (str(h) + '时' + str(mi) + '分')
+            return str(h) + '时' + str(mi) + '分'
         elif outtype == 'onlytime':
-            return (str(h) + '时' + str(mi) + '分' + '（UTC+8）')
+            return str(h) + '时' + str(mi) + '分' + '（UTC+8）'
         elif outtype == 'full':
-            return (str(y) + '年' + str(m) + '月' + str(d) + '日' + str(h) + '时' + str(mi) + '分' + '（UTC+8）')
+            return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h) + ':' + str(mi) + '（UTC+8）'
         elif outtype == 'notimezone':
-            return (str(y) + '年' + str(m) + '月' + str(d) + '日' + str(h) + '时' + str(mi) + '分')
+            return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h) + ':' + str(mi)

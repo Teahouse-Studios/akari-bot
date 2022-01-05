@@ -117,6 +117,8 @@ class MessageSession(MS):
 
 
 class FetchTarget(FT):
+    name = 'Telegram'
+
     @staticmethod
     async def fetch_target(targetId) -> Union[MessageSession, bool]:
         matchChannel = re.match(r'^(Telegram\|.*?)\|(.*)', targetId)

@@ -169,7 +169,7 @@ class WikiLib:
                 api_match = m[0]
                 if api_match.startswith('//'):
                     api_match = self.url.split('//')[0] + api_match
-                Logger.info(api_match)
+                # Logger.info(api_match)
                 wiki_api_link = api_match
             except (TimeoutError, asyncio.TimeoutError):
                 return WikiStatus(available=False, value=False, message='错误：尝试建立连接超时。')

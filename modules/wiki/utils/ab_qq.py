@@ -36,8 +36,8 @@ async def ab_qq(wiki_url):
     for x in query["query"]["abuselog"]:
         t = []
         t.append(f"用户：{user_checked_map[x['user']]}")
-        t.append(f"过滤器名：{x['filter']}")
         t.append(f"页面标题：{title_checked_map[x['title']]}")
+        t.append(f"过滤器名：{x['filter']}")
         t.append(f"操作：{x['action']}")
         result = x['result']
         if result == '':

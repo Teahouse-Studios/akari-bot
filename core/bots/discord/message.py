@@ -137,6 +137,8 @@ class MessageSession(MS):
 
 
 class FetchTarget(FT):
+    name = 'Discord'
+
     @staticmethod
     async def fetch_target(targetId) -> Union[MessageSession, bool]:
         matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)

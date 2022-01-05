@@ -67,6 +67,8 @@ class Template(MessageSession):
 
 
 class FetchTarget(FT):
+    name = 'TEST'
+
     @staticmethod
     async def fetch_target(targetId):
         return Template(target=MsgInfo(targetId=targetId,

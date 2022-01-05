@@ -112,6 +112,8 @@ class MessageSession:
 
 
 class FetchTarget:
+    name = ''
+
     @staticmethod
     async def fetch_target(targetId) -> MessageSession:
         """
