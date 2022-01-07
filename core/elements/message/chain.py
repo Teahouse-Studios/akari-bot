@@ -1,3 +1,7 @@
+import base64
+import ujson as json
+import re
+
 from .internal import Plain, Image, Voice, Embed
 from core.elements.others import Secret, ErrorMessage
 from typing import Union, List, Tuple
@@ -13,18 +17,25 @@ class MessageChain:
             elements = str(elements)
         if isinstance(elements, str):
             if elements != '':
-                self.value.append(Plain(elements))
+                elements = Plain(elements)
             else:
-                self.value.append(
-                    Plain(ErrorMessage('机器人尝试发送空文本消息，请联系机器人开发者解决问题。')))
-        elif isinstance(elements, (Plain, Image, Voice, Embed)):
-            self.value.append(elements)
-        elif isinstance(elements, (list, tuple)):
+                elements = Plain(ErrorMessage('机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
+        if isinstance(elements, (Plain, Image, Voice, Embed)):
+            if isinstance(elements, Plain):
+                if elements.text != '':
+                    elements = match_kecode(elements.text)
+            else:
+                elements = [elements]
+        if isinstance(elements, (list, tuple)):
             for e in elements:
                 if isinstance(e, ErrorMessage):
                     self.value.append(str(e))
                 if isinstance(e, (Plain, Image, Voice, Embed)):
-                    self.value.append(e)
+                    if isinstance(e, Plain):
+                        if e.text != '':
+                            self.value += match_kecode(e.text)
+                    else:
+                        self.value.append(e)
                 else:
                     Logger.error(f'Unexpected message type: {elements.__dict__}')
                     self.value.append(
@@ -34,6 +45,8 @@ class MessageChain:
         else:
             self.value.append(
                 Plain(ErrorMessage('机器人尝试发送非法消息链，请联系机器人开发者解决问题。')))
+        if not self.value:
+            self.value.append(Plain(ErrorMessage('机器人尝试发送空消息链，请联系机器人开发者解决问题。')))
 
     @property
     def is_safe(self):
@@ -81,6 +94,58 @@ class MessageChain:
 
     def __repr__(self):
         return self.value
+
+
+def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
+    split_all = re.split(r'(\[Ke:.*?])', text)
+    for x in split_all:
+        if x == '':
+            split_all.remove('')
+    elements = []
+    for e in split_all:
+        match = re.match(r'\[Ke:(.*?),(.*)]', e)
+        if not match:
+            if e != '':
+                elements.append(Plain(e))
+        else:
+            element_type = match.group(1).lower()
+            args = re.split(r',|,.\s', match.group(2))
+            for x in args:
+                if x == '':
+                    args.remove('')
+            if element_type == 'plain':
+                for a in args:
+                    ma = re.match(r'(.*?)=(.*)', a)
+                    if ma:
+                        if ma.group(1) == 'text':
+                            elements.append(Plain(ma.group(2)))
+                        else:
+                            elements.append(Plain(a))
+                    else:
+                        elements.append(Plain(a))
+            elif element_type == 'image':
+                for a in args:
+                    ma = re.match(r'(.*?)=(.*)', a)
+                    if ma:
+                        img = None
+                        if ma.group(1) == 'path':
+                            img = Image(path=ma.group(2))
+                        if ma.group(1) == 'headers':
+                            img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
+                        elements.append(img)
+                    else:
+                        elements.append(Image(a))
+            elif element_type == 'voice':
+                for a in args:
+                    ma = re.match(r'(.*?)=(.*)', a)
+                    if ma:
+                        if ma.group(1) == 'path':
+                            elements.append(Voice(path=ma.group(2)))
+                        else:
+                            elements.append(Voice(a))
+                    else:
+                        elements.append(Voice(a))
+    return elements
 
 
 __all__ = ["MessageChain"]

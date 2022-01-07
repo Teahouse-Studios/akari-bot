@@ -13,8 +13,10 @@ from config import CachePath
 
 class Plain:
     def __init__(self,
-                 text):
-        self.text = text
+                 text, *texts):
+        self.text = str(text)
+        for t in texts:
+            self.text += str(t)
 
 
 class Image:
@@ -38,7 +40,7 @@ class Image:
     @retry(stop=stop_after_attempt(3))
     async def get_image(self):
         url = self.path
-        async with aiohttp.ClientSession as session:
+        async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 raw = await req.read()
                 ft = filetype.match(raw).extension

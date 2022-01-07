@@ -22,13 +22,13 @@ class Template(MessageSession):
         msg_list = []
         for x in msgchain.asSendable(embed=False):
             if isinstance(x, Plain):
-                print(x.text)
                 msg_list.append(x.text)
+                print(x.text)
             if isinstance(x, BImage):
                 img = Image.open(await x.get())
                 img.show()
-            return MessageSession(target=self.target,
-                                  session=Session(message=str(msg_list), target='TEST|Console', sender='TEST|Console'))
+        return MessageSession(target=self.target,
+                              session=Session(message=str(msg_list), target='TEST|Console', sender='TEST|Console'))
 
     async def waitConfirm(self, msgchain=None, quote=True):
         if msgchain is not None:
