@@ -34,7 +34,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
             for row in tbl.data:
                 cs = []
                 for c in row:
-                    cs.append(escape(re.sub(r'\n', '<br>', c))
+                    cs.append(escape(re.sub(r'\n', '<br>', c)))
                 d.append(cs)
             w = len(tbl.headers) * 500
             if w > max_width:
