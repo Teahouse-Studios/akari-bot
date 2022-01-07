@@ -51,7 +51,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
             if log:
                 Logger.info(await req.read())
             if status_code and req.status != status_code:
-                raise ValueError(req.status)
+                raise ValueError(f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
             if fmt is not None:
                 if hasattr(req, fmt):
                     return await getattr(req, fmt)()

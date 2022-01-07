@@ -13,6 +13,8 @@ async def get_info(usercode):
     headers = {"User-Agent": Config('arcapi_agent')}
     try:
         get_ = await get_url(api_url + "user/info?usercode=" + usercode + '&recent=1', headers=headers, fmt='json')
+    except ValueError as e:
+        return [Plain('查询失败：' + str(e))]
     except Exception:
         return [Plain('查询失败。')]
     print(get_)

@@ -132,7 +132,8 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                             img = Image(path=ma.group(2))
                         if ma.group(1) == 'headers':
                             img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
-                        elements.append(img)
+                        if img is not None:
+                            elements.append(img)
                     else:
                         elements.append(Image(a))
             elif element_type == 'voice':
