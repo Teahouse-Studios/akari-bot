@@ -2,10 +2,12 @@ import os
 import re
 import traceback
 import uuid
+from html import escape
 from typing import List, Union
 
 import aiohttp
 import ujson as json
+
 from tabulate import tabulate
 
 from config import Config
@@ -32,7 +34,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
             for row in tbl.data:
                 cs = []
                 for c in row:
-                    cs.append(re.sub(r'\n', '<br>', c))
+                    cs.append(escape(c))
                 d.append(cs)
             w = len(tbl.headers) * 500
             if w > max_width:
