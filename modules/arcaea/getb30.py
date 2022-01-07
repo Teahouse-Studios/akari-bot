@@ -20,7 +20,7 @@ async def getb30(usercode):
         url = Config("arcapi_url")
         async with session.get(url + "user/best30?usercode=" + usercode, headers=headers) as resp:
             if resp.status != 200:
-                return {'text': f'获取失败{str(resp.status)}[Ke:Image,path=https://http.cat/{str(resp.status)}.jpg]'}
+                return {'text': f'获取失败：{str(resp.status)}[Ke:Image,path=https://http.cat/{str(resp.status)}.jpg]'}
             a = await resp.text()
             print(a)
             loadjson = json.loads(a)
