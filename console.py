@@ -12,6 +12,8 @@ import asyncio
 import traceback
 import aioconsole
 
+from datetime import datetime
+
 from init import init_bot
 from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
 from core.console.template import Template as MessageSession, FetchTarget
@@ -40,6 +42,7 @@ async def console_scheduler():
 async def console_command():
     try:
         m = await aioconsole.ainput('> ')
+        time = datetime.now()
         await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
                                                    senderId='TEST|0',
                                                    senderName='',
@@ -47,6 +50,8 @@ async def console_command():
                                                    senderFrom='TEST|Console'),
                                     session=Session(message=m, target='TEST|0', sender='TEST|0')))
         print('----Process end----')
+        usage_time = datetime.now() - time
+        print('Usage time:', usage_time)
         await console_command()
     except KeyboardInterrupt:
         print('Exited.')
