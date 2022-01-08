@@ -9,6 +9,8 @@ from core.logger import Logger
 
 from ...logger import Logger
 
+from ...logger import Logger
+
 
 class MessageChain:
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed]],
