@@ -438,13 +438,14 @@ class WikiLib:
                     else:
                         page_info.before_title = title
                         t = page_info.title
-                        if before_page_info.args is not None:
-                            page_info.before_title += urllib.parse.unquote(before_page_info.args)
-                            t += urllib.parse.unquote(before_page_info.args)
-                            if page_info.link is not None:
-                                page_info.link += before_page_info.args
-                        if tried_iw == 0:
-                            page_info.title = page_info.interwiki_prefix + t
+                        if t is not None:
+                            if before_page_info.args is not None:
+                                page_info.before_title += urllib.parse.unquote(before_page_info.args)
+                                t += urllib.parse.unquote(before_page_info.args)
+                                if page_info.link is not None:
+                                    page_info.link += before_page_info.args
+                            if tried_iw == 0:
+                                page_info.title = page_info.interwiki_prefix + t
         if not self.wiki_info.in_allowlist:
             checklist = []
             if page_info.title is not None:

@@ -1,4 +1,5 @@
 import os
+import traceback
 
 from config import Config
 from core.elements import Plain, Image
@@ -16,6 +17,7 @@ async def get_info(usercode):
     except ValueError as e:
         return [Plain('查询失败：' + str(e))]
     except Exception:
+        traceback.print_exc()
         return [Plain('查询失败。')]
     print(get_)
     if get_["status"] == 0:
