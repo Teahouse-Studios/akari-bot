@@ -14,7 +14,7 @@ import aioconsole
 
 from init import init_bot
 from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
-from core.unit_test.template import Template as MessageSession, FetchTarget
+from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.loader import ModulesManager
@@ -25,7 +25,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
 
 
-async def unit_test_scheduler():
+async def console_scheduler():
     gather_list = []
     Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
@@ -37,7 +37,7 @@ async def unit_test_scheduler():
     Scheduler.start()
 
 
-async def unit_test_command():
+async def console_command():
     try:
         m = await aioconsole.ainput('> ')
         await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
@@ -47,7 +47,7 @@ async def unit_test_command():
                                                    senderFrom='TEST|Console'),
                                     session=Session(message=m, target='TEST|0', sender='TEST|0')))
         print('----Process end----')
-        await unit_test_command()
+        await console_command()
     except KeyboardInterrupt:
         print('Exited.')
         exit()
@@ -57,6 +57,6 @@ async def unit_test_command():
 
 init_bot()
 loop = asyncio.get_event_loop()
-loop.create_task(unit_test_scheduler())
-loop.create_task(unit_test_command())
+loop.create_task(console_scheduler())
+loop.create_task(console_command())
 loop.run_forever()

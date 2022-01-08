@@ -431,7 +431,7 @@ whoami = on_command('whoami', developers=['Dianliang233'], desc='获取发送命
 
 @whoami.handle()
 async def _(msg: MessageSession):
-    await msg.sendMessage(f'当前登录的账号是：{msg.target.senderFrom}')
+    await msg.sendMessage(f'你是：{msg.target.senderId}\n本对话是：{msg.target.targetId}')
 
 
 ab = on_command('abuse', alias=['ab'], developers=['Dianliang233'], required_superuser=True)

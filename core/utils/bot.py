@@ -17,7 +17,7 @@ from core.logger import Logger
 
 
 def init() -> None:
-    '''初始化机器人。仅用于bot.py与unit_test.py。'''
+    '''初始化机器人。仅用于bot.py与console.py。'''
     load_modules()
     version = os.path.abspath(PrivateAssets.path + '/version')
     write_version = open(version, 'w')
@@ -65,7 +65,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def download_to_cache(link: str) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
-    
+
     :param link: 需要获取的link。
     :returns: 文件的相对路径，若获取失败则返回False。'''
     try:
@@ -88,7 +88,7 @@ def cache_name():
 
 async def slk_converter(filepath: str) -> str:
     '''将指定文件转为slk格式。
-    
+
     :param filepath: 需要获取的link。
     :returns: 文件的相对路径。'''
     filepath2 = filepath + '.silk'
