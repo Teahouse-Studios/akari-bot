@@ -24,9 +24,12 @@ async def urban(term: str):
         else:
             count = data.__len__()
             word = data[0]['word']
-            defination = data[0]['definition']
+            definition = data[0]['definition']
             example = data[0]['example']
             link = data[0]['permalink']
-            return f'[Urban Dictionary]（{count}个结果）：\n{word}\n{defination}\nExample: {example}\n{link}'
+            def_length = definition.split(' ').__len__()
+            if def_length > 50:
+                definition = ' '.join(definition.split(' ')[0:50]) + '…'
+            return f'[Urban Dictionary]（{count}个结果）：\n{word}\n{definition}\nExample: {example}\n{link}'
     except:
         return '[Urban Dictionary] 查询出错。'
