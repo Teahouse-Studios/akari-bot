@@ -426,25 +426,32 @@ async def del_su(message: MessageSession):
             await message.sendMessage('操作成功：已将' + user + '移出超级用户。')
 
 
-whoami = on_command('whoami', developers=['Dianliang233'], desc='获取发送命令的账号在机器人内部的识别码', base=True)
+whoami = on_command('whoami', developers=['Dianliang233'], desc='获取发送命令的账号在机器人内部的 ID', base=True)
 
 
 @whoami.handle()
 async def _(msg: MessageSession):
-    await msg.sendMessage(f'你是：{msg.target.senderId}\n本对话是：{msg.target.targetId}')
+    rights = ''
+    if await msg.checkNativePermission():
+        rights += '\n（你拥有本对话的管理员权限）'
+    elif await msg.checkPermission():
+        rights += '\n（你拥有本对话的机器人管理员权限）'
+    if msg.checkSuperUser():
+        rights += '\n（你拥有本机器人的超级用户权限）'
+    await msg.sendMessage(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights)
 
 
-ab = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
+ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
 
 
-@ab.handle('check <user>')
+@ae.handle('check <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     warns = BotDBUtil.SenderInfo(user).query.warns
     await msg.sendMessage(f'{user} 已被警告 {warns} 次。')
 
 
-@ab.handle('warn <user> [<count>]')
+@ae.handle('warn <user> [<count>]')
 async def _(msg: MessageSession):
     count = int(msg.parsed_msg['<count>'] or 1)
     user = msg.parsed_msg['<user>']
@@ -452,7 +459,7 @@ async def _(msg: MessageSession):
     await msg.sendMessage(f'成功警告 {user} {count} 次。此用户已被警告 {warn_count} 次。')
 
 
-@ab.handle('revoke <user> [<count>]')
+@ae.handle('revoke <user> [<count>]')
 async def _(msg: MessageSession):
     count = 0 - int(msg.parsed_msg['<count>'] or -1)
     user = msg.parsed_msg['<user>']
@@ -460,27 +467,27 @@ async def _(msg: MessageSession):
     await msg.sendMessage(f'成功移除警告 {user} 的 {count} 次警告。此用户已被警告 {warn_count} 次。')
 
 
-@ab.handle('clear <user>')
+@ae.handle('clear <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     await pardon_user(user)
     await msg.sendMessage(f'成功清除 {user} 的警告。')
 
-@ab.handle('untempban <user>')
+@ae.handle('untempban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     remove_temp_ban(user)
     await msg.sendMessage(f'成功解除 {user} 的临时封禁。')
 
 
-@ab.handle('ban <user>')
+@ae.handle('ban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
         await msg.sendMessage(f'成功封禁 {user}。')
 
 
-@ab.handle('unban <user>')
+@ae.handle('unban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):

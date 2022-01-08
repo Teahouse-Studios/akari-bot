@@ -51,6 +51,10 @@ class Template(MessageSession):
         print("(Try to check your permissions, but this is a unit test environment. Have fun!)")
         return True
 
+    async def checkNativePermission(self):
+        print("(Try to check your native permissions, but this is a unit test environment. Have fun!)")
+        return True
+
     def checkSuperUser(self):
         print("(Try to check if you are superuser, but this is a unit test environment. Have fun!)")
         return True

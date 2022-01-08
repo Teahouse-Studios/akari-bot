@@ -73,6 +73,12 @@ class MessageSession:
         """
         ...
 
+    async def checkNativePermission(self):
+        """
+        用于检查消息发送者原本在聊天平台中是否具有管理员权限。
+        """
+        ...
+
     async def fake_forward_msg(self, nodelist):
         """
         用于发送假转发消息（QQ）。

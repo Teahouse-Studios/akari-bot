@@ -84,6 +84,15 @@ class MessageSession(MS):
                 return True
         return False
 
+    async def checkNativePermission(self):
+        match_guild = re.match(r'(.*)\|(.*)', self.session.target)
+        get_member_info = await bot.call_action('get_guild_members', guild_id=match_guild.group(1))
+        tiny_id = self.session.sender
+        for m in get_member_info['admins']:
+            if m['tiny_id'] == tiny_id:
+                return True
+        return False
+
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
 
