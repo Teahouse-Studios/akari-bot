@@ -13,13 +13,15 @@ meme = on_command(
     developers=['Dianliang233'])
 
 
-@meme.handle(help_doc='<term> {在小鸡词典、萌娘百科、nbnhhsh、Urban Dictionary 中查询梗}')
+@meme.handle(help_doc='<term> {在萌娘百科、nbnhhsh、Urban Dictionary 中查询梗}')
 async def _(msg: MessageSession):
-    res_jiki = await jiki(msg.parsed_msg['<term>'])
+    # jiki is not going to be supported as least for a while due to the strict anti-bot config.
+    # res_jiki = await jiki(msg.parsed_msg['<term>'])
     res_moegirl = await moegirl(msg.parsed_msg['<term>'])
     res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'])
     res_urban = await urban(msg.parsed_msg['<term>'])
-    chk = await check(res_jiki, res_moegirl, res_nbnhhsh, res_urban)
+    # chk = await check(res_jiki, res_moegirl, res_nbnhhsh, res_urban)
+    chk = await check(res_moegirl, res_nbnhhsh, res_urban)
     res = ''
     for i in chk:
         if not i['status']:
