@@ -19,7 +19,7 @@ from .utils.ab_qq import ab_qq
 from .utils.newbie import newbie
 from .utils.rc import rc
 from .utils.rc_qq import rc_qq
-from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError
+from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
@@ -261,8 +261,7 @@ async def _(msg: MessageSession):
             await msg.sendMessage(send_msgs)
             legacy = False
     if legacy:
-        wikis = []
-        wikis.append('现有白名单：')
+        wikis = ['现有白名单：']
         for al in allow_list:
             wikis.append(f'{al[0]}（by {al[1]}）')
         wikis.append('现有黑名单：')
@@ -311,17 +310,27 @@ async def _(msg: MessageSession):
         await query_pages(msg, query_list, mediawiki=True)
 
 
-async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
-                      template=False, mediawiki=False, useprefix=True):
-    target = WikiTargetInfo(msg)
-    start_wiki = target.get_start_wiki()
-    interwiki_list = target.get_interwikis()
-    headers = target.get_headers()
-    prefix = target.get_prefix()
-    enabled_fandom_addon = BotDBUtil.Module(msg).check_target_enabled_module('wiki_fandom_addon')
+async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple],
+                      template=False, mediawiki=False, use_prefix=True):
+    if isinstance(session, MessageSession):
+        target = WikiTargetInfo(session)
+        start_wiki = target.get_start_wiki()
+        interwiki_list = target.get_interwikis()
+        headers = target.get_headers()
+        prefix = target.get_prefix()
+        enabled_fandom_addon = BotDBUtil.Module(session).check_target_enabled_module('wiki_fandom_addon')
+    elif isinstance(session, QueryInfo):
+        start_wiki = session.api
+        interwiki_list = []
+        headers = session.headers
+        prefix = session.prefix
+        enabled_fandom_addon = False
+    else:
+        raise TypeError('session must be MessageSession or QueryInfo.')
+
     if start_wiki is None:
-        await msg.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
-                              '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/')
+        await session.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
+                                  '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/')
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if isinstance(title, str):
         title = [title]
@@ -329,7 +338,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
         raise AbuseWarning('一次性查询的页面超出15个。')
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
     for t in title:
-        if prefix is not None and useprefix:
+        if prefix is not None and use_prefix:
             t = prefix + t
         if t[0] == ':':
             if len(t) > 1:
@@ -418,7 +427,7 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
                     if r.file is not None:
                         dl_list.append(r.file)
                     else:
-                        if msg.Feature.image and r.link is not None:
+                        if r.link is not None:
                             web_render_list.append({r.link: r.info.realurl})
                 else:
                     plain_slice = []
@@ -441,33 +450,37 @@ async def query_pages(msg: MessageSession, title: Union[str, list, tuple],
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except InvalidWikiError as e:
-            await msg.sendMessage(f'发生错误：' + str(e))
-    if msg_list:
-        await msg.sendMessage(msg_list)
-    if web_render_list and msg.Feature.image:
-        infobox_msg_list = []
-        for i in web_render_list:
-            for ii in i:
-                get_infobox = await get_infobox_pic(i[ii], ii, headers)
-                if get_infobox:
-                    infobox_msg_list.append(Image(get_infobox))
-        if infobox_msg_list:
-            await msg.sendMessage(infobox_msg_list, quote=False)
-    if dl_list:
-        for f in dl_list:
-            dl = await download_to_cache(f)
-            guess_type = filetype.guess(dl)
-            if guess_type is not None:
-                if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
-                    if msg.Feature.image:
-                        await msg.sendMessage(Image(dl), quote=False)
-                elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
-                    if msg.Feature.voice:
-                        await msg.sendMessage(Voice(dl), quote=False)
-    if wait_msg_list:
-        confirm = await msg.waitConfirm(wait_msg_list)
-        if confirm and wait_list:
-            await query_pages(msg, wait_list, useprefix=False)
+            await session.sendMessage(f'发生错误：' + str(e))
+    if isinstance(session, MessageSession):
+        if msg_list:
+            await session.sendMessage(msg_list)
+        if web_render_list and session.Feature.image:
+            infobox_msg_list = []
+            for i in web_render_list:
+                for ii in i:
+                    get_infobox = await get_infobox_pic(i[ii], ii, headers)
+                    if get_infobox:
+                        infobox_msg_list.append(Image(get_infobox))
+            if infobox_msg_list:
+                await session.sendMessage(infobox_msg_list, quote=False)
+        if dl_list:
+            for f in dl_list:
+                dl = await download_to_cache(f)
+                guess_type = filetype.guess(dl)
+                if guess_type is not None:
+                    if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
+                        if session.Feature.image:
+                            await session.sendMessage(Image(dl), quote=False)
+                    elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
+                        if session.Feature.voice:
+                            await session.sendMessage(Voice(dl), quote=False)
+        if wait_msg_list:
+            confirm = await session.waitConfirm(wait_msg_list)
+            if confirm and wait_list:
+                await query_pages(session, wait_list, use_prefix=False)
+    else:
+        return {'msg_list': msg_list, 'web_render_list': web_render_list, 'dl_list': dl_list,
+                'wait_list': wait_list, 'wait_msg_list': wait_msg_list}
 
 
 rc_ = on_command('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])

@@ -7,6 +7,10 @@ from core.elements.others import Secret, ErrorMessage
 from typing import Union, List, Tuple
 from core.logger import Logger
 
+from ...logger import Logger
+
+from ...logger import Logger
+
 
 class MessageChain:
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed]],
@@ -43,6 +47,7 @@ class MessageChain:
         elif isinstance(elements, MessageChain):
             self.value = elements.value
         else:
+            Logger.error(f'Unexpected message type: {elements.__dict__}')
             self.value.append(
                 Plain(ErrorMessage('机器人尝试发送非法消息链，请联系机器人开发者解决问题。')))
         if not self.value:

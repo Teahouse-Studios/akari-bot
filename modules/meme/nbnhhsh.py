@@ -2,23 +2,10 @@ import traceback
 
 import ujson as json
 
-from core.elements import MessageSession
-from core.component import on_command
 from core.utils import post_url
-
-n = on_command(
-    bind_prefix='nbnhhsh',
-    desc='能不能好好说话？拼音首字母缩写释义工具',
-    developers=['Dianliang233'],)
-
-
-@n.handle('<term>')
-async def _(msg: MessageSession):
-    await msg.sendMessage(await nbnhhsh(msg.parsed_msg['<term>']))
 
 async def nbnhhsh(term: str):
     '''查询nbnhhsh。
-
     :param term: 需要查询的term。
     :returns: 查询结果。'''
     try:
