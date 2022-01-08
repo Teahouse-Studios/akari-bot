@@ -404,27 +404,24 @@ async def config_gu(msg: MessageSession):
                 await msg.sendMessage("成功")
 
 
-asu = on_command('add_su', developers=['OasisAkari'], required_superuser=True)
+su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
 
-@asu.handle('<user>')
+@su.handle('add <user>')
 async def add_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     print(message.parsed_msg)
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.sendMessage('成功')
+            await message.sendMessage('操作成功：已将' + user + '设置为超级用户。')
 
 
-dsu = on_command('del_su', developers=['OasisAkari'], required_superuser=True)
-
-
-@dsu.handle('<user>')
+@su.handle('del <user>')
 async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.sendMessage('成功')
+            await message.sendMessage('操作成功：已将' + user + '移出超级用户。')
 
 
 """
@@ -478,7 +475,7 @@ async def update_and_restart_bot(msg: MessageSession):
         await msg.sendMessage(result.read()[:-1])
         python = sys.executable
         os.execl(python, python, *sys.argv)
-        
+
 """
 
 
