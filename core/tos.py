@@ -20,8 +20,10 @@ async def warn_target(msg: MessageSession, reason=None):
         return
     await msg.sendMessage('\n'.join(warn_template))
 
+
 async def pardon_user(user: str):
     BotDBUtil.SenderInfo(user).edit('warns', 0)
+
 
 async def warn_user(user: str, count=1):
     current_warns = int(BotDBUtil.SenderInfo(user).query.warns) + count

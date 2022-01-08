@@ -52,9 +52,9 @@ class MessageSession(MS):
         forward = False
         delete = True
 
-    async def sendMessage(self, msgchain, quote=True):
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
         msgchain = MessageChain(msgchain)
-        if not msgchain.is_safe:
+        if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
         count = 0
         send = []
