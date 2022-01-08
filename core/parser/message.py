@@ -20,6 +20,10 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 
 temp_ban_counter = {}  # 临时封禁计数
 
+async def remove_temp_ban(msg: MessageSession):
+    is_temp_banned = temp_ban_counter.get(msg.target.senderId)
+    if is_temp_banned is not None:
+        del temp_ban_counter[msg.target.senderId]
 
 async def msg_counter(msg: MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
@@ -60,7 +64,7 @@ async def parser(msg: MessageSession):
     msg.trigger_msg = display
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
-    if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList or len(display) == 0:
+    if len(display) == 0:
         return
     if display[0] in command_prefix:  # 检查消息前缀
         if len(display) <= 1 or (display[0] == '~' and display[1] == '~'):
@@ -88,6 +92,8 @@ async def parser(msg: MessageSession):
                 del command_spilt[0]
                 command_first_word = command_spilt[0].lower()
                 msg.trigger_msg = ' '.join(command_spilt)
+            if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo: # 如果是以 sudo 执行的命令，则不检查是否已 ban
+                return
             if command_first_word in ModulesAliases:
                 command_spilt[0] = ModulesAliases[command_first_word]
                 command = ' '.join(command_spilt)

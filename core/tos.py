@@ -1,4 +1,5 @@
 from core.elements import MessageSession
+from database import BotDBUtil
 
 
 async def warn_target(msg: MessageSession, reason=None):
@@ -18,3 +19,13 @@ async def warn_target(msg: MessageSession, reason=None):
         msg.target.senderInfo.edit('isInBlockList', True)
         return
     await msg.sendMessage('\n'.join(warn_template))
+
+async def pardon_user(user: str):
+    BotDBUtil.SenderInfo(user).edit('warns', 0)
+
+async def warn_user(user: str, count=1):
+    current_warns = int(BotDBUtil.SenderInfo(user).query.warns) + count
+    BotDBUtil.SenderInfo(user).edit('warns', current_warns)
+    if current_warns > 5:
+        BotDBUtil.SenderInfo(user).edit('isInBlockList', True)
+    return current_warns
