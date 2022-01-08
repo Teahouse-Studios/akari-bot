@@ -1,3 +1,4 @@
+import traceback
 import ujson as json
 
 from config import Config
@@ -28,12 +29,14 @@ async def urban(term: str):
             example = limit_length(data[0]['example'])
             link = data[0]['permalink']
             return f'[Urban Dictionary]（{count}个结果）：\n{word}\n{definition}\nExample: {example}\n{link}'
-    except:
+    except Exception:
+        traceback.print_exc()
         return '[Urban Dictionary] 查询出错。'
 
 
 def limit_length(text, limit=50):
-    length = text.split(' ').__len__()
+    new = text
+    length = new.split(' ').__len__()
     if length > limit:
-        text = ' '.join(length.split(' ')[0:limit]) + '…'
-    return text
+        new = ' '.join(new.split(' ')[0:limit]) + '…'
+    return new
