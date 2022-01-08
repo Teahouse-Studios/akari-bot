@@ -434,7 +434,7 @@ async def _(msg: MessageSession):
     await msg.sendMessage(f'你是：{msg.target.senderId}\n本对话是：{msg.target.targetId}')
 
 
-ab = on_command('abuse', alias=['ab'], developers=['Dianliang233'], required_superuser=True)
+ab = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
 
 
 @ab.handle('check <user>')
