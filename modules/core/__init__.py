@@ -1,17 +1,15 @@
 import os
-import sys
 import time
 import traceback
 
 import psutil
-import ujson as json
-from core.parser.message import remove_temp_ban
 
-from core.tos import pardon_user, warn_target, warn_user
 from core.component import on_command
 from core.elements import MessageSession, Command, PrivateAssets, Image, Plain
 from core.loader import ModulesManager
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
+from core.parser.message import remove_temp_ban
+from core.tos import pardon_user, warn_user
 from core.utils.image_table import ImageTable, image_table_render, web_render
 from database import BotDBUtil
 
@@ -438,7 +436,7 @@ async def _(msg: MessageSession):
         rights += '\n（你拥有本对话的机器人管理员权限）'
     if msg.checkSuperUser():
         rights += '\n（你拥有本机器人的超级用户权限）'
-    await msg.sendMessage(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights)
+    await msg.sendMessage(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights, disable_secret_check=True)
 
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
@@ -473,10 +471,11 @@ async def _(msg: MessageSession):
     await pardon_user(user)
     await msg.sendMessage(f'成功清除 {user} 的警告。')
 
+
 @ae.handle('untempban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
-    remove_temp_ban(user)
+    await remove_temp_ban(user)
     await msg.sendMessage(f'成功解除 {user} 的临时封禁。')
 
 

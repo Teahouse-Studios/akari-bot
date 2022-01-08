@@ -37,11 +37,12 @@ class MessageSession:
         self.target = target
         self.session = session
 
-    async def sendMessage(self, msgchain, quote=True):
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
         """
         用于向消息发送者回复消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param quote: 是否引用传入dict中的消息（默认为True）
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
         """
         ...

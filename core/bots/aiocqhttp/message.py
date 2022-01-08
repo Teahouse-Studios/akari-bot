@@ -34,12 +34,12 @@ class MessageSession(MS):
         forward = True
         delete = True
 
-    async def sendMessage(self, msgchain, quote=True):
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
         msg = MessageSegment.text('')
         if quote and self.target.targetFrom == 'QQ|Group':
             msg = MessageSegment.reply(self.session.message.message_id)
         msgchain = MessageChain(msgchain)
-        if not msgchain.is_safe:
+        if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
         count = 0
         for x in msgchain.asSendable(embed=False):
