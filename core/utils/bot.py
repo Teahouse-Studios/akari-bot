@@ -65,13 +65,12 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def post_url(url: str, data: any, headers: dict = None):
     '''发送POST请求。
-
     :param url: 需要发送的url。
     :param data: 需要发送的数据。
     :param headers: 请求时使用的http头。
     :returns: 发送请求后的响应。'''
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.post(url, data=data) as req:
+        async with session.post(url, data=data, headers=headers) as req:
             return await req.text()
 
 
