@@ -1,3 +1,5 @@
+import traceback
+
 import ujson as json
 
 from core.utils.bot import post_url
@@ -10,6 +12,7 @@ async def jiki(term: str):
     try:
         url = 'https://api.jikipedia.com/go/search_entities' + term
         text = await post_url(url, data={'page': 1, 'phrase': term, 'size': 1})
+        print(text)
         data = json.loads(text)
         count = data['total']
         result = data['data'][0]['definitions']
@@ -17,5 +20,6 @@ async def jiki(term: str):
         content = result['plaintext']
         link = 'https://jikipedia.com/definition/' + result['id']
         return f'[小鸡百科]（{count}个结果）：{title}\n{content}\n{link}'
-    except:
+    except Exception:
+        traceback.print_exc()
         return '[小鸡百科] 查询出错。'

@@ -34,6 +34,13 @@ class WhatAreUDoingError(Exception):
     pass
 
 
+class QueryInfo:
+    def __init__(self, api, headers=None, prefix=None):
+        self.api = api
+        self.headers = headers if headers is not None else {'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
+        self.prefix = prefix
+
+
 class WikiInfo:
     def __init__(self,
                  api: str,
