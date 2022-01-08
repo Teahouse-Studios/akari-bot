@@ -85,6 +85,9 @@ async def parser(msg: MessageSession):
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_spilt[0].lower()
             sudo = False
+            mute = False
+            if command_first_word == 'mute':
+                mute = True
             if command_first_word == 'sudo':
                 if not msg.checkSuperUser():
                     return await msg.sendMessage('你不是本机器人的超级管理员，无法使用sudo命令。')
@@ -93,6 +96,11 @@ async def parser(msg: MessageSession):
                 command_first_word = command_spilt[0].lower()
                 msg.trigger_msg = ' '.join(command_spilt)
             if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo: # 如果是以 sudo 执行的命令，则不检查是否已 ban
+                ExecutionLockList.remove(msg)
+                return
+            in_mute = BotDBUtil.Muting(msg).check()
+            if in_mute and not mute:
+                ExecutionLockList.remove(msg)
                 return
             if command_first_word in ModulesAliases:
                 command_spilt[0] = ModulesAliases[command_first_word]
@@ -133,7 +141,10 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
                             continue
                     elif module.required_admin:
-                        if not await msg.checkPermission():
+                        if not await msg.checkPermission() and not mute:
+                            if in_mute:
+                                ExecutionLockList.remove(msg)
+                                continue
                             await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                             continue
                     if not module.match_list.set:

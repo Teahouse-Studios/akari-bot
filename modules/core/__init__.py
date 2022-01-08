@@ -577,3 +577,16 @@ async def _(msg: MessageSession):
     else:
         target.edit('disable_typing', False)
         await msg.sendMessage('成功打开输入提示。')
+
+
+mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True)
+
+
+@mute.handle()
+async def _(msg: MessageSession):
+    if BotDBUtil.Muting(msg).check():
+        BotDBUtil.Muting(msg).remove()
+        await msg.sendMessage('成功取消禁言。')
+    else:
+        BotDBUtil.Muting(msg).add()
+        await msg.sendMessage('成功禁言。')

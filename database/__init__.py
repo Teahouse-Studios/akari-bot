@@ -6,7 +6,7 @@ from config import Config
 from core.elements.message import MessageSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
-from database.tables import EnabledModules, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList
+from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList
 
 cache = Config('db_cache')
 
@@ -224,6 +224,35 @@ class BotDBUtil:
         if query is not None:
             return True
         return False
+
+
+    class Muting:
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def __init__(self, msg: MessageSession):
+            self.msg = msg
+            self.targetId = msg.target.targetId
+            self.query = session.query(MuteList).filter_by(targetId=self.targetId).first()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def check(self):
+            if self.query is not None:
+                return True
+            return False
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add(self):
+            session.add(MuteList(targetId=self.targetId))
+            session.commit()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def remove(self):
+            if self.query is not None:
+                session.delete(self.query)
+                session.commit()
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]
