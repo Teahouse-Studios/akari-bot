@@ -84,6 +84,14 @@ class MessageSession(MS):
             return True
         return False
 
+    async def checkNativePermission(self):
+        if self.session.message.chat.type == 'private':
+            return True
+        admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
+        if self.session.sender in admins:
+            return True
+        return False
+
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
 

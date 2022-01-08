@@ -88,6 +88,15 @@ class MessageSession(MS):
             return True
         return False
 
+    async def checkNativePermission(self):
+        if self.target.targetFrom == 'QQ':
+            return True
+        get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
+                                                user_id=self.session.sender)
+        if get_member_info['role'] in ['owner', 'admin']:
+            return True
+        return False
+
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
 
