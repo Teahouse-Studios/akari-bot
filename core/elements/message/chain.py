@@ -1,4 +1,6 @@
 import base64
+from urllib.parse import urlparse
+
 import ujson as json
 import re
 
@@ -101,6 +103,9 @@ class MessageChain:
         return self.value
 
 
+site_whitelist = ['http.cat']
+
+
 def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
     split_all = re.split(r'(\[Ke:.*?])', text)
     for x in split_all:
@@ -134,7 +139,9 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                     if ma:
                         img = None
                         if ma.group(1) == 'path':
-                            img = Image(path=ma.group(2))
+                            parse_url = urlparse(ma.group(2))
+                            if parse_url[0] == 'file' or parse_url[1] in site_whitelist:
+                                img = Image(path=ma.group(2))
                         if ma.group(1) == 'headers':
                             img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
                         if img is not None:
@@ -146,7 +153,9 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                     ma = re.match(r'(.*?)=(.*)', a)
                     if ma:
                         if ma.group(1) == 'path':
-                            elements.append(Voice(path=ma.group(2)))
+                            parse_url = urlparse(ma.group(2))
+                            if parse_url[0] == 'file' or parse_url[1] in site_whitelist:
+                                elements.append(Voice(path=ma.group(2)))
                         else:
                             elements.append(Voice(a))
                     else:
