@@ -16,4 +16,6 @@ biliuser = on_command(
 
 @biliuser.handle(['<Bili_UID> - 获取哔哩哔哩用户信息（使用UID）。'])
 async def main(uid: MessageSession):
-    await biliuser(uid)
+    await biliuser.send(biliuser(uid))
+    await biliuser.sleep(90)
+    await biliuser.delete()
