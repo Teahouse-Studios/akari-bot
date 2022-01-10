@@ -7,11 +7,15 @@ from typing import List, Union
 import discord
 
 from core.bots.discord.client import client
+from core.bots.discord.smms import SMMS
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList
 from core.elements.message.chain import MessageChain
 from core.elements.message.internal import Embed
 from core.elements.others import confirm_command
 from database import BotDBUtil
+
+
+smms = SMMS()
 
 
 def convert2lst(s) -> list:
@@ -31,10 +35,14 @@ async def convert_embed(embed: Embed) -> discord.Embed:
                                url=embed.url if embed.url is not None else discord.Embed.Empty,
                                timestamp=datetime.datetime.fromtimestamp(
                                    embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty, )
-        """        if embed.image is not None:
-            embeds.set_image(url=Path(await embed.image.get()).as_uri())
+        if embed.image is not None and smms.status:
+            upload = await smms.upload(await embed.image.get())
+            if upload:
+                embeds.set_image(url=upload)
         if embed.thumbnail is not None:
-            embeds.set_thumbnail(url=Path(await embed.thumbnail.get()).as_uri())"""
+            upload = await smms.upload(await embed.thumbnail.get())
+            if upload:
+                embeds.set_thumbnail(url=upload)
         if embed.author is not None:
             embeds.set_author(name=embed.author)
         if embed.footer is not None:

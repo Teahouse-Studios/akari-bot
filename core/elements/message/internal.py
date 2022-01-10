@@ -73,8 +73,8 @@ class Embed:
                  url: str = None,
                  timestamp: float = None,
                  color: int = None,
-                 # image: Image = None,
-                 # thumbnail: Image = None,
+                 image: Image = None,
+                 thumbnail: Image = None,
                  author: str = None,
                  footer: str = None,
                  fields: List[EmbedField] = None):
@@ -83,8 +83,8 @@ class Embed:
         self.url = url
         self.timestamp = timestamp
         self.color = color
-        # self.image = image
-        # self.thumbnail = thumbnail
+        self.image = image
+        self.thumbnail = thumbnail
         self.author = author
         self.footer = footer
         self.fields = fields
@@ -110,8 +110,8 @@ class Embed:
         msgchain = []
         if text_lst:
             msgchain.append(Plain('\n'.join(text_lst)))
-        # if self.image is not None:
-        #    msgchain.append(self.image)
+        if self.image is not None:
+            msgchain.append(self.image)
         return msgchain
 
 
