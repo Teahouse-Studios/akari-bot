@@ -37,8 +37,7 @@ async def bilibili_user_infomation_getter(uid: str):
     result = json.dumps(final_json)
     return result
 
-async def handle_uid(bot: Bot, event: Event, state: T_State):
-    uid = state['uid']
+async def handle_uid(uid):
     final_information = await final(uid)
     information = json.loads(await bilibili_user_infomation_getter(uid))
     if str(information["name"]) == "null":
