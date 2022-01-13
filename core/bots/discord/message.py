@@ -7,15 +7,11 @@ from typing import List, Union
 import discord
 
 from core.bots.discord.client import client
-from core.bots.discord.smms import SMMS
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList
 from core.elements.message.chain import MessageChain
 from core.elements.message.internal import Embed
 from core.elements.others import confirm_command
 from database import BotDBUtil
-
-
-smms = SMMS()
 
 
 def convert2lst(s) -> list:
@@ -27,8 +23,9 @@ def convert2lst(s) -> list:
         return list(s)
 
 
-async def convert_embed(embed: Embed) -> discord.Embed:
+async def convert_embed(embed: Embed):
     if isinstance(embed, Embed):
+        files = []
         embeds = discord.Embed(title=embed.title if embed.title is not None else discord.Embed.Empty,
                                description=embed.description if embed.description is not None else discord.Embed.Empty,
                                color=embed.color if embed.color is not None else discord.Embed.Empty,
@@ -36,13 +33,13 @@ async def convert_embed(embed: Embed) -> discord.Embed:
                                timestamp=datetime.datetime.fromtimestamp(
                                    embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty, )
         if embed.image is not None and smms.status:
-            upload = await smms.upload(await embed.image.get())
-            if upload:
-                embeds.set_image(url=upload)
+            upload = discord.File(await embed.image.get(), filename="image.png")
+            files.append(upload)
+            embeds.set_image(url="attachment://image.png")
         if embed.thumbnail is not None:
-            upload = await smms.upload(await embed.thumbnail.get())
-            if upload:
-                embeds.set_thumbnail(url=upload)
+            upload = discord.File(await embed.thumbnail.get(), filename="thumbnail.png")
+            files.append(upload)
+            embeds.set_thumbnail(url="attachment://thumbnail.png")
         if embed.author is not None:
             embeds.set_author(name=embed.author)
         if embed.footer is not None:
@@ -50,7 +47,7 @@ async def convert_embed(embed: Embed) -> discord.Embed:
         if embed.fields is not None:
             for field in embed.fields:
                 embeds.add_field(name=field.name, value=field.value, inline=field.inline)
-        return embeds
+        return embeds, files
 
 
 class MessageSession(MS):
@@ -76,9 +73,11 @@ class MessageSession(MS):
                                                        reference=self.session.message if quote and count == 0
                                                                                          and self.session.message else None)
             elif isinstance(x, Embed):
-                send_ = await self.session.target.send(embed=await convert_embed(x),
+                embeds, files = await convert_embed(x)
+                send_ = await self.session.target.send(embed=embeds,
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None)
+                                                                                         and self.session.message else None,
+                                                       files=files)
             else:
                 send_ = False
             if send_:
