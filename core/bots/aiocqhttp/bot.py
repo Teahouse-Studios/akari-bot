@@ -36,6 +36,10 @@ async def startup():
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     bot.logger.setLevel(logging.WARNING)
+
+
+@bot.on_websocket_connection
+async def _(event: Event):
     await load_prompt(FetchTarget)
 
 

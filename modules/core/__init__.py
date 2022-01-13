@@ -1,8 +1,11 @@
 import os
+import sys
 import time
 import traceback
 
 import psutil
+
+import ujson as json
 
 from core.component import on_command
 from core.elements import MessageSession, Command, PrivateAssets, Image, Plain
@@ -497,9 +500,20 @@ async def _(msg: MessageSession):
 @on_command('set_modules', required_superuser=True, help_doc='set_modules <>')
 async def set_modules(display_msg: dict):
     ...
-
+"""
 
 rst = on_command('restart', developers=['OasisAkari'], required_superuser=True)
+
+
+def restart():
+    sys.exit(512)
+
+
+def write_version_cache(msg: MessageSession):
+    update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
+    write_version = open(update, 'w')
+    write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
+    write_version.close()
 
 
 @rst.handle()
@@ -507,16 +521,16 @@ async def restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
-        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
-        write_version = open(update, 'w')
-        write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
-        write_version.close()
+        write_version_cache(msg)
         await msg.sendMessage('已执行。')
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
+        restart()
 
 
 upd = on_command('update', developers=['OasisAkari'], required_superuser=True)
+
+
+def pull_repo():
+    return os.popen('git pull', 'r').read()[:-1]
 
 
 @upd.handle()
@@ -524,8 +538,7 @@ async def update_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
-        result = os.popen('git pull', 'r')
-        await msg.sendMessage(result.read()[:-1])
+        await msg.sendMessage(pull_repo())
 
 
 upds = on_command('update&restart', developers=['OasisAkari'], required_superuser=True)
@@ -536,16 +549,9 @@ async def update_and_restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
-        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
-        write_version = open(update, 'w')
-        write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
-        write_version.close()
-        result = os.popen('git pull', 'r')
-        await msg.sendMessage(result.read()[:-1])
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
-
-"""
+        write_version_cache(msg)
+        await msg.sendMessage(pull_repo())
+        restart()
 
 
 echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)

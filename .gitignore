@@ -18,6 +18,7 @@ assets/maimai*
 core/bots/**/assets
 core/unused_bots/**/assets
 .version*
+.pid_last
 .cache_loader
 assets/arc**
 assets/version*
