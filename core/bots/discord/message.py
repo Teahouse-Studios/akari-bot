@@ -32,7 +32,7 @@ async def convert_embed(embed: Embed):
                                url=embed.url if embed.url is not None else discord.Embed.Empty,
                                timestamp=datetime.datetime.fromtimestamp(
                                    embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty, )
-        if embed.image is not None and smms.status:
+        if embed.image is not None:
             upload = discord.File(await embed.image.get(), filename="image.png")
             files.append(upload)
             embeds.set_image(url="attachment://image.png")
