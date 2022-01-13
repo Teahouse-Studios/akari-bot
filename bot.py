@@ -47,7 +47,7 @@ def run_bot():
                 if int(pid) in running_pids:
                     try:
                         os.kill(int(pid), 9)
-                    except PermissionError:
+                    except (PermissionError, ProcessLookupError):
                         pass
         os.remove(pid_cache)
 
@@ -108,7 +108,7 @@ try:
             for x in pidlst:
                 try:
                     os.kill(x, 9)
-                except PermissionError:
+                except (PermissionError, ProcessLookupError):
                     pass
             pidlst.clear()
             sleep(5)
@@ -117,5 +117,5 @@ except KeyboardInterrupt:
     for x in pidlst:
         try:
             os.kill(x, 9)
-        except PermissionError:
+        except (PermissionError, ProcessLookupError):
             pass
