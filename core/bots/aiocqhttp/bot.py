@@ -114,7 +114,8 @@ async def _(event: Event):
         if event.duration >= 259200:
             result = True
         else:
-            result = UnfriendlyActions(targetId=event.group_id, senderId=event.operator_id).add_and_check('mute')
+            result = UnfriendlyActions(targetId=event.group_id,
+                                       senderId=event.operator_id).add_and_check('mute', str(event.duration))
         if result:
             await bot.call_action('set_group_leave', group_id=event.group_id)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)

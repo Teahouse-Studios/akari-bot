@@ -32,6 +32,7 @@ class UnfriendlyActionsTable(Base):
     targetId = Column(String(512))
     senderId = Column(String(512))
     action = Column(String(512))
+    detail = Column(String(512))
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
@@ -128,11 +129,11 @@ class UnfriendlyActions:
 
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
-    def add_and_check(self, action='default') -> bool:
+    def add_and_check(self, action='default', detail='') -> bool:
         """
 
         :return: True = yes, False = no
         """
-        session.add_all([UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action)])
+        session.add_all([UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action, detail=detail)])
         session.commit()
         return self.check_mute()
