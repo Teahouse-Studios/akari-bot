@@ -53,7 +53,10 @@ def load_secret():
     config_path = abspath('./config/' + config_filename)
     cp = ConfigParser()
     cp.read(config_path)
-    section = cp.sections()[0]
+    section = cp.sections()
+    if len(section) == 0:
+        raise new Error('Config file not found')
+    section = section[0]
     options = cp.options(section)
     for option in options:
         value = cp.get(section, option)
