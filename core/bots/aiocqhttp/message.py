@@ -36,7 +36,7 @@ class MessageSession(MS):
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
         msg = MessageSegment.text('')
-        if quote and self.target.targetFrom == 'QQ|Group':
+        if quote and self.target.targetFrom == 'QQ|Group' and self.session.message:
             msg = MessageSegment.reply(self.session.message.message_id)
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:

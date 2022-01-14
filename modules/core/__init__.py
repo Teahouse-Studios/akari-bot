@@ -506,7 +506,7 @@ rst = on_command('restart', developers=['OasisAkari'], required_superuser=True)
 
 
 def restart():
-    sys.exit(512)
+    sys.exit(233)
 
 
 def write_version_cache(msg: MessageSession):

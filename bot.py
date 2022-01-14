@@ -91,8 +91,8 @@ def run_bot():
             break
 
         for p in runlst:
-            if p.poll() == 512:
-                logging.warning(f'{p.pid} exited with code 512, restart all bots.')
+            if p.poll() == 233:
+                logging.warning(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
         sleep(0.001)
