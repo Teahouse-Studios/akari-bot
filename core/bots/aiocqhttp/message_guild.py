@@ -76,21 +76,19 @@ class MessageSession(MS):
     async def checkPermission(self):
         if self.target.senderInfo.check_TargetAdmin(self.target.targetId) or self.target.senderInfo.query.isSuperUser:
             return True
-        match_guild = re.match(r'(.*)\|(.*)', self.session.target)
-        get_member_info = await bot.call_action('get_guild_members', guild_id=match_guild.group(1))
-        tiny_id = self.session.sender
-        for m in get_member_info['admins']:
-            if m['tiny_id'] == tiny_id:
-                return True
-        return False
+        return await self.checkNativePermission()
 
     async def checkNativePermission(self):
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)
-        get_member_info = await bot.call_action('get_guild_members', guild_id=match_guild.group(1))
-        tiny_id = self.session.sender
-        for m in get_member_info['admins']:
-            if m['tiny_id'] == tiny_id:
+        get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
+                                                user_id=self.session.sender)
+        print(get_member_info)
+        for m in get_member_info['roles']:
+            if m['role_id'] == "2":
                 return True
+        get_guild_info = await bot.call_action('get_guild_meta_by_guest', guild_id=match_guild.group(1))
+        if get_guild_info['owner_id'] == self.session.sender:
+            return True
         return False
 
     def checkSuperUser(self):
