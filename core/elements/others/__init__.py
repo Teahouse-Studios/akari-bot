@@ -55,7 +55,7 @@ def load_secret():
     cp.read(config_path)
     section = cp.sections()
     if len(section) == 0:
-        raise new Error('Config file not found')
+        raise Error('Config file not found') from None
     section = section[0]
     options = cp.options(section)
     for option in options:
