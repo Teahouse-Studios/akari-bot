@@ -1,6 +1,8 @@
 from configparser import ConfigParser
 from os.path import abspath
 
+from core.exceptions import ConfigFileNotFound
+
 config_filename = 'config.cfg'
 config_path = abspath('./config/' + config_filename)
 
@@ -10,7 +12,10 @@ class CFG:
         cp = ConfigParser()
         cp.read(config_path)
         try:
-            section = cp.sections()[0]
+            section = cp.sections()
+            if len(section) == 0:
+                raise ConfigFileNotFound(config_path) from None
+            section = section[0]
             value = cp.get(section, q)
         except Exception:
             return False

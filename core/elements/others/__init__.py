@@ -5,6 +5,8 @@ import traceback
 
 import requests
 
+from core.exceptions import ConfigFileNotFound
+
 confirm_command = ["是", "对", '确定', '是吧', '大概是',
                    '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
                    '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该',
@@ -55,7 +57,7 @@ def load_secret():
     cp.read(config_path)
     section = cp.sections()
     if len(section) == 0:
-        raise Error('Config file not found') from None
+        raise ConfigFileNotFound(config_path) from None
     section = section[0]
     options = cp.options(section)
     for option in options:
