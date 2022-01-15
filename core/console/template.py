@@ -2,7 +2,7 @@ from typing import List
 
 from PIL import Image
 
-from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, Voice, Embed
+from core.elements import MessageSession, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, Voice, Embed, FetchedSession as FS
 from core.elements.others import confirm_command
 from core.elements.message.chain import MessageChain
 from core.logger import Logger
@@ -15,7 +15,7 @@ class Template(MessageSession):
         forward = False
         delete = True
 
-    async def sendMessage(self, msgchain, quote=True) -> MessageSession:
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> MessageSession:
         Logger.info(msgchain)
         msgchain = MessageChain(msgchain)
         Logger.info(msgchain)
@@ -70,27 +70,34 @@ class Template(MessageSession):
             pass
 
 
+class FetchedSession(FS):
+    def __init__(self, targetFrom, targetId):
+        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
+                              senderId=f'{targetFrom}|{targetId}',
+                              targetFrom=targetFrom,
+                              senderFrom=targetFrom,
+                              senderName='')
+        self.session = Session(message=False, target=targetId, sender=targetId)
+        self.parent = Template(self.target, self.session)
+
+    async def sendMessage(self, msgchain, disable_secret_check=False):
+        """
+        用于向获取对象发送消息。
+        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :return: 被发送的消息链
+        """
+        return await self.parent.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
+
+
 class FetchTarget(FT):
     name = 'TEST'
 
     @staticmethod
-    async def fetch_target(targetId):
-        return Template(target=MsgInfo(targetId=targetId,
-                                       senderId=targetId,
-                                       senderName='',
-                                       targetFrom='TEST|Console',
-                                       senderFrom='TEST|Console'),
-                        session=Session(message=False, target=targetId, sender=targetId))
+    async def fetch_target(targetId) -> FetchedSession:
+        return FetchedSession('TEST|Console', targetId)
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[MessageSession] = None):
-        if isinstance(message, str):
-            print(message)
-        elif isinstance(message, list):
-            for x in message:
-                if isinstance(x, Plain):
-                    print(x.text)
-                if isinstance(x, BImage):
-                    img = Image.open(await x.get())
-                    img.show()
-        return message
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
+        fetch = await FetchTarget.fetch_target('0')
+        await fetch.sendMessage(message)

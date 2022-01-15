@@ -11,7 +11,7 @@ from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
-    ExecutionLockList
+    ExecutionLockList, FetchedSession as FS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
 from core.logger import Logger
@@ -136,28 +136,43 @@ class MessageSession(MS):
             pass
 
 
+class FetchedSession(FS):
+    def __init__(self, targetFrom, targetId):
+        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
+                              senderId=f'{targetFrom}|{targetId}',
+                              targetFrom=targetFrom,
+                              senderFrom=targetFrom,
+                              senderName='')
+        self.session = Session(message=False, target=targetId, sender=targetId)
+        if targetFrom == 'QQ|Guild':
+            self.parent = MessageSessionGuild(self.target, self.session)
+        else:
+            self.parent = MessageSession(self.target, self.session)
+
+    async def sendMessage(self, msgchain, disable_secret_check=False):
+        """
+        用于向获取对象发送消息。
+        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :return: 被发送的消息链
+        """
+        send = await self.parent.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
+        print(send)
+        return send
+
+
 class FetchTarget(FT):
     name = 'QQ'
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[MessageSession, bool]:
+    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
         matchTarget = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', targetId)
         if matchTarget:
-            print(matchTarget.group(2))
-            if matchTarget.group(1) != 'QQ|Guild':
-                return MessageSession(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
-                                              targetFrom=matchTarget.group(1), senderFrom=matchTarget.group(1)),
-                                      Session(message=False, target=int(matchTarget.group(2)),
-                                              sender=int(matchTarget.group(2))))
-            else:
-                return MessageSessionGuild(MsgInfo(targetId=targetId, senderId=targetId, senderName='',
-                                                   targetFrom='QQ|Guild', senderFrom='QQ|Guild'),
-                                           Session(message=False, target=matchTarget.group(2),
-                                                   sender=matchTarget.group(2)))
+            return FetchedSession(matchTarget.group(1), matchTarget.group(2))
         return False
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[MessageSession]:
+    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
         lst = []
         group_list_raw = await bot.call_action('get_group_list')
         group_list = []
@@ -190,12 +205,12 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[MessageSession] = None):
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
         send_list = []
         if user_list is not None:
             for x in user_list:
                 try:
-                    send = await x.sendMessage(message, quote=False)
+                    send = await x.sendMessage(message)
                     send_list.append(send)
                 except Exception:
                     traceback.print_exc()
@@ -208,7 +223,7 @@ class FetchTarget(FT):
             friend_list_raw = await bot.call_action('get_friend_list')
             friend_list = []
             for f in friend_list_raw:
-                friend_list.append(f)
+                friend_list.append(f['user_id'])
             guild_list_raw = await bot.call_action('get_guild_list')
             guild_list = []
             for g in guild_list_raw:
@@ -221,17 +236,17 @@ class FetchTarget(FT):
                 Logger.info(fetch)
                 if fetch:
                     if fetch.target.targetFrom == 'QQ|Group':
-                        if fetch.session.target not in group_list:
+                        if int(fetch.session.target) not in group_list:
                             continue
                     if fetch.target.targetFrom == 'QQ':
-                        if fetch.session.target not in friend_list:
+                        if int(fetch.session.target) not in friend_list:
                             continue
                     if fetch.target.targetFrom == 'QQ|Guild':
                         if fetch.session.target not in guild_list:
                             continue
                     try:
                         print(fetch)
-                        send = await fetch.sendMessage(message, quote=False)
+                        send = await fetch.sendMessage(message)
                         send_list.append(send)
                         await asyncio.sleep(0.5)
                     except Exception:

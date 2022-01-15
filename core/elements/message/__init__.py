@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Union
 
 
@@ -106,7 +107,7 @@ class MessageSession:
         ...
 
     async def sleep(self, s):
-        ...
+        await asyncio.sleep(s)
 
     class Feature:
         """
@@ -118,28 +119,48 @@ class MessageSession:
         delete = ...
 
 
+class FetchedSession:
+    def __init__(self, targetFrom, targetId):
+        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
+                              senderId=f'{targetFrom}|{targetId}',
+                              targetFrom=targetFrom,
+                              senderFrom=targetFrom,
+                              senderName='')
+        self.session = Session(message=False, target=targetId, sender=targetId)
+        self.parent = MessageSession(self.target, self.session)
+
+    async def sendMessage(self, msgchain, disable_secret_check=False):
+        """
+        用于向获取对象发送消息。
+        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :return: 被发送的消息链
+        """
+        ...
+
+
 class FetchTarget:
     name = ''
 
     @staticmethod
-    async def fetch_target(targetId) -> MessageSession:
+    async def fetch_target(targetId) -> FetchedSession:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         ...
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[MessageSession]:
+    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
         ...
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[MessageSession] = None):
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
         """
         尝试向开启此模块的对象发送一条消息。
         """
 
 
-__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session"]
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession"]

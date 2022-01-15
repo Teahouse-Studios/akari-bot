@@ -31,8 +31,8 @@ class MessageSession(MS):
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
         msg = MessageSegment.text('')
-        # if quote:
-        #    msg = MessageSegment.reply(self.session.message.message_id)
+        if quote:
+            msg = MessageSegment.reply(self.session.message.message_id)
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
