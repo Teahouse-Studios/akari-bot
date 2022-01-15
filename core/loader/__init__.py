@@ -5,6 +5,7 @@ import traceback
 from typing import Dict, Union
 
 from core.elements import Command, Option, Schedule, RegexCommand, StartUp, PrivateAssets
+from core.elements.module import NatrualLanguage
 from core.logger import Logger
 
 load_dir_path = os.path.abspath('./modules/')
@@ -41,10 +42,10 @@ def load_modules():
 
 
 class ModulesManager:
-    modules: Dict[str, Union[Command, Option, Schedule, RegexCommand, StartUp]] = {}
+    modules: Dict[str, Union[Command, Option, Schedule, RegexCommand, StartUp, NatrualLanguage]] = {}
 
     @staticmethod
-    def add_module(module: Union[Command, Option, Schedule, RegexCommand, StartUp]):
+    def add_module(module: Union[Command, Option, Schedule, RegexCommand, StartUp, NatrualLanguage]):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
         else:
@@ -56,7 +57,7 @@ class ModulesManager:
             ModulesManager.modules[bind_prefix].match_list.add(meta)
 
     @staticmethod
-    def return_modules_list_as_dict() -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
+    def return_modules_list_as_dict() -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option, NatrualLanguage]]:
         return ModulesManager.modules
 
     @staticmethod
@@ -93,7 +94,7 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option]) \
+    def return_specified_type_modules(module_type: Union[Command, RegexCommand, Schedule, StartUp, Option,  NatrualLanguage]) \
             -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()

@@ -108,7 +108,7 @@ class Option:
 class Schedule:
     def __init__(self,
                  function: Callable,
-                 trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
+                 trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
                  bind_prefix: str,
                  desc: str = None,
                  alias: Union[str, list, tuple, dict] = None,
@@ -117,7 +117,7 @@ class Schedule:
                  required_superuser: bool = False,
                  ):
         self.function: Callable = function
-        self.trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger] = trigger
+        self.trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger] = trigger
         self.bind_prefix: str = bind_prefix
         self.desc: str = desc
         if isinstance(alias, str):
@@ -169,5 +169,27 @@ class StartUp:
         self.required_superuser: bool = required_superuser
 
 
-__all__ = ["Command", "RegexCommand", "Option", "Schedule", "StartUp", "AndTrigger", "OrTrigger", "DateTrigger",
+class NatrualLanguage:
+    def __init__(self,
+                 keywords: Union[str, list, tuple],
+                 bind_module: Union[str, list, tuple],
+                 developers: Union[str, list, tuple] = None,
+                 required_admin: bool = False,
+                 base: bool = False,
+                 required_superuser: bool = False):
+
+        keywords: Union[str, list, tuple] = keywords
+        self.bind_module: Union[str, list, tuple] = bind_module
+        if isinstance(developers, str):
+            developers = [developers]
+        elif isinstance(developers, tuple):
+            developers = list(developers)
+        self.developers: List[str] = developers
+        self.required_admin: bool = required_admin
+        self.base: bool = base
+        self.required_superuser: bool = required_superuser
+        self.match_list = NatrualLanguageMatches()
+
+
+__all__ = ["Command", "RegexCommand", "Option", "Schedule", "StartUp", "NatrualLanguage", "AndTrigger", "OrTrigger", "DateTrigger",
            "CronTrigger", "IntervalTrigger"]

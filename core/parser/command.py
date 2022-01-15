@@ -4,7 +4,7 @@ import traceback
 from typing import Union
 
 from core.docopt import docopt, DocoptExit
-from core.elements import Command, Option, Schedule, StartUp, RegexCommand, command_prefix, MessageSession
+from core.elements import Command, Option, Schedule, StartUp, RegexCommand, NatrualLanguage, command_prefix, MessageSession
 
 command_prefix_first = command_prefix[0]
 
@@ -20,7 +20,7 @@ class InvalidCommandFormatError(BaseException):
 
 
 class CommandParser:
-    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule, StartUp, RegexCommand], prefix=None,
+    def __init__(self, args: Union[str, list, tuple, Command, Option, Schedule, StartUp, RegexCommand, NatrualLanguage], prefix=None,
                  msg: MessageSession = None):
         """
         Format: https://github.com/jazzband/docopt-ng#usage-pattern-format
@@ -41,7 +41,7 @@ class CommandParser:
                 args = help_doc_list
             else:
                 args = None
-        elif isinstance(args, (Schedule, StartUp, Option, RegexCommand)):
+        elif isinstance(args, (Schedule, StartUp, Option, RegexCommand, NatrualLanguage)):
             args = None
         if args is None:
             self.args = None

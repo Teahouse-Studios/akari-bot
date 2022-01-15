@@ -52,4 +52,12 @@ class ScheduleMeta:
         self.function = function
 
 
-__all__ = ["Meta", "CommandMeta", "RegexMeta", "ScheduleMeta"]
+class NatrualLanguageMeta:
+    def __init__(self,
+                 function: Callable = None,
+                 keywords: Union[str, list, tuple] = None,
+                 ):
+        self.function = function
+        self.keywords = keywords
+
+__all__ = ["Meta", "CommandMeta", "RegexMeta", "ScheduleMeta", "NatrualLanguageMeta"]
