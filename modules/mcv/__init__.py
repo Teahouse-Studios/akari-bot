@@ -1,6 +1,6 @@
 from core.component import on_command
 from core.elements import MessageSession
-from .mcv import mcv, mcbv, mcdv
+from .mcv import mcv, mcbv, mcdv, mcev
 
 m = on_command(
     bind_prefix='mcv',
@@ -35,3 +35,14 @@ md = on_command(
 @md.handle()
 async def mcdv_loader(msg: MessageSession):
     await msg.sendMessage(await mcdv())
+
+
+me = on_command(
+    bind_prefix='mcev',
+    desc='查询当前Minecraft教育版Windows版记录的最新版本。',
+    developers=['OasisAkari', 'Dianliang233'])
+
+
+@me.handle()
+async def mcev_loader(msg: MessageSession):
+    await msg.sendMessage(await mcev())

@@ -1,3 +1,4 @@
+from ensurepip import version
 import json
 import re
 from core.elements.others import ErrorMessage
@@ -57,3 +58,14 @@ async def mcdv():
         if not v['archived']:
             release.append(v["name"])
     return f'最新版：{" | ".join(release)} \n（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
+
+
+async def mcev():
+    try:
+        data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt')
+        print(data)
+        version = re.search(r'(?<=\[)(.*?)(?=\])', data)[0]
+        print(version)
+    except (ConnectionError, OSError):  # Probably...
+        return ErrorMessage('土豆熟了')
+    return f'最新版：{version}'
