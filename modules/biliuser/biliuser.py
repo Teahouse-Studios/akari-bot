@@ -1,18 +1,13 @@
-from core.elements import MessageSession
+from core.elements import MessageSession, Plain, Image
 import asyncio
 import re
 import json
-from aiocqhttp import MessageSegment
 
 from core.utils import get_url
 
 biliapi = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid="
 
-#async def get_url(url):
-#    async with httpx.AsyncClient() as client:
-#        resp = await client.get(url,timeout=300)
-#        result = resp.text
-#        return result
+
 async def bilibili_user_infomation_getter(uid: str):
     final_url = biliapi + uid
     first_json = await get_url(final_url)
@@ -42,15 +37,16 @@ async def bilibili_user_infomation_getter(uid: str):
     return result
   
 async def biliuser(uid):
-    uid = state['uid']
     final_information = await final(uid)
     information = json.loads(await bilibili_user_infomation_getter(uid))
     if str(information["name"]) == "null":
         msg = "此用户不存在，请检查输入！"
     else:
         img_url = str(information["avatar"])
-        msg = final_information+MessageSegment.image(img_url)
+        msg = [Plain(final_information), Image(img_url)]
     return msg
+
+
 async def final(uid):
     information = json.loads(await bilibili_user_infomation_getter(uid))
     print(information)
