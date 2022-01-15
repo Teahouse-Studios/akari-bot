@@ -15,8 +15,8 @@ biliuser = on_command(
     base = False,
     required_superuser = False
 )
+
 @biliuser.handle('<uid> {根据UID获取哔哩哔哩用户信息}')
 async def main(msg: MessageSession):
-    uid = f'{msg.parsed_msg["<uid>"]}'
-    message = await bu(uid)
+    message = await bu(msg.parsed_msg["<uid>"])
     await msg.sendMessage(message)
