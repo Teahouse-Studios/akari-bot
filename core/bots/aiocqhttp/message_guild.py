@@ -7,19 +7,21 @@ from aiocqhttp import MessageSegment
 
 from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, ExecutionLockList
+from core.elements import Plain, Image, MessageSession as MS, ExecutionLockList, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
 from core.logger import Logger
 
 
-def convert2lst(s) -> list:
-    if isinstance(s, str):
-        return [Plain(s)]
-    elif isinstance(s, list):
-        return s
-    elif isinstance(s, tuple):
-        return list(s)
+class FinishedSession(FinS):
+    def __init__(self, result: list):
+        self.result = result
+
+    async def delete(self):
+        """
+        用于删除这条消息。
+        """
+        ...
 
 
 class MessageSession(MS):
@@ -29,7 +31,7 @@ class MessageSession(MS):
         forward = False
         delete = False
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msg = MessageSegment.text('')
         if quote:
             msg = MessageSegment.reply(self.session.message.message_id)
@@ -51,17 +53,13 @@ class MessageSession(MS):
         send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
                                      channel_id=int(match_guild.group(2)), message=msg)
 
-        return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='QQ|Bot',
-                                             senderFrom='QQ|Bot'),
-                              session=Session(message=send,
-                                              target=self.session.target,
-                                              sender=self.session.sender))
+        return FinishedSession([send])
 
     async def waitConfirm(self, msgchain=None, quote=True):
         send = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
-            msgchain = convert2lst(msgchain)
+            msgchain = MessageChain(msgchain)
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
             send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()

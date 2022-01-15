@@ -6,19 +6,25 @@ from typing import List, Union
 from core.bots.aiogram.client import dp, bot
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
-    ExecutionLockList, FetchedSession as FS
+    ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
 from database import BotDBUtil
 
 
-def convert2lst(s) -> list:
-    if isinstance(s, str):
-        return [Plain(s)]
-    elif isinstance(s, list):
-        return s
-    elif isinstance(s, tuple):
-        return list(s)
+class FinishedSession(FinS):
+    def __init__(self, result: list):
+        self.result = result
+
+    async def delete(self):
+        """
+        用于删除这条消息。
+        """
+        try:
+            for x in self.result:
+                await x.delete()
+        except Exception:
+            traceback.print_exc()
 
 
 class MessageSession(MS):
@@ -28,7 +34,7 @@ class MessageSession(MS):
         forward = False
         delete = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
@@ -55,15 +61,13 @@ class MessageSession(MS):
             if send_:
                 send.append(send_)
             count += 1
-        return MessageSession(target=MsgInfo(targetId=0, senderId=0, senderName='', targetFrom='Telegram|Bot',
-                                             senderFrom='Telegram|Bot'),
-                              session=Session(message=send, target=send, sender=send))
+        return FinishedSession(send)
 
     async def waitConfirm(self, msgchain=None, quote=True):
         ExecutionLockList.remove(self)
         send = None
         if msgchain is not None:
-            msgchain = convert2lst(msgchain)
+            msgchain = MessageChain(msgchain)
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
             send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
@@ -104,11 +108,8 @@ class MessageSession(MS):
 
     async def delete(self):
         try:
-            if isinstance(self.session.message, list):
-                for x in self.session.message:
-                    await x.delete()
-            else:
-                await self.session.message.delete()
+            for x in self.session.message:
+                await x.delete()
         except Exception:
             traceback.print_exc()
 

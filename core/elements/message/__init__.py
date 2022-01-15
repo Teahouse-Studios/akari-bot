@@ -26,6 +26,17 @@ class Session:
         self.sender = sender
 
 
+class FinishedSession:
+    def __init__(self, result: list):
+        self.result = result
+
+    async def delete(self):
+        """
+        用于删除这条消息。
+        """
+        ...
+
+
 class MessageSession:
     """
     消息会话，囊括了处理一条消息所需要的东西。
@@ -38,7 +49,10 @@ class MessageSession:
         self.target = target
         self.session = session
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False):
+    async def sendMessage(self,
+                          msgchain,
+                          quote=True,
+                          disable_secret_check=False) -> FinishedSession:
         """
         用于向消息发送者回复消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
@@ -163,4 +177,4 @@ class FetchTarget:
         """
 
 
-__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession"]
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession"]
