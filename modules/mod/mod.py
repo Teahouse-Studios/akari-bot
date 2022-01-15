@@ -14,15 +14,10 @@ async def mcmod(keyword: str):
     str0_1 = str(more_useful_information[2])
     potato = str0_1[:20]
     if potato.find("body"):
-        print(str0_1)
         desc = re.sub(r"\[(.+?)\]","",str0_1[int(str0_1.find("<div class=\"body\">")+18):int(str0_1.find("</div>"))])
         str0_2 = bshtml.div.div.find_all('a')
         str3 = str(str0_2[2])
         link = str3[int(str3.find("\"")+1):int(str3.find(" target")-1)]
-        dict = [link,desc]
-        return dict
+        return f"{link}\n{desc}"
     else:
-        link = "发生错误，土豆熟了"
-        desc = "发生错误，土豆熟了"
-        dict = [link,desc]
-        return dict
+        return f"Mod不存在，检索失败"
