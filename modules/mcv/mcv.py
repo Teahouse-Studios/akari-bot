@@ -1,4 +1,3 @@
-from ensurepip import version
 import json
 import re
 from core.elements.others import ErrorMessage
