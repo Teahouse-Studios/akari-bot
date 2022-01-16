@@ -43,7 +43,6 @@ class MessageSession(MS):
         wait = True
         quote = True
 
-
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msg = MessageSegment.text('')
         if quote and self.target.targetFrom == 'QQ|Group' and self.session.message:
@@ -79,13 +78,15 @@ class MessageSession(MS):
         await flag.wait()
         if send is not None:
             await send.delete()
-        if FinishedTasks.get()[self.session.sender] in confirm_command:
+        print(self.asDisplay(FinishedTasks.get()[self.session.sender]))
+        if self.asDisplay(FinishedTasks.get()[self.session.sender]) in confirm_command:
             return True
         return False
 
     async def checkPermission(self):
-        if self.target.targetFrom == 'QQ' or self.target.senderInfo.check_TargetAdmin(
-                self.target.targetId) or self.target.senderInfo.query.isSuperUser:
+        if self.target.targetFrom == 'QQ' \
+            or self.target.senderInfo.check_TargetAdmin(self.target.targetId) \
+                or self.target.senderInfo.query.isSuperUser:
             return True
         get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
                                                 user_id=self.session.sender)
@@ -105,8 +106,8 @@ class MessageSession(MS):
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
 
-    def asDisplay(self):
-        return html.unescape(self.session.message.message)
+    def asDisplay(self, message=None):
+        return ''.join(re.split(r'\[CQ:.*?]', html.unescape(self.session.message.message if message is None else message)))
 
     async def fake_forward_msg(self, nodelist):
         if self.target.targetFrom == 'QQ|Group':
@@ -231,7 +232,8 @@ class FetchTarget(FT):
             guild_list_raw = await bot.call_action('get_guild_list')
             guild_list = []
             for g in guild_list_raw:
-                get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'], no_cache=True)
+                get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
+                                                         no_cache=True)
                 for channel in get_channel_list:
                     if channel['channel_type'] == 1:
                         guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
