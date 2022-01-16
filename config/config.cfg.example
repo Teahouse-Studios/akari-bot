@@ -13,5 +13,8 @@ Check_accessKeyId =
 Check_accessKeySecret =
 web_render =
 arcapi_url =
+<<<<<<< HEAD
 arcapi_agent =
+=======
+>>>>>>> 9b8d40a9d68adb21f672f45b3d27628a75d00202
 tg_token =

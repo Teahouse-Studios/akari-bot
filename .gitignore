@@ -24,6 +24,10 @@ assets/version*
 assets/mcnews.txt
 .vscode
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 cov.xml
 >>>>>>> 9b8d40a (Move the help_doc test)
+=======
+cov.xml
+>>>>>>> 9b8d40a9d68adb21f672f45b3d27628a75d00202
