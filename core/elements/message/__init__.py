@@ -114,6 +114,12 @@ class MessageSession:
             """
             ...
 
+        async def __aenter__(self):
+            pass
+
+        async def __aexit__(self, exc_type, exc_val, exc_tb):
+            pass
+
     def checkSuperUser(self):
         """
         用于检查消息发送者是否为超级用户。

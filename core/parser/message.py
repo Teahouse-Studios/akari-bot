@@ -20,10 +20,12 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 
 temp_ban_counter = {}  # 临时封禁计数
 
+
 async def remove_temp_ban(msg: MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         del temp_ban_counter[msg.target.senderId]
+
 
 async def msg_counter(msg: MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
@@ -45,10 +47,11 @@ async def msg_counter(msg: MessageSession, command: str):
             raise AbuseWarning('一段时间内使用命令的次数过多')
 
 
-async def parser(msg: MessageSession):
+async def parser(msg: MessageSession, require_enable_modules: bool = True):
     """
     接收消息必经的预处理器
     :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
+    :param require_enable_modules: 是否需要检查模块是否已启用
     :return: 无返回
     """
     global Modules
@@ -60,6 +63,7 @@ async def parser(msg: MessageSession):
         ModulesAliases = ModulesManager.return_modules_alias_map()
     if ModulesRegex == {}:
         ModulesRegex = ModulesManager.return_specified_type_modules(RegexCommand)
+    print(Modules)
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
     # Logger.info(f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
     msg.trigger_msg = display
@@ -96,7 +100,7 @@ async def parser(msg: MessageSession):
                 del command_spilt[0]
                 command_first_word = command_spilt[0].lower()
                 msg.trigger_msg = ' '.join(command_spilt)
-            if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo: # 如果是以 sudo 执行的命令，则不检查是否已 ban
+            if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo:  # 如果是以 sudo 执行的命令，则不检查是否已 ban
                 ExecutionLockList.remove(msg)
                 return
             in_mute = BotDBUtil.Muting(msg).check()
@@ -138,7 +142,7 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage('你没有使用该命令的权限。')
                             continue
                     elif not module.base:
-                        if command_first_word not in enabled_modules_list and not sudo:  # 若未开启
+                        if command_first_word not in enabled_modules_list and not sudo and require_enable_modules:  # 若未开启
                             await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
                             continue
                     elif module.required_admin:

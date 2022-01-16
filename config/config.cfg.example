@@ -15,4 +15,6 @@ web_render =
 arcapi_url =
 arcapi_agent =
 tg_token =
-smms_token =
+qqchannel_appid =
+qqchannel_token =
+qqchannel_secret =
