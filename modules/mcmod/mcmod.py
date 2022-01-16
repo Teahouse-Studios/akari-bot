@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from config import Config
 from core.utils import get_url
+import re
 
 api = 'https://search.mcmod.cn/s?key='
 
@@ -19,7 +20,7 @@ async def mcmod(keyword: str):
         a = res.find('div', class_='head').find('a', recursive=False)
         name = a.text
         url = a['href']
-        desc = res.find('div', class_='body').text
+        desc = re.sub(r"\[(.+?)\]","",res.find('div', class_='body').text)
         return f'{name}\n{url}\n{desc}'
     else:
         return '未找到结果。'
