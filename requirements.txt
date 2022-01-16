@@ -16,3 +16,4 @@ tenacity
 aiocqhttp
 tabulate
 feedparser
+pytest
