@@ -68,16 +68,20 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                 servers.append(onlinesplayer)
                                 if showplayer:
                                     playerlist = []
-                                    for x in jejson['players']['sample']:
-                                        playerlist.append(x['name'])
-                                    servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
+                                    if 'sample' in jejson['players']:
+                                        for x in jejson['players']['sample']:
+                                            playerlist.append(x['name'])
+                                        servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
+                                    else:
+                                        if jejson['players']['online'] == 0:
+                                            servers.append('当前在线玩家：\n无')
                             if 'version' in jejson:
                                 versions = "游戏版本：" + jejson['version']['name']
                                 servers.append(versions)
                             servers.append(serip + ':' + port1)
                         except Exception:
                             traceback.print_exc()
-                            servers.append(ErrorMessage("JE查询调用API时发生错误。"))
+                            servers.append(str(ErrorMessage("JE查询调用API时发生错误。")))
         except Exception:
             traceback.print_exc()
         if raw:

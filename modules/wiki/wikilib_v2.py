@@ -114,6 +114,7 @@ class WikiLib:
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
+            Logger.info(api)
         else:
             raise ValueError('kwargs is None')
         return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
@@ -376,6 +377,10 @@ class WikiLib:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
                         page_info.link = full_url
+                        file = None
+                        if 'imageinfo' in page_raw:
+                            file = page_raw['imageinfo'][0]['url']
+                        page_info.file = file
                     else:
                         split_title = title.split(':')
                         if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
