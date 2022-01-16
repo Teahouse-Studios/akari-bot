@@ -5,8 +5,6 @@ config/*.cfg
 assets/mcversion.txt
 mcvrss.txt
 assets/usercard/*
-test*
-!tests/
 assets/Favicon/*
 assets/cache/*
 *.db
@@ -25,3 +23,7 @@ assets/arc**
 assets/version*
 assets/mcnews.txt
 .vscode
+<<<<<<< HEAD
+=======
+cov.xml
+>>>>>>> 9b8d40a (Move the help_doc test)
