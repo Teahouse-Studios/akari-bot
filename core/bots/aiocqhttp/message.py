@@ -37,8 +37,12 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = True
+        embed = False
         forward = True
         delete = True
+        wait = True
+        quote = True
+
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msg = MessageSegment.text('')
