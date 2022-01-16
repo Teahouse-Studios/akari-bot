@@ -433,7 +433,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     plain_slice = []
                     wait_plain_slice = []
                     if display_title is not None and display_before_title is not None:
-                        wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                        if isinstance(session, MessageSession) and session.Feature.wait:
+                            wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                        else:
+                            wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
                         wait_list.append(display_title)
                     elif r.before_title is not None:
                         plain_slice.append(f'提示：找不到[{display_before_title}]。')
@@ -474,7 +477,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                         if session.Feature.voice:
                             await session.sendMessage(Voice(dl), quote=False)
-        if wait_msg_list:
+        if wait_msg_list and session.Feature.wait:
             confirm = await session.waitConfirm(wait_msg_list)
             if confirm and wait_list:
                 await query_pages(session, wait_list, use_prefix=False)

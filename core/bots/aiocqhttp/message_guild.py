@@ -28,13 +28,14 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = False
+        embed = False
         forward = False
         delete = False
+        wait = True
+        quote = False
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msg = MessageSegment.text('')
-        if quote:
-            msg = MessageSegment.reply(self.session.message.message_id)
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')

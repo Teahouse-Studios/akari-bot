@@ -31,8 +31,11 @@ class MessageSession(MS):
     class Feature:
         image = True
         voice = True
+        embed = False
         forward = False
         delete = True
+        quote = True
+        wait = True
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msgchain = MessageChain(msgchain)

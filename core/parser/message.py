@@ -61,6 +61,7 @@ async def parser(msg: MessageSession):
     if ModulesRegex == {}:
         ModulesRegex = ModulesManager.return_specified_type_modules(RegexCommand)
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
+    # Logger.info(f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
     msg.trigger_msg = display
     msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
