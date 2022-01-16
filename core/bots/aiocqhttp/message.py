@@ -78,7 +78,6 @@ class MessageSession(MS):
         await flag.wait()
         if send is not None:
             await send.delete()
-        print(self.asDisplay(FinishedTasks.get()[self.session.sender]))
         if self.asDisplay(FinishedTasks.get()[self.session.sender]) in confirm_command:
             return True
         return False
