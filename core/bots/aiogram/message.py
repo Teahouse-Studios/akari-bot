@@ -35,7 +35,7 @@ class MessageSession(MS):
         forward = False
         delete = True
         quote = True
-        reply = True
+        wait = True
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         msgchain = MessageChain(msgchain)
