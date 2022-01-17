@@ -10,7 +10,7 @@ from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
-from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck, PrivateAssets
+from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck, PrivateAssets, Url
 from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler
@@ -20,6 +20,7 @@ from database.logging_message import UnfriendlyActions
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
+Url.mm = 'https://middleman.wdf.ink/?source=akaribot&dest=%s'
 init()
 
 
