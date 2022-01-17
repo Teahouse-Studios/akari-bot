@@ -12,6 +12,7 @@ from config import CachePath
 
 from urllib import parse
 
+from core.utils import caesar_encrypt
 
 class Plain:
     def __init__(self,
@@ -30,7 +31,7 @@ class Url:
     def __init__(self, url):
         self.url = url
         if Url.mm != '':
-            self.url = Url.mm % parse.quote(url)
+            self.url = Url.mm % caesar_encrypt(parse.quote(url), 13)
 
     def __str__(self):
         return self.url
@@ -71,6 +72,7 @@ class Voice:
     def __init__(self,
                  path=None):
         self.path = path
+
 
 class EmbedField:
     def __init__(self,
