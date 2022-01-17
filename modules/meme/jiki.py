@@ -2,6 +2,7 @@ import traceback
 
 import ujson as json
 
+from core.elements import Url
 from core.utils.bot import post_url
 
 async def jiki(term: str):
@@ -23,7 +24,7 @@ async def jiki(term: str):
         title = result['term']['title']
         content = result['plaintext']
         link = 'https://jikipedia.com/definition/' + result['id']
-        return f'[小鸡百科]（{count}个结果）：{title}\n{content}\n{link}'
+        return f'[小鸡百科]（{count}个结果）：{title}\n{content}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
         return '[小鸡百科] 查询出错。'

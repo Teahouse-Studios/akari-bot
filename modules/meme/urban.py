@@ -2,6 +2,7 @@ import traceback
 import ujson as json
 
 from config import Config
+from core.elements import Url
 from core.utils import get_url
 
 async def urban(term: str):
@@ -28,7 +29,7 @@ async def urban(term: str):
             definition = limit_length(data[0]['definition'])
             example = limit_length(data[0]['example'])
             link = data[0]['permalink']
-            return f'[Urban Dictionary]（{count}个结果）：\n{word}\n{definition}\nExample: {example}\n{link}'
+            return f'[Urban Dictionary]（{count}个结果）：\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
         return '[Urban Dictionary] 查询出错。'

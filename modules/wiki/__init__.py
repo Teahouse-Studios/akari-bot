@@ -7,7 +7,7 @@ import filetype
 import ujson as json
 
 from core.component import on_command, on_regex, on_option
-from core.elements import MessageSession, Plain, Image, Voice
+from core.elements import MessageSession, Plain, Image, Voice, Url
 from core.exceptions import AbuseWarning
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
@@ -102,7 +102,7 @@ async def _(msg: MessageSession):
     query = target.get_interwikis()
     if query != {}:
         if msg.parsed_msg['<Interwiki>'] in query:
-            await msg.sendMessage(query[msg.parsed_msg['<Interwiki>']])
+            await msg.sendMessage(Url(query[msg.parsed_msg['<Interwiki>']]))
         else:
             await msg.sendMessage(f'未找到Interwiki：{msg.parsed_msg["<Interwiki>"]}')
     else:
@@ -419,7 +419,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         else:
                             plain_slice.append(f'（重定向[{display_before_title}] -> [{display_title}]）')
                     if r.link is not None:
-                        plain_slice.append(r.link)
+                        plain_slice.append(str(Url(r.link)))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if plain_slice:

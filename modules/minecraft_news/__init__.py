@@ -8,7 +8,7 @@ import ujson as json
 
 from config import Config
 from core.component import on_schedule
-from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
+from core.elements import FetchTarget, IntervalTrigger, PrivateAssets, Url
 from core.logger import Logger
 from core.utils import get_url
 
@@ -71,7 +71,7 @@ async def start_check_news(bot: FetchTarget):
             title = default_tile['title']
             desc = default_tile['sub_header']
             link = baseurl + o_article['article_url']
-            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{link}\n{desc}'
+            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{str(Url(link))}\n{desc}'
             if title not in alist:
                 publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
                 now = datetime.now()
@@ -106,7 +106,7 @@ async def feedback_news(bot: FetchTarget):
                     Logger.info(f'huh, we find {name}.')
                     alist.append(name)
                     await bot.post_message('feedback_news',
-                                           f'Minecraft Feedback 发布了新的文章：\n{name}\n{link}')
+                                           f'Minecraft Feedback 发布了新的文章：\n{name}\n{str(Url(link))}')
                     addversion = open(version_file, 'a', encoding='utf-8')
                     addversion.write('\n' + name)
                     addversion.close()

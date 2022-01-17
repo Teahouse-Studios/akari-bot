@@ -10,6 +10,8 @@ from tenacity import retry, stop_after_attempt
 
 from config import CachePath
 
+from urllib import parse
+
 
 class Plain:
     def __init__(self,
@@ -17,6 +19,21 @@ class Plain:
         self.text = str(text)
         for t in texts:
             self.text += str(t)
+
+    def __str__(self):
+        return self.text
+
+
+class Url:
+    mm = ''
+
+    def __init__(self, url):
+        self.url = url
+        if Url.mm != '':
+            self.url = Url.mm % parse.quote(url)
+
+    def __str__(self):
+        return self.url
 
 
 class Image:
@@ -54,7 +71,6 @@ class Voice:
     def __init__(self,
                  path=None):
         self.path = path
-
 
 class EmbedField:
     def __init__(self,
@@ -115,4 +131,4 @@ class Embed:
         return msgchain
 
 
-__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField"]
+__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url"]
