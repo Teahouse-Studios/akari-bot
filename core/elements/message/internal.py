@@ -12,7 +12,6 @@ from config import CachePath
 
 from urllib import parse
 
-from core.utils import caesar_encrypt
 
 class Plain:
     def __init__(self,

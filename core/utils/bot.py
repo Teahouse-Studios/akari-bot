@@ -11,7 +11,7 @@ import ujson as json
 
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.elements import FetchTarget, PrivateAssets
+from core.elements import PrivateAssets
 from core.loader import load_modules
 from core.logger import Logger
 
