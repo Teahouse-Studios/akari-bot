@@ -26,12 +26,16 @@ class Plain:
 
 
 class Url:
-    mm = ''
+    mm = False
 
-    def __init__(self, url):
+    def __init__(self, url: str):
         self.url = url
-        if Url.mm != '':
-            self.url = Url.mm % caesar_encrypt(parse.quote(url), 13)
+        if Url.mm:
+            mm_url = f'https://middleman.wdf.ink/?source=akaribot&rot13=%s'
+            rot13 = str.maketrans(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")
+            self.url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
     def __str__(self):
         return self.url

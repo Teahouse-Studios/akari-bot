@@ -20,7 +20,7 @@ from database.logging_message import UnfriendlyActions
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
-Url.mm = 'https://middleman.wdf.ink/?source=akaribot&dest=%s'
+Url.mm = True
 init()
 
 

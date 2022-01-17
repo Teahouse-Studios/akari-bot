@@ -35,19 +35,6 @@ def init() -> None:
     write_tag.close()
 
 
-def caesar_encrypt(text, s):
-    result = ""
-
-    # transverse the plain txt
-    for i in range(len(text)):
-        char = text[i]
-        if char.isupper():
-            result += chr((ord(char) + s - 64) % 26 + 65)
-        else:
-            result += chr((ord(char) + s - 96) % 26 + 97)
-    return result
-
-
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False):
     """利用AioHttp获取指定url的内容。

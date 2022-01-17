@@ -24,7 +24,7 @@ from core.utils import init
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-Url.mm = 'https://middleman.wdf.ink/?source=akaribot&dest=%s'
+Url.mm = True
 init()
 
 
