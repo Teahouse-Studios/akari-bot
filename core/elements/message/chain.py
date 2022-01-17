@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 import ujson as json
 import re
 
-from .internal import Plain, Image, Voice, Embed
+from .internal import Plain, Image, Voice, Embed, Url
 from core.elements.others import Secret, ErrorMessage
 from typing import Union, List, Tuple
 
@@ -12,9 +12,9 @@ from core.logger import Logger
 
 
 class MessageChain:
-    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed]],
-                                       Tuple[Union[Plain, Image, Voice, Embed]],
-                                       Plain, Image, Voice, Embed]):
+    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
+                                       Tuple[Union[Plain, Image, Voice, Embed, Url]],
+                                       Plain, Image, Voice, Embed, Url]):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
@@ -23,7 +23,7 @@ class MessageChain:
                 elements = Plain(elements)
             else:
                 elements = Plain(ErrorMessage('机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
-        if isinstance(elements, (Plain, Image, Voice, Embed)):
+        if isinstance(elements, (Plain, Image, Voice, Embed, Url)):
             if isinstance(elements, Plain):
                 if elements.text != '':
                     elements = match_kecode(elements.text)
@@ -32,8 +32,10 @@ class MessageChain:
         if isinstance(elements, (list, tuple)):
             for e in elements:
                 if isinstance(e, ErrorMessage):
-                    self.value.append(str(e))
-                if isinstance(e, (Plain, Image, Voice, Embed)):
+                    self.value.append(Plain(str(e)))
+                elif isinstance(e, Url):
+                    self.value.append(Plain(e.url))
+                elif isinstance(e, (Plain, Image, Voice, Embed)):
                     if isinstance(e, Plain):
                         if e.text != '':
                             self.value += match_kecode(e.text)

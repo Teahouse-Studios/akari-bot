@@ -1,4 +1,6 @@
 import json
+
+from core.elements import Url
 from core.elements.others import ErrorMessage
 
 from core.utils import get_url
@@ -90,6 +92,6 @@ async def bugtracker_get(MojiraID):
         if Version:
             msglist.append(Version)
         if Link:
-            msglist.append(Link)
+            msglist.append(str(Url(Link)))
         msg = '\n'.join(msglist)
     return msg

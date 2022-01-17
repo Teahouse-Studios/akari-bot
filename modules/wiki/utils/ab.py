@@ -1,6 +1,7 @@
 from core.dirty_check import check
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.wikilib_v2 import WikiLib
+from core.elements import Url
 
 
 async def ab(wiki_url):
@@ -14,6 +15,6 @@ async def ab(wiki_url):
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
-        return f'{pageurl}\n{y}\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。'
+        return f'{str(Url(pageurl))}\n{y}\n...仅显示前5条内容\n检测到外来信息介入，请前往滥用日志查看所有消息。'
     else:
-        return f'{pageurl}\n{y}\n...仅显示前5条内容'
+        return f'{str(Url(pageurl))}\n{y}\n...仅显示前5条内容'

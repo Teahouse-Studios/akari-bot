@@ -1,6 +1,6 @@
 import traceback
 
-from core.elements import MessageSession, Image, Plain
+from core.elements import MessageSession, Image, Plain, Url
 from core.elements.others import ErrorMessage
 from core.utils.bot import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
@@ -21,12 +21,12 @@ async def repo(msg: MessageSession):
         parent = False
 
         if result['homepage'] is not None:
-            website = 'Website: ' + result['homepage'] + '\n'
+            website = 'Website: ' + str(Url(result['homepage'])) + '\n'
         else:
             website = ''
 
         if result['mirror_url'] is not None:
-            mirror = f' (This is a mirror of {result["mirror_url"]} )'
+            mirror = f' (This is a mirror of {str(Url(result["mirror_url"]))} )'
         else:
             mirror = ''
 
@@ -46,7 +46,7 @@ Language · {result['language']} | Fork · {result['forks_count']} | Star · {re
 License: {rlicense}
 Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updated_at'])} ago
 
-{website}{result['html_url']}'''
+{website}{str(Url(result['html_url']))}'''
 
         if mirror:
             message += '\n' + mirror

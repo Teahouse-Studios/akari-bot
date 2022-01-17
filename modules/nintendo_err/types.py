@@ -1,3 +1,6 @@
+from core.elements import Url
+
+
 class Module:
     """
     Describes a Module. A Module contains a dictionary of ResultCodes,
@@ -95,7 +98,7 @@ class ConsoleErrorInfo:
 
 
 # Helper constants
-REPORT_DETAILS = '你应该向本模块的原仓库发起Issue来添加有关内容（请说英文）：https://github.com/nh-server/Kurisu/issues'
+REPORT_DETAILS = '你应该向本模块的原仓库发起Issue来添加有关内容（请说英文）：' + str(Url('https://github.com/nh-server/Kurisu/issues'))
 
 UNKNOWN_MODULE = ResultInfo(f'无效或未知的模组。请问你正确输入错误代码了吗？{REPORT_DETAILS}')
 

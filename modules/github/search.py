@@ -1,6 +1,6 @@
 import traceback
 
-from core.elements import MessageSession
+from core.elements import MessageSession, Url
 from core.elements.others import ErrorMessage
 from core.utils.bot import get_url
 from modules.github.utils import dirty_check, darkCheck
@@ -14,7 +14,7 @@ async def search(msg: MessageSession):
         items_out = []
         for item in items:
             try:
-                items_out.append(str(item['full_name'] + ': ' + item['html_url']))
+                items_out.append(str(item['full_name'] + ': ' + str(Url(item['html_url']))))
             except TypeError:
                 continue
         footnotes = f"另有 {result['total_count'] - 5} 个结果未显示。" if item_count_expected == 5 else ''

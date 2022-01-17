@@ -1,6 +1,6 @@
 import traceback
 
-from core.elements import MessageSession
+from core.elements import MessageSession, Url
 from core.elements.others import ErrorMessage
 from core.utils.bot import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
@@ -35,7 +35,7 @@ async def user(msg: MessageSession):
 Type · {result['type']} | Follower · {result['followers']} | Following · {result['following']} | Repo · {result['public_repos']} | Gist · {result['public_gists']}{optional_text}
 Account Created {time_diff(result['created_at'])} ago | Latest activity {time_diff(result['updated_at'])} ago
 
-{result['html_url']}'''
+{str(Url(result['html_url']))}'''
 
         is_dirty = await dirty_check(message, result['login']) or darkCheck(message)
         if is_dirty:
