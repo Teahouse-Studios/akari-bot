@@ -20,7 +20,6 @@ from database.logging_message import UnfriendlyActions
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
-Url.mm = True
 init()
 
 
