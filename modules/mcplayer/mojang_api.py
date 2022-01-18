@@ -16,11 +16,11 @@ async def name_to_uuid(name):
 async def uuid_to_skin_and_cape(uuid):
     skin = await download_to_cache(
         'https://crafatar.com/renders/body/' + uuid + '?overlay')
+    is_cape = True
     try:
         await get_url('https://crafatar.com/capes/' + uuid, status_code=200)
     except ValueError:
         is_cape = False
-    is_cape = True
     path = None
     if is_cape:
         cape = Image.open(await download_to_cache(
