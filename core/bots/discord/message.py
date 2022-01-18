@@ -12,6 +12,7 @@ from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, 
 from core.elements.message.chain import MessageChain
 from core.elements.message.internal import Embed
 from core.elements.others import confirm_command
+from core.logger import Logger
 from database import BotDBUtil
 
 
@@ -78,16 +79,19 @@ class MessageSession(MS):
                 send_ = await self.session.target.send(x.text,
                                                        reference=self.session.message if quote and count == 0
                                                                                          and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 send_ = await self.session.target.send(file=discord.File(await x.get()),
                                                        reference=self.session.message if quote and count == 0
                                                                                          and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
                 send_ = await self.session.target.send(embed=embeds,
                                                        reference=self.session.message if quote and count == 0
                                                                                          and self.session.message else None,
                                                        files=files)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Embed: {str(x.__dict__)}')
             else:
                 send_ = False
             if send_:

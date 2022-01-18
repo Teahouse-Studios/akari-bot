@@ -9,6 +9,7 @@ from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, 
     ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
+from core.logger import Logger
 from database import BotDBUtil
 
 
@@ -48,17 +49,20 @@ class MessageSession(MS):
                 send_ = await bot.send_message(self.session.target, x.text,
                                                reply_to_message_id=self.session.message.message_id if quote
                                                and count == 0 and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 with open(await x.get(), 'rb') as image:
                     send_ = await bot.send_photo(self.session.target, image,
                                                  reply_to_message_id=self.session.message.message_id if quote
                                                  and count == 0
                                                  and self.session.message else None)
+                    Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Voice):
                 with open(x.path, 'rb') as voice:
                     send_ = await bot.send_audio(self.session.target, voice,
                                                  reply_to_message_id=self.session.message.message_id if quote
                                                  and count == 0 and self.session.message else None)
+                    Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
             else:
                 send_ = False
             if send_:
