@@ -27,9 +27,9 @@ class Plain:
 class Url:
     mm = False
 
-    def __init__(self, url: str):
+    def __init__(self, url: str, disable_mm: bool = False):
         self.url = url
-        if Url.mm:
+        if Url.mm and not disable_mm:
             mm_url = f'https://middleman.wdf.ink/?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
