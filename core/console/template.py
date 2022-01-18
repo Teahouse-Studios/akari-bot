@@ -26,6 +26,7 @@ class Template(MS):
         voice = False
         forward = False
         delete = True
+        wait = True
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         Logger.info(msgchain)
@@ -59,7 +60,8 @@ class Template(MS):
         return self.session.message
 
     async def delete(self):
-        print(f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )")
+        print(
+            f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )")
         return True
 
     async def checkPermission(self):
