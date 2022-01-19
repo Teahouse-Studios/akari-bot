@@ -11,7 +11,7 @@ from .orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList
 
 
 class WikiTargetInfo:
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def __init__(self, msg: [MessageSession, str]):
         if isinstance(msg, MessageSession):
@@ -27,7 +27,7 @@ class WikiTargetInfo:
             session.commit()
             self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def add_start_wiki(self, url):
         self.query.link = url
@@ -39,7 +39,7 @@ class WikiTargetInfo:
         if self.query is not None:
             return self.query.link if self.query.link is not None else None
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def config_interwikis(self, iw: str, iwlink: str = None, let_it=True):
         interwikis = json.loads(self.query.iws)
@@ -61,7 +61,7 @@ class WikiTargetInfo:
         else:
             return {}
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def config_headers(self, headers, let_it: [bool, None] = True):
         headers = json.loads(headers)
@@ -87,14 +87,14 @@ class WikiTargetInfo:
             headers = {'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
         return headers
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def set_prefix(self, prefix: str):
         self.query.prefix = prefix
         session.commit()
         return True
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def del_prefix(self):
         self.query.prefix = None
@@ -106,7 +106,7 @@ class WikiTargetInfo:
 
 
 class WikiSiteInfo:
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def __init__(self, api_link):
         self.api_link = api_link
@@ -117,7 +117,7 @@ class WikiSiteInfo:
             return self.query.siteInfo, self.query.timestamp
         return False
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def update(self, info: dict):
         if self.query is None:
@@ -134,20 +134,20 @@ class Audit:
         self.api_link = api_link
 
     @property
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def inAllowList(self) -> bool:
         session.expire_all()
         return True if session.query(WikiAllowList).filter_by(apiLink=self.api_link).first() else False
 
     @property
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def inBlockList(self) -> bool:
         session.expire_all()
         return True if session.query(WikiBlockList).filter_by(apiLink=self.api_link).first() else False
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def add_to_AllowList(self, op) -> bool:
         if self.inAllowList:
@@ -157,7 +157,7 @@ class Audit:
         session.expire_all()
         return True
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def remove_from_AllowList(self) -> bool:
         if not self.inAllowList:
@@ -167,7 +167,7 @@ class Audit:
         session.expire_all()
         return True
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def add_to_BlockList(self, op) -> bool:
         if self.inBlockList:
@@ -177,7 +177,7 @@ class Audit:
         session.expire_all()
         return True
 
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def remove_from_BlockList(self) -> bool:
         if not self.inBlockList:
@@ -188,13 +188,13 @@ class Audit:
         return True
 
     @staticmethod
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def get_allow_list() -> list:
         return session.query(WikiAllowList.apiLink, WikiAllowList.operator)
 
     @staticmethod
-    @retry(stop=stop_after_attempt(3))
+    @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def get_block_list() -> list:
         return session.query(WikiBlockList.apiLink, WikiBlockList.operator)
