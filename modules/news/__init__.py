@@ -1,7 +1,7 @@
 from core.component import on_command
 from core.elements import MessageSession, Image
 
-from .world_news import news as n
+from .news import news as n
 
 news = on_command(
     bind_prefix='news',
