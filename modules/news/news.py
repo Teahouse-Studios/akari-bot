@@ -1,10 +1,5 @@
-import httpx
 import json
-async def get_url(url):
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url,timeout=600)
-        result = resp.text
-        return result
+from core.utils import get_url
 async def news():
     try:
         information = json.loads(await get_url('https://api.iyk0.com/60s/'))
