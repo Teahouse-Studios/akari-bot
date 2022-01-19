@@ -63,7 +63,7 @@ async def arcb30init():
         if not os.path.exists(bluroutputpath):
             os.makedirs(bluroutputpath)
         d2.save(f'{bluroutputpath}/{file}')
-        img3 = img.filter(ImageFilter.GaussianBlur(radius=8))
+        img3 = img.filter(ImageFilter.GaussianBlur(radius=40))
         downlight = ImageEnhance.Brightness(img3)
         d3 = downlight.enhance(0.65)
         if not os.path.exists(bluroutputpath_official):
@@ -104,7 +104,7 @@ async def arcb30init():
         if x.find('_') == -1:
             shutil.copy(cache + f'/assets/img/world/{x}', assets + f'/world/{x}')
             imgw = Image.open(cache + f'/assets/img/world/{x}')
-            imgw1 = imgw.filter(ImageFilter.GaussianBlur(radius=8))
+            imgw1 = imgw.filter(ImageFilter.GaussianBlur(radius=40))
             imgw1.save(world_official + x)
 
     coordinate = {'left_top': [1070, 25], 'right_top': [1070, 25], 'right_bottom': [1070, 959],
