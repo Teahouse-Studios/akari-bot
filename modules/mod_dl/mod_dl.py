@@ -14,11 +14,11 @@ def Chinese(string: str):
     return False
 async def curseforge(mod_name: str,ver: str):
     if Chinese(mod_name):
-        return '请不要输入中文，CurseForge暂不支持中文搜索。'
+        return {'msg':'请不要输入中文，CurseForge暂不支持中文搜索。'}
     full_url = search_piece_1 + mod_name + search_piece_2
     html = await get_url(full_url)
     if html == '404 page not found':
-        return '未找到搜索结果。'
+        return {'msg':'未找到搜索结果。'}
     bs = BeautifulSoup(html,'html.parser')
     information = bs.body.div.div.a
     more_specific_html = str(information)
@@ -34,7 +34,7 @@ async def curseforge(mod_name: str,ver: str):
         status = "Release"
     if bool(information_2.find("Release")) == True:
         status = "Beta"
-    dict = {"filename":file_name,"download_link":download_link,"status":status}
+    dict = {"filename":file_name,"download_link":download_link,"status":status,'msg':'200 OK'}
     print(dict)
     return dict
     
