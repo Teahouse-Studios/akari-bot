@@ -22,8 +22,29 @@ async def cytoid_profile(msg: MessageSession):
     currentLevel = profile['exp']['currentLevel']
     nextLevelExp = profile['exp']['nextLevelExp']
     rating = profile['rating']
-    grade = profile['grade']
-    grade = f'A: {grade["A"]}, B: {grade["B"]}, C: {grade["C"]}, D: {grade["D"]}, F: {grade["F"]}, S: {grade["S"]}, SS: {grade["SS"]}'
+    grade: dict = profile['grade']
+    gradet = ''
+    a = grade.get('A')
+    if a is not None:
+        gradet += f'A: {a},'
+    b = grade.get('B')
+    if b is not None:
+        gradet += f' B: {b},'
+    c = grade.get('C')
+    if c is not None:
+        gradet += f' C: {c},'
+    d = grade.get('D')
+    if d is not None:
+        gradet += f' D: {d},'
+    e = grade.get('E')
+    if e is not None:
+        gradet += f' E: {e},'
+    s = grade.get('S')
+    if s is not None:
+        gradet += f' S: {s},'
+    ss = grade.get('SS')
+    if ss is not None:
+        gradet += f' SS: {ss}'
     text = f'UID: {uid}\n' + \
            (f'Nickname: {nick}\n' if nick else '') + \
            f'BasicExp: {basicExp}\n' + \
@@ -32,6 +53,6 @@ async def cytoid_profile(msg: MessageSession):
            f'CurrentLevel: {currentLevel}\n' + \
            f'NextLevelExp: {nextLevelExp}\n' + \
            f'Rating: {rating}\n' + \
-           f'Grade: {grade}'
+           f'Grade: {gradet}'
     msgchain = [Image(path=avatar), Plain(text)]
     await msg.sendMessage(msgchain)
