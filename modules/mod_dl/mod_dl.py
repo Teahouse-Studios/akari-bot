@@ -27,7 +27,10 @@ async def curseforge(mod_name: str,ver: str):
     final_url = search_step_2 + id + '&ver=' + ver
     html_2 = await get_url(final_url)
     bs_2 = BeautifulSoup(html_2,'html.parser')
-    results = bs_2.body.div.div.table.tbody.find_all('tr')
+    try:
+        results = bs_2.body.div.div.table.tbody.find_all('tr')
+    except:
+        return {'msg':'请不要尝试搜索不存在的Minecraft版本的Mod。'}
     information_2 = str(results[1])
     download_link = information_2[int(information_2.find("\"")+1):int(information_2.find("\" target="))]
     file_name = information_2[int(information_2.find("_blank\"")+8):int(information_2.find("</a>"))]
