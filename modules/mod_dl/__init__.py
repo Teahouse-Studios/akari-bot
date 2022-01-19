@@ -1,7 +1,6 @@
 from core.component import on_command
 from core.elements import MessageSession
 from core.elements import Url
-from core.utils import get_url
 
 from .mod_dl import curseforge as d
 
