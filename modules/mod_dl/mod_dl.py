@@ -1,6 +1,7 @@
 '''
 调用了其他API，但是已于CurseForge仓库对接。
 '''
+from core.utils import get_url
 from bs4 import BeautifulSoup
 
 search_piece_1 = 'https://files.xmdhs.top/curseforge/s?q='
