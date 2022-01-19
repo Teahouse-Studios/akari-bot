@@ -7,11 +7,12 @@ from .mod_dl import curseforge as d
 mod_dl = on_command(
     bind_prefix='mod_dl',
     desc='下载CurseForge上的Mod。',
-    developers=['HornCopper'])
+    developers=['HornCopper'],
+    recommend_modules=['mcmod']))
 
-@news.handle('<mod_name> {通过模组名获取模组下载链接，CloudFlare CDN支持。}')
+@news.handle('<mod_name> <mcversion> {通过模组名获取模组下载链接，CloudFlare CDN支持。')
 async def main(msg: MessageSession):
-    info = await d(msg.parsed_msg['<mod_name>'])
+    info = await d(msg.parsed_msg['<mod_name>'],msg.parsed_msg['<mcversion>'])
     if info['msg'] != '200 OK':
         await msg.sendMessage(info['msg'])
     link = info["download_link"]
