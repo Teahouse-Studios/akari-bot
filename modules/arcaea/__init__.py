@@ -25,6 +25,7 @@ async def _(msg: MessageSession):
         return
     query_code = None
     unofficial = msg.parsed_msg['unofficial']
+    onofficial = True if unofficial is not None else False
     friendcode = msg.parsed_msg['<friendcode>']
     if friendcode is not None:
         query_code = friendcode
