@@ -414,7 +414,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(rd)))
             query = await asyncio.gather(*tasks)
             for result in query:
-                print(result.__dict__)
+                print(result)
                 r: PageInfo = result
                 iw_prefix = iw_prefix
                 display_title = None
