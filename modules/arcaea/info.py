@@ -63,6 +63,6 @@ async def get_info(usercode):
         return result
     else:
         if get_['status'] in errcode:
-            return {'text': f'查询失败：{errcode[get_["status"]]}'}
+            return Plain(f'查询失败：{errcode[get_["status"]]}')
         else:
-            return {'text': '查询失败。' + get_}
+            return Plain('查询失败。' + get_)

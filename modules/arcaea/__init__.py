@@ -8,6 +8,7 @@ from core.utils import get_url
 from .getb30 import getb30
 from .getb30_official import getb30_official
 from .info import get_info
+from .info_official import get_info_official
 from .initialize import arcb30init
 from .dbutils import ArcBindInfoManager
 from .utils import get_userinfo
@@ -27,9 +28,15 @@ async def _(msg: MessageSession):
         return
     query_code = None
     unofficial = msg.parsed_msg['unofficial']
-    friendcode = msg.parsed_msg['<friendcode>']
+    friendcode: str = msg.parsed_msg['<friendcode>']
     if friendcode is not None:
-        query_code = friendcode
+        if friendcode.isdigit():
+            if len(friendcode) == 9:
+                query_code = friendcode
+            else:
+                return await msg.sendMessage('好友码必须是9位数字！')
+        else:
+            return await msg.sendMessage('请输入正确的好友码！')
     else:
         get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
         if get_friendcode_from_db is not None:
@@ -44,6 +51,7 @@ async def _(msg: MessageSession):
                 await msg.sendMessage(msgchain)
             except Exception:
                 traceback.print_exc()
+                await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
                 unofficial = True
         if unofficial:
             try:
@@ -59,27 +67,48 @@ async def _(msg: MessageSession):
         return await msg.sendMessage('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
 
 
-@arc.handle('info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}')
+@arc.handle('info unofficial [<friendcode>] {查询一个Arcaea用户的最近游玩记录（不使用官方API）}',
+            'info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}')
 async def _(msg: MessageSession):
     if not os.path.exists(assets_path):
         await msg.sendMessage('未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
         return
     query_code = None
+    unofficial = msg.parsed_msg['unofficial']
     friendcode = msg.parsed_msg['<friendcode>']
     if friendcode is not None:
-        query_code = friendcode
+        if friendcode.isdigit():
+            if len(friendcode) == 9:
+                query_code = friendcode
+            else:
+                return await msg.sendMessage('好友码必须是9位数字！')
+        else:
+            return await msg.sendMessage('请输入正确的好友码！')
     else:
         get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
         if get_friendcode_from_db is not None:
             query_code = get_friendcode_from_db
     if query_code is not None:
-        try:
-            resp = await get_info(query_code)
-            await msg.sendMessage(resp)
-        except Exception:
-            traceback.print_exc()
-            await msg.sendMessage('获取失败。')
-            return
+        if not unofficial:
+            try:
+                resp = await get_info_official(query_code)
+                if resp['success']:
+                    return await msg.sendMessage(resp['msg'])
+                else:
+                    await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
+                    unofficial = True
+            except Exception:
+                traceback.print_exc()
+                await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
+                unofficial = True
+        if unofficial:
+            try:
+                resp = await get_info(query_code)
+                await msg.sendMessage(resp)
+            except Exception:
+                traceback.print_exc()
+                await msg.sendMessage('获取失败。')
+                return
     else:
         return await msg.sendMessage('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
 
