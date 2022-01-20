@@ -81,6 +81,14 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
+    start_wiki = target.get_start_wiki()
+    base_interwiki_link = None
+    if start_wiki is not None:
+        base_interwiki_link = await WikiLib(start_wiki, target.get_headers()).parse_page_info('Special:Interwiki')
+        print(base_interwiki_link.__dict__)
+        if base_interwiki_link.status:
+            base_interwiki_link = base_interwiki_link.link
+    base_interwiki_link_msg = f'此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
     if query != {}:
         if not msg.parsed_msg['legacy'] and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
@@ -88,9 +96,14 @@ async def _(msg: MessageSession):
         else:
             img = False
         if img:
-            await msg.sendMessage([Image(img), Plain(f'使用~wiki iw get <Interwiki> 可以获取interwiki对应的链接。')])
+            mt = f'使用~wiki iw get <Interwiki> 可以获取interwiki对应的链接。'
+            if base_interwiki_link is not None:
+                mt += base_interwiki_link_msg
+            await msg.sendMessage([Image(img), Plain(mt)])
         else:
             result = '当前设置了以下Interwiki：\n' + '\n'.join([f'{x}: {query[x]}' for x in query])
+            if base_interwiki_link is not None:
+                result += base_interwiki_link_msg
             await msg.sendMessage(result)
     else:
         await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
@@ -273,7 +286,7 @@ async def _(msg: MessageSession):
 on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari'])
 
 wiki_inline = on_regex('wiki_inline',
-                       desc='解析消息中带有的[[]]或{{}}字符串自动查询Wiki，如[[海晶石]]',
+                       desc='开启后将自动解析消息中带有的[[]]或{{}}字符串并自动查询Wiki，如[[海晶石]]',
                        alias='wiki_regex', developers=['OasisAkari'])
 
 

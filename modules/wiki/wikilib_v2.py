@@ -64,6 +64,9 @@ class WikiInfo:
         self.in_allowlist = in_allowlist
         self.in_blocklist = in_blocklist
 
+    def __repr__(self):
+        return self.__dict__
+
 
 class WikiStatus:
     def __init__(self,
@@ -73,6 +76,9 @@ class WikiStatus:
         self.available = available
         self.value = value
         self.message = message
+
+    def __repr__(self):
+        return self.__dict__
 
 
 class PageInfo:
@@ -102,6 +108,9 @@ class PageInfo:
         self.before_page_property = before_page_property
         self.page_property = page_property
         self.invalid_namespace = invalid_namespace
+
+    def __repr__(self):
+        return self.__dict__
 
 
 class WikiLib:
@@ -381,6 +390,7 @@ class WikiLib:
                         if 'imageinfo' in page_raw:
                             file = page_raw['imageinfo'][0]['url']
                         page_info.file = file
+                        page_info.status = True
                     else:
                         split_title = title.split(':')
                         if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
