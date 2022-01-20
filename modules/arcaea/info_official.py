@@ -61,8 +61,6 @@ async def get_info_official(usercode):
             ptt += 1 + (score - 9800000) / 200000
         elif score <= 9500000:
             ptt += (score - 9500000) / 300000
-        if ptt <= 0:
-            realptt = "???(can't calc since score is too low)"
 
     shiny_pure = recent['shiny_pure_count']
     pure = recent['pure_count']
