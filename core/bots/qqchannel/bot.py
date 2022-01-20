@@ -14,7 +14,16 @@ from database import BotDBUtil
 
 from core.bots.qqchannel.token import token
 from core.bots.qqchannel.message import MessageSession
+from core.logger import basic_logger_format
+import logging
 
+log_format = logging.Formatter(fmt=basic_logger_format)
+log_handler = logging.StreamHandler()
+log_handler.setFormatter(log_format)
+logger = logging.getLogger()
+for h in logger.handlers:
+    logger.removeHandler(h)
+logger.addHandler(log_handler)
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
