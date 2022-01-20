@@ -1,6 +1,4 @@
-import datetime
 import logging
-import os
 import subprocess
 import traceback
 from queue import Queue, Empty
@@ -9,7 +7,11 @@ from time import sleep
 
 import psutil
 
-from init import init_bot
+import os
+import shutil
+
+from config import Config
+from database import BotDBUtil
 
 encode = 'UTF-8'
 
@@ -28,11 +30,19 @@ def enqueue_output(out, queue):
     out.close()
 
 
-init_bot()
+def init_bot():
+    cache_path = os.path.abspath('./cache/')
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+        os.mkdir(cache_path)
+    else:
+        os.mkdir(cache_path)
 
-logging.basicConfig(format="%(msg)s", level=logging.INFO)
+    base_superuser = Config('base_superuser')
+    if base_superuser:
+        BotDBUtil.SenderInfo(base_superuser).edit('isSuperUser', True)
 
-start = datetime.datetime.now()
+
 pidlst = []
 
 
@@ -99,24 +109,27 @@ def run_bot():
         sleep(0.001)
 
 
-try:
-    while True:
-        try:
-            run_bot()
-            logging.fatal('All bots exited unexpectedly, please check the output')
-            break
-        except RestartBot:
-            for x in pidlst:
-                try:
-                    os.kill(x, 9)
-                except (PermissionError, ProcessLookupError):
-                    pass
-            pidlst.clear()
-            sleep(5)
-            continue
-except KeyboardInterrupt:
-    for x in pidlst:
-        try:
-            os.kill(x, 9)
-        except (PermissionError, ProcessLookupError):
-            pass
+if __name__ == '__main__':
+    init_bot()
+    logging.basicConfig(format="%(msg)s", level=logging.INFO)
+    try:
+        while True:
+            try:
+                run_bot()
+                logging.fatal('All bots exited unexpectedly, please check the output')
+                break
+            except RestartBot:
+                for x in pidlst:
+                    try:
+                        os.kill(x, 9)
+                    except (PermissionError, ProcessLookupError):
+                        pass
+                pidlst.clear()
+                sleep(5)
+                continue
+    except KeyboardInterrupt:
+        for x in pidlst:
+            try:
+                os.kill(x, 9)
+            except (PermissionError, ProcessLookupError):
+                pass

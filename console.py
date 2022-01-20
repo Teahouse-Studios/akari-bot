@@ -14,7 +14,7 @@ import aioconsole
 
 from datetime import datetime
 
-from init import init_bot
+from bot import init_bot
 from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck, Url
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
