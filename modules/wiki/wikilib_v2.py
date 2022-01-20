@@ -64,9 +64,6 @@ class WikiInfo:
         self.in_allowlist = in_allowlist
         self.in_blocklist = in_blocklist
 
-    def __repr__(self):
-        return self.__dict__
-
 
 class WikiStatus:
     def __init__(self,
@@ -76,9 +73,6 @@ class WikiStatus:
         self.available = available
         self.value = value
         self.message = message
-
-    def __repr__(self):
-        return self.__dict__
 
 
 class PageInfo:
@@ -108,9 +102,6 @@ class PageInfo:
         self.before_page_property = before_page_property
         self.page_property = page_property
         self.invalid_namespace = invalid_namespace
-
-    def __repr__(self):
-        return self.__dict__
 
 
 class WikiLib:
