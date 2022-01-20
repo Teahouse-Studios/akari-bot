@@ -3,7 +3,9 @@ import logging
 import re
 import sys
 
+
 factory = logging.getLogRecordFactory()
+basic_logger_format = "[%(asctime)s][%(botname)s][%(levelname)s][%(pathname)s:%(lineno)d]: %(msg)s"
 
 
 def record_factory(*args, **kwargs):
@@ -19,7 +21,7 @@ logging.setLogRecordFactory(record_factory)
 
 
 class Logginglogger:
-    def __init__(self, fmt="[%(asctime)s][%(botname)s][%(levelname)s][%(pathname)s:%(lineno)d]: %(msg)s", **kwargs):
+    def __init__(self, fmt=basic_logger_format, **kwargs):
         logging.basicConfig(
             format=fmt,
             level=logging.INFO if not kwargs.get("debug") else logging.DEBUG
