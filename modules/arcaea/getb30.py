@@ -84,7 +84,7 @@ async def getb30(usercode, official=False):
                     realptt = realptts[last5['song_id'] + difficulty]
                     ptt = ptts[last5['song_id'] + difficulty]
                     score = scores[last5['song_id'] + difficulty]
-                    last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt} -> {round(ptt, 4)}\n'
+                    last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt / 10} -> {round(ptt, 4)}\n'
                 print(last5list)
                 username = loadjson["content"]['account_info']['name']
                 ptt = int(loadjson["content"]['account_info']['rating']) / 100

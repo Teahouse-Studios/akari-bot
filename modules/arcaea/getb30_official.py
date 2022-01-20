@@ -114,7 +114,7 @@ async def getb30_official(usercode):
         realptt = realptts[last5['song_id'] + difficulty]
         ptt = ptts[last5['song_id'] + difficulty]
         score = scores[last5['song_id'] + difficulty]
-        last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt} -> {round(ptt, 4)}\n'
+        last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt / 10} -> {round(ptt, 4)}\n'
     print(last5list)
     filename = drawb30(username, b30_avg, r10_avg, potential, 0, newdir, official=True)
     filelist = os.listdir(newdir)
