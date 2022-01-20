@@ -89,7 +89,7 @@ async def download_to_cache(link: str) -> Union[str, bool]:
                     file.write(res)
                     return path
     except:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False
 
 

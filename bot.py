@@ -85,7 +85,7 @@ def run_bot():
                 logging.info(line[:-1].decode(encode))
             except Exception:
                 print(line)
-                traceback.print_exc()
+                logging.error(traceback.format_exc())
 
         # break when all processes are done.
         if all(p.poll() is not None for p in runlst):

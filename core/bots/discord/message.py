@@ -55,7 +55,7 @@ class FinishedSession(FinS):
             for x in self.result:
                 await x.delete()
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
 
 class MessageSession(MS):
@@ -144,7 +144,7 @@ class MessageSession(MS):
             for x in self.session.message:
                 await x.delete()
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
     class Typing:
         def __init__(self, msg: MS):
@@ -178,7 +178,7 @@ class FetchedSession(FS):
         try:
             getChannel = await client.fetch_channel(self.session.target)
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             return False
         self.session.target = self.session.sender = self.parent.session.target = self.parent.session.sender = getChannel
         return await self.parent.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
@@ -213,7 +213,7 @@ class FetchTarget(FT):
                     send = await x.sendMessage(message)
                     send_list.append(send)
                 except Exception:
-                    traceback.print_exc()
+                    Logger.error(traceback.format_exc())
         else:
             get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
             for x in get_target_id:
@@ -223,5 +223,5 @@ class FetchTarget(FT):
                         send = await fetch.sendMessage(message)
                         send_list.append(send)
                     except Exception:
-                        traceback.print_exc()
+                        Logger.error(traceback.format_exc())
         return send_list

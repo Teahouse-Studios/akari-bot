@@ -30,7 +30,7 @@ class FinishedSession(FinS):
             for x in self.result:
                 await bot.call_action('delete_msg', message_id=x['message_id'])
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
 
 class MessageSession(MS):
@@ -125,7 +125,7 @@ class MessageSession(MS):
             else:
                 await bot.call_action('delete_msg', message_id=self.session.message['message_id'])
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
     class Typing:
         def __init__(self, msg: MS):
@@ -218,7 +218,7 @@ class FetchTarget(FT):
                     send = await x.sendMessage(message)
                     send_list.append(send)
                 except Exception:
-                    traceback.print_exc()
+                    Logger.error(traceback.format_exc())
         else:
             get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
             group_list_raw = await bot.call_action('get_group_list')
@@ -256,5 +256,5 @@ class FetchTarget(FT):
                         send_list.append(send)
                         await asyncio.sleep(0.5)
                     except Exception:
-                        traceback.print_exc()
+                        Logger.error(traceback.format_exc())
         return send_list

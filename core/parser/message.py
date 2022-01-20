@@ -182,7 +182,7 @@ async def parser(msg: MessageSession):
                                 await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                                 continue
                         except InvalidHelpDocTypeError:
-                            traceback.print_exc()
+                            Logger.error(traceback.format_exc())
                             await msg.sendMessage(ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
                             continue
                     else:

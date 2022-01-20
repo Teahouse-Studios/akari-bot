@@ -2,6 +2,7 @@
 __pycache__/
 config/*.cfg
 .idea
+.vscode
 assets/mcversion.txt
 mcvrss.txt
 assets/usercard/*
