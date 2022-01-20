@@ -141,7 +141,7 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     if not official:
         text_border(textdraw, 1876, 1270, f'B30: {str(b30)}  R10: {str(r10)}', 'white', '#3a4853', font=b30font)
     else:
-        text_border(textdraw, b30img.width - 170 - textdraw.textsize(br30, font=b30font)[0], 112, br30, 'white', '#3a4853', font=b30font)
+        text_border(textdraw, b30img.width - 360, 112, br30, 'white', '#3a4853', font=b30font)
     # disclaimer
     disclaimer_font = ImageFont.truetype(f'{assets_path}/Fonts/Exo-Medium.ttf', 25)
     if official:
@@ -183,4 +183,4 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
 
 
 if __name__ == '__main__':
-    drawb30('OasisAkari', '10.250', '10.250', 12.31, '0', official=False)
+    drawb30('OasisAkari', '10.250', '10.250', 12.31, '0', official=True)

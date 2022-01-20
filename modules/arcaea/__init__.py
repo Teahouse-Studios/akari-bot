@@ -18,7 +18,9 @@ webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-@arc.handle('b30 [<friendcode>] {查询一个Arcaea用户的b30列表}', 'b30 unofficial [<friendcode>] {查询一个Arcaea用户的b30列表（不使用官方API）}')
+@arc.handle('b30 unofficial [<friendcode>] {查询一个Arcaea用户的b30列表（不使用官方API）}',
+            'b30 [<friendcode>] {查询一个Arcaea用户的b30列表}'
+            )
 async def _(msg: MessageSession):
     if not os.path.exists(assets_path):
         await msg.sendMessage('未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
