@@ -61,7 +61,9 @@ def run_bot():
                     except (PermissionError, ProcessLookupError):
                         pass
         os.remove(pid_cache)
-
+    envs = os.environ.copy()
+    envs['PYTHONIOENCODING'] = 'UTF-8'
+    envs['PYTHONPATH'] = os.path.abspath('.')
     botdir = './core/bots/'
     lst = os.listdir(botdir)
     runlst = []
@@ -69,7 +71,7 @@ def run_bot():
         bot = os.path.abspath(f'{botdir}{x}/bot.py')
         if os.path.exists(bot):
             p = subprocess.Popen(['python', bot], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 cwd=os.path.abspath('.'))
+                                 cwd=os.path.abspath('.'), env=envs)
             runlst.append(p)
             pidlst.append(p.pid)
 
