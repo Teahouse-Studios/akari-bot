@@ -85,7 +85,6 @@ async def _(msg: MessageSession):
     base_interwiki_link = None
     if start_wiki is not None:
         base_interwiki_link = await WikiLib(start_wiki, target.get_headers()).parse_page_info('Special:Interwiki')
-        print(base_interwiki_link.__dict__)
         if base_interwiki_link.status:
             base_interwiki_link = base_interwiki_link.link
     base_interwiki_link_msg = f'此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
