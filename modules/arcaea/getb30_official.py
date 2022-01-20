@@ -86,7 +86,10 @@ async def getb30_official(usercode):
                     potential_value -= 1 + (score - 9800000) / 200000
                 elif score <= 9500000:
                     potential_value -= (score - 9500000) / 300000
-                realptt = round(potential_value, 1) * 10
+                if potential_value <= 0:
+                    realptt = -1
+                else:
+                    realptt = round(potential_value, 1) * 10
             ptt = x['potential_value']
             ptts[x['song_id'] + difficulty] = ptt
             scores[x['song_id'] + difficulty] = score
@@ -114,7 +117,8 @@ async def getb30_official(usercode):
         realptt = realptts[last5['song_id'] + difficulty]
         ptt = ptts[last5['song_id'] + difficulty]
         score = scores[last5['song_id'] + difficulty]
-        last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt / 10} -> {round(ptt, 4)}\n'
+        last5list += f'[{last5rank}] {trackname}\n' \
+                     f'[{last5rank}] {score} / {(realptt / 10) if realptt > 0 else "???(cant calc since score is too low)"} -> {round(ptt, 4)}\n'
     print(last5list)
     filename = drawb30(username, b30_avg, r10_avg, potential, 0, newdir, official=True)
     filelist = os.listdir(newdir)
