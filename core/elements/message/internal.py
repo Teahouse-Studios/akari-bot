@@ -1,7 +1,8 @@
 import re
 import uuid
 from os.path import abspath
-from typing import List, Union
+from typing import List
+from urllib import parse
 
 import aiohttp
 import filetype
@@ -9,8 +10,6 @@ from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
 from config import CachePath
-
-from urllib import parse
 
 
 class Plain:
@@ -25,12 +24,16 @@ class Plain:
 
 
 class Url:
-    mm = ''
+    mm = False
 
-    def __init__(self, url):
+    def __init__(self, url: str, disable_mm: bool = False):
         self.url = url
-        if Url.mm != '':
-            self.url = Url.mm % parse.quote(url)
+        if Url.mm and not disable_mm:
+            mm_url = f'https://middleman.wdf.ink/?source=akaribot&rot13=%s'
+            rot13 = str.maketrans(
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")
+            self.url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
     def __str__(self):
         return self.url
@@ -71,6 +74,7 @@ class Voice:
     def __init__(self,
                  path=None):
         self.path = path
+
 
 class EmbedField:
     def __init__(self,

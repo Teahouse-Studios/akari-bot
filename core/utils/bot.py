@@ -8,10 +8,9 @@ from typing import Union
 import aiohttp
 import filetype as ft
 import ujson as json
-
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.elements import FetchTarget, PrivateAssets
+from core.elements import PrivateAssets
 from core.loader import load_modules
 from core.logger import Logger
 
@@ -119,7 +118,7 @@ async def load_prompt(bot) -> None:
         open_loader_cache = open(loader_cache, 'r')
         m = await bot.fetch_target(author)
         if m:
-            await m.sendMessage(open_loader_cache.read(), quote=False)
+            await m.sendMessage(open_loader_cache.read())
             open_loader_cache.close()
             open_author_cache.close()
             os.remove(author_cache)

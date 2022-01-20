@@ -1,32 +1,25 @@
 '''基于logging的日志器。'''
 import logging
-from abc import ABC, abstractmethod
+import re
+import sys
+
+factory = logging.getLogRecordFactory()
 
 
-class AbstractLogger(ABC):
-    @abstractmethod
-    def info(self, msg):
-        pass
-
-    @abstractmethod
-    def error(self, msg):
-        pass
-
-    @abstractmethod
-    def debug(self, msg):
-        pass
-
-    @abstractmethod
-    def warn(self, msg):
-        pass
-
-    @abstractmethod
-    def exception(self, msg):
-        pass
+def record_factory(*args, **kwargs):
+    record = factory(*args, **kwargs)
+    for x in sys.path:
+        record.pathname = record.pathname.replace(x, '')
+    record.pathname = record.pathname.replace('\\', '.').replace('/', '.')[1:]
+    record.botname = re.split(r'[/\\]', sys.path[0])[-1]
+    return record
 
 
-class Logginglogger(AbstractLogger):
-    def __init__(self, fmt="[%(asctime)s][%(levelname)s]: %(msg)s", **kwargs):
+logging.setLogRecordFactory(record_factory)
+
+
+class Logginglogger:
+    def __init__(self, fmt="[%(asctime)s][%(botname)s][%(levelname)s][%(pathname)s:%(lineno)d]: %(msg)s", **kwargs):
         logging.basicConfig(
             format=fmt,
             level=logging.INFO if not kwargs.get("debug") else logging.DEBUG
@@ -34,20 +27,11 @@ class Logginglogger(AbstractLogger):
         self.log = logging.getLogger('akaribot.logger')
         self.log.setLevel(logging.INFO)
 
-    def info(self, msg):
-        return self.log.info(msg)
-
-    def error(self, msg):
-        return self.log.error(msg)
-
-    def debug(self, msg):
-        return self.log.debug(msg)
-
-    def warn(self, msg):
-        return self.log.warning(msg)
-
-    def exception(self, msg):
-        return self.log.exception(msg)
+        self.info = self.log.info
+        self.error = self.log.error
+        self.debug = self.log.debug
+        self.warn = self.log.warning
+        self.exception = self.log.exception
 
 
 Logger = Logginglogger()

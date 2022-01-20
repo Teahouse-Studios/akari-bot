@@ -95,7 +95,8 @@ class MessageSession(MS):
 
     async def get_text_channel_list(self):
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)
-        get_channels_info = await bot.call_action('get_guild_channel_list', guild_id=match_guild.group(1), no_cache=True)
+        get_channels_info = await bot.call_action('get_guild_channel_list', guild_id=match_guild.group(1),
+                                                  no_cache=True)
         lst = []
         for m in get_channels_info:
             if m['channel_type'] == 1:
@@ -130,6 +131,8 @@ class MessageSession(MS):
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
+
+
 """
 
 class FetchTarget(FT):

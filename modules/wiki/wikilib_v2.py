@@ -5,11 +5,10 @@ import traceback
 import urllib.parse
 from typing import Union, Dict, List
 
-import core.html2text as html2text
 import ujson as json
 
+import core.html2text as html2text
 from core.dirty_check import check
-from core.logger import Logger
 from core.utils import get_url
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
@@ -37,7 +36,8 @@ class WhatAreUDoingError(Exception):
 class QueryInfo:
     def __init__(self, api, headers=None, prefix=None):
         self.api = api
-        self.headers = headers if headers is not None else {'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
+        self.headers = headers if headers is not None else {
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
         self.prefix = prefix
 
 
@@ -114,7 +114,7 @@ class WikiLib:
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
-            Logger.info(api)
+            # Logger.info(api)
         else:
             raise ValueError('kwargs is None')
         return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
@@ -381,10 +381,11 @@ class WikiLib:
                         if 'imageinfo' in page_raw:
                             file = page_raw['imageinfo'][0]['url']
                         page_info.file = file
+                        page_info.status = True
                     else:
                         split_title = title.split(':')
                         if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                            and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
                             rstitle = ':'.join(split_title[1:]) + page_info.args
                             research = await self.parse_page_info(rstitle)
                             page_info.title = research.title
@@ -405,7 +406,7 @@ class WikiLib:
                     split_title = title.split(':')
                     get_desc = True
                     if not doc_mode and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                            and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                        and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
                         get_all_text = await self.get_wikitext(title)
                         match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
                         if match_doc:

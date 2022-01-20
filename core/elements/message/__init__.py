@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Union
+from typing import List
 
 
 class MsgInfo:

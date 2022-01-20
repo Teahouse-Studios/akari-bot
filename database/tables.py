@@ -35,6 +35,7 @@ class MuteList(Base):
     __tablename__ = "MuteList"
     targetId = Column(String(512), primary_key=True)
 
+
 class CommandTriggerTime(Base):
     """命令触发时间"""
     __tablename__ = "CommandTriggerTime"

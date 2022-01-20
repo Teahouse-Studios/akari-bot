@@ -12,6 +12,7 @@ async def _(msg: MessageSession):
     else:
         await user.user(msg)
 
+
 @github.handle('repo <name> {获取 GitHub 仓库信息}')
 async def _(msg: MessageSession):
     await repo.repo(msg)

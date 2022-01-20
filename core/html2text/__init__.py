@@ -1,7 +1,5 @@
 """html2text: Turn HTML into equivalent Markdown-structured text."""
 
-from core.elements import Url
-
 import html.entities
 import html.parser
 import re
@@ -9,6 +7,7 @@ import urllib.parse as urlparse
 from textwrap import wrap
 from typing import Dict, List, Optional, Tuple, Union
 
+from core.elements import Url
 from . import config
 from .elements import AnchorElement, ListElement
 from .typing import OutCallback

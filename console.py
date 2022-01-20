@@ -24,7 +24,7 @@ from core.utils import init
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-Url.mm = 'https://middleman.wdf.ink/?source=akaribot&dest=%s'
+Url.mm = True
 init()
 
 
@@ -33,9 +33,11 @@ async def console_scheduler():
     Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
         if isinstance(Modules[x], StartUp):
-            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+            gather_list.append(asyncio.ensure_future(
+                Modules[x].function(FetchTarget)))
         if isinstance(Modules[x], Schedule):
-            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget])
+            Scheduler.add_job(
+                func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget])
     await asyncio.gather(*gather_list)
     Scheduler.start()
 

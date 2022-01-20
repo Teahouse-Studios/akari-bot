@@ -6,8 +6,6 @@ import zipfile
 
 from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 
-from core.elements import MessageSession
-
 
 async def arcb30init():
     cache = os.path.abspath('./cache')
@@ -51,8 +49,11 @@ async def arcb30init():
     shutil.copytree(jacket_output, assets + '/jacket')
     files = os.listdir(jacket_output)
     bluroutputpath = os.path.abspath('./cache/bluroutput')
+    bluroutputpath_official = os.path.abspath('./cache/bluroutput_official')
     if not os.path.exists(bluroutputpath):
         os.makedirs(bluroutputpath)
+    if not os.path.exists(bluroutputpath_official):
+        os.makedirs(bluroutputpath_official)
 
     for file in files:
         img = Image.open(f'{jacket_output}/{file}')
@@ -62,17 +63,30 @@ async def arcb30init():
         if not os.path.exists(bluroutputpath):
             os.makedirs(bluroutputpath)
         d2.save(f'{bluroutputpath}/{file}')
+        img3 = img.filter(ImageFilter.GaussianBlur(radius=40))
+        downlight = ImageEnhance.Brightness(img3)
+        d3 = downlight.enhance(0.65)
+        if not os.path.exists(bluroutputpath_official):
+            os.makedirs(bluroutputpath_official)
+        d3.save(f'{bluroutputpath_official}/{file}')
 
     files = os.listdir(bluroutputpath)
     b30background_imgdir = assets + '/b30background_img'
     if not os.path.exists(b30background_imgdir):
         os.makedirs(b30background_imgdir)
+    b30background_imgdir_official = assets + '/b30background_img_official'
+    if not os.path.exists(b30background_imgdir_official):
+        os.makedirs(b30background_imgdir_official)
 
     for file in files:
         img = Image.open(os.path.abspath(f'{bluroutputpath}/{file}'))
         img1 = img.resize((325, 325))
         img2 = img1.crop((0, 62, 325, 263))
         img2.save(os.path.abspath(f'{b30background_imgdir}/{file}'))
+        img3 = Image.open(os.path.abspath(f'{bluroutputpath_official}/{file}'))
+        img4 = img3.resize((325, 325))
+        img5 = img4.crop((0, 62, 325, 263))
+        img5.save(os.path.abspath(f'{b30background_imgdir_official}/{file}'))
 
     shutil.copytree(cache + '/assets/char', assets + '/char')
     shutil.copytree(cache + '/assets/Fonts', assets + '/Fonts')
@@ -81,12 +95,17 @@ async def arcb30init():
     for rating in ratings:
         shutil.copy(cache + f'/assets/img/rating_{rating}.png', assets + f'/ptt/rating_{rating}.png')
 
-    worldimg = cache + f'/assets/img/world'
+    worldimg = f'{cache}/assets/img/world'
     worldimglist = os.listdir(worldimg)
-    os.mkdir(assets + f'/world/')
+    os.mkdir(f'{assets}/world/')
+    world_official = f'{assets}/world_official/'
+    os.mkdir(world_official)
     for x in worldimglist:
         if x.find('_') == -1:
             shutil.copy(cache + f'/assets/img/world/{x}', assets + f'/world/{x}')
+            imgw = Image.open(cache + f'/assets/img/world/{x}')
+            imgw1 = imgw.filter(ImageFilter.GaussianBlur(radius=40))
+            imgw1.save(world_official + x)
 
     coordinate = {'left_top': [1070, 25], 'right_top': [1070, 25], 'right_bottom': [1070, 959],
                   'left_bottom': [134, 959]}

@@ -4,6 +4,7 @@ import ujson as json
 
 from core.utils import post_url
 
+
 async def nbnhhsh(term: str):
     '''查询nbnhhsh。
     :param term: 需要查询的term。
@@ -11,7 +12,8 @@ async def nbnhhsh(term: str):
     try:
         url = 'https://lab.magiconch.com/api/nbnhhsh/guess'
         req = json.dumps({'text': term})
-        text = await post_url(url, data=req, headers={'Content-Type': 'application/json', 'Accept': '*/*', 'Content-Length': str(len(req))})
+        text = await post_url(url, data=req, headers={'Content-Type': 'application/json', 'Accept': '*/*',
+                                                      'Content-Length': str(len(req))})
         print(text)
         data = json.loads(text)
         result = data[0]

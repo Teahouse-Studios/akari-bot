@@ -18,7 +18,7 @@ async def bugtracker(msg: MessageSession):
 
 
 rbug = on_regex('bug_regex',
-                desc='正则自动查询Mojira漏洞，所有消息开头为!<mojiraid>和来自Mojira的链接将会被自动查询并发送梗概内容。',
+                desc='开启后发送 !<mojiraid> 将会查询Mojira并发送该bug的梗概内容。',
                 developers=['OasisAkari'])
 
 
