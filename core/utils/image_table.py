@@ -7,7 +7,6 @@ from typing import List, Union
 
 import aiohttp
 import ujson as json
-
 from tabulate import tabulate
 
 from config import Config

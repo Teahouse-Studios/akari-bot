@@ -7,10 +7,9 @@ import traceback
 import uuid
 
 from config import Config
+from core.utils import get_url
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
-
-from core.utils import get_url
 
 assets_path = os.path.abspath('./assets/arcaea')
 
@@ -41,10 +40,12 @@ async def getb30_official(usercode):
     for x in getb30:
         async def get_songinfo(songid):
             try:
-                get_songinfo_from_botarcapi = await get_url(f'{botarcapi_url}song/info?songid={songid}', headers=headers_botarcapi, status_code=200, fmt='json')
+                get_songinfo_from_botarcapi = await get_url(f'{botarcapi_url}song/info?songid={songid}',
+                                                            headers=headers_botarcapi, status_code=200, fmt='json')
                 songsinfo[songid] = get_songinfo_from_botarcapi['content']
             except Exception:
                 traceback.print_exc()
+
         getinfos.append(get_songinfo(x['song_id']))
     await asyncio.gather(*getinfos)
     newdir = f'./cache/{str(uuid.uuid4())}'
@@ -58,6 +59,7 @@ async def getb30_official(usercode):
     run_lst = []
     for x in getb30:
         d = d + 1
+
         async def draw_jacket(x, d):
             difficulty = '???'
             if x['difficulty'] == 0:
@@ -126,6 +128,3 @@ async def getb30_official(usercode):
         os.remove(f'{newdir}/{x}')
     os.removedirs(newdir)
     return {'text': f'获取结果\nB30: {b30_avg} | R10: {r10_avg}\nB30倒5列表：\n{last5list}', 'file': filename}
-
-
-

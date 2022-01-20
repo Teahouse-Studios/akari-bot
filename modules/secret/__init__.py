@@ -31,7 +31,7 @@ async def newbie(bot: FetchTarget):
                     sz = z['content']
                     if not z['status']:
                         sz = sz + '\n检测到外来信息介入，请前往日志查看所有消息。' \
-                                'https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers'
+                                  'https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers'
                     await bot.post_message('__check_newbie__', sz)
                     qq.append(xz['title'])
 
@@ -70,11 +70,6 @@ async def _(bot: FetchTarget):
                     sz = z['content']
                     if not z['status']:
                         sz = sz + '\n检测到外来信息介入，请前往日志查看所有消息。' \
-                                'https://minecraft.fandom.com/zh/wiki/Special:%E6%BB%A5%E7%94%A8%E6%97%A5%E5%BF%97'
+                                  'https://minecraft.fandom.com/zh/wiki/Special:%E6%BB%A5%E7%94%A8%E6%97%A5%E5%BF%97'
                     await bot.post_message('__check_abuse__', sz)
                     abuses.append(identify)
-
-
-
-
-

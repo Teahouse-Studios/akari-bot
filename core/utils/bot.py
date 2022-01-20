@@ -8,7 +8,6 @@ from typing import Union
 import aiohttp
 import filetype as ft
 import ujson as json
-
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from core.elements import PrivateAssets

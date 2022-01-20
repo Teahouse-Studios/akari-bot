@@ -1,6 +1,6 @@
 from core.component import on_command
-from core.elements import MessageSession
 from core.dirty_check import check
+from core.elements import MessageSession
 from core.logger import Logger
 # from modules.meme.jiki import jiki
 from modules.meme.moegirl import moegirl
@@ -9,7 +9,7 @@ from modules.meme.urban import urban
 
 meme = on_command(
     bind_prefix='meme',
-    alias=['nbnhhsh'], # well, people still use it though it only lived for an hour or so
+    alias=['nbnhhsh'],  # well, people still use it though it only lived for an hour or so
     desc='全功能梗查询。',
     developers=['Dianliang233'])
 
@@ -30,5 +30,5 @@ async def _(msg: MessageSession):
             res += i + '\n'
         else:
             res += i['content'] + '\n'
-    Logger.info('res:'+res)
+    Logger.info('res:' + res)
     await msg.sendMessage(res)

@@ -1,5 +1,4 @@
-from sqlalchemy import Column, String, Text, TIMESTAMP, text
-from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from database.orm import DBSession

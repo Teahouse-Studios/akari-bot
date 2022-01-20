@@ -3,10 +3,11 @@ import logging
 import os
 import subprocess
 import traceback
-import psutil
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
+
+import psutil
 
 from init import init_bot
 

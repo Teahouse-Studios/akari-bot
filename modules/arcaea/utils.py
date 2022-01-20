@@ -16,4 +16,3 @@ async def get_userinfo(user):
     except Exception:
         traceback.print_exc()
         return False
-

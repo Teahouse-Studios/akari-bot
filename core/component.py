@@ -62,14 +62,14 @@ class Bind:
 
 
 def on_command(
-        bind_prefix: str,
-        alias: Union[str, list, tuple, dict] = None,
-        desc: str = None,
-        recommend_modules: Union[str, list, tuple] = None,
-        developers: Union[str, list, tuple] = None,
-        required_admin: bool = False,
-        base: bool = False,
-        required_superuser: bool = False
+    bind_prefix: str,
+    alias: Union[str, list, tuple, dict] = None,
+    desc: str = None,
+    recommend_modules: Union[str, list, tuple] = None,
+    developers: Union[str, list, tuple] = None,
+    required_admin: bool = False,
+    base: bool = False,
+    required_superuser: bool = False
 ):
     """
 
@@ -97,14 +97,14 @@ def on_command(
 
 
 def on_regex(
-        bind_prefix: str,
-        recommend_modules: Union[str, list, tuple] = None,
-        alias: Union[str, list, tuple, dict] = None,
-        desc: str = None,
-        developers: Union[str, list, tuple] = None,
-        required_admin: bool = False,
-        base: bool = False,
-        required_superuser: bool = False):
+    bind_prefix: str,
+    recommend_modules: Union[str, list, tuple] = None,
+    alias: Union[str, list, tuple, dict] = None,
+    desc: str = None,
+    developers: Union[str, list, tuple] = None,
+    required_admin: bool = False,
+    base: bool = False,
+    required_superuser: bool = False):
     """
 
     :param bind_prefix: 绑定的命令前缀。
@@ -133,13 +133,13 @@ def on_regex(
 
 
 def on_option(
-        bind_prefix: str,
-        desc: str = None,
-        alias: Union[str, list, tuple, dict] = None,
-        recommend_modules: Union[str, list, tuple] = None,
-        developers: Union[str, list, tuple] = None,
-        required_superuser: bool = False,
-        required_admin: bool = False
+    bind_prefix: str,
+    desc: str = None,
+    alias: Union[str, list, tuple, dict] = None,
+    recommend_modules: Union[str, list, tuple] = None,
+    developers: Union[str, list, tuple] = None,
+    required_superuser: bool = False,
+    required_admin: bool = False
 ):
     """
 
@@ -164,13 +164,13 @@ def on_option(
 
 
 def on_schedule(
-        bind_prefix: str,
-        trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
-        desc: str = None,
-        alias: Union[str, list, tuple, dict] = None,
-        recommend_modules: Union[str, list, tuple] = None,
-        developers: Union[str, list, tuple] = None,
-        required_superuser: bool = False,
+    bind_prefix: str,
+    trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
+    desc: str = None,
+    alias: Union[str, list, tuple, dict] = None,
+    recommend_modules: Union[str, list, tuple] = None,
+    developers: Union[str, list, tuple] = None,
+    required_superuser: bool = False,
 ):
     """
     :param bind_prefix: 绑定的命令前缀。
@@ -199,12 +199,12 @@ def on_schedule(
 
 
 def on_startup(
-        bind_prefix: str,
-        desc: str = None,
-        alias: Union[str, list, tuple, dict] = None,
-        recommend_modules: Union[str, list, tuple] = None,
-        developers: Union[str, list, tuple] = None,
-        required_superuser: bool = False,
+    bind_prefix: str,
+    desc: str = None,
+    alias: Union[str, list, tuple, dict] = None,
+    recommend_modules: Union[str, list, tuple] = None,
+    developers: Union[str, list, tuple] = None,
+    required_superuser: bool = False,
 ):
     """
 

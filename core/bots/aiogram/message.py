@@ -48,20 +48,20 @@ class MessageSession(MS):
             if isinstance(x, Plain):
                 send_ = await bot.send_message(self.session.target, x.text,
                                                reply_to_message_id=self.session.message.message_id if quote
-                                               and count == 0 and self.session.message else None)
+                                                                                                      and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 with open(await x.get(), 'rb') as image:
                     send_ = await bot.send_photo(self.session.target, image,
                                                  reply_to_message_id=self.session.message.message_id if quote
-                                                 and count == 0
-                                                 and self.session.message else None)
+                                                                                                        and count == 0
+                                                                                                        and self.session.message else None)
                     Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Voice):
                 with open(x.path, 'rb') as voice:
                     send_ = await bot.send_audio(self.session.target, voice,
                                                  reply_to_message_id=self.session.message.message_id if quote
-                                                 and count == 0 and self.session.message else None)
+                                                                                                        and count == 0 and self.session.message else None)
                     Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
             else:
                 send_ = False
@@ -88,7 +88,7 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderInfo.check_TargetAdmin(
-                self.target.targetId) or self.target.senderInfo.query.isSuperUser:
+            self.target.targetId) or self.target.senderInfo.query.isSuperUser:
             return True
         admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
         if self.session.sender in admins:

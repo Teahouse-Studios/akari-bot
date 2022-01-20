@@ -1,6 +1,6 @@
 import os
-import traceback
 import random
+import traceback
 from datetime import datetime, timedelta
 from urllib.parse import quote
 
@@ -50,7 +50,8 @@ class Article:
 
 
 @on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
-             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60), desc='开启后将会自动推送来自Minecraft官网的新闻。')
+             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60),
+             desc='开启后将会自动推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
     file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
     baseurl = 'https://www.minecraft.net'

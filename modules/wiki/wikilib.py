@@ -5,11 +5,11 @@ import traceback
 import urllib.parse
 
 import aiohttp
-from core.elements.others import ErrorMessage
 import html2text
 import ujson as json
 
 from core import dirty_check
+from core.elements.others import ErrorMessage
 from core.logger import Logger
 from modules.wiki.dbutils import WikiSiteInfo
 

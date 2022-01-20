@@ -655,12 +655,12 @@ class ParsedOptions(dict):
 
 
 def docopt(
-        docstring: Optional[str] = None,
-        argvs: Optional[Union[List[str], str]] = None,
-        default_help: bool = True,
-        version: Any = None,
-        options_first: bool = False,
-        more_magic: bool = False,
+    docstring: Optional[str] = None,
+    argvs: Optional[Union[List[str], str]] = None,
+    default_help: bool = True,
+    version: Any = None,
+    options_first: bool = False,
+    more_magic: bool = False,
 ) -> ParsedOptions:
     """Parse `argv` based on command-line interface described in `doc`.
 

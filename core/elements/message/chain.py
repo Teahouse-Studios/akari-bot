@@ -1,14 +1,13 @@
 import base64
+import re
+from typing import Union, List, Tuple
 from urllib.parse import urlparse
 
 import ujson as json
-import re
 
-from .internal import Plain, Image, Voice, Embed, Url
 from core.elements.others import Secret, ErrorMessage
-from typing import Union, List, Tuple
-
 from core.logger import Logger
+from .internal import Plain, Image, Voice, Embed, Url
 
 
 class MessageChain:
@@ -58,6 +57,7 @@ class MessageChain:
     def is_safe(self):
         def unsafeprompt(name, secret, text):
             return f'{name} contains unsafe text "{secret}": {text}'
+
         for v in self.value:
             if isinstance(v, Plain):
                 for secret in Secret.list:

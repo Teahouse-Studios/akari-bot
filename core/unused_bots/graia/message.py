@@ -122,8 +122,8 @@ class MessageSession(MS):
         """
         if isinstance(self.session.target, Group):
             if str(self.session.sender.permission) in ['MemberPerm.Administrator', 'MemberPerm.Owner'] \
-                    or self.target.senderInfo.query.isSuperUser \
-                    or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
+                or self.target.senderInfo.query.isSuperUser \
+                or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
                 return True
         if isinstance(self.session.target, Friend):
             return True

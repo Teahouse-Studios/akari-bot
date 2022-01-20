@@ -94,7 +94,7 @@ class ModulesManager:
 
     @staticmethod
     def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option]) \
-            -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
+        -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()
         for m in modules:

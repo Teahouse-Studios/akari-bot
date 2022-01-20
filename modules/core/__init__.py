@@ -4,7 +4,6 @@ import time
 import traceback
 
 import psutil
-
 import ujson as json
 
 from core.component import on_command
@@ -61,7 +60,7 @@ async def config_modules(msg: MessageSession):
                 if function[0] == '_':
                     continue
                 if isinstance(modules_[function], Command) and (
-                        modules_[function].base or modules_[function].required_superuser):
+                    modules_[function].base or modules_[function].required_superuser):
                     continue
                 enable_list.append(function)
         else:
@@ -108,7 +107,7 @@ async def config_modules(msg: MessageSession):
                 if function[0] == '_':
                     continue
                 if isinstance(modules_[function], Command) and (
-                        modules_[function].base or modules_[function].required_superuser):
+                    modules_[function].base or modules_[function].required_superuser):
                     continue
                 disable_list.append(function)
         else:
@@ -439,7 +438,8 @@ async def _(msg: MessageSession):
         rights += '\n（你拥有本对话的机器人管理员权限）'
     if msg.checkSuperUser():
         rights += '\n（你拥有本机器人的超级用户权限）'
-    await msg.sendMessage(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights, disable_secret_check=True)
+    await msg.sendMessage(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
+                          disable_secret_check=True)
 
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)

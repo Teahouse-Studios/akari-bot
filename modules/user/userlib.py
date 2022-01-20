@@ -6,7 +6,6 @@ import aiohttp
 
 from core.elements import Url
 from core.elements.others import ErrorMessage
-
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.wikilib import wikilib as wiki
 from .gender import gender
@@ -217,17 +216,18 @@ async def GetUser(wikiurl, username, argv=None):
                                     globaltop=d(str(dd[6])),
                                     wikipoint=point)
         if argv == '-p':
-            return str(Url(f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}')) + '[[uimgc:{imagepath}]]'
+            return str(
+                Url(f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}')) + '[[uimgc:{imagepath}]]'
         GlobalAuthData = (
-                f'\n全域用户组：{GGroup}\n' +
-                f'全域编辑数：{GEditcount}\n' +
-                f'注册wiki：{GHome}') if CentralAuth else ''
-        return str(Url(GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')))) + '\n' +\
-                Wikiname + '\n' +\
-                f'用户：{User} | 编辑数：{Editcount}\n' +\
-                f'用户组：{Group}\n' +\
-                f'性别：{Gender}\n' +\
-                f'注册时间：{Registration}' + GlobalAuthData + Blockmessage
+            f'\n全域用户组：{GGroup}\n' +
+            f'全域编辑数：{GEditcount}\n' +
+            f'注册wiki：{GHome}') if CentralAuth else ''
+        return str(Url(GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')))) + '\n' + \
+               Wikiname + '\n' + \
+               f'用户：{User} | 编辑数：{Editcount}\n' + \
+               f'用户组：{Group}\n' + \
+               f'性别：{Gender}\n' + \
+               f'注册时间：{Registration}' + GlobalAuthData + Blockmessage
     except Exception as e:
         if 'missing' in GetUserJson['query']['users'][0]:
             return '没有找到此用户。'

@@ -1,5 +1,6 @@
-from PIL import Image
 import ujson as json
+from PIL import Image
+
 from core.utils import get_url, download_to_cache
 
 
@@ -29,5 +30,6 @@ async def uuid_to_skin_and_cape(uuid):
         path = 'cache/' + uuid + '_fixed.png'
         cape.save(path)
     return {'skin': skin, 'cape': path}
+
 
 __all__ = ['uuid_to_name', 'name_to_uuid', 'uuid_to_skin_and_cape']

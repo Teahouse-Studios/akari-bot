@@ -20,10 +20,12 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 
 temp_ban_counter = {}  # 临时封禁计数
 
+
 async def remove_temp_ban(msg: MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         del temp_ban_counter[msg.target.senderId]
+
 
 async def msg_counter(msg: MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
@@ -96,7 +98,7 @@ async def parser(msg: MessageSession):
                 del command_spilt[0]
                 command_first_word = command_spilt[0].lower()
                 msg.trigger_msg = ' '.join(command_spilt)
-            if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo: # 如果是以 sudo 执行的命令，则不检查是否已 ban
+            if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo:  # 如果是以 sudo 执行的命令，则不检查是否已 ban
                 ExecutionLockList.remove(msg)
                 return
             in_mute = BotDBUtil.Muting(msg).check()

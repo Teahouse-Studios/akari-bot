@@ -225,7 +225,6 @@ class BotDBUtil:
             return True
         return False
 
-
     class Muting:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error

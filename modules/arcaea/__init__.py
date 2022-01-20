@@ -5,12 +5,12 @@ from config import Config
 from core.component import on_command
 from core.elements import MessageSession, Plain, Image
 from core.utils import get_url
+from .dbutils import ArcBindInfoManager
 from .getb30 import getb30
 from .getb30_official import getb30_official
 from .info import get_info
 from .info_official import get_info_official
 from .initialize import arcb30init
-from .dbutils import ArcBindInfoManager
 from .utils import get_userinfo
 
 arc = on_command('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关内容。',
@@ -150,7 +150,8 @@ async def _(msg: MessageSession):
 
 @arc.handle('download {获取最新版本的游戏apk}')
 async def _(msg: MessageSession):
-    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200, fmt='json')
+    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
+                         fmt='json')
     if resp:
         await msg.sendMessage([Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}')])
 

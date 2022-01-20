@@ -3,7 +3,6 @@ import traceback
 
 from config import Config
 from core.elements import Plain, Image
-
 from core.utils.bot import get_url
 from modules.arcaea.errcode import errcode
 
@@ -14,7 +13,8 @@ api_url = Config("botarcapi_url")
 async def get_info(usercode):
     headers = {"User-Agent": Config('botarcapi_agent')}
     try:
-        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True", headers=headers, fmt='json')
+        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True", headers=headers,
+                             fmt='json')
     except ValueError as e:
         return [Plain('查询失败：' + str(e))]
     except Exception:

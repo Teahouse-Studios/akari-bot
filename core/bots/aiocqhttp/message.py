@@ -8,8 +8,8 @@ from typing import List, Union
 from aiocqhttp import MessageSegment
 
 from core.bots.aiocqhttp.client import bot
-from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
+from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
@@ -85,7 +85,7 @@ class MessageSession(MS):
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
             or self.target.senderInfo.check_TargetAdmin(self.target.targetId) \
-                or self.target.senderInfo.query.isSuperUser:
+            or self.target.senderInfo.query.isSuperUser:
             return True
         get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
                                                 user_id=self.session.sender)
@@ -106,7 +106,8 @@ class MessageSession(MS):
         return True if self.target.senderInfo.query.isSuperUser else False
 
     def asDisplay(self, message=None):
-        return ''.join(re.split(r'\[CQ:.*?]', html.unescape(self.session.message.message if message is None else message)))
+        return ''.join(
+            re.split(r'\[CQ:.*?]', html.unescape(self.session.message.message if message is None else message)))
 
     async def fake_forward_msg(self, nodelist):
         if self.target.targetFrom == 'QQ|Group':

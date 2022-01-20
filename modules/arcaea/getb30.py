@@ -67,6 +67,7 @@ async def getb30(usercode, official=False):
                             imgpath = f'{assets_path}/b30background_img{"_official" if official else ""}/random.jpg'
                         dsimg(os.path.abspath(imgpath), d, trackname, x['difficulty'], score, ptt, realptt,
                               x['perfect_count'], x['near_count'], x['miss_count'], x['time_played'], newdir)
+
                     run_lst.append(draw_jacket(x, d))
                 await asyncio.gather(*run_lst)
                 print(tracknames)

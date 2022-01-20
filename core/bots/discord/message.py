@@ -7,7 +7,7 @@ from typing import List, Union
 import discord
 
 from core.bots.discord.client import client
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList,\
+from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList, \
     FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.elements.message.internal import Embed
@@ -117,15 +117,15 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel) \
-                or self.target.senderInfo.query.isSuperUser \
-                or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
+            or isinstance(self.session.message.channel, discord.DMChannel) \
+            or self.target.senderInfo.query.isSuperUser \
+            or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel):
+            or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 

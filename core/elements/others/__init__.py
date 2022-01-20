@@ -1,7 +1,7 @@
 import os
+import traceback
 from configparser import ConfigParser
 from os.path import abspath
-import traceback
 
 import requests
 
@@ -74,6 +74,5 @@ def load_secret():
 
 
 load_secret()
-
 
 __all__ = ["confirm_command", "command_prefix", "EnableDirtyWordCheck", "PrivateAssets", "Secret", "ErrorMessage"]

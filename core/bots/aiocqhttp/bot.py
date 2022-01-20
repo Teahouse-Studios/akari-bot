@@ -10,7 +10,7 @@ from core.bots.aiocqhttp.client import bot
 from core.bots.aiocqhttp.message import MessageSession, FetchTarget
 from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
-from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck, PrivateAssets, Url
+from core.elements import MsgInfo, Session, StartUp, Schedule, EnableDirtyWordCheck, PrivateAssets
 from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler

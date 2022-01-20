@@ -134,6 +134,7 @@ class UnfriendlyActions:
 
         :return: True = yes, False = no
         """
-        session.add_all([UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action, detail=detail)])
+        session.add_all(
+            [UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action, detail=detail)])
         session.commit()
         return self.check_mute()

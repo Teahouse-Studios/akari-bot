@@ -1,7 +1,8 @@
 import re
 import uuid
 from os.path import abspath
-from typing import List, Union
+from typing import List
+from urllib import parse
 
 import aiohttp
 import filetype
@@ -9,8 +10,6 @@ from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
 from config import CachePath
-
-from urllib import parse
 
 
 class Plain:

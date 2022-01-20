@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+
 from config import Config
 from core.elements import Url
 from core.utils import get_url

@@ -14,7 +14,7 @@ mcbbs_news = on_command(
 @mcbbs_news.handle()
 async def main(msg: MessageSession):
     res = await news()
-    print('res'+str(res))
+    print('res' + str(res))
     if res is None:
         message = '没有找到任何新闻。'
     else:
