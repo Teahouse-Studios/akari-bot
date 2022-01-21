@@ -66,6 +66,6 @@ def UTC8(t, outtype):
         elif outtype == 'onlytime':
             return str(h).zfill(2) + ':' + str(mi).zfill(2) + '（UTC+8）'
         elif outtype == 'full':
-            return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h) + ':' + str(mi) + '（UTC+8）'
+            return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h).zfill(2) + ':' + str(mi).zfill(2) + '（UTC+8）'
         elif outtype == 'notimezone':
-            return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h) + ':' + str(mi)
+            return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h).zfill(2) + ':' + str(mi).zfill(2)
