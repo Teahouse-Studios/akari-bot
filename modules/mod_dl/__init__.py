@@ -1,5 +1,5 @@
 from core.component import on_command
-from core.elements import MessageSession
+from core.elements import MessageSession, Url
 
 from .mod_dl import curseforge as d
 
@@ -19,5 +19,5 @@ async def main(msg: MessageSession):
     link = info["download_link"]
     name = info["filename"]
     status = info["status"]
-    message = f'下载链接：{link}\n文件名：{name}\n版本状态：{status}'
+    message = f'下载链接：{str(Url(link))}\n文件名：{name}\n版本状态：{status}'
     await msg.sendMessage(message)
