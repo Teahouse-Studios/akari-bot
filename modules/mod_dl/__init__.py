@@ -7,7 +7,8 @@ mod_dl = on_command(
     bind_prefix='mod_dl',
     desc='下载CurseForge上的Mod。',
     developers=['HornCopper'],
-    recommend_modules=['mcmod'])
+    recommend_modules=['mcmod'],
+    alias='moddl')
 
 
 @mod_dl.handle('<mod_name> <mcversion> {通过模组名获取模组下载链接，CloudFlare CDN支持。}')

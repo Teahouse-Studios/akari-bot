@@ -18,7 +18,7 @@ def Chinese(string: str):
 
 async def curseforge(mod_name: str, ver: str):
     if Chinese(mod_name):
-        return {'msg': 'CurseForge暂不支持中文搜索。'}
+        return {'msg': 'CurseForge暂不支持中文搜索。', 'success': False}
     full_url = search_piece_1 + mod_name + search_piece_2
     html = await get_url(full_url)
     bs = BeautifulSoup(html, 'html.parser')
