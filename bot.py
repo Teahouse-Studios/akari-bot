@@ -1,9 +1,13 @@
+import datetime
 import logging
+import re
 import subprocess
 import traceback
+from itertools import islice
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
+from logging.handlers import TimedRotatingFileHandler
 
 import psutil
 
@@ -18,6 +22,59 @@ encode = 'UTF-8'
 
 class RestartBot(Exception):
     pass
+
+
+class TimedPatternFileHandler(logging.FileHandler):
+    """File handler that uses the current time fo the log filename,
+    by formating the current datetime, according to filename_pattern, using
+    the strftime function.
+
+    If backup_count is non-zero, then older filenames that match the base
+    filename are deleted to only leave the backup_count most recent copies,
+    whenever opening a new log file with a different name.
+
+    """
+
+    def __init__(self, filename_pattern, mode, backup_count):
+        self.filename_pattern = os.path.abspath(filename_pattern)
+        self.backup_count = backup_count
+        self.filename = datetime.datetime.now().strftime(self.filename_pattern)
+
+        delete = islice(self._matching_files(), self.backup_count, None)
+        for entry in delete:
+            # print(entry)
+            os.remove(entry.path)
+        super().__init__(filename=self.filename, mode=mode)
+
+    @property
+    def filename(self):
+        """Generate the 'current' filename to open"""
+        # use the start of *this* interval, not the next
+        return datetime.datetime.now().strftime(self.filename_pattern)
+
+    @filename.setter
+    def filename(self, _):
+        pass
+
+    def _matching_files(self):
+        """Generate DirEntry entries that match the filename pattern.
+
+        The files are ordered by their last modification time, most recent
+        files first.
+
+        """
+        matches = []
+        basename = os.path.basename(self.filename_pattern)
+        pattern = re.compile(re.sub('%[a-zA-z]', '.*', basename))
+
+        for entry in os.scandir(os.path.dirname(self.filename_pattern)):
+            if not entry.is_file():
+                continue
+            entry_basename = os.path.basename(entry.path)
+            if re.match(pattern, entry_basename):
+                matches.append(entry)
+        matches.sort(key=lambda e: e.stat().st_mtime, reverse=True)
+        return iter(matches)
 
 
 def get_pid(name):
@@ -114,6 +171,12 @@ def run_bot():
 if __name__ == '__main__':
     init_bot()
     logging.basicConfig(format="%(msg)s", level=logging.INFO)
+    logger = logging.getLogger()
+    logpath = os.path.abspath('./log')
+    if not os.path.exists(logpath):
+        os.mkdir(logpath)
+    filehandler = TimedPatternFileHandler('{}_%Y-%m-%d.log'.format(logpath + '/log'), mode='a', backup_count=5)
+    logger.addHandler(filehandler)
     try:
         while True:
             try:
