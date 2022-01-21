@@ -1,13 +1,13 @@
 import re
 
 
-def UTC8(str1, outtype):
-    if str1 in ['infinity', 'infinite']:
+def UTC8(timestamp, outtype):
+    if timestamp in ['infinity', 'infinite']:
         return '无限期'
     else:
-        q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', str1)
+        q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', timestamp)
         if not q:
-            q = re.match(r'(....)(..)(..)(..)(..)(..)', str1)
+            q = re.match(r'(....)(..)(..)(..)(..)(..)', timestamp)
         y = int(q.group(1))
         m = int(q.group(2))
         d = int(q.group(3))
@@ -62,9 +62,9 @@ def UTC8(str1, outtype):
             if mi != 0:
                 h = h - 24
         if outtype == 'onlytimenoutc':
-            return str(h) + ':' + str(mi)
+            return str(h).zfill(2) + ':' + str(mi).zfill(2)
         elif outtype == 'onlytime':
-            return str(h) + ':' + str(mi) + '（UTC+8）'
+            return str(h).zfill(2) + ':' + str(mi).zfill(2) + '（UTC+8）'
         elif outtype == 'full':
             return str(y) + '年' + str(m) + '月' + str(d) + '日 ' + str(h) + ':' + str(mi) + '（UTC+8）'
         elif outtype == 'notimezone':
