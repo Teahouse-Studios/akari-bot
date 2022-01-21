@@ -1,13 +1,13 @@
 import re
 
 
-def UTC8(timestamp, outtype):
-    if timestamp in ['infinity', 'infinite']:
+def UTC8(t, outtype):
+    if t in ['infinity', 'infinite']:
         return '无限期'
     else:
-        q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', timestamp)
+        q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', t)
         if not q:
-            q = re.match(r'(....)(..)(..)(..)(..)(..)', timestamp)
+            q = re.match(r'(....)(..)(..)(..)(..)(..)', t)
         y = int(q.group(1))
         m = int(q.group(2))
         d = int(q.group(3))
