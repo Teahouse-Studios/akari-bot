@@ -7,7 +7,6 @@ from itertools import islice
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep
-from logging.handlers import TimedRotatingFileHandler
 
 import psutil
 
