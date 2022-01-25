@@ -231,7 +231,7 @@ async def _(msg: MessageSession):
                 if render:
                     legacy_help = False
                     await msg.sendMessage([Image(render),
-                                           Plain('使用~modules查看所有的可用模块。'
+                                           Plain('此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用~modules命令。'
                                                  '\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')])
         except Exception:
             traceback.print_exc()
