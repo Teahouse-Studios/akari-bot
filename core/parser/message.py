@@ -1,5 +1,6 @@
 import re
 import traceback
+from aiocqhttp.exceptions import ActionFailed
 from datetime import datetime
 
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
@@ -199,6 +200,9 @@ async def parser(msg: MessageSession):
                     temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                              'ts': datetime.now().timestamp()}
                     return
+                except ActionFailed:
+                    await msg.sendMessage('消息发送失败，机器人账户可能被风控，请稍后再试。')
+                    continue
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     ExecutionLockList.remove(msg)
