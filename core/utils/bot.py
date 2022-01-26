@@ -118,7 +118,7 @@ async def load_prompt(bot) -> None:
         open_loader_cache = open(loader_cache, 'r')
         m = await bot.fetch_target(author)
         if m:
-            await m.sendMessage(open_loader_cache.read())
+            await m.sendDirectMessage(open_loader_cache.read())
             open_loader_cache.close()
             open_author_cache.close()
             os.remove(author_cache)

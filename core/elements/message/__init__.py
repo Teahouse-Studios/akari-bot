@@ -62,6 +62,15 @@ class MessageSession:
         """
         ...
 
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
+        """
+        用于向消息发送者直接发送消息。
+        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :return: 被发送的消息链
+        """
+        await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
+
     async def waitConfirm(self, msgchain=None, quote=True):
         """
         一次性模板，用于等待触发对象确认。
@@ -146,14 +155,14 @@ class FetchedSession:
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
-    async def sendMessage(self, msgchain, disable_secret_check=False):
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
         """
-        ...
+        return await self.parent.sendDirectMessage(msgchain, disable_secret_check)
 
 
 class FetchTarget:

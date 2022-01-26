@@ -142,15 +142,6 @@ class FetchedSession(FS):
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
-    async def sendMessage(self, msgchain, disable_secret_check=False):
-        """
-        用于向获取对象发送消息。
-        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :param disable_secret_check: 是否禁用消息检查（默认为False）
-        :return: 被发送的消息链
-        """
-        return await self.parent.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
-
 
 class FetchTarget(FT):
     name = 'Telegram'
@@ -178,7 +169,7 @@ class FetchTarget(FT):
         if user_list is not None:
             for x in user_list:
                 try:
-                    send = await x.sendMessage(message)
+                    send = await x.sendDirectMessage(message)
                     send_list.append(send)
                 except Exception:
                     Logger.error(traceback.format_exc())
@@ -188,7 +179,7 @@ class FetchTarget(FT):
                 fetch = await FetchTarget.fetch_target(x)
                 if fetch:
                     try:
-                        send = await fetch.sendMessage(message)
+                        send = await fetch.sendDirectMessage(message)
                         send_list.append(send)
                     except Exception:
                         Logger.error(traceback.format_exc())

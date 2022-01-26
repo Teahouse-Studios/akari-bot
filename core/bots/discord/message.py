@@ -119,13 +119,13 @@ class MessageSession(MS):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
             or isinstance(self.session.message.channel, discord.DMChannel) \
             or self.target.senderInfo.query.isSuperUser \
-            or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
+                or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-            or isinstance(self.session.message.channel, discord.DMChannel):
+                or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 
@@ -168,7 +168,7 @@ class FetchedSession(FS):
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
-    async def sendMessage(self, msgchain, disable_secret_check=False):
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
         """
         用于向获取对象发送消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
@@ -181,7 +181,7 @@ class FetchedSession(FS):
             Logger.error(traceback.format_exc())
             return False
         self.session.target = self.session.sender = self.parent.session.target = self.parent.session.sender = getChannel
-        return await self.parent.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
+        return await self.parent.sendDirectMessage(msgchain, disable_secret_check=disable_secret_check)
 
 
 class FetchTarget(FT):
@@ -210,7 +210,7 @@ class FetchTarget(FT):
         if user_list is not None:
             for x in user_list:
                 try:
-                    send = await x.sendMessage(message)
+                    send = await x.sendDirectMessage(message)
                     send_list.append(send)
                 except Exception:
                     Logger.error(traceback.format_exc())
@@ -220,7 +220,7 @@ class FetchTarget(FT):
                 fetch = await FetchTarget.fetch_target(x)
                 if fetch:
                     try:
-                        send = await fetch.sendMessage(message)
+                        send = await fetch.sendDirectMessage(message)
                         send_list.append(send)
                     except Exception:
                         Logger.error(traceback.format_exc())
