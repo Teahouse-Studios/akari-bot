@@ -205,7 +205,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                                              'ts': datetime.now().timestamp()}
                     return
                 except ActionFailed:
-                    await msg.sendMessage('消息发送失败，机器人账户可能被风控，请稍后再试。')
+                    await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                     continue
                 except Exception as e:
                     Logger.error(traceback.format_exc())
@@ -258,7 +258,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                                          'ts': datetime.now().timestamp()}
                 return
             except ActionFailed:
-                await msg.sendMessage('消息发送失败，机器人账户可能被风控，请稍后再试。')
+                await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                 continue
             except Exception:
                 Logger.error(traceback.format_exc())

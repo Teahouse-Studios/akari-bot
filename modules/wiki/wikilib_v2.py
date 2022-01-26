@@ -9,6 +9,7 @@ import ujson as json
 
 import core.html2text as html2text
 from core.dirty_check import check
+from core.logger import Logger
 from core.utils import get_url
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
@@ -114,7 +115,7 @@ class WikiLib:
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
-            # Logger.info(api)
+            Logger.info(api)
         else:
             raise ValueError('kwargs is None')
         return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
@@ -340,7 +341,7 @@ class WikiLib:
                         'redirects': 'True', 'titles': title}
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts:
-            query_string.update({'prop': 'info|imageinfo|extracts',
+            query_string.update({'prop': 'info|imageinfo|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
