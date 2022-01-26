@@ -20,7 +20,8 @@ def remove_ineffective_text(prefix: str, lst: list) -> list:
                         del split_list[-1]
             for _ in split_list:
                 if len(split_list) > 0:
-                    if split_list[0][0] in prefix:
+                    spl0 = split_list[0][0]
+                    if spl0 in prefix and spl0 != '':
                         split_list[0] = re.sub(r'^' + split_list[0][0], '', split_list[0])
             list_cache.append(x.join(split_list))
         lst = list_cache

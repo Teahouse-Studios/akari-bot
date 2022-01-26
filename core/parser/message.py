@@ -48,15 +48,15 @@ async def msg_counter(msg: MessageSession, command: str):
             raise AbuseWarning('一段时间内使用命令的次数过多')
 
 
-async def parser(msg: MessageSession):
+async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None):
     """
     接收消息必经的预处理器
     :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
+    :param require_enable_modules: 是否需要检查模块是否已启用
+    :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在''值的情况下则代表无需命令前缀
     :return: 无返回
     """
-    global Modules
-    global ModulesAliases
-    global ModulesRegex
+    global Modules, ModulesAliases, ModulesRegex
     if Modules == {}:
         Modules = ModulesManager.return_modules_list_as_dict()
     if ModulesAliases == {}:
@@ -70,12 +70,25 @@ async def parser(msg: MessageSession):
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     if len(display) == 0:
         return
-    if display[0] in command_prefix:  # 检查消息前缀
+    disable_prefix = False
+    print(prefix)
+    if prefix is not None:
+        if '' in prefix:
+            disable_prefix = True
+        command_prefix.clear()
+        command_prefix.extend(prefix)
+    print(command_prefix)
+    is_command = False
+    if display[0] in command_prefix or disable_prefix:  # 检查消息前缀
         if len(display) <= 1 or (display[0] == '~' and display[1] == '~'):
             return
+        is_command = True
         Logger.info(
             f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
-        command = display[1:]
+        if disable_prefix and display[0] not in command_prefix:
+            command = display
+        else:
+            command = display[1:]
         command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
         if len(command_list) > 5 and not senderInfo.query.isSuperUser:
             await msg.sendMessage('你不是本机器人的超级管理员，最多只能并排执行5个命令。')
@@ -141,7 +154,7 @@ async def parser(msg: MessageSession):
                             await msg.sendMessage('你没有使用该命令的权限。')
                             continue
                     elif not module.base:
-                        if command_first_word not in enabled_modules_list and not sudo:  # 若未开启
+                        if command_first_word not in enabled_modules_list and not sudo and require_enable_modules:  # 若未开启
                             await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
                             continue
                     elif module.required_admin:
@@ -209,50 +222,50 @@ async def parser(msg: MessageSession):
                     await msg.sendMessage(ErrorMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e)))
                     continue
         ExecutionLockList.remove(msg)
-
-    for regex in ModulesRegex:  # 遍历正则模块列表
-        try:
-            if regex in enabled_modules_list:
-                regex_module = ModulesRegex[regex]
-                if regex_module.required_superuser:
-                    if not msg.checkSuperUser():
-                        continue
-                elif regex_module.required_admin:
-                    if not await msg.checkPermission():
-                        continue
-                for rfunc in regex_module.match_list.set:
-                    msg.matched_msg = False
-                    matched = False
-                    if rfunc.mode.upper() in ['M', 'MATCH']:
-                        msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
-                        if msg.matched_msg is not None:
-                            matched = True
-                    elif rfunc.mode.upper() in ['A', 'FINDALL']:
-                        msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
-                        if msg.matched_msg:
-                            matched = True
-                    if matched:
-                        if regex_module.required_superuser:
-                            if not msg.checkSuperUser():
-                                continue
-                        elif regex_module.required_admin:
-                            if not await msg.checkPermission():
-                                continue
-                        if not ExecutionLockList.check(msg):
-                            ExecutionLockList.add(msg)
-                        else:
-                            return await msg.sendMessage('您有命令正在执行，请稍后再试。')
-                        if rfunc.show_typing and not senderInfo.query.disable_typing:
-                            async with msg.Typing(msg):
+    if not is_command:
+        for regex in ModulesRegex:  # 遍历正则模块列表
+            try:
+                if regex in enabled_modules_list:
+                    regex_module = ModulesRegex[regex]
+                    if regex_module.required_superuser:
+                        if not msg.checkSuperUser():
+                            continue
+                    elif regex_module.required_admin:
+                        if not await msg.checkPermission():
+                            continue
+                    for rfunc in regex_module.match_list.set:
+                        msg.matched_msg = False
+                        matched = False
+                        if rfunc.mode.upper() in ['M', 'MATCH']:
+                            msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
+                            if msg.matched_msg is not None:
+                                matched = True
+                        elif rfunc.mode.upper() in ['A', 'FINDALL']:
+                            msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
+                            if msg.matched_msg:
+                                matched = True
+                        if matched:
+                            if regex_module.required_superuser:
+                                if not msg.checkSuperUser():
+                                    continue
+                            elif regex_module.required_admin:
+                                if not await msg.checkPermission():
+                                    continue
+                            if not ExecutionLockList.check(msg):
+                                ExecutionLockList.add(msg)
+                            else:
+                                return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                            if rfunc.show_typing and not senderInfo.query.disable_typing:
+                                async with msg.Typing(msg):
+                                    await rfunc.function(msg)  # 将msg传入下游模块
+                            else:
                                 await rfunc.function(msg)  # 将msg传入下游模块
-                        else:
-                            await rfunc.function(msg)  # 将msg传入下游模块
-                    ExecutionLockList.remove(msg)
-        except AbuseWarning as e:
-            await warn_target(msg, str(e))
-            temp_ban_counter[msg.target.senderId] = {'count': 1,
-                                                     'ts': datetime.now().timestamp()}
-            return
-        except Exception:
-            Logger.error(traceback.format_exc())
-        ExecutionLockList.remove(msg)
+                        ExecutionLockList.remove(msg)
+            except AbuseWarning as e:
+                await warn_target(msg, str(e))
+                temp_ban_counter[msg.target.senderId] = {'count': 1,
+                                                         'ts': datetime.now().timestamp()}
+                return
+            except Exception:
+                Logger.error(traceback.format_exc())
+            ExecutionLockList.remove(msg)
