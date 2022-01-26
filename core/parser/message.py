@@ -1,5 +1,6 @@
 import re
 import traceback
+from aiocqhttp.exceptions import ActionFailed
 from datetime import datetime
 
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
@@ -184,7 +185,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True):
                                 await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                                 continue
                         except InvalidHelpDocTypeError:
-                            traceback.print_exc()
+                            Logger.error(traceback.format_exc())
                             await msg.sendMessage(ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
                             continue
                     else:
@@ -201,6 +202,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True):
                     temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                              'ts': datetime.now().timestamp()}
                     return
+                except ActionFailed:
+                    await msg.sendMessage('消息发送失败，机器人账户可能被风控，请稍后再试。')
+                    continue
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     ExecutionLockList.remove(msg)

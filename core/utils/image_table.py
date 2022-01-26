@@ -10,6 +10,7 @@ import ujson as json
 from tabulate import tabulate
 
 from config import Config
+from core.logger import Logger
 
 web_render = Config('web_render')
 
@@ -65,5 +66,5 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
                     jpg.write(await resp.read())
         return picname
     except Exception:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         return False

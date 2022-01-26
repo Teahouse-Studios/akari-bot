@@ -14,13 +14,14 @@ import aioconsole
 
 from datetime import datetime
 
-from init import init_bot
+from bot import init_bot
 from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck, Url
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
 from core.scheduler import Scheduler
 from core.loader import ModulesManager
 from core.utils import init
+from core.logger import Logger
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
@@ -60,7 +61,7 @@ async def console_command():
         print('Exited.')
         exit()
     except Exception:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
 
 
 init_bot()

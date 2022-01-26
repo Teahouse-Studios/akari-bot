@@ -24,14 +24,11 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
     else:
         scoretype = 'D'
     # song ptt
-    if ptt > 0:
-        realptt = realptt / 10
-        if ptt > realptt or ptt < realptt:
-            ptt = f'{realptt} > {round(ptt, 4)}'
-        else:
-            ptt = str(realptt)
+    realptt = realptt / 10
+    if ptt > realptt or ptt < realptt:
+        ptt = f'{realptt} > {round(ptt, 4)}'
     else:
-        ptt = f'??? > {round(ptt, 4)}'
+        ptt = str(realptt)
     # playtime
     nowtime = time.time()
     playtime = playtime // 1000 - nowtime

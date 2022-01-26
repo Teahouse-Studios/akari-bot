@@ -69,7 +69,7 @@ def load_secret():
         if ip:
             Secret.add(ip.text.replace('\n', ''))
     except:
-        traceback.print_exc()
+        Logger.error(traceback.format_exc())
         pass
 
 

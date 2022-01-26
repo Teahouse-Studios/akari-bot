@@ -7,7 +7,7 @@ from .rating import get_rating
 from .utils import get_profile_name
 
 cytoid = on_command('cytoid',
-                    developers=['OasisAkari'])
+                    developers=['OasisAkari'], alias='ctd')
 
 
 @cytoid.handle('profile [<UserID>] {查询一个用户的基本信息}')

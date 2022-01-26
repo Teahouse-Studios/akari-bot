@@ -2,6 +2,7 @@ import asyncio
 import re
 import traceback
 from typing import List
+from core.logger import Logger
 
 from graia.application import MessageChain, GroupMessage, FriendMessage
 from graia.application.friend import Friend
@@ -112,7 +113,7 @@ class MessageSession(MS):
         try:
             await app.revokeMessage(self.session.message)
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
 
     async def checkPermission(self):
         """
@@ -141,7 +142,7 @@ class MessageSession(MS):
                 try:
                     await app.nudge(self.msg.session.sender)
                 except Exception:
-                    traceback.print_exc()
+                    Logger.error(traceback.format_exc())
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
@@ -168,7 +169,7 @@ class FetchTarget(FT):
                     send = await x.sendMessage(message, quote=False)
                     send_list.append(send)
                 except Exception:
-                    traceback.print_exc()
+                    Logger.error(traceback.format_exc())
         else:
             get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
             for x in get_target_id:
@@ -179,5 +180,5 @@ class FetchTarget(FT):
                         send_list.append(send)
                         await asyncio.sleep(0.5)
                     except Exception:
-                        traceback.print_exc()
+                        Logger.error(traceback.format_exc())
         return send_list
