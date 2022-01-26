@@ -53,7 +53,8 @@ class WikiInfo:
                  namespaces: list,
                  namespaces_local: dict,
                  in_allowlist: bool,
-                 in_blocklist: bool):
+                 in_blocklist: bool,
+                 script: str):
         self.api = api
         self.articlepath = articlepath
         self.extensions = extensions
@@ -64,6 +65,7 @@ class WikiInfo:
         self.namespaces_local = namespaces_local
         self.in_allowlist = in_allowlist
         self.in_blocklist = in_blocklist
+        self.script = script
 
 
 class WikiStatus:
@@ -80,6 +82,7 @@ class PageInfo:
     def __init__(self,
                  info: WikiInfo,
                  title: str,
+                 id: int = -1,
                  before_title: str = None,
                  link: str = None,
                  file: str = None,
@@ -92,6 +95,7 @@ class PageInfo:
                  invalid_namespace: bool = False
                  ):
         self.info = info
+        self.id = id
         self.title = title
         self.before_title = before_title
         self.link = link
@@ -109,7 +113,7 @@ class WikiLib:
     def __init__(self, url: str, headers=None):
         self.url = url
         self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
-                                  namespaces=[], namespaces_local={}, in_allowlist=False, in_blocklist=False)
+                                  namespaces=[], namespaces_local={}, in_allowlist=False, in_blocklist=False, script='')
         self.headers = headers
 
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
@@ -120,7 +124,7 @@ class WikiLib:
             raise ValueError('kwargs is None')
         return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
 
-    def rearrange_siteinfo(self, info: Union[dict, str]) -> WikiInfo:
+    def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
         if isinstance(info, str):
             info = json.loads(info)
         extensions = info['query']['extensions']
@@ -150,7 +154,7 @@ class WikiLib:
         interwiki_dict = {}
         for interwiki in interwiki_map:
             interwiki_dict[interwiki['prefix']] = interwiki['url']
-        api_url = real_url + info['query']['general']['scriptpath'] + '/api.php'
+        api_url = wiki_api_link
         audit = Audit(api_url)
         return WikiInfo(articlepath=real_url + info['query']['general']['articlepath'],
                         extensions=ext_list,
@@ -161,7 +165,8 @@ class WikiLib:
                         namespaces_local=namespaces_local,
                         interwiki=interwiki_dict,
                         in_allowlist=audit.inAllowList,
-                        in_blocklist=audit.inBlockList)
+                        in_blocklist=audit.inBlockList,
+                        script=real_url + info['query']['general']['script'])
 
     async def check_wiki_available(self):
         try:
@@ -196,7 +201,7 @@ class WikiLib:
         get_cache_info = DBSiteInfo(wiki_api_link).get()
         if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
             return WikiStatus(available=True,
-                              value=self.rearrange_siteinfo(get_cache_info[0]),
+                              value=self.rearrange_siteinfo(get_cache_info[0], wiki_api_link),
                               message='')
         try:
             get_json = await self.get_json_from_api(wiki_api_link, log=True,
@@ -210,7 +215,7 @@ class WikiLib:
                 message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
             return WikiStatus(available=False, value=False, message=message)
         DBSiteInfo(wiki_api_link).update(get_json)
-        info = self.rearrange_siteinfo(get_json)
+        info = self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(available=True, value=info,
                           message='警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
                           if 'TextExtracts' not in info.extensions else '')
@@ -364,9 +369,10 @@ class WikiLib:
         pages: Dict[str, dict] = query.get('pages')
         if pages is not None:
             for page_id in pages:
+                page_info.id = int(page_id)
                 page_raw = pages[page_id]
                 title = page_raw['title']
-                if int(page_id) < 0:
+                if page_info.id < 0:
                     if 'invalid' in page_raw:
                         rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
                                      page_raw['invalidreason'])
@@ -432,6 +438,8 @@ class WikiLib:
                     if 'imageinfo' in page_raw:
                         file = page_raw['imageinfo'][0]['url']
                     page_info.title = title
+                    if page_info.args == '':
+                        full_url = self.wiki_info.script + f'?curid={page_info.id}'
                     page_info.link = full_url
                     page_info.file = file
                     page_info.desc = page_desc
