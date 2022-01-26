@@ -12,9 +12,6 @@ from core.tos import warn_target
 from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from database import BotDBUtil
 
-Modules = ModulesManager.return_modules_list_as_dict()
-ModulesAliases = ModulesManager.return_modules_alias_map()
-ModulesRegex = ModulesManager.return_specified_type_modules(RegexCommand)
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -56,13 +53,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在''值的情况下则代表无需命令前缀
     :return: 无返回
     """
-    global Modules, ModulesAliases, ModulesRegex
-    if Modules == {}:
-        Modules = ModulesManager.return_modules_list_as_dict()
-    if ModulesAliases == {}:
-        ModulesAliases = ModulesManager.return_modules_alias_map()
-    if ModulesRegex == {}:
-        ModulesRegex = ModulesManager.return_specified_type_modules(RegexCommand)
+    modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
+    modulesAliases = ModulesManager.return_modules_alias_map()
+    modulesRegex = ModulesManager.return_specified_type_modules(RegexCommand, targetFrom=msg.target.targetFrom)
     display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
     # Logger.info(f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
     msg.trigger_msg = display
@@ -71,13 +64,11 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     if len(display) == 0:
         return
     disable_prefix = False
-    print(prefix)
     if prefix is not None:
         if '' in prefix:
             disable_prefix = True
         command_prefix.clear()
         command_prefix.extend(prefix)
-    print(command_prefix)
     is_command = False
     if display[0] in command_prefix or disable_prefix:  # 检查消息前缀
         if len(display) <= 1 or (display[0] == '~' and display[1] == '~'):
@@ -119,13 +110,13 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             if in_mute and not mute:
                 ExecutionLockList.remove(msg)
                 return
-            if command_first_word in ModulesAliases:
-                command_spilt[0] = ModulesAliases[command_first_word]
+            if command_first_word in modulesAliases:
+                command_spilt[0] = modulesAliases[command_first_word]
                 command = ' '.join(command_spilt)
                 command_spilt = command.split(' ')
                 command_first_word = command_spilt[0]
                 msg.trigger_msg = command
-            if command_first_word in Modules:  # 检查触发命令是否在模块列表中
+            if command_first_word in modules:  # 检查触发命令是否在模块列表中
                 try:
                     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
                     if is_temp_banned is not None:
@@ -144,7 +135,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 return await warn_target(msg)
                     if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module':
                         await msg_counter(msg, msg.trigger_msg)
-                    module = Modules[command_first_word]
+                    module = modules[command_first_word]
                     if not isinstance(module, Command):
                         if module.desc is not None:
                             await msg.sendMessage(f'介绍：\n{module.desc}')
@@ -223,10 +214,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     continue
         ExecutionLockList.remove(msg)
     if not is_command:
-        for regex in ModulesRegex:  # 遍历正则模块列表
+        for regex in modulesRegex:  # 遍历正则模块列表
             try:
                 if regex in enabled_modules_list:
-                    regex_module = ModulesRegex[regex]
+                    regex_module = modulesRegex[regex]
                     if regex_module.required_superuser:
                         if not msg.checkSuperUser():
                             continue
@@ -266,6 +257,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                          'ts': datetime.now().timestamp()}
                 return
+            except ActionFailed:
+                await msg.sendMessage('消息发送失败，机器人账户可能被风控，请稍后再试。')
+                continue
             except Exception:
                 Logger.error(traceback.format_exc())
             ExecutionLockList.remove(msg)

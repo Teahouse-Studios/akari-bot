@@ -24,9 +24,7 @@ module = on_command('module',
 
 
 @module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
-                'disable (<module>...|all) {关闭一个/多个或所有模块}'],
-               available_for=['QQ|Group', 'QQ', 'Discord|Channel', 'Discord|DM|Channel', 'Telegram|private',
-                              'Telegram|group', 'Telegram|supergroup', 'Telegram|channel', 'TEST|Console'])
+                'disable (<module>...|all) {关闭一个/多个或所有模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: MessageSession):
     await config_modules(msg)
 
@@ -40,7 +38,7 @@ async def _(msg: MessageSession):
 
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
-    modules_ = ModulesManager.return_modules_list_as_dict()
+    modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     wait_config = msg.parsed_msg['<module>']
     wait_config_list = []
     for module_ in wait_config:
@@ -151,7 +149,7 @@ hlp = on_command('help',
 
 @hlp.handle('<module> {查看一个模块的详细信息}')
 async def bot_help(msg: MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict()
+    module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
     if msg.parsed_msg is not None:
@@ -192,7 +190,7 @@ async def bot_help(msg: MessageSession):
 
 @hlp.handle()
 async def _(msg: MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict()
+    module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
@@ -267,8 +265,7 @@ modules = on_command('modules',
 
 @modules.handle()
 async def modules_help(msg: MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict()
-    target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
+    module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if web_render and msg.Feature.image:

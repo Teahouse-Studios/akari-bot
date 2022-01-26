@@ -14,6 +14,7 @@ class CommandMeta:
                  required_admin: bool = False,
                  required_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
+                 exclude_from: Union[str, list, tuple] = '',
                  ):
         self.function = function
         if isinstance(help_doc, str):
@@ -27,7 +28,12 @@ class CommandMeta:
             available_for = [available_for]
         elif isinstance(available_for, tuple):
             available_for = list(available_for)
+        if isinstance(exclude_from, str):
+            exclude_from = [exclude_from]
+        elif isinstance(exclude_from, tuple):
+            exclude_from = list(exclude_from)
         self.available_for = available_for
+        self.exclude_from = exclude_from
 
 
 class RegexMeta:

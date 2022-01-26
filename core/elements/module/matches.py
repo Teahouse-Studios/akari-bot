@@ -14,6 +14,8 @@ class CommandMatches:
     def get(self, targetFrom: str) -> List[CommandMeta]:
         metas = []
         for meta in self.set:
+            if targetFrom in meta.exclude_from:
+                continue
             if targetFrom in meta.available_for or '*' in meta.available_for:
                 metas.append(meta)
         return metas

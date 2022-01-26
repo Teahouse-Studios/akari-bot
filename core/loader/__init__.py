@@ -56,7 +56,18 @@ class ModulesManager:
             ModulesManager.modules[bind_prefix].match_list.add(meta)
 
     @staticmethod
-    def return_modules_list_as_dict() -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
+    def return_modules_list_as_dict(targetFrom: str = None) ->\
+            Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
+        if targetFrom is not None:
+            returns = {}
+            for m in ModulesManager.modules:
+                if isinstance(ModulesManager.modules[m], (Command, RegexCommand, Schedule, StartUp)):
+                    if targetFrom in ModulesManager.modules[m].exclude_from:
+                        continue
+                    available = ModulesManager.modules[m].available_for
+                    if targetFrom in available or '*' in available:
+                        returns.update({m: ModulesManager.modules[m]})
+            return returns
         return ModulesManager.modules
 
     @staticmethod
@@ -93,12 +104,20 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option]) \
-        -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
+    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp, Option],
+                                      targetFrom: str = None) \
+            -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp, Option]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()
         for m in modules:
             module = modules[m]
             if isinstance(module, module_type):
-                d.update({module.bind_prefix: module})
+                if targetFrom is not None:
+                    if isinstance(module, (Command, RegexCommand, Schedule, StartUp)):
+                        if targetFrom in module.exclude_from:
+                            continue
+                        if targetFrom in module.available_for or '*' in module.available_for:
+                            d.update({m: module})
+                else:
+                    d.update({module.bind_prefix: module})
         return d

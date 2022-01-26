@@ -21,7 +21,8 @@ class Bind:
                    *docs,
                    required_admin: bool = False,
                    required_superuser: bool = False,
-                   available_for: Union[str, list, tuple] = '*'):
+                   available_for: Union[str, list, tuple] = '*',
+                   exclude_from: Union[str, list, tuple] = ''):
             def decorator(function):
                 nonlocal help_doc
                 if isinstance(help_doc, str):
@@ -32,7 +33,8 @@ class Bind:
                                                                             help_doc=help_doc,
                                                                             required_admin=required_admin,
                                                                             required_superuser=required_superuser,
-                                                                            available_for=available_for))
+                                                                            available_for=available_for,
+                                                                            exclude_from=exclude_from))
 
             return decorator
 
@@ -69,7 +71,9 @@ def on_command(
     developers: Union[str, list, tuple] = None,
     required_admin: bool = False,
     base: bool = False,
-    required_superuser: bool = False
+    required_superuser: bool = False,
+    available_for: Union[str, list, tuple] = '*',
+    exclude_from: Union[str, list, tuple] = ''
 ):
     """
 
@@ -82,6 +86,8 @@ def on_command(
     :param required_admin: 此命令是否需要群聊管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
+    :param available_for: 此命令支持的平台列表。
+    :param exclude_from: 此命令排除的平台列表。
     :return: 此类型的模块。
     """
     module = Command(alias=alias,
@@ -91,7 +97,9 @@ def on_command(
                      developers=developers,
                      base=base,
                      required_admin=required_admin,
-                     required_superuser=required_superuser)
+                     required_superuser=required_superuser,
+                     available_for=available_for,
+                     exclude_from=exclude_from)
     ModulesManager.add_module(module)
     return Bind.Command(bind_prefix)
 
@@ -104,7 +112,10 @@ def on_regex(
     developers: Union[str, list, tuple] = None,
     required_admin: bool = False,
     base: bool = False,
-    required_superuser: bool = False):
+    required_superuser: bool = False,
+    available_for: Union[str, list, tuple] = '*',
+    exclude_from: Union[str, list, tuple] = ''
+):
     """
 
     :param bind_prefix: 绑定的命令前缀。
@@ -116,6 +127,8 @@ def on_regex(
     :param required_admin: 此命令是否需要群聊管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
+    :param available_for: 此命令支持的平台列表。
+    :param exclude_from: 此命令排除的平台列表。
     :return: 此类型的模块。
     """
 
@@ -127,6 +140,8 @@ def on_regex(
                           required_admin=required_admin,
                           base=base,
                           required_superuser=required_superuser,
+                          available_for=available_for,
+                          exclude_from=exclude_from
                           )
     ModulesManager.add_module(module)
     return Bind.Regex(bind_prefix)
@@ -171,6 +186,8 @@ def on_schedule(
     recommend_modules: Union[str, list, tuple] = None,
     developers: Union[str, list, tuple] = None,
     required_superuser: bool = False,
+    available_for: Union[str, list, tuple] = '*',
+    exclude_from: Union[str, list, tuple] = ''
 ):
     """
     :param bind_prefix: 绑定的命令前缀。
@@ -180,6 +197,8 @@ def on_schedule(
     :param recommend_modules: 推荐打开的其他模块。
     :param developers: 模块作者。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
+    :param available_for: 此命令支持的平台列表。
+    :param exclude_from: 此命令排除的平台列表。
     :return: 此类型的模块。
     """
 
@@ -191,7 +210,9 @@ def on_schedule(
                           alias=alias,
                           recommend_modules=recommend_modules,
                           developers=developers,
-                          required_superuser=required_superuser)
+                          required_superuser=required_superuser,
+                          available_for=available_for,
+                          exclude_from=exclude_from)
         ModulesManager.add_module(module)
         return module
 
@@ -205,6 +226,8 @@ def on_startup(
     recommend_modules: Union[str, list, tuple] = None,
     developers: Union[str, list, tuple] = None,
     required_superuser: bool = False,
+    available_for: Union[str, list, tuple] = '*',
+    exclude_from: Union[str, list, tuple] = ''
 ):
     """
 
@@ -214,6 +237,8 @@ def on_startup(
     :param recommend_modules: 推荐打开的其他模块。
     :param developers: 模块作者。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
+    :param available_for: 此命令支持的平台列表。
+    :param exclude_from: 此命令排除的平台列表。
     :return: 此类型的模块。
     """
 
@@ -224,7 +249,10 @@ def on_startup(
                          alias=alias,
                          recommend_modules=recommend_modules,
                          developers=developers,
-                         required_superuser=required_superuser)
+                         required_superuser=required_superuser,
+                         available_for=available_for,
+                         exclude_from=exclude_from
+                         )
         ModulesManager.add_module(module)
         return module
 
