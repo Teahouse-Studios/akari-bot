@@ -306,12 +306,13 @@ class WikiLib:
         return new_page_name, is_invalid_namespace
 
     async def parse_page_info(self, title: str, doc_mode=False,
-                              tried_iw=0, iw_prefix='') -> PageInfo:
+                              tried_iw=0, iw_prefix='', iw_mode=False) -> PageInfo:
         """
         :param title: 页面标题
         :param doc_mode: 是否为文档模式
         :param tried_iw: 尝试iw跳转的次数
         :param iw_prefix: iw前缀
+        :param iw_mode: 是否为iw模式
         :return:
         """
         try:
@@ -438,8 +439,6 @@ class WikiLib:
                     if 'imageinfo' in page_raw:
                         file = page_raw['imageinfo'][0]['url']
                     page_info.title = title
-                    if page_info.args == '':
-                        full_url = self.wiki_info.script + f'?curid={page_info.id}'
                     page_info.link = full_url
                     page_info.file = file
                     page_info.desc = page_desc
@@ -450,9 +449,10 @@ class WikiLib:
                     iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
                     iw_title = iw_title.group(1)
                     iw_prefix += i['iw'] + ':'
+                    iw_mode = True
                     iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']]).parse_page_info(iw_title,
                                                                                                     tried_iw=tried_iw + 1,
-                                                                                                    iw_prefix=iw_prefix)
+                                                                                                    iw_prefix=iw_prefix, iw_mode=iw_mode)
                     before_page_info = page_info
                     page_info = iw_query
                     if iw_query.title == '':
@@ -466,8 +466,12 @@ class WikiLib:
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link is not None:
                                     page_info.link += before_page_info.args
+                            else:
+                                page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if tried_iw == 0:
                                 page_info.title = page_info.interwiki_prefix + t
+        if not iw_mode and page_info.args == '':
+            page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
         if not self.wiki_info.in_allowlist:
             checklist = []
             if page_info.title is not None:
@@ -478,7 +482,6 @@ class WikiLib:
                 checklist.append(page_info.desc)
             chk = await check(*checklist)
             for x in chk:
-                print(x)
                 if not x['status']:
                     ban = True
         if ban:
