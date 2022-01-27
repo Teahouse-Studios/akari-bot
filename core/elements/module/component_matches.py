@@ -1,6 +1,6 @@
 from typing import List
 
-from .meta import *
+from .component_meta import *
 
 
 class CommandMatches:

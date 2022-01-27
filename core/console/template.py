@@ -76,6 +76,9 @@ class Template(MS):
         print("(Try to check if you are superuser, but this is a unit test environment. Have fun!)")
         return True
 
+    async def sleep(self, s):
+        print("(Tried to sleep for %d seconds, skip.)" % s)
+
     class Typing:
         def __init__(self, msg: MS):
             self.msg = msg

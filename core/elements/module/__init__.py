@@ -5,7 +5,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from .matches import *
+from .component_matches import *
 
 
 def convert2lst(elements: Union[str, list, tuple]) -> list:

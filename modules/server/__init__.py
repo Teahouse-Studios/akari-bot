@@ -11,9 +11,8 @@ on_option('server_disable_revoke', desc='关闭server命令的自动撤回')  # 
 s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.handle(['<ServerIP>:<Port> {获取Minecraft Java/基岩版服务器motd。}',
-           '<ServerIP>:<Port> [-r] {获取Minecraft Java/基岩版服务器motd。（原始信息）}',
-           '<ServerIP>:<Port> [-p] {获取Minecraft Java/基岩版服务器motd。（包括玩家信息）}'])
+@s.handle('<ServerIP>:<Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
+          options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: MessageSession):
     enabled_addon = BotDBUtil.Module(msg).check_target_enabled_module('server_disable_revoke')
     gather_list = []

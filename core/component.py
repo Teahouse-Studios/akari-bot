@@ -7,7 +7,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from core.elements import Command, RegexCommand, Option, Schedule, StartUp
-from core.elements.module.meta import *
+from core.elements.module.component_meta import *
 from core.loader import ModulesManager
 
 
@@ -18,7 +18,8 @@ class Bind:
 
         def handle(self,
                    help_doc: Union[str, list, tuple] = None,
-                   *docs,
+                   *help_docs,
+                   options_desc: dict = None,
                    required_admin: bool = False,
                    required_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
@@ -27,10 +28,11 @@ class Bind:
                 nonlocal help_doc
                 if isinstance(help_doc, str):
                     help_doc = [help_doc]
-                if docs:
-                    help_doc += docs
+                if help_docs:
+                    help_doc += help_docs
                 ModulesManager.bind_to_module(self.bind_prefix, CommandMeta(function=function,
                                                                             help_doc=help_doc,
+                                                                            options_desc=options_desc,
                                                                             required_admin=required_admin,
                                                                             required_superuser=required_superuser,
                                                                             available_for=available_for,

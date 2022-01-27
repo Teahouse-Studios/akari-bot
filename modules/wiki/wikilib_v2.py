@@ -119,7 +119,7 @@ class WikiLib:
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
-            # Logger.info(api)
+            Logger.info(api)
         else:
             raise ValueError('kwargs is None')
         return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
@@ -305,10 +305,11 @@ class WikiLib:
             is_invalid_namespace = True
         return new_page_name, is_invalid_namespace
 
-    async def parse_page_info(self, title: str, doc_mode=False,
+    async def parse_page_info(self, title: str = None, pageid: int = None, doc_mode=False,
                               tried_iw=0, iw_prefix='', iw_mode=False) -> PageInfo:
         """
-        :param title: 页面标题
+        :param title: 页面标题，如果为None，则使用pageid
+        :param pageid: 页面id
         :param doc_mode: 是否为文档模式
         :param tried_iw: 尝试iw跳转的次数
         :param iw_prefix: iw前缀
@@ -321,30 +322,38 @@ class WikiLib:
             link = None
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
-            return PageInfo(title=title, link=link, desc='发生错误：' + str(e), info=self.wiki_info)
+            return PageInfo(title=title if title is not None else pageid, id=pageid,
+                            link=link, desc='发生错误：' + str(e), info=self.wiki_info)
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if tried_iw > 5:
             raise WhatAreUDoingError
-        if title == '':
-            return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info)
-        split_name = re.split(r'([#?])', title)
-        title = re.sub('_', ' ', split_name[0])
-        arg_list = []
-        quote_code = False
-        for a in split_name[1:]:
-            if a[0] == '#':
-                quote_code = True
-            if a[0] == '?':
-                quote_code = False
-            if quote_code:
-                arg_list.append(urllib.parse.quote(a))
-            else:
-                arg_list.append(a)
-        page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=iw_prefix)
-        query_string = {'action': 'query', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
-                        'redirects': 'True', 'titles': title}
+        if title is not None:
+            if title == '':
+                return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info)
+            split_name = re.split(r'([#?])', title)
+            title = re.sub('_', ' ', split_name[0])
+            arg_list = []
+            quote_code = False
+            for a in split_name[1:]:
+                if a[0] == '#':
+                    quote_code = True
+                if a[0] == '?':
+                    quote_code = False
+                if quote_code:
+                    arg_list.append(urllib.parse.quote(a))
+                else:
+                    arg_list.append(a)
+            page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=iw_prefix)
+            query_string = {'action': 'query', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
+                            'redirects': 'True', 'titles': title}
+        elif pageid is not None:
+            page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=iw_prefix)
+            query_string = {'action': 'query', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
+                            'redirects': 'True', 'pageids': pageid}
+        else:
+            raise ValueError('title and pageid cannot be both None')
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts:
             query_string.update({'prop': 'info|imageinfo|extracts|pageprops',
@@ -368,80 +377,92 @@ class WikiLib:
                     page_info.before_title = n['from']
                     page_info.title = n['to']
         pages: Dict[str, dict] = query.get('pages')
+        print(pages)
         if pages is not None:
             for page_id in pages:
                 page_info.id = int(page_id)
                 page_raw = pages[page_id]
-                title = page_raw['title']
-                if page_info.id < 0:
-                    if 'invalid' in page_raw:
-                        rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
-                                     page_raw['invalidreason'])
-                        rs = '发生错误：“' + rs1 + '”。'
-                        rs = re.sub('".”', '"”', rs)
-                        page_info.desc = rs
+                if 'missing' in page_raw:
+                    if 'title' in page_raw:
+                        if 'invalid' in page_raw:
+                            rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
+                                         page_raw['invalidreason'])
+                            rs = '发生错误：“' + rs1 + '”。'
+                            rs = re.sub('".”', '"”', rs)
+                            page_info.desc = rs
+                            page_info.status = False
+                        elif 'known' in page_raw:
+                            full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
+                                       + page_info.args
+                            page_info.link = full_url
+                            file = None
+                            if 'imageinfo' in page_raw:
+                                file = page_raw['imageinfo'][0]['url']
+                            page_info.file = file
+                            page_info.status = True
+                        else:
+                            split_title = title.split(':')
+                            if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                                rstitle = ':'.join(split_title[1:]) + page_info.args
+                                research = await self.parse_page_info(rstitle)
+                                page_info.title = research.title
+                                page_info.link = research.link
+                                page_info.desc = research.desc
+                                page_info.file = research.file
+                                page_info.before_title = title
+                                page_info.before_page_property = 'template'
+                                page_info.status = research.status
+                            else:
+                                research = await self.research_page(title)
+                                page_info.title = research[0]
+                                page_info.before_title = title
+                                page_info.invalid_namespace = research[1]
+                                page_info.status = False
+                    else:
                         page_info.status = False
-                    elif 'missing' not in page_raw or 'known' in page_raw:
+                else:
+                    if 'special' in page_raw:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
                         page_info.link = full_url
+                        page_info.status = True
+                    else:
+                        title = page_raw['title']
+                        page_desc = ''
+                        split_title = title.split(':')
+                        get_desc = True
+                        if not doc_mode and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
+                            and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                            get_all_text = await self.get_wikitext(title)
+                            match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
+                            if match_doc:
+                                match_link = re.match(r'link=(.*)', match_doc.group(1), re.I | re.S)
+                                if match_link:
+                                    get_doc = match_link.group(1)
+                                else:
+                                    get_doc = title + '/doc'
+                                get_desc = False
+                                get_doc_desc = await self.parse_page_info(get_doc, doc_mode=True)
+                                page_desc = get_doc_desc.desc
+                                page_info.before_page_property = page_info.page_property = 'template'
+                        if get_desc:
+                            if use_textextracts:
+                                raw_desc = page_raw.get('extract')
+                                if raw_desc is not None:
+                                    page_desc = self.parse_text(raw_desc)
+                            else:
+                                page_desc = self.parse_text(await self.get_html_to_text(title))
+                        full_url = page_raw['fullurl'] + page_info.args
                         file = None
                         if 'imageinfo' in page_raw:
                             file = page_raw['imageinfo'][0]['url']
+                        page_info.title = title
+                        page_info.link = full_url
                         page_info.file = file
-                        page_info.status = True
-                    else:
-                        split_title = title.split(':')
-                        if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                            and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
-                            rstitle = ':'.join(split_title[1:]) + page_info.args
-                            research = await self.parse_page_info(rstitle)
-                            page_info.title = research.title
-                            page_info.link = research.link
-                            page_info.desc = research.desc
-                            page_info.file = research.file
-                            page_info.before_title = title
-                            page_info.before_page_property = 'template'
-                            page_info.status = research.status
-                        else:
-                            research = await self.research_page(title)
-                            page_info.title = research[0]
-                            page_info.before_title = title
-                            page_info.invalid_namespace = research[1]
-                            page_info.status = False
-                else:
-                    page_desc = ''
-                    split_title = title.split(':')
-                    get_desc = True
-                    if not doc_mode and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                        and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
-                        get_all_text = await self.get_wikitext(title)
-                        match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
-                        if match_doc:
-                            match_link = re.match(r'link=(.*)', match_doc.group(1), re.I | re.S)
-                            if match_link:
-                                get_doc = match_link.group(1)
-                            else:
-                                get_doc = title + '/doc'
-                            get_desc = False
-                            get_doc_desc = await self.parse_page_info(get_doc, doc_mode=True)
-                            page_desc = get_doc_desc.desc
-                            page_info.before_page_property = page_info.page_property = 'template'
-                    if get_desc:
-                        if use_textextracts:
-                            raw_desc = page_raw.get('extract')
-                            if raw_desc is not None:
-                                page_desc = self.parse_text(raw_desc)
-                        else:
-                            page_desc = self.parse_text(await self.get_html_to_text(title))
-                    full_url = page_raw['fullurl'] + page_info.args
-                    file = None
-                    if 'imageinfo' in page_raw:
-                        file = page_raw['imageinfo'][0]['url']
-                    page_info.title = title
-                    page_info.link = full_url
-                    page_info.file = file
-                    page_info.desc = page_desc
+                        page_info.desc = page_desc
+                        if not iw_mode and page_info.args == '':
+                            page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
         interwiki_: List[Dict[str, str]] = query.get('interwiki')
         if interwiki_ is not None:
             for i in interwiki_:
@@ -452,7 +473,8 @@ class WikiLib:
                     iw_mode = True
                     iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']]).parse_page_info(iw_title,
                                                                                                     tried_iw=tried_iw + 1,
-                                                                                                    iw_prefix=iw_prefix, iw_mode=iw_mode)
+                                                                                                    iw_prefix=iw_prefix,
+                                                                                                    iw_mode=iw_mode)
                     before_page_info = page_info
                     page_info = iw_query
                     if iw_query.title == '':
@@ -470,8 +492,6 @@ class WikiLib:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if tried_iw == 0:
                                 page_info.title = page_info.interwiki_prefix + t
-        if not iw_mode and page_info.args == '':
-            page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
         if not self.wiki_info.in_allowlist:
             checklist = []
             if page_info.title is not None:

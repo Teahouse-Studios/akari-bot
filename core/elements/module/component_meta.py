@@ -11,6 +11,7 @@ class CommandMeta:
     def __init__(self,
                  function: Callable = None,
                  help_doc: Union[str, list, tuple] = None,
+                 options_desc: dict = None,
                  required_admin: bool = False,
                  required_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
@@ -22,6 +23,7 @@ class CommandMeta:
         elif isinstance(help_doc, tuple):
             help_doc = list(help_doc)
         self.help_doc: list = help_doc
+        self.options_desc = options_desc
         self.required_admin = required_admin
         self.required_superuser = required_superuser
         if isinstance(available_for, str):

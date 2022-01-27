@@ -25,7 +25,6 @@ from core.logger import Logger
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-Url.mm = True
 init()
 
 
