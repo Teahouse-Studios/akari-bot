@@ -265,7 +265,7 @@ class WikiLib:
             ell = True
         return '\n'.join(split_desc) + ('...' if ell else '')
 
-    async def get_html_to_text(self, page_name):
+    async def get_html_to_text(self, page_name, section=None):
         await self.fixup_wiki_info()
         get_parse = await self.get_json(action='parse',
                                         page=page_name,
@@ -275,7 +275,19 @@ class WikiLib:
         h.ignore_images = True
         h.ignore_tables = True
         h.single_line_break = True
-        return h.handle(get_parse['parse']['text']['*'])
+        t = h.handle(get_parse['parse']['text']['*'])
+        if section is not None:
+            s = re.split(r'(.*##[^#].*\[.*?])', t, re.M | re.S)
+            ls = len(s)
+            if ls > 1:
+                i = 0
+                for x in s:
+                    i += 1
+                    if re.match(r'##[^#]' + section + r'\[.*?]', x):
+                        break
+                if i != ls:
+                    t = ''.join(s[i:])
+        return t
 
     async def get_wikitext(self, page_name):
         await self.fixup_wiki_info()
@@ -329,12 +341,14 @@ class WikiLib:
             ban = True
         if tried_iw > 5:
             raise WhatAreUDoingError
+        section = None
         if title is not None:
             if title == '':
                 return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info)
             split_name = re.split(r'([#?])', title)
             title = re.sub('_', ' ', split_name[0])
             arg_list = []
+            section_list = []
             quote_code = False
             for a in split_name[1:]:
                 if a[0] == '#':
@@ -343,8 +357,11 @@ class WikiLib:
                     quote_code = False
                 if quote_code:
                     arg_list.append(urllib.parse.quote(a))
+                    section_list.append(a)
                 else:
                     arg_list.append(a)
+            if len(section_list) > 1:
+                section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=iw_prefix)
             query_string = {'action': 'query', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
@@ -355,7 +372,7 @@ class WikiLib:
         else:
             raise ValueError('title and pageid cannot be both None')
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
-        if use_textextracts:
+        if use_textextracts and section is None:
             query_string.update({'prop': 'info|imageinfo|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
@@ -447,12 +464,12 @@ class WikiLib:
                                 page_desc = get_doc_desc.desc
                                 page_info.before_page_property = page_info.page_property = 'template'
                         if get_desc:
-                            if use_textextracts:
+                            if use_textextracts and section is None:
                                 raw_desc = page_raw.get('extract')
                                 if raw_desc is not None:
                                     page_desc = self.parse_text(raw_desc)
                             else:
-                                page_desc = self.parse_text(await self.get_html_to_text(title))
+                                page_desc = self.parse_text(await self.get_html_to_text(title, section))
                         full_url = page_raw['fullurl'] + page_info.args
                         file = None
                         if 'imageinfo' in page_raw:
