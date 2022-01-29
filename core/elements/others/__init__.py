@@ -6,6 +6,7 @@ from os.path import abspath
 import requests
 
 from core.exceptions import ConfigFileNotFound
+from core.logger import Logger
 
 confirm_command = ["是", "对", '确定', '是吧', '大概是',
                    '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
