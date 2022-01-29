@@ -9,6 +9,7 @@ import ujson as json
 
 import core.html2text as html2text
 from core.dirty_check import check
+from core.elements import Url
 from core.logger import Logger
 from core.utils import get_url
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
@@ -88,6 +89,7 @@ class PageInfo:
                  file: str = None,
                  desc: str = None,
                  args: str = None,
+                 section: str = None,
                  interwiki_prefix: str = '',
                  status: bool = True,
                  before_page_property: str = 'page',
@@ -102,6 +104,7 @@ class PageInfo:
         self.file = file
         self.desc = desc
         self.args = args
+        self.section = section
         self.interwiki_prefix = interwiki_prefix
         self.status = status
         self.before_page_property = before_page_property
@@ -363,6 +366,7 @@ class WikiLib:
             if len(section_list) > 1:
                 section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=iw_prefix)
+            page_info.section = section
             query_string = {'action': 'query', 'prop': 'info|imageinfo', 'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
         elif pageid is not None:
@@ -378,6 +382,7 @@ class WikiLib:
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
+        print(query)
         if query is None:
             return PageInfo(title=title, link=None, desc='发生错误：API未返回任何内容，请联系此站点管理员获取原因。',
                             info=self.wiki_info)
@@ -483,7 +488,7 @@ class WikiLib:
         interwiki_: List[Dict[str, str]] = query.get('interwiki')
         if interwiki_ is not None:
             for i in interwiki_:
-                if i['title'] == title:
+                if i['title'] == page_info.title:
                     iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
                     iw_title = iw_title.group(1)
                     iw_prefix += i['iw'] + ':'
@@ -497,7 +502,7 @@ class WikiLib:
                     if iw_query.title == '':
                         page_info.title = title
                     else:
-                        page_info.before_title = title
+                        page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t is not None:
                             if before_page_info.args is not None:
@@ -509,6 +514,8 @@ class WikiLib:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if tried_iw == 0:
                                 page_info.title = page_info.interwiki_prefix + t
+                                if before_page_info.section is not None:
+                                    page_info.section = before_page_info.section
         if not self.wiki_info.in_allowlist:
             checklist = []
             if page_info.title is not None:
@@ -522,11 +529,11 @@ class WikiLib:
                 if not x['status']:
                     ban = True
         if ban:
-            page_info.status = True
-            page_info.before_title = '?'
-            page_info.title = '¿'
-            page_info.link = 'https://wdf.ink/6OUp'
-            page_info.desc = None
+            page_info.status = False
+            page_info.title = page_info.before_title = None
+            page_info.id = -1
+            page_info.desc = str(Url(page_info.link, use_mm=True))
+            page_info.link = None
         return page_info
 
     async def random_page(self) -> PageInfo:

@@ -413,7 +413,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
     msg_list = []
     wait_msg_list = []
     wait_list = []
-    web_render_list = []
+    render_infobox_list = []
+    render_section_list = []
     dl_list = []
     for q in query_task:
         current_task = query_task[q]
@@ -460,8 +461,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if r.file is not None:
                         dl_list.append(r.file)
                     else:
-                        if r.link is not None:
-                            web_render_list.append({r.link: r.info.realurl})
+                        if r.link is not None and r.section is None:
+                            render_infobox_list.append({r.link: r.info.realurl})
+                        elif r.link is not None and r.section is not None and r.info.in_allowlist:
+                            render_section_list.append({r.link: {'url': r.info.realurl, 'section': r.section}})
                 else:
                     plain_slice = []
                     wait_plain_slice = []
@@ -492,15 +495,24 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
     if isinstance(session, MessageSession):
         if msg_list:
             await session.sendMessage(msg_list)
-        if web_render_list and session.Feature.image:
+        if render_infobox_list and session.Feature.image:
             infobox_msg_list = []
-            for i in web_render_list:
+            for i in render_infobox_list:
                 for ii in i:
                     get_infobox = await get_infobox_pic(i[ii], ii, headers)
                     if get_infobox:
                         infobox_msg_list.append(Image(get_infobox))
             if infobox_msg_list:
                 await session.sendMessage(infobox_msg_list, quote=False)
+        if render_section_list and session.Feature.image:
+            section_msg_list = []
+            for i in render_section_list:
+                for ii in i:
+                    get_section = await get_infobox_pic(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                    if get_section:
+                        section_msg_list.append(Image(get_section))
+            if section_msg_list:
+                await session.sendMessage(section_msg_list, quote=False)
         if dl_list:
             for f in dl_list:
                 dl = await download_to_cache(f)
@@ -517,7 +529,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             if confirm and wait_list:
                 await query_pages(session, wait_list, use_prefix=False)
     else:
-        return {'msg_list': msg_list, 'web_render_list': web_render_list, 'dl_list': dl_list,
+        return {'msg_list': msg_list, 'web_render_list': render_infobox_list, 'dl_list': dl_list,
                 'wait_list': wait_list, 'wait_msg_list': wait_msg_list}
 
 
