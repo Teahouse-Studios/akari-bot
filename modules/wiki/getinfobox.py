@@ -101,6 +101,7 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
             open_file.write(str(find_infobox))
             if find_infobox.parent.has_attr('style'):
                 open_file.write(join_url(link, find_infobox.parent.get('style')))
+            w = 1000
         else:
             for x in soup.find_all('div'):
                 if x.has_attr('id'):
@@ -182,6 +183,7 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
                     x.attrs['src'] = x.attrs['data-src']
             open_file = open(url, 'w', encoding='utf-8')
             open_file.write(str(soup))
+            w = 1000
         open_file.write('<style>span.heimu a.external,\
             span.heimu a.external:visited,\
             span.heimu a.extiw,\
@@ -198,7 +200,7 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
         open_file.write('</div></body></html>')
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
-        html = {'content': read_file.read()}
+        html = {'content': read_file.read(), 'width': w}
         Logger.info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
