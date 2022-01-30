@@ -49,7 +49,17 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
             target = ' '.join(targetlist)
             return target
 
-        open_file.write('<!DOCTYPE html>\n<html>\n<head>\n')
+        open_file.write('<!DOCTYPE html>\n')
+        for x in soup.find_all('html'):
+            fl = []
+            for f in x.attrs:
+                if isinstance(x.attrs[f], str):
+                    fl.append(f'{f}="{x.attrs[f]}"')
+                elif isinstance(x.attrs[f], list):
+                    fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+            open_file.write(f'<html {" ".join(fl)}>')
+
+        open_file.write('<head>\n')
         for x in soup.find_all(rel='stylesheet'):
             if x.has_attr('href'):
                 x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
@@ -61,10 +71,6 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
         for x in soup.find_all('style'):
             open_file.write(str(x))
         open_file.write('</head>')
-
-        for x in soup.find_all('body'):
-            if x.has_attr('class'):
-                open_file.write(f'<body class="{" ".join(x.get("class"))}">')
 
         if section is None:
             infoboxes = ['notaninfobox', 'portable-infobox', 'infobox', 'tpl-infobox', 'infoboxtable',
@@ -101,8 +107,13 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
             open_file.write(str(find_infobox))
             if find_infobox.parent.has_attr('style'):
                 open_file.write(join_url(link, find_infobox.parent.get('style')))
-            w = 1000
+            w = 500
+            open_file.write('</div>')
         else:
+            for x in soup.find_all('body'):
+                if x.has_attr('class'):
+                    open_file.write(f'<body class="{" ".join(x.get("class"))}">')
+
             for x in soup.find_all('div'):
                 if x.has_attr('id'):
                     if x.get('id') in ['content', 'mw-content-text']:
@@ -184,6 +195,7 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
             open_file = open(url, 'w', encoding='utf-8')
             open_file.write(str(soup))
             w = 1000
+            open_file.write('</div></body>')
         open_file.write('<style>span.heimu a.external,\
             span.heimu a.external:visited,\
             span.heimu a.extiw,\
@@ -197,7 +209,7 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
                 background-color: #cccccc;\
                 text-shadow: none;\
             }</style>')
-        open_file.write('</div></body></html>')
+        open_file.write('</html>')
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
         html = {'content': read_file.read(), 'width': w}
