@@ -187,6 +187,7 @@ class BotDBUtil:
             if query:
                 session.delete(query)
                 session.commit()
+            return True
 
     class CoolDown:
         @retry(stop=stop_after_attempt(3))
