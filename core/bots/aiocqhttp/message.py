@@ -5,6 +5,7 @@ import traceback
 from pathlib import Path
 from typing import List, Union
 
+import aiocqhttp.exceptions
 from aiocqhttp import MessageSegment
 
 from core.bots.aiocqhttp.client import bot
@@ -61,7 +62,11 @@ class MessageSession(MS):
             count += 1
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         if self.target.targetFrom == 'QQ|Group':
-            send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+            try:
+                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+            except aiocqhttp.exceptions.ActionFailed:
+                msg = msg + MessageSegment.text('（房蜂控）')
+                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
         else:
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
         return FinishedSession([send])
