@@ -94,11 +94,11 @@ async def _(event):
     await parser(msg)
 
 
-@bot.on('request.friend')
+"""@bot.on('request.friend')
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isInBlockList:
         return {'approve': False}
-    return {'approve': True}
+    return {'approve': True}"""
 
 
 @bot.on('request.group.invite')
