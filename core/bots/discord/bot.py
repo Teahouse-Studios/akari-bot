@@ -7,7 +7,7 @@ import discord
 from config import Config
 from core.bots.discord.client import client
 from core.bots.discord.message import MessageSession, FetchTarget
-from core.elements import MsgInfo, Session, Schedule, StartUp, PrivateAssets
+from core.elements import MsgInfo, Session, Schedule, StartUp, PrivateAssets, Url
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import parser
@@ -16,6 +16,7 @@ from core.utils import init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
+Url.completely_disable_mm = True
 
 count = 0
 

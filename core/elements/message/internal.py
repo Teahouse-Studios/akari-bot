@@ -25,10 +25,11 @@ class Plain:
 
 class Url:
     mm = False
+    completely_disable_mm = False
 
     def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
         self.url = url
-        if (Url.mm and not disable_mm) or use_mm:
+        if (Url.mm and not disable_mm) or (use_mm and not Url.completely_disable_mm):
             mm_url = f'https://middleman.wdf.ink/?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",

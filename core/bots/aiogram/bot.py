@@ -7,7 +7,7 @@ from aiogram import types, executor
 from core.bots.aiogram.client import dp
 from core.bots.aiogram.message import MessageSession, FetchTarget
 from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
-from core.elements import MsgInfo, Session, StartUp, Schedule, PrivateAssets
+from core.elements import MsgInfo, Session, StartUp, Schedule, PrivateAssets, Url
 from core.loader import ModulesManager
 from core.parser.message import parser
 from core.scheduler import Scheduler
@@ -15,6 +15,7 @@ from core.utils import init, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
+Url.completely_disable_mm = True
 
 
 @dp.message_handler()
