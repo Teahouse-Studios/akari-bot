@@ -169,8 +169,13 @@ def run_bot():
 
 if __name__ == '__main__':
     init_bot()
-    logging.basicConfig(format="%(msg)s", level=logging.INFO)
+    log_format = logging.Formatter(fmt="%(msg)s")
+    log_handler = logging.StreamHandler()
+    log_handler.setFormatter(log_format)
     logger = logging.getLogger()
+    for h in logger.handlers:
+        logger.removeHandler(h)
+    logger.addHandler(log_handler)
     logpath = os.path.abspath('./log')
     if not os.path.exists(logpath):
         os.mkdir(logpath)
