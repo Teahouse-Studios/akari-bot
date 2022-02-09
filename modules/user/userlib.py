@@ -124,7 +124,11 @@ async def GetUser(wikiurl, username, argv=None):
                 clawer = await get_data(clawerurl, 'text')
                 soup = bs(clawer, 'html.parser')
                 stats = soup.find('div', class_='section stats')
-                point = soup.find('div', class_='score').text
+                try:
+                    point = soup.find('div', class_='score').text
+                except:
+                    traceback.print_exc()
+                    point = '未知'
                 dd = stats.find_all('dd')
                 Editcount = ('\n编辑过的Wiki：' + str(dd[0]) + '\n创建数：' + str(dd[1]) + ' | 编辑数：' + str(
                     dd[2]) + '\n删除数：' + str(
@@ -133,6 +137,7 @@ async def GetUser(wikiurl, username, argv=None):
                 Editcount = re.sub(r'<dd>|</dd>', '', Editcount)
                 Editcount += f' | Wikipoints：{point}'
             except:
+                traceback.print_exc()
                 Editcount = '无法获取到增强型用户页中的编辑信息。'
                 dd = ['?', '?', Editcount_Api, '?', '?', '?', '?']
                 point = '?'
@@ -219,7 +224,7 @@ async def GetUser(wikiurl, username, argv=None):
                                     wikipoint=point)
         if argv == '-p':
             return str(
-                Url(f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}')) + '[[uimgc:{imagepath}]]'
+                Url(f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}')) + f'[[uimgc:{imagepath}]]'
         GlobalAuthData = (
             f'\n全域用户组：{GGroup}\n' +
             f'全域编辑数：{GEditcount}\n' +

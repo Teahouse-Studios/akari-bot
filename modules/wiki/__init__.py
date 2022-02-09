@@ -34,11 +34,14 @@ async def _(msg: MessageSession):
 
 @wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID搜索一个Wiki页面。}')
 async def _(msg: MessageSession):
-    iw = msg.parsed_msg['<CustomIW>']
+    iw: str = msg.parsed_msg['<CustomIW>']
+    page_id: str = msg.parsed_msg['<PageID>']
+    if not page_id.isdigit():
+        return await msg.sendMessage('错误：页面ID必须是数字。')
     print(msg.parsed_msg)
     if not iw:
-        iw = None
-    await query_pages(msg, pageid=msg.parsed_msg['<PageID>'], iw=iw)
+        iw = ''
+    await query_pages(msg, pageid=page_id, iw=iw)
 
 
 @wiki.handle('set <WikiUrl> {设置起始查询Wiki}', required_admin=True)
