@@ -45,17 +45,22 @@ class QueryInfo:
 
 class WikiInfo:
     def __init__(self,
-                 api: str,
-                 articlepath: str,
-                 extensions: list,
-                 interwiki: dict,
-                 realurl: str,
-                 name: str,
-                 namespaces: list,
-                 namespaces_local: dict,
-                 in_allowlist: bool,
-                 in_blocklist: bool,
-                 script: str):
+                 api: str = '',
+                 articlepath: str = '',
+                 extensions=None,
+                 interwiki=None,
+                 realurl: str = '',
+                 name: str = '',
+                 namespaces=None,
+                 namespaces_local=None,
+                 in_allowlist=False,
+                 in_blocklist=False,
+                 script: str = '',
+                 logo_url: str = ''):
+        if extensions is None:
+            extensions = []
+        if interwiki is None:
+            interwiki = {}
         self.api = api
         self.articlepath = articlepath
         self.extensions = extensions
@@ -67,6 +72,7 @@ class WikiInfo:
         self.in_allowlist = in_allowlist
         self.in_blocklist = in_blocklist
         self.script = script
+        self.logo_url = logo_url
 
 
 class WikiStatus:
@@ -115,8 +121,7 @@ class PageInfo:
 class WikiLib:
     def __init__(self, url: str, headers=None):
         self.url = url
-        self.wiki_info = WikiInfo(api='', articlepath='', extensions=[], interwiki={}, realurl='', name='',
-                                  namespaces=[], namespaces_local={}, in_allowlist=False, in_blocklist=False, script='')
+        self.wiki_info = WikiInfo()
         self.headers = headers
 
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
@@ -169,7 +174,8 @@ class WikiLib:
                         interwiki=interwiki_dict,
                         in_allowlist=audit.inAllowList,
                         in_blocklist=audit.inBlockList,
-                        script=real_url + info['query']['general']['script'])
+                        script=real_url + info['query']['general']['script'],
+                        logo_url=info['query']['general'].get('logo'))
 
     async def check_wiki_available(self):
         try:
@@ -414,7 +420,8 @@ class WikiLib:
                             page_info.desc = rs
                             page_info.status = False
                         elif 'known' in page_raw:
-                            full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
+                            full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')),
+                                              self.wiki_info.articlepath) \
                                        + page_info.args
                             page_info.link = full_url
                             file = None

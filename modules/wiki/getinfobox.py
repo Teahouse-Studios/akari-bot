@@ -20,8 +20,8 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
         return False
     try:
         Logger.info('Starting find infobox/section..')
-        wlink = re.sub(r'api.php', '', link)
-        link = re.sub(r'(?:w/|)api.php', '', link)
+        if link[-1] != '/':
+            link += '/'
         try:
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
@@ -62,15 +62,16 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
         open_file.write('<head>\n')
         for x in soup.find_all(rel='stylesheet'):
             if x.has_attr('href'):
-                x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
+                x.attrs['href'] = re.sub(';', '&', urljoin(link, x.get('href')))
             open_file.write(str(x))
 
         for x in soup.find_all():
             if x.has_attr('href'):
-                x.attrs['href'] = re.sub(';', '&', urljoin(wlink, x.get('href')))
+                x.attrs['href'] = re.sub(';', '&', urljoin(link, x.get('href')))
+        open_file.write('</head>')
+
         for x in soup.find_all('style'):
             open_file.write(str(x))
-        open_file.write('</head>')
 
         if section is None:
             infoboxes = ['notaninfobox', 'portable-infobox', 'infobox', 'tpl-infobox', 'infoboxtable',
@@ -105,8 +106,6 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
                     x.attrs['class'] = 'image'
                     x.attrs['src'] = x.attrs['data-src']
             open_file.write(str(find_infobox))
-            if find_infobox.parent.has_attr('style'):
-                open_file.write(join_url(link, find_infobox.parent.get('style')))
             w = 500
             open_file.write('</div>')
         else:

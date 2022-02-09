@@ -7,10 +7,8 @@ import aiohttp
 from core.elements import Url
 from core.elements.others import ErrorMessage
 from modules.wiki.utils.UTC8 import UTC8
-from modules.wiki.wikilib import wikilib as wiki
+from modules.wiki.wikilib_v2 import WikiLib
 from .gender import gender
-
-wikilib = wiki()
 
 
 async def get_data(url: str, fmt: str):
@@ -44,7 +42,7 @@ async def get_user_group(wikiurl):
 
 
 async def check_central_auth(wikiurl):
-    return 'CentralAuth' in await wikilib.get_enabled_extensions(url=wikiurl)
+    return 'CentralAuth' in (await WikiLib(wikiurl).check_wiki_available()).value.extensions
 
 
 async def get_user_central_auth_data(wikiurl, username):
@@ -71,12 +69,16 @@ def d(str1):
 
 async def GetUser(wikiurl, username, argv=None):
     print(wikiurl)
-    GetInterwiki = await wikilib.get_interwiki(url=wikiurl)
-    GetInterwiki = await wikilib.get_interwiki(url=wikiurl)
+    get_value = await WikiLib(wikiurl).check_wiki_available()
+    if get_value:
+        get_value = get_value.value
+    else:
+        return False
+    GetInterwiki = get_value.interwiki
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in GetInterwiki:
-            wikiurl = await wikilib.check_wiki_available(GetInterwiki[match_interwiki.group(1)])
+            wikiurl = await WikiLib(GetInterwiki[match_interwiki.group(1)]).check_wiki_available()
             if wikiurl:
                 return await GetUser(wikiurl[0], match_interwiki.group(2), argv)
     UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
@@ -86,7 +88,7 @@ async def GetUser(wikiurl, username, argv=None):
         return '发生错误：无法获取到页面信息，请检查是否设置了对应Interwiki。'
     Wikiname = await getwikiname(wikiurl)
     GetUserGroupsList = await get_user_group(wikiurl)
-    GetArticleUrl = await wikilib.get_article_path(wikiurl)
+    GetArticleUrl = get_value.articlepath
     GetUserCentralAuthData = await get_user_central_auth_data(wikiurl, username)
     try:
         User = GetUserJson['query']['users'][0]['name']
