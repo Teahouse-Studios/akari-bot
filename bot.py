@@ -176,7 +176,7 @@ if __name__ == '__main__':
     for h in logger.handlers:
         logger.removeHandler(h)
     logger.addHandler(log_handler)
-    logpath = os.path.abspath('./log')
+    logpath = os.path.abspath('./logs')
     if not os.path.exists(logpath):
         os.mkdir(logpath)
     filehandler = TimedPatternFileHandler('{}_%Y-%m-%d.log'.format(logpath + '/log'), mode='a', backup_count=5)
