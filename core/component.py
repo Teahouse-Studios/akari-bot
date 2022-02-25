@@ -9,7 +9,6 @@ from apscheduler.triggers.interval import IntervalTrigger
 from core.elements import Command, RegexCommand, Option, Schedule, StartUp
 from core.elements.module.component_meta import *
 from core.loader import ModulesManager
-from core.logger import Logger
 
 
 class Bind:
@@ -27,8 +26,6 @@ class Bind:
                    exclude_from: Union[str, list, tuple] = ''):
             def decorator(function):
                 nonlocal help_doc
-                if help_doc is None:
-                    help_doc = []
                 if isinstance(help_doc, str):
                     help_doc = [help_doc]
                 if help_docs:
@@ -40,8 +37,6 @@ class Bind:
                                                                             required_superuser=required_superuser,
                                                                             available_for=available_for,
                                                                             exclude_from=exclude_from))
-                return Logger.info(f'Successfully registered {str(help_doc)} {"commands" if len(help_doc) > 1 else "command"}'
-                                   f' to {self.bind_prefix} module!')
 
             return decorator
 
@@ -57,7 +52,6 @@ class Bind:
                                                                           flags=flags,
                                                                           show_typing=show_typing))
 
-                return Logger.info(f'Successfully registered {str(pattern)} expression to {self.bind_prefix} module!')
             return decorator
 
     class Schedule:
@@ -68,7 +62,6 @@ class Bind:
             def decorator(function):
                 ModulesManager.bind_to_module(self.bind_prefix, ScheduleMeta(function=function))
 
-                return Logger.info(f'Successfully registered scheduler to {self.bind_prefix} module!')
             return decorator
 
 
