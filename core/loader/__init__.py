@@ -67,6 +67,8 @@ class ModulesManager:
                     available = ModulesManager.modules[m].available_for
                     if targetFrom in available or '*' in available:
                         returns.update({m: ModulesManager.modules[m]})
+                if isinstance(ModulesManager.modules[m], Option):
+                    returns.update({m: ModulesManager.modules[m]})
             return returns
         return ModulesManager.modules
 
