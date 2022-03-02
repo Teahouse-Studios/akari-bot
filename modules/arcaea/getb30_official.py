@@ -78,18 +78,18 @@ async def getb30_official(usercode):
             realptt = songsinfo.get(x['song_id'], {}).get('difficulties', {})
             if realptt:
                 realptt = realptt[x['difficulty']].get('realrating', False)
-            realptts[x['song_id'] + difficulty] = realptt
+                realptts[x['song_id'] + difficulty] = realptt
             score = x['score']
             if not realptt:
-                potential_value = x['potential_value']
+                realptt = x['potential_value']
                 if score >= 10000000:
-                    potential_value -= 2
+                    realptt -= 2
                 elif score >= 9800000:
-                    potential_value -= 1 + (score - 9800000) / 200000
+                    realptt -= 1 + (score - 9800000) / 200000
                 elif score <= 9500000:
-                    potential_value -= (score - 9500000) / 300000
-                else:
-                    realptt = round(potential_value, 1) * 10
+                    realptt -= (score - 9500000) / 300000
+                realptt = round(realptt, 1) * 10
+                realptts[x['song_id'] + difficulty] = realptt
             ptt = x['potential_value']
             ptts[x['song_id'] + difficulty] = ptt
             scores[x['song_id'] + difficulty] = score
