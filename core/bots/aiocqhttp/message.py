@@ -58,7 +58,7 @@ class MessageSession(MS):
             elif isinstance(x, Image):
                 msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
             elif isinstance(x, Voice):
-                msg = msg + MessageSegment.record(Path(x.path).as_uri())
+                msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         if self.target.targetFrom == 'QQ|Group':
@@ -131,6 +131,9 @@ class MessageSession(MS):
                 await bot.call_action('delete_msg', message_id=self.session.message['message_id'])
         except Exception:
             Logger.error(traceback.format_exc())
+
+    async def call_api(self, action, **params):
+        return await bot.call_action(action, **params)
 
     class Typing:
         def __init__(self, msg: MS):

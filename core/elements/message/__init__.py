@@ -132,6 +132,9 @@ class MessageSession:
     async def sleep(self, s):
         await asyncio.sleep(s)
 
+    async def call_api(self, action, **params):
+        ...
+
     class Feature:
         """
         此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断（如QQ支持消息类型的语音而Discord不支持）

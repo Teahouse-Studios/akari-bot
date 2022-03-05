@@ -593,3 +593,15 @@ async def _(msg: MessageSession):
     else:
         BotDBUtil.Muting(msg).add()
         await msg.sendMessage('成功禁言。')
+
+
+leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
+                   desc='使机器人离开群聊。')
+
+
+@leave.handle()
+async def _(msg: MessageSession):
+    confirm = await msg.waitConfirm('你确定吗？')
+    if confirm:
+        await msg.sendMessage('已执行。')
+        await msg.call_api('set_group_leave', group_id=msg.session.target)
