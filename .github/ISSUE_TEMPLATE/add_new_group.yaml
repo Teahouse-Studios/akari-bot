@@ -17,8 +17,6 @@ body:
       options:
         - label: 我已阅读并同意小可 [服务条款](https://bot.teahou.se/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahou.se/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
           required: true
-        - label: 我已事先添加当前机器人的账号 `2314163511` 为好友，且已发送群聊邀请/频道通行证至机器人。
-          required: true
   - type: dropdown
     id: group-type
     attributes:
