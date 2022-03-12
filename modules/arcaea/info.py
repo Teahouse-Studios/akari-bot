@@ -1,6 +1,8 @@
 import os
 import traceback
 
+from datetime import datetime, timedelta
+
 from config import Config
 from core.elements import Plain, Image
 from core.utils.bot import get_url
@@ -51,13 +53,15 @@ async def get_info(usercode):
         lost = recent['miss_count']
         username = get_['content']['account_info']['name']
         usrptt = int(get_['content']['account_info']['rating']) / 100
+        time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
         result = [Plain(f'{username} (Ptt: {usrptt})的最近游玩记录：\n'
                         f'{trackname} ({difficulty})\n'
                         f'Score: {score}\n'
                         f'Pure: {pure} ({shiny_pure})\n'
                         f'Far: {far}\n'
                         f'Lost: {lost}\n'
-                        f'Potential: {realptt} -> {ptt}')]
+                        f'Potential: {realptt} -> {ptt}\n'
+                        f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)')]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         return result

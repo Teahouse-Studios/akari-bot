@@ -1,5 +1,6 @@
 import os
 import traceback
+from datetime import datetime, timedelta
 
 from config import Config
 from core.elements import Plain
@@ -66,11 +67,13 @@ async def get_info_official(usercode):
     pure = recent['pure_count']
     far = recent['far_count']
     lost = recent['lost_count']
+    time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
     result = {'success': True, 'msg': f'{username} (Ptt: {potential})的最近游玩记录：\n'
                                       f'{trackname} ({difficulty})\n'
                                       f'Score: {score}\n'
                                       f'Pure: {pure} ({shiny_pure})\n'
                                       f'Far: {far}\n'
                                       f'Lost: {lost}\n'
-                                      f'Potential: {realptt} -> {ptt}'}
+                                      f'Potential: {realptt} -> {ptt}\n'
+                                      f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)'}
     return result
