@@ -163,7 +163,10 @@ today = on_command('maimai_today', alias=['今日舞萌', '今日mai'], desc='�
 
 @today.handle()
 async def _(msg: MessageSession):
-    qq = int(msg.session.sender)
+    if msg.target.senderFrom == "Discord|Client":
+        qq = int(msg.session.sender.id)
+    else:
+        qq = int(msg.session.sender)
     h = hash(qq)
     rp = h % 100
     wm_value = []
