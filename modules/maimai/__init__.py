@@ -262,7 +262,7 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
             await msg.sendMessage("格式错误，输入“分数线 帮助”以查看帮助信息")
 
 
-b40 = on_command('maimai_b40', developers=['mai-bot', 'OasisAkari'])
+b40 = on_command('maimai_b40', developers=['mai-bot', 'OasisAkari'], desc='仅限大陆版maimai使用。')
 
 
 @b40.handle('<username>')
