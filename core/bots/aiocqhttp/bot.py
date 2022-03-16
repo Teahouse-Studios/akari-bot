@@ -64,7 +64,7 @@ async def _(event: Event):
                                  senderFrom='QQ', senderName=''), Session(message=event,
                                                                           target=event.group_id if event.detail_type == 'group' else event.user_id,
                                                                           sender=event.user_id))
-    await parser(msg)
+    await parser(msg, running_mention=True)
 
 
 class GuildAccountInfo:
@@ -91,7 +91,7 @@ async def _(event):
                               Session(message=event,
                                       target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                       sender=event.user_id))
-    await parser(msg)
+    await parser(msg, running_mention=True)
 
 
 """@bot.on('request.friend')
