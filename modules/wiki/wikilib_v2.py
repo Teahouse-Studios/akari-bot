@@ -53,6 +53,7 @@ class WikiInfo:
                  name: str = '',
                  namespaces=None,
                  namespaces_local=None,
+                 namespacealiases=None,
                  in_allowlist=False,
                  in_blocklist=False,
                  script: str = '',
@@ -69,6 +70,7 @@ class WikiInfo:
         self.name = name
         self.namespaces = namespaces
         self.namespaces_local = namespaces_local
+        self.namespacealiases = namespacealiases
         self.in_allowlist = in_allowlist
         self.in_blocklist = in_blocklist
         self.script = script
@@ -144,6 +146,7 @@ class WikiLib:
             real_url = self.url.split('//')[0] + real_url
         namespaces = []
         namespaces_local = {}
+        namespacealiases = {}
         for x in info['query']['namespaces']:
             try:
                 ns = info['query']['namespaces'][x]
@@ -158,6 +161,7 @@ class WikiLib:
         for x in info['query']['namespacealiases']:
             if '*' in x:
                 namespaces.append(x['*'])
+                namespacealiases[x['*'].lower()] = x['*']
         interwiki_map = info['query']['interwikimap']
         interwiki_dict = {}
         for interwiki in interwiki_map:
@@ -171,6 +175,7 @@ class WikiLib:
                         api=api_url,
                         namespaces=namespaces,
                         namespaces_local=namespaces_local,
+                        namespacealiases=namespacealiases,
                         interwiki=interwiki_dict,
                         in_allowlist=audit.inAllowList,
                         in_blocklist=audit.inBlockList,
@@ -322,7 +327,8 @@ class WikiLib:
         title_split = page_name.split(':')
         print(title_split, len(title_split))
         is_invalid_namespace = False
-        if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces:
+        if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces \
+                and title_split[0].lower() not in self.wiki_info.namespacealiases:
             is_invalid_namespace = True
         return new_page_name, is_invalid_namespace
 
@@ -408,6 +414,7 @@ class WikiLib:
         print(pages)
         if pages is not None:
             for page_id in pages:
+                page_info.status = False
                 page_info.id = int(page_id)
                 page_raw = pages[page_id]
                 if 'missing' in page_raw:
@@ -418,7 +425,6 @@ class WikiLib:
                             rs = '发生错误：“' + rs1 + '”。'
                             rs = re.sub('".”', '"”', rs)
                             page_info.desc = rs
-                            page_info.status = False
                         elif 'known' in page_raw:
                             full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')),
                                               self.wiki_info.articlepath) \
@@ -431,26 +437,30 @@ class WikiLib:
                             page_info.status = True
                         else:
                             split_title = title.split(':')
-                            if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                            reparse = False
+                            if (len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local
+                                    and self.wiki_info.namespaces_local[split_title[0]] == 'Template'):
                                 rstitle = ':'.join(split_title[1:]) + page_info.args
-                                research = await self.parse_page_info(rstitle)
-                                page_info.title = research.title
-                                page_info.link = research.link
-                                page_info.desc = research.desc
-                                page_info.file = research.file
-                                page_info.before_title = title
+                                reparse = await self.parse_page_info(rstitle)
                                 page_info.before_page_property = 'template'
-                                page_info.status = research.status
+                            elif len(split_title) > 1 and split_title[0].lower() in self.wiki_info.namespacealiases:
+                                rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
+                                          + ':'.join(split_title[1:]) + page_info.args
+                                reparse = await self.parse_page_info(rstitle)
+                            if reparse:
+                                page_info.title = reparse.title
+                                page_info.link = reparse.link
+                                page_info.desc = reparse.desc
+                                page_info.file = reparse.file
+                                page_info.before_title = title
+                                page_info.status = reparse.status
                             else:
                                 research = await self.research_page(title)
                                 page_info.title = research[0]
                                 page_info.before_title = title
                                 page_info.invalid_namespace = research[1]
-                                page_info.status = False
-                    else:
-                        page_info.status = False
                 else:
+                    page_info.status = True
                     if 'special' in page_raw:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
