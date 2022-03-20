@@ -144,23 +144,23 @@ class WikiLib:
         real_url = info['query']['general']['server']
         if real_url.startswith('//'):
             real_url = self.url.split('//')[0] + real_url
-        namespaces = []
+        namespaces = {}
         namespaces_local = {}
         namespacealiases = {}
         for x in info['query']['namespaces']:
             try:
                 ns = info['query']['namespaces'][x]
                 if '*' in ns:
-                    namespaces.append(ns['*'])
+                    namespaces[ns['*']] = ns['id']
                 if 'canonical' in ns:
-                    namespaces.append(ns['canonical'])
+                    namespaces[ns['canonical']] = ns['id']
                 if '*' in ns and 'canonical' in ns:
                     namespaces_local.update({ns['*']: ns['canonical']})
             except Exception:
                 traceback.print_exc()
         for x in info['query']['namespacealiases']:
             if '*' in x:
-                namespaces.append(x['*'])
+                namespaces[x['*']] = x['id']
                 namespacealiases[x['*'].lower()] = x['*']
         interwiki_map = info['query']['interwikimap']
         interwiki_dict = {}
@@ -315,11 +315,12 @@ class WikiLib:
             desc = ''
         return desc
 
-    async def research_page(self, page_name: str):
+    async def research_page(self, page_name: str, namespace='*'):
         await self.fixup_wiki_info()
         get_page = await self.get_json(action='query',
                                        list='search',
                                        srsearch=page_name,
+                                       srnamespace=namespace,
                                        srwhat='text',
                                        srlimit='1',
                                        srenablerewrites=True)
@@ -333,7 +334,7 @@ class WikiLib:
         return new_page_name, is_invalid_namespace
 
     async def parse_page_info(self, title: str = None, pageid: int = None, doc_mode=False,
-                              tried_iw=0, iw_prefix='', iw_mode=False) -> PageInfo:
+                              tried_iw=0, iw_prefix='', iw_mode=False, search_mode=False) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid
         :param pageid: 页面id
@@ -341,6 +342,7 @@ class WikiLib:
         :param tried_iw: 尝试iw跳转的次数
         :param iw_prefix: iw前缀
         :param iw_mode: 是否为iw模式
+        :param research_mode: 是否为搜索模式
         :return:
         """
         try:
@@ -443,10 +445,10 @@ class WikiLib:
                                 rstitle = ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle)
                                 page_info.before_page_property = 'template'
-                            elif len(split_title) > 1 and split_title[0].lower() in self.wiki_info.namespacealiases:
+                            elif len(split_title) > 1 and split_title[0].lower() in self.wiki_info.namespacealiases and not search_mode:
                                 rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
                                           + ':'.join(split_title[1:]) + page_info.args
-                                reparse = await self.parse_page_info(rstitle)
+                                reparse = await self.parse_page_info(rstitle, search_mode=True)
                             if reparse:
                                 page_info.title = reparse.title
                                 page_info.link = reparse.link
@@ -455,7 +457,10 @@ class WikiLib:
                                 page_info.before_title = title
                                 page_info.status = reparse.status
                             else:
-                                research = await self.research_page(title)
+                                if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces:
+                                    research = await self.research_page(title, self.wiki_info.namespaces[split_title[0]])
+                                else:
+                                    research = await self.research_page(title)
                                 page_info.title = research[0]
                                 page_info.before_title = title
                                 page_info.invalid_namespace = research[1]
