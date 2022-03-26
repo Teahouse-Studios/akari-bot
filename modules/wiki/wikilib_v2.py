@@ -102,7 +102,8 @@ class PageInfo:
                  status: bool = True,
                  before_page_property: str = 'page',
                  page_property: str = 'page',
-                 invalid_namespace: bool = False
+                 namespace: str = '',
+                 invalid_namespace: Union[str, bool] = False
                  ):
         self.info = info
         self.id = id
@@ -327,11 +328,11 @@ class WikiLib:
         new_page_name = get_page['query']['search'][0]['title'] if len(get_page['query']['search']) > 0 else None
         title_split = page_name.split(':')
         print(title_split, len(title_split))
-        is_invalid_namespace = False
+        invalid_namespace = False
         if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces \
                 and title_split[0].lower() not in self.wiki_info.namespacealiases:
-            is_invalid_namespace = True
-        return new_page_name, is_invalid_namespace
+            invalid_namespace = title_split[0]
+        return new_page_name, invalid_namespace
 
     async def parse_page_info(self, title: str = None, pageid: int = None, doc_mode=False,
                               tried_iw=0, iw_prefix='', iw_mode=False, search_mode=False) -> PageInfo:
@@ -342,7 +343,7 @@ class WikiLib:
         :param tried_iw: 尝试iw跳转的次数
         :param iw_prefix: iw前缀
         :param iw_mode: 是否为iw模式
-        :param research_mode: 是否为搜索模式
+        :param search_mode: 是否为搜索模式
         :return:
         """
         try:
@@ -361,7 +362,7 @@ class WikiLib:
         section = None
         if title is not None:
             if title == '':
-                return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info)
+                return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info, interwiki_prefix=iw_prefix)
             split_name = re.split(r'([#?])', title)
             title = re.sub('_', ' ', split_name[0])
             arg_list = []
@@ -456,6 +457,7 @@ class WikiLib:
                                 page_info.file = reparse.file
                                 page_info.before_title = title
                                 page_info.status = reparse.status
+                                page_info.invalid_namespace = reparse.invalid_namespace
                             else:
                                 if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces:
                                     research = await self.research_page(title, self.wiki_info.namespaces[split_title[0]])
@@ -522,11 +524,11 @@ class WikiLib:
                     before_page_info = page_info
                     page_info = iw_query
                     if iw_query.title == '':
-                        page_info.title = title
+                        page_info.title = ''
                     else:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
-                        if t is not None:
+                        if t != '':
                             if before_page_info.args is not None:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)

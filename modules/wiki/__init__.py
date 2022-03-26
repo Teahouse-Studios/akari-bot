@@ -3,6 +3,7 @@ import re
 import traceback
 from typing import Union
 
+import ffmpy
 import filetype
 import ujson as json
 
@@ -484,9 +485,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
-                        s = r.before_title.split(":")
-                        if len(s) > 1:
-                            plain_slice.append(f'此Wiki上没有名为{s[0]}的命名空间，请检查拼写后再试。')
+                        plain_slice.append(f'此Wiki上没有名为{r.invalid_namespace}的命名空间，请检查拼写后再试。')
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if wait_plain_slice:
