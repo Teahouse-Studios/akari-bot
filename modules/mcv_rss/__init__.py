@@ -1,8 +1,12 @@
 import os
+import re
 import traceback
+from urllib.parse import quote
 
 import ujson as json
+from bs4 import BeautifulSoup
 
+from config import Config
 from core.component import on_schedule
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.logger import Logger
@@ -17,6 +21,46 @@ def getfileversions(path):
     s = w.read().split('\n')
     w.close()
     return s
+
+
+async def get_article(version):
+    match_snapshot = re.match(r'.*?w.*', version)
+    link = False
+    if match_snapshot:
+        link = 'https://www.minecraft.net/en-us/article/minecraft-snapshot-' + version
+    match_prerelease1 = re.match(r'(.*?)-pre(.*[0-9])', version)
+    match_prerelease2 = re.match(r'(.*?) Pre-Release (.*[0-9])', version)
+    if match_prerelease1:
+        match_prerelease = match_prerelease1
+    elif match_prerelease2:
+        match_prerelease = match_prerelease2
+    else:
+        match_prerelease = False
+    if match_prerelease:
+        link = f'https://www.minecraft.net/en-us/article/minecraft-' + re.sub("\.", "-", match_prerelease.group(1)) \
+               + f'-pre-release-{match_prerelease.group(2)}'
+    match_release_candidate = re.match(r'(.*?)-rc(.*[0-9])', version)
+    if match_release_candidate:
+        link = f'https://www.minecraft.net/en-us/article/minecraft-' + re.sub("\.", "-", match_release_candidate.group(1))\
+               + f'-release-candidate-{match_release_candidate.group(2)}'
+    if not link:
+        link = 'https://www.minecraft.net/en-us/article/minecraft-java-edition-' + re.sub("\.", "-", version)
+    webrender = Config('web_render')
+    get = webrender + 'source?url=' + quote(link)
+
+    try:
+        html = await get_url(get)
+
+        soup = BeautifulSoup(html, 'html.parser')
+
+        title = soup.find('h1')
+        if title.text == 'WE’RE SSSSSSSORRY':
+            return '', ''
+        else:
+            return link, title.text
+    except Exception:
+        traceback.print_exc()
+        return '', ''
 
 
 @on_schedule('mcv_rss',
@@ -39,12 +83,26 @@ async def mcv_rss(bot: FetchTarget):
             addversion.write('\n' + release)
             addversion.close()
             verlist = getfileversions(version_file)
+            article = await get_article(release)
+            if article[0] != '':
+                await bot.post_message('minecraft_news', f'Minecraft官网发布了{release}的更新日志：\n' + article[0])
+                newsfile = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
+                addnews = open(newsfile, 'a', encoding='utf-8')
+                addnews.write('\n' + article[1])
+                addnews.close()
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
             await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['snapshot'] + '快照。')
             addversion = open(version_file, 'a', encoding='utf-8')
             addversion.write('\n' + snapshot)
             addversion.close()
+            article = await get_article(snapshot)
+            if article[0] != '':
+                await bot.post_message('minecraft_news', f'Minecraft官网发布了{snapshot}的更新日志：\n' + article[0])
+                newsfile = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
+                addnews = open(newsfile, 'a', encoding='utf-8')
+                addnews.write('\n' + article[1])
+                addnews.close()
     except Exception:
         traceback.print_exc()
 
