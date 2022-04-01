@@ -145,7 +145,7 @@ def run_bot():
 
     while True:
         try:
-            line = q.get_nowait()
+            line = q.get()
         except Empty:
             pass
         else:
@@ -164,7 +164,6 @@ def run_bot():
                 logging.warning(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
-        sleep(0.001)
 
 
 if __name__ == '__main__':
