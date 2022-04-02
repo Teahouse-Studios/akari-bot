@@ -3,7 +3,6 @@ aiohttp
 beautifulsoup4
 psutil
 gql==3.0.0
-graiax-silkcoder
 filetype
 sqlalchemy
 apscheduler
@@ -11,8 +10,10 @@ aioconsole
 aiogram
 ujson
 pymysql
-py-cord==2.0.0b3
+py-cord==2.0.0b5
 tenacity
 aiocqhttp
 tabulate
 feedparser
+ffmpy
+google_play_scraper
