@@ -12,6 +12,8 @@ from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.logger import Logger
 from core.utils import get_url
 
+from google_play_scraper import app as google_play_scraper
+
 
 def getfileversions(path):
     if not os.path.exists(path):
@@ -103,6 +105,25 @@ async def mcv_rss(bot: FetchTarget):
                 addnews = open(newsfile, 'a', encoding='utf-8')
                 addnews.write('\n' + article[1])
                 addnews.close()
+    except Exception:
+        traceback.print_exc()
+
+
+@on_schedule('mcbv_rss', developers=['OasisAkari'],
+             recommend_modules=['mcbv_jira_rss'],
+             trigger=IntervalTrigger(seconds=60),
+             desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
+async def mcbv_rss(bot: FetchTarget):
+    try:
+        version_file = os.path.abspath(f'{PrivateAssets.path}/mcbeversion.txt')
+        verlist = getfileversions(version_file)
+        version = google_play_scraper('com.mojang.minecraftpe')['version']
+        if version not in verlist:
+            Logger.info(f'huh, we find bedrock {version}.')
+            await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '。')
+            addversion = open(version_file, 'a', encoding='utf-8')
+            addversion.write('\n' + version)
+            addversion.close()
     except Exception:
         traceback.print_exc()
 

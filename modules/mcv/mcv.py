@@ -4,6 +4,8 @@ import re
 from core.elements.others import ErrorMessage
 from core.utils import get_url
 
+from google_play_scraper import app as google_play_scraper
+
 
 async def mcv():
     try:
@@ -29,6 +31,10 @@ Mojira上所记录最新版本为：
 
 
 async def mcbv():
+    try: # play store
+        play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
+    except Exception:
+        play_store_version = '获取失败'
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions'))
     except (ConnectionError, OSError):  # Probably...
@@ -43,8 +49,12 @@ async def mcbv():
             else:
                 release.append(v["name"])
     fix = " | "
-    return f'Beta：{fix.join(beta)}，Release：{fix.join(release)}\n' \
-           f'（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
+    msg2 = f'Beta：{fix.join(beta)}，Release：{fix.join(release)}'
+    return f"""目前商店内最新正式版为：
+{play_store_version}，
+Mojira上所记录最新版本为：
+{msg2}
+（以商店内最新版本为准，Mojira仅作版本号预览用）"""
 
 
 async def mcdv():

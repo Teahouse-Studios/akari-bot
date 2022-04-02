@@ -39,6 +39,7 @@ async def _(msg: MessageSession):
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
+    enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
     wait_config = msg.parsed_msg['<module>']
     wait_config_list = []
     for module_ in wait_config:
@@ -75,7 +76,8 @@ async def config_modules(msg: MessageSession):
                         recommend = modules_[module_].recommend_modules
                         if recommend is not None:
                             for r in recommend:
-                                recommend_modules_list.append(r)
+                                if r not in enable_list and r not in enabled_modules_list:
+                                    recommend_modules_list.append(r)
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
@@ -86,18 +88,20 @@ async def config_modules(msg: MessageSession):
         else:
             if query.enable(enable_list):
                 for x in enable_list:
-                    msglist.append(f'成功：打开模块“{x}”')
+                    if x in enabled_modules_list:
+                        msglist.append(f'失败：“{x}”模块已经开启')
+                    else:
+                        msglist.append(f'成功：打开模块“{x}”')
         if recommend_modules_list:
             for m in recommend_modules_list:
-                if m not in enable_list:
-                    try:
-                        hdoc = CommandParser(modules_[m], msg=msg).return_formatted_help_doc()
-                        recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
-                        if modules_[m].desc is not None:
-                            recommend_modules_help_doc_list.append(modules_[m].desc)
-                        recommend_modules_help_doc_list.append(hdoc)
-                    except InvalidHelpDocTypeError:
-                        pass
+                try:
+                    hdoc = CommandParser(modules_[m], msg=msg).return_formatted_help_doc()
+                    recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
+                    if modules_[m].desc is not None:
+                        recommend_modules_help_doc_list.append(modules_[m].desc)
+                    recommend_modules_help_doc_list.append(hdoc)
+                except InvalidHelpDocTypeError:
+                    pass
     elif msg.parsed_msg['disable']:
         disable_list = []
         if wait_config_list == ['all']:
@@ -124,7 +128,10 @@ async def config_modules(msg: MessageSession):
         else:
             if query.disable(disable_list):
                 for x in disable_list:
-                    msglist.append(f'成功：关闭模块“{x}”')
+                    if x not in enabled_modules_list:
+                        msglist.append(f'失败：“{x}”模块已经关闭')
+                    else:
+                        msglist.append(f'成功：关闭模块“{x}”')
     if msglist is not None:
         await msg.sendMessage('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
