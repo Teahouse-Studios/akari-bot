@@ -120,7 +120,7 @@ async def mcbv_rss(bot: FetchTarget):
         version = google_play_scraper('com.mojang.minecraftpe')['version']
         if version not in verlist:
             Logger.info(f'huh, we find bedrock {version}.')
-            await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '。')
+            await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '正式版。')
             addversion = open(version_file, 'a', encoding='utf-8')
             addversion.write('\n' + version)
             addversion.close()

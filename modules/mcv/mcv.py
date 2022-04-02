@@ -31,7 +31,7 @@ Mojira上所记录最新版本为：
 
 
 async def mcbv():
-    try: # play store
+    try:  # play store
         play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
     except Exception:
         play_store_version = '获取失败'
