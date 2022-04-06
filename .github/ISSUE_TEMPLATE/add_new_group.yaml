@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        你好哇！感谢您使用小可，想必您一定想要让小可为您的QQ群聊或者频道效劳吧？填写下方的表单，让我们马上开始。
+        你好哇！感谢您使用小可，想必您一定想要让小可为您的QQ群聊或者频道效劳吧？填写下方的表单，让我们马上开始。申请提交后，我们将会在24小时内进行处理。
   - type: checkboxes
     id: preflight
     attributes:
