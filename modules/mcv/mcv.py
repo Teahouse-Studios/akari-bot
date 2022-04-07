@@ -40,16 +40,19 @@ async def mcbv():
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage('土豆熟了')
     beta = []
+    preview = []
     release = []
     for v in data:
         if not v['archived']:
-            match = re.match(r"(.*Beta)$", v["name"])
-            if match:
-                beta.append(match.group(1))
+            if re.match(r".*Beta$", v["name"]):
+                beta.append(v["name"])
+            elif re.match(r".*Preview$", v["name"]):
+                preview.append(v["name"])
             else:
-                release.append(v["name"])
+                if v["name"] != "Future Release":
+                    release.append(v["name"])
     fix = " | "
-    msg2 = f'Beta：{fix.join(beta)}，Release：{fix.join(release)}'
+    msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
     return f"""目前商店内最新正式版为：
 {play_store_version}，
 Mojira上所记录最新版本为：
