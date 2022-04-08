@@ -1,11 +1,12 @@
 from core.dirty_check import check
-from modules.wiki.wikilib_v2 import WikiLib
+from modules.wiki.wikilib import WikiLib
 
 
 async def newbie(wiki_url):
     wiki = WikiLib(wiki_url)
     query = await wiki.get_json(action='query', list='logevents', letype='newusers')
-    pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:Log?type=newusers')
+    pageurl = wiki.wiki_info.articlepath.replace(
+        '$1', 'Special:Log?type=newusers')
     d = []
     for x in query['query']['logevents'][:5]:
         d.append(x['title'])

@@ -7,7 +7,7 @@ import aiohttp
 from core.elements import Url
 from core.elements.others import ErrorMessage
 from modules.wiki.utils.UTC8 import UTC8
-from modules.wiki.wikilib_v2 import WikiLib
+from modules.wiki.wikilib import WikiLib
 from .gender import gender
 
 
@@ -81,7 +81,8 @@ async def GetUser(wikiurl, username, argv=None):
             wikiurl = await WikiLib(GetInterwiki[match_interwiki.group(1)]).check_wiki_available()
             if wikiurl:
                 return await GetUser(wikiurl[0], match_interwiki.group(2), argv)
-    UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
+    UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + \
+        '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
     try:
         GetUserJson = await get_data(UserJsonURL, 'json')
     except:
@@ -93,13 +94,16 @@ async def GetUser(wikiurl, username, argv=None):
     try:
         User = GetUserJson['query']['users'][0]['name']
         Editcount = str(GetUserJson['query']['users'][0]['editcount'])
-        Group = trans_user_group(GetUserJson['query']['users'][0]['groups'], GetUserGroupsList)
+        Group = trans_user_group(
+            GetUserJson['query']['users'][0]['groups'], GetUserGroupsList)
         Gender = gender(GetUserJson['query']['users'][0]['gender'])
         RegistrationTime = GetUserJson['query']['users'][0]['registration']
-        Registration = UTC8(RegistrationTime, 'full') if RegistrationTime is not None else '未知'
+        Registration = UTC8(
+            RegistrationTime, 'full') if RegistrationTime is not None else '未知'
         CentralAuth = await check_central_auth(wikiurl)
         if CentralAuth:
-            GEditcount = str(GetUserCentralAuthData['query']['globaluserinfo']['editcount'])
+            GEditcount = str(
+                GetUserCentralAuthData['query']['globaluserinfo']['editcount'])
             GGroup = trans_user_group(GetUserCentralAuthData['query']['globaluserinfo']['groups'],
                                       GetUserGroupsList) or '无'
             GHome = GetUserCentralAuthData['query']['globaluserinfo']['home']
@@ -108,8 +112,10 @@ async def GetUser(wikiurl, username, argv=None):
         if 'blockedby' in GetUserJson['query']['users'][0]:
             BlockedBy = GetUserJson['query']['users'][0]['blockedby']
             if BlockedBy:
-                Blockedtimestamp = UTC8(GetUserJson['query']['users'][0]['blockedtimestamp'], 'full')
-                Blockexpiry = UTC8(str(GetUserJson['query']['users'][0]['blockexpiry']), 'full')
+                Blockedtimestamp = UTC8(
+                    GetUserJson['query']['users'][0]['blockedtimestamp'], 'full')
+                Blockexpiry = UTC8(
+                    str(GetUserJson['query']['users'][0]['blockexpiry']), 'full')
                 Blockmessage = f'\n{User}正在被封禁！' + \
                                f'\n被{BlockedBy}封禁，时间从{Blockedtimestamp}到{Blockexpiry}'
                 if 'blockreason' in GetUserJson['query']['users'][0]:
@@ -144,16 +150,19 @@ async def GetUser(wikiurl, username, argv=None):
             if argv == '-p':
                 import uuid
                 import os
-                Registration = UTC8(GetUserJson['query']['users'][0]['registration'], 'notimezone')
+                Registration = UTC8(
+                    GetUserJson['query']['users'][0]['registration'], 'notimezone')
 
                 matchlink = re.match(r'https?://(.*)/', wikiurl)
-                filepath = os.path.abspath('./assets/Favicon/' + matchlink.group(1) + '/')
+                filepath = os.path.abspath(
+                    './assets/Favicon/' + matchlink.group(1) + '/')
                 if not os.path.exists(filepath):
                     favicon_path = os.path.abspath('./assets/Favicon/')
                     if not os.path.exists(favicon_path):
                         os.makedirs(favicon_path)
                     os.makedirs(filepath)
-                wikipng = os.path.abspath('./assets/Favicon/' + matchlink.group(1) + '/Wiki.png')
+                wikipng = os.path.abspath(
+                    './assets/Favicon/' + matchlink.group(1) + '/Wiki.png')
                 if not os.path.exists(wikipng):
                     from .dpng import dpng
                     if not await dpng(wikiurl, matchlink.group(1)):
@@ -162,12 +171,15 @@ async def GetUser(wikiurl, username, argv=None):
                 if 'blockedby' in GetUserJson['query']['users'][0]:
                     BlockedBy = GetUserJson['query']['users'][0]['blockedby']
                     if BlockedBy:
-                        Blockedtimestamp = UTC8(GetUserJson['query']['users'][0]['blockedtimestamp'], 'notimezone')
-                        Blockexpiry = UTC8(str(GetUserJson['query']['users'][0]['blockexpiry']), 'notimezone')
+                        Blockedtimestamp = UTC8(
+                            GetUserJson['query']['users'][0]['blockedtimestamp'], 'notimezone')
+                        Blockexpiry = UTC8(
+                            str(GetUserJson['query']['users'][0]['blockexpiry']), 'notimezone')
                         Brs = 1
                         try:
                             from .hh import hh1
-                            Blockreason = hh1(GetUserJson['query']['users'][0]['blockreason'])
+                            Blockreason = hh1(
+                                GetUserJson['query']['users'][0]['blockreason'])
                             Brs = 2
                         except KeyError:
                             pass
@@ -230,11 +242,11 @@ async def GetUser(wikiurl, username, argv=None):
             f'全域编辑数：{GEditcount}\n' +
             f'注册wiki：{GHome}') if CentralAuth else ''
         return str(Url(GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')))) + '\n' + \
-               Wikiname + '\n' + \
-               f'用户：{User} | 编辑数：{Editcount}\n' + \
-               f'用户组：{Group}\n' + \
-               f'性别：{Gender}\n' + \
-               f'注册时间：{Registration}' + GlobalAuthData + Blockmessage
+            Wikiname + '\n' + \
+            f'用户：{User} | 编辑数：{Editcount}\n' + \
+            f'用户组：{Group}\n' + \
+            f'性别：{Gender}\n' + \
+            f'注册时间：{Registration}' + GlobalAuthData + Blockmessage
     except Exception as e:
         if 'missing' in GetUserJson['query']['users'][0]:
             return '没有找到此用户。'

@@ -1,7 +1,7 @@
 from config import Config
 from core.dirty_check import check
 from modules.wiki.utils.UTC8 import UTC8
-from modules.wiki.wikilib_v2 import WikiLib
+from modules.wiki.wikilib import WikiLib
 
 
 async def ab_qq(wiki_url):

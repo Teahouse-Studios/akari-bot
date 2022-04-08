@@ -20,10 +20,11 @@ from .utils.ab_qq import ab_qq
 from .utils.newbie import newbie
 from .utils.rc import rc
 from .utils.rc_qq import rc_qq
-from .wikilib_v2 import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
+from .wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = on_command('wiki',
-                  alias={'wiki_start_site': 'wiki set', 'interwiki': 'wiki iw'},
+                  alias={'wiki_start_site': 'wiki set',
+                         'interwiki': 'wiki iw'},
                   recommend_modules='wiki_inline',
                   developers=['OasisAkari'])
 
@@ -58,7 +59,8 @@ async def set_start_wiki(msg: MessageSession):
         else:
             await msg.sendMessage(f'错误：{check.value.name}处于黑名单中。')
     else:
-        result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        result = '错误：无法添加此Wiki。' + \
+            ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
 
 
@@ -76,7 +78,8 @@ async def _(msg: MessageSession):
         else:
             await msg.sendMessage(f'错误：{check.value.name}处于黑名单中。')
     else:
-        result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        result = '错误：无法添加此Wiki。' + \
+            ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
 
 
@@ -113,7 +116,8 @@ async def _(msg: MessageSession):
                 mt += base_interwiki_link_msg
             await msg.sendMessage([Image(img), Plain(mt)])
         else:
-            result = '当前设置了以下Interwiki：\n' + '\n'.join([f'{x}: {query[x]}' for x in query])
+            result = '当前设置了以下Interwiki：\n' + \
+                '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
                 result += base_interwiki_link_msg
             await msg.sendMessage(result)
@@ -147,7 +151,8 @@ async def _(msg: MessageSession):
 @wiki.handle('headers (add|set) <Headers> {添加自定义headers}', required_admin=True)
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
-    add = target.config_headers(" ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
+    add = target.config_headers(
+        " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
     if add:
         await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
@@ -155,7 +160,8 @@ async def _(msg: MessageSession):
 @wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}', required_admin=True)
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
-    delete = target.config_headers([msg.parsed_msg['<HeaderHey>']], let_it=False)
+    delete = target.config_headers(
+        [msg.parsed_msg['<HeaderHey>']], let_it=False)
     if delete:
         await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
@@ -208,7 +214,8 @@ async def _(msg: MessageSession):
         else:
             await msg.sendMessage(f'成功加入{list_name}名单：' + api)
     else:
-        result = '错误：无法添加此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        result = '错误：无法添加此Wiki。' + \
+            ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
 
 
@@ -230,7 +237,8 @@ async def _(msg: MessageSession):
         else:
             await msg.sendMessage(f'成功从{list_name}名单删除：' + api)
     else:
-        result = '错误：无法查询此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        result = '错误：无法查询此Wiki。' + \
+            ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
 
 
@@ -255,7 +263,8 @@ async def _(msg: MessageSession):
         else:
             await msg.sendMessage(api + '不存在于任何名单。')
     else:
-        result = '错误：无法查询此Wiki。' + ('\n详细信息：' + check.message if check.message != '' else '')
+        result = '错误：无法查询此Wiki。' + \
+            ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.sendMessage(result)
 
 
@@ -268,7 +277,8 @@ async def _(msg: MessageSession):
         send_msgs = []
         allow_columns = [[x[0], x[1]] for x in allow_list]
         if allow_columns:
-            allow_table = ImageTable(data=allow_columns, headers=['APILink', 'Operator'])
+            allow_table = ImageTable(data=allow_columns, headers=[
+                                     'APILink', 'Operator'])
             if allow_table:
                 allow_image = await image_table_render(allow_table)
                 if allow_image:
@@ -276,7 +286,8 @@ async def _(msg: MessageSession):
                     send_msgs.append(Image(allow_image))
         block_columns = [[x[0], x[1]] for x in block_list]
         if block_columns:
-            block_table = ImageTable(data=block_columns, headers=['APILink', 'Operator'])
+            block_table = ImageTable(data=block_columns, headers=[
+                                     'APILink', 'Operator'])
             if block_table:
                 block_image = await image_table_render(block_table)
                 if block_image:
@@ -295,7 +306,8 @@ async def _(msg: MessageSession):
         await msg.sendMessage('\n'.join(wikis))
 
 
-on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。', developers=['OasisAkari'])
+on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。',
+          developers=['OasisAkari'])
 
 wiki_inline = on_regex('wiki_inline',
                        desc='开启后将自动解析消息中带有的[[]]或{{}}字符串并自动查询Wiki，如[[海晶石]]',
@@ -344,7 +356,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         interwiki_list = target.get_interwikis()
         headers = target.get_headers()
         prefix = target.get_prefix()
-        enabled_fandom_addon = BotDBUtil.Module(session).check_target_enabled_module('wiki_fandom_addon')
+        enabled_fandom_addon = BotDBUtil.Module(
+            session).check_target_enabled_module('wiki_fandom_addon')
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = []
@@ -378,23 +391,27 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if g1 in interwiki_list:
                         interwiki_url = interwiki_list[g1]
                         if interwiki_url not in query_task:
-                            query_task[interwiki_url] = {'query': [], 'iw_prefix': g1}
+                            query_task[interwiki_url] = {
+                                'query': [], 'iw_prefix': g1}
                         query_task[interwiki_url]['query'].append(g2)
                     elif g1 == 'w' and enabled_fandom_addon:
                         if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
                             if match_interwiki.group(1) == 'c':
                                 if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
-                                    interwiki_split = match_interwiki.group(1).split('.')
+                                    interwiki_split = match_interwiki.group(
+                                        1).split('.')
                                     if len(interwiki_split) == 2:
                                         get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
-                                        find = interwiki_split[0] + ':' + match_interwiki.group(2)
+                                        find = interwiki_split[0] + \
+                                            ':' + match_interwiki.group(2)
                                         iw = 'w:c:' + interwiki_split[0]
                                     else:
                                         get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
                                         find = match_interwiki.group(2)
                                         iw = 'w:c:' + match_interwiki.group(1)
                                     if get_link not in query_task:
-                                        query_task[get_link] = {'query': [], 'iw_prefix': iw}
+                                        query_task[get_link] = {
+                                            'query': [], 'iw_prefix': iw}
                                     query_task[get_link]['query'].append(find)
                                 else:
                                     query_task[start_wiki]['query'].append(t)
@@ -410,7 +427,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         if iw is None:
             query_task = {start_wiki: {'queryid': [pageid], 'iw_prefix': ''}}
         else:
-            query_task = {interwiki_list[iw]: {'queryid': [pageid], 'iw_prefix': iw}}
+            query_task = {interwiki_list[iw]: {
+                'queryid': [pageid], 'iw_prefix': iw}}
     else:
         raise ValueError('title or pageid must be specified.')
     print(query_task)
@@ -422,22 +440,28 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
     dl_list = []
     for q in query_task:
         current_task = query_task[q]
-        ready_for_query_pages = current_task['query'] if 'query' in current_task else []
-        ready_for_query_ids = current_task['queryid'] if 'queryid' in current_task else []
-        iw_prefix = (current_task['iw_prefix'] + ':') if current_task['iw_prefix'] != '' else ''
+        ready_for_query_pages = current_task['query'] if 'query' in current_task else [
+        ]
+        ready_for_query_ids = current_task['queryid'] if 'queryid' in current_task else [
+        ]
+        iw_prefix = (current_task['iw_prefix'] +
+                     ':') if current_task['iw_prefix'] != '' else ''
         try:
             tasks = []
             for rd in ready_for_query_pages:
                 if rd == '随机页面':
-                    tasks.append(asyncio.create_task(WikiLib(q, headers).random_page()))
+                    tasks.append(asyncio.create_task(
+                        WikiLib(q, headers).random_page()))
                 else:
                     if template:
                         rd = f'Template:{rd}'
                     if mediawiki:
                         rd = f'MediaWiki:{rd}'
-                    tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(title=rd)))
+                    tasks.append(asyncio.ensure_future(
+                        WikiLib(q, headers).parse_page_info(title=rd)))
             for rdp in ready_for_query_ids:
-                tasks.append(asyncio.ensure_future(WikiLib(q, headers).parse_page_info(pageid=rdp)))
+                tasks.append(asyncio.ensure_future(
+                    WikiLib(q, headers).parse_page_info(pageid=rdp)))
             query = await asyncio.gather(*tasks)
             for result in query:
                 print(result)
@@ -453,11 +477,14 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     plain_slice = []
                     if display_before_title is not None and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
-                            plain_slice.append(f'（[{display_before_title}]不存在，已自动重定向至[{display_title}]）')
+                            plain_slice.append(
+                                f'（[{display_before_title}]不存在，已自动重定向至[{display_title}]）')
                         else:
-                            plain_slice.append(f'（重定向[{display_before_title}] -> [{display_title}]）')
+                            plain_slice.append(
+                                f'（重定向[{display_before_title}] -> [{display_title}]）')
                     if r.link is not None:
-                        plain_slice.append(str(Url(r.link, use_mm=not r.info.in_allowlist)))
+                        plain_slice.append(
+                            str(Url(r.link, use_mm=not r.info.in_allowlist)))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if plain_slice:
@@ -466,17 +493,21 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         dl_list.append(r.file)
                     else:
                         if r.link is not None and r.section is None:
-                            render_infobox_list.append({r.link: r.info.realurl})
+                            render_infobox_list.append(
+                                {r.link: r.info.realurl})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
-                            render_section_list.append({r.link: {'url': r.info.realurl, 'section': r.section}})
+                            render_section_list.append(
+                                {r.link: {'url': r.info.realurl, 'section': r.section}})
                 else:
                     plain_slice = []
                     wait_plain_slice = []
                     if display_title is not None and display_before_title is not None:
                         if isinstance(session, MessageSession) and session.Feature.wait:
-                            wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                            wait_plain_slice.append(
+                                f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
                         else:
-                            wait_plain_slice.append(f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
+                            wait_plain_slice.append(
+                                f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
                         wait_list.append(display_title)
                     elif r.before_title is not None:
                         plain_slice.append(f'提示：找不到[{display_before_title}]。')
@@ -485,11 +516,13 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
-                        plain_slice.append(f'此Wiki上没有名为{r.invalid_namespace}的命名空间，请检查拼写后再试。')
+                        plain_slice.append(
+                            f'此Wiki上没有名为{r.invalid_namespace}的命名空间，请检查拼写后再试。')
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if wait_plain_slice:
-                        wait_msg_list.append(Plain('\n'.join(wait_plain_slice)))
+                        wait_msg_list.append(
+                            Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except InvalidWikiError as e:
