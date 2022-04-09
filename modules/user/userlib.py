@@ -82,7 +82,7 @@ async def GetUser(wikiurl, username, argv=None):
             if wikiurl:
                 return await GetUser(wikiurl[0], match_interwiki.group(2), argv)
     UserJsonURL = wikiurl + '?action=query&list=users&ususers=' + username + \
-        '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
+                  '&usprop=groups%7Cblockinfo%7Cregistration%7Ceditcount%7Cgender&format=json'
     try:
         GetUserJson = await get_data(UserJsonURL, 'json')
     except:
@@ -235,17 +235,18 @@ async def GetUser(wikiurl, username, argv=None):
                                     globaltop=d(str(dd[6])),
                                     wikipoint=point)
         if argv == '-p':
-            return str(Url(f'{GetArticleUrl}'.replace('$1', f'User:{urllib.parse.quote(rmuser.encode("UTF-8"))}'))) + f'[[uimgc:{imagepath}]]'
+            return str(Url(re.sub(r'\$1', f'User:{urllib.parse.quote(rmuser.encode("UTF-8"))}',
+                                  GetArticleUrl))) + f'[[uimgc:{imagepath}]]'
         GlobalAuthData = (
             f'\n全域用户组：{GGroup}\n' +
             f'全域编辑数：{GEditcount}\n' +
             f'注册wiki：{GHome}') if CentralAuth else ''
         return str(Url(GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')))) + '\n' + \
-            Wikiname + '\n' + \
-            f'用户：{User} | 编辑数：{Editcount}\n' + \
-            f'用户组：{Group}\n' + \
-            f'性别：{Gender}\n' + \
-            f'注册时间：{Registration}' + GlobalAuthData + Blockmessage
+               Wikiname + '\n' + \
+               f'用户：{User} | 编辑数：{Editcount}\n' + \
+               f'用户组：{Group}\n' + \
+               f'性别：{Gender}\n' + \
+               f'注册时间：{Registration}' + GlobalAuthData + Blockmessage
     except Exception as e:
         if 'missing' in GetUserJson['query']['users'][0]:
             return '没有找到此用户。'
