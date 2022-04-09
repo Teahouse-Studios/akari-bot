@@ -240,7 +240,7 @@ async def GetUser(wikiurl, username, argv=None):
             f'\n全域用户组：{GGroup}\n' +
             f'全域编辑数：{GEditcount}\n' +
             f'注册wiki：{GHome}') if CentralAuth else ''
-        return str(Url(GetArticleUrl + 'User:' + urllib.parse.quote(rmuser.encode('UTF-8')))) + '\n' + \
+        return str(Url(f'{GetArticleUrl}'.replace('$1', f'User:{urllib.parse.quote(rmuser.encode("UTF-8"))}'))) + '\n' + \
             Wikiname + '\n' + \
             f'用户：{User} | 编辑数：{Editcount}\n' + \
             f'用户组：{Group}\n' + \
