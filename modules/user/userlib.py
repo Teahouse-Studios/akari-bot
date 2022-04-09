@@ -235,8 +235,7 @@ async def GetUser(wikiurl, username, argv=None):
                                     globaltop=d(str(dd[6])),
                                     wikipoint=point)
         if argv == '-p':
-            return str(
-                Url(f'{GetArticleUrl}User:{urllib.parse.quote(rmuser.encode("UTF-8"))}')) + f'[[uimgc:{imagepath}]]'
+            return str(Url(f'{GetArticleUrl}'.replace('$1', f'User:{urllib.parse.quote(rmuser.encode("UTF-8"))}'))) + f'[[uimgc:{imagepath}]]'
         GlobalAuthData = (
             f'\n全域用户组：{GGroup}\n' +
             f'全域编辑数：{GEditcount}\n' +
