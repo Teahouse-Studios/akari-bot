@@ -15,7 +15,7 @@ from core.logger import Logger
 web_render = Config('web_render')
 
 
-async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, bool]:
+async def get_pic(link, page_link, headers, section=None, allow_special_page=False) -> Union[str, bool]:
     if not web_render:
         return False
     try:
@@ -74,40 +74,74 @@ async def get_infobox_pic(link, page_link, headers, section=None) -> Union[str, 
             open_file.write(str(x))
 
         if section is None:
-            infoboxes = ['notaninfobox', 'portable-infobox', 'infobox', 'tpl-infobox', 'infoboxtable',
-                         'infotemplatebox', 'skin-infobox', 'arcaeabox']
-            find_infobox = None
-            for i in infoboxes:
-                find_infobox = soup.find(class_=i)
-                if find_infobox is not None:
-                    break
-            if find_infobox is None:
-                Logger.info('Found nothing...')
-                return False  # 找你妈，不找了<-咱还是回家吧
-            Logger.info('Found infobox...')
+            find_diff = None
+            if allow_special_page:
+                diff = 'diff diff-contentalign-left'
+                find_diff = soup.find(class_=diff)
+                if find_diff is not None:
+                    Logger.info('Found diff...')
+                    for x in soup.find_all('body'):
+                        if x.has_attr('class'):
+                            open_file.write(f'<body class="{" ".join(x.get("class"))}">')
 
-            for x in find_infobox.find_all(['a', 'img', 'span']):
-                if x.has_attr('href'):
-                    x.attrs['href'] = join_url(link, x.get('href'))
-                if x.has_attr('src'):
-                    x.attrs['src'] = join_url(link, x.get('src'))
-                if x.has_attr('srcset'):
-                    x.attrs['srcset'] = join_url(link, x.get('srcset'))
-                if x.has_attr('style'):
-                    x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
+                    for x in soup.find_all('div'):
+                        if x.has_attr('id'):
+                            if x.get('id') in ['content', 'mw-content-text']:
+                                fl = []
+                                for f in x.attrs:
+                                    if isinstance(x.attrs[f], str):
+                                        fl.append(f'{f}="{x.attrs[f]}"')
+                                    elif isinstance(x.attrs[f], list):
+                                        fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                                open_file.write(f'<div {" ".join(fl)}>')
+                    open_file.write('<div class="mw-parser-output">')
 
-            for x in find_infobox.find_all(class_='lazyload'):
-                if x.has_attr('class') and x.has_attr('data-src'):
-                    x.attrs['class'] = 'image'
-                    x.attrs['src'] = x.attrs['data-src']
+                    for x in soup.find_all('main'):
+                        fl = []
+                        for f in x.attrs:
+                            if isinstance(x.attrs[f], str):
+                                fl.append(f'{f}="{x.attrs[f]}"')
+                            elif isinstance(x.attrs[f], list):
+                                fl.append(f'{f}="{" ".join(x.attrs[f])}"')
+                        open_file.write(f'<main {" ".join(fl)}>')
+                    open_file.write(str(find_diff))
+                    w = 2000
+            if find_diff is None:
+                infoboxes = ['notaninfobox', 'portable-infobox', 'infobox', 'tpl-infobox', 'infoboxtable',
+                             'infotemplatebox', 'skin-infobox', 'arcaeabox']
+                find_infobox = None
+                for i in infoboxes:
+                    find_infobox = soup.find(class_=i)
+                    if find_infobox is not None:
+                        break
+                if find_infobox is None:
+                    Logger.info('Found nothing...')
+                    return False
+                else:
+                    Logger.info('Found infobox...')
 
-            for x in find_infobox.find_all(class_='lazyload'):
-                if x.has_attr('class') and x.has_attr('data-src'):
-                    x.attrs['class'] = 'image'
-                    x.attrs['src'] = x.attrs['data-src']
-            open_file.write(str(find_infobox))
-            w = 500
-            open_file.write('</div>')
+                    for x in find_infobox.find_all(['a', 'img', 'span']):
+                        if x.has_attr('href'):
+                            x.attrs['href'] = join_url(link, x.get('href'))
+                        if x.has_attr('src'):
+                            x.attrs['src'] = join_url(link, x.get('src'))
+                        if x.has_attr('srcset'):
+                            x.attrs['srcset'] = join_url(link, x.get('srcset'))
+                        if x.has_attr('style'):
+                            x.attrs['style'] = re.sub(r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
+
+                    for x in find_infobox.find_all(class_='lazyload'):
+                        if x.has_attr('class') and x.has_attr('data-src'):
+                            x.attrs['class'] = 'image'
+                            x.attrs['src'] = x.attrs['data-src']
+
+                    for x in find_infobox.find_all(class_='lazyload'):
+                        if x.has_attr('class') and x.has_attr('data-src'):
+                            x.attrs['class'] = 'image'
+                            x.attrs['src'] = x.attrs['data-src']
+                    open_file.write(str(find_infobox))
+                    w = 500
+                    open_file.write('</div>')
         else:
             for x in soup.find_all('body'):
                 if x.has_attr('class'):

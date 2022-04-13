@@ -14,7 +14,7 @@ from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
 from database import BotDBUtil
 from .dbutils import WikiTargetInfo, Audit
-from .getinfobox import get_infobox_pic
+from .getinfobox import get_pic
 from .utils.ab import ab
 from .utils.ab_qq import ab_qq
 from .utils.newbie import newbie
@@ -494,7 +494,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     else:
                         if r.link is not None and r.section is None:
                             render_infobox_list.append(
-                                {r.link: r.info.realurl})
+                                {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section}})
@@ -534,7 +534,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             infobox_msg_list = []
             for i in render_infobox_list:
                 for ii in i:
-                    get_infobox = await get_infobox_pic(i[ii], ii, headers)
+                    get_infobox = await get_pic(i[ii]['url'], ii, headers, allow_special_page=i[ii]['in_allowlist'])
                     if get_infobox:
                         infobox_msg_list.append(Image(get_infobox))
             if infobox_msg_list:
@@ -543,7 +543,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             section_msg_list = []
             for i in render_section_list:
                 for ii in i:
-                    get_section = await get_infobox_pic(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                    get_section = await get_pic(i[ii]['url'], ii, headers, section=i[ii]['section'])
                     if get_section:
                         section_msg_list.append(Image(get_section))
             if section_msg_list:
