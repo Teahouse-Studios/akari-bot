@@ -41,7 +41,7 @@ async def msg_counter(msg: MessageSession, command: str):
                                             'ts': datetime.now().timestamp()}
     else:
         all_['count'] += 1
-        if all_['count'] > 30:
+        if all_['count'] > 20:
             raise AbuseWarning('一段时间内使用命令的次数过多')
 
 
@@ -256,6 +256,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 async with msg.Typing(msg):
                                     await rfunc.function(msg)  # 将msg传入下游模块
                             else:
+                                await msg_counter(msg, msg.trigger_msg)
                                 await rfunc.function(msg)  # 将msg传入下游模块
                         ExecutionLockList.remove(msg)
             except AbuseWarning as e:
