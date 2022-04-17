@@ -22,6 +22,8 @@ async def _(msg: MessageSession):
         if not records['data']:
             await msg.sendMessage('获取失败。')
             return
+        else:
+            records['ts'] = int(datetime.now().timestamp())
 
     if 'data' in records:
         i = []
