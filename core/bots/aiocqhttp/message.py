@@ -1,5 +1,6 @@
 import asyncio
 import html
+import random
 import re
 import traceback
 from pathlib import Path
@@ -65,7 +66,8 @@ class MessageSession(MS):
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
             except aiocqhttp.exceptions.ActionFailed:
-                msg = msg + MessageSegment.text('（房蜂控）')
+                anti_autofilter_word_list = ['（ffk）', '（阻止风向控制）', '（房蜂控）']
+                msg = msg + MessageSegment.text(random.choice(anti_autofilter_word_list))
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
         else:
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
