@@ -21,7 +21,7 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=False):
     if not web_render:
         return False
     try:
@@ -55,6 +55,10 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
               text-align: left;
             }</style>"""
         html = {'content': tblst + css, 'width': w}
+        if save_source:
+            fname = os.path.abspath(f'./cache/{str(uuid.uuid4())}.html')
+            with open(fname, 'w') as fi:
+                fi.write(tblst + css)
         picname = os.path.abspath(f'./cache/{str(uuid.uuid4())}.jpg')
         if os.path.exists(picname):
             os.remove(picname)

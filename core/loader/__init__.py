@@ -19,7 +19,7 @@ def load_modules():
             file_path = f'{load_dir_path}/{file_name}'
             fun_file = None
             if os.path.isdir(file_path):
-                if file_name != '__pycache__':
+                if file_name[0] != '_':
                     fun_file = file_name
             if fun_file is not None:
                 Logger.info(f'Loading modules.{fun_file}...')
