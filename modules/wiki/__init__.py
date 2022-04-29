@@ -321,7 +321,7 @@ async def _(msg: MessageSession):
         if x != '' and x not in query_list and x[0] != '#':
             query_list.append(x.split("|")[0])
     if query_list:
-        await query_pages(msg, query_list)
+        await query_pages(msg, query_list, inline_mode=True)
 
 
 @wiki_inline.handle(r'\{\{(.*?)}}', mode='A', flags=re.I)
@@ -332,7 +332,7 @@ async def _(msg: MessageSession):
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
             query_list.append(x.split("|")[0])
     if query_list:
-        await query_pages(msg, query_list, template=True)
+        await query_pages(msg, query_list, template=True, inline_mode=True)
 
 
 @wiki_inline.handle(r'≺(.*?)≻|⧼(.*?)⧽', mode='A', flags=re.I, show_typing=False)
@@ -344,12 +344,12 @@ async def _(msg: MessageSession):
             if y != '' and y not in query_list and y[0] != '#':
                 query_list.append(y)
     if query_list:
-        await query_pages(msg, query_list, mediawiki=True)
+        await query_pages(msg, query_list, mediawiki=True, inline_mode=True)
 
 
 async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None,
-                      template=False, mediawiki=False, use_prefix=True):
+                      template=False, mediawiki=False, use_prefix=True, inline_mode=False):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
@@ -440,10 +440,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
     dl_list = []
     for q in query_task:
         current_task = query_task[q]
-        ready_for_query_pages = current_task['query'] if 'query' in current_task else [
-        ]
-        ready_for_query_ids = current_task['queryid'] if 'queryid' in current_task else [
-        ]
+        ready_for_query_pages = current_task['query'] if 'query' in current_task else []
+        ready_for_query_ids = current_task['queryid'] if 'queryid' in current_task else []
         iw_prefix = (current_task['iw_prefix'] +
                      ':') if current_task['iw_prefix'] != '' else ''
         try:
@@ -458,10 +456,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if mediawiki:
                         rd = f'MediaWiki:{rd}'
                     tasks.append(asyncio.ensure_future(
-                        WikiLib(q, headers).parse_page_info(title=rd)))
+                        WikiLib(q, headers).parse_page_info(title=rd, inline=inline_mode)))
             for rdp in ready_for_query_ids:
                 tasks.append(asyncio.ensure_future(
-                    WikiLib(q, headers).parse_page_info(pageid=rdp)))
+                    WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode)))
             query = await asyncio.gather(*tasks)
             for result in query:
                 print(result)
