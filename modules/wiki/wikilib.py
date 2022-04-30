@@ -393,7 +393,10 @@ class WikiLib:
             if _arg.find('=') != -1:
                 arg_list.append(_arg)
             else:
-                title += _arg
+                if len(arg_list) > 0:
+                    arg_list[-1] += _arg
+                else:
+                    title += _arg
             if len(section_list) > 1:
                 section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
