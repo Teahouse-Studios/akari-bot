@@ -47,4 +47,4 @@ QQ频道的测试版支持也请在上方链接申请。我们正在进行QQ频�
 
 ## 许可
 
-小可继承 Mirai 项目，使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
+小可使用 AGPL-3.0 协议授权。详见 [./LICENSE](./LICENSE)。
