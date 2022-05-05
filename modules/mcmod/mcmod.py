@@ -20,7 +20,7 @@ async def mcmod(keyword: str, detail: bool = False):
     print(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.find_all('div', class_='result-item')
-    if results is not None:
+    if results:
         res = results[0]
         a = res.find('div', class_='head').find('a', recursive=False)
         name = a.text
