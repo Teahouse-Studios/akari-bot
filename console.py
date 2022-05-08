@@ -37,7 +37,7 @@ async def console_scheduler():
                 Modules[x].function(FetchTarget)))
         if isinstance(Modules[x], Schedule):
             Scheduler.add_job(
-                func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30)
+                func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
     await asyncio.gather(*gather_list)
     Scheduler.start()
 
