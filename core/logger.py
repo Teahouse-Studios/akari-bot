@@ -5,7 +5,7 @@ import sys
 
 
 factory = logging.getLogRecordFactory()
-basic_logger_format = "[%(asctime)s][%(botname)s][%(levelname)s][%(pathname)s:%(lineno)d]: %(msg)s"
+basic_logger_format = "[%(asctime)s][%(botname)s][%(levelname)s][%(pathname)s:%(lineno)d]: %(message)s"
 
 
 def record_factory(*args, **kwargs):
