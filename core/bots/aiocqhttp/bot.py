@@ -34,7 +34,7 @@ async def startup():
             Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
     await asyncio.gather(*gather_list)
     Scheduler.start()
-    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    # logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     bot.logger.setLevel(logging.WARNING)
 
 
