@@ -15,4 +15,4 @@ web_render =
 botarcapi_url =
 botarcapi_agent =
 tg_token =
-smms_token =
+slower_schedule = False
