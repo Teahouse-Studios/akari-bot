@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import html
 import random
 import re
@@ -33,6 +34,9 @@ class FinishedSession(FinS):
                 await bot.call_action('delete_msg', message_id=x['message_id'])
         except Exception:
             Logger.error(traceback.format_exc())
+
+
+last_send_typing_time = {}
 
 
 class MessageSession(MS):
@@ -92,7 +96,7 @@ class MessageSession(MS):
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
             or self.target.senderInfo.check_TargetAdmin(self.target.targetId) \
-            or self.target.senderInfo.query.isSuperUser:
+                or self.target.senderInfo.query.isSuperUser:
             return True
         get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
                                                 user_id=self.session.sender)
@@ -142,10 +146,13 @@ class MessageSession(MS):
             self.msg = msg
 
         async def __aenter__(self):
-            """if self.msg.target.targetFrom == 'QQ|Group':
+            if self.msg.target.targetFrom == 'QQ|Group':
+                if self.msg.session.sender in last_send_typing_time:
+                    if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 60:
+                        return
+                last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
                 await bot.send_group_msg(group_id=self.msg.session.target,
-                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')"""
-            pass
+                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass
