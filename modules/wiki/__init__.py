@@ -480,11 +480,11 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         else:
                             plain_slice.append(
                                 f'（重定向[{display_before_title}] -> [{display_title}]）')
+                    if r.desc is not None and r.desc != '':
+                        plain_slice.append(r.desc)
                     if r.link is not None:
                         plain_slice.append(
                             str(Url(r.link, use_mm=not r.info.in_allowlist)))
-                    if r.desc is not None and r.desc != '':
-                        plain_slice.append(r.desc)
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if r.file is not None:

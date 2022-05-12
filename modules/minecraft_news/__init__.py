@@ -72,7 +72,7 @@ async def start_check_news(bot: FetchTarget):
             title = default_tile['title']
             desc = default_tile['sub_header']
             link = baseurl + o_article['article_url']
-            articletext = f'Minecraft官网发布了新的文章：\n{title}\n{str(Url(link))}\n{desc}'
+            articletext = f'Minecraft官网发布了新的文章：\n{title}\n  {desc}\n{str(Url(link))}'
             if title not in alist:
                 publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
                 now = datetime.now()
