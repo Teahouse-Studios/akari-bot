@@ -1,7 +1,9 @@
+from datetime import datetime
 import os
 import sys
 import time
 import traceback
+from cpuinfo import get_cpu_info
 
 import psutil
 import ujson as json
@@ -354,11 +356,15 @@ ping = on_command('ping',
                   )
 
 
+started_time = datetime.now()
+
+
 @ping.handle()
 async def _(msg: MessageSession):
     checkpermisson = msg.checkSuperUser()
     result = "Pong!"
     if checkpermisson:
+        timediff = str(datetime.now() - started_time)
         Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
         Cpu_usage = psutil.cpu_percent()
         RAM = int(psutil.virtual_memory().total / (1024 * 1024))
@@ -379,7 +385,9 @@ async def _(msg: MessageSession):
         """
         BFH = r'%'
         result += (f"\n系统运行时间：{Boot_Start}"
-                   + f"\n当前CPU使用率：{Cpu_usage}{BFH}"
+                   + f"\n机器人已运行：{timediff}"
+                   + f"\n处理器型号：{get_cpu_info()['brand_raw']}"
+                   + f"\n当前处理器使用率：{Cpu_usage}{BFH}"
                    + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
                    + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
                    + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
