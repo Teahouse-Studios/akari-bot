@@ -2,7 +2,7 @@ import random
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
-import requests
+from core.utils import get_url
 
 
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
@@ -145,9 +145,17 @@ class MusicList(List[Music]):
         return new_list
 
 
-obj = requests.get('https://www.diving-fish.com/api/maimaidxprober/music_data').json()
-total_list: MusicList = MusicList(obj)
-for __i in range(len(total_list)):
-    total_list[__i] = Music(total_list[__i])
-    for __j in range(len(total_list[__i].charts)):
-        total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
+class TotalList:
+    def __init__(self):
+        self.total_list = None
+
+    async def get(self):
+        if self.total_list is None:
+            obj = await get_url('https://www.diving-fish.com/api/maimaidxprober/music_data', fmt='json')
+            total_list: MusicList = MusicList(obj)
+            for __i in range(len(total_list)):
+                total_list[__i] = Music(total_list[__i])
+                for __j in range(len(total_list[__i].charts)):
+                    total_list[__i].charts[__j] = Chart(total_list[__i].charts[__j])
+            self.total_list = total_list
+        return self.total_list
