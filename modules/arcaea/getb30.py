@@ -20,7 +20,6 @@ async def getb30(usercode, official=False):
     async with aiohttp.ClientSession() as session:
         url = Config("botarcapi_url")
         async with session.get(url + f"user/best30?usercode={usercode}&withsonginfo=True", headers=headers) as resp:
-            print(await resp.text())
             if resp.status != 200:
                 return {'text': f'获取失败：{str(resp.status)}[Ke:Image,path=https://http.cat/{str(resp.status)}.jpg]'}
             a = await resp.text()
