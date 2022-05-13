@@ -70,15 +70,18 @@ async def getb30_official(usercode):
                 difficulty = 'FTR'
             elif x['difficulty'] == 3:
                 difficulty = 'BYD'
-            trackname = songsinfo.get(x['song_id'], {}).get("title_localized", {}).get('en', x['song_id'])
+            songinfo = songsinfo.get(x['song_id'], {})
+            trackname = x['song_id']
+            realptt = False
+            if songinfo:
+                trackname = songinfo['difficulties'][x['difficulty']]['name_en']
+                realptt = songinfo['difficulties'][x['difficulty']]['rating']
+                realptts[x['song_id'] + difficulty] = realptt
             tracknames[x['song_id'] + difficulty] = trackname + f' ({difficulty})'
             imgpath = f'{assets_path}/b30background_img_official/{x["song_id"]}_{str(x["difficulty"])}.jpg'
             if not os.path.exists(imgpath):
                 imgpath = f'{assets_path}/b30background_img_official/{x["song_id"]}.jpg'
-            realptt = songsinfo.get(x['song_id'], {}).get('difficulties', {})
-            if realptt:
-                realptt = realptt[x['difficulty']].get('realrating', False)
-                realptts[x['song_id'] + difficulty] = realptt
+
             score = x['score']
             if not realptt:
                 realptt = x['potential_value']

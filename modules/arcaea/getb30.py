@@ -20,6 +20,7 @@ async def getb30(usercode, official=False):
     async with aiohttp.ClientSession() as session:
         url = Config("botarcapi_url")
         async with session.get(url + f"user/best30?usercode={usercode}&withsonginfo=True", headers=headers) as resp:
+            print(await resp.text())
             if resp.status != 200:
                 return {'text': f'获取失败：{str(resp.status)}[Ke:Image,path=https://http.cat/{str(resp.status)}.jpg]'}
             a = await resp.text()
@@ -37,9 +38,8 @@ async def getb30(usercode, official=False):
                 last5list = ''
                 run_lst = []
                 songsinfo = {}
-                for si in loadjson["content"]["best30_songinfo"]:
-                    songsinfo[si["id"]] = si
                 for x in loadjson["content"]["best30_list"]:
+                    songsinfo[x['song_id'] + str(x['difficulty'])] = loadjson["content"]["best30_songinfo"][d]
                     d = d + 1
 
                     async def draw_jacket(x, d):
@@ -52,12 +52,12 @@ async def getb30(usercode, official=False):
                             difficulty = 'FTR'
                         elif x['difficulty'] == 3:
                             difficulty = 'BYD'
-                        trackname = songsinfo[x['song_id']]['title_localized']['en']
+                        trackname = songsinfo[x['song_id'] + str(x['difficulty'])]['name_en']
                         tracknames[x['song_id'] + difficulty] = trackname + f' ({difficulty})'
                         imgpath = f'{assets_path}/b30background_img{"_official" if official else ""}/{x["song_id"]}_{str(x["difficulty"])}.jpg'
                         if not os.path.exists(imgpath):
                             imgpath = f'{assets_path}/b30background_img{"_official" if official else ""}/{x["song_id"]}.jpg'
-                        realptt = songsinfo[x['song_id']]['difficulties'][x['difficulty']]['realrating']
+                        realptt = songsinfo[x['song_id'] + str(x['difficulty'])]['rating']
                         realptts[x['song_id'] + difficulty] = realptt
                         ptt = x['rating']
                         ptts[x['song_id'] + difficulty] = ptt

@@ -53,8 +53,9 @@ async def get_info_official(usercode):
     trackname = recent['song_id']
     songinfo = await get_songinfo(recent['song_id'])
     if songinfo:
-        trackname = songinfo['title_localized']['en']
-        realptt = songinfo['difficulties'][recent['difficulty']]['realrating'] / 10
+        s = songinfo['difficulties'][recent['difficulty']]
+        trackname = s['name_en']
+        realptt = s['rating'] / 10
         ptt = realptt
         if score >= 10000000:
             ptt += 2

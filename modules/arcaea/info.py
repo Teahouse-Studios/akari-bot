@@ -37,14 +37,12 @@ async def get_info(usercode):
             difficulty = 'FTR'
         elif recent['difficulty'] == 3:
             difficulty = 'BYD'
-        songsinfo = {}
-        for si in get_["content"]["songinfo"]:
-            songsinfo[si["id"]] = si
-        trackname = songsinfo[recent["song_id"]]['title_localized']['en']
+        songinfo = get_['content']['songinfo'][0]
+        trackname = songinfo['name_en']
         imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
         if not os.path.exists(imgpath):
             imgpath = f'{assets_path}/jacket/{recent["song_id"]}.jpg'
-        realptt = songsinfo[recent["song_id"]]['difficulties'][recent['difficulty']]['realrating']
+        realptt = songinfo['rating']
         ptt = recent['rating']
         score = recent['score']
         shiny_pure = recent['shiny_perfect_count']

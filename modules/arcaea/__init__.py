@@ -61,6 +61,7 @@ async def _(msg: MessageSession):
                     msgchain.append(Image(path=resp['file']))
                 await msg.sendMessage(msgchain)
             except Exception:
+                traceback.print_exc()
                 await msg.sendMessage('获取失败。')
                 return
     else:
