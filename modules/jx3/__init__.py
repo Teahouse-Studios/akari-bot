@@ -2,7 +2,7 @@ from core.component import on_command
 from core.elements import MessageSession
 from .jx3 import *
 
-jx3 = on_command(jx3', developers=['HornCopper'])
+jx3 = on_command('jx3', developers=['HornCopper'])
                 
 @jx3.handle("status <server_name> {获取剑网三服务器状态}")
 async def _(msg: MessageSession):
