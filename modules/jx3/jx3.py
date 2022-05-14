@@ -1,11 +1,5 @@
 import json
 from core.utils import get_url
-
-async def get_url(url):
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url,timeout=300)
-        result = resp.text
-        return result
 async def server_status(server_name):
     full_link = "https://www.jx3api.com/app/check?server="+server_name
     info = json.loads(await get_url(full_link))
