@@ -8,7 +8,6 @@ sqlalchemy
 apscheduler
 aioconsole
 aiogram
-requests
 ujson
 pymysql
 py-cord==2.0.0b7
