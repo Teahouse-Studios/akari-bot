@@ -1,12 +1,14 @@
 '''
 调用了其他API，但是已于CurseForge仓库对接。
 '''
+import traceback
+
 from core.utils import get_url
 from bs4 import BeautifulSoup
 
-search_piece_1 = 'https://files.xmdhs.top/curseforge/s?q='
+search_piece_1 = 'https://files.xmdhs.com/curseforge/s?q='
 search_piece_2 = '&type=1'
-search_step_2 = 'https://files.xmdhs.top/curseforge/history?id='
+search_step_2 = 'https://files.xmdhs.com/curseforge/history?id='
 
 
 def Chinese(string: str):
@@ -32,8 +34,9 @@ async def curseforge(mod_name: str, ver: str):
     html_2 = await get_url(final_url)
     bs_2 = BeautifulSoup(html_2, 'html.parser')
     try:
-        results = bs_2.body.div.div.table.tbody.find_all('tr')
+        results = bs_2.body.div.find_all('tr')
     except Exception:
+        traceback.print_exc()
         return {'msg': f'此Mod没有{ver}的版本。', 'success': False}
     information_2 = str(results[1])
     download_link = information_2[int(information_2.find("\"") + 1):int(information_2.find("\" target="))]
