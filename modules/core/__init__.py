@@ -1,12 +1,15 @@
-from datetime import datetime
 import os
 import sys
 import time
 import traceback
-from cpuinfo import get_cpu_info
+import platform
 
 import psutil
+
 import ujson as json
+
+from datetime import datetime
+from cpuinfo import get_cpu_info
 
 from core.component import on_command
 from core.elements import MessageSession, Command, PrivateAssets, Image, Plain
@@ -386,6 +389,7 @@ async def _(msg: MessageSession):
         BFH = r'%'
         result += (f"\n系统运行时间：{Boot_Start}"
                    + f"\n机器人已运行：{timediff}"
+                   + f"\nPython版本：{platform.python_version()}"
                    + f"\n处理器型号：{get_cpu_info()['brand_raw']}"
                    + f"\n当前处理器使用率：{Cpu_usage}{BFH}"
                    + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
