@@ -29,12 +29,15 @@ async def _(msg: MessageSession):
     for x in filter:
         if x.lower() in enums:
             enum.append(x)
-        if re.match(r'[0-9].*\.[0-9].*\.[0-9].*\.[0-9]', x):
+        elif re.match(r'[0-9].*\.[0-9].*\.[0-9].*\.[0-9]', x):
             version.append(x)
-        if x.lower() in branches:
+        elif x.lower() in branches:
             branch.append(x)
-        if x in enum_map:
+        elif x in enum_map:
             enum.append(enum_map[x])
+        else:
+            if not enum and not version and not branch:
+                query += " " + x
     if len(enum) > 1:
         return await msg.sendMessage('你一次只能指定一个枚举类型。')
     if len(version) > 1:
