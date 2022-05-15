@@ -148,7 +148,7 @@ class MessageSession(MS):
         async def __aenter__(self):
             if self.msg.target.targetFrom == 'QQ|Group':
                 if self.msg.session.sender in last_send_typing_time:
-                    if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 60:
+                    if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                         return
                 last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
                 await bot.send_group_msg(group_id=self.msg.session.target,
