@@ -242,7 +242,10 @@ async def _(msg: MessageSession):
                     legacy_help = False
                     await msg.sendMessage([Image(render),
                                            Plain('此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用~modules命令。'
-                                                 '\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')])
+                                                 '\n你也可以通过查阅文档获取帮助：'
+                                                 '\nhttps://bot.teahou.se/wiki/'
+                                                 '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
+                                                 '\nhttps://afdian.net/@teahouse')])
         except Exception:
             traceback.print_exc()
     if legacy_help:
