@@ -462,7 +462,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode)))
             query = await asyncio.gather(*tasks)
             for result in query:
-                print(result)
+                print(result.__dict__)
                 r: PageInfo = result
                 iw_prefix = iw_prefix
                 display_title = None
@@ -516,6 +516,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if r.invalid_namespace and r.before_title is not None:
                         plain_slice.append(
                             f'此Wiki上没有名为{r.invalid_namespace}的命名空间，请检查拼写后再试。')
+                    if r.before_page_property == 'template':
+                        if r.before_title.split(':')[1].isupper():
+                            plain_slice.append(
+                                f'提示：机器人暂不支持魔术字。')
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if wait_plain_slice:
