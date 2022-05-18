@@ -213,7 +213,7 @@ class BotDBUtil:
             if not self.need_insert:
                 session.delete(self.query)
                 session.commit()
-            session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
+            session.add_all([CommandTriggerTime(targetId=self.msg.target.senderId, commandName=self.name)])
             session.commit()
 
     @staticmethod
