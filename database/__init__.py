@@ -195,7 +195,7 @@ class BotDBUtil:
         def __init__(self, msg: MessageSession, name):
             self.msg = msg
             self.name = name
-            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.targetId),
+            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.senderId),
                                                                      commandName=name).first()
             self.need_insert = True if self.query is None else False
 
