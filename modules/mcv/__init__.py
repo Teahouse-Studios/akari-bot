@@ -12,7 +12,7 @@ m = on_command(
 
 @m.handle()
 async def mcv_loader(msg: MessageSession):
-    await msg.sendMessage(await mcv())
+    await msg.finish(await mcv())
 
 
 mb = on_command(
@@ -23,7 +23,7 @@ mb = on_command(
 
 @mb.handle()
 async def mcbv_loader(msg: MessageSession):
-    await msg.sendMessage(await mcbv())
+    await msg.finish(await mcbv())
 
 
 md = on_command(
@@ -34,7 +34,7 @@ md = on_command(
 
 @md.handle()
 async def mcdv_loader(msg: MessageSession):
-    await msg.sendMessage(await mcdv())
+    await msg.finish(await mcdv())
 
 
 me = on_command(
@@ -45,4 +45,4 @@ me = on_command(
 
 @me.handle()
 async def mcev_loader(msg: MessageSession):
-    await msg.sendMessage(await mcev())
+    await msg.finish(await mcev())

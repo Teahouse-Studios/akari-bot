@@ -23,7 +23,7 @@ async def pttimg(msg: MessageSession):
         try:
             ptt = float(ptt)
         except ValueError:
-            return await msg.sendMessage('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
+            await msg.finish('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
     if ptt >= 12.50:
         pttimg = 6
     elif ptt >= 12.00:
@@ -72,11 +72,11 @@ async def pttimg(msg: MessageSession):
         drawptt = ImageDraw.Draw(pttimg)
         drawptt.text((0, 0), ptt, 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
     else:
-        return await msg.sendMessage('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
+        return await msg.finish('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
     pttimgr.alpha_composite(ptttext, (0, 0))
     savepath = cache_name() + '.png'
     pttimgr.save(savepath)
-    await msg.sendMessage([Img(path=savepath)])
+    await msg.finish([Img(path=savepath)])

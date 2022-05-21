@@ -61,9 +61,9 @@ async def _(msg: MessageSession):
             plain_texts.append(f'{x["enumName"]}：{x["key"]} -> {x["value"]}')
         if resp['data']['count'] > 5:
             plain_texts.append('...仅显示前5条结果。')
-        await msg.sendMessage('\n'.join(plain_texts))
+        await msg.finish('\n'.join(plain_texts))
     else:
-        await msg.sendMessage('没有找到结果。')
+        await msg.finish('没有找到结果。')
 
 
 

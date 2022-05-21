@@ -30,7 +30,7 @@ async def _(msg: MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            return await msg.sendMessage('未绑定用户，请使用~cytoid bind <friendcode>绑定一个用户。')
+            await msg.finish('未绑定用户，请使用~cytoid bind <friendcode>绑定一个用户。')
     if query:
         qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
         c = qc.check(300)
@@ -57,13 +57,13 @@ async def _(msg: MessageSession):
                 m = f'{getcode[1]}({getcode[0]})'
             else:
                 m = getcode[0]
-            await msg.sendMessage(f'绑定成功：' + m)
+            await msg.finish(f'绑定成功：' + m)
     else:
-        await msg.sendMessage('绑定失败，请检查输入。')
+        await msg.finish('绑定失败，请检查输入。')
 
 
 @cytoid.handle('unbind {取消绑定用户}')
 async def _(msg: MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.sendMessage('取消绑定成功。')
+        await msg.finish('取消绑定成功。')

@@ -15,9 +15,9 @@ mod_dl = on_command(
 async def main(msg: MessageSession):
     info = await d(msg.parsed_msg['<mod_name>'], msg.parsed_msg['<mcversion>'])
     if not info['success']:
-        return await msg.sendMessage(info['msg'])
+        await msg.finish(info['msg'])
     link = info["download_link"]
     name = info["filename"]
     status = info["status"]
     message = f'下载链接：{str(Url(link))}\n文件名：{name}\n版本状态：{status}'
-    await msg.sendMessage(message)
+    await msg.finish(message)

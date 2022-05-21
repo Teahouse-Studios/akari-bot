@@ -100,7 +100,7 @@ async def result(msg: MessageSession):
     err = msg.parsed_msg['<errcode>']
     err = results.fixup_input(err)
     if (meme := results.check_meme(err)) is not None:
-        return await msg.sendMessage(meme)
+        return await msg.finish(meme)
     try:
         ret = results.fetch(err)
     except ValueError:
@@ -112,6 +112,6 @@ async def result(msg: MessageSession):
             embed.description = ret.extra_description
         for field in ret:
             embed.add_field(name=field.field_name, value=field.message, inline=False)
-        await msg.sendMessage(convertDiscordEmbed(embed))
+        await msg.finish(convertDiscordEmbed(embed))
     else:
-        await msg.sendMessage(f'你输入的代码是无效的，或者此功能不支持你使用的主机。')
+        await msg.finish(f'你输入的代码是无效的，或者此功能不支持你使用的主机。')

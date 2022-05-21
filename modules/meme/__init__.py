@@ -31,4 +31,4 @@ async def _(msg: MessageSession):
         else:
             res += i['content'] + '\n'
     Logger.info('res:' + res)
-    await msg.sendMessage(res)
+    await msg.finish(res)

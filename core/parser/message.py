@@ -4,7 +4,7 @@ from aiocqhttp.exceptions import ActionFailed
 from datetime import datetime
 
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
-from core.exceptions import AbuseWarning
+from core.exceptions import AbuseWarning, FinishedException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
@@ -209,6 +209,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 except ActionFailed:
                     await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                     continue
+                except FinishedException:
+                    continue
                 except Exception as e:
                     Logger.error(traceback.format_exc())
                     ExecutionLockList.remove(msg)
@@ -266,6 +268,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 return
             except ActionFailed:
                 await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
+                continue
+            except FinishedException:
                 continue
             except Exception:
                 Logger.error(traceback.format_exc())

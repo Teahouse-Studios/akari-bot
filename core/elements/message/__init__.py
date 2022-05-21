@@ -1,6 +1,8 @@
 import asyncio
 from typing import List
 
+from core.exceptions import FinishedException
+
 
 class MsgInfo:
     __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom"]
@@ -61,6 +63,21 @@ class MessageSession:
         :return: 被发送的消息链
         """
         ...
+
+    async def finish(self,
+                     msgchain,
+                     quote=True,
+                     disable_secret_check=False):
+        """
+        用于向消息发送者回复消息并终结会话（模块后续代码不再执行）。
+        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
+        :param quote: 是否引用传入dict中的消息（默认为True）
+        :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :return: 被发送的消息链
+        """
+        ...
+        f = await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=quote)
+        raise FinishedException(f)
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False):
         """

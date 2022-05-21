@@ -39,7 +39,7 @@ async def _(msg: MessageSession):
     iw: str = msg.parsed_msg['<CustomIW>']
     page_id: str = msg.parsed_msg['<PageID>']
     if not page_id.isdigit():
-        return await msg.sendMessage('错误：页面ID必须是数字。')
+        await msg.finish('错误：页面ID必须是数字。')
     print(msg.parsed_msg)
     if not iw:
         iw = ''
@@ -54,14 +54,14 @@ async def set_start_wiki(msg: MessageSession):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
             if result:
-                await msg.sendMessage(
+                await msg.finish(
                     f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else ''))
         else:
-            await msg.sendMessage(f'错误：{check.value.name}处于黑名单中。')
+            await msg.finish(f'错误：{check.value.name}处于黑名单中。')
     else:
         result = '错误：无法添加此Wiki。' + \
             ('\n详细信息：' + check.message if check.message != '' else '')
-        await msg.sendMessage(result)
+        await msg.finish(result)
 
 
 @wiki.handle('iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}', required_admin=True)
@@ -74,13 +74,13 @@ async def _(msg: MessageSession):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = target.config_interwikis(iw, check.value.api, let_it=True)
             if result:
-                await msg.sendMessage(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
+                await msg.finish(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
         else:
-            await msg.sendMessage(f'错误：{check.value.name}处于黑名单中。')
+            await msg.finish(f'错误：{check.value.name}处于黑名单中。')
     else:
         result = '错误：无法添加此Wiki。' + \
             ('\n详细信息：' + check.message if check.message != '' else '')
-        await msg.sendMessage(result)
+        await msg.finish(result)
 
 
 @wiki.handle('iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}', required_admin=True)
@@ -89,7 +89,7 @@ async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     result = target.config_interwikis(iw, let_it=False)
     if result:
-        await msg.sendMessage(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
+        await msg.finish(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
 
 
 @wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}',
@@ -114,15 +114,15 @@ async def _(msg: MessageSession):
             mt = f'使用~wiki iw get <Interwiki> 可以获取interwiki对应的链接。'
             if base_interwiki_link is not None:
                 mt += base_interwiki_link_msg
-            await msg.sendMessage([Image(img), Plain(mt)])
+            await msg.finish([Image(img), Plain(mt)])
         else:
             result = '当前设置了以下Interwiki：\n' + \
                 '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
                 result += base_interwiki_link_msg
-            await msg.sendMessage(result)
+            await msg.finish(result)
     else:
-        await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
+        await msg.finish('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
 
 
 @wiki.handle('iw get <Interwiki> {获取设置的Interwiki对应的api地址}')
@@ -131,11 +131,11 @@ async def _(msg: MessageSession):
     query = target.get_interwikis()
     if query != {}:
         if msg.parsed_msg['<Interwiki>'] in query:
-            await msg.sendMessage(Url(query[msg.parsed_msg['<Interwiki>']]))
+            await msg.finish(Url(query[msg.parsed_msg['<Interwiki>']]))
         else:
-            await msg.sendMessage(f'未找到Interwiki：{msg.parsed_msg["<Interwiki>"]}')
+            await msg.finish(f'未找到Interwiki：{msg.parsed_msg["<Interwiki>"]}')
     else:
-        await msg.sendMessage('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
+        await msg.finish('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
 
 
 @wiki.handle(['headers show {展示当前设置的headers}', 'headers list {headers show 的别名}'])
@@ -145,7 +145,7 @@ async def _(msg: MessageSession):
     prompt = f'当前设置了以下标头：\n{json.dumps(headers)}\n如需自定义，请使用~wiki headers set <headers>。\n' \
              f'格式：\n' \
              f'~wiki headers set {{"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}}'
-    await msg.sendMessage(prompt)
+    await msg.finish(prompt)
 
 
 @wiki.handle('headers (add|set) <Headers> {添加自定义headers}', required_admin=True)
@@ -154,7 +154,7 @@ async def _(msg: MessageSession):
     add = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
     if add:
-        await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+        await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
 @wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}', required_admin=True)
@@ -163,7 +163,7 @@ async def _(msg: MessageSession):
     delete = target.config_headers(
         [msg.parsed_msg['<HeaderHey>']], let_it=False)
     if delete:
-        await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+        await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
 @wiki.handle('headers reset {重置headers}', required_admin=True)
@@ -171,7 +171,7 @@ async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     reset = target.config_headers('', let_it=None)
     if reset:
-        await msg.sendMessage(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+        await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
 
 @wiki.handle('prefix set <prefix> {设置查询自动添加前缀}', required_admin=True)
@@ -180,7 +180,7 @@ async def _(msg: MessageSession):
     prefix = msg.parsed_msg['<prefix>']
     set_prefix = target.set_prefix(prefix)
     if set_prefix:
-        await msg.sendMessage(f'成功更新请求时所使用的前缀：{prefix}')
+        await msg.finish(f'成功更新请求时所使用的前缀：{prefix}')
 
 
 @wiki.handle('prefix reset {重置查询自动添加的前缀}', required_admin=True)
@@ -188,7 +188,7 @@ async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
     set_prefix = target.del_prefix()
     if set_prefix:
-        await msg.sendMessage(f'成功重置请求时所使用的前缀。')
+        await msg.finish(f'成功重置请求时所使用的前缀。')
 
 
 aud = on_command('wiki_audit', alias='wa',
@@ -210,13 +210,13 @@ async def _(msg: MessageSession):
             res = Audit(api).add_to_BlockList(op)
             list_name = '黑'
         if not res:
-            await msg.sendMessage(f'失败，此wiki已经存在于{list_name}名单中：' + api)
+            await msg.finish(f'失败，此wiki已经存在于{list_name}名单中：' + api)
         else:
-            await msg.sendMessage(f'成功加入{list_name}名单：' + api)
+            await msg.finish(f'成功加入{list_name}名单：' + api)
     else:
         result = '错误：无法添加此Wiki。' + \
             ('\n详细信息：' + check.message if check.message != '' else '')
-        await msg.sendMessage(result)
+        await msg.finish(result)
 
 
 @aud.handle(['distrust <apiLink>', 'unblock <apiLink>'])
@@ -233,13 +233,13 @@ async def _(msg: MessageSession):
             res = Audit(api).remove_from_BlockList()
             list_name = '黑'
         if not res:
-            await msg.sendMessage(f'失败，此wiki不存在于{list_name}名单中：' + api)
+            await msg.finish(f'失败，此wiki不存在于{list_name}名单中：' + api)
         else:
-            await msg.sendMessage(f'成功从{list_name}名单删除：' + api)
+            await msg.finish(f'成功从{list_name}名单删除：' + api)
     else:
         result = '错误：无法查询此Wiki。' + \
             ('\n详细信息：' + check.message if check.message != '' else '')
-        await msg.sendMessage(result)
+        await msg.finish(result)
 
 
 @aud.handle('query <apiLink>')
@@ -259,13 +259,13 @@ async def _(msg: MessageSession):
             msg_list.append(api + '已存在于黑名单。')
         if msg_list:
             msg_list.append('优先级：白名单 > 黑名单')
-            await msg.sendMessage('\n'.join(msg_list))
+            await msg.finish('\n'.join(msg_list))
         else:
-            await msg.sendMessage(api + '不存在于任何名单。')
+            await msg.finish(api + '不存在于任何名单。')
     else:
         result = '错误：无法查询此Wiki。' + \
             ('\n详细信息：' + check.message if check.message != '' else '')
-        await msg.sendMessage(result)
+        await msg.finish(result)
 
 
 @aud.handle('list')
@@ -294,7 +294,7 @@ async def _(msg: MessageSession):
                     send_msgs.append(Plain('现有黑名单：'))
                     send_msgs.append(Image(block_image))
         if send_msgs:
-            await msg.sendMessage(send_msgs)
+            await msg.finish(send_msgs)
             legacy = False
     if legacy:
         wikis = ['现有白名单：']
@@ -303,7 +303,7 @@ async def _(msg: MessageSession):
         wikis.append('现有黑名单：')
         for bl in block_list:
             wikis.append(f'{bl[0]}（by {bl[1]}）')
-        await msg.sendMessage('\n'.join(wikis))
+        await msg.finish('\n'.join(wikis))
 
 
 on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。',
@@ -540,7 +540,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if get_infobox:
                         infobox_msg_list.append(Image(get_infobox))
             if infobox_msg_list:
-                await session.sendMessage(infobox_msg_list, quote=False)
+                await session.finish(infobox_msg_list, quote=False)
         if render_section_list and session.Feature.image:
             section_msg_list = []
             for i in render_section_list:
@@ -549,7 +549,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if get_section:
                         section_msg_list.append(Image(get_section))
             if section_msg_list:
-                await session.sendMessage(section_msg_list, quote=False)
+                await session.finish(section_msg_list, quote=False)
         if dl_list:
             for f in dl_list:
                 dl = await download_to_cache(f)
@@ -557,12 +557,12 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 if guess_type is not None:
                     if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                         if session.Feature.image:
-                            await session.sendMessage(Image(dl), quote=False)
+                            await session.finish(Image(dl), quote=False)
                     elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                         if session.Feature.voice:
-                            await session.sendMessage(Voice(dl), quote=False)
+                            await session.finish(Voice(dl), quote=False)
         if wait_msg_list and session.Feature.wait:
-            confirm = await session.waitConfirm(wait_msg_list)
+            confirm = await session.finish(wait_msg_list)
             if confirm and wait_list:
                 await query_pages(session, wait_list, use_prefix=False)
     else:
@@ -577,7 +577,7 @@ rc_ = on_command('rc', desc='获取默认wiki的最近更改', developers=['Oasi
 async def rc_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
-        return await msg.sendMessage('未设置起始wiki。')
+        return await msg.finish('未设置起始wiki。')
     legacy = True
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
         try:
@@ -586,11 +586,11 @@ async def rc_loader(msg: MessageSession):
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.sendMessage('无法发送转发消息，已自动回滚至传统样式。')
+            await msg.finish('无法发送转发消息，已自动回滚至传统样式。')
             legacy = True
     if legacy:
         res = await rc(start_wiki)
-        await msg.sendMessage(res)
+        await msg.finish(res)
 
 
 a = on_command('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
@@ -600,7 +600,7 @@ a = on_command('ab', desc='获取默认wiki的最近滥用日志', developers=['
 async def ab_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
-        return await msg.sendMessage('未设置起始wiki。')
+        return await msg.finish('未设置起始wiki。')
     legacy = True
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
         try:
@@ -609,11 +609,11 @@ async def ab_loader(msg: MessageSession):
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.sendMessage('无法发送转发消息，已自动回滚至传统样式。')
+            await msg.finish('无法发送转发消息，已自动回滚至传统样式。')
             legacy = True
     if legacy:
         res = await ab(start_wiki)
-        await msg.sendMessage(res)
+        await msg.finish(res)
 
 
 n = on_command('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
@@ -623,6 +623,6 @@ n = on_command('newbie', desc='获取默认wiki的新用户', developers=['Oasis
 async def newbie_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
-        return await msg.sendMessage('未设置起始wiki。')
+        return await msg.finish('未设置起始wiki。')
     res = await newbie(start_wiki)
-    await msg.sendMessage(res)
+    await msg.finish(res)

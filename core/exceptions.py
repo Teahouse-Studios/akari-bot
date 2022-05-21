@@ -4,3 +4,7 @@ class AbuseWarning(Exception):
 
 class ConfigFileNotFound(Exception):
     pass
+
+
+class FinishedException(BaseException):
+    pass

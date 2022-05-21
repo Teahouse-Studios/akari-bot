@@ -150,7 +150,7 @@ async def config_modules(msg: MessageSession):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(f'成功：打开模块“{x}”')
-                await msg.sendMessage('\n'.join(msglist))
+                await msg.finish('\n'.join(msglist))
 
 
 hlp = on_command('help',
@@ -195,9 +195,9 @@ async def bot_help(msg: MessageSession):
             else:
                 devs = ''
             devs_msg = '\n模块作者：' + devs if devs != '' else ''
-            await msg.sendMessage(doc + devs_msg)
+            await msg.finish(doc + devs_msg)
         else:
-            await msg.sendMessage('此模块可能不存在，请检查输入。')
+            await msg.finish('此模块可能不存在，请检查输入。')
 
 
 @hlp.handle()
@@ -240,7 +240,7 @@ async def _(msg: MessageSession):
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    await msg.sendMessage([Image(render),
+                    await msg.finish([Image(render),
                                            Plain('此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用~modules命令。'
                                                  '\n你也可以通过查阅文档获取帮助：'
                                                  '\nhttps://bot.teahou.se/wiki/'
@@ -315,7 +315,7 @@ async def modules_help(msg: MessageSession):
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    await msg.sendMessage([Image(render)])
+                    await msg.finish([Image(render)])
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -351,8 +351,8 @@ async def bot_version(msg: MessageSession):
     open_version = open(ver, 'r')
     open_tag = open(tag, 'r')
     msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）'
-    await msg.sendMessage(msgs, msgs)
     open_version.close()
+    await msg.finish(msgs, msgs)
 
 
 ping = on_command('ping',
@@ -401,7 +401,7 @@ async def _(msg: MessageSession):
                    # + f"\n已加入QQ群聊：{GroupList}"
                    # + f" | 已添加QQ好友：{FriendList}" """
                    )
-    await msg.sendMessage(result)
+    await msg.finish(result)
 
 
 admin = on_command('admin',
@@ -417,12 +417,12 @@ async def config_gu(msg: MessageSession):
         user = msg.parsed_msg['<UserID>']
         if user and not BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").check_TargetAdmin(msg.target.targetId):
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").add_TargetAdmin(msg.target.targetId):
-                await msg.sendMessage("成功")
+                await msg.finish("成功")
     if msg.parsed_msg['del']:
         user = msg.parsed_msg['<UserID>']
         if user:
             if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").remove_TargetAdmin(msg.target.targetId):
-                await msg.sendMessage("成功")
+                await msg.finish("成功")
 
 
 su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
@@ -434,7 +434,7 @@ async def add_su(message: MessageSession):
     print(message.parsed_msg)
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.sendMessage('操作成功：已将' + user + '设置为超级用户。')
+            await message.finish('操作成功：已将' + user + '设置为超级用户。')
 
 
 @su.handle('del <user>')
@@ -442,7 +442,7 @@ async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.sendMessage('操作成功：已将' + user + '移出超级用户。')
+            await message.finish('操作成功：已将' + user + '移出超级用户。')
 
 
 whoami = on_command('whoami', developers=['Dianliang233'], desc='获取发送命令的账号在机器人内部的 ID', base=True)
@@ -457,7 +457,7 @@ async def _(msg: MessageSession):
         rights += '\n（你拥有本对话的机器人管理员权限）'
     if msg.checkSuperUser():
         rights += '\n（你拥有本机器人的超级用户权限）'
-    await msg.sendMessage(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
+    await msg.finish(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
                           disable_secret_check=True)
 
 
@@ -468,7 +468,7 @@ ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_sup
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     warns = BotDBUtil.SenderInfo(user).query.warns
-    await msg.sendMessage(f'{user} 已被警告 {warns} 次。')
+    await msg.finish(f'{user} 已被警告 {warns} 次。')
 
 
 @ae.handle('warn <user> [<count>]')
@@ -476,7 +476,7 @@ async def _(msg: MessageSession):
     count = int(msg.parsed_msg['<count>'] or 1)
     user = msg.parsed_msg['<user>']
     warn_count = await warn_user(user, count)
-    await msg.sendMessage(f'成功警告 {user} {count} 次。此用户已被警告 {warn_count} 次。')
+    await msg.finish(f'成功警告 {user} {count} 次。此用户已被警告 {warn_count} 次。')
 
 
 @ae.handle('revoke <user> [<count>]')
@@ -484,35 +484,35 @@ async def _(msg: MessageSession):
     count = 0 - int(msg.parsed_msg['<count>'] or -1)
     user = msg.parsed_msg['<user>']
     warn_count = await warn_user(user, count)
-    await msg.sendMessage(f'成功移除警告 {user} 的 {count} 次警告。此用户已被警告 {warn_count} 次。')
+    await msg.finish(f'成功移除警告 {user} 的 {count} 次警告。此用户已被警告 {warn_count} 次。')
 
 
 @ae.handle('clear <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     await pardon_user(user)
-    await msg.sendMessage(f'成功清除 {user} 的警告。')
+    await msg.finish(f'成功清除 {user} 的警告。')
 
 
 @ae.handle('untempban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     await remove_temp_ban(user)
-    await msg.sendMessage(f'成功解除 {user} 的临时封禁。')
+    await msg.finish(f'成功解除 {user} 的临时封禁。')
 
 
 @ae.handle('ban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
-        await msg.sendMessage(f'成功封禁 {user}。')
+        await msg.finish(f'成功封禁 {user}。')
 
 
 @ae.handle('unban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
-        await msg.sendMessage(f'成功解除 {user} 的封禁。')
+        await msg.finish(f'成功解除 {user} 的封禁。')
 
 
 """
@@ -578,7 +578,7 @@ echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
 
 @echo.handle('<display_msg>')
 async def _(msg: MessageSession):
-    await msg.sendMessage(msg.parsed_msg['<display_msg>'])
+    await msg.finish(msg.parsed_msg['<display_msg>'])
 
 
 say = on_command('say', developers=['OasisAkari'], required_superuser=True)
@@ -586,7 +586,7 @@ say = on_command('say', developers=['OasisAkari'], required_superuser=True)
 
 @say.handle('<display_msg>')
 async def _(msg: MessageSession):
-    await msg.sendMessage(msg.parsed_msg['<display_msg>'], quote=False)
+    await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
 
 tog = on_command('toggle', developers=['OasisAkari'], base=True)
@@ -598,10 +598,10 @@ async def _(msg: MessageSession):
     state = target.query.disable_typing
     if not state:
         target.edit('disable_typing', True)
-        await msg.sendMessage('成功关闭输入提示。')
+        await msg.finish('成功关闭输入提示。')
     else:
         target.edit('disable_typing', False)
-        await msg.sendMessage('成功打开输入提示。')
+        await msg.finish('成功打开输入提示。')
 
 
 mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True)
@@ -611,10 +611,10 @@ mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin
 async def _(msg: MessageSession):
     if BotDBUtil.Muting(msg).check():
         BotDBUtil.Muting(msg).remove()
-        await msg.sendMessage('成功取消禁言。')
+        await msg.finish('成功取消禁言。')
     else:
         BotDBUtil.Muting(msg).add()
-        await msg.sendMessage('成功禁言。')
+        await msg.finish('成功禁言。')
 
 
 leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',

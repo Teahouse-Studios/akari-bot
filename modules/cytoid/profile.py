@@ -63,4 +63,4 @@ async def cytoid_profile(msg: MessageSession):
            f'Rating: {rating}\n' + \
            f'Grade: {gradet}'
     msgchain = [Image(path=avatar), Plain(text)]
-    await msg.sendMessage(msgchain)
+    await msg.finish(msgchain)
