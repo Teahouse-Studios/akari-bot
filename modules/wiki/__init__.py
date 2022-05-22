@@ -531,7 +531,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             await session.sendMessage(f'发生错误：' + str(e))
     if isinstance(session, MessageSession):
         if msg_list:
-            if not all([not render_infobox_list, not render_section_list, not dl_list, not wait_list]):
+            if all([not render_infobox_list, not render_section_list, not dl_list, not wait_list]):
                 await session.finish(msg_list)
             else:
                 await session.sendMessage(msg_list)
