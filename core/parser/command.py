@@ -5,18 +5,9 @@ from typing import Union
 
 from core.docopt import docopt, DocoptExit
 from core.elements import Command, Option, Schedule, StartUp, RegexCommand, command_prefix, MessageSession
+from core.exceptions import InvalidCommandFormatError, InvalidHelpDocTypeError
 
 command_prefix_first = command_prefix[0]
-
-
-class InvalidHelpDocTypeError(BaseException):
-    def __init__(self, *args, **kwargs):
-        pass
-
-
-class InvalidCommandFormatError(BaseException):
-    def __init__(self, *args, **kwargs):
-        pass
 
 
 class CommandParser:

@@ -4,10 +4,10 @@ from aiocqhttp.exceptions import ActionFailed
 from datetime import datetime
 
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
-from core.exceptions import AbuseWarning, FinishedException
+from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.parser.command import CommandParser, InvalidCommandFormatError, InvalidHelpDocTypeError
+from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.utils import remove_ineffective_text, RemoveDuplicateSpace
 from database import BotDBUtil
