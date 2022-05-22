@@ -14,10 +14,10 @@ mcmod = on_command(
 @mcmod.handle('<mod_name> {通过模组名获取模组简介及链接，可使用无歧义简写和准确中文。}')
 async def main(msg: MessageSession):
     message = await m(msg.parsed_msg['<mod_name>'])
-    await msg.sendMessage(message)
+    await msg.finish(message)
 
 
 @mcmod.handle('details <content> {通过 Mod 内容的名称获取模组简介及链接，可使用物品/方块/实体的 ID 或准确中文。}')
 async def main(msg: MessageSession):
     message = await m(msg.parsed_msg['<content>'], detail=True)
-    await msg.sendMessage(message)
+    await msg.finish(message)

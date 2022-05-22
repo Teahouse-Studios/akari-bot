@@ -14,7 +14,7 @@ async def bugtracker(msg: MessageSession):
         q = re.match(r'(.*-.*)', mojira_id)
         if q:
             result = await bugtracker_get(q.group(1))
-            await msg.sendMessage(result)
+            await msg.finish(result)
 
 
 rbug = on_regex('bug_regex',
@@ -27,7 +27,7 @@ async def regex_bugtracker(msg: MessageSession):
     matched_msg = msg.matched_msg
     if len(matched_msg.group(1)) < 10 and len(matched_msg.group(2)) < 10:
         result = await bugtracker_get(matched_msg.group(1) + '-' + matched_msg.group(2))
-        return await msg.sendMessage(result)
+        await msg.finish(result)
 
 
 """rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')

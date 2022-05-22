@@ -36,10 +36,10 @@ wky = on_command('weekly', developers=['Dianliang233'], desc='获取中文 Minec
 @wky.handle()
 async def _(msg: MessageSession):
     weekly = await get_weekly()
-    await msg.sendMessage(weekly)
+    await msg.finish(weekly)
 
 
 @wky.handle('teahouse {获取茶馆周报}')
 async def _(msg: MessageSession):
     weekly = await get_teahouse_rss()
-    await msg.sendMessage(weekly)
+    await msg.finish(weekly)

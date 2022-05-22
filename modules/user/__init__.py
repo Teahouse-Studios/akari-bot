@@ -24,7 +24,7 @@ async def user(msg: MessageSession):
         metaurl = get_url
         username = msg.parsed_msg['<username>']
     else:
-        await msg.sendMessage('未设置起始wiki且没有提供Interwiki。')
+        await msg.finish('未设置起始wiki且没有提供Interwiki。')
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         get_iw = WikiTargetInfo(msg).get_interwikis()
@@ -40,4 +40,4 @@ async def user(msg: MessageSession):
         else:
             msgchain = [Plain(result)]
         print(msgchain)
-        await msg.sendMessage(msgchain)
+        await msg.finish(msgchain)

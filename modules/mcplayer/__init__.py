@@ -32,4 +32,4 @@ async def main(msg: MessageSession):
             chain.append(Image(cape))
     except ValueError:
         chain = [Plain(f'未找到 {arg} 的信息。')]
-    await msg.sendMessage(chain)
+    await msg.finish(chain)

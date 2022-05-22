@@ -22,4 +22,4 @@ async def main(msg: MessageSession):
         for i in res:
             lst += [f'{i["count"]}. {i["title"]} - {i["url"]}']
         message = '\n'.join(lst)
-    await msg.sendMessage(message)
+    await msg.finish(message)
