@@ -38,6 +38,9 @@ class FinishedSession:
         """
         ...
 
+    def __str__(self):
+        return f"<FinishedSession: {str(self.result)}>"
+
 
 class MessageSession:
     """

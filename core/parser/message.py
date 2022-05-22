@@ -209,7 +209,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 except ActionFailed:
                     await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                     continue
-                except FinishedException:
+                except FinishedException as e:
+                    Logger.info(f'Successfully finished session from [{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}], returns: {str(e)}')
                     continue
                 except Exception as e:
                     Logger.error(traceback.format_exc())
@@ -269,7 +270,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             except ActionFailed:
                 await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                 continue
-            except FinishedException:
+            except FinishedException as e:
+                Logger.info(
+                    f'Successfully finished session from [{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}], returns: {str(e)}')
                 continue
             except Exception:
                 Logger.error(traceback.format_exc())
