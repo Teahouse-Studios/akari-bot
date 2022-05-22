@@ -78,7 +78,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         modulesAliases = ModulesManager.return_modules_alias_map()
         modulesRegex = ModulesManager.return_specified_type_modules(RegexCommand, targetFrom=msg.target.targetFrom)
         display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
-        # Logger.info(f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
+        identify_str = f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}]'
+        # Logger.info(f'{identify_str} -> [Bot]: {display}')
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
         enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
@@ -96,7 +97,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 return
             is_command = True
             Logger.info(
-                f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}] -> [Bot]: {display}')
+                f'{identify_str} -> [Bot]: {display}')
             if disable_prefix and display[0] not in command_prefix:
                 command = display
             else:
@@ -205,7 +206,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     else:
                                         await func.function(msg)
                     except FinishedException as e:
-                        Logger.info(f'Successfully finished session from [{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}], returns: {str(e)}')
+                        Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}')
                         if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module':
                             await msg_counter(msg, msg.trigger_msg)
                         continue
@@ -260,7 +261,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             ExecutionLockList.remove(msg)
                 except FinishedException as e:
                     Logger.info(
-                        f'Successfully finished session from [{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}], returns: {str(e)}')
+                        f'Successfully finished session from {identify_str}, returns: {str(e)}')
                     await msg_counter(msg, msg.trigger_msg)
                     continue
                 ExecutionLockList.remove(msg)
