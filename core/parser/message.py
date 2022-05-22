@@ -104,8 +104,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 command = display[1:]
             command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
             if len(command_list) > 5 and not senderInfo.query.isSuperUser:
-                await msg.sendMessage('你不是本机器人的超级管理员，最多只能并排执行5个命令。')
-                return
+                return await msg.sendMessage('你不是本机器人的超级管理员，最多只能并排执行5个命令。')
             if not ExecutionLockList.check(msg):
                 ExecutionLockList.add(msg)
             else:
@@ -126,12 +125,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     command_first_word = command_spilt[0].lower()
                     msg.trigger_msg = ' '.join(command_spilt)
                 if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList and not sudo:  # 如果是以 sudo 执行的命令，则不检查是否已 ban
-                    ExecutionLockList.remove(msg)
-                    return
+                    return ExecutionLockList.remove(msg)
                 in_mute = BotDBUtil.Muting(msg).check()
                 if in_mute and not mute:
-                    ExecutionLockList.remove(msg)
-                    return
+                    return ExecutionLockList.remove(msg)
                 if command_first_word in modulesAliases:
                     command_spilt[0] = modulesAliases[command_first_word]
                     command = ' '.join(command_spilt)
@@ -205,6 +202,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                             await func.function(msg)  # 将msg传入下游模块
                                     else:
                                         await func.function(msg)
+                    except ActionFailed:
+                        await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
+                        continue
                     except FinishedException as e:
                         Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}')
                         if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module':
@@ -259,14 +259,15 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 else:
                                     await rfunc.function(msg)  # 将msg传入下游模块
                             ExecutionLockList.remove(msg)
+                except ActionFailed:
+                    await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
+                    continue
                 except FinishedException as e:
                     Logger.info(
                         f'Successfully finished session from {identify_str}, returns: {str(e)}')
                     await msg_counter(msg, msg.trigger_msg)
                     continue
                 ExecutionLockList.remove(msg)
-    except ActionFailed:
-        await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
     except AbuseWarning as e:
         await warn_target(msg, str(e))
         temp_ban_counter[msg.target.senderId] = {'count': 1,
