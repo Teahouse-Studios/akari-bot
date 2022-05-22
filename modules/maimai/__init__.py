@@ -236,7 +236,9 @@ HOLD\t2/5/10
 SLIDE\t3/7.5/15
 TOUCH\t1/2.5/5
 BREAK\t5/12.5/25(外加200落)'''
-        await msg.finish([BImage(text_to_image(s))])
+        img = text_to_image(s)
+        if img:
+            await msg.finish([BImage(img)])
     elif args2 is not None:
         try:
             grp = re.match(r, arg1).groups()

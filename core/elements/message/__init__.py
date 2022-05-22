@@ -39,6 +39,9 @@ class FinishedSession:
         ...
 
     def __str__(self):
+        """
+        <FinishedSession: {str(self.result)}>
+        """
         return f"<FinishedSession: {str(self.result)}>"
 
 
