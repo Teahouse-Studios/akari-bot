@@ -281,4 +281,5 @@ async def _(msg: MessageSession):
     elif success == 403:
         await msg.finish("该用户禁止了其他人获取数据。")
     else:
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
