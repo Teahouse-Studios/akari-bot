@@ -531,7 +531,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             await session.sendMessage(f'发生错误：' + str(e))
     if isinstance(session, MessageSession):
         if msg_list:
-            await session.sendMessage(msg_list)
+            if not all([not render_infobox_list, not render_section_list, not dl_list, not wait_list]):
+                await session.finish(msg_list)
+            else:
+                await session.sendMessage(msg_list)
         if render_infobox_list and session.Feature.image:
             infobox_msg_list = []
             for i in render_infobox_list:
@@ -541,6 +544,9 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         infobox_msg_list.append(Image(get_infobox))
             if infobox_msg_list:
                 await session.finish(infobox_msg_list, quote=False)
+        else:
+            if all([not render_section_list, not dl_list, not wait_list]):
+                await session.finish()
         if render_section_list and session.Feature.image:
             section_msg_list = []
             for i in render_section_list:
@@ -550,6 +556,9 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         section_msg_list.append(Image(get_section))
             if section_msg_list:
                 await session.finish(section_msg_list, quote=False)
+        else:
+            if all([not dl_list, not wait_list]):
+                await session.finish()
         if dl_list:
             for f in dl_list:
                 dl = await download_to_cache(f)
@@ -562,9 +571,11 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         if session.Feature.voice:
                             await session.finish(Voice(dl), quote=False)
         if wait_msg_list and session.Feature.wait:
-            confirm = await session.finish(wait_msg_list)
+            confirm = await session.waitConfirm(wait_msg_list)
             if confirm and wait_list:
                 await query_pages(session, wait_list, use_prefix=False)
+        else:
+            await session.finish()
     else:
         return {'msg_list': msg_list, 'web_render_list': render_infobox_list, 'dl_list': dl_list,
                 'wait_list': wait_list, 'wait_msg_list': wait_msg_list}

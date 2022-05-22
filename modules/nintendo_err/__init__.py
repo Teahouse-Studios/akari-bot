@@ -100,7 +100,7 @@ async def result(msg: MessageSession):
     err = msg.parsed_msg['<errcode>']
     err = results.fixup_input(err)
     if (meme := results.check_meme(err)) is not None:
-        return await msg.finish(meme)
+        await msg.finish(meme)
     try:
         ret = results.fetch(err)
     except ValueError:

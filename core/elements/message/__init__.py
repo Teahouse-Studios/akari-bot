@@ -65,7 +65,7 @@ class MessageSession:
         ...
 
     async def finish(self,
-                     msgchain,
+                     msgchain=None,
                      quote=True,
                      disable_secret_check=False):
         """
@@ -76,7 +76,9 @@ class MessageSession:
         :return: 被发送的消息链
         """
         ...
-        f = await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=quote)
+        f = None
+        if msgchain is not None:
+            f = await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=quote)
         raise FinishedException(f)
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False):

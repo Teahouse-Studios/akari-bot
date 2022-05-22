@@ -30,6 +30,7 @@ async def main(msg: MessageSession):
         if msg.Feature.delete and not enabled_addon:
             await msg.sleep(90)
             await send.delete()
+            await msg.finish()
 
 
 async def s(msg: MessageSession, address, raw, showplayer, mode, enabled_addon):
@@ -44,4 +45,5 @@ async def s(msg: MessageSession, address, raw, showplayer, mode, enabled_addon):
             if msg.Feature.delete and not enabled_addon:
                 await msg.sleep(90)
                 await send.delete()
+                await msg.finish()
     return sendmsg
