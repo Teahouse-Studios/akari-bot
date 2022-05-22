@@ -45,6 +45,24 @@ async def msg_counter(msg: MessageSession, command: str):
             raise AbuseWarning('一段时间内使用命令的次数过多')
 
 
+async def temp_ban_check(msg: MessageSession):
+    is_temp_banned = temp_ban_counter.get(msg.target.senderId)
+    if is_temp_banned is not None:
+        ban_time = datetime.now().timestamp() - is_temp_banned['ts']
+        if ban_time < 300:
+            if is_temp_banned['count'] < 2:
+                is_temp_banned['count'] += 1
+                return await msg.sendMessage('提示：\n'
+                                             '由于你的行为触发了警告，我们已对你进行临时封禁。\n'
+                                             f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+            elif is_temp_banned['count'] <= 5:
+                is_temp_banned['count'] += 1
+                return await msg.sendMessage('即使是触发了临时封禁，继续使用命令还是可能会导致你被再次警告。\n'
+                                             f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+            else:
+                raise AbuseWarning('无视临时封禁警告')
+
+
 async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
@@ -121,21 +139,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     msg.trigger_msg = command
                 if command_first_word in modules:  # 检查触发命令是否在模块列表中
                     try:
-                        is_temp_banned = temp_ban_counter.get(msg.target.senderId)
-                        if is_temp_banned is not None:
-                            ban_time = datetime.now().timestamp() - is_temp_banned['ts']
-                            if ban_time < 300:
-                                if is_temp_banned['count'] < 2:
-                                    is_temp_banned['count'] += 1
-                                    return await msg.sendMessage('提示：\n'
-                                                                 '由于你的行为触发了警告，我们已对你进行临时封禁。\n'
-                                                                 f'距离解封时间还有{str(int(300 - ban_time))}秒。')
-                                elif is_temp_banned['count'] <= 5:
-                                    is_temp_banned['count'] += 1
-                                    return await msg.sendMessage('即使是触发了临时封禁，继续使用命令还是可能会导致你被再次警告。\n'
-                                                                 f'距离解封时间还有{str(int(300 - ban_time))}秒。')
-                                else:
-                                    return await warn_target(msg)
+                        await temp_ban_check(msg)
                         module = modules[command_first_word]
                         if not isinstance(module, Command):
                             if module.desc is not None:
@@ -269,3 +273,4 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         return
     except Exception:
         Logger.error(traceback.format_exc())
+    ExecutionLockList.remove(msg)
