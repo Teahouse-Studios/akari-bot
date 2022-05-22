@@ -138,7 +138,10 @@ async def config_modules(msg: MessageSession):
                     else:
                         msglist.append(f'成功：关闭模块“{x}”')
     if msglist is not None:
-        await msg.sendMessage('\n'.join(msglist))
+        if not recommend_modules_help_doc_list:
+            await msg.finish('\n'.join(msglist))
+        else:
+            await msg.sendMessage('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.waitConfirm('建议同时打开以下模块：\n' +
                                         '\n'.join(recommend_modules_list) + '\n\n' +
@@ -151,6 +154,8 @@ async def config_modules(msg: MessageSession):
                 for x in recommend_modules_list:
                     msglist.append(f'成功：打开模块“{x}”')
                 await msg.finish('\n'.join(msglist))
+    else:
+        await msg.finish()
 
 
 hlp = on_command('help',
