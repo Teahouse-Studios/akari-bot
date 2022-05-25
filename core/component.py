@@ -37,7 +37,7 @@ class Bind:
                                                                             required_superuser=required_superuser,
                                                                             available_for=available_for,
                                                                             exclude_from=exclude_from))
-
+                return function
             return decorator
 
     class Regex:
@@ -51,7 +51,7 @@ class Bind:
                                                                           mode=mode,
                                                                           flags=flags,
                                                                           show_typing=show_typing))
-
+                return function
             return decorator
 
     class Schedule:
@@ -61,7 +61,7 @@ class Bind:
         def handle(self):
             def decorator(function):
                 ModulesManager.bind_to_module(self.bind_prefix, ScheduleMeta(function=function))
-
+                return function
             return decorator
 
 

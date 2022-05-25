@@ -29,15 +29,21 @@ module = on_command('module',
 
 
 @module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
-                'disable (<module>...|all) {关闭一个/多个或所有模块}'], exclude_from=['QQ|Guild'])
+                'disable (<module>...|all) {关闭一个/多个或所有模块}',
+                'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: MessageSession):
+    if msg.parsed_msg['list']:
+        await modules_help(msg)
     await config_modules(msg)
 
 
 @module.handle(['enable (<module>...|all) [-g] {开启一个/多个或所有模块}',
-                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为文字频道内全局操作}'],
+                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为文字频道内全局操作}',
+                'list {查看所有可用模块}'],
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
+    if msg.parsed_msg['list']:
+        await modules_help(msg)
     await config_modules(msg)
 
 
