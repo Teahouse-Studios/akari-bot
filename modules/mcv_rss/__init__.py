@@ -114,7 +114,7 @@ async def mcv_rss(bot: FetchTarget):
 
 @on_schedule('mcbv_rss', developers=['OasisAkari'],
              recommend_modules=['mcbv_jira_rss'],
-             trigger=IntervalTrigger(seconds=trigger_times),
+             trigger=IntervalTrigger(seconds=180),
              desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
 async def mcbv_rss(bot: FetchTarget):
     try:
