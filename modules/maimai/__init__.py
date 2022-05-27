@@ -267,9 +267,6 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
             await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
 
 
-b40 = on_command('maimai_b40', developers=['mai-bot', 'OasisAkari'], desc='仅限大陆版maimai使用。')
-
-
 @mai.handle('b40 <username> {查询B40信息（仅限大陆版maimai使用）}')
 async def _(msg: MessageSession):
     username = msg.parsed_msg['<username>']
