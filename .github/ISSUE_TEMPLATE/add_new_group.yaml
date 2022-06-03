@@ -15,7 +15,7 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已阅读并同意小可 [服务条款](https://bot.teahou.se/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahou.se/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
           required: true
   - type: dropdown
     id: group-type

@@ -254,7 +254,7 @@ async def _(msg: MessageSession):
                     await msg.finish([Image(render),
                                            Plain('此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用~modules命令。'
                                                  '\n你也可以通过查阅文档获取帮助：'
-                                                 '\nhttps://bot.teahou.se/wiki/'
+                                                 '\nhttps://bot.teahouse.team/wiki/'
                                                  '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
                                                  '\nhttps://afdian.net/@teahouse')])
         except Exception:
@@ -274,7 +274,7 @@ async def _(msg: MessageSession):
         help_msg.append(' | '.join(module_))
         print(help_msg)
         help_msg.append(
-            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
+            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
             help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
@@ -340,7 +340,7 @@ async def modules_help(msg: MessageSession):
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
         help_msg.append(
-            '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahou.se/wiki/')
+            '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
             help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
