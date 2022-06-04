@@ -22,7 +22,7 @@ from database import BotDBUtil
 
 module = on_command('module',
                     base=True,
-                    alias={'enable': 'module enable', 'disable': 'module disable', 'modules enable': 'module enable', 'modules disable': 'module disable'},
+                    alias={'enable': 'module enable', 'disable': 'module disable'},
                     developers=['OasisAkari'],
                     required_admin=True
                     )
