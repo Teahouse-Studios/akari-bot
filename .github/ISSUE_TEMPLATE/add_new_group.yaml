@@ -48,6 +48,6 @@ body:
     attributes:
       label: 备注
       description: 你还想告诉我们什么？
-      placeholder: 什么都可以哦，没有就算了吧。（如果需要入群答案请备注于此）
+      placeholder: 什么都可以哦，没有就算了吧。（如果需要入群答案请备注于此，如未备注而入群需要答案将会默认填写为“机器人申请”）
     validations:
       required: false
