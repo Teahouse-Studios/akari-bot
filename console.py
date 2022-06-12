@@ -29,7 +29,6 @@ init()
 
 async def console_scheduler():
     await init_scheduler()
-    Scheduler.start()
 
 
 async def console_command():
