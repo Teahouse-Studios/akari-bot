@@ -1,12 +1,13 @@
 import datetime
+from typing import Union
 
 from tenacity import retry, stop_after_attempt
 
 from config import Config
-from core.elements.message import MessageSession
+from core.elements.message import MessageSession, FetchTarget
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import DBSession
-from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList
+from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList, StoredData
 
 cache = Config('db_cache')
 
@@ -253,6 +254,32 @@ class BotDBUtil:
             if self.query is not None:
                 session.delete(self.query)
                 session.commit()
+
+    class Data:
+        def __init__(self, msg: Union[MessageSession, FetchTarget]):
+            self.targetName = msg.target.clientName if isinstance(msg, MessageSession) else msg.name
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add(self, name, value: str):
+            session.add(StoredData(name=f'{self.targetName}|{name}', value=value))
+            session.commit()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def get(self, name):
+            return session.query(StoredData).filter_by(name=f'{self.targetName}|{name}').first()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def update(self, name, value: str):
+            exists = self.get(name)
+            if exists is None:
+                self.add(name=name, value=value)
+            else:
+                exists.value = value
+                session.commit()
+            return True
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

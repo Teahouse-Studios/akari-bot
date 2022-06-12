@@ -25,13 +25,13 @@ async def msg_handler(message: types.Message):
     msg = MessageSession(MsgInfo(targetId=f'Telegram|{message.chat.type}|{message.chat.id}',
                                  senderId=f'Telegram|User|{message.from_user.id}',
                                  targetFrom=f'Telegram|{message.chat.type}',
-                                 senderFrom='Telegram|User', senderName=message.from_user.username),
+                                 senderFrom='Telegram|User', senderName=message.from_user.username, clientName='Telegram'),
                          Session(message=message, target=message.chat.id, sender=message.from_user.id))
     await parser(msg)
 
 
 async def on_startup(dispatcher):
-    await init_scheduler()
+    await init_scheduler(FetchTarget)
     await load_prompt(FetchTarget)
 
 

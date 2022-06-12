@@ -23,7 +23,7 @@ init()
 
 @bot.on_startup
 async def startup():
-    await init_scheduler()
+    await init_scheduler(FetchTarget)
     bot.logger.setLevel(logging.WARNING)
 
 
@@ -50,9 +50,10 @@ async def _(event: Event):
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|{str(event.user_id)}',
                                  targetFrom='QQ|Group' if event.detail_type == 'group' else 'QQ',
-                                 senderFrom='QQ', senderName=''), Session(message=event,
-                                                                          target=event.group_id if event.detail_type == 'group' else event.user_id,
-                                                                          sender=event.user_id))
+                                 senderFrom='QQ', senderName='', clientName='QQ'),
+                         Session(message=event,
+                                 target=event.group_id if event.detail_type == 'group' else event.user_id,
+                                 sender=event.user_id))
     await parser(msg, running_mention=True)
 
 
@@ -76,7 +77,7 @@ async def _(event):
     msg = MessageSessionGuild(MsgInfo(targetId=f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}',
                                       senderId=f'QQ|Tiny|{str(event.user_id)}',
                                       targetFrom='QQ|Guild',
-                                      senderFrom='QQ|Tiny', senderName=''),
+                                      senderFrom='QQ|Tiny', senderName='', clientName='QQ'),
                               Session(message=event,
                                       target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                       sender=event.user_id))

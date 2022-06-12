@@ -1,5 +1,8 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
+
+from config import Config
 
 Base = declarative_base()
 
@@ -20,6 +23,13 @@ class SenderInfo(Base):
     isSuperUser = Column(Boolean, default=False)
     warns = Column(Integer, default='0')
     disable_typing = Column(Boolean, default=False)
+
+
+class StoredData(Base):
+    """数据存储"""
+    __tablename__ = "StoredData"
+    name = Column(String(512), primary_key=True)
+    value = Column(LONGTEXT if Config('db_path').startswith('mysql') else Text)
 
 
 class TargetAdmin(Base):
@@ -49,4 +59,4 @@ class GroupAllowList(Base):
     targetId = Column(String(512), primary_key=True)
 
 
-__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList"]
+__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData"]

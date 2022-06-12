@@ -11,17 +11,7 @@ from config import Config
 from core.component import on_schedule
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.logger import Logger
-from core.utils import get_url
-
-
-def getfileversions(path):
-    if not os.path.exists(path):
-        a = open(path, 'a', encoding='utf-8')
-        a.close()
-    w = open(path, 'r+', encoding='utf-8')
-    s = w.read().split('\n')
-    w.close()
-    return s
+from core.utils import get_stored_list, update_stored_list, get_url
 
 
 async def get_article(version):
@@ -75,38 +65,32 @@ trigger_times = 60 if not Config('slower_schedule') else 180
 async def mcv_rss(bot: FetchTarget):
     url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
     try:
-        version_file = os.path.abspath(f'{PrivateAssets.path}/mcversion.txt')
-        verlist = getfileversions(version_file)
+        verlist = get_stored_list(bot, 'mcv_rss')
         file = json.loads(await get_url(url))
         release = file['latest']['release']
         snapshot = file['latest']['snapshot']
         if release not in verlist:
             Logger.info(f'huh, we find {release}.')
             await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['release'] + '正式版。')
-            addversion = open(version_file, 'a', encoding='utf-8')
-            addversion.write('\n' + release)
-            addversion.close()
-            verlist = getfileversions(version_file)
+            verlist.append(release)
+            update_stored_list(bot, 'mcv_rss', verlist)
             article = await get_article(release)
             if article[0] != '':
                 await bot.post_message('minecraft_news', f'Minecraft官网发布了{release}的更新日志：\n' + article[0])
-                newsfile = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
-                addnews = open(newsfile, 'a', encoding='utf-8')
-                addnews.write('\n' + article[1])
-                addnews.close()
+                get_stored_news_title = get_stored_list(bot, 'mcnews')
+                get_stored_news_title.append(article[1])
+                update_stored_list(bot, 'mcname', get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
             await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['snapshot'] + '快照。')
-            addversion = open(version_file, 'a', encoding='utf-8')
-            addversion.write('\n' + snapshot)
-            addversion.close()
+            verlist.append(snapshot)
+            update_stored_list(bot, 'mcv_rss', verlist)
             article = await get_article(snapshot)
             if article[0] != '':
                 await bot.post_message('minecraft_news', f'Minecraft官网发布了{snapshot}的更新日志：\n' + article[0])
-                newsfile = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
-                addnews = open(newsfile, 'a', encoding='utf-8')
-                addnews.write('\n' + article[1])
-                addnews.close()
+                get_stored_news_title = get_stored_list(bot, 'mcnews')
+                get_stored_news_title.append(article[1])
+                update_stored_list(bot, 'mcname', get_stored_news_title)
     except Exception:
         traceback.print_exc()
 
@@ -117,15 +101,13 @@ async def mcv_rss(bot: FetchTarget):
              desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
 async def mcbv_rss(bot: FetchTarget):
     try:
-        version_file = os.path.abspath(f'{PrivateAssets.path}/mcbeversion.txt')
-        verlist = getfileversions(version_file)
+        verlist = get_stored_list(bot, 'mcbv_rss')
         version = google_play_scraper('com.mojang.minecraftpe')['version']
         if version not in verlist:
             Logger.info(f'huh, we find bedrock {version}.')
             await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '正式版。')
-            addversion = open(version_file, 'a', encoding='utf-8')
-            addversion.write('\n' + version)
-            addversion.close()
+            verlist.append(version)
+            update_stored_list(bot, 'mcbv_rss', verlist)
     except Exception:
         traceback.print_exc()
 
@@ -136,23 +118,24 @@ async def mcbv_rss(bot: FetchTarget):
              desc='开启后当Jira更新Java版时将会自动推送消息。', alias='mcvjirarss')
 async def mcv_jira_rss(bot: FetchTarget):
     try:
-        version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Java.txt')
-        verlist = getfileversions(version_file)
+        verlist = get_stored_list(bot, 'mcv_jira_rss')
         file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions'))
         releases = []
         for v in file:
             if not v['archived']:
                 releases.append(v['name'])
+            else:
+                if v['name'] not in verlist:
+                    verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
-                verlist.append(release)
                 await bot.post_message('mcv_jira_rss',
                                        f'Jira已更新Java版 {release}。'
                                        f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
-                addversion = open(version_file, 'a', encoding='utf-8')
-                addversion.write('\n' + release)
-                addversion.close()
+                verlist.append(release)
+                update_stored_list(bot, 'mcv_jira_rss', verlist)
+
     except Exception:
         traceback.print_exc()
 
@@ -164,23 +147,24 @@ async def mcv_jira_rss(bot: FetchTarget):
              desc='开启后当Jira更新基岩版时将会自动推送消息。', alias='mcbvjirarss')
 async def mcbv_jira_rss(bot: FetchTarget):
     try:
-        version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Bedrock.txt')
-        verlist = getfileversions(version_file)
+        verlist = get_stored_list(bot, 'mcbv_jira_rss')
         file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions'))
         releases = []
         for v in file:
             if not v['archived']:
                 releases.append(v['name'])
+            else:
+                if v['name'] not in verlist:
+                    verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
-                verlist.append(release)
+
                 await bot.post_message('mcbv_jira_rss',
                                        f'Jira已更新基岩版 {release}。'
                                        f'\n（Jira上的信息仅作版本号预览用，不代表商城已更新此版本）')
-                addversion = open(version_file, 'a', encoding='utf-8')
-                addversion.write('\n' + release)
-                addversion.close()
+                verlist.append(release)
+                update_stored_list(bot, 'mcbv_jira_rss', verlist)
     except Exception:
         traceback.print_exc()
 
@@ -192,22 +176,23 @@ async def mcbv_jira_rss(bot: FetchTarget):
              desc='开启后当Jira更新Dungeons版本时将会自动推送消息。', alias='mcdvjirarss')
 async def mcdv_jira_rss(bot: FetchTarget):
     try:
-        version_file = os.path.abspath(f'{PrivateAssets.path}/mcjira_Minecraft Dungeons.txt')
-        verlist = getfileversions(version_file)
+        verlist = get_stored_list(bot, 'mcdv_jira_rss')
         file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions'))
         releases = []
         for v in file:
             if not v['archived']:
                 releases.append(v['name'])
+            else:
+                if v['name'] not in verlist:
+                    verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
-                verlist.append(release)
+
                 await bot.post_message('mcdv_jira_rss',
                                        f'Jira已更新Minecraft Dungeons {release}。'
                                        f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
-                addversion = open(version_file, 'a', encoding='utf-8')
-                addversion.write('\n' + release)
-                addversion.close()
+                verlist.append(release)
+                update_stored_list(bot, 'mcdv_jira_rss', verlist)
     except Exception:
         traceback.print_exc()

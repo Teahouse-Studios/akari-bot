@@ -28,14 +28,14 @@ def init() -> None:
     write_tag.close()
 
 
-async def init_scheduler() -> None:
+async def init_scheduler(ft) -> None:
     gather_list = []
     Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
         if isinstance(Modules[x], StartUp):
-            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+            gather_list.append(asyncio.ensure_future(Modules[x].function(ft)))
         elif isinstance(Modules[x], Schedule):
-            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
+            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[ft], misfire_grace_time=30, max_instance=1)
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)

@@ -96,7 +96,7 @@ class FetchedSession(FS):
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='')
+                              senderName='', clientName='TEST')
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = Template(self.target, self.session)
 

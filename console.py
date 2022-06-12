@@ -16,9 +16,8 @@ from datetime import datetime
 
 from bot import init_bot
 from core.elements import MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
-from core.console.template import Template as MessageSession
+from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
-from core.scheduler import Scheduler
 from core.utils import init, init_scheduler
 from core.logger import Logger
 
@@ -28,7 +27,7 @@ init()
 
 
 async def console_scheduler():
-    await init_scheduler()
+    await init_scheduler(FetchTarget)
 
 
 async def console_command():

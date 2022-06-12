@@ -164,7 +164,8 @@ class FetchedSession(FS):
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='')
+                              senderName='',
+                              clientName='QQ')
         self.session = Session(message=False, target=targetId, sender=targetId)
         if targetFrom == 'QQ|Guild':
             self.parent = MessageSessionGuild(self.target, self.session)

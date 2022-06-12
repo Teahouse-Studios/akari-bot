@@ -10,17 +10,7 @@ from config import Config
 from core.component import on_schedule
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets, Url
 from core.logger import Logger
-from core.utils import get_url
-
-
-def getfileversions(path):
-    if not os.path.exists(path):
-        a = open(path, 'a', encoding='utf-8')
-        a.close()
-    w = open(path, 'r+', encoding='utf-8')
-    s = w.read().split('\n')
-    w.close()
-    return s
+from core.utils import get_url, get_stored_list, update_stored_list
 
 
 class Article:
@@ -53,7 +43,6 @@ class Article:
              recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
              desc='开启后将会自动推送来自Minecraft官网的新闻。')
 async def start_check_news(bot: FetchTarget):
-    file_ = os.path.abspath(f'{PrivateAssets.path}/mcnews.txt')
     baseurl = 'https://www.minecraft.net'
     url = quote(
         f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
@@ -63,7 +52,7 @@ async def start_check_news(bot: FetchTarget):
         return
     getpage = await get_url(get)
     if getpage:
-        alist = getfileversions(file_)
+        alist = get_stored_list(bot, 'mcnews')
         o_json = json.loads(getpage)
         o_nws = o_json['article_grid']
         Article.count = o_json['article_count']
@@ -78,9 +67,8 @@ async def start_check_news(bot: FetchTarget):
                 now = datetime.now()
                 if now - publish_date < timedelta(days=2):
                     await bot.post_message('minecraft_news', articletext)
-                addversion = open(file_, 'a', encoding='utf-8')
-                addversion.write('\n' + title)
-                addversion.close()
+                alist.append(title)
+                update_stored_list(bot, 'mcnews', alist)
 
 
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
@@ -92,9 +80,7 @@ async def feedback_news(bot: FetchTarget):
                  'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001186971/articles?per_page=5'}]
     for section in sections:
         try:
-            name = section['name']
-            version_file = os.path.abspath(f'{PrivateAssets.path}/feedback_{name}.txt')
-            alist = getfileversions(version_file)
+            alist = get_stored_list(bot, 'mcfeedbacknews')
             get = await get_url(section['url'])
             res = json.loads(get)
             articles = []
@@ -105,12 +91,9 @@ async def feedback_news(bot: FetchTarget):
                     name = article['name']
                     link = article['html_url']
                     Logger.info(f'huh, we find {name}.')
-                    alist.append(name)
                     await bot.post_message('feedback_news',
                                            f'Minecraft Feedback 发布了新的文章：\n{name}\n{str(Url(link))}')
-                    addversion = open(version_file, 'a', encoding='utf-8')
-                    addversion.write('\n' + name)
-                    addversion.close()
+                    alist.append(name)
+                    update_stored_list(bot, 'mcfeedbacknews', alist)
         except Exception:
             traceback.print_exc()
-            print(get)

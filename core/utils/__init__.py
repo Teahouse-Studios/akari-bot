@@ -4,3 +4,4 @@ from .http import *
 from .image_table import *
 from .message import *
 from .message import *
+from .storedata import *

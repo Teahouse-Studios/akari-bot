@@ -22,7 +22,7 @@ async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
     global count
     if count == 0:
-        await init_scheduler()
+        await init_scheduler(FetchTarget)
         await load_prompt(FetchTarget)
         count = 1
 
@@ -37,7 +37,8 @@ async def on_message(message):
         target = "Discord|DM|Channel"
     msg = MessageSession(target=MsgInfo(targetId=f"{target}|{message.channel.id}",
                                         senderId=f"Discord|Client|{message.author.id}",
-                                        senderName=message.author.name, targetFrom=target, senderFrom="Discord|Client"),
+                                        senderName=message.author.name, targetFrom=target, senderFrom="Discord|Client",
+                                        clientName='Discord'),
                          session=Session(message=message, target=message.channel, sender=message.author))
     await parser(msg)
 

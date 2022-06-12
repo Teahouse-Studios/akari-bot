@@ -5,20 +5,22 @@ from core.exceptions import FinishedException
 
 
 class MsgInfo:
-    __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom"]
+    __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom", "clientName"]
 
     def __init__(self,
                  targetId: [int, str],
                  senderId: [int, str],
                  senderName: str,
                  targetFrom: str,
-                 senderFrom: str
+                 senderFrom: str,
+                 clientName: str
                  ):
         self.targetId = targetId
         self.senderId = senderId
         self.senderName = senderName
         self.targetFrom = targetFrom
         self.senderFrom = senderFrom
+        self.clientName = clientName
 
 
 class Session:
