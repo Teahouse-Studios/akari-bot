@@ -10,9 +10,9 @@ from typing import List, Union
 import aiocqhttp.exceptions
 from aiocqhttp import MessageSegment
 
-from core.bots.aiocqhttp.client import bot
-from core.bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
-from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
+from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
+from bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain

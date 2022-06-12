@@ -8,7 +8,6 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from modules.maimai.libraries.maimaidx_music import TotalList
 
-
 total_list = TotalList()
 
 

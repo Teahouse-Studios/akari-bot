@@ -5,8 +5,8 @@ from pathlib import Path
 
 from aiocqhttp import MessageSegment
 
-from core.bots.aiocqhttp.client import bot
-from core.bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
+from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, ExecutionLockList, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command

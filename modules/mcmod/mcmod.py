@@ -1,10 +1,10 @@
+from urllib.parse import quote
+
 from bs4 import BeautifulSoup
 
 from config import Config
 from core.elements import Url
 from core.utils import get_url
-
-from urllib.parse import quote
 
 api = 'https://search.mcmod.cn/s?key='
 api_details = 'https://search.mcmod.cn/s?filter=3&key='

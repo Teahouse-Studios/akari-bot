@@ -3,9 +3,9 @@ import shlex
 import traceback
 from typing import Union
 
-from core.docopt import docopt, DocoptExit
 from core.elements import Command, Option, Schedule, StartUp, RegexCommand, command_prefix, MessageSession
 from core.exceptions import InvalidCommandFormatError, InvalidHelpDocTypeError
+from core.utils.docopt import docopt, DocoptExit
 
 command_prefix_first = command_prefix[0]
 

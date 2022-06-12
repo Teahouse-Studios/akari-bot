@@ -1,10 +1,10 @@
 import json
 import re
 
+from google_play_scraper import app as google_play_scraper
+
 from core.elements.others import ErrorMessage
 from core.utils import get_url
-
-from google_play_scraper import app as google_play_scraper
 
 
 async def mcv():

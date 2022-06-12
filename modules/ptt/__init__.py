@@ -1,11 +1,10 @@
 import os
-import re
 
 from PIL import Image, ImageDraw, ImageFont
 
 from core.component import on_command
 from core.elements import Image as Img, MessageSession
-from core.utils import cache_name
+from core.utils.cache import random_cache_path
 
 assets_path = os.path.abspath('./assets/arcaea')
 
@@ -77,6 +76,6 @@ async def pttimg(msg: MessageSession):
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
     pttimgr.alpha_composite(ptttext, (0, 0))
-    savepath = cache_name() + '.png'
+    savepath = random_cache_path() + '.png'
     pttimgr.save(savepath)
     await msg.finish([Img(path=savepath)])

@@ -1,11 +1,10 @@
 import os
 import traceback
-
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from config import Config
 from core.elements import Plain, Image
-from core.utils.bot import get_url
+from core.utils import get_url
 from modules.arcaea.errcode import errcode
 
 assets_path = os.path.abspath('./assets/arcaea')

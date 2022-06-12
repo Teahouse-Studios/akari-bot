@@ -1,22 +1,16 @@
-'''编写机器人时可能会用到的一些工具类方法。'''
+import asyncio
+import logging
 import os
-import traceback
-import uuid
-from os.path import abspath
-from typing import Union
 
-import aiohttp
-import filetype as ft
 import ujson as json
-from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.elements import PrivateAssets
-from core.loader import load_modules
-from core.logger import Logger
+from core.elements import PrivateAssets, StartUp, FetchTarget, Schedule
+from core.loader import load_modules, ModulesManager
+from core.scheduler import Scheduler
 
 
 def init() -> None:
-    '''初始化机器人。仅用于bot.py与console.py。'''
+    """初始化机器人。仅用于bot.py与console.py。"""
     load_modules()
     version = os.path.abspath(PrivateAssets.path + '/version')
     write_version = open(version, 'w')
@@ -34,79 +28,17 @@ def init() -> None:
     write_tag.close()
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False):
-    """利用AioHttp获取指定url的内容。
-
-    :param url: 需要获取的url。
-    :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
-    :param headers: 请求时使用的http头。
-    :param fmt: 指定返回的格式。
-    :param log: 是否输出日志。
-    :returns: 指定url的内容（字符串）。
-    """
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
-            if log:
-                Logger.info(await req.read())
-            if status_code and req.status != status_code:
-                raise ValueError(f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
-            if fmt is not None:
-                if hasattr(req, fmt):
-                    return await getattr(req, fmt)()
-                else:
-                    raise ValueError(f"NoSuchMethod: {fmt}")
-            else:
-                text = await req.text()
-                return text
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def post_url(url: str, data: any, headers: dict = None):
-    '''发送POST请求。
-    :param url: 需要发送的url。
-    :param data: 需要发送的数据。
-    :param headers: 请求时使用的http头。
-    :returns: 发送请求后的响应。'''
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.post(url, data=data, headers=headers) as req:
-            return await req.text()
-
-
-@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def download_to_cache(link: str) -> Union[str, bool]:
-    '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
-
-    :param link: 需要获取的link。
-    :returns: 文件的相对路径，若获取失败则返回False。'''
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(link) as resp:
-                res = await resp.read()
-                ftt = ft.match(res).extension
-                path = abspath(f'./cache/{str(uuid.uuid4())}.{ftt}')
-                with open(path, 'wb+') as file:
-                    file.write(res)
-                    return path
-    except:
-        Logger.error(traceback.format_exc())
-        return False
-
-
-def cache_name():
-    return abspath(f'./cache/{str(uuid.uuid4())}')
-
-
-async def slk_converter(filepath: str) -> str:
-    '''将指定文件转为slk格式。
-
-    :param filepath: 需要获取的link。
-    :returns: 文件的相对路径。'''
-    filepath2 = filepath + '.silk'
-    Logger.info('Start encoding voice...')
-    os.system('python slk_coder.py ' + filepath)
-    Logger.info('Voice encoded.')
-    return filepath2
+async def init_scheduler() -> None:
+    gather_list = []
+    Modules = ModulesManager.return_modules_list_as_dict()
+    for x in Modules:
+        if isinstance(Modules[x], StartUp):
+            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
+        elif isinstance(Modules[x], Schedule):
+            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
+    await asyncio.gather(*gather_list)
+    Scheduler.start()
+    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 
 
 async def load_prompt(bot) -> None:
@@ -123,3 +55,6 @@ async def load_prompt(bot) -> None:
             open_author_cache.close()
             os.remove(author_cache)
             os.remove(loader_cache)
+
+
+__all__ = ['init', 'init_scheduler', 'load_prompt']

@@ -1,6 +1,8 @@
 import datetime
 import logging
+import os
 import re
+import shutil
 import subprocess
 import traceback
 from itertools import islice
@@ -9,9 +11,6 @@ from threading import Thread
 from time import sleep
 
 import psutil
-
-import os
-import shutil
 
 from config import Config
 from database import BotDBUtil
@@ -87,7 +86,7 @@ def enqueue_output(out, queue):
 
 
 def init_bot():
-    cache_path = os.path.abspath('./cache/')
+    cache_path = os.path.abspath(Config('cache_path'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
         os.mkdir(cache_path)
@@ -120,7 +119,7 @@ def run_bot():
     envs = os.environ.copy()
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
-    botdir = './core/bots/'
+    botdir = './bots/'
     lst = os.listdir(botdir)
     runlst = []
     for x in lst:

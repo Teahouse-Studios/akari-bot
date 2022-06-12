@@ -1,22 +1,18 @@
-import asyncio
-import logging
 import os
 
 import discord
 
+from bots.discord.client import client
+from bots.discord.message import MessageSession, FetchTarget
 from config import Config
-from core.bots.discord.client import client
-from core.bots.discord.message import MessageSession, FetchTarget
-from core.elements import MsgInfo, Session, Schedule, StartUp, PrivateAssets, Url
-from core.loader import ModulesManager
+from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
-from core.scheduler import Scheduler
-from core.utils import init, load_prompt
+from core.utils import init, init_scheduler, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
-Url.completely_disable_mm = True
+Url.disable_mm = True
 
 count = 0
 
@@ -26,16 +22,7 @@ async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
     global count
     if count == 0:
-        gather_list = []
-        Modules = ModulesManager.return_modules_list_as_dict()
-        for x in Modules:
-            if isinstance(Modules[x], StartUp):
-                gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
-            if isinstance(Modules[x], Schedule):
-                Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
-        await asyncio.gather(*gather_list)
-        Scheduler.start()
-        logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+        await init_scheduler()
         await load_prompt(FetchTarget)
         count = 1
 

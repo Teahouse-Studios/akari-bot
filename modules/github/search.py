@@ -2,7 +2,7 @@ import traceback
 
 from core.elements import MessageSession, Url
 from core.elements.others import ErrorMessage
-from core.utils.bot import get_url
+from core.utils import get_url
 from modules.github.utils import dirty_check, darkCheck
 
 

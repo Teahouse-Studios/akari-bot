@@ -1,12 +1,12 @@
 import re
 from typing import Union
 
-from core.elements.message.internal import Embed, EmbedField
-
 from discord import Embed as DiscordEmbed
 
+from core.elements.message.internal import Embed, EmbedField
 
-def remove_ineffective_text(prefix: str, lst: list) -> list:
+
+def removeIneffectiveText(prefix: str, lst: list) -> list:
     '''删除命令首尾的空格和换行以及重复命令。
     
     :param prefix: 机器人的命令前缀。
@@ -38,7 +38,7 @@ def remove_ineffective_text(prefix: str, lst: list) -> list:
     return lst
 
 
-def RemoveDuplicateSpace(text: str) -> str:
+def removeDuplicateSpace(text: str) -> str:
     '''删除命令中间多余的空格。
 
     :param text: 字符串。
@@ -86,3 +86,4 @@ def convertDiscordEmbed(embed: Union[DiscordEmbed, dict]) -> Embed:
     return embed_
 
 
+__all__ = ['removeDuplicateSpace', 'removeIneffectiveText', 'convertDiscordEmbed']

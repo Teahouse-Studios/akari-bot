@@ -3,8 +3,9 @@
 '''
 import traceback
 
-from core.utils import get_url
 from bs4 import BeautifulSoup
+
+from core.utils import get_url
 
 search_piece_1 = 'https://files.xmdhs.com/curseforge/s?q='
 search_piece_2 = '&type=1'

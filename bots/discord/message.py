@@ -6,7 +6,7 @@ from typing import List, Union
 
 import discord
 
-from core.bots.discord.client import client
+from bots.discord.client import client
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList, \
     FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain

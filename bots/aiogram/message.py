@@ -3,8 +3,8 @@ import re
 import traceback
 from typing import List, Union
 
-from core.bots.aiogram.client import dp, bot
-from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
+from bots.aiogram.client import dp, bot
+from bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain

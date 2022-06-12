@@ -8,9 +8,8 @@ import traceback
 import uuid
 from urllib.parse import urlparse, parse_qs, urlencode, unquote
 
-import ujson as json
-
 import aiohttp
+import ujson as json
 
 from config import Config
 from core.logger import Logger

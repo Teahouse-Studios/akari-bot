@@ -1,14 +1,12 @@
 import os
+import platform
 import sys
 import time
 import traceback
-import platform
+from datetime import datetime
 
 import psutil
-
 import ujson as json
-
-from datetime import datetime
 from cpuinfo import get_cpu_info
 
 from core.component import on_command

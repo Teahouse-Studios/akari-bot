@@ -7,7 +7,7 @@ from typing import Union, Dict, List
 
 import ujson as json
 
-import core.html2text as html2text
+import core.utils.html2text as html2text
 from core.dirty_check import check
 from core.elements import Url
 from core.logger import Logger

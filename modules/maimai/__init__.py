@@ -8,7 +8,6 @@ from modules.maimai.libraries.maimai_best_40 import generate
 from modules.maimai.libraries.maimaidx_music import *
 from modules.maimai.libraries.tool import hash
 
-
 total_list = TotalList()
 
 

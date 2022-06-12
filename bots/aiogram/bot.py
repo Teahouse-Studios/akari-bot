@@ -1,21 +1,17 @@
-import asyncio
-import logging
 import os
 
 from aiogram import types, executor
 
-from core.bots.aiogram.client import dp
-from core.bots.aiogram.message import MessageSession, FetchTarget
-from core.bots.aiogram.tasks import MessageTaskManager, FinishedTasks
-from core.elements import MsgInfo, Session, StartUp, Schedule, PrivateAssets, Url
-from core.loader import ModulesManager
+from bots.aiogram.client import dp
+from bots.aiogram.message import MessageSession, FetchTarget
+from bots.aiogram.tasks import MessageTaskManager, FinishedTasks
+from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.parser.message import parser
-from core.scheduler import Scheduler
-from core.utils import init, load_prompt
+from core.utils import init, load_prompt, init_scheduler
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
-Url.completely_disable_mm = True
+Url.disable_mm = True
 
 
 @dp.message_handler()
@@ -35,16 +31,7 @@ async def msg_handler(message: types.Message):
 
 
 async def on_startup(dispatcher):
-    gather_list = []
-    Modules = ModulesManager.return_modules_list_as_dict()
-    for x in Modules:
-        if isinstance(Modules[x], StartUp):
-            gather_list.append(asyncio.ensure_future(Modules[x].function(FetchTarget)))
-        elif isinstance(Modules[x], Schedule):
-            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
-    await asyncio.gather(*gather_list)
-    Scheduler.start()
-    logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    await init_scheduler()
     await load_prompt(FetchTarget)
 
 

@@ -5,14 +5,13 @@ from urllib.parse import quote
 
 import ujson as json
 from bs4 import BeautifulSoup
+from google_play_scraper import app as google_play_scraper
 
 from config import Config
 from core.component import on_schedule
 from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
 from core.logger import Logger
 from core.utils import get_url
-
-from google_play_scraper import app as google_play_scraper
 
 
 def getfileversions(path):

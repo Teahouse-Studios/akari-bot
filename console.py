@@ -15,12 +15,11 @@ import aioconsole
 from datetime import datetime
 
 from bot import init_bot
-from core.elements import Schedule, StartUp, MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck, Url
-from core.console.template import Template as MessageSession, FetchTarget
+from core.elements import MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
+from core.console.template import Template as MessageSession
 from core.parser.message import parser
 from core.scheduler import Scheduler
-from core.loader import ModulesManager
-from core.utils import init
+from core.utils import init, init_scheduler
 from core.logger import Logger
 
 EnableDirtyWordCheck.status = True
@@ -29,16 +28,7 @@ init()
 
 
 async def console_scheduler():
-    gather_list = []
-    Modules = ModulesManager.return_modules_list_as_dict()
-    for x in Modules:
-        if isinstance(Modules[x], StartUp):
-            gather_list.append(asyncio.ensure_future(
-                Modules[x].function(FetchTarget)))
-        if isinstance(Modules[x], Schedule):
-            Scheduler.add_job(
-                func=Modules[x].function, trigger=Modules[x].trigger, args=[FetchTarget], misfire_grace_time=30, max_instance=1)
-    await asyncio.gather(*gather_list)
+    await init_scheduler()
     Scheduler.start()
 
 

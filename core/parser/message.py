@@ -1,7 +1,8 @@
 import re
 import traceback
-from aiocqhttp.exceptions import ActionFailed
 from datetime import datetime
+
+from aiocqhttp.exceptions import ActionFailed
 
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError
@@ -9,9 +10,8 @@ from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
-from core.utils import remove_ineffective_text, RemoveDuplicateSpace
+from core.utils import removeIneffectiveText, removeDuplicateSpace
 from database import BotDBUtil
-
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -77,7 +77,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
         modulesAliases = ModulesManager.return_modules_alias_map()
         modulesRegex = ModulesManager.return_specified_type_modules(RegexCommand, targetFrom=msg.target.targetFrom)
-        display = RemoveDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
+        display = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
         identify_str = f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}]'
         # Logger.info(f'{identify_str} -> [Bot]: {display}')
         msg.trigger_msg = display
@@ -102,7 +102,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 command = display
             else:
                 command = display[1:]
-            command_list = remove_ineffective_text(command_prefix, command.split('&&'))  # 并行命令处理
+            command_list = removeIneffectiveText(command_prefix, command.split('&&'))  # 并行命令处理
             if len(command_list) > 5 and not senderInfo.query.isSuperUser:
                 return await msg.sendMessage('你不是本机器人的超级管理员，最多只能并排执行5个命令。')
             if not ExecutionLockList.check(msg):

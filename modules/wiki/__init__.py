@@ -3,7 +3,6 @@ import re
 import traceback
 from typing import Union
 
-import ffmpy
 import filetype
 import ujson as json
 

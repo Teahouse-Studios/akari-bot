@@ -1,7 +1,7 @@
 import feedparser
 
-from core.html2text import html2text
-from core.utils.bot import get_url
+from core.utils import get_url
+from core.utils.html2text import html2text
 
 
 async def get_rss():
