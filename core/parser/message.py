@@ -110,6 +110,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             else:
                 return await msg.sendMessage('您有命令正在执行，请稍后再试。')
             for command in command_list:
+                for alias in modulesAliases:
+                    if command.startswith(alias) and not command.startswith(modulesAliases[alias]):
+                        command = command.replace(alias, modulesAliases[alias], 1)
+                        break
                 command_spilt = command.split(' ')  # 切割消息
                 msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
                 command_first_word = command_spilt[0].lower()
@@ -129,12 +133,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 in_mute = BotDBUtil.Muting(msg).check()
                 if in_mute and not mute:
                     return ExecutionLockList.remove(msg)
-                if command_first_word in modulesAliases:
-                    command_spilt[0] = modulesAliases[command_first_word]
-                    command = ' '.join(command_spilt)
-                    command_spilt = command.split(' ')
-                    command_first_word = command_spilt[0]
-                    msg.trigger_msg = command
                 if command_first_word in modules:  # 检查触发命令是否在模块列表中
                     try:
                         await temp_ban_check(msg)

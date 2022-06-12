@@ -272,7 +272,7 @@ async def _(msg: MessageSession):
         help_msg.append(' | '.join(module_))
         print(help_msg)
         help_msg.append(
-            '使用~help <对应模块名>查看详细信息。\n使用~modules查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
+            '使用~help <对应模块名>查看详细信息。\n使用~module list查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
             help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
@@ -280,14 +280,6 @@ async def _(msg: MessageSession):
         await send.delete()
 
 
-modules = on_command('modules',
-                     base=True,
-                     desc='查看所有可用模块',
-                     developers=['OasisAkari']
-                     )
-
-
-@modules.handle()
 async def modules_help(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
