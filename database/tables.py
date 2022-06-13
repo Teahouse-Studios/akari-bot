@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
 from sqlalchemy.dialects.mysql import LONGTEXT
-from sqlalchemy.ext.declarative import declarative_base
+
+from database.orm_base import Base
+
+from database.orm import Session
 
 from config import Config
-
-Base = declarative_base()
 
 
 class EnabledModules(Base):
@@ -59,4 +60,5 @@ class GroupAllowList(Base):
     targetId = Column(String(512), primary_key=True)
 
 
-__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData"]
+Session.create()
+__all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData"]

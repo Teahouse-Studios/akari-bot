@@ -6,7 +6,7 @@ from tenacity import retry, stop_after_attempt
 from config import Config
 from core.elements.message import MessageSession, FetchTarget
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
-from database.orm import DBSession
+from database.orm import Session
 from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList, StoredData
 
 cache = Config('db_cache')
@@ -32,7 +32,7 @@ class Dict2Object(dict):
         self[key] = value
 
 
-session = DBSession().session
+session = Session.session
 
 
 def auto_rollback_error(func):

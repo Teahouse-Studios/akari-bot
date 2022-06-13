@@ -38,7 +38,7 @@ async def console_command():
                                                    senderId='TEST|0',
                                                    senderName='',
                                                    targetFrom='TEST|Console',
-                                                   senderFrom='TEST|Console'),
+                                                   senderFrom='TEST|Console', clientName='TEST'),
                                     session=Session(message=m, target='TEST|0', sender='TEST|0')))
         print('----Process end----')
         usage_time = datetime.now() - time
