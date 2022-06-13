@@ -60,5 +60,11 @@ class GroupAllowList(Base):
     targetId = Column(String(512), primary_key=True)
 
 
+class DBVersion(Base):
+    __tablename__ = "DBVersion"
+    value = Column(String(512), primary_key=True)
+
+
 Session.create()
-__all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData"]
+__all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData",
+           "DBVersion"]

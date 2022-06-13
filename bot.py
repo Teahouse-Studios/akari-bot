@@ -13,7 +13,7 @@ from time import sleep
 import psutil
 
 from config import Config
-from database import BotDBUtil
+from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
@@ -180,6 +180,10 @@ if __name__ == '__main__':
         os.mkdir(logpath)
     filehandler = TimedPatternFileHandler('{}_%Y-%m-%d.log'.format(logpath + '/log'), mode='a', backup_count=5)
     logger.addHandler(filehandler)
+    query_dbver = session.query(DBVersion).all()
+    if not query_dbver:
+        session.add_all([DBVersion(value=1)])
+        session.commit()
     try:
         while True:
             try:

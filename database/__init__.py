@@ -8,7 +8,7 @@ from config import Config
 from core.elements.message import MessageSession, FetchTarget
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import Session
-from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList, StoredData
+from database.tables import *
 
 cache = Config('db_cache')
 
@@ -36,6 +36,8 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
+    database_version = 1
+
     class Module:
         @retry(stop=stop_after_attempt(3))
         def __init__(self, msg: [MessageSession, str]):
