@@ -9,6 +9,9 @@ from core.loader import load_modules, ModulesManager
 from core.scheduler import Scheduler
 
 
+bot_version = 'v4.0.0'
+
+
 def init() -> None:
     """初始化机器人。仅用于bot.py与console.py。"""
     load_modules()
@@ -17,14 +20,14 @@ def init() -> None:
     try:
         write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
     except Exception as e:
-        write_version.write(str(e))
+        write_version.write(bot_version)
     write_version.close()
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     write_tag = open(tag, 'w')
     try:
         write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
     except Exception as e:
-        write_tag.write(str(e))
+        write_tag.write(bot_version)
     write_tag.close()
 
 
