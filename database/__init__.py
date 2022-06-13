@@ -1,4 +1,5 @@
 import datetime
+import ujson as json
 from typing import Union
 
 from tenacity import retry, stop_after_attempt
@@ -10,18 +11,6 @@ from database.orm import Session
 from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList, StoredData
 
 cache = Config('db_cache')
-
-
-def convert_list_to_str(lst: list) -> str:
-    filter_lst = []
-    for x in lst:
-        if x != '':
-            filter_lst.append(x)
-    return '|'.join(filter_lst)
-
-
-def convert_str_to_list(s: str) -> list:
-    return s.split('|')
 
 
 class Dict2Object(dict):
@@ -63,7 +52,7 @@ class BotDBUtil:
                     self.enable_modules_list = []
                 else:
                     query_ = query.enabledModules
-                    self.enable_modules_list = convert_str_to_list(query_)
+                    self.enable_modules_list = json.loads(query_)
                 if cache:
                     EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
 
@@ -88,7 +77,7 @@ class BotDBUtil:
                 for x in module_name:
                     if x not in self.enable_modules_list:
                         self.enable_modules_list.append(x)
-            value = convert_list_to_str(self.enable_modules_list)
+            value = json.dumps(self.enable_modules_list)
             if self.need_insert:
                 table = EnabledModules(targetId=self.targetId,
                                        enabledModules=value)
@@ -112,7 +101,7 @@ class BotDBUtil:
                     if x in self.enable_modules_list:
                         self.enable_modules_list.remove(x)
             if not self.need_insert:
-                self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
+                self.query_EnabledModules.enabledModules = json.dumps(self.enable_modules_list)
                 session.commit()
                 session.expire_all()
                 if cache:
@@ -126,7 +115,7 @@ class BotDBUtil:
             query = session.query(EnabledModules).filter(EnabledModules.enabledModules.like(f'%{module_name}%'))
             targetIds = []
             for x in query:
-                enabled_list = convert_str_to_list(x.enabledModules)
+                enabled_list = json.loads(x.enabledModules)
                 if module_name in enabled_list:
                     targetIds.append(x.targetId)
             return targetIds

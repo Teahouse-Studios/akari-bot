@@ -126,7 +126,12 @@ async def config_modules(msg: MessageSession):
                 if module_ not in modules_:
                     msglist.append(f'失败：“{module_}”模块不存在')
                 else:
-                    disable_list.append(module_)
+                    if modules_[module_].required_superuser and not msg.checkSuperUser():
+                        msglist.append(f'失败：你没有关闭“{module_}”的权限。')
+                    elif isinstance(modules_[module_], Command) and modules_[module_].base:
+                        msglist.append(f'失败：“{module_}”为基础模块，无法关闭。')
+                    else:
+                        disable_list.append(module_)
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
