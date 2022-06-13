@@ -67,4 +67,4 @@ class DBVersion(Base):
 
 Session.create()
 __all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData",
-           "DBVersion"]
+           "DBVersion", "MuteList"]
