@@ -15,6 +15,8 @@ import psutil
 from config import Config
 from database import BotDBUtil, session, DBVersion
 
+from core.logger import Logger
+
 encode = 'UTF-8'
 
 
@@ -149,10 +151,9 @@ def run_bot():
             pass
         else:
             try:
-                logging.info(line[:-1].decode(encode))
+                Logger.info(line[:-1].decode(encode))
             except Exception:
-                print(line)
-                logging.error(traceback.format_exc())
+                Logger.error(traceback.format_exc())
 
         # break when all processes are done.
         if all(p.poll() is not None for p in runlst):
@@ -160,7 +161,7 @@ def run_bot():
 
         for p in runlst:
             if p.poll() == 233:
-                logging.warning(f'{p.pid} exited with code 233, restart all bots.')
+                Logger.warning(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
         sleep(0.001)
@@ -188,7 +189,7 @@ if __name__ == '__main__':
         while True:
             try:
                 run_bot()
-                logging.fatal('All bots exited unexpectedly, please check the output')
+                Logger.fatal('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:
                 for x in pidlst:
