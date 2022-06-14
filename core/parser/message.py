@@ -110,10 +110,15 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             else:
                 return await msg.sendMessage('您有命令正在执行，请稍后再试。')
             for command in command_list:
-                for alias in modulesAliases:
-                    if command.startswith(alias) and not command.startswith(modulesAliases[alias]):
-                        command = command.replace(alias, modulesAliases[alias], 1)
-                        break
+                no_alias = False
+                for moduleName in modules:
+                    if command.startswith(moduleName):
+                        no_alias = True
+                if not no_alias:
+                    for alias in modulesAliases:
+                        if command.startswith(alias) and not command.startswith(modulesAliases[alias]):
+                            command = command.replace(alias, modulesAliases[alias], 1)
+                            break
                 command_spilt = command.split(' ')  # 切割消息
                 msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
                 command_first_word = command_spilt[0].lower()
