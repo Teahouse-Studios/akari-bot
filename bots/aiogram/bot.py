@@ -7,7 +7,7 @@ from bots.aiogram.message import MessageSession, FetchTarget
 from bots.aiogram.tasks import MessageTaskManager, FinishedTasks
 from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.parser.message import parser
-from core.utils import init, load_prompt, init_scheduler
+from core.utils import init, load_prompt, init_async
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
@@ -31,7 +31,7 @@ async def msg_handler(message: types.Message):
 
 
 async def on_startup(dispatcher):
-    await init_scheduler(FetchTarget)
+    await init_async(FetchTarget)
     await load_prompt(FetchTarget)
 
 

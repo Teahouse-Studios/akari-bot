@@ -18,7 +18,7 @@ from bot import init_bot
 from core.elements import MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
-from core.utils import init, init_scheduler
+from core.utils import init, init_async
 from core.logger import Logger
 
 EnableDirtyWordCheck.status = True
@@ -27,7 +27,7 @@ init()
 
 
 async def console_scheduler():
-    await init_scheduler(FetchTarget)
+    await init_async(FetchTarget)
 
 
 async def console_command():

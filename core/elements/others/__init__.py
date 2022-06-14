@@ -1,12 +1,4 @@
 import os
-import traceback
-from configparser import ConfigParser
-from os.path import abspath
-
-import requests
-
-from core.exceptions import ConfigFileNotFound
-from core.logger import Logger
 
 confirm_command = ["是", "对", '确定', '是吧', '大概是',
                    '也许', '可能', '对的', '是呢', '对呢', '嗯', '嗯呢',
@@ -50,30 +42,5 @@ class ErrorMessage:
     def __repr__(self):
         return self.error_message
 
-
-def load_secret():
-    config_filename = 'config.cfg'
-    config_path = abspath('./config/' + config_filename)
-    cp = ConfigParser()
-    cp.read(config_path)
-    section = cp.sections()
-    if len(section) == 0:
-        raise ConfigFileNotFound(config_path) from None
-    section = section[0]
-    options = cp.options(section)
-    for option in options:
-        value = cp.get(section, option)
-        if value.upper() not in ['', 'TRUE', 'FALSE']:
-            Secret.add(value.upper())
-    try:
-        ip = requests.get('https://api.ip.sb/ip', timeout=10)
-        if ip:
-            Secret.add(ip.text.replace('\n', ''))
-    except:
-        Logger.error(traceback.format_exc())
-        pass
-
-
-load_secret()
 
 __all__ = ["confirm_command", "command_prefix", "EnableDirtyWordCheck", "PrivateAssets", "Secret", "ErrorMessage"]

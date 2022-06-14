@@ -12,7 +12,7 @@ from bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from config import Config
 from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets
 from core.parser.message import parser
-from core.utils import init, load_prompt, init_scheduler
+from core.utils import init, load_prompt, init_async
 from database import BotDBUtil
 from database.logging_message import UnfriendlyActions
 
@@ -23,7 +23,7 @@ init()
 
 @bot.on_startup
 async def startup():
-    await init_scheduler(FetchTarget)
+    await init_async(FetchTarget)
     bot.logger.setLevel(logging.WARNING)
 
 

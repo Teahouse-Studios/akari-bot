@@ -8,7 +8,7 @@ from config import Config
 from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
-from core.utils import init, init_scheduler, load_prompt
+from core.utils import init, init_async, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
@@ -22,7 +22,7 @@ async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
     global count
     if count == 0:
-        await init_scheduler(FetchTarget)
+        await init_async(FetchTarget)
         await load_prompt(FetchTarget)
         count = 1
 

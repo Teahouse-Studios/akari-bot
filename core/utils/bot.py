@@ -1,12 +1,19 @@
 import asyncio
 import logging
 import os
+import traceback
 
 import ujson as json
 
-from core.elements import PrivateAssets, StartUp, FetchTarget, Schedule
+from core.elements import PrivateAssets, StartUp, Schedule, Secret
 from core.loader import load_modules, ModulesManager
 from core.scheduler import Scheduler
+from core.exceptions import ConfigFileNotFound
+from core.logger import Logger
+from core.utils.http import get_url
+
+from configparser import ConfigParser
+from os.path import abspath
 
 
 bot_version = 'v4.0.0'
@@ -31,7 +38,7 @@ def init() -> None:
     write_tag.close()
 
 
-async def init_scheduler(ft) -> None:
+async def init_async(ft) -> None:
     gather_list = []
     Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
@@ -42,6 +49,30 @@ async def init_scheduler(ft) -> None:
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    await load_secret()
+
+
+async def load_secret():
+    config_filename = 'config.cfg'
+    config_path = abspath('./config/' + config_filename)
+    cp = ConfigParser()
+    cp.read(config_path)
+    section = cp.sections()
+    if len(section) == 0:
+        raise ConfigFileNotFound(config_path) from None
+    section = section[0]
+    options = cp.options(section)
+    for option in options:
+        value = cp.get(section, option)
+        if value.upper() not in ['', 'TRUE', 'FALSE']:
+            Secret.add(value.upper())
+    try:
+        ip = await get_url('https://api.ip.sb/ip')
+        if ip:
+            Secret.add(ip.replace('\n', ''))
+    except Exception:
+        Logger.error(traceback.format_exc())
+        pass
 
 
 async def load_prompt(bot) -> None:
@@ -60,4 +91,4 @@ async def load_prompt(bot) -> None:
             os.remove(loader_cache)
 
 
-__all__ = ['init', 'init_scheduler', 'load_prompt']
+__all__ = ['init', 'init_async', 'load_prompt']
