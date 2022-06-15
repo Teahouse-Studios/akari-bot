@@ -38,8 +38,9 @@ QQ频道的测试版支持也请在上方链接申请。我们正在进行QQ频�
 
 ### 自搭建
 
-由于本项目设计时的局限性，小可并不适合自搭建。未来我们可能会提供自搭建的教程和文档。在此之前，若您有此需求，您可参考 [config.cfg.example](./config/config.cfg.example)
-初步摸索配置；若遇到问题，可以通过 [issue](https://github.com/Teahouse-Studios/bot/issues/new) 或其他方式咨询开发者。
+你可以[参考这里](https://github.com/Teahouse-Studios/bot/blob/v4.0.0-release.6/DEPOLY.md) 来进行尝试搭建。
+
+若遇到问题，可以通过 [issue](https://github.com/Teahouse-Studios/bot/issues/new) 或其他方式咨询开发者。
 
 ### 贡献
 
