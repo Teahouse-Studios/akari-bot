@@ -14,8 +14,9 @@ async def mcmod(keyword: str, detail: bool = False):
     endpoint = api_details if detail else api
     search_url = endpoint + quote(keyword)
     webrender = Config('web_render')
-    if webrender:
-        search_url = webrender + 'source?url=' + quote(search_url)
+    if not webrender:
+        return
+    search_url = webrender + 'source?url=' + quote(search_url)
     html = await get_url(search_url)
     print(html)
     bs = BeautifulSoup(html, 'html.parser')

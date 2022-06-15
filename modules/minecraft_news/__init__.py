@@ -47,9 +47,9 @@ async def start_check_news(bot: FetchTarget):
     url = quote(
         f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
     webrender = Config('web_render')
-    get = webrender + 'source?url=' + url
     if not webrender:
         return
+    get = webrender + 'source?url=' + url
     getpage = await get_url(get)
     if getpage:
         alist = get_stored_list(bot, 'mcnews')

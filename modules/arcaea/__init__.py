@@ -148,6 +148,8 @@ async def _(msg: MessageSession):
 
 @arc.handle('download {获取最新版本的游戏apk}')
 async def _(msg: MessageSession):
+    if not webrender:
+        await msg.finish(['未配置webrender，无法使用此命令。'])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
                          fmt='json')
     if resp:
@@ -156,6 +158,8 @@ async def _(msg: MessageSession):
 
 @arc.handle('random {随机一首曲子}')
 async def _(msg: MessageSession):
+    if not webrender:
+        await msg.finish(['未配置webrender，无法使用此命令。'])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
     if resp:
         value = resp["value"][0]
@@ -168,6 +172,8 @@ async def _(msg: MessageSession):
 
 @arc.handle('rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}')
 async def _(msg: MessageSession):
+    if not webrender:
+        await msg.finish(['未配置webrender，无法使用此命令。'])
     if msg.parsed_msg['free']:
         resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
     else:
