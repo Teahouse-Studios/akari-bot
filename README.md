@@ -32,19 +32,19 @@
 
 #### QQ
 
-目前QQ上稳定运行的小可实例为小可三号机，支持直接添加好友私聊。关于群聊，由于腾讯相关限制，请[在此提交](https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+)入群申请。
+目前QQ上稳定运行的小可实例为小可三号机，支持直接添加好友私聊。关于群聊，由于腾讯相关限制，请 [在此提交](https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+) 入群申请。
 
 QQ频道的测试版支持也请在上方链接申请。我们正在进行QQ频道官方机器人入驻，未来可能会成为官方认证的机器人。
 
 ### 自搭建
 
-你可以[参考这里](https://github.com/Teahouse-Studios/bot/blob/v4.0.0-release.6/DEPOLY.md) 来进行尝试搭建。
+你可以 [参考这里](https://github.com/Teahouse-Studios/bot/blob/master/DEPOLY.md) 来进行尝试搭建。
 
 若遇到问题，可以通过 [issue](https://github.com/Teahouse-Studios/bot/issues/new) 或其他方式咨询开发者。
 
 ### 贡献
 
-如您想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)
+如您想为我们编写新的模块，可以看看 [这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)
 
 ## 许可
 

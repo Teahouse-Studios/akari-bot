@@ -35,10 +35,10 @@
 
 ### SQLite
 
-如果你不希望为了部署一个 Bot 而去研究如何安装（或购买）某服务商的数据库服务的话
+如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话
 ，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
-如果你选择 SQLite，只需要将字段内容填写为以下格式即可，无需再关注数据库搭建等问题：
+如果你选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
 **格式**
 
@@ -50,13 +50,17 @@
 
 此示例将会在 `database` 文件夹内创建 `save.db` 来存储用户数据。
 
-## 运行控制台
+## 运行测试控制台
 
-一旦你配置好了数据库后，你就可以直接去启动控制台（`console.py`）了。
+一旦你配置好了数据库后，你就可以直接去启动测试控制台（`console.py`）了。
 
-控制台包括一个基础的运行环境，你可以在控制台内使用命令进行基础的机器人交互。
+测试控制台包括一个基础的运行环境，你可以在测试控制台内使用命令进行基础的机器人交互。
 
-控制台仅支持回复文本消息和图片，其它消息元素将被忽略或转换为文本或图片来显示。
+测试控制台仅支持回复文本消息和图片，其它消息元素将被忽略或转换为文本或图片来显示。
+
+1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+3. 于终端内输入 `python console.py` 来启动测试控制台。
 
 ## 配置平台机器人
 
@@ -95,18 +99,18 @@ servers:
 
 我们在这里使用了 [Pycord](https://github.com/Pycord-Development/pycord) 来调用 Discord API。
 
-为了达到目的，你需要于 [Discord 开发者平台](https://discord.com/developers) 创建一个 Bot 并获取 Token。
+为了达到目的，你需要于 [Discord 开发者平台](https://discord.com/developers) 创建一个机器人并获取 Token。
 
-`dc_token =` - 填写你获取到的 Bot Token。
+`dc_token =` - 填写你获取到的机器人 Token。
 
 
 ### Telegram
 
 我们在这里使用了 [AIOGram](https://github.com/aiogram/aiogram) 来异步调用 Telegram API。
 
-为了达到目的，你需要在 Telegram 搜索 `@BotFather` 来创建 Bot。
+为了达到目的，你需要在 Telegram 搜索 `@BotFather` 来创建机器人。
 
-`tg_token =` - 填写你获取到的 Bot Token。
+`tg_token =` - 填写你获取到的机器人 Token。
 
 ## 运行平台机器人
 
@@ -114,11 +118,11 @@ servers:
 
 我们不推荐双击运行 `start.bat` 来启动程序。
 
-建议在启动 Bot 之前，先打开终端（cmd 或 Powershell）再运行 `start.bat`。
+建议在启动机器人之前，先打开终端（cmd 或 Powershell）再运行 `start.bat`。
 
 1. 于 `start.bat` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
 2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
-3. 于终端内输入 `.\start.bat` （Powershell） 或 `start.bat` （cmd）来启动 Bot。
+3. 于终端内输入 `.\start.bat` （Powershell） 或 `start.bat` （cmd）来启动机器人。
 
 ### Linux
 
@@ -181,7 +185,7 @@ ArcaeaLimitedAPI 需要向 Lowiro 官方发送邮件申请以获得 Token。
 
 `botarcapi_agent =` - 填写 BotArcAPI 公用实例申请到的 UA 名
 
-填写完后，你还需要从下载 [Arcaea](https://616.sb/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot 启动后使用 `~arcaea initialize` 来初始化资源文件。
+填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot 启动后使用 `~arcaea initialize` 来初始化资源文件。
 
 #### maimai
 maimai 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
@@ -200,7 +204,7 @@ assets
             │...
 ```
 
-#### 其他功能
+### 其他功能
 
 `qq_msg_logging_to_db = True` - 将 QQ 平台内的命令触发消息记录至 `database/msg.db` 中，有助于判断是否存在违规使用机器人的情况。
 
@@ -208,11 +212,17 @@ assets
 
 `slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
+#### 自定义确认词及命令前缀
+
+你可以通过编辑 `core/elements/others` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix` 变量来增加（或删除）可使用的命令前缀。
+
+`command_prefix` 首位将被用作帮助文档中默认展示的前缀。
+
 # 疑难排查
 
 ## QQ：Attempt to access request outside of a relevant context
 
-造成此报错的原因未知，推测是 `quart` 库不允许机器人的命令处理库 `docopt` 进行一些未常规调用而导致。
+造成此报错的原因未知，推测是 `quart` 库不允许小可的命令处理库 `docopt` 进行一些非常规调用而导致。
 
 ### 解决方法
 
