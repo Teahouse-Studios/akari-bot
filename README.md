@@ -38,7 +38,7 @@ QQ频道的测试版支持也请在上方链接申请。我们正在进行QQ频�
 
 ### 自搭建
 
-你可以 [参考这里](https://github.com/Teahouse-Studios/bot/blob/master/DEPOLY.md) 来进行尝试搭建。
+你可以 [参考这里](https://github.com/Teahouse-Studios/bot/blob/master/DEPLOY.md) 来进行尝试搭建。
 
 若遇到问题，可以通过 [issue](https://github.com/Teahouse-Studios/bot/issues/new) 或其他方式咨询开发者。
 
