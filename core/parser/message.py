@@ -148,7 +148,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         module = modules[command_first_word]
                         if not isinstance(module, Command):
                             if module.desc is not None:
-                                await msg.sendMessage(f'介绍：\n{module.desc}')
+                                desc = f'介绍：\n{module.desc}'
+                                if command_first_word not in enabled_modules_list:
+                                    desc += f'\n{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。'
+                                await msg.sendMessage(desc)
                             continue
                         if module.required_superuser:
                             if not msg.checkSuperUser():
