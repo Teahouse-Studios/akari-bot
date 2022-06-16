@@ -4,6 +4,7 @@ from datetime import datetime
 
 from aiocqhttp.exceptions import ActionFailed
 
+from config import Config
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError
 from core.loader import ModulesManager
@@ -12,6 +13,9 @@ from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.utils import removeIneffectiveText, removeDuplicateSpace
 from database import BotDBUtil
+
+
+enable_tos = Config('enable_tos')
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -210,7 +214,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         continue
                     except FinishedException as e:
                         Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}')
-                        if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module':
+                        if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
                             await msg_counter(msg, msg.trigger_msg)
                         continue
                     except Exception as e:
@@ -268,14 +272,16 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 except FinishedException as e:
                     Logger.info(
                         f'Successfully finished session from {identify_str}, returns: {str(e)}')
-                    await msg_counter(msg, msg.trigger_msg)
+                    if enable_tos:
+                        await msg_counter(msg, msg.trigger_msg)
                     continue
                 ExecutionLockList.remove(msg)
     except AbuseWarning as e:
-        await warn_target(msg, str(e))
-        temp_ban_counter[msg.target.senderId] = {'count': 1,
-                                                 'ts': datetime.now().timestamp()}
-        return
+        if enable_tos:
+            await warn_target(msg, str(e))
+            temp_ban_counter[msg.target.senderId] = {'count': 1,
+                                                     'ts': datetime.now().timestamp()}
+            return
     except Exception:
         Logger.error(traceback.format_exc())
     ExecutionLockList.remove(msg)

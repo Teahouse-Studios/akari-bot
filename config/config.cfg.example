@@ -14,3 +14,4 @@ botarcapi_url =
 botarcapi_agent =
 tg_token =
 slower_schedule = False
+enable_tos = False

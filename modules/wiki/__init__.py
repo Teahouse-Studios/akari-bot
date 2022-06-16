@@ -21,6 +21,7 @@ from .utils.rc import rc
 from .utils.rc_qq import rc_qq
 from .wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
+
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set',
                          'interwiki': 'wiki iw'},

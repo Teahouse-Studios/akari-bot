@@ -14,6 +14,8 @@ from core.logger import Logger
 from core.utils import get_url
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
+from config import Config
+
 
 class InvalidPageIDError(Exception):
     pass
@@ -364,7 +366,8 @@ class WikiLib:
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
         if _tried > 5:
-            raise WhatAreUDoingError
+            if Config('enable_tos'):
+                raise WhatAreUDoingError
         section = None
         if title is not None:
             if title == '':
