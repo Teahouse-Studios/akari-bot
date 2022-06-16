@@ -119,10 +119,12 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     if command.startswith(moduleName):
                         no_alias = True
                 if not no_alias:
+                    alias_list = []
                     for alias in modulesAliases:
                         if command.startswith(alias) and not command.startswith(modulesAliases[alias]):
-                            command = command.replace(alias, modulesAliases[alias], 1)
-                            break
+                            alias_list.append(alias)
+                    max_ = max(alias_list, key=len)
+                    command = command.replace(max_, modulesAliases[max_], 1)
                 command_spilt = command.split(' ')  # 切割消息
                 msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
                 command_first_word = command_spilt[0].lower()
