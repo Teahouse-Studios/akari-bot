@@ -212,6 +212,8 @@ assets
 
 `slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
+`enable_tos = False` - 是否启用内置的违反服务条款的检查。
+
 #### 自定义确认词及命令前缀
 
 你可以通过编辑 `core/elements/others/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix` 变量来增加（或删除）可使用的命令前缀。
