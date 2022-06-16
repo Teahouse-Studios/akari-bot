@@ -41,7 +41,7 @@ class Article:
 
 @on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
              recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
-             desc='开启后将会自动推送来自Minecraft官网的新闻。')
+             desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
 async def start_check_news(bot: FetchTarget):
     baseurl = 'https://www.minecraft.net'
     url = quote(
@@ -72,7 +72,8 @@ async def start_check_news(bot: FetchTarget):
 
 
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
-             trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。')
+             trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。',
+             alias='feedbacknews')
 async def feedback_news(bot: FetchTarget):
     sections = [{'name': 'beta',
                  'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
