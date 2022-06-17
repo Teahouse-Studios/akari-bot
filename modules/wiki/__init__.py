@@ -46,6 +46,12 @@ async def _(msg: MessageSession):
     await query_pages(msg, pageid=page_id, iw=iw)
 
 
+@wiki.handle('-l <lang> <PageName> {查找本页面的对应语言版本，若无结果则返回当前语言。}')
+async def _(msg: MessageSession):
+    lang = msg.parsed_msg['<lang>']
+    await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang if lang else None)
+
+
 @wiki.handle('set <WikiUrl> {设置起始查询Wiki}', required_admin=True)
 async def set_start_wiki(msg: MessageSession):
     target = WikiTargetInfo(msg)
@@ -348,7 +354,7 @@ async def _(msg: MessageSession):
 
 
 async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
-                      pageid: str = None, iw: str = None,
+                      pageid: str = None, iw: str = None, lang: str=None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
@@ -456,10 +462,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if mediawiki:
                         rd = f'MediaWiki:{rd}'
                     tasks.append(asyncio.ensure_future(
-                        WikiLib(q, headers).parse_page_info(title=rd, inline=inline_mode)))
+                        WikiLib(q, headers).parse_page_info(title=rd, inline=inline_mode, langlink=lang)))
             for rdp in ready_for_query_ids:
                 tasks.append(asyncio.ensure_future(
-                    WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode)))
+                    WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode, langlink=lang)))
             query = await asyncio.gather(*tasks)
             for result in query:
                 print(result.__dict__)
