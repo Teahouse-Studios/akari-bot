@@ -13,6 +13,7 @@ from datetime import datetime
 from core.component import on_command
 from core.elements import MessageSession, Image, Plain
 from core.utils import download_to_cache
+from core.logger import Logger
 
 Base = declarative_base()
 
@@ -71,14 +72,13 @@ async def _(msg: MessageSession):
     playlist.append(msg.target.targetId)
     get_rand = randcc()
     get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
-    print(get_rand[1])
+    Logger.info(get_rand[1])
     await msg.sendMessage([Image(get_image), Plain('请于2分钟内发送正确答案。')])
     time_start = datetime.now().timestamp()
 
     async def ans(msg: MessageSession, answer):
         if datetime.now().timestamp() - time_start > 120:
-            await msg.finish(f'已超时，正确答案是 {answer}', quote=False)
-            playlist.remove(msg.target.targetId)
+            await msg.sendMessage(f'已超时，正确答案是 {answer}', quote=False)
         if msg.asDisplay() != answer:
             next_ = await msg.waitAnyone()
             return await ans(next_, answer)
