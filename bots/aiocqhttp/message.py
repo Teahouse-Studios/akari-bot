@@ -252,11 +252,15 @@ class FetchTarget(FT):
             guild_list_raw = await bot.call_action('get_guild_list')
             guild_list = []
             for g in guild_list_raw:
-                get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
-                                                         no_cache=True)
-                for channel in get_channel_list:
-                    if channel['channel_type'] == 1:
-                        guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
+                try:
+                    get_channel_list = await bot.call_action('get_guild_channel_list', guild_id=g['guild_id'],
+                                                             no_cache=True)
+                    for channel in get_channel_list:
+                        if channel['channel_type'] == 1:
+                            guild_list.append(f"{str(g['guild_id'])}|{str(channel['channel_id'])}")
+                except Exception:
+                    traceback.print_exc()
+                    continue
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x)
                 Logger.info(fetch)
