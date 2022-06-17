@@ -61,7 +61,7 @@ def randcc():
     return query.cas, query.answer
 
 
-cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], developers=['OasisAkari'])
+cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
 playlist = []
 
 

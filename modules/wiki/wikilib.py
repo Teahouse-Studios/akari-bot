@@ -556,7 +556,7 @@ class WikiLib:
                     iw_title = iw_title.group(1)
                     _prefix += i['iw'] + ':'
                     _iw = True
-                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']]).parse_page_info(iw_title,
+                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']]).parse_page_info(iw_title, langlink=langlink,
                                                                                                     _tried=_tried + 1,
                                                                                                     _prefix=_prefix,
                                                                                                     _iw=_iw)
@@ -576,7 +576,9 @@ class WikiLib:
                             else:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if _tried == 0:
-                                page_info.title = page_info.interwiki_prefix + t
+                                page_info.title = page_info.interwiki_prefix if not langlink else '' + t
+                                if langlink:
+                                    page_info.before_title = page_info.title
                                 if before_page_info.section is not None:
                                     page_info.section = before_page_info.section
         if not self.wiki_info.in_allowlist:
