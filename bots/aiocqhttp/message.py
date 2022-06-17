@@ -77,7 +77,7 @@ class MessageSession(MS):
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
         return FinishedSession([send])
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         send = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
@@ -87,11 +87,24 @@ class MessageSession(MS):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self.target.targetId, self.session.sender, flag)
         await flag.wait()
-        if send is not None:
+        if send is not None and delete:
             await send.delete()
-        if self.asDisplay(FinishedTasks.get()[self.target.targetId][self.session.sender]) in confirm_command:
+        if FinishedTasks.get()[self.target.targetId][self.session.sender].asDisplay() in confirm_command:
             return True
         return False
+
+    async def waitAnyone(self, msgchain=None, delete=False):
+        send = None
+        ExecutionLockList.remove(self)
+        if msgchain is not None:
+            msgchain = MessageChain(msgchain)
+            send = await self.sendMessage(msgchain, quote=False)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self.target.targetId, 'all', flag)
+        await flag.wait()
+        if send is not None and delete:
+            await send.delete()
+        return FinishedTasks.get()[self.target.targetId]['all']
 
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \

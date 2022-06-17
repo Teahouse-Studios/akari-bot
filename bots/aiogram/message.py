@@ -70,7 +70,7 @@ class MessageSession(MS):
             count += 1
         return FinishedSession(send)
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         ExecutionLockList.remove(self)
         send = None
         if msgchain is not None:
@@ -80,11 +80,24 @@ class MessageSession(MS):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self.target.targetId, self.session.sender, flag)
         await flag.wait()
-        if msgchain is not None:
+        if msgchain is not None and delete:
             await send.delete()
-        if FinishedTasks.get()[self.target.targetId][self.session.sender].text in confirm_command:
+        if FinishedTasks.get()[self.target.targetId][self.session.sender].asDisplay() in confirm_command:
             return True
         return False
+
+    async def waitAnyone(self, msgchain=None, delete=False):
+        send = None
+        ExecutionLockList.remove(self)
+        if msgchain is not None:
+            msgchain = MessageChain(msgchain)
+            send = await self.sendMessage(msgchain, quote=False)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self.target.targetId, 'all', flag)
+        await flag.wait()
+        if send is not None and delete:
+            await send.delete()
+        return FinishedTasks.get()[self.target.targetId]['all']
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderInfo.check_TargetAdmin(

@@ -26,3 +26,4 @@ assets/version*
 assets/mcnews.txt
 *.log
 assets/mcbeversion.txt
+!modules/chemical_code/answer.db

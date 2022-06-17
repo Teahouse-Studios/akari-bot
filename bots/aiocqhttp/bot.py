@@ -43,11 +43,6 @@ async def _(event: Event):
     all_tsk = MessageTaskManager.get()
     user_id = event.user_id
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
-    if targetId in all_tsk:
-        if user_id in all_tsk[targetId]:
-            FinishedTasks.add_task(targetId, user_id, event.message)
-            all_tsk[targetId][user_id].set()
-            MessageTaskManager.del_task(targetId, user_id)
 
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|{str(event.user_id)}',
@@ -56,6 +51,17 @@ async def _(event: Event):
                          Session(message=event,
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
+    if targetId in all_tsk:
+        add_ = None
+        if user_id in all_tsk[targetId]:
+            add_ = user_id
+        if 'all' in all_tsk[targetId]:
+            add_ = 'all'
+        if add_:
+            FinishedTasks.add_task(targetId, add_, msg)
+            all_tsk[targetId][add_].set()
+            MessageTaskManager.del_task(targetId, add_)
+
     await parser(msg, running_mention=True)
 
 
@@ -72,12 +78,6 @@ async def _(event):
     if tiny_id == GuildAccountInfo.tiny_id:
         return
     targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
-    all_tsk = MessageTaskManager.guild_get()
-    if targetId in all_tsk:
-        if tiny_id in all_tsk[targetId]:
-            FinishedTasks.add_guild_task(targetId, tiny_id, event.message)
-            all_tsk[targetId][tiny_id].set()
-            MessageTaskManager.del_guild_task(targetId, tiny_id)
     msg = MessageSessionGuild(MsgInfo(targetId=targetId,
                                       senderId=f'QQ|Tiny|{str(event.user_id)}',
                                       targetFrom='QQ|Guild',
@@ -85,6 +85,12 @@ async def _(event):
                               Session(message=event,
                                       target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                       sender=event.user_id))
+    all_tsk = MessageTaskManager.guild_get()
+    if targetId in all_tsk:
+        if tiny_id in all_tsk[targetId]:
+            FinishedTasks.add_guild_task(targetId, tiny_id, msg)
+            all_tsk[targetId][tiny_id].set()
+            MessageTaskManager.del_guild_task(targetId, tiny_id)
     await parser(msg, running_mention=True)
 
 

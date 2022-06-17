@@ -7,6 +7,7 @@ from typing import List, Union
 import discord
 
 from bots.discord.client import client
+from bots.discord.tasks import MessageTaskManager, FinishedTasks
 from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, FetchTarget as FT, ExecutionLockList, \
     FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
@@ -99,21 +100,35 @@ class MessageSession(MS):
             count += 1
         return FinishedSession(send)
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         ExecutionLockList.remove(self)
-
-        def check(m):
-            return m.channel == self.session.message.channel and m.author == self.session.message.author
 
         send = None
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
             send = await self.sendMessage(msgchain, quote)
-        msg = await client.wait_for('message', check=check)
-        if send is not None:
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self.target.targetId, self.session.sender, flag)
+        await flag.wait()
+        if msgchain is not None and delete:
             await send.delete()
-        return True if msg.content in confirm_command else False
+        if FinishedTasks.get()[self.target.targetId][self.session.sender].asDisplay() in confirm_command:
+            return True
+        return False
+
+    async def waitAnyone(self, msgchain=None, delete=False):
+        send = None
+        ExecutionLockList.remove(self)
+        if msgchain is not None:
+            msgchain = MessageChain(msgchain)
+            send = await self.sendMessage(msgchain, quote=False)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self.target.targetId, 'all', flag)
+        await flag.wait()
+        if send is not None and delete:
+            await send.delete()
+        return FinishedTasks.get()[self.target.targetId]['all']
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \

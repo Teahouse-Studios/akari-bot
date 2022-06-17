@@ -4,6 +4,8 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.message import MessageSession, FetchTarget
+from bots.discord.tasks import MessageTaskManager, FinishedTasks
+
 from config import Config
 from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.logger import Logger
@@ -35,11 +37,24 @@ async def on_message(message):
     target = "Discord|Channel"
     if isinstance(message.channel, discord.DMChannel):
         target = "Discord|DM|Channel"
-    msg = MessageSession(target=MsgInfo(targetId=f"{target}|{message.channel.id}",
+    targetId = f"{target}|{message.channel.id}"
+    user_id = message.author
+    msg = MessageSession(target=MsgInfo(targetId=targetId,
                                         senderId=f"Discord|Client|{message.author.id}",
                                         senderName=message.author.name, targetFrom=target, senderFrom="Discord|Client",
                                         clientName='Discord'),
                          session=Session(message=message, target=message.channel, sender=message.author))
+    all_tsk = MessageTaskManager.get()
+    if targetId in all_tsk:
+        add_ = None
+        if user_id in all_tsk[targetId]:
+            add_ = user_id
+        if 'all' in all_tsk[targetId]:
+            add_ = 'all'
+        if add_:
+            FinishedTasks.add_task(targetId, add_, msg)
+            all_tsk[targetId][add_].set()
+            MessageTaskManager.del_task(targetId, add_)
     await parser(msg)
 
 

@@ -98,12 +98,22 @@ class MessageSession:
         """
         await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         """
         一次性模板，用于等待触发对象确认。
         :param msgchain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
+        :param delete: 是否在触发后删除消息
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
+        """
+        ...
+
+    async def waitAnyone(self, msgchain=None, delete=False):
+        """
+        一次性模板，用于等待触发发送者所属对象内所有成员确认。
+        :param msgchain: 需要发送的确认消息，可不填
+        :param delete: 是否在触发后删除消息
+        :return: 任意人的一条文本消息。
         """
         ...
 

@@ -56,7 +56,7 @@ class MessageSession(MS):
 
         return FinishedSession([send])
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         send = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
@@ -66,11 +66,24 @@ class MessageSession(MS):
         flag = asyncio.Event()
         MessageTaskManager.add_guild_task(self.target.targetId, self.session.sender, flag)
         await flag.wait()
-        if send is not None:
+        if send is not None and delete:
             await send.delete()
         if FinishedTasks.guild_get()[self.target.targetId][self.session.sender] in confirm_command:
             return True
         return False
+
+    async def waitAnyone(self, msgchain=None, delete=False):
+        send = None
+        ExecutionLockList.remove(self)
+        if msgchain is not None:
+            msgchain = MessageChain(msgchain)
+            send = await self.sendMessage(msgchain, quote=False)
+        flag = asyncio.Event()
+        MessageTaskManager.add_guild_task(self.target.targetId, 'all', flag)
+        await flag.wait()
+        if send is not None and delete:
+            await send.delete()
+        return FinishedTasks.guild_get()[self.target.targetId]['all']
 
     async def checkPermission(self):
         if self.target.senderInfo.check_TargetAdmin(self.target.targetId) or self.target.senderInfo.query.isSuperUser:
