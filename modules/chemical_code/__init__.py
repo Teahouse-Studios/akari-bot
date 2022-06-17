@@ -77,6 +77,8 @@ async def _(msg: MessageSession):
     time_start = datetime.now().timestamp()
 
     async def ans(msg: MessageSession, answer):
+        if msg.asDisplay() == 'STOP':
+            return await msg.sendMessage(f'已停止，正确答案是 {answer}', quote=False)
         if datetime.now().timestamp() - time_start > 120:
             return await msg.sendMessage(f'已超时，正确答案是 {answer}', quote=False)
         if msg.asDisplay() != answer:
