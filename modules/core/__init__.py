@@ -629,7 +629,7 @@ leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin
 
 @leave.handle()
 async def _(msg: MessageSession):
-    confirm = await msg.waitConfirm('你确定吗？')
+    confirm = await msg.waitConfirm('你确定吗？此操作不可逆。')
     if confirm:
         await msg.sendMessage('已执行。')
         await msg.call_api('set_group_leave', group_id=msg.session.target)
