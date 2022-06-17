@@ -2,12 +2,12 @@ class MessageTaskManager:
     _list = {}
 
     @staticmethod
-    def add_task(uid, tsk):
-        MessageTaskManager._list.update({uid: tsk})
+    def add_task(grp, uid, tsk):
+        MessageTaskManager._list.update({grp: {uid: tsk}})
 
     @staticmethod
-    def del_task(uid):
-        del MessageTaskManager._list[uid]
+    def del_task(grp, uid):
+        del MessageTaskManager._list[grp][uid]
 
     @staticmethod
     def get():
@@ -18,12 +18,12 @@ class FinishedTasks:
     _list = {}
 
     @staticmethod
-    def add_task(uid, result):
-        FinishedTasks._list.update({uid: result})
+    def add_task(grp, uid, result):
+        FinishedTasks._list.update({grp: {uid: result}})
 
     @staticmethod
-    def del_task(uid):
-        del FinishedTasks._list[uid]
+    def del_task(grp, uid):
+        del FinishedTasks._list[grp][uid]
 
     @staticmethod
     def get():

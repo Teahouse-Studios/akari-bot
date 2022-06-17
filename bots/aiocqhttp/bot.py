@@ -42,11 +42,13 @@ async def _(event: Event):
         return
     all_tsk = MessageTaskManager.get()
     user_id = event.user_id
-    if user_id in all_tsk:
-        FinishedTasks.add_task(user_id, event.message)
-        all_tsk[user_id].set()
-        MessageTaskManager.del_task(user_id)
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
+    if targetId in all_tsk:
+        if user_id in all_tsk[targetId]:
+            FinishedTasks.add_task(targetId, user_id, event.message)
+            all_tsk[targetId][user_id].set()
+            MessageTaskManager.del_task(targetId, user_id)
+
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|{str(event.user_id)}',
                                  targetFrom='QQ|Group' if event.detail_type == 'group' else 'QQ',
@@ -69,12 +71,14 @@ async def _(event):
     tiny_id = event.user_id
     if tiny_id == GuildAccountInfo.tiny_id:
         return
+    targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
     all_tsk = MessageTaskManager.guild_get()
-    if tiny_id in all_tsk:
-        FinishedTasks.add_guild_task(tiny_id, event.message)
-        all_tsk[tiny_id].set()
-        MessageTaskManager.del_guild_task(tiny_id)
-    msg = MessageSessionGuild(MsgInfo(targetId=f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}',
+    if targetId in all_tsk:
+        if tiny_id in all_tsk[targetId]:
+            FinishedTasks.add_guild_task(targetId, tiny_id, event.message)
+            all_tsk[targetId][tiny_id].set()
+            MessageTaskManager.del_guild_task(targetId, tiny_id)
+    msg = MessageSessionGuild(MsgInfo(targetId=targetId,
                                       senderId=f'QQ|Tiny|{str(event.user_id)}',
                                       targetFrom='QQ|Guild',
                                       senderFrom='QQ|Tiny', senderName='', clientName='QQ'),

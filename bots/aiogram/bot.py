@@ -18,11 +18,13 @@ Url.disable_mm = True
 async def msg_handler(message: types.Message):
     all_tsk = MessageTaskManager.get()
     user_id = message.from_user.id
-    if user_id in all_tsk:
-        FinishedTasks.add_task(user_id, message)
-        all_tsk[user_id].set()
-        MessageTaskManager.del_task(user_id)
-    msg = MessageSession(MsgInfo(targetId=f'Telegram|{message.chat.type}|{message.chat.id}',
+    targetId = f'Telegram|{message.chat.type}|{message.chat.id}'
+    if targetId in all_tsk:
+        if user_id in all_tsk[targetId]:
+            FinishedTasks.add_task(targetId, user_id, message)
+            all_tsk[targetId][user_id].set()
+            MessageTaskManager.del_task(targetId, user_id)
+    msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'Telegram|User|{message.from_user.id}',
                                  targetFrom=f'Telegram|{message.chat.type}',
                                  senderFrom='Telegram|User', senderName=message.from_user.username, clientName='Telegram'),

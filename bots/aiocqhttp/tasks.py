@@ -3,24 +3,24 @@ class MessageTaskManager:
     _guild_list = {}
 
     @staticmethod
-    def add_task(uid, tsk):
-        MessageTaskManager._list.update({uid: tsk})
+    def add_task(grp, uid, tsk):
+        MessageTaskManager._list.update({grp: {uid: tsk}})
 
     @staticmethod
-    def del_task(uid):
-        del MessageTaskManager._list[uid]
+    def del_task(grp, uid):
+        del MessageTaskManager._list[grp][uid]
 
     @staticmethod
     def get():
         return MessageTaskManager._list
 
     @staticmethod
-    def add_guild_task(uid, tsk):
-        MessageTaskManager._guild_list.update({uid: tsk})
+    def add_guild_task(grp, uid, tsk):
+        MessageTaskManager._guild_list.update({grp: {uid: tsk}})
 
     @staticmethod
-    def del_guild_task(uid):
-        del MessageTaskManager._guild_list[uid]
+    def del_guild_task(grp, uid):
+        del MessageTaskManager._guild_list[grp][uid]
 
     @staticmethod
     def guild_get():
@@ -32,24 +32,24 @@ class FinishedTasks:
     _guild_list = {}
 
     @staticmethod
-    def add_task(uid, result):
-        FinishedTasks._list.update({uid: result})
+    def add_task(grp, uid, result):
+        FinishedTasks._list.update({grp: {uid: result}})
 
     @staticmethod
-    def del_task(uid):
-        del FinishedTasks._list[uid]
+    def del_task(grp, uid):
+        del FinishedTasks._list[grp][uid]
 
     @staticmethod
     def get():
         return FinishedTasks._list
 
     @staticmethod
-    def add_guild_task(uid, result):
-        FinishedTasks._guild_list.update({uid: result})
+    def add_guild_task(grp, uid, result):
+        FinishedTasks._guild_list.update({grp: {uid: result}})
 
     @staticmethod
-    def del_guild_task(uid):
-        del FinishedTasks._guild_list[uid]
+    def del_guild_task(grp, uid):
+        del FinishedTasks._guild_list[grp][uid]
 
     @staticmethod
     def guild_get():

@@ -85,11 +85,11 @@ class MessageSession(MS):
             msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
             send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self.session.sender, flag)
+        MessageTaskManager.add_task(self.target.targetId, self.session.sender, flag)
         await flag.wait()
         if send is not None:
             await send.delete()
-        if self.asDisplay(FinishedTasks.get()[self.session.sender]) in confirm_command:
+        if self.asDisplay(FinishedTasks.get()[self.target.targetId][self.session.sender]) in confirm_command:
             return True
         return False
 
