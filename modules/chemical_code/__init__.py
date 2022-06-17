@@ -73,7 +73,7 @@ async def _(msg: MessageSession):
     get_rand = randcc()
     get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
     Logger.info(get_rand[1])
-    await msg.sendMessage([Image(get_image), Plain('请于2分钟内发送正确答案。')])
+    await msg.sendMessage([Image(get_image), Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()
 
     async def ans(msg: MessageSession, answer):
