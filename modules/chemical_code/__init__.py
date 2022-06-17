@@ -78,6 +78,7 @@ async def _(msg: MessageSession):
     async def ans(msg: MessageSession, answer):
         if datetime.now().timestamp() - time_start > 120:
             await msg.finish(f'已超时，正确答案是 {answer}', quote=False)
+            playlist.remove(msg.target.targetId)
         if msg.asDisplay() != answer:
             next_ = await msg.waitAnyone()
             return await ans(next_, answer)
