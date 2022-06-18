@@ -118,7 +118,7 @@ async def _(msg: MessageSession):
     await asyncio.gather(ans(msg, get_rand[1]), timer(time_start))
 
 
-@cc.handle('stop')
+@cc.handle('stop {停止当前的游戏。}')
 async def s(msg: MessageSession):
     state = play_state.get(msg.target.targetId, False)
     if state:
