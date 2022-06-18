@@ -175,7 +175,7 @@ async def _(msg: MessageSession):
 @wiki.handle('headers reset {重置headers}', required_admin=True)
 async def _(msg: MessageSession):
     target = WikiTargetInfo(msg)
-    reset = target.config_headers('', let_it=None)
+    reset = target.config_headers('{}', let_it=None)
     if reset:
         await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
 
