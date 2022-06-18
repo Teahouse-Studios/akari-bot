@@ -34,6 +34,7 @@ class Logginglogger:
         self.debug = self.log.debug
         self.warn = self.log.warning
         self.exception = self.log.exception
+        self.fatal = self.log.fatal
 
 
 Logger = Logginglogger()

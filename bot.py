@@ -161,7 +161,7 @@ def run_bot():
 
         for p in runlst:
             if p.poll() == 233:
-                Logger.warning(f'{p.pid} exited with code 233, restart all bots.')
+                Logger.warn(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
         sleep(0.001)
