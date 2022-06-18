@@ -534,7 +534,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except InvalidWikiError as e:
-            await session.sendMessage(f'发生错误：' + str(e))
+            if isinstance(session, MessageSession):
+                await session.sendMessage(f'发生错误：' + str(e))
+            else:
+                msg_list.append(f'发生错误：' + str(e))
     if isinstance(session, MessageSession):
         if msg_list:
             if all([not render_infobox_list, not render_section_list, not dl_list, not wait_list]):
