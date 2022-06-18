@@ -42,19 +42,29 @@ class Template(MS):
                 img.show()
         return FinishedSession(['There should be a callable here... hmm...'])
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         send = None
         if msgchain is not None:
             send = await self.sendMessage(msgchain)
             print("（发送“是”或符合确认条件的词语来确认）")
         c = input('Confirm: ')
         print(c)
-        if msgchain is not None:
+        if msgchain is not None and delete:
             await send.delete()
         if c in confirm_command:
             return True
 
         return False
+
+    async def waitAnyone(self, msgchain=None, quote=True, delete=True):
+        send = None
+        if msgchain is not None:
+            send = await self.sendMessage(msgchain)
+        c = input('Confirm: ')
+        print(c)
+        if msgchain is not None and delete:
+            await send.delete()
+        return c
 
     def asDisplay(self):
         return self.session.message

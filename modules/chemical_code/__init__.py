@@ -15,6 +15,8 @@ from core.elements import MessageSession, Image, Plain
 from core.utils import download_to_cache
 from core.logger import Logger
 
+from PIL import Image as PILImage
+
 Base = declarative_base()
 
 DB_LINK = 'sqlite:///modules/chemical_code/answer.db'
@@ -73,7 +75,26 @@ async def _(msg: MessageSession):
     get_rand = randcc()
     get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
     Logger.info(get_rand[1])
-    await msg.sendMessage([Image(get_image), Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
+
+    with PILImage.open(get_image) as im:
+        if im.size[0] == 4:
+            playlist.remove(msg.target.targetId)
+            return await _(msg)
+        im.seek(0)
+        image = im.convert("RGBA")
+        datas = image.getdata()
+        newData = []
+        for item in datas:
+            if item[3] == 0:  # if transparent
+                newData.append((255, 255, 255))  # set transparent color in jpg
+            else:
+                newData.append(tuple(item[:3]))
+        image = PILImage.new("RGB", im.size)
+        image.getdata()
+        image.putdata(newData)
+
+    await msg.sendMessage([Image(image),
+                           Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()
 
     async def ans(msg: MessageSession, answer):
