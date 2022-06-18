@@ -1,8 +1,7 @@
 import asyncio
-import aiohttp
 import random
 
-from sqlalchemy import create_engine, Column, String, Text, Integer, TIMESTAMP, text
+from sqlalchemy import create_engine, Column, String, Text, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -64,21 +63,22 @@ def randcc():
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
-playlist = []
+play_state = {}
 
 
 @cc.handle()
 async def _(msg: MessageSession):
-    if msg.target.targetId in playlist:
+    if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:
         await msg.finish('当前有一局游戏正在进行中。')
-    playlist.append(msg.target.targetId)
+    play_state.update({msg.target.targetId: {'active': True}})
     get_rand = randcc()
     get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
     Logger.info(get_rand[1])
+    play_state[msg.target.targetId]['answer'] = get_rand[1]
 
     with PILImage.open(get_image) as im:
         if im.size[0] == 4:
-            playlist.remove(msg.target.targetId)
+            del play_state[msg.target.targetId]
             return await _(msg)
         im.seek(0)
         image = im.convert("RGBA")
@@ -98,20 +98,36 @@ async def _(msg: MessageSession):
     time_start = datetime.now().timestamp()
 
     async def ans(msg: MessageSession, answer):
-        if msg.asDisplay() == 'STOP':
-            return await msg.sendMessage(f'已停止，正确答案是 {answer}', quote=False)
-        if datetime.now().timestamp() - time_start > 120:
-            return await msg.sendMessage(f'已超时，正确答案是 {answer}', quote=False)
-        if msg.asDisplay() != answer:
-            next_ = await msg.waitAnyone()
-            return await ans(next_, answer)
+        wait = await msg.waitAnyone()
+        if play_state[msg.target.targetId]['active']:
+            if wait.asDisplay() != answer:
+                return await ans(wait, answer)
+            else:
+                await wait.sendMessage('回答正确。')
+                play_state[msg.target.targetId]['active'] = False
+
+    async def timer(start):
+        if play_state[msg.target.targetId]['active']:
+            if datetime.now().timestamp() - start > 120:
+                await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}', quote=False)
+                play_state[msg.target.targetId]['active'] = False
+            else:
+                await asyncio.sleep(1)
+                await timer(start)
+
+    await asyncio.gather(ans(msg, get_rand[1]), timer(time_start))
+
+
+@cc.handle('stop')
+async def s(msg: MessageSession):
+    state = play_state.get(msg.target.targetId, False)
+    if state:
+        if state['active']:
+            play_state[msg.target.targetId]['active'] = False
+            await msg.sendMessage(f'已停止，正确答案是 {state["answer"]}', quote=False)
         else:
-            await msg.sendMessage('回答正确。')
-    wait = await msg.waitAnyone()
-    await ans(wait, answer=get_rand[1])
-    playlist.remove(msg.target.targetId)
-
-
-
+            await msg.sendMessage('当前无活跃状态的游戏。')
+    else:
+        await msg.sendMessage('当前无活跃状态的游戏。')
 
 

@@ -64,7 +64,8 @@ class Template(MS):
         print(c)
         if msgchain is not None and delete:
             await send.delete()
-        return c
+        self.session.message = c
+        return self
 
     def asDisplay(self):
         return self.session.message
