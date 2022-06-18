@@ -430,7 +430,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 else:
                     query_task[start_wiki]['query'].append(t)
     elif pageid is not None:
-        if iw is None:
+        if iw == '':
             query_task = {start_wiki: {'queryid': [pageid], 'iw_prefix': ''}}
         else:
             query_task = {interwiki_list[iw]: {

@@ -68,15 +68,18 @@ async def temp_ban_check(msg: MessageSession):
 
 
 async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
-                 running_mention: bool = False):
+                 running_mention: bool = False, tos: bool = True):
     """
     接收消息必经的预处理器
     :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
     :param require_enable_modules: 是否需要检查模块是否已启用
     :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在''值的情况下则代表无需命令前缀
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行
+    :param tos: 是否启用TOS
     :return: 无返回
     """
+    if not tos:
+        enable_tos = False
     try:
         modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
         modulesAliases = ModulesManager.return_modules_alias_map()

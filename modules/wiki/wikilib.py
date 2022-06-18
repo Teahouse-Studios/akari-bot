@@ -576,8 +576,8 @@ class WikiLib:
                             else:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if _tried == 0:
-                                page_info.title = page_info.interwiki_prefix if not langlink else '' + t
-                                if langlink:
+                                page_info.title = (page_info.interwiki_prefix if langlink is None else '') + t
+                                if langlink is not None:
                                     page_info.before_title = page_info.title
                                 if before_page_info.section is not None:
                                     page_info.section = before_page_info.section

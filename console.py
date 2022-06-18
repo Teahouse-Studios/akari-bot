@@ -1,4 +1,5 @@
 import os
+import sys
 
 from config import Config
 
@@ -11,10 +12,11 @@ if not Config('db_path'):
 import asyncio
 import traceback
 import aioconsole
+import logging
 
 from datetime import datetime
 
-from bot import init_bot
+from bot import init_bot, TimedPatternFileHandler
 from core.elements import MsgInfo, Session, PrivateAssets, EnableDirtyWordCheck
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
@@ -33,16 +35,7 @@ async def console_scheduler():
 async def console_command():
     try:
         m = await aioconsole.ainput('> ')
-        time = datetime.now()
-        await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
-                                                   senderId='TEST|0',
-                                                   senderName='',
-                                                   targetFrom='TEST|Console',
-                                                   senderFrom='TEST|Console', clientName='TEST'),
-                                    session=Session(message=m, target='TEST|0', sender='TEST|0')))
-        print('----Process end----')
-        usage_time = datetime.now() - time
-        print('Usage time:', usage_time)
+        await send_command(m)
         await console_command()
     except KeyboardInterrupt:
         print('Exited.')
@@ -51,8 +44,45 @@ async def console_command():
         Logger.error(traceback.format_exc())
 
 
-init_bot()
-loop = asyncio.get_event_loop()
-loop.create_task(console_scheduler())
-loop.create_task(console_command())
-loop.run_forever()
+async def send_command(msg):
+    time = datetime.now()
+    Logger.info('-------Start-------')
+    await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
+                                               senderId='TEST|0',
+                                               senderName='',
+                                               targetFrom='TEST|Console',
+                                               senderFrom='TEST|Console', clientName='TEST'),
+                                session=Session(message=msg, target='TEST|0', sender='TEST|0')), tos=False)
+    Logger.info('----Process end----')
+    usage_time = datetime.now() - time
+    Logger.info('Usage time:' + str(usage_time))
+
+
+async def autotest():
+    test_file = './test_commands.txt'
+    if not os.path.exists(test_file):
+        Logger.error('Test file not found.')
+    read = open(test_file, 'r', encoding='utf-8')
+    commands = read.read().split('\n\n')
+    for command in commands:
+        await send_command(command)
+
+
+if __name__ == '__main__':
+    logger = logging.getLogger()
+    logpath = os.path.abspath('./logs')
+    logger.addHandler(TimedPatternFileHandler('{}_%Y-%m-%d.log'.format(logpath + '/console_log'), mode='a', backup_count=5))
+    init_bot()
+    loop = asyncio.get_event_loop()
+    argv = sys.argv
+    autotest_ = False
+    if len(argv) > 1:
+        if argv[1] == 'autotest':
+            autotest_ = True
+    if not autotest_:
+        loop.create_task(console_scheduler())
+        loop.create_task(console_command())
+        loop.run_forever()
+    else:
+        loop.create_task(autotest())
+        loop.run_forever()
