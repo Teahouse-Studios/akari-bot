@@ -69,21 +69,33 @@ csr_link = 'https://www.chemspider.com'
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
-async def search_csr():
-    cas, answer = randcc()
+async def search_csr(id=None):
+    if id is not None:
+        answer = id
+    else:
+        cas, answer = randcc()
     get = await get_url(csr_link + '/Search.aspx?q=' + answer, 200, fmt='text')
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')
-    results = soup.find_all('tbody')[0].find_all('tr')
-
-
     rlist = []
+    try:
+        results = soup.find_all('tbody')[0].find_all('tr')
+        for x in results:
+            sub = x.find_all('td')[0:4]
+            name = sub[2].text
+            image = sub[1].find_all('img')[0].get('src')
+            rlist.append({'name': name, 'image': csr_link + image + '&w=500&h=500'})
+    except IndexError:
+        try:
+            name = soup.find('span',
+                             id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text
+            image = soup.find('img',
+                              id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_ThumbnailControl1_viewMolecule')\
+                .get('src')
+            rlist.append({'name': name, 'image': csr_link + image})
+        except Exception as e:
+            raise e
 
-    for x in results:
-        sub = x.find_all('td')[0:4]
-        name = sub[2].text
-        image = sub[1].find_all('img')[0].get('src')
-        rlist.append({'name': name, 'image': csr_link + image + '&w=500&h=500'})
 
     return rlist
 
@@ -93,12 +105,23 @@ play_state = {}
 
 
 @cc.handle()
-async def _(msg: MessageSession):
+async def chemical_code_by_random(msg: MessageSession):
+    await c(msg)
+
+
+@cc.handle('<id> {根据 ID 出题}')
+async def chemical_code_by_id(msg: MessageSession):
+    id = msg.parsed_msg['<id>']
+    if id.isdigit():
+        await c(msg, id)
+
+
+async def c(msg: MessageSession, id=None):
     if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:
         await msg.finish('当前有一局游戏正在进行中。')
     play_state.update({msg.target.targetId: {'active': True}})
     try:
-        csr = await search_csr()
+        csr = await search_csr(id)
     except Exception as e:
         traceback.print_exc()
         play_state[msg.target.targetId]['active'] = False
