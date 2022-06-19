@@ -163,10 +163,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 await msg.sendMessage(f'{command_first_word}模块未启用，请发送~enable {command_first_word}启用本模块。')
                                 continue
                         elif module.required_admin:
-                            if not await msg.checkPermission() and not mute:
-                                if in_mute:
-                                    ExecutionLockList.remove(msg)
-                                    continue
+                            if not await msg.checkPermission():
                                 await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                                 continue
                         if not module.match_list.set:
