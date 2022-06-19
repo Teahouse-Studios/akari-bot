@@ -1,6 +1,7 @@
 import asyncio
 import random
 
+from bs4 import BeautifulSoup
 from sqlalchemy import create_engine, Column, String, Text, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -11,10 +12,9 @@ from datetime import datetime
 
 from core.component import on_command
 from core.elements import MessageSession, Image, Plain
-from core.utils import download_to_cache, random_cache_path
+from core.utils import get_url
 from core.logger import Logger
 
-from PIL import Image as PILImage
 
 Base = declarative_base()
 
@@ -62,6 +62,26 @@ def randcc():
     return query.cas, query.answer
 
 
+csr_link = 'https://www.chemspider.com'
+
+
+async def search_csr(keyword: str):
+    get = await get_url(csr_link + '/Search.aspx?q=' + keyword, 200, fmt='text')
+    soup = BeautifulSoup(get, 'html.parser')
+
+    results = soup.find_all('tbody')[0].find_all('tr')
+
+    rlist = []
+
+    for x in results:
+        sub = x.find_all('td')[0:4]
+        name = sub[2].text
+        image = sub[1].find_all('img')[0].get('src')
+        rlist.append({'name': name, 'image': csr_link + image})
+
+    return rlist
+
+
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
 play_state = {}
 
@@ -72,7 +92,12 @@ async def _(msg: MessageSession):
         await msg.finish('当前有一局游戏正在进行中。')
     play_state.update({msg.target.targetId: {'active': True}})
     get_rand = randcc()
-    get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
+    csr = await search_csr(get_rand[1])
+    choice = random.choice(csr)
+    play_state[msg.target.targetId]['answer'] = choice['name']
+    Logger.info(f'Answer: {choice["name"]}')
+
+    """get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
     Logger.info(get_rand[1])
     play_state[msg.target.targetId]['answer'] = get_rand[1]
 
@@ -93,9 +118,9 @@ async def _(msg: MessageSession):
         image.getdata()
         image.putdata(newData)
         newpath = random_cache_path() + '.png'
-        image.save(newpath)
+        image.save(newpath)"""
 
-    await msg.sendMessage([Image(newpath),
+    await msg.sendMessage([Image(choice['image']),
                            Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()
 
