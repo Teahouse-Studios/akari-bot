@@ -86,7 +86,7 @@ async def _(msg: MessageSession):
         newData = []
         for item in datas:
             if item[3] == 0:  # if transparent
-                newData.append((255, 255, 255))  # set transparent color in jpg
+                newData.append((230, 230, 230))  # set transparent color in jpg
             else:
                 newData.append(tuple(item[:3]))
         image = PILImage.new("RGBA", im.size)
