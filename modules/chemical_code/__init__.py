@@ -68,6 +68,7 @@ csr_link = 'https://www.chemspider.com'
 async def search_csr(keyword: str):
     try:
         get = await get_url(csr_link + '/Search.aspx?q=' + keyword, 200, fmt='text')
+        Logger.info(get)
         soup = BeautifulSoup(get, 'html.parser')
         results = soup.find_all('tbody')[0].find_all('tr')
 
