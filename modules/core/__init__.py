@@ -610,7 +610,8 @@ async def _(msg: MessageSession):
         await msg.finish('成功打开输入提示。')
 
 
-mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True)
+mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True, 
+                   desc='使机器人停止发言。')
 
 
 @mute.handle()
