@@ -28,12 +28,9 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     get = await get_url(csr_link + '/Search.aspx?q=' + str(answer), 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
-    rlist = []  # 创建一个空列表用于存放搜索结果
     name = soup.find('span',
                      id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-    rlist.append({'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w=500&h=500'})
-
-    return rlist
+    return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w=500&h=500'}
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
@@ -78,10 +75,9 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
         play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
         return await msg.finish('发生错误：拉取题目失败，请重新发起游戏。')
     # print(csr)
-    choice = random.choice(csr)  # 从列表中随机选择一个结果
-    play_state[msg.target.targetId]['answer'] = choice['name']  # 将正确答案标记于 play_state 中存储的对象中
-    Logger.info(f'Answer: {choice["name"]}')  # 在日志中输出正确答案
-    download = await download_to_cache(choice['image'])  # 从结果中获取链接并下载图片
+    play_state[msg.target.targetId]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
+    Logger.info(f'Answer: {csr["name"]}')  # 在日志中输出正确答案
+    download = await download_to_cache(csr['image'])  # 从结果中获取链接并下载图片
 
     with PILImage.open(download) as im:  # 打开下载的图片
         datas = im.getdata()  # 获取图片数组
@@ -120,5 +116,5 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
                 await asyncio.sleep(1)  # 等待1秒
                 await timer(start)  # 重新调用计时器函数
 
-    await asyncio.gather(ans(msg, choice['name']), timer(time_start))  # 同时启动回答函数和计时器函数
+    await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
 
