@@ -18,3 +18,4 @@ feedparser
 ffmpy
 google_play_scraper
 py-cpuinfo
+aiofile

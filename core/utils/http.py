@@ -2,6 +2,7 @@ import traceback
 from typing import Union
 
 import aiohttp
+from aiofile import async_open
 import filetype as ft
 from tenacity import retry, wait_fixed, stop_after_attempt
 
@@ -60,8 +61,8 @@ async def download_to_cache(link: str) -> Union[str, bool]:
                 res = await resp.read()
                 ftt = ft.match(res).extension
                 path = f'{random_cache_path()}.{ftt}'
-                with open(path, 'wb+') as file:
-                    file.write(res)
+                async with async_open(path, 'wb+') as file:
+                    await file.write(res)
                     return path
     except:
         Logger.error(traceback.format_exc())
