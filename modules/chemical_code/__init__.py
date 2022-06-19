@@ -3,9 +3,6 @@ import random
 import traceback
 
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine, Column, String, Text, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 from tenacity import retry, stop_after_attempt
 
@@ -19,52 +16,6 @@ from core.logger import Logger
 from PIL import Image as PILImage
 
 
-Base = declarative_base()
-
-DB_LINK = 'sqlite:///modules/chemical_code/answer.db'  # 题型数据库
-
-
-class Answer(Base):  # 数据表，为了使用 sqlalchemy 进行数据库操作所以预设此类
-    __tablename__ = "Answer"
-    id = Column(Integer, primary_key=True)
-    cas = Column(String(512))
-    answer = Column(Text)
-
-
-class MSGDBSession:  # 数据库会话类
-    def __init__(self):
-        self.engine = engine = create_engine(DB_LINK)
-        Base.metadata.create_all(bind=engine, checkfirst=True)
-        self.Session = sessionmaker()
-        self.Session.configure(bind=self.engine)
-
-    @property
-    def session(self):
-        return self.Session()
-
-
-session = MSGDBSession().session  # 实例化数据库会话并获取数据库会话
-
-
-def auto_rollback_error(func):  # 函数装饰器，用于捕获异常并回滚数据库
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            session.rollback()
-            raise e
-
-    return wrapper
-
-
-@retry(stop=stop_after_attempt(3))  # 函数装饰器，用于重试 3 次
-@auto_rollback_error  # 函数装饰器，用于捕获异常并回滚数据库
-def randcc():  # 随机从数据库（数据来源：chemicalbook）中获取一个题目
-    num = random.randint(1, 20000)  # 在 1 到 20000 之间随机一个数作为抽取 ID
-    query = session.query(Answer).filter_by(id=num).first()  # 根据 ID 查询题目
-    return query.cas, query.answer  # 返回 chemicalbook 中的 CAS 号和化学式
-
-
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 
 
@@ -73,29 +24,17 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     if id is not None:  # 如果传入了 ID，则使用 ID 查询
         answer = id
     else:
-        cas, answer = randcc()  # 否则随机查询一个题目
-    get = await get_url(csr_link + '/Search.aspx?q=' + answer, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
+        answer = random.randint(1, 100000000)  # 否则随机查询一个题目
+    get = await get_url(csr_link + '/Search.aspx?q=' + str(answer), 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
     rlist = []  # 创建一个空列表用于存放搜索结果
-    try:  # 尝试获取搜索结果
-        results = soup.find_all('tbody')[0].find_all('tr')  # 获取搜索结果中的所有表格行
-        for x in results:  # 遍历所有表格行
-            sub = x.find_all('td')[0:4]  # 获取表格行中的前四个单元格
-            name = sub[2].text  # 单元格中的化学式名称
-            image = sub[1].find_all('img')[0].get('src')  # 单元格中的图片链接
-            rlist.append({'name': name, 'image': csr_link + image + '&w=500&h=500'})  # 将化学式名称和图片链接加入列表
-    except IndexError:  # 尝试失败，进行第二次尝试
-        try:
-            name = soup.find('span',
-                             id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-            image = soup.find('img',
-                              id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_ThumbnailControl1_viewMolecule')\
-                .get('src')  # 获取图片链接
-            rlist.append({'name': name, 'image': csr_link + image})
-        except Exception as e:  # 尝试失败，抛出错误
-            raise e
-
+    try:
+        name = soup.find('span',
+                         id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
+        rlist.append({'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w=500&h=500'})
+    except Exception as e:  # 尝试失败，抛出错误
+        raise e
 
     return rlist
 
@@ -145,31 +84,6 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
     choice = random.choice(csr)  # 从列表中随机选择一个结果
     play_state[msg.target.targetId]['answer'] = choice['name']  # 将正确答案标记于 play_state 中存储的对象中
     Logger.info(f'Answer: {choice["name"]}')  # 在日志中输出正确答案
-
-    # 下面的代码已被注释，因为不再使用 ChemicalBook 图片数据源
-    """get_image = await download_to_cache(f'https://www.chemicalbook.com/CAS/GIF/{get_rand[0]}.gif')
-    Logger.info(get_rand[1])
-    play_state[msg.target.targetId]['answer'] = get_rand[1]
-
-    with PILImage.open(get_image) as im:
-        if im.size[0] < 10:
-            del play_state[msg.target.targetId]
-            return await _(msg)
-        im.seek(0)
-        image = im.convert("RGBA")
-        datas = image.getdata()
-        newData = []
-        for item in datas:
-            if item[3] == 0:  # if transparent
-                newData.append((230, 230, 230))  # set transparent color in jpg
-            else:
-                newData.append(tuple(item[:3]))
-        image = PILImage.new("RGBA", im.size)
-        image.getdata()
-        image.putdata(newData)
-        newpath = random_cache_path() + '.png'
-        image.save(newpath)"""
-
     download = await download_to_cache(choice['image'])  # 从结果中获取链接并下载图片
 
     with PILImage.open(download) as im:  # 打开下载的图片
