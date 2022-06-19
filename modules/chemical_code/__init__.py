@@ -95,13 +95,13 @@ async def _(msg: MessageSession):
     if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:
         await msg.finish('当前有一局游戏正在进行中。')
     play_state.update({msg.target.targetId: {'active': True}})
-    get_rand = randcc()
     try:
         csr = await search_csr()
     except Exception as e:
         traceback.print_exc()
         play_state[msg.target.targetId]['active'] = False
         return await msg.finish('发生错误：拉取题目失败，请重新发起游戏。')
+    print(csr)
     choice = random.choice(csr)
     play_state[msg.target.targetId]['answer'] = choice['name']
     Logger.info(f'Answer: {choice["name"]}')
@@ -152,7 +152,7 @@ async def _(msg: MessageSession):
                 await asyncio.sleep(1)
                 await timer(start)
 
-    await asyncio.gather(ans(msg, get_rand[1]), timer(time_start))
+    await asyncio.gather(ans(msg, choice['name']), timer(time_start))
 
 
 @cc.handle('stop {停止当前的游戏。}')
