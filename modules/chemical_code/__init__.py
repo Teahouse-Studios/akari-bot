@@ -1,5 +1,6 @@
 import asyncio
 import random
+import re
 import traceback
 
 from bs4 import BeautifulSoup
@@ -30,7 +31,15 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
     name = soup.find('span',
                      id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-    return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w=500&h=500'}
+    values_ = re.split(r'[A-Za-z]+', name)  # 去除化学式名称中的字母
+    value = 0  # 起始元素记数，忽略单个元素（有无意义不大）
+    for v in values_:  # 遍历剔除字母后的数字
+        if v.isdigit():
+            value += int(v)  # 加一起
+    wh = 500 * value // 50
+    if wh < 100:
+        wh = 200
+    return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w={wh}&h={wh}'}
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
@@ -77,6 +86,7 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
     # print(csr)
     play_state[msg.target.targetId]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
     Logger.info(f'Answer: {csr["name"]}')  # 在日志中输出正确答案
+    Logger.info(f'Image: {csr["image"]}')  # 在日志中输出图片链接
     download = await download_to_cache(csr['image'])  # 从结果中获取链接并下载图片
 
     with PILImage.open(download) as im:  # 打开下载的图片
