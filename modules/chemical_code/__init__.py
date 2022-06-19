@@ -24,7 +24,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     if id is not None:  # 如果传入了 ID，则使用 ID 查询
         answer = id
     else:
-        answer = random.randint(1, 100000000)  # 否则随机查询一个题目
+        answer = random.randint(1, 12198914)  # 否则随机查询一个题目
     get = await get_url(csr_link + '/Search.aspx?q=' + str(answer), 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
@@ -63,7 +63,7 @@ async def s(msg: MessageSession):
 
 @cc.handle('<chemspider id> {根据 ChemSpider ID 出题}')
 async def chemical_code_by_id(msg: MessageSession):
-    id = msg.parsed_msg['<chemspider id>']  # 从已解析的消息中获取 ChemSpider ID
+    id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
     if id.isdigit():  # 如果 ID 为纯数字
         await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
