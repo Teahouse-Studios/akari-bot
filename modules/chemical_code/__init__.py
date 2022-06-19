@@ -81,7 +81,7 @@ async def search_csr():
         sub = x.find_all('td')[0:4]
         name = sub[2].text
         image = sub[1].find_all('img')[0].get('src')
-        rlist.append({'name': name, 'image': csr_link + image})
+        rlist.append({'name': name, 'image': csr_link + image + '&w=250&h=250'})
 
     return rlist
 
