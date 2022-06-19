@@ -52,7 +52,7 @@ async def send_command(msg):
                                                senderName='',
                                                targetFrom='TEST|Console',
                                                senderFrom='TEST|Console', clientName='TEST'),
-                                session=Session(message=msg, target='TEST|0', sender='TEST|0')), tos=False)
+                                session=Session(message=msg, target='TEST|0', sender='TEST|0')))
     Logger.info('----Process end----')
     usage_time = datetime.now() - time
     Logger.info('Usage time:' + str(usage_time))

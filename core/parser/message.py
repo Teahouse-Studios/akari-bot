@@ -68,7 +68,7 @@ async def temp_ban_check(msg: MessageSession):
 
 
 async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
-                 running_mention: bool = False, tos: bool = True):
+                 running_mention: bool = False):
     """
     接收消息必经的预处理器
     :param msg: 从监听器接收到的dict，该dict将会经过此预处理器传入下游
@@ -78,8 +78,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     :param tos: 是否启用TOS
     :return: 无返回
     """
-    if not tos:
-        enable_tos = False
     try:
         modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
         modulesAliases = ModulesManager.return_modules_alias_map()
