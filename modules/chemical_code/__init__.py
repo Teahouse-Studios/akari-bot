@@ -44,8 +44,9 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     wh = 500 * value // 100
     if wh < 500:
         wh = 500
-    return {'id': answer_id, 'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
-                                   (f"&w={wh}&h={wh}" if answer_id not in special_id else "")}
+    return {'id': answer_id, 'name': name,
+            'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
+            (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
@@ -118,8 +119,11 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
         newpath = random_cache_path() + '.png'  # 创建新文件名
         image.save(newpath)  # 保存新图片
 
+    set_timeout = csr['length'] // 30
+    if set_timeout < 2:
+        set_timeout = 2
     await msg.sendMessage([Image(newpath),
-                           Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
+                           Plain(f'请于{set_timeout}分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()  # 记录开始时间
 
     async def ans(msg: MessageSession, answer):  # 定义回答函数的功能
@@ -134,7 +138,7 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
 
     async def timer(start):  # 计时器函数
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if datetime.now().timestamp() - start > 120:  # 如果超过2分钟
+            if datetime.now().timestamp() - start > 60 * set_timeout:  # 如果超过2分钟
                 await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}', quote=False)
                 play_state[msg.target.targetId]['active'] = False
             else:  # 如果未超时
