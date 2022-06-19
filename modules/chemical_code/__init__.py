@@ -1,4 +1,5 @@
 import asyncio
+import os
 import random
 import re
 import traceback
@@ -26,11 +27,11 @@ special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "45
 @retry(stop=stop_after_attempt(3), reraise=True)
 async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的链接，留空（将会使用缺省值 None）则随机查询
     if id is not None:  # 如果传入了 ID，则使用 ID 查询
-        answer = id
+        answer_id = id
     else:
-        answer = random.randint(1, 12198914)  # 否则随机查询一个题目
-    answer = str(answer)
-    get = await get_url(csr_link + '/Search.aspx?q=' + answer, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
+        answer_id = random.randint(1, 12198914)  # 否则随机查询一个题目
+    answer_id = str(answer_id)
+    get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
     name = soup.find('span',
@@ -43,8 +44,8 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     wh = 500 * value // 100
     if wh < 500:
         wh = 500
-    return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}' +
-                                   (f"&w={wh}&h={wh}" if answer not in special_id else "")}
+    return {'id': answer_id, 'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
+                                   (f"&w={wh}&h={wh}" if answer_id not in special_id else "")}
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
@@ -92,16 +93,31 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
     play_state[msg.target.targetId]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
     Logger.info(f'Answer: {csr["name"]}')  # 在日志中输出正确答案
     Logger.info(f'Image: {csr["image"]}')  # 在日志中输出图片链接
-    download = await download_to_cache(csr['image'])  # 从结果中获取链接并下载图片
+    download = False
+    if csr["id"] in special_id:  # 如果正确答案在 special_id 中
+        file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
+        Logger.info(f'File path: {file_path}')  # 在日志中输出文件路径
+        exists_file = os.path.exists(file_path)  # 尝试获取图片文件是否存在
+        if exists_file:
+            download = file_path
+    if not download:
+        download = await download_to_cache(csr['image'])  # 从结果中获取链接并下载图片
 
     with PILImage.open(download) as im:  # 打开下载的图片
+        im.convert("RGBA")
         datas = im.getdata()  # 获取图片数组
         newData = []
         for item in datas:  # 对每个像素点进行处理
-            if item[3] == 0:  # 如果为透明
-                newData.append((230, 230, 230))  # 设置白底
+            if isinstance(item, int):
+                if item == 0:
+                    newData.append((230, 230, 230))
+                else:
+                    newData.append(item)
             else:
-                newData.append(tuple(item[:3]))  # 否则保留原图像素点
+                if item[3] == 0:
+                    newData.append((230, 230, 230))
+                else:
+                    newData.append(tuple(item[:3]))  # 否则保留原图像素点
         image = PILImage.new("RGBA", im.size)  # 创建新图片
         image.getdata()  # 获取新图片数组
         image.putdata(newData)  # 将处理后的数组覆盖新图片
