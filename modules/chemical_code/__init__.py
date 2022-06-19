@@ -77,7 +77,7 @@ async def _(msg: MessageSession):
     play_state[msg.target.targetId]['answer'] = get_rand[1]
 
     with PILImage.open(get_image) as im:
-        if im.size[0] == 4:
+        if im.size[0] < 10:
             del play_state[msg.target.targetId]
             return await _(msg)
         im.seek(0)
@@ -103,6 +103,7 @@ async def _(msg: MessageSession):
         wait = await msg.waitAnyone()
         if play_state[msg.target.targetId]['active']:
             if wait.asDisplay() != answer:
+                Logger.info(f'{wait.asDisplay()} != {answer}')
                 return await ans(wait, answer)
             else:
                 await wait.sendMessage('回答正确。')
