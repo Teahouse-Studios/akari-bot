@@ -36,9 +36,9 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     for v in values_:  # 遍历剔除字母后的数字
         if v.isdigit():
             value += int(v)  # 加一起
-    wh = 500 * value // 50
-    if wh < 200:
-        wh = 200
+    wh = 500 * value // 100
+    if wh < 250:
+        wh = 250
     return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w={wh}&h={wh}'}
 
 
