@@ -11,7 +11,7 @@ from datetime import datetime
 
 from core.component import on_command
 from core.elements import MessageSession, Image, Plain
-from core.utils import download_to_cache
+from core.utils import download_to_cache, random_cache_path
 from core.logger import Logger
 
 from PIL import Image as PILImage
@@ -89,11 +89,13 @@ async def _(msg: MessageSession):
                 newData.append((255, 255, 255))  # set transparent color in jpg
             else:
                 newData.append(tuple(item[:3]))
-        image = PILImage.new("RGB", im.size)
+        image = PILImage.new("RGBA", im.size)
         image.getdata()
         image.putdata(newData)
+        newpath = random_cache_path() + '.png'
+        image.save(newpath)
 
-    await msg.sendMessage([Image(image),
+    await msg.sendMessage([Image(newpath),
                            Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()
 
