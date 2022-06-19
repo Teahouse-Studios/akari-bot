@@ -18,6 +18,9 @@ from PIL import Image as PILImage
 
 
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
+special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
+              "4514330", "4514408", "4514534", "4514586", "4514603", "4515054", "4573995", "4574465", "4575369", "4575370",
+              "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276", "21865280"]
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
@@ -26,7 +29,8 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
         answer = id
     else:
         answer = random.randint(1, 12198914)  # 否则随机查询一个题目
-    get = await get_url(csr_link + '/Search.aspx?q=' + str(answer), 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
+    answer = str(answer)
+    get = await get_url(csr_link + '/Search.aspx?q=' + answer, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
     name = soup.find('span',
@@ -39,7 +43,8 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     wh = 500 * value // 100
     if wh < 500:
         wh = 500
-    return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w={wh}&h={wh}'}
+    return {'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}' +
+                                   (f"&w={wh}&h={wh}" if answer not in special_id else "")}
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
