@@ -1,3 +1,4 @@
+# https://github.com/XeroAlpha/caidlist/blob/master/backend/API.md
 import re
 import urllib.parse
 
@@ -12,6 +13,9 @@ enumNames = ['方块', '物品', '实体', '状态效果', '附魔类型', '迷�
              '声音', '游戏规则', '槽位类型', '战利品表', '音乐', '可再生的实体', '战利品使用工具']
 enum_map = dict(zip(enumNames, enums))
 branches = ['vanilla', 'education', 'experiment', 'translator']
+scopes = ['all', 'key', 'value']
+matches = ['keyword', 'contains', 'startswith', 'equal']
+
 api = 'https://ca.projectxero.top/idlist/search'
 
 i = on_command('idlist')
@@ -24,6 +28,8 @@ async def _(msg: MessageSession):
     enum = []
     version = []
     branch = []
+    scope = []
+    match = []
     for x in filter:
         if x.lower() in enums:
             enum.append(x)
@@ -33,6 +39,10 @@ async def _(msg: MessageSession):
             branch.append(x)
         elif x in enum_map:
             enum.append(enum_map[x])
+        elif x.lower() in scopes:
+            scope.append(x)
+        elif x.lower() in matches:
+            match.append(x)
         else:
             if not enum and not version and not branch:
                 query += " " + x
@@ -42,6 +52,10 @@ async def _(msg: MessageSession):
         return await msg.sendMessage('你一次只能指定一个版本。')
     if len(branch) > 1:
         return await msg.sendMessage('你一次只能指定一个分支。')
+    if len(scope) > 1:
+        return await msg.sendMessage('你一次只能指定一个范围。')
+    if len(match) > 1:
+        return await msg.sendMessage('你一次只能指定一个匹配方式。')
     query_options = {'q': query, 'limit': '6'}
     if enum:
         query_options['enum'] = enum[0]
@@ -49,6 +63,10 @@ async def _(msg: MessageSession):
         query_options['version'] = version[0]
     if branch:
         query_options['branch'] = branch[0]
+    if scope:
+        query_options['scope'] = scope[0]
+    if match:
+        query_options['match'] = match[0]
     query_url = api + '?' + urllib.parse.urlencode(query_options)
     resp = await get_url(query_url, fmt='json')
     print(resp)
