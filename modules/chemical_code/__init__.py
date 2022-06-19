@@ -122,7 +122,7 @@ async def s(msg: MessageSession):
         await msg.sendMessage('当前无活跃状态的游戏。')
 
 
-@cc.handle('<id> {根据 ChemSpider ID 出题}')
+@cc.handle('<chemspider id> {根据 ChemSpider ID 出题}')
 async def chemical_code_by_id(msg: MessageSession):
     id = msg.parsed_msg['<chemspider id>']
     if id.isdigit():
