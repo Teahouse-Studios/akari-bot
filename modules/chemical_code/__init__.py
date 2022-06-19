@@ -13,8 +13,10 @@ from datetime import datetime
 
 from core.component import on_command
 from core.elements import MessageSession, Image, Plain
-from core.utils import get_url
+from core.utils import get_url, download_to_cache, random_cache_path
 from core.logger import Logger
+
+from PIL import Image as PILImage
 
 
 Base = declarative_base()
@@ -101,7 +103,7 @@ async def _(msg: MessageSession):
         traceback.print_exc()
         play_state[msg.target.targetId]['active'] = False
         return await msg.finish('发生错误：拉取题目失败，请重新发起游戏。')
-    print(csr)
+    # print(csr)
     choice = random.choice(csr)
     play_state[msg.target.targetId]['answer'] = choice['name']
     Logger.info(f'Answer: {choice["name"]}')
@@ -129,7 +131,23 @@ async def _(msg: MessageSession):
         newpath = random_cache_path() + '.png'
         image.save(newpath)"""
 
-    await msg.sendMessage([Image(choice['image']),
+    download = await download_to_cache(choice['image'])
+
+    with PILImage.open(download) as im:
+        datas = im.getdata()
+        newData = []
+        for item in datas:
+            if item[3] == 0:  # if transparent
+                newData.append((230, 230, 230))  # set transparent color in jpg
+            else:
+                newData.append(tuple(item[:3]))
+        image = PILImage.new("RGBA", im.size)
+        image.getdata()
+        image.putdata(newData)
+        newpath = random_cache_path() + '.png'
+        image.save(newpath)
+
+    await msg.sendMessage([Image(newpath),
                            Plain('请于2分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()
 
