@@ -9,6 +9,7 @@ from os.path import abspath
 import aiohttp
 import ujson as json
 from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageFilter, ImageOps
+from aiofile import async_open
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
@@ -204,8 +205,8 @@ async def download_cover_thumb(uid):
             cover_thumbnail = get_level['cover']['thumbnail']
             async with aiohttp.ClientSession() as session:
                 async with session.get(cover_thumbnail) as resp:
-                    with open(path, 'wb+') as jpg:
-                        jpg.write(await resp.read())
+                    async with async_open(path, 'wb+') as jpg:
+                        await jpg.write(await resp.read())
                         return path
         else:
             return path
@@ -226,8 +227,8 @@ async def download_avatar_thumb(link, id):
             os.remove(path)
         async with aiohttp.ClientSession() as session:
             async with session.get(link, timeout=aiohttp.ClientTimeout(total=20)) as resp:
-                with open(path, 'wb+') as jpg:
-                    jpg.write(await resp.read())
+                async with async_open(path, 'wb+') as jpg:
+                    await jpg.write(await resp.read())
                     return path
     except:
         traceback.print_exc()
