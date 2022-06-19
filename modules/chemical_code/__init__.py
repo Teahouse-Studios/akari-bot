@@ -114,6 +114,8 @@ async def chemical_code_by_id(msg: MessageSession):
     id = msg.parsed_msg['<id>']
     if id.isdigit():
         await c(msg, id)
+    else:
+        await msg.reply('请输入纯数字ID！')
 
 
 async def c(msg: MessageSession, id=None):
