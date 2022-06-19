@@ -109,6 +109,19 @@ async def chemical_code_by_random(msg: MessageSession):
     await c(msg)
 
 
+@cc.handle('stop {停止当前的游戏。}')
+async def s(msg: MessageSession):
+    state = play_state.get(msg.target.targetId, False)
+    if state:
+        if state['active']:
+            play_state[msg.target.targetId]['active'] = False
+            await msg.sendMessage(f'已停止，正确答案是 {state["answer"]}', quote=False)
+        else:
+            await msg.sendMessage('当前无活跃状态的游戏。')
+    else:
+        await msg.sendMessage('当前无活跃状态的游戏。')
+
+
 @cc.handle('<id> {根据 ID 出题}')
 async def chemical_code_by_id(msg: MessageSession):
     id = msg.parsed_msg['<id>']
@@ -196,18 +209,4 @@ async def c(msg: MessageSession, id=None):
                 await timer(start)
 
     await asyncio.gather(ans(msg, choice['name']), timer(time_start))
-
-
-@cc.handle('stop {停止当前的游戏。}')
-async def s(msg: MessageSession):
-    state = play_state.get(msg.target.targetId, False)
-    if state:
-        if state['active']:
-            play_state[msg.target.targetId]['active'] = False
-            await msg.sendMessage(f'已停止，正确答案是 {state["answer"]}', quote=False)
-        else:
-            await msg.sendMessage('当前无活跃状态的游戏。')
-    else:
-        await msg.sendMessage('当前无活跃状态的游戏。')
-
 
