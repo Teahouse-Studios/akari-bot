@@ -29,12 +29,9 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
     rlist = []  # 创建一个空列表用于存放搜索结果
-    try:
-        name = soup.find('span',
-                         id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-        rlist.append({'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w=500&h=500'})
-    except Exception as e:  # 尝试失败，抛出错误
-        raise e
+    name = soup.find('span',
+                     id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
+    rlist.append({'name': name, 'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer}&w=500&h=500'})
 
     return rlist
 
