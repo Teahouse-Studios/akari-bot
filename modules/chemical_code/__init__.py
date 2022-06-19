@@ -106,7 +106,7 @@ play_state = {}  # 创建一个空字典用于存放游戏状态
 
 @cc.handle()  # 直接使用 cc 命令将触发此装饰器
 async def chemical_code_by_random(msg: MessageSession):
-    await c(msg)  # 将消息会话传入 c 函数
+    await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
 @cc.handle('stop {停止当前的游戏。}')
@@ -126,12 +126,12 @@ async def s(msg: MessageSession):
 async def chemical_code_by_id(msg: MessageSession):
     id = msg.parsed_msg['<chemspider id>']  # 从已解析的消息中获取 ChemSpider ID
     if id.isdigit():  # 如果 ID 为纯数字
-        await c(msg, id)  # 将消息会话和 ID 一并传入 c 函数
+        await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
         await msg.finish('请输入纯数字ID！')
 
 
-async def c(msg: MessageSession, id=None):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
+async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish('当前有一局游戏正在进行中。')
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
