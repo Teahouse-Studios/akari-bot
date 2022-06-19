@@ -66,20 +66,23 @@ csr_link = 'https://www.chemspider.com'
 
 
 async def search_csr(keyword: str):
-    get = await get_url(csr_link + '/Search.aspx?q=' + keyword, 200, fmt='text')
-    soup = BeautifulSoup(get, 'html.parser')
+    try:
+        get = await get_url(csr_link + '/Search.aspx?q=' + keyword, 200, fmt='text')
+        soup = BeautifulSoup(get, 'html.parser')
+        results = soup.find_all('tbody')[0].find_all('tr')
 
-    results = soup.find_all('tbody')[0].find_all('tr')
 
-    rlist = []
+        rlist = []
 
-    for x in results:
-        sub = x.find_all('td')[0:4]
-        name = sub[2].text
-        image = sub[1].find_all('img')[0].get('src')
-        rlist.append({'name': name, 'image': csr_link + image})
+        for x in results:
+            sub = x.find_all('td')[0:4]
+            name = sub[2].text
+            image = sub[1].find_all('img')[0].get('src')
+            rlist.append({'name': name, 'image': csr_link + image})
 
-    return rlist
+        return rlist
+    except Exception:
+        return False
 
 
 cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
@@ -93,6 +96,9 @@ async def _(msg: MessageSession):
     play_state.update({msg.target.targetId: {'active': True}})
     get_rand = randcc()
     csr = await search_csr(get_rand[1])
+    if not csr:
+        play_state[msg.target.targetId]['active'] = False
+        await msg.finish('发生错误：拉取题目失败，请重新发起游戏。')
     choice = random.choice(csr)
     play_state[msg.target.targetId]['answer'] = choice['name']
     Logger.info(f'Answer: {choice["name"]}')
