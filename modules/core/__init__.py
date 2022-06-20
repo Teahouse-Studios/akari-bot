@@ -566,7 +566,6 @@ async def restart_bot(msg: MessageSession):
         restart_time.append(datetime.now().timestamp())
         await wait_for_restart(msg)
         write_version_cache(msg)
-        await msg.sendMessage('已执行。')
         restart()
 
 
