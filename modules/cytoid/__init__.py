@@ -32,16 +32,20 @@ async def _(msg: MessageSession):
         if query_id is None:
             await msg.finish('未绑定用户，请使用~cytoid bind <friendcode>绑定一个用户。')
     if query:
-        qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
-        c = qc.check(300)
+        if msg.target.targetFrom == 'TEST|Console':
+            c = 0
+        else:
+            qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
+            c = qc.check(300)
         if c == 0:
             img = await get_rating(query_id, query)
             if 'path' in img:
                 await msg.sendMessage([Image(path=img['path'])])
             if 'text' in img:
                 await msg.sendMessage(img['text'])
-            if img['status']:
-                qc.reset()
+            if msg.target.targetFrom != 'TEST|Console':
+                if img['status']:
+                    qc.reset()
         else:
             await msg.sendMessage(f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为300秒。')
 

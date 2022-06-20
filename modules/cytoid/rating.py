@@ -6,6 +6,7 @@ import traceback
 import uuid
 from datetime import datetime, timedelta
 from os.path import abspath
+from config import Config
 
 import aiohttp
 import ujson as json
@@ -14,6 +15,7 @@ from aiofile import async_open
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
+from core.logger import Logger
 from core.utils import get_url
 
 
@@ -72,12 +74,14 @@ async def get_rating(uid, query_type):
 
         result = await client.execute_async(query)
         print(result)
-        workdir = os.path.abspath('./cache/' + str(uuid.uuid4()))
+        workdir = os.path.abspath(Config("cache_path") + str(uuid.uuid4()))
         os.mkdir(workdir)
         bestRecords = result['profile'][query_type]
         rank = 0
+        resources = []
         songcards = []
-        for x in bestRecords:
+
+        async def mkresources(x, rank):
             thumbpath = await download_cover_thumb(x['chart']['level']['uid'])
             chart_type = x['chart']['type']
             difficulty = x['chart']['difficulty']
@@ -103,15 +107,20 @@ async def get_rating(uid, query_type):
                     t = playtime
                     dw = 's'
             playtime = str(int(t)) + dw
-            rank += 1
             if thumbpath:
                 havecover = True
             else:
                 havecover = False
-            songcards.append(
-                make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
-                              havecover))
+            songcards.append(make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
+                          havecover))
+
+        for x in bestRecords:
+            rank += 1
+            resources.append(mkresources(x, rank))
+
+        await asyncio.gather(*resources)
         await asyncio.gather(*songcards)
+
         # b30card
         b30img = Image.new("RGBA", (1975, 1610), '#1e2129')
         avatar_path = await download_avatar_thumb(Avatar_img, ProfileId)
@@ -174,7 +183,7 @@ async def get_rating(uid, query_type):
                 h = h + 240 * t
                 w = w - 384 * 5 * t
                 i += 1
-                cardimg = await makeShadow(cardimg, 4, 9, [0, 3], 'rgba(0,0,0,0)', '#000000')
+                # cardimg = await makeShadow(cardimg, 4, 9, [0, 3], 'rgba(0,0,0,0)', '#000000')
                 b30img.alpha_composite(cardimg, (w, h))
                 fname += 1
                 s += 1
@@ -186,9 +195,9 @@ async def get_rating(uid, query_type):
         if __name__ == '__main__':
             b30img.show()
         else:
-            savefilename = os.path.abspath(f'./cache/{str(uuid.uuid4())}.jpg')
+            savefilename = os.path.abspath(f'{Config("cache_path")}{str(uuid.uuid4())}.jpg')
             b30img.convert("RGB").save(savefilename)
-            shutil.rmtree(workdir)
+            # shutil.rmtree(workdir)
             return {'status': True, 'path': savefilename}
     except Exception as e:
         traceback.print_exc()
@@ -206,7 +215,7 @@ async def download_cover_thumb(uid):
         if not os.path.exists(path):
             level_url = 'http://services.cytoid.io/levels/' + uid
             get_level = json.loads(await get_url(level_url))
-            cover_thumbnail = get_level['cover']['thumbnail']
+            cover_thumbnail = get_level['cover']['original'] + "?h=240&w=384"
             async with aiohttp.ClientSession() as session:
                 async with session.get(cover_thumbnail) as resp:
                     async with async_open(path, 'wb+') as jpg:
@@ -220,6 +229,7 @@ async def download_cover_thumb(uid):
 
 
 async def download_avatar_thumb(link, id):
+    Logger.info(f'Downloading avatar for {str(id)}')
     try:
         d = abspath('./assets/cytoid-avatar/')
         if not os.path.exists(d):
@@ -251,8 +261,7 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
         img = Image.new('RGBA', (384, 240), 'black')
     img = img.convert('RGBA')
     downlight = ImageEnhance.Brightness(img)
-    d2 = downlight.enhance(0.5)
-    img = d2.resize((384, 240))
+    img = downlight.enhance(0.5).resize((384, 240))
     img_type = Image.open(f'./assets/cytoid/{chart_type}.png')
     img_type = img_type.convert('RGBA')
     img_type = img_type.resize((40, 40))
@@ -274,6 +283,7 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
     draw_typetext = ImageDraw.Draw(type_text)
     draw_typetext.text(((32 - font3.getsize(type_)[0] - font.getoffset(type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
     img.alpha_composite(type_text, (23, 29))
+    Logger.info('Image generated: ' + str(rank))
     img.save(workdir + '/' + str(rank) + '.png')
 
 
