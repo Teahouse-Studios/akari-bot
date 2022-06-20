@@ -29,7 +29,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     if id is not None:  # 如果传入了 ID，则使用 ID 查询
         answer_id = id
     else:
-        answer_id = random.randint(1, 12198914)  # 否则随机查询一个题目
+        answer_id = random.randint(1, 114974229)  # 否则随机查询一个题目
     answer_id = str(answer_id)
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
