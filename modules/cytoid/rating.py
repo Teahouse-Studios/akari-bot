@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 import time
@@ -75,6 +76,7 @@ async def get_rating(uid, query_type):
         os.mkdir(workdir)
         bestRecords = result['profile'][query_type]
         rank = 0
+        songcards = []
         for x in bestRecords:
             thumbpath = await download_cover_thumb(x['chart']['level']['uid'])
             chart_type = x['chart']['type']
@@ -106,8 +108,10 @@ async def get_rating(uid, query_type):
                 havecover = True
             else:
                 havecover = False
-            make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
-                          havecover)
+            songcards.append(
+                make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
+                              havecover))
+        await asyncio.gather(*songcards)
         # b30card
         b30img = Image.new("RGBA", (1975, 1610), '#1e2129')
         avatar_path = await download_avatar_thumb(Avatar_img, ProfileId)
@@ -170,7 +174,7 @@ async def get_rating(uid, query_type):
                 h = h + 240 * t
                 w = w - 384 * 5 * t
                 i += 1
-                cardimg = makeShadow(cardimg, 4, 9, [0, 3], 'rgba(0,0,0,0)', '#000000')
+                cardimg = await makeShadow(cardimg, 4, 9, [0, 3], 'rgba(0,0,0,0)', '#000000')
                 b30img.alpha_composite(cardimg, (w, h))
                 fname += 1
                 s += 1
@@ -235,8 +239,8 @@ async def download_avatar_thumb(link, id):
         return False
 
 
-def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
-                  havecover=True):
+async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
+                        havecover=True):
     if havecover:
         try:
             img = Image.open(coverpath)
@@ -273,7 +277,7 @@ def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score,
     img.save(workdir + '/' + str(rank) + '.png')
 
 
-def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour):
+async def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour):
     fullWidth = image.size[0] + abs(offset[0]) + 2 * border
     fullHeight = image.size[1] + abs(offset[1]) + 2 * border
     shadow = Image.new(image.mode, (fullWidth, fullHeight), backgroundColour)
