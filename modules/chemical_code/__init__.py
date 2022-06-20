@@ -50,7 +50,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
             (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
 
 
-cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码测试', developers=['OasisAkari'])
+cc = on_command('chemical_code', alias=['cc', 'chemicalcode'], desc='化学式验证码，无聊的小游戏', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
@@ -124,7 +124,7 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
     if set_timeout < 2:
         set_timeout = 2
     await msg.sendMessage([Image(newpath),
-                           Plain(f'请于{set_timeout}分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
+                           Plain(f'请在{set_timeout}分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
     time_start = datetime.now().timestamp()  # 记录开始时间
 
     async def ans(msg: MessageSession, answer):  # 定义回答函数的功能
