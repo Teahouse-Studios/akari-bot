@@ -1,3 +1,4 @@
+import asyncio
 import os
 import platform
 import sys
@@ -10,7 +11,7 @@ import ujson as json
 from cpuinfo import get_cpu_info
 
 from core.component import on_command
-from core.elements import MessageSession, Command, PrivateAssets, Image, Plain
+from core.elements import MessageSession, Command, PrivateAssets, Image, Plain, ExecutionLockList
 from core.loader import ModulesManager
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from core.parser.message import remove_temp_ban
@@ -541,11 +542,29 @@ def write_version_cache(msg: MessageSession):
     write_version.close()
 
 
+restart_time = []
+
+
+async def wait_for_restart(msg: MessageSession):
+    get = ExecutionLockList.get()
+    if datetime.now().timestamp() - restart_time[0] < 60:
+        if len(get) != 0:
+            await msg.sendMessage(f'有 {len(get)} 个命令正在执行中，将于执行完毕后重启。')
+            await asyncio.sleep(10)
+            return await wait_for_restart(msg)
+        else:
+            await msg.sendMessage('重启中...')
+    else:
+        await msg.sendMessage('等待已超时，强制重启中...')
+
+
 @rst.handle()
 async def restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
+        restart_time.append(datetime.now().timestamp())
+        await wait_for_restart(msg)
         write_version_cache(msg)
         await msg.sendMessage('已执行。')
         restart()
@@ -574,6 +593,8 @@ async def update_and_restart_bot(msg: MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
+        restart_time.append(datetime.now().timestamp())
+        await wait_for_restart(msg)
         write_version_cache(msg)
         await msg.sendMessage(pull_repo())
         restart()
