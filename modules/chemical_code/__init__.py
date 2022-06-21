@@ -106,18 +106,9 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
         download = await download_to_cache(csr['image'])  # 从结果中获取链接并下载图片
 
     with PILImage.open(download) as im:  # 打开下载的图片
-        im = im.convert("RGBA")
-        """datas = im.getdata()  # 获取图片数组
-        newData = []
-        for item in datas:  # 对每个像素点进行处理
-            if item[3] == 0:
-                newData.append((255, 255, 255))
-            else:
-                newData.append(tuple(item[:3]))  # 否则保留原图像素点"""
+        im = im.convert("RGBA")  # 转换为 RGBA 格式
         image = PILImage.new("RGBA", im.size, 'white')  # 创建新图片
         image.alpha_composite(im, (0, 0))  # 将图片合并到新图片中
-        # image.getdata()  # 获取新图片数组
-        # image.putdata(newData)  # 将处理后的数组覆盖新图片
         newpath = random_cache_path() + '.png'  # 创建新文件名
         image.save(newpath)  # 保存新图片
 
