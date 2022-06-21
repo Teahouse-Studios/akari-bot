@@ -113,7 +113,7 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
             if item[3] == 0:
                 newData.append((255, 255, 255))
             else:
-                newData.append(tuple(item[:3]))  # 否则保留原图像素点
+                newData.append(tuple(item))  # 否则保留原图像素点
         image = PILImage.new("RGBA", im.size)  # 创建新图片
         image.getdata()  # 获取新图片数组
         image.putdata(newData)  # 将处理后的数组覆盖新图片
