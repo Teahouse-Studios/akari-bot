@@ -134,9 +134,14 @@ async def mcv_jira_rss(bot: FetchTarget):
         for release in releases:
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
-                await bot.post_message('mcv_jira_rss',
-                                       f'Jira已更新Java版 {release}。'
-                                       f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                if release.lower().find('future version') != -1:
+                    await bot.post_message('mcv_jira_rss',
+                                           f'Jira版本库已新增Java版 {release}。'
+                                           f'\n（Future Version仅代表与此相关的版本正在规划中，不代表启动器已更新此版本）')
+                else:
+                    await bot.post_message('mcv_jira_rss',
+                                           f'Jira已更新Java版 {release}。'
+                                           f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
                 verlist.append(release)
                 update_stored_list(bot, 'mcv_jira_rss', verlist)
 
