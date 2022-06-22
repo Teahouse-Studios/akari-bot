@@ -66,14 +66,14 @@ async def load_secret():
         value = cp.get(section, option)
         if value.upper() not in ['', 'TRUE', 'FALSE']:
             Secret.add(value.upper())
-    try:
+    """    try:
         ip = await get_url('https://api.ip.sb/ip')
         if ip:
             Secret.add(ip.replace('\n', ''))
     except asyncio.exceptions.TimeoutError:
         Logger.error(traceback.format_exc())
     except Exception:
-        Logger.error(traceback.format_exc())
+        Logger.error(traceback.format_exc())"""
 
 
 async def load_prompt(bot) -> None:
