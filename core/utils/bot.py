@@ -70,9 +70,8 @@ async def load_secret():
         ip = await get_url('https://api.ip.sb/ip')
         if ip:
             Secret.add(ip.replace('\n', ''))
-    except Exception:
+    except:
         Logger.error(traceback.format_exc())
-        pass
 
 
 async def load_prompt(bot) -> None:
