@@ -70,7 +70,9 @@ async def load_secret():
         ip = await get_url('https://api.ip.sb/ip')
         if ip:
             Secret.add(ip.replace('\n', ''))
-    except:
+    except asyncio.exceptions.TimeoutError:
+        Logger.error(traceback.format_exc())
+    except Exception:
         Logger.error(traceback.format_exc())
 
 
