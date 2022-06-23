@@ -11,7 +11,7 @@ from .cache import random_cache_path
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False):
+async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False, timeout=20):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -19,10 +19,11 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
     :param headers: 请求时使用的http头。
     :param fmt: 指定返回的格式。
     :param log: 是否输出日志。
+    :param timeout: 超时时间。
     :returns: 指定url的内容（字符串）。
     """
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=20), headers=headers) as req:
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers) as req:
             if log:
                 Logger.info(await req.read())
             if status_code and req.status != status_code:

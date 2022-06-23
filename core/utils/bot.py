@@ -66,14 +66,17 @@ async def load_secret():
         value = cp.get(section, option)
         if value.upper() not in ['', 'TRUE', 'FALSE']:
             Secret.add(value.upper())
-    """    try:
-        ip = await get_url('https://api.ip.sb/ip')
-        if ip:
-            Secret.add(ip.replace('\n', ''))
-    except asyncio.exceptions.TimeoutError:
-        Logger.error(traceback.format_exc())
+    try:
+        async def append_ip():
+            ip = await get_url('https://api.ip.sb/ip', timeout=10)
+            if ip:
+                Secret.add(ip.replace('\n', ''))
+        Logger.info('Fetching IP information...')
+        await asyncio.create_task(append_ip())
+        Logger.info('Successfully fetched IP information.')
     except Exception:
-        Logger.error(traceback.format_exc())"""
+        Logger.info('Failed to get IP information.')
+        Logger.error(traceback.format_exc())
 
 
 async def load_prompt(bot) -> None:
