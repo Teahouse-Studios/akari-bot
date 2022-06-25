@@ -27,6 +27,7 @@ async def curseforge(mod_name: str, ver: str):
     bs = BeautifulSoup(html, 'html.parser')
     try:
         information = bs.body.div.div.a
+        mod_title = information.find('h3').text
     except Exception:
         return {'msg': '未搜索到该Mod。', 'success': False}
     more_specific_html = str(information)
@@ -36,11 +37,10 @@ async def curseforge(mod_name: str, ver: str):
     bs_2 = BeautifulSoup(html_2, 'html.parser')
     try:
         results = bs_2.body.div.find_all('tr')
+        information_2 = str(results[1])
     except Exception:
         traceback.print_exc()
-        return {'msg': f'此Mod没有{ver}的版本。', 'success': False}
-    print(results)
-    information_2 = str(results[1])
+        return {'msg': f'此{mod_title}没有{ver}的版本。', 'success': False}
     download_link = information_2[int(information_2.find("\"") + 1):int(information_2.find("\" target="))]
     file_name = information_2[int(information_2.find("_blank\"") + 8):int(information_2.find("</a>"))]
     status = '???'
