@@ -39,6 +39,7 @@ async def curseforge(mod_name: str, ver: str):
     except Exception:
         traceback.print_exc()
         return {'msg': f'此Mod没有{ver}的版本。', 'success': False}
+    print(results)
     information_2 = str(results[1])
     download_link = information_2[int(information_2.find("\"") + 1):int(information_2.find("\" target="))]
     file_name = information_2[int(information_2.find("_blank\"") + 8):int(information_2.find("</a>"))]
