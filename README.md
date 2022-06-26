@@ -32,7 +32,7 @@
 
 #### QQ
 
-目前QQ上稳定运行的小可实例为小可三号机，支持直接添加好友私聊。关于群聊，由于腾讯相关限制，请 [在此提交](https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+) 入群申请。
+目前QQ上稳定运行的小可实例为小可三号机。由于腾讯风控问题，请 [在此提交](https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+) 入群申请。
 
 QQ频道的测试版支持也请在上方链接申请。我们正在进行QQ频道官方机器人入驻，未来可能会成为官方认证的机器人。
 
