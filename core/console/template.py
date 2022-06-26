@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Union
 
 from PIL import Image
 
 from core.elements import MessageSession as MS, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
+    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
 from core.logger import Logger
@@ -21,6 +21,7 @@ class FinishedSession(FinS):
 
 
 class Template(MS):
+    session: Union[Session, AS]
     class Feature:
         image = True
         voice = False
@@ -31,6 +32,7 @@ class Template(MS):
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         Logger.info(msgchain)
         msgchain = MessageChain(msgchain)
+        self.sent.append(msgchain)
         Logger.info(msgchain)
         msg_list = []
         for x in msgchain.asSendable(embed=False):
@@ -47,7 +49,11 @@ class Template(MS):
         if msgchain is not None:
             send = await self.sendMessage(msgchain)
             print("（发送“是”或符合确认条件的词语来确认）")
-        c = input('Confirm: ')
+        if self.session.auto_interactions:
+            c = self.session.auto_interactions[0]
+            del self.session.auto_interactions[0]
+        else:
+            c = input('Confirm: ')
         print(c)
         if msgchain is not None and delete:
             await send.delete()
@@ -60,7 +66,11 @@ class Template(MS):
         send = None
         if msgchain is not None:
             send = await self.sendMessage(msgchain)
-        c = input('Confirm: ')
+        if self.session.auto_interactions is not None:
+            c = self.session.auto_interactions[0]
+            del self.session.auto_interactions[0]
+        else:
+            c = input('Confirm: ')
         print(c)
         if msgchain is not None and delete:
             await send.delete()

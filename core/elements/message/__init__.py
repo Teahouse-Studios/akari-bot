@@ -1,6 +1,7 @@
 import asyncio
 from typing import List
 
+from core.elements.message.chain import MessageChain
 from core.exceptions import FinishedException
 
 
@@ -30,6 +31,17 @@ class Session:
         self.sender = sender
 
 
+class AutoSession(Session):
+    """
+    For autotest
+    """
+    def __init__(self, message, target, sender, auto_interactions=None):
+        super().__init__(message, target, sender)
+        if auto_interactions is None:
+            auto_interactions = []
+        self.auto_interactions = auto_interactions
+
+
 class FinishedSession:
     def __init__(self, result: list):
         self.result = result
@@ -51,13 +63,14 @@ class MessageSession:
     """
     消息会话，囊括了处理一条消息所需要的东西。
     """
-    __slots__ = ("target", "session", "trigger_msg", "parsed_msg", "matched_msg",)
+    __slots__ = ("target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent")
 
     def __init__(self,
                  target: MsgInfo,
                  session: Session):
         self.target = target
         self.session = session
+        self.sent: List[MessageChain] = []
 
     async def sendMessage(self,
                           msgchain,
@@ -184,6 +197,8 @@ class MessageSession:
         quote = ...
         wait = ...
 
+    def __str__(self):
+        return "Message(sent={})".format(self.sent)
 
 class FetchedSession:
     def __init__(self, targetFrom, targetId):
@@ -191,7 +206,7 @@ class FetchedSession:
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='')
+                              senderName='', clientName='')
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
@@ -229,4 +244,4 @@ class FetchTarget:
         """
 
 
-__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession"]
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession"]

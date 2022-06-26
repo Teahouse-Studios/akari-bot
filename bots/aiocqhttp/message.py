@@ -22,9 +22,6 @@ from database import BotDBUtil
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -56,6 +53,7 @@ class MessageSession(MS):
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
+        self.sent.append(msgchain)
         count = 0
         for x in msgchain.asSendable(embed=False):
             if isinstance(x, Plain):

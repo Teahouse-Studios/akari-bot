@@ -111,10 +111,10 @@ class MessageChain:
         self.value.remove(element)
 
     def __str__(self):
-        return f'[{", ".join([str(x.__dict__) for x in self.value])}]'
+        return f'[{", ".join([x.__repr__() for x in self.value])}]'
 
     def __repr__(self):
-        return self.value
+        return self.__str__()
 
 
 site_whitelist = ['http.cat']

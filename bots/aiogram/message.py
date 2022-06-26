@@ -42,6 +42,7 @@ class MessageSession(MS):
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
+        self.sent.append(msgchain)
         count = 0
         send = []
         for x in msgchain.asSendable(embed=False):

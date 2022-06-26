@@ -222,6 +222,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         await msg.sendMessage(ErrorMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e)))
                         continue
             ExecutionLockList.remove(msg)
+            return msg
         if not is_command:
             if running_mention:
                 if display.find('小可') != -1:
@@ -275,6 +276,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         await msg_counter(msg, msg.trigger_msg)
                     continue
                 ExecutionLockList.remove(msg)
+            return msg
     except AbuseWarning as e:
         if enable_tos:
             await warn_target(msg, str(e))
