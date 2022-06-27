@@ -88,7 +88,7 @@ servers:
   #- ws-reverse: # 反向 Websocket
   #- pprof: #性能分析服务器
   - ws-reverse:
-      universal: ws://127.0.0.1:11901/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
+      universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
       reconnect-interval: 3000
       middlewares:
         <<: *default # 引用默认中间件
