@@ -4,13 +4,12 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.message import MessageSession, FetchTarget
-from bots.discord.tasks import MessageTaskManager, FinishedTasks
 
 from config import Config
 from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
-from core.utils import init, init_async, load_prompt
+from core.utils import init, init_async, load_prompt, MessageTaskManager
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
@@ -44,17 +43,7 @@ async def on_message(message):
                                         senderName=message.author.name, targetFrom=target, senderFrom="Discord|Client",
                                         clientName='Discord'),
                          session=Session(message=message, target=message.channel, sender=message.author))
-    all_tsk = MessageTaskManager.get()
-    if targetId in all_tsk:
-        add_ = None
-        if user_id in all_tsk[targetId]:
-            add_ = user_id
-        if 'all' in all_tsk[targetId]:
-            add_ = 'all'
-        if add_:
-            FinishedTasks.add_task(targetId, add_, msg)
-            all_tsk[targetId][add_].set()
-            MessageTaskManager.del_task(targetId, add_)
+    MessageTaskManager.check(msg)
     await parser(msg)
 
 

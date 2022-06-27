@@ -12,11 +12,10 @@ from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
-from bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
-from core.elements import Plain, Image, MessageSession as MS, MsgInfo, Session, Voice, FetchTarget as FT, \
+from core.builtins.message import MessageSession as MS
+from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, \
     ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
-from core.elements.others import confirm_command
 from core.logger import Logger
 from database import BotDBUtil
 
@@ -74,35 +73,6 @@ class MessageSession(MS):
         else:
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
         return FinishedSession([send])
-
-    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
-        send = None
-        ExecutionLockList.remove(self)
-        if msgchain is not None:
-            msgchain = MessageChain(msgchain)
-            msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
-            send = await self.sendMessage(msgchain, quote)
-        flag = asyncio.Event()
-        MessageTaskManager.add_task(self.target.targetId, self.session.sender, flag)
-        await flag.wait()
-        if send is not None and delete:
-            await send.delete()
-        if FinishedTasks.get()[self.target.targetId][self.session.sender].asDisplay() in confirm_command:
-            return True
-        return False
-
-    async def waitAnyone(self, msgchain=None, delete=False):
-        send = None
-        ExecutionLockList.remove(self)
-        if msgchain is not None:
-            msgchain = MessageChain(msgchain)
-            send = await self.sendMessage(msgchain, quote=False)
-        flag = asyncio.Event()
-        MessageTaskManager.add_task(self.target.targetId, 'all', flag)
-        await flag.wait()
-        if send is not None and delete:
-            await send.delete()
-        return FinishedTasks.get()[self.target.targetId]['all']
 
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \

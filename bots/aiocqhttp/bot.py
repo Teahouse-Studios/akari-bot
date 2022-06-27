@@ -8,13 +8,13 @@ from aiocqhttp import Event
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
-from bots.aiocqhttp.tasks import MessageTaskManager, FinishedTasks
 from config import Config
 from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets
 from core.parser.message import parser
-from core.utils import init, load_prompt, init_async
+from core.utils import init, load_prompt, init_async, MessageTaskManager
 from database import BotDBUtil
 from database.logging_message import UnfriendlyActions
+
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = True
@@ -40,8 +40,6 @@ async def _(event: Event):
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml.*?>.*?', event.message)
     if filter_msg:
         return
-    all_tsk = MessageTaskManager.get()
-    user_id = event.user_id
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
 
     msg = MessageSession(MsgInfo(targetId=targetId,
@@ -51,17 +49,7 @@ async def _(event: Event):
                          Session(message=event,
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
-    if targetId in all_tsk:
-        add_ = None
-        if user_id in all_tsk[targetId]:
-            add_ = user_id
-        if 'all' in all_tsk[targetId]:
-            add_ = 'all'
-        if add_:
-            FinishedTasks.add_task(targetId, add_, msg)
-            all_tsk[targetId][add_].set()
-            MessageTaskManager.del_task(targetId, add_)
-
+    MessageTaskManager.check(msg)
     await parser(msg, running_mention=True)
 
 
@@ -85,12 +73,7 @@ async def _(event):
                               Session(message=event,
                                       target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                       sender=event.user_id))
-    all_tsk = MessageTaskManager.guild_get()
-    if targetId in all_tsk:
-        if tiny_id in all_tsk[targetId]:
-            FinishedTasks.add_guild_task(targetId, tiny_id, msg)
-            all_tsk[targetId][tiny_id].set()
-            MessageTaskManager.del_guild_task(targetId, tiny_id)
+    MessageTaskManager.check(msg)
     await parser(msg, running_mention=True)
 
 
