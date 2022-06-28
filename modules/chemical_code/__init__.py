@@ -60,6 +60,11 @@ async def chemical_code_by_random(msg: MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
+@cc.handle('captcha {验证码样式}')
+async def _(msg: MessageSession):
+    await chemical_code(msg, captcha_mode=True)
+
+
 @cc.handle('stop {停止当前的游戏。}')
 async def s(msg: MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
@@ -82,7 +87,7 @@ async def chemical_code_by_id(msg: MessageSession):
         await msg.finish('请输入纯数字ID！')
 
 
-async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
+async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish('当前有一局游戏正在进行中。')
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
@@ -116,9 +121,6 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
     set_timeout = csr['length'] // 30
     if set_timeout < 2:
         set_timeout = 2
-    await msg.sendMessage([Image(newpath),
-                           Plain(f'请在{set_timeout}分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
-    time_start = datetime.now().timestamp()  # 记录开始时间
 
     async def ans(msg: MessageSession, answer):  # 定义回答函数的功能
         wait = await msg.waitAnyone()  # 等待对象内的任意人回答
@@ -139,5 +141,16 @@ async def chemical_code(msg: MessageSession, id=None):  # 要求传入消息会�
                 await asyncio.sleep(1)  # 等待1秒
                 await timer(start)  # 重新调用计时器函数
 
-    await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
+    if not captcha_mode:
+        await msg.sendMessage([Image(newpath),
+                           Plain(f'请在{set_timeout}分钟内发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
+        time_start = datetime.now().timestamp()  # 记录开始时间
+
+        await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
+    else:
+        result = await msg.waitReply([Image(newpath), '请发送正确答案。（请使用字母表顺序，如：CHBrClF）'])
+        if result.asDisplay() == csr['name']:
+            await result.sendMessage('回答正确。')
+        else:
+            await result.sendMessage('回答错误，正确答案是 ' + csr['name'])
 
