@@ -63,7 +63,7 @@ async def chemical_code_by_random(msg: MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
-@cc.handle('captcha {验证码样式}')
+@cc.handle('captcha {验证码样式（不支持指定ID）}')
 async def _(msg: MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
