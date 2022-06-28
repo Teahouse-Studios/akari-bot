@@ -6,7 +6,8 @@ from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
 from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
-from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError
+from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
+    WaitCancelException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser
@@ -75,7 +76,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     :param require_enable_modules: 是否需要检查模块是否已启用
     :param prefix: 使用的命令前缀。如果为None，则使用默认的命令前缀，存在''值的情况下则代表无需命令前缀
     :param running_mention: 消息内若包含机器人名称，则检查是否有命令正在运行
-    :param tos: 是否启用TOS
     :return: 无返回
     """
     try:
@@ -283,6 +283,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                      'ts': datetime.now().timestamp()}
             return
+    except WaitCancelException:
+        Logger.info('Waiting task cancelled by user.')
     except Exception:
         Logger.error(traceback.format_exc())
     ExecutionLockList.remove(msg)

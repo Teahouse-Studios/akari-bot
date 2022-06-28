@@ -3,6 +3,7 @@ import asyncio
 from core.elements import ExecutionLockList, Plain, confirm_command
 from core.elements.message import *
 from core.elements.message.chain import MessageChain
+from core.exceptions import WaitCancelException
 from core.utils import MessageTaskManager
 
 
@@ -17,11 +18,15 @@ class MessageSession(MessageSession):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
         await flag.wait()
-        if msgchain is not None and delete:
-            await send.delete()
-        if MessageTaskManager.get_result(self).asDisplay() in confirm_command:
-            return True
-        return False
+        result = MessageTaskManager.get_result(self)
+        if result:
+            if msgchain is not None and delete:
+                await send.delete()
+            if result.asDisplay() in confirm_command:
+                return True
+            return False
+        else:
+            raise WaitCancelException
 
     async def waitReply(self, msgchain, quote=True) -> MessageSession:
         ExecutionLockList.remove(self)
@@ -31,7 +36,11 @@ class MessageSession(MessageSession):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, reply=send.messageId)
         await flag.wait()
-        return MessageTaskManager.get()[self.target.targetId][self.target.senderId]['result']
+        result = MessageTaskManager.get_result(self)
+        if result:
+            return result
+        else:
+            raise WaitCancelException
 
     async def waitAnyone(self, msgchain=None, delete=False) -> MessageSession:
         send = None
@@ -42,9 +51,13 @@ class MessageSession(MessageSession):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True)
         await flag.wait()
-        if send is not None and delete:
-            await send.delete()
-        return MessageTaskManager.get()[self.target.targetId]['all']['result']
+        result = MessageTaskManager.get()[self.target.targetId]['all']
+        if 'result' in result:
+            if send is not None and delete:
+                await send.delete()
+            return MessageTaskManager.get()[self.target.targetId]['all']['result']
+        else:
+            raise WaitCancelException
 
     async def sleep(self, s):
         ExecutionLockList.remove(self)

@@ -26,7 +26,8 @@ class FinishedSession(FinS):
         用于删除这条消息。
         """
         try:
-            await bot.call_action('delete_msg', message_id=self.messageId)
+            for x in self.messageId:
+                await bot.call_action('delete_msg', message_id=x)
         except Exception:
             Logger.error(traceback.format_exc())
 

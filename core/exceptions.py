@@ -13,5 +13,10 @@ class InvalidHelpDocTypeError(Exception):
 class InvalidCommandFormatError(Exception):
     pass
 
+
 class FinishedException(BaseException):
+    pass
+
+
+class WaitCancelException(BaseException):
     pass
