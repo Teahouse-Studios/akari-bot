@@ -2,7 +2,8 @@ from typing import List, Union
 
 from PIL import Image
 
-from core.elements import MessageSession as MS, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, \
+from core.builtins.message import MessageSession as MS
+from core.elements import Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
@@ -10,9 +11,6 @@ from core.logger import Logger
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -42,7 +40,7 @@ class Template(MS):
             if isinstance(x, BImage):
                 img = Image.open(await x.get())
                 img.show()
-        return FinishedSession(['There should be a callable here... hmm...'])
+        return FinishedSession([0], ['There should be a callable here... hmm...'])
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         send = None
@@ -117,7 +115,7 @@ class FetchedSession(FS):
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='', clientName='TEST')
+                              senderName='', clientName='TEST', messageId=0, replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = Template(self.target, self.session)
 

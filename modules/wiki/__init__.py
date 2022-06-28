@@ -22,7 +22,6 @@ from .utils.rc import rc
 from .utils.rc_qq import rc_qq
 from .wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
-
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set',
                          'interwiki': 'wiki iw'},
@@ -72,7 +71,7 @@ async def set_start_wiki(msg: MessageSession):
             await msg.finish(f'错误：{check.value.name}处于黑名单中。')
     else:
         result = '错误：无法添加此Wiki。' + \
-            ('\n详细信息：' + check.message if check.message != '' else '')
+                 ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -91,7 +90,7 @@ async def _(msg: MessageSession):
             await msg.finish(f'错误：{check.value.name}处于黑名单中。')
     else:
         result = '错误：无法添加此Wiki。' + \
-            ('\n详细信息：' + check.message if check.message != '' else '')
+                 ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -129,7 +128,7 @@ async def _(msg: MessageSession):
             await msg.finish([Image(img), Plain(mt)])
         else:
             result = '当前设置了以下Interwiki：\n' + \
-                '\n'.join([f'{x}: {query[x]}' for x in query])
+                     '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
                 result += base_interwiki_link_msg
             await msg.finish(result)
@@ -227,7 +226,7 @@ async def _(msg: MessageSession):
             await msg.finish(f'成功加入{list_name}名单：' + api)
     else:
         result = '错误：无法添加此Wiki。' + \
-            ('\n详细信息：' + check.message if check.message != '' else '')
+                 ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -250,7 +249,7 @@ async def _(msg: MessageSession):
             await msg.finish(f'成功从{list_name}名单删除：' + api)
     else:
         result = '错误：无法查询此Wiki。' + \
-            ('\n详细信息：' + check.message if check.message != '' else '')
+                 ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -276,7 +275,7 @@ async def _(msg: MessageSession):
             await msg.finish(api + '不存在于任何名单。')
     else:
         result = '错误：无法查询此Wiki。' + \
-            ('\n详细信息：' + check.message if check.message != '' else '')
+                 ('\n详细信息：' + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -290,7 +289,7 @@ async def _(msg: MessageSession):
         allow_columns = [[x[0], x[1]] for x in allow_list]
         if allow_columns:
             allow_table = ImageTable(data=allow_columns, headers=[
-                                     'APILink', 'Operator'])
+                'APILink', 'Operator'])
             if allow_table:
                 allow_image = await image_table_render(allow_table)
                 if allow_image:
@@ -299,7 +298,7 @@ async def _(msg: MessageSession):
         block_columns = [[x[0], x[1]] for x in block_list]
         if block_columns:
             block_table = ImageTable(data=block_columns, headers=[
-                                     'APILink', 'Operator'])
+                'APILink', 'Operator'])
             if block_table:
                 block_image = await image_table_render(block_table)
                 if block_image:
@@ -445,13 +444,8 @@ async def search_pages(session: MessageSession, title: Union[str, list, tuple], 
         await query_pages(reply, wait_msg_list[reply_number])
 
 
-
-
-
-
-
 async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
-                      pageid: str = None, iw: str = None, lang: str=None,
+                      pageid: str = None, iw: str = None, lang: str = None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
@@ -508,7 +502,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                     if len(interwiki_split) == 2:
                                         get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
                                         find = interwiki_split[0] + \
-                                            ':' + match_interwiki.group(2)
+                                               ':' + match_interwiki.group(2)
                                         iw = 'w:c:' + interwiki_split[0]
                                     else:
                                         get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
@@ -554,10 +548,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if mediawiki:
                         rd = f'MediaWiki:{rd}'
                     tasks.append(asyncio.ensure_future(
-                        WikiLib(q, headers).parse_page_info(title=rd, inline=inline_mode, langlink=lang)))
+                        WikiLib(q, headers).parse_page_info(title=rd, inline=inline_mode, lang=lang)))
             for rdp in ready_for_query_ids:
                 tasks.append(asyncio.ensure_future(
-                    WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode, langlink=lang)))
+                    WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)))
             query = await asyncio.gather(*tasks)
             for result in query:
                 print(result.__dict__)

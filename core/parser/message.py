@@ -5,7 +5,8 @@ from datetime import datetime
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.elements import MessageSession, Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
+from core.builtins.message import MessageSession
+from core.elements import Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException
 from core.loader import ModulesManager

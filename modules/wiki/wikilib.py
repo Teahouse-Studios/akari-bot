@@ -104,7 +104,6 @@ class PageInfo:
                  status: bool = True,
                  before_page_property: str = 'page',
                  page_property: str = 'page',
-                 namespace: str = '',
                  invalid_namespace: Union[str, bool] = False
                  ):
         self.info = info
@@ -328,7 +327,8 @@ class WikiLib:
         title_split = search_text.split(':')
         if title_split[0] in self.wiki_info.interwiki:
             search_text = ':'.join(title_split[1:])
-            result = await WikiLib(self.wiki_info.interwiki[title_split[0]], self.headers).search_page(search_text, namespace, limit)
+            q_site = WikiLib(self.wiki_info.interwiki[title_split[0]], self.headers)
+            result = await q_site.search_page(search_text, namespace, limit)
             result_ = []
             for r in result:
                 result_.append(title_split[0] + ':' + r)
@@ -350,20 +350,19 @@ class WikiLib:
         get_titles = await self.search_page(page_name, namespace=namespace, limit=1)
         new_page_name = get_titles[0] if len(get_titles) > 0 else None
         title_split = page_name.split(':')
-        print(title_split, len(title_split))
         invalid_namespace = False
         if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces \
-                and title_split[0].lower() not in self.wiki_info.namespacealiases:
+            and title_split[0].lower() not in self.wiki_info.namespacealiases:
             invalid_namespace = title_split[0]
         return new_page_name, invalid_namespace
 
-    async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, langlink=None, _doc=False,
+    async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, lang=None, _doc=False,
                               _tried=0, _prefix='', _iw=False, _search=False) -> PageInfo:
         """
         :param title: 页面标题，如果为None，则使用pageid
         :param pageid: 页面id
         :param inline: 是否为inline模式
-        :param langlink: 所需的对应语言版本
+        :param lang: 所需的对应语言版本
         :param _doc: 是否为文档模式，仅用作内部递归调用判断
         :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断
         :param _prefix: iw前缀，仅用作内部递归调用判断
@@ -422,12 +421,13 @@ class WikiLib:
                 section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.section = section
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'inprop': 'url', 'iiprop': 'url',
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url',
+                            'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
         elif pageid is not None:
             page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'inprop': 'url', 'iiprop': 'url',
-                            'redirects': 'True', 'pageids': pageid}
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url', 'inprop': 'url',
+                            'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
         else:
             raise ValueError('title and pageid cannot be both None')
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
@@ -437,7 +437,6 @@ class WikiLib:
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
-        print(query)
         if query is None:
             return PageInfo(title=title, link=None, desc='发生错误：API未返回任何内容，请联系此站点管理员获取原因。',
                             info=self.wiki_info)
@@ -482,11 +481,12 @@ class WikiLib:
                             split_title = title.split(':')
                             reparse = False
                             if (len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local
-                                    and self.wiki_info.namespaces_local[split_title[0]] == 'Template'):
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template'):
                                 rstitle = ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle)
                                 page_info.before_page_property = 'template'
-                            elif len(split_title) > 1 and split_title[0].lower() in self.wiki_info.namespacealiases and not _search:
+                            elif len(split_title) > 1 and split_title[
+                                0].lower() in self.wiki_info.namespacealiases and not _search:
                                 rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
                                           + ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle, _search=True)
@@ -500,7 +500,8 @@ class WikiLib:
                                 page_info.invalid_namespace = reparse.invalid_namespace
                             else:
                                 if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces:
-                                    research = await self.research_page(title, self.wiki_info.namespaces[split_title[0]])
+                                    research = await self.research_page(title,
+                                                                        self.wiki_info.namespaces[split_title[0]])
                                 else:
                                     research = await self.research_page(title)
                                 page_info.title = research[0]
@@ -515,13 +516,50 @@ class WikiLib:
                         page_info.status = True
                     else:
                         query_langlinks = False
-                        if langlink is not None:
+                        if lang is not None:
                             langlinks_ = {}
                             for x in page_raw['langlinks']:
-                                langlinks_[x['lang']] = x['*']
-                            if langlink in langlinks_:
-                                query_langlinks = await WikiLib(url=self.wiki_info.interwiki[langlink]).parse_page_info(
-                                    langlinks_[langlink])
+                                langlinks_[x['lang']] = x['url']
+                            if lang in langlinks_:
+                                query_wiki = WikiLib(url=self.wiki_info.interwiki[lang], headers=self.headers)
+                                await query_wiki.fixup_wiki_info()
+                                query_wiki_info = query_wiki.wiki_info
+                                q_articlepath = query_wiki_info.articlepath.replace('$1', '(.*)')
+                                get_title = re.sub(r'' + q_articlepath, '\\1', langlinks_[lang])
+                                query_langlinks = await query_wiki.parse_page_info(get_title)
+                            if 'WikibaseClient' in self.wiki_info.extensions and not query_langlinks:
+                                get_original_title = (await self.parse_page_info(title)).title
+                                qc_string = {'action': 'query', 'meta': 'wikibase', 'wbprop': 'url|siteid'}
+                                query_client_info = await self.get_json(**qc_string)
+                                repo_url = query_client_info['query']['wikibase']['repo']['url']['base']
+                                siteid = query_client_info['query']['wikibase']['siteid']
+                                query_target_site = WikiLib(self.wiki_info.interwiki[lang], headers=self.headers)
+                                target_siteid = (await query_target_site.get_json(**qc_string))['query']['wikibase']['siteid']
+                                qr_wiki_info = WikiLib(repo_url)
+                                qr_string = {'action': 'wbgetentities', 'sites': siteid, 'titles': get_original_title,
+                                             'props': 'sitelinks/urls', 'redirects': 'yes'}
+                                qr = await qr_wiki_info.get_json(**qr_string)
+                                if 'entities' in qr:
+                                    qr_result = qr['entities']
+                                    for x in qr_result:
+                                        if 'missing' not in qr_result[x]:
+                                            target_site_page_title = qr_result[x]['sitelinks'][target_siteid]['title']
+                                            q_target = await query_target_site.parse_page_info(target_site_page_title)
+                                            if q_target.status:
+                                                query_langlinks = q_target
+                                                break
+
+                            if lang in self.wiki_info.interwiki and not query_langlinks:
+                                query_wiki = WikiLib(url=self.wiki_info.interwiki[lang], headers=self.headers)
+                                await query_wiki.fixup_wiki_info()
+                                query_wiki_info = query_wiki.wiki_info
+                                q_articlepath = query_wiki_info.articlepath
+                                get_title_schema = re.sub(r'' + q_articlepath.replace('$1', '(.*)'), '\\1',
+                                                          self.wiki_info.interwiki[lang])
+                                query_langlinks_ = await query_wiki.parse_page_info(
+                                    get_title_schema.replace('$1', title))
+                                if query_langlinks_.status:
+                                    query_langlinks = query_langlinks_
 
                         if not query_langlinks:
                             title = page_raw['title']
@@ -572,10 +610,11 @@ class WikiLib:
                     iw_title = iw_title.group(1)
                     _prefix += i['iw'] + ':'
                     _iw = True
-                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']]).parse_page_info(iw_title, langlink=langlink,
-                                                                                                    _tried=_tried + 1,
-                                                                                                    _prefix=_prefix,
-                                                                                                    _iw=_iw)
+                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']], headers=self.headers) \
+                        .parse_page_info(iw_title, lang=lang,
+                                         _tried=_tried + 1,
+                                         _prefix=_prefix,
+                                         _iw=_iw)
                     before_page_info = page_info
                     page_info = iw_query
                     if iw_query.title == '':
@@ -592,8 +631,8 @@ class WikiLib:
                             else:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if _tried == 0:
-                                page_info.title = (page_info.interwiki_prefix if langlink is None else '') + t
-                                if langlink is not None:
+                                page_info.title = (page_info.interwiki_prefix if lang is None else '') + t
+                                if lang is not None:
                                     page_info.before_title = page_info.title
                                 if before_page_info.section is not None:
                                     page_info.section = before_page_info.section
