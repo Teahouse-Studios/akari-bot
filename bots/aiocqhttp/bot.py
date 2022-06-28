@@ -8,7 +8,7 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
-from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets
+from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.utils import init, load_prompt, init_async, MessageTaskManager
 from database import BotDBUtil
@@ -16,7 +16,8 @@ from database.logging_message import UnfriendlyActions
 
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-EnableDirtyWordCheck.status = True
+EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
+Url.disable_mm = not Config('qq_enable_urlmanager')
 init()
 
 
