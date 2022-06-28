@@ -599,6 +599,7 @@ class WikiLib:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                         else:
                             page_info.title = query_langlinks.title
+                            page_info.before_title = query_langlinks.title
                             page_info.link = query_langlinks.link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
