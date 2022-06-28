@@ -528,7 +528,7 @@ class WikiLib:
                                 get_title = re.sub(r'' + q_articlepath, '\\1', langlinks_[lang])
                                 query_langlinks = await query_wiki.parse_page_info(get_title)
                             if 'WikibaseClient' in self.wiki_info.extensions and not query_langlinks:
-                                get_original_title = (await self.parse_page_info(title)).title
+                                title = (await self.parse_page_info(title)).title
                                 qc_string = {'action': 'query', 'meta': 'wikibase', 'wbprop': 'url|siteid'}
                                 query_client_info = await self.get_json(**qc_string)
                                 repo_url = query_client_info['query']['wikibase']['repo']['url']['base']
@@ -536,7 +536,7 @@ class WikiLib:
                                 query_target_site = WikiLib(self.wiki_info.interwiki[lang], headers=self.headers)
                                 target_siteid = (await query_target_site.get_json(**qc_string))['query']['wikibase']['siteid']
                                 qr_wiki_info = WikiLib(repo_url)
-                                qr_string = {'action': 'wbgetentities', 'sites': siteid, 'titles': get_original_title,
+                                qr_string = {'action': 'wbgetentities', 'sites': siteid, 'titles': title,
                                              'props': 'sitelinks/urls', 'redirects': 'yes'}
                                 qr = await qr_wiki_info.get_json(**qr_string)
                                 if 'entities' in qr:
