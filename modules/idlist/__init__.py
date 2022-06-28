@@ -3,7 +3,7 @@ import re
 import urllib.parse
 
 from core.component import on_command
-from core.elements import MessageSession
+from core.builtins.message import MessageSession
 from core.utils import get_url
 
 enums = ['block', 'item', 'entity', 'effect', 'enchant', 'fog', 'location', 'entityevent', 'entityfamily', 'animation',

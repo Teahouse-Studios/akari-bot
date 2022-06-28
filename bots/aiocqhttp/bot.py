@@ -1,5 +1,4 @@
 import logging
-import logging
 import os
 import re
 
@@ -40,12 +39,18 @@ async def _(event: Event):
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml.*?>.*?', event.message)
     if filter_msg:
         return
+    replyId = None
+    match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
+    if match_reply:
+        replyId = int(match_reply.group(1))
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
 
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|{str(event.user_id)}',
                                  targetFrom='QQ|Group' if event.detail_type == 'group' else 'QQ',
-                                 senderFrom='QQ', senderName='', clientName='QQ'),
+                                 senderFrom='QQ', senderName='', clientName='QQ',
+                                 messageId=event.message_id,
+                                 replyId=replyId),
                          Session(message=event,
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
@@ -65,11 +70,16 @@ async def _(event):
     tiny_id = event.user_id
     if tiny_id == GuildAccountInfo.tiny_id:
         return
+    replyId = None
+    match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
+    if match_reply:
+        replyId = int(match_reply.group(1))
     targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
     msg = MessageSessionGuild(MsgInfo(targetId=targetId,
                                       senderId=f'QQ|Tiny|{str(event.user_id)}',
                                       targetFrom='QQ|Guild',
-                                      senderFrom='QQ|Tiny', senderName='', clientName='QQ'),
+                                      senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,
+                                      replyId=replyId),
                               Session(message=event,
                                       target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                       sender=event.user_id))

@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import re
 import traceback
@@ -8,7 +7,7 @@ import discord
 
 from bots.discord.client import client
 from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, MsgInfo, Session, FetchTarget as FT, ExecutionLockList, \
+from core.elements import Plain, Image, MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.elements.message.internal import Embed
@@ -44,9 +43,6 @@ async def convert_embed(embed: Embed):
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -98,7 +94,11 @@ class MessageSession(MS):
             if send_:
                 send.append(send_)
             count += 1
-        return FinishedSession(send)
+        msgIds = []
+        for x in send:
+            msgIds.append(x.id)
+
+        return FinishedSession(msgIds, send)
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
@@ -114,15 +114,8 @@ class MessageSession(MS):
             return True
         return False
 
-    def checkSuperUser(self):
-        return True if self.target.senderInfo.query.isSuperUser else False
-
     def asDisplay(self):
         return self.session.message.content
-
-    async def sleep(self, s):
-        ExecutionLockList.remove(self)
-        await asyncio.sleep(s)
 
     async def delete(self):
         try:
@@ -149,7 +142,7 @@ class FetchedSession(FS):
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='', clientName='Discord')
+                              senderName='', clientName='Discord', messageId=0, replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 

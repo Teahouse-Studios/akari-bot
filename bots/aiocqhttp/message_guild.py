@@ -13,9 +13,6 @@ from core.logger import Logger
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -54,7 +51,7 @@ class MessageSession(MS):
         send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
                                      channel_id=int(match_guild.group(2)), message=msg)
 
-        return FinishedSession([send])
+        return FinishedSession(send['message_id'], [send])
 
     async def checkPermission(self):
         if self.target.senderInfo.check_TargetAdmin(self.target.targetId) or self.target.senderInfo.query.isSuperUser:

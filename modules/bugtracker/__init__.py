@@ -1,7 +1,7 @@
 import re
 
+from core.builtins.message import MessageSession
 from core.component import on_command, on_regex
-from core.elements import MessageSession
 from .bugtracker import bugtracker_get
 
 bug = on_command('bug', alias='b', developers=['OasisAkari'])

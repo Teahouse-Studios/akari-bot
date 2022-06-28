@@ -1,7 +1,8 @@
 import re
 
 from core.component import on_command
-from core.elements import Plain, Image, MessageSession
+from core.elements import Plain, Image
+from core.builtins.message import MessageSession
 from modules.wiki.dbutils import WikiTargetInfo
 from .userlib import GetUser
 

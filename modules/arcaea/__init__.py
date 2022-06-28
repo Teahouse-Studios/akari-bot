@@ -3,7 +3,8 @@ import traceback
 
 from config import Config
 from core.component import on_command
-from core.elements import MessageSession, Plain, Image
+from core.builtins.message import MessageSession
+from core.elements import Plain, Image
 from core.utils import get_url
 from .dbutils import ArcBindInfoManager
 from .getb30 import getb30

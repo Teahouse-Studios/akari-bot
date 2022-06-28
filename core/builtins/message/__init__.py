@@ -7,7 +7,7 @@ from core.utils import MessageTaskManager
 
 
 class MessageSession(MessageSession):
-    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
         send = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
@@ -23,7 +23,17 @@ class MessageSession(MessageSession):
             return True
         return False
 
-    async def waitAnyone(self, msgchain=None, delete=False):
+    async def waitReply(self, msgchain, quote=True) -> MessageSession:
+        ExecutionLockList.remove(self)
+        msgchain = MessageChain(msgchain)
+        msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
+        send = await self.sendMessage(msgchain, quote)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self, flag, reply=send.messageId)
+        await flag.wait()
+        return MessageTaskManager.get()[self.target.targetId][self.target.senderId]['result']
+
+    async def waitAnyone(self, msgchain=None, delete=False) -> MessageSession:
         send = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
@@ -35,6 +45,13 @@ class MessageSession(MessageSession):
         if send is not None and delete:
             await send.delete()
         return MessageTaskManager.get()[self.target.targetId]['all']['result']
+
+    async def sleep(self, s):
+        ExecutionLockList.remove(self)
+        await asyncio.sleep(s)
+
+    def checkSuperUser(self):
+        return True if self.target.senderInfo.query.isSuperUser else False
 
 
 __all__ = ["MessageSession"]

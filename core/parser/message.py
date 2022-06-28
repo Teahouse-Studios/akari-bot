@@ -79,6 +79,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     :return: 无返回
     """
     try:
+        print(msg)
         modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
         modulesAliases = ModulesManager.return_modules_alias_map()
         modulesRegex = ModulesManager.return_specified_type_modules(RegexCommand, targetFrom=msg.target.targetFrom)

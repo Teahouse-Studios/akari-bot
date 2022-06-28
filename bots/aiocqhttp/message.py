@@ -14,7 +14,7 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from core.builtins.message import MessageSession as MS
 from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, \
-    ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
+    FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.logger import Logger
 from database import BotDBUtil
@@ -26,8 +26,7 @@ class FinishedSession(FinS):
         用于删除这条消息。
         """
         try:
-            for x in self.result:
-                await bot.call_action('delete_msg', message_id=x['message_id'])
+            await bot.call_action('delete_msg', message_id=self.messageId)
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -72,7 +71,7 @@ class MessageSession(MS):
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
         else:
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
-        return FinishedSession([send])
+        return FinishedSession(send['message_id'], [send])
 
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
@@ -94,20 +93,13 @@ class MessageSession(MS):
             return True
         return False
 
-    def checkSuperUser(self):
-        return True if self.target.senderInfo.query.isSuperUser else False
-
     def asDisplay(self, message=None):
         return ''.join(
-            re.split(r'\[CQ:.*?]', html.unescape(self.session.message.message if message is None else message)))
+            re.split(r'\[CQ:.*?]', html.unescape(self.session.message.message if message is None else message))).strip()
 
     async def fake_forward_msg(self, nodelist):
         if self.target.targetFrom == 'QQ|Group':
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
-
-    async def sleep(self, s):
-        ExecutionLockList.remove(self)
-        await asyncio.sleep(s)
 
     async def delete(self):
         try:
@@ -146,7 +138,9 @@ class FetchedSession(FS):
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
                               senderName='',
-                              clientName='QQ')
+                              clientName='QQ',
+                              messageId=0,
+                              replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         if targetFrom == 'QQ|Guild':
             self.parent = MessageSessionGuild(self.target, self.session)

@@ -1,5 +1,6 @@
 from core.component import on_command
-from core.elements import MessageSession, Plain, Image, Url
+from core.builtins.message import MessageSession
+from core.elements import Plain, Image, Url
 
 from .mojang_api import *
 

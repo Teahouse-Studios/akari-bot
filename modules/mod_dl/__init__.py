@@ -1,5 +1,6 @@
 from core.component import on_command
-from core.elements import MessageSession, Url
+from core.elements import Url
+from core.builtins.message import MessageSession
 
 from .mod_dl import curseforge as d
 

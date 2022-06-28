@@ -11,7 +11,8 @@ from tenacity import retry, stop_after_attempt
 from datetime import datetime
 
 from core.component import on_command
-from core.elements import MessageSession, Image, Plain
+from core.elements import Image, Plain
+from core.builtins.message import MessageSession
 from core.utils import get_url, download_to_cache, random_cache_path
 from core.logger import Logger
 

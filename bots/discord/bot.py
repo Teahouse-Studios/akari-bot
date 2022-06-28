@@ -37,11 +37,16 @@ async def on_message(message):
     if isinstance(message.channel, discord.DMChannel):
         target = "Discord|DM|Channel"
     targetId = f"{target}|{message.channel.id}"
-    user_id = message.author
+    replyId = None
+    if message.reference is not None:
+        replyId = message.reference.message_id
+
     msg = MessageSession(target=MsgInfo(targetId=targetId,
                                         senderId=f"Discord|Client|{message.author.id}",
                                         senderName=message.author.name, targetFrom=target, senderFrom="Discord|Client",
-                                        clientName='Discord'),
+                                        clientName='Discord',
+                                        messageId=message.id,
+                                        replyId=replyId),
                          session=Session(message=message, target=message.channel, sender=message.author))
     MessageTaskManager.check(msg)
     await parser(msg)

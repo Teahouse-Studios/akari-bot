@@ -1,27 +1,36 @@
 import asyncio
-from typing import List
+from typing import List, Union
 
 from core.elements.message.chain import MessageChain
 from core.exceptions import FinishedException
 
 
 class MsgInfo:
-    __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom", "clientName"]
+    __slots__ = ["targetId", "senderId", "senderName", "targetFrom", "senderInfo", "senderFrom", "clientName",
+                 "messageId", "replyId"]
 
     def __init__(self,
-                 targetId: [int, str],
-                 senderId: [int, str],
+                 targetId: Union[int, str],
+                 senderId: Union[int, str],
                  senderName: str,
                  targetFrom: str,
                  senderFrom: str,
-                 clientName: str
-                 ):
+                 clientName: str,
+                 messageId: Union[int, str],
+                 replyId: Union[int, str] = None):
         self.targetId = targetId
         self.senderId = senderId
         self.senderName = senderName
         self.targetFrom = targetFrom
         self.senderFrom = senderFrom
         self.clientName = clientName
+        self.messageId = messageId
+        self.replyId = replyId
+
+    def __repr__(self):
+        return f'MsgInfo(targetId={self.targetId}, senderId={self.senderId}, senderName={self.senderName},' \
+               f' targetFrom={self.targetFrom}, senderFrom={self.senderFrom}, clientName={self.clientName}, ' \
+               f'messageId={self.messageId}, replyId={self.replyId})'
 
 
 class Session:
@@ -30,11 +39,15 @@ class Session:
         self.target = target
         self.sender = sender
 
+    def __repr__(self):
+        return f'Session(message={self.message}, target={self.target}, sender={self.sender})'
+
 
 class AutoSession(Session):
     """
     For autotest
     """
+
     def __init__(self, message, target, sender, auto_interactions=None):
         super().__init__(message, target, sender)
         if auto_interactions is None:
@@ -43,7 +56,10 @@ class AutoSession(Session):
 
 
 class FinishedSession:
-    def __init__(self, result: list):
+    def __init__(self, messageId: Union[List[int], List[str], int, str], result):
+        if isinstance(messageId, (int, str)):
+            messageId = [messageId]
+        self.messageId = messageId
         self.result = result
 
     async def delete(self):
@@ -53,10 +69,7 @@ class FinishedSession:
         ...
 
     def __str__(self):
-        """
-        <FinishedSession: {str(self.result)}>
-        """
-        return f"<FinishedSession: {str(self.result)}>"
+        return f"FinishedSession(messageId={self.messageId}, result={self.result})"
 
 
 class MessageSession:
@@ -111,12 +124,21 @@ class MessageSession:
         """
         await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
 
-    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
         """
         一次性模板，用于等待触发对象确认。
         :param msgchain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
         :param delete: 是否在触发后删除消息
+        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
+        """
+        ...
+
+    async def waitReply(self, msgchain, quote=True):
+        """
+        一次性模板，用于等待触发对象回复消息。
+        :param msgchain: 需要发送的确认消息，可不填
+        :param quote: 是否引用传入dict中的消息（默认为True）
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
         ...
@@ -198,7 +220,8 @@ class MessageSession:
         wait = ...
 
     def __str__(self):
-        return "Message(sent={})".format(self.sent)
+        return "Message(target={}, session={}, sent={})".format(self.target, self.session, self.sent)
+
 
 class FetchedSession:
     def __init__(self, targetFrom, targetId):
@@ -206,7 +229,7 @@ class FetchedSession:
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='', clientName='')
+                              senderName='', clientName='', replyId=None, messageId=0)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 

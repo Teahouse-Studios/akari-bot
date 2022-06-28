@@ -3,7 +3,8 @@ import re
 import ujson as json
 
 from core.component import on_command
-from core.elements import Plain, Image, MessageSession, Url
+from core.elements import Plain, Image, Url
+from core.builtins.message import MessageSession
 from core.utils import get_url
 from .teahouse import get_rss as get_teahouse_rss
 

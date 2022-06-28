@@ -1,5 +1,5 @@
 from core.component import on_command
-from core.elements import MessageSession
+from core.builtins.message import MessageSession
 from .mcv import mcv, mcbv, mcdv, mcev
 
 m = on_command(

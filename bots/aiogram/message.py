@@ -1,21 +1,16 @@
-import asyncio
 import re
 import traceback
 from typing import List, Union
 
 from bots.aiogram.client import dp, bot
 from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, \
-    ExecutionLockList, FetchedSession as FS, FinishedSession as FinS
+from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.logger import Logger
 from database import BotDBUtil
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -68,7 +63,10 @@ class MessageSession(MS):
             if send_:
                 send.append(send_)
             count += 1
-        return FinishedSession(send)
+        msgIds = []
+        for x in send:
+            msgIds.append(x.message_id)
+        return FinishedSession(msgIds, send)
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderInfo.check_TargetAdmin(
@@ -87,15 +85,8 @@ class MessageSession(MS):
             return True
         return False
 
-    def checkSuperUser(self):
-        return True if self.target.senderInfo.query.isSuperUser else False
-
     def asDisplay(self):
         return self.session.message.text
-
-    async def sleep(self, s):
-        ExecutionLockList.remove(self)
-        await asyncio.sleep(s)
 
     async def delete(self):
         try:
@@ -123,7 +114,7 @@ class FetchedSession(FS):
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
                               senderName='',
-                              clientName='Telegram')
+                              clientName='Telegram', messageId=0, replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 

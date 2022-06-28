@@ -1,5 +1,6 @@
 from core.component import on_command
-from core.elements import MessageSession, Image
+from core.elements import Image
+from core.builtins.message import MessageSession
 from database import BotDBUtil
 from .dbutils import CytoidBindInfoManager
 from .profile import cytoid_profile

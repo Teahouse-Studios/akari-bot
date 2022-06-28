@@ -1,6 +1,6 @@
 from core.component import on_command
 from core.dirty_check import check
-from core.elements import MessageSession
+from core.builtins.message import MessageSession
 from core.logger import Logger
 # from modules.meme.jiki import jiki
 from modules.meme.moegirl import moegirl

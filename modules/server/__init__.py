@@ -2,7 +2,7 @@ import asyncio
 
 from core.component import on_command, on_option
 from core.dirty_check import check
-from core.elements import MessageSession
+from core.builtins.message import MessageSession
 from database import BotDBUtil
 from .server import server
 

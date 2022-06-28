@@ -1,6 +1,7 @@
 import traceback
 
-from core.elements import MessageSession, Url
+from core.builtins.message import MessageSession
+from core.elements import Url
 from core.elements.others import ErrorMessage
 from core.utils import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck

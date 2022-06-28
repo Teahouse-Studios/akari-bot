@@ -1,6 +1,7 @@
 import traceback
 
-from core.elements import MessageSession, Image, Plain, Url
+from core.builtins.message import MessageSession
+from core.elements import Image, Plain, Url
 from core.elements.others import ErrorMessage
 from core.utils import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck

@@ -5,13 +5,14 @@ class MessageTaskManager:
     _list = {}
 
     @staticmethod
-    def add_task(session: MessageSession, flag, all_=False):
+    def add_task(session: MessageSession, flag, all_=False, reply=None):
         sender = session.target.senderId
+        task_type = 'reply' if reply is not None else 'wait'
         if all_:
             sender = 'all'
 
         MessageTaskManager._list.update(
-            {session.target.targetId: {sender: {'flag': flag, 'active': True}}})
+            {session.target.targetId: {sender: {'flag': flag, 'active': True, 'type': task_type, 'reply': reply}}})
 
     @staticmethod
     def get_result(session: MessageSession):
@@ -30,9 +31,25 @@ class MessageTaskManager:
             if 'all' in MessageTaskManager._list[session.target.targetId]:
                 sender = 'all'
             if sender is not None:
-                MessageTaskManager._list[session.target.targetId][sender]['result'] = session
-                MessageTaskManager._list[session.target.targetId][sender]['active'] = False
-                MessageTaskManager._list[session.target.targetId][sender]['flag'].set()
+                get_ = MessageTaskManager._list[session.target.targetId][sender]
+                if get_['type'] == 'wait':
+                    get_['result'] = session
+                    get_['active'] = False
+                    get_['flag'].set()
+                elif get_['type'] == 'reply':
+                    if isinstance(get_['reply'], list):
+                        for reply in get_['reply']:
+                            print(reply, session.target.replyId)
+                            if reply == session.target.replyId:
+                                get_['result'] = session
+                                get_['active'] = False
+                                get_['flag'].set()
+                                break
+                    else:
+                        if get_['reply'] == session.target.replyId:
+                            get_['result'] = session
+                            get_['active'] = False
+                            get_['flag'].set()
 
 
 __all__ = ['MessageTaskManager']

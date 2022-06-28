@@ -11,7 +11,8 @@ import ujson as json
 from cpuinfo import get_cpu_info
 
 from core.component import on_command
-from core.elements import MessageSession, Command, PrivateAssets, Image, Plain, ExecutionLockList
+from core.builtins.message import MessageSession
+from core.elements import Command, PrivateAssets, Image, Plain, ExecutionLockList
 from core.loader import ModulesManager
 from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from core.parser.message import remove_temp_ban

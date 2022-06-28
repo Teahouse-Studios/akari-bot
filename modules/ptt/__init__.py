@@ -3,7 +3,8 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 from core.component import on_command
-from core.elements import Image as Img, MessageSession
+from core.elements import Image as Img
+from core.builtins.message import MessageSession
 from core.utils.cache import random_cache_path
 
 assets_path = os.path.abspath('./assets/arcaea')
