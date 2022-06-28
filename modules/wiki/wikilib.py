@@ -323,16 +323,32 @@ class WikiLib:
             desc = ''
         return desc
 
-    async def research_page(self, page_name: str, namespace='*'):
+    async def search_page(self, search_text, namespace='*', limit=10):
         await self.fixup_wiki_info()
+        title_split = search_text.split(':')
+        if title_split[0] in self.wiki_info.interwiki:
+            search_text = ':'.join(title_split[1:])
+            result = await WikiLib(self.wiki_info.interwiki[title_split[0]], self.headers).search_page(search_text, namespace, limit)
+            result_ = []
+            for r in result:
+                result_.append(title_split[0] + ':' + r)
+            return result_
         get_page = await self.get_json(action='query',
                                        list='search',
-                                       srsearch=page_name,
+                                       srsearch=search_text,
                                        srnamespace=namespace,
                                        srwhat='text',
-                                       srlimit='1',
+                                       srlimit=limit,
                                        srenablerewrites=True)
-        new_page_name = get_page['query']['search'][0]['title'] if len(get_page['query']['search']) > 0 else None
+        pagenames = []
+        for x in get_page['query']['search']:
+            pagenames.append(x['title'])
+        return pagenames
+
+    async def research_page(self, page_name: str, namespace='*'):
+        await self.fixup_wiki_info()
+        get_titles = await self.search_page(page_name, namespace=namespace, limit=1)
+        new_page_name = get_titles[0] if len(get_titles) > 0 else None
         title_split = page_name.split(':')
         print(title_split, len(title_split))
         invalid_namespace = False

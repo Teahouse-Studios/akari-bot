@@ -7,7 +7,8 @@ import filetype
 import ujson as json
 
 from core.component import on_command, on_regex, on_option
-from core.elements import MessageSession, Plain, Image, Voice, Url
+from core.elements import Plain, Image, Voice, Url
+from core.builtins.message import MessageSession
 from core.exceptions import AbuseWarning
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
@@ -29,12 +30,12 @@ wiki = on_command('wiki',
                   developers=['OasisAkari'])
 
 
-@wiki.handle('<PageName> {搜索一个Wiki页面，若搜索“随机页面”则随机一个页面。}')
+@wiki.handle('<PageName> {查询一个Wiki页面，若查询“随机页面”则随机一个页面。}')
 async def _(msg: MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'])
 
 
-@wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID搜索一个Wiki页面。}')
+@wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID查询一个Wiki页面。}')
 async def _(msg: MessageSession):
     iw: str = msg.parsed_msg['<CustomIW>']
     page_id: str = msg.parsed_msg['<PageID>']
@@ -50,6 +51,11 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     lang = msg.parsed_msg['<lang>']
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang if lang else None)
+
+
+@wiki.handle('search <PageName> {搜索一个Wiki页面。}')
+async def _(msg: MessageSession):
+    await search_pages(msg, msg.parsed_msg['<PageName>'])
 
 
 @wiki.handle('set <WikiUrl> {设置起始查询Wiki}', required_admin=True)
@@ -353,6 +359,97 @@ async def _(msg: MessageSession):
         await query_pages(msg, query_list, mediawiki=True, inline_mode=True)
 
 
+async def search_pages(session: MessageSession, title: Union[str, list, tuple], use_prefix=True):
+    target = WikiTargetInfo(session)
+    start_wiki = target.get_start_wiki()
+    interwiki_list = target.get_interwikis()
+    headers = target.get_headers()
+    prefix = target.get_prefix()
+    enabled_fandom_addon = BotDBUtil.Module(
+        session).check_target_enabled_module('wiki_fandom_addon')
+    if start_wiki is None:
+        await session.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
+                                  '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/')
+        start_wiki = 'https://minecraft.fandom.com/zh/api.php'
+    if isinstance(title, str):
+        title = [title]
+    query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
+    for t in title:
+        if prefix is not None and use_prefix:
+            t = prefix + t
+        if t[0] == ':':
+            if len(t) > 1:
+                query_task[start_wiki]['query'].append(t[1:])
+        else:
+            matched = False
+            match_interwiki = re.match(r'^(.*?):(.*)', t)
+            if match_interwiki:
+                g1 = match_interwiki.group(1)
+                g2 = match_interwiki.group(2)
+                if g1 in interwiki_list:
+                    interwiki_url = interwiki_list[g1]
+                    if interwiki_url not in query_task:
+                        query_task[interwiki_url] = {
+                            'query': [], 'iw_prefix': g1}
+                    query_task[interwiki_url]['query'].append(g2)
+                    matched = True
+                elif g1 == 'w' and enabled_fandom_addon:
+                    if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
+                        if match_interwiki.group(1) == 'c':
+                            if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
+                                interwiki_split = match_interwiki.group(
+                                    1).split('.')
+                                if len(interwiki_split) == 2:
+                                    get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
+                                    find = interwiki_split[0] + \
+                                           ':' + match_interwiki.group(2)
+                                    iw = 'w:c:' + interwiki_split[0]
+                                else:
+                                    get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
+                                    find = match_interwiki.group(2)
+                                    iw = 'w:c:' + match_interwiki.group(1)
+                                if get_link not in query_task:
+                                    query_task[get_link] = {
+                                        'query': [], 'iw_prefix': iw}
+                                query_task[get_link]['query'].append(find)
+                                matched = True
+            if not matched:
+                query_task[start_wiki]['query'].append(t)
+    print(query_task)
+    msg_list = []
+    wait_msg_list = []
+    for q in query_task:
+        current_task = query_task[q]
+        ready_for_query_pages = current_task['query'] if 'query' in current_task else []
+        iw_prefix = (current_task['iw_prefix'] +
+                     ':') if current_task['iw_prefix'] != '' else ''
+        tasks = []
+        for rd in ready_for_query_pages:
+            tasks.append(asyncio.ensure_future(
+                WikiLib(q, headers).search_page(rd)))
+        query = await asyncio.gather(*tasks)
+        for result in query:
+            for r in result:
+                wait_msg_list.append(iw_prefix + r)
+    if len(wait_msg_list) != 0:
+        msg_list.append('查询到以下结果：')
+        i = 0
+        for w in wait_msg_list:
+            i += 1
+            w = f'{i}. {w}'
+            msg_list.append(w)
+        msg_list.append('回复编号以查询对应的页面。')
+    reply = await session.waitReply(Plain('\n'.join(msg_list)))
+    if reply.asDisplay().isdigit():
+        reply_number = int(reply.asDisplay()) - 1
+        await query_pages(reply, wait_msg_list[reply_number])
+
+
+
+
+
+
+
 async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str=None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False):
@@ -391,6 +488,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     query_task[start_wiki]['query'].append(t[1:])
             else:
                 match_interwiki = re.match(r'^(.*?):(.*)', t)
+                matched = False
                 if match_interwiki:
                     g1 = match_interwiki.group(1)
                     g2 = match_interwiki.group(2)
@@ -400,6 +498,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             query_task[interwiki_url] = {
                                 'query': [], 'iw_prefix': g1}
                         query_task[interwiki_url]['query'].append(g2)
+                        matched = True
                     elif g1 == 'w' and enabled_fandom_addon:
                         if match_interwiki := re.match(r'(.*?):(.*)', match_interwiki.group(2)):
                             if match_interwiki.group(1) == 'c':
@@ -419,15 +518,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                         query_task[get_link] = {
                                             'query': [], 'iw_prefix': iw}
                                     query_task[get_link]['query'].append(find)
-                                else:
-                                    query_task[start_wiki]['query'].append(t)
-                            else:
-                                query_task[start_wiki]['query'].append(t)
-                        else:
-                            query_task[start_wiki]['query'].append(t)
-                    else:
-                        query_task[start_wiki]['query'].append(t)
-                else:
+                                    matched = True
+                if not matched:
                     query_task[start_wiki]['query'].append(t)
     elif pageid is not None:
         if iw == '':
@@ -470,7 +562,6 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             for result in query:
                 print(result.__dict__)
                 r: PageInfo = result
-                iw_prefix = iw_prefix
                 display_title = None
                 display_before_title = None
                 if r.title is not None:
