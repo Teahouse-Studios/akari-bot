@@ -152,9 +152,10 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
         result = await msg.waitReply([Image(newpath), Plain('请发送正确答案。（请使用字母表顺序，如：CHBrClF）')])
-        if result.asDisplay() == csr['name']:
-            await result.sendMessage('回答正确。')
-        else:
-            await result.sendMessage('回答错误，正确答案是 ' + csr['name'])
-        play_state[msg.target.targetId]['active'] = False
+        if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
+            if result.asDisplay() == csr['name']:
+                await result.sendMessage('回答正确。')
+            else:
+                await result.sendMessage('回答错误，正确答案是 ' + csr['name'])
+            play_state[msg.target.targetId]['active'] = False
 
