@@ -65,7 +65,7 @@ trigger_times = 60 if not Config('slower_schedule') else 180
              trigger=IntervalTrigger(seconds=trigger_times),
              desc='开启后当Minecraft启动器更新时将会自动推送消息。', alias='mcvrss')
 async def mcv_rss(bot: FetchTarget):
-    url = 'http://launchermeta.mojang.com/mc/game/version_manifest.json'
+    url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:
         verlist = get_stored_list(bot, 'mcv_rss')
         file = json.loads(await get_url(url))
