@@ -156,4 +156,5 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
             await result.sendMessage('回答正确。')
         else:
             await result.sendMessage('回答错误，正确答案是 ' + csr['name'])
+        play_state[msg.target.targetId]['active'] = False
 
