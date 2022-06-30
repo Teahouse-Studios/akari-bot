@@ -12,7 +12,7 @@ api = 'https://ca.projectxero.top/idlist/search'
 i = on_command('idlist')
 
 
-@i.handle('<query> [<filter>...] {查询MCBEID表。}')
+@i.handle('<query> {查询MCBEID表。}')
 async def _(msg: MessageSession):
     query = msg.parsed_msg['<query>']
     query_options = {'q': query, 'limit': '6'}
