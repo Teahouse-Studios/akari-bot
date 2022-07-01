@@ -1,7 +1,6 @@
 import json
 import os
 import sys
-import inspect
 
 from config import Config
 
@@ -14,11 +13,10 @@ if not Config('db_path'):
 import asyncio
 import traceback
 import aioconsole
-import logging
 
 from datetime import datetime
 
-from bot import init_bot, TimedPatternFileHandler
+from bot import init_bot
 from core.elements import MsgInfo, AutoSession, PrivateAssets, EnableDirtyWordCheck, Plain
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
@@ -146,10 +144,6 @@ async def autotest():
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger()
-    logpath = os.path.abspath('./logs')
-    logger.addHandler(
-        TimedPatternFileHandler('{}_%Y-%m-%d.log'.format(logpath + '/console_log'), mode='a', backup_count=5))
     init_bot()
     loop = asyncio.get_event_loop()
     argv = sys.argv

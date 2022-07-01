@@ -1,40 +1,30 @@
 '''基于logging的日志器。'''
-import logging
+import os
 import re
 import sys
 
-
-factory = logging.getLogRecordFactory()
-basic_logger_format = "[%(asctime)s][%(botname)s][%(levelname)s][%(pathname)s:%(lineno)d]: %(message)s"
+from loguru import logger
 
 
-def record_factory(*args, **kwargs):
-    record = factory(*args, **kwargs)
-    for x in sys.path:
-        record.pathname = record.pathname.replace(x, '')
-    record.pathname = record.pathname.replace('\\', '.').replace('/', '.')[1:]
-    record.botname = re.split(r'[/\\]', sys.path[0])[-1]
-    return record
+logpath = os.path.abspath('./logs')
+if not os.path.exists(logpath):
+    os.mkdir(logpath)
 
-
-logging.setLogRecordFactory(record_factory)
+bot_name = re.split(r'[/\\]', sys.path[0])[-1].title()
+basic_logger_format = "<cyan>[" + bot_name + "]</cyan><green>[{time:YYYY-MM-DD HH:mm:ss}]</green><blue>[{name}:{function}:{line}]</blue><level>[{level}]:{message}</level>"
 
 
 class Logginglogger:
-    def __init__(self, fmt=basic_logger_format, **kwargs):
-        logging.basicConfig(
-            format=fmt,
-            level=logging.INFO if not kwargs.get("debug") else logging.DEBUG
-        )
-        self.log = logging.getLogger('akaribot.logger')
-        self.log.setLevel(logging.INFO)
-
+    def __init__(self):
+        self.log = logger
+        self.log.remove()
+        self.log.add(sys.stderr, format=basic_logger_format, level="INFO", backtrace=False, diagnose=False)
+        self.log.add(logpath + '/' + bot_name + "_{time:YYYY-MM-DD}.log", format=basic_logger_format, retention="10 days")
         self.info = self.log.info
         self.error = self.log.error
         self.debug = self.log.debug
         self.warn = self.log.warning
         self.exception = self.log.exception
-        self.fatal = self.log.fatal
 
 
 Logger = Logginglogger()
