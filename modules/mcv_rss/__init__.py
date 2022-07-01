@@ -82,7 +82,7 @@ async def mcv_rss(bot: FetchTarget):
                 if article[1] not in get_stored_news_title:
                     await bot.post_message('minecraft_news', f'Minecraft官网发布了{release}的更新日志：\n' + article[0])
                     get_stored_news_title.append(article[1])
-                    update_stored_list(bot, 'mcname', get_stored_news_title)
+                    update_stored_list(bot, 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
             await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['snapshot'] + '快照。')
@@ -94,7 +94,7 @@ async def mcv_rss(bot: FetchTarget):
                 if article[1] not in get_stored_news_title:
                     await bot.post_message('minecraft_news', f'Minecraft官网发布了{snapshot}的更新日志：\n' + article[0])
                     get_stored_news_title.append(article[1])
-                    update_stored_list(bot, 'mcname', get_stored_news_title)
+                    update_stored_list(bot, 'mcnews', get_stored_news_title)
     except Exception:
         traceback.print_exc()
 
