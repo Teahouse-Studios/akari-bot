@@ -6,7 +6,7 @@ from typing import Union
 import filetype
 import ujson as json
 
-from core.component import on_command, on_regex, on_option
+from core.component import on_command, on_regex
 from core.elements import Plain, Image, Voice, Url
 from core.builtins.message import MessageSession
 from core.exceptions import AbuseWarning
@@ -202,6 +202,16 @@ async def _(msg: MessageSession):
         await msg.finish(f'成功重置请求时所使用的前缀。')
 
 
+@wiki.handle('fandom (enable|disable) {启用/禁用Fandom全局Interwiki查询}', required_admin=True)
+async def _(msg: MessageSession):
+    if msg.parsed_msg['enable']:
+        BotDBUtil.Options(msg).edit('wiki_fandom_addon', True)
+        await msg.finish('已启用Fandom全局Interwiki查询。')
+    else:
+        BotDBUtil.Options(msg).edit('wiki_fandom_addon', False)
+        await msg.finish('已禁用Fandom全局Interwiki查询。')
+
+
 aud = on_command('wiki_audit', alias='wa',
                  developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
@@ -316,10 +326,6 @@ async def _(msg: MessageSession):
             wikis.append(f'{bl[0]}（by {bl[1]}）')
         await msg.finish('\n'.join(wikis))
 
-
-on_option('wiki_fandom_addon', desc='为Fandom定制的查询附加功能。',
-          developers=['OasisAkari'])
-
 wiki_inline = on_regex('wiki_inline',
                        desc='开启后将自动解析消息中带有的[[]]或{{}}字符串并自动查询Wiki，如[[海晶石]]',
                        alias='wiki_regex', developers=['OasisAkari'])
@@ -364,8 +370,7 @@ async def search_pages(session: MessageSession, title: Union[str, list, tuple], 
     interwiki_list = target.get_interwikis()
     headers = target.get_headers()
     prefix = target.get_prefix()
-    enabled_fandom_addon = BotDBUtil.Module(
-        session).check_target_enabled_module('wiki_fandom_addon')
+    enabled_fandom_addon = BotDBUtil.Options(session).get('wiki_fandom_addon')
     if start_wiki is None:
         await session.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
                                   '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/')
@@ -453,8 +458,9 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         interwiki_list = target.get_interwikis()
         headers = target.get_headers()
         prefix = target.get_prefix()
-        enabled_fandom_addon = BotDBUtil.Module(
-            session).check_target_enabled_module('wiki_fandom_addon')
+        enabled_fandom_addon = BotDBUtil.Options(session).get('wiki_fandom_addon')
+        if enabled_fandom_addon is None:
+            enabled_fandom_addon = False
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = []

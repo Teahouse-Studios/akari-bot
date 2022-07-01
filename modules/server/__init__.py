@@ -1,12 +1,10 @@
 import asyncio
 
-from core.component import on_command, on_option
+from core.component import on_command
 from core.dirty_check import check
 from core.builtins.message import MessageSession
 from database import BotDBUtil
 from .server import server
-
-on_option('server_disable_revoke', desc='关闭server命令的自动撤回')  # 临时解决方案，后续会改动，归属到toggle命令下
 
 s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
@@ -14,7 +12,9 @@ s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 @s.handle('<ServerIP>:<Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
           options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: MessageSession):
-    enabled_addon = BotDBUtil.Module(msg).check_target_enabled_module('server_disable_revoke')
+    enabled_addon = BotDBUtil.Options(msg).get('server_revoke')
+    if enabled_addon is None:
+        enabled_addon = True
     gather_list = []
     sm = ['j', 'b']
     for x in sm:
@@ -24,13 +24,23 @@ async def main(msg: MessageSession):
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
         msg_ = '发生错误：没有找到任何类型的Minecraft服务器。'
-        if msg.Feature.delete and not enabled_addon:
+        if msg.Feature.delete and enabled_addon:
             msg_ += '[90秒后撤回消息]'
         send = await msg.sendMessage(msg_)
-        if msg.Feature.delete and not enabled_addon:
+        if msg.Feature.delete and enabled_addon:
             await msg.sleep(90)
             await send.delete()
             await msg.finish()
+
+
+@s.handle('revoke (enable|disable) {是否启用自动撤回功能（默认为是）。}')
+async def revoke(msg: MessageSession):
+    if msg.parsed_msg['enable']:
+        BotDBUtil.Options(msg).edit('server_revoke', True)
+        await msg.finish('已启用自动撤回功能。')
+    else:
+        BotDBUtil.Options(msg).edit('server_revoke', False)
+        await msg.finish('已禁用自动撤回功能。')
 
 
 async def s(msg: MessageSession, address, raw, showplayer, mode, enabled_addon):
@@ -39,10 +49,10 @@ async def s(msg: MessageSession, address, raw, showplayer, mode, enabled_addon):
         sendmsg = await check(sendmsg)
         for x in sendmsg:
             m = x['content']
-            if msg.Feature.delete and not enabled_addon:
+            if msg.Feature.delete and enabled_addon:
                 m += '\n[90秒后撤回消息]'
             send = await msg.sendMessage(m)
-            if msg.Feature.delete and not enabled_addon:
+            if msg.Feature.delete and enabled_addon:
                 await msg.sleep(90)
                 await send.delete()
                 await msg.finish()

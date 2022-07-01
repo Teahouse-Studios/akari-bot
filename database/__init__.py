@@ -272,5 +272,31 @@ class BotDBUtil:
                 session.commit()
             return True
 
+    class Options:
+        def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
+            self.targetId = msg.target.targetId if isinstance(msg, (MessageSession, FetchTarget)) else msg
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def edit(self, k, v):
+            get_ = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
+            if get_ is None:
+                session.add_all([TargetOptions(targetId=self.targetId, options=json.dumps({k: v}))])
+            else:
+                get_.options = json.dumps({**json.loads(get_.options), k: v})
+            session.commit()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def get(self, k=None):
+            query = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
+            if query is None:
+                return {}
+            value: dict = json.loads(query.options)
+            if k is None:
+                return value
+            else:
+                return value.get(k)
+
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

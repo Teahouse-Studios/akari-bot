@@ -18,7 +18,7 @@ class Logginglogger:
     def __init__(self):
         self.log = logger
         self.log.remove()
-        self.log.add(sys.stderr, format=basic_logger_format, level="INFO", backtrace=False, diagnose=False, colorize=True)
+        self.log.add(sys.stderr, format=basic_logger_format, level="INFO", colorize=True)
         self.log.add(logpath + '/' + bot_name + "_{time:YYYY-MM-DD}.log", format=basic_logger_format, retention="10 days")
         self.info = self.log.info
         self.error = self.log.error

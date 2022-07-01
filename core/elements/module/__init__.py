@@ -74,29 +74,6 @@ class RegexCommand:
         self.match_list = RegexMatches()
 
 
-class Option:
-    def __init__(self,
-                 bind_prefix: str,
-                 desc: str = None,
-                 alias: Union[str, list, tuple, dict] = None,
-                 recommend_modules: Union[str, list, tuple] = None,
-                 developers: Union[str, list, tuple] = None,
-                 required_superuser: bool = False,
-                 required_admin: bool = False):
-        self.bind_prefix: str = bind_prefix
-        if isinstance(alias, str):
-            alias = {alias: bind_prefix}
-        elif isinstance(alias, (tuple, list)):
-            alias = {x: bind_prefix for x in alias}
-        self.alias: Dict[str, str] = alias
-        self.desc: str = desc
-        self.recommend_modules: List[str] = convert2lst(recommend_modules)
-        self.developers: List[str] = convert2lst(developers)
-        self.required_admin: bool = required_admin
-        self.required_superuser: bool = required_superuser
-        self.match_list = None
-
-
 class Schedule:
     def __init__(self,
                  function: Callable,
@@ -151,5 +128,5 @@ class StartUp:
         self.exclude_from: List[str] = convert2lst(exclude_from)
 
 
-__all__ = ["Command", "RegexCommand", "Option", "Schedule", "StartUp", "AndTrigger", "OrTrigger", "DateTrigger",
+__all__ = ["Command", "RegexCommand", "Schedule", "StartUp", "AndTrigger", "OrTrigger", "DateTrigger",
            "CronTrigger", "IntervalTrigger"]

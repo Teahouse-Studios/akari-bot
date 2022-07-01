@@ -26,6 +26,13 @@ class SenderInfo(Base):
     disable_typing = Column(Boolean, default=False)
 
 
+class TargetOptions(Base):
+    """对象设置的参数"""
+    __tablename__ = "TargetOptions"
+    targetId = Column(String(512), primary_key=True)
+    options = Column(LONGTEXT if Config('db_path').startswith('mysql') else Text)
+
+
 class StoredData(Base):
     """数据存储"""
     __tablename__ = "StoredData"
@@ -66,5 +73,5 @@ class DBVersion(Base):
 
 
 Session.create()
-__all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList", "StoredData",
-           "DBVersion", "MuteList"]
+__all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "TargetOptions", "CommandTriggerTime", "GroupAllowList",
+           "StoredData", "DBVersion", "MuteList"]

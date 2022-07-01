@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.elements import Command, RegexCommand, Option, Schedule, StartUp
+from core.elements import Command, RegexCommand, Schedule, StartUp
 from core.elements.module.component_meta import *
 from core.loader import ModulesManager
 
@@ -147,38 +147,6 @@ def on_regex(
                           )
     ModulesManager.add_module(module)
     return Bind.Regex(bind_prefix)
-
-
-def on_option(
-    bind_prefix: str,
-    desc: str = None,
-    alias: Union[str, list, tuple, dict] = None,
-    recommend_modules: Union[str, list, tuple] = None,
-    developers: Union[str, list, tuple] = None,
-    required_superuser: bool = False,
-    required_admin: bool = False
-):
-    """
-
-    :param bind_prefix: 绑定的命令前缀。
-    :param alias: 此命令的别名。
-    :param desc: 此命令的简介。
-    :param recommend_modules: 推荐打开的其他模块。
-    :param developers: 模块作者。
-    :param required_admin: 此命令是否需要群聊管理员权限。
-    :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
-    :return: 此类型的模块。
-    """
-
-    module = Option(bind_prefix=bind_prefix,
-                    desc=desc,
-                    alias=alias,
-                    recommend_modules=recommend_modules,
-                    developers=developers,
-                    required_superuser=required_superuser,
-                    required_admin=required_admin)
-    ModulesManager.add_module(module)
-
 
 def on_schedule(
     bind_prefix: str,
