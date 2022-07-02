@@ -20,3 +20,4 @@ google_play_scraper
 py-cpuinfo
 aiofile
 loguru
+qq-bot

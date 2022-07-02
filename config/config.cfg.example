@@ -17,3 +17,6 @@ botarcapi_agent =
 tg_token =
 slower_schedule = False
 enable_tos = False
+qqchannel_appid =
+qqchannel_token =
+qqchannel_secret =
