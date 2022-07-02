@@ -1,7 +1,11 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.dialects.mysql import LONGTEXT
 
-Base = declarative_base()
+from database.orm_base import Base
+
+from database.orm import Session
+
+from config import Config
 
 
 class EnabledModules(Base):
@@ -20,6 +24,20 @@ class SenderInfo(Base):
     isSuperUser = Column(Boolean, default=False)
     warns = Column(Integer, default='0')
     disable_typing = Column(Boolean, default=False)
+
+
+class TargetOptions(Base):
+    """对象设置的参数"""
+    __tablename__ = "TargetOptions"
+    targetId = Column(String(512), primary_key=True)
+    options = Column(LONGTEXT if Config('db_path').startswith('mysql') else Text)
+
+
+class StoredData(Base):
+    """数据存储"""
+    __tablename__ = "StoredData"
+    name = Column(String(512), primary_key=True)
+    value = Column(LONGTEXT if Config('db_path').startswith('mysql') else Text)
 
 
 class TargetAdmin(Base):
@@ -49,4 +67,11 @@ class GroupAllowList(Base):
     targetId = Column(String(512), primary_key=True)
 
 
-__all__ = ["Base", "EnabledModules", "TargetAdmin", "SenderInfo", "CommandTriggerTime", "GroupAllowList"]
+class DBVersion(Base):
+    __tablename__ = "DBVersion"
+    value = Column(String(512), primary_key=True)
+
+
+Session.create()
+__all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "TargetOptions", "CommandTriggerTime", "GroupAllowList",
+           "StoredData", "DBVersion", "MuteList"]

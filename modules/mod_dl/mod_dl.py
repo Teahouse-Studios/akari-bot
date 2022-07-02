@@ -1,12 +1,15 @@
 '''
 调用了其他API，但是已于CurseForge仓库对接。
 '''
-from core.utils import get_url
+import traceback
+
 from bs4 import BeautifulSoup
 
-search_piece_1 = 'https://files.xmdhs.top/curseforge/s?q='
+from core.utils import get_url
+
+search_piece_1 = 'https://files.xmdhs.com/curseforge/s?q='
 search_piece_2 = '&type=1'
-search_step_2 = 'https://files.xmdhs.top/curseforge/history?id='
+search_step_2 = 'https://files.xmdhs.com/curseforge/history?id='
 
 
 def Chinese(string: str):
@@ -24,6 +27,7 @@ async def curseforge(mod_name: str, ver: str):
     bs = BeautifulSoup(html, 'html.parser')
     try:
         information = bs.body.div.div.a
+        mod_title = information.find('h3').text
     except Exception:
         return {'msg': '未搜索到该Mod。', 'success': False}
     more_specific_html = str(information)
@@ -32,10 +36,11 @@ async def curseforge(mod_name: str, ver: str):
     html_2 = await get_url(final_url)
     bs_2 = BeautifulSoup(html_2, 'html.parser')
     try:
-        results = bs_2.body.div.div.table.tbody.find_all('tr')
+        results = bs_2.body.div.find_all('tr')
+        information_2 = str(results[1])
     except Exception:
-        return {'msg': f'此Mod没有{ver}的版本。', 'success': False}
-    information_2 = str(results[1])
+        traceback.print_exc()
+        return {'msg': f'{mod_title}没有{ver}的版本。', 'success': False}
     download_link = information_2[int(information_2.find("\"") + 1):int(information_2.find("\" target="))]
     file_name = information_2[int(information_2.find("_blank\"") + 8):int(information_2.find("</a>"))]
     status = '???'

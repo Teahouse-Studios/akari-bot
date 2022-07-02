@@ -1,18 +1,16 @@
-from typing import List
+from typing import List, Union
 
 from PIL import Image
 
-from core.elements import MessageSession as MS, Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
+from core.builtins.message import MessageSession as MS
+from core.elements import Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, \
+    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
 from core.logger import Logger
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -21,6 +19,7 @@ class FinishedSession(FinS):
 
 
 class Template(MS):
+    session: Union[Session, AS]
     class Feature:
         image = True
         voice = False
@@ -31,6 +30,7 @@ class Template(MS):
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
         Logger.info(msgchain)
         msgchain = MessageChain(msgchain)
+        self.sent.append(msgchain)
         Logger.info(msgchain)
         msg_list = []
         for x in msgchain.asSendable(embed=False):
@@ -40,21 +40,40 @@ class Template(MS):
             if isinstance(x, BImage):
                 img = Image.open(await x.get())
                 img.show()
-        return FinishedSession(['There should be a callable here... hmm...'])
+        return FinishedSession([0], ['There should be a callable here... hmm...'])
 
-    async def waitConfirm(self, msgchain=None, quote=True):
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         send = None
         if msgchain is not None:
             send = await self.sendMessage(msgchain)
             print("（发送“是”或符合确认条件的词语来确认）")
-        c = input('Confirm: ')
+        if self.session.auto_interactions:
+            c = self.session.auto_interactions[0]
+            del self.session.auto_interactions[0]
+        else:
+            c = input('Confirm: ')
         print(c)
-        if msgchain is not None:
+        if msgchain is not None and delete:
             await send.delete()
         if c in confirm_command:
             return True
 
         return False
+
+    async def waitAnyone(self, msgchain=None, quote=True, delete=True):
+        send = None
+        if msgchain is not None:
+            send = await self.sendMessage(msgchain)
+        if self.session.auto_interactions is not None:
+            c = self.session.auto_interactions[0]
+            del self.session.auto_interactions[0]
+        else:
+            c = input('Confirm: ')
+        print(c)
+        if msgchain is not None and delete:
+            await send.delete()
+        self.session.message = c
+        return self
 
     def asDisplay(self):
         return self.session.message
@@ -76,6 +95,9 @@ class Template(MS):
         print("(Try to check if you are superuser, but this is a unit test environment. Have fun!)")
         return True
 
+    async def sleep(self, s):
+        print("(Tried to sleep for %d seconds, skip.)" % s)
+
     class Typing:
         def __init__(self, msg: MS):
             self.msg = msg
@@ -93,7 +115,7 @@ class FetchedSession(FS):
                               senderId=f'{targetFrom}|{targetId}',
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
-                              senderName='')
+                              senderName='', clientName='TEST', messageId=0, replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = Template(self.target, self.session)
 

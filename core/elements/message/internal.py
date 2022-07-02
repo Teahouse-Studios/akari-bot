@@ -22,14 +22,18 @@ class Plain:
     def __str__(self):
         return self.text
 
+    def __repr__(self):
+        return f'Plain(text="{self.text}")'
+
 
 class Url:
     mm = False
+    disable_mm = False
 
-    def __init__(self, url: str, disable_mm: bool = False):
+    def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
         self.url = url
-        if Url.mm and not disable_mm:
-            mm_url = f'https://middleman.wdf.ink/?source=akaribot&rot13=%s'
+        if (Url.mm and not disable_mm) or (use_mm and not Url.disable_mm):
+            mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")
@@ -37,6 +41,9 @@ class Url:
 
     def __str__(self):
         return self.url
+
+    def __repr__(self):
+        return f'Url(url="{self.url}")'
 
 
 class Image:
@@ -69,11 +76,23 @@ class Image:
                     image_cache.write(raw)
                 return img_path
 
+    def __str__(self):
+        return self.path
+
+    def __repr__(self):
+        return f'Image(path="{self.path}", headers={self.headers})'
+
 
 class Voice:
     def __init__(self,
                  path=None):
         self.path = path
+
+    def __str__(self):
+        return self.path
+
+    def __repr__(self):
+        return f'Voice(path={self.path})'
 
 
 class EmbedField:
@@ -84,6 +103,12 @@ class EmbedField:
         self.name = name
         self.value = value
         self.inline = inline
+
+    def __str__(self):
+        return f'{self.name}: {self.value}'
+
+    def __repr__(self):
+        return f'EmbedField(name="{self.name}", value="{self.value}", inline={self.inline})'
 
 
 class Embed:
@@ -133,6 +158,15 @@ class Embed:
         if self.image is not None:
             msgchain.append(self.image)
         return msgchain
+
+    def __str__(self):
+        return str(self.to_msgchain())
+
+    def __repr__(self):
+        return f'Embed(title="{self.title}", description="{self.description}", url="{self.url}", ' \
+               f'timestamp={self.timestamp}, color={self.color}, image={self.image.__repr__()}, ' \
+               f'thumbnail={self.thumbnail.__repr__()}, author="{self.author}", footer="{self.footer}", ' \
+               f'fields={self.fields})'
 
 
 __all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url"]

@@ -3,26 +3,30 @@ from os.path import abspath
 
 import aiohttp
 
-from modules.wiki.wikilib import wikilib
+from modules.wiki.wikilib import WikiLib
 
 
 async def dpng(link, ss):
-    imgurl = await wikilib().get_image('File:Wiki.png', link)
-    d = abspath('./assets/Favicon/' + ss + '/')
-    if not os.path.exists(d):
-        os.makedirs(d)
-    path = d + '/Wiki.png'
+    check = await WikiLib(link).check_wiki_available()
+    if check:
+        imgurl = check.value.logo_url
+        if imgurl is not None:
+            d = abspath('./assets/Favicon/' + ss + '/')
+            if not os.path.exists(d):
+                os.makedirs(d)
+            path = d + '/Wiki.png'
 
-    try:
-        if not os.path.exists(d):
-            os.mkdir(d)
-        if not os.path.exists(path):
-            async with aiohttp.ClientSession() as session:
-                async with session.get(imgurl) as resp:
-                    with open(path, 'wb+') as jpg:
-                        jpg.write(await resp.read())
-                        return True
-        else:
-            return True
-    except Exception:
-        return False
+            try:
+                if not os.path.exists(d):
+                    os.mkdir(d)
+                if not os.path.exists(path):
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(imgurl) as resp:
+                            with open(path, 'wb+') as jpg:
+                                jpg.write(await resp.read())
+                                return True
+                else:
+                    return True
+            except Exception:
+                return False
+    return False

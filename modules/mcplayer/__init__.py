@@ -1,5 +1,6 @@
 from core.component import on_command
-from core.elements import MessageSession, Plain, Image, Url
+from core.builtins.message import MessageSession
+from core.elements import Plain, Image, Url
 
 from .mojang_api import *
 
@@ -27,8 +28,9 @@ async def main(msg: MessageSession):
         skin = sac['skin']
         cape = sac['cape']
         namemc = 'https://namemc.com/profile/' + name
-        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(skin), Image(cape)] if cape \
-            else [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(skin)]
+        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(skin)]
+        if cape:
+            chain.append(Image(cape))
     except ValueError:
         chain = [Plain(f'未找到 {arg} 的信息。')]
-    await msg.sendMessage(chain)
+    await msg.finish(chain)

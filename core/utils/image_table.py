@@ -1,7 +1,6 @@
 import os
 import re
 import traceback
-import uuid
 from html import escape
 from typing import List, Union
 
@@ -11,6 +10,7 @@ from tabulate import tabulate
 
 from config import Config
 from core.logger import Logger
+from .cache import random_cache_path
 
 web_render = Config('web_render')
 
@@ -21,7 +21,7 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=False):
     if not web_render:
         return False
     try:
@@ -55,7 +55,11 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
               text-align: left;
             }</style>"""
         html = {'content': tblst + css, 'width': w}
-        picname = os.path.abspath(f'./cache/{str(uuid.uuid4())}.jpg')
+        if save_source:
+            fname = random_cache_path() + '.html'
+            with open(fname, 'w') as fi:
+                fi.write(tblst + css)
+        picname = random_cache_path() + '.jpg'
         if os.path.exists(picname):
             os.remove(picname)
         async with aiohttp.ClientSession() as session:
@@ -68,3 +72,6 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]]):
     except Exception:
         Logger.error(traceback.format_exc())
         return False
+
+
+__all__ = ['ImageTable', 'image_table_render']

@@ -3,30 +3,11 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 from core.component import on_command
-from core.elements import Image as Img, MessageSession
-from core.utils import cache_name
+from core.elements import Image as Img
+from core.builtins.message import MessageSession
+from core.utils.cache import random_cache_path
 
 assets_path = os.path.abspath('./assets/arcaea')
-
-
-def text_border(draw, x, y, text, shadowcolor, fillcolor, font):
-    x = x + 3
-    y = y + 3
-    # thin border
-    draw.text((x - 3, y), text, font=font, fill=shadowcolor)
-    draw.text((x + 3, y), text, font=font, fill=shadowcolor)
-    draw.text((x, y - 3), text, font=font, fill=shadowcolor)
-    draw.text((x, y + 3), text, font=font, fill=shadowcolor)
-
-    # thicker border
-    draw.text((x - 3, y - 3), text, font=font, fill=shadowcolor)
-    draw.text((x + 3, y - 3), text, font=font, fill=shadowcolor)
-    draw.text((x - 3, y + 3), text, font=font, fill=shadowcolor)
-    draw.text((x + 3, y + 3), text, font=font, fill=shadowcolor)
-
-    # now draw the text over it
-    draw.text((x, y), text, font=font, fill=fillcolor)
-
 
 p = on_command('ptt',
                developers=['OasisAkari'])
@@ -39,7 +20,10 @@ async def pttimg(msg: MessageSession):
     if ptt == '--':
         ptt = -1
     else:
-        ptt = float(ptt)
+        try:
+            ptt = float(ptt)
+        except ValueError:
+            await msg.finish('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
     if ptt >= 12.50:
         pttimg = 6
     elif ptt >= 12.00:
@@ -77,27 +61,22 @@ async def pttimg(msg: MessageSession):
         print(font2_width, font2_height)
         pttimg = Image.new("RGBA", (font1_width + font2_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
-        text_border(drawptt, 0, 0,
-                    ptt1 + '.',
-                    '#52495d', 'white', font=font1)
+        drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
         print(int(int(font1_height) - int(font2_height)))
-        text_border(drawptt, font1_width, 16, ptt2,
-                    '#52495d', 'white', font=font2)
+        drawptt.text((font1_width, int(int(font1_height) - int(font2_height))), ptt2, 'white', font=font2, stroke_width=3, stroke_fill='#52495d')
     elif ptt == -1:
         ptt = '--'
         ptttext_width, ptttext_height = ptttext.size
         font1_width, font1_height = font1.getsize(ptt)
         pttimg = Image.new("RGBA", (font1_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
-        text_border(drawptt, 0, 0,
-                    ptt,
-                    '#52495d', 'white', font=font1)
+        drawptt.text((0, 0), ptt, 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
     else:
-        return await msg.sendMessage('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
+        return await msg.finish('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))
     pttimgr.alpha_composite(ptttext, (0, 0))
-    savepath = cache_name() + '.png'
+    savepath = random_cache_path() + '.png'
     pttimgr.save(savepath)
-    await msg.sendMessage([Img(path=savepath)])
+    await msg.finish([Img(path=savepath)])

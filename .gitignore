@@ -16,7 +16,7 @@ assets/feedback_*.txt
 assets/cytoid-avatar/
 assets/cytoid-cover/
 assets/maimai*
-core/bots/**/assets
+bots/**/assets
 core/unused_bots/**/assets
 .version*
 .pid_last
@@ -25,3 +25,6 @@ assets/arc**
 assets/version*
 assets/mcnews.txt
 *.log
+assets/mcbeversion.txt
+!modules/chemical_code/answer.db
+!test_commands.txt

@@ -1,11 +1,10 @@
 from sqlalchemy import Column, String
-from sqlalchemy.ext.declarative import declarative_base
 
-from database.orm import DBSession
+from database.orm import Session
+from database.orm_base import Base
 
-Base = declarative_base()
 table_prefix = 'module_arcaea_'
-db = DBSession()
+db = Session
 session = db.session
 engine = db.engine
 
@@ -17,4 +16,4 @@ class ArcBindInfo(Base):
     friendcode = Column(String(512))
 
 
-Base.metadata.create_all(bind=engine, checkfirst=True)
+Session.create()

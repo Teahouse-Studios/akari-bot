@@ -1,7 +1,7 @@
 import re
 
 from modules.wiki import query_pages
-from modules.wiki.wikilib_v2 import QueryInfo
+from modules.wiki.wikilib import QueryInfo
 
 
 async def moegirl(term: str):

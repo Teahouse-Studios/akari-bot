@@ -8,8 +8,9 @@ from core.utils import get_url
 async def news():
     api = 'https://www.mcbbs.net/forum-news-1.html'
     webrender = Config('web_render')
-    if webrender:
-        api = webrender + 'source?url=' + api
+    if not webrender:
+        return
+    api = webrender + 'source?url=' + api
     html = await get_url(api)
     print(html)
     bs = BeautifulSoup(html, 'html.parser')

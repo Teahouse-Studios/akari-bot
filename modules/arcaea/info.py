@@ -1,9 +1,10 @@
 import os
 import traceback
+from datetime import datetime
 
 from config import Config
 from core.elements import Plain, Image
-from core.utils.bot import get_url
+from core.utils import get_url
 from modules.arcaea.errcode import errcode
 
 assets_path = os.path.abspath('./assets/arcaea')
@@ -35,14 +36,12 @@ async def get_info(usercode):
             difficulty = 'FTR'
         elif recent['difficulty'] == 3:
             difficulty = 'BYD'
-        songsinfo = {}
-        for si in get_["content"]["songinfo"]:
-            songsinfo[si["id"]] = si
-        trackname = songsinfo[recent["song_id"]]['title_localized']['en']
+        songinfo = get_['content']['songinfo'][0]
+        trackname = songinfo['name_en']
         imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
         if not os.path.exists(imgpath):
             imgpath = f'{assets_path}/jacket/{recent["song_id"]}.jpg'
-        realptt = songsinfo[recent["song_id"]]['difficulties'][recent['difficulty']]['realrating']
+        realptt = songinfo['rating']
         ptt = recent['rating']
         score = recent['score']
         shiny_pure = recent['shiny_perfect_count']
@@ -51,13 +50,15 @@ async def get_info(usercode):
         lost = recent['miss_count']
         username = get_['content']['account_info']['name']
         usrptt = int(get_['content']['account_info']['rating']) / 100
+        time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
         result = [Plain(f'{username} (Ptt: {usrptt})的最近游玩记录：\n'
                         f'{trackname} ({difficulty})\n'
                         f'Score: {score}\n'
                         f'Pure: {pure} ({shiny_pure})\n'
                         f'Far: {far}\n'
                         f'Lost: {lost}\n'
-                        f'Potential: {realptt} -> {ptt}')]
+                        f'Potential: {realptt} -> {ptt}\n'
+                        f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)')]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         return result

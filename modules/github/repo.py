@@ -1,8 +1,9 @@
 import traceback
 
-from core.elements import MessageSession, Image, Plain, Url
+from core.builtins.message import MessageSession
+from core.elements import Image, Plain, Url
 from core.elements.others import ErrorMessage
-from core.utils.bot import get_url
+from core.utils import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -57,13 +58,13 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
         if is_dirty:
             message = 'https://wdf.ink/6OUp'
-            await msg.sendMessage([Plain(message)])
+            await msg.finish([Plain(message)])
         else:
-            await msg.sendMessage([Plain(message), Image(
+            await msg.finish([Plain(message), Image(
                 path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
     except Exception as e:
         if result['message'] == 'Not Found':
-            await msg.sendMessage('发生错误：查无此人，请检查拼写是否正确。')
+            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
         else:
             await msg.sendMessage(ErrorMessage(str(e)))
             traceback.print_exc()

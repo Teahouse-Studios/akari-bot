@@ -70,26 +70,29 @@ async def getb30_official(usercode):
                 difficulty = 'FTR'
             elif x['difficulty'] == 3:
                 difficulty = 'BYD'
-            trackname = songsinfo.get(x['song_id'], {}).get("title_localized", {}).get('en', x['song_id'])
+            songinfo = songsinfo.get(x['song_id'], {})
+            trackname = x['song_id']
+            realptt = False
+            if songinfo:
+                trackname = songinfo['difficulties'][x['difficulty']]['name_en']
+                realptt = songinfo['difficulties'][x['difficulty']]['rating']
+                realptts[x['song_id'] + difficulty] = realptt
             tracknames[x['song_id'] + difficulty] = trackname + f' ({difficulty})'
             imgpath = f'{assets_path}/b30background_img_official/{x["song_id"]}_{str(x["difficulty"])}.jpg'
             if not os.path.exists(imgpath):
                 imgpath = f'{assets_path}/b30background_img_official/{x["song_id"]}.jpg'
-            realptt = songsinfo.get(x['song_id'], {}).get('difficulties', {})
-            if realptt:
-                realptt = realptt[x['difficulty']].get('realrating', False)
-            realptts[x['song_id'] + difficulty] = realptt
+
             score = x['score']
             if not realptt:
-                potential_value = x['potential_value']
+                realptt = x['potential_value']
                 if score >= 10000000:
-                    potential_value -= 2
+                    realptt -= 2
                 elif score >= 9800000:
-                    potential_value -= 1 + (score - 9800000) / 200000
+                    realptt -= 1 + (score - 9800000) / 200000
                 elif score <= 9500000:
-                    potential_value -= (score - 9500000) / 300000
-                else:
-                    realptt = round(potential_value, 1) * 10
+                    realptt -= (score - 9500000) / 300000
+                realptt = round(realptt, 1) * 10
+                realptts[x['song_id'] + difficulty] = realptt
             ptt = x['potential_value']
             ptts[x['song_id'] + difficulty] = ptt
             scores[x['song_id'] + difficulty] = score

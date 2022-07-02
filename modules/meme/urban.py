@@ -15,8 +15,9 @@ async def urban(term: str):
     try:
         url = 'http://api.urbandictionary.com/v0/define?term=' + term
         webrender = Config('web_render')
-        if webrender:
-            url = webrender + 'source?url=' + url
+        if not webrender:
+            return
+        url = webrender + 'source?url=' + url
         text = await get_url(url, headers={'accept': '*/*',
                                            'accept-encoding': 'gzip, deflate',
                                            'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',

@@ -4,7 +4,7 @@ from core.elements import FetchTarget
 from core.logger import Logger
 from core.scheduler import Scheduler
 from modules.wiki.utils.UTC8 import UTC8
-from modules.wiki.wikilib_v2 import WikiLib
+from modules.wiki.wikilib import WikiLib
 
 wiki = WikiLib('https://minecraft.fandom.com/zh/api.php')
 
@@ -24,7 +24,8 @@ async def newbie(bot: FetchTarget):
         qqqq = await wiki.get_json(action='query', list='logevents', letype='newusers')
         for xz in qqqq['query']['logevents'][:]:
             if xz['title'] not in qq:
-                prompt = UTC8(xz['timestamp'], 'onlytime') + '新增新人：\n' + xz['title']
+                prompt = UTC8(xz['timestamp'], 'onlytime') + \
+                    '新增新人：\n' + xz['title']
                 s = await check(prompt)
                 Logger.info(s)
                 for z in s:
@@ -45,7 +46,8 @@ async def _(bot: FetchTarget):
                                 afllimit=30)
     abuses = []
     for x in query["query"]["abuselog"]:
-        abuses.append(f'{x["user"]}{x["title"]}{x["timestamp"]}{x["filter"]}{x["action"]}{x["result"]}')
+        abuses.append(
+            f'{x["user"]}{x["title"]}{x["timestamp"]}{x["filter"]}{x["action"]}{x["result"]}')
 
     @Scheduler.scheduled_job('interval', seconds=60)
     async def check_abuse():

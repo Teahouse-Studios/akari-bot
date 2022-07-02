@@ -1,10 +1,11 @@
 import os
 import traceback
+from datetime import datetime
 
 from config import Config
 from core.elements import Plain
 from core.logger import Logger
-from core.utils.bot import get_url
+from core.utils import get_url
 
 assets_path = os.path.abspath('./assets/arcaea')
 apiurl = Config('arcapi_official_url')
@@ -52,8 +53,9 @@ async def get_info_official(usercode):
     trackname = recent['song_id']
     songinfo = await get_songinfo(recent['song_id'])
     if songinfo:
-        trackname = songinfo['title_localized']['en']
-        realptt = songinfo['difficulties'][recent['difficulty']]['realrating'] / 10
+        s = songinfo['difficulties'][recent['difficulty']]
+        trackname = s['name_en']
+        realptt = s['rating'] / 10
         ptt = realptt
         if score >= 10000000:
             ptt += 2
@@ -66,11 +68,13 @@ async def get_info_official(usercode):
     pure = recent['pure_count']
     far = recent['far_count']
     lost = recent['lost_count']
+    time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
     result = {'success': True, 'msg': f'{username} (Ptt: {potential})的最近游玩记录：\n'
                                       f'{trackname} ({difficulty})\n'
                                       f'Score: {score}\n'
                                       f'Pure: {pure} ({shiny_pure})\n'
                                       f'Far: {far}\n'
                                       f'Lost: {lost}\n'
-                                      f'Potential: {realptt} -> {ptt}'}
+                                      f'Potential: {realptt} -> {ptt}\n'
+                                      f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)'}
     return result

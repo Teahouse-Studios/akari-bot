@@ -3,293 +3,261 @@ import datetime
 import re
 import traceback
 import urllib.parse
+from typing import Union, Dict, List
 
-import aiohttp
-import html2text
 import ujson as json
 
-from core import dirty_check
-from core.elements.others import ErrorMessage
+import core.utils.html2text as html2text
+from core.dirty_check import check
+from core.elements import Url
 from core.logger import Logger
-from modules.wiki.dbutils import WikiSiteInfo
+from core.utils import get_url
+from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
+
+from config import Config
 
 
-class wikilib:
-    async def get_data(self, url: str, fmt: str, headers=None, ignore_err=False):
-        print(url)
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
-                if req.status == 200 or ignore_err:
-                    if fmt == 'json':
-                        try:
-                            return json.loads(await req.text())
-                        except UnicodeDecodeError:
-                            traceback.print_exc()
-                            return json.loads(await req.text(encoding='unicode-escape'))
-                    else:
-                        try:
-                            return await req.text()
-                        except UnicodeDecodeError:
-                            traceback.print_exc()
-                            return await req.text(encoding='unicode-escape')
-                else:
-                    raise ValueError(req.status)
+class InvalidPageIDError(Exception):
+    pass
 
-    def encode_query_string(self, kwargs: dict):
-        return '?' + urllib.parse.urlencode(kwargs)
 
-    async def check_wiki_available(self, link, headers=None):
-        query_string = {'action': 'query', 'meta': 'siteinfo',
-                        'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
-        query = self.encode_query_string(query_string)
+class InvalidWikiError(Exception):
+    pass
+
+
+class DangerousContentError(Exception):
+    pass
+
+
+class PageNotFound(Exception):
+    pass
+
+
+class WhatAreUDoingError(Exception):
+    pass
+
+
+class QueryInfo:
+    def __init__(self, api, headers=None, prefix=None):
+        self.api = api
+        self.headers = headers if headers is not None else {
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
+        self.prefix = prefix
+
+
+class WikiInfo:
+    def __init__(self,
+                 api: str = '',
+                 articlepath: str = '',
+                 extensions=None,
+                 interwiki=None,
+                 realurl: str = '',
+                 name: str = '',
+                 namespaces=None,
+                 namespaces_local=None,
+                 namespacealiases=None,
+                 in_allowlist=False,
+                 in_blocklist=False,
+                 script: str = '',
+                 logo_url: str = ''):
+        if extensions is None:
+            extensions = []
+        if interwiki is None:
+            interwiki = {}
+        self.api = api
+        self.articlepath = articlepath
+        self.extensions = extensions
+        self.interwiki = interwiki
+        self.realurl = realurl
+        self.name = name
+        self.namespaces = namespaces
+        self.namespaces_local = namespaces_local
+        self.namespacealiases = namespacealiases
+        self.in_allowlist = in_allowlist
+        self.in_blocklist = in_blocklist
+        self.script = script
+        self.logo_url = logo_url
+
+
+class WikiStatus:
+    def __init__(self,
+                 available: bool,
+                 value: Union[WikiInfo, bool],
+                 message: str):
+        self.available = available
+        self.value = value
+        self.message = message
+
+
+class PageInfo:
+    def __init__(self,
+                 info: WikiInfo,
+                 title: str,
+                 id: int = -1,
+                 before_title: str = None,
+                 link: str = None,
+                 file: str = None,
+                 desc: str = None,
+                 args: str = None,
+                 section: str = None,
+                 interwiki_prefix: str = '',
+                 status: bool = True,
+                 before_page_property: str = 'page',
+                 page_property: str = 'page',
+                 invalid_namespace: Union[str, bool] = False
+                 ):
+        self.info = info
+        self.id = id
+        self.title = title
+        self.before_title = before_title
+        self.link = link
+        self.file = file
+        self.desc = desc
+        self.args = args
+        self.section = section
+        self.interwiki_prefix = interwiki_prefix
+        self.status = status
+        self.before_page_property = before_page_property
+        self.page_property = page_property
+        self.invalid_namespace = invalid_namespace
+
+
+class WikiLib:
+    def __init__(self, url: str, headers=None):
+        self.url = url
+        self.wiki_info = WikiInfo()
+        self.headers = headers
+
+    async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
+        if kwargs is not None:
+            api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
+            Logger.info(api)
+        else:
+            raise ValueError('kwargs is None')
         try:
-            api = re.match(r'(https?://.*?/api.php$)', link)
-            wlink = api.group(1)
-            json1 = json.loads(await self.get_data(api.group(1) + query, 'json', headers=headers))
-            getcacheinfo = WikiSiteInfo(wlink).get()
-            if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
-                return wlink, json.loads(getcacheinfo[0])['query']['general']['sitename']
-        except:
-            try:
-                getpage = await self.get_data(link, 'text', headers=headers, ignore_err=True)
-                if getpage.find('<title>Attention Required! | Cloudflare</title>') != -1:
-                    return False, 'CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。'
-                m = re.findall(
-                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
-                    getpage)
-                api = m[0]
-                if api.startswith('//'):
-                    api = link.split('//')[0] + api
-                Logger.info(api)
-                getcacheinfo = WikiSiteInfo(api).get()
-                if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
-                    return api, json.loads(getcacheinfo[0])['query']['general']['sitename']
-                json1 = await self.get_data(api + query, 'json', headers=headers)
-                wlink = api
-            except TimeoutError:
-                traceback.print_exc()
-                return False, '错误：尝试建立连接超时。'
-            except Exception as e:
-                traceback.print_exc()
-                if e.args == (403,):
-                    return False, '服务器拒绝了机器人的请求。'
-                elif not re.match(r'^(https?://).*', link):
-                    return False, '所给的链接没有指明协议头（链接应以http://或https://开头）。'
-                else:
-                    return False, '此站点也许不是一个有效的Mediawiki：' + str(e)
-        WikiSiteInfo(wlink).update(json1)
-        wikiname = json1['query']['general']['sitename']
-        extensions = json1['query']['extensions']
-        extlist = []
-        for ext in extensions:
-            extlist.append(ext['name'])
-        if 'TextExtracts' not in extlist:
-            wikiname = wikiname + '\n警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
+            return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
+        except Exception as e:
+            if api.find('moegirl.org.cn') != -1:
+                raise InvalidWikiError('尝试请求萌娘百科失败，可能站点正在遭受攻击。请直接访问萌娘百科以获取信息。')
+            raise e
 
-        return wlink, wikiname
-
-    def danger_wiki_check(self):
-        if self.wiki_api_endpoint.upper().find('WIKIPEDIA') != -1:
-            return True
-        if self.wiki_api_endpoint.upper().find('UNCYCLOPEDIA') != -1:
-            return True
-        if self.wiki_api_endpoint.upper().find('HMOEGIRL') != -1:
-            return True
-        if self.wiki_api_endpoint.upper().find('EVCHK') != -1:
-            return True
-        if self.wiki_api_endpoint.upper().find('HONGKONG.FANDOM') != -1:
-            return True
-        if self.wiki_api_endpoint.upper().find('WIKILEAKS') != -1:
-            return True
-        if self.wiki_api_endpoint.upper().find('NANFANGGONGYUAN') != -1:
-            return True
-        return False
-
-    async def danger_text_check(self, text):
-        if not self.danger_wiki_check():
-            return False
-        check = await dirty_check.check(text)
-        for x in check:
-            if not x['status']:
-                return True
-        return False
-
-    async def random_page(self, url, iw=None, headers=None):
-        query_string = {'action': 'query',
-                        'list': 'random',
-                        'format': 'json'}
-        random_url = url + self.encode_query_string(query_string)
-        json = await self.get_data(random_url, 'json')
-        randompage = json['query']['random'][0]['title']
-        return await self.main(url, randompage, interwiki=iw, headers=headers)
-
-    async def get_wiki_info(self, url=None):
-        url = url if url is not None else self.wiki_api_endpoint
-        getcacheinfo = WikiSiteInfo(url).get()
-        if getcacheinfo and datetime.datetime.now().timestamp() - getcacheinfo[1].timestamp() < 43200:
-            return json.loads(getcacheinfo[0])
-        query_string = {'action': 'query', 'meta': 'siteinfo',
-                        'siprop': 'general|namespaces|namespacealiases|interwikimap|extensions', 'format': 'json'}
-        wiki_info_url = url + self.encode_query_string(query_string)
-        j = await self.get_data(wiki_info_url, 'json')
-        WikiSiteInfo(url).update(j)
-        return j
-
-    async def get_interwiki(self, url=None, iw=None):
-        print(url)
-        if url is None:
-            json = self.wiki_info
-        else:
-            json = await self.get_wiki_info(url)
-        interwikimap = json['query']['interwikimap']
-        interwiki_dict = {}
-        if iw is None:
-            for interwiki in interwikimap:
-                interwiki_dict[interwiki['prefix']] = re.sub(r'\$1$', '', interwiki['url'])
-        else:
-            if iw in interwikimap:
-                interwiki_dict[iw] = interwikimap[iw]['url']
-        return interwiki_dict
-
-    async def get_namespace(self, url=None):
-        if url is None:
-            j = self.wiki_info
-        else:
-            j = await self.get_wiki_info(url)
-        d = {}
-        for x in j['query']['namespaces']:
-            try:
-                d[j['query']['namespaces'][x]['*']] = j['query']['namespaces'][x]['canonical']
-            except KeyError:
-                pass
-            except:
-                traceback.print_exc()
-        for x in j['query']['namespacealiases']:
-            try:
-                d[x['*']] = 'aliases'
-            except KeyError:
-                pass
-            except:
-                traceback.print_exc()
-        return d
-
-    async def get_article_path(self, url=None):
-        if url is None:
-            wiki_info = self.wiki_info
-            url = self.wiki_api_endpoint
-        else:
-            wiki_info = await self.get_wiki_info(url)
-            if not wiki_info:
-                return False
-        article_path = wiki_info['query']['general']['articlepath']
-        article_path = re.sub(r'\$1$', '', article_path)
-        print(url)
-        base_url = re.match(r'(https?://.*?)/.*', url)
-        return base_url.group(1) + article_path
-
-    async def get_enabled_extensions(self, url=None):
-        if url is None:
-            wiki_info = self.wiki_info
-        else:
-            wiki_info = await self.get_wiki_info(url)
-        extensions = wiki_info['query']['extensions']
+    def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
+        if isinstance(info, str):
+            info = json.loads(info)
+        extensions = info['query']['extensions']
         ext_list = []
         for ext in extensions:
             ext_list.append(ext['name'])
-        return ext_list
-
-    async def get_real_address(self, url=None):
-        if url is None:
-            wiki_info = self.wiki_info
-        else:
-            wiki_info = await self.get_wiki_info(url)
-        real_url = wiki_info['query']['general']['server']
+        real_url = info['query']['general']['server']
         if real_url.startswith('//'):
-            real_url = self.wiki_api_endpoint.split('//')[0] + real_url
-        return real_url
+            real_url = self.url.split('//')[0] + real_url
+        namespaces = {}
+        namespaces_local = {}
+        namespacealiases = {}
+        for x in info['query']['namespaces']:
+            try:
+                ns = info['query']['namespaces'][x]
+                if '*' in ns:
+                    namespaces[ns['*']] = ns['id']
+                if 'canonical' in ns:
+                    namespaces[ns['canonical']] = ns['id']
+                if '*' in ns and 'canonical' in ns:
+                    namespaces_local.update({ns['*']: ns['canonical']})
+            except Exception:
+                traceback.print_exc()
+        for x in info['query']['namespacealiases']:
+            if '*' in x:
+                namespaces[x['*']] = x['id']
+                namespacealiases[x['*'].lower()] = x['*']
+        interwiki_map = info['query']['interwikimap']
+        interwiki_dict = {}
+        for interwiki in interwiki_map:
+            interwiki_dict[interwiki['prefix']] = interwiki['url']
+        api_url = wiki_api_link
+        audit = Audit(api_url)
+        return WikiInfo(articlepath=real_url + info['query']['general']['articlepath'],
+                        extensions=ext_list,
+                        name=info['query']['general']['sitename'],
+                        realurl=real_url,
+                        api=api_url,
+                        namespaces=namespaces,
+                        namespaces_local=namespaces_local,
+                        namespacealiases=namespacealiases,
+                        interwiki=interwiki_dict,
+                        in_allowlist=audit.inAllowList,
+                        in_blocklist=audit.inBlockList,
+                        script=real_url + info['query']['general']['script'],
+                        logo_url=info['query']['general'].get('logo'))
 
-    async def get_image(self, page_name, wiki_api_endpoint=None):
+    async def check_wiki_available(self):
         try:
-            query_string = {'action': 'query', 'titles': page_name, 'prop': 'imageinfo', 'iiprop': 'url',
-                            'format': 'json'}
-            url = (
-                      wiki_api_endpoint if wiki_api_endpoint is not None else self.wiki_api_endpoint) + self.encode_query_string(
-                query_string)
-            json_ = await self.get_data(url, 'json')
-            parse_page_id = self.parse_page_id(json_)
-            image_link = json_['query']['pages'][parse_page_id]['imageinfo'][0]['url']
-            return image_link
-        except:
-            traceback.print_exc()
-            return False
-
-    async def get_page_link(self, page_name=None):
-        page_name = page_name if page_name is not None else self.page_name
-        page_name = re.sub('(.*)\?.*$', '\\1', page_name)
-        query_string = {'action': 'query', 'format': 'json', 'prop': 'info', 'inprop': 'url', 'redirects': 'True',
-                        'titles': page_name}
-        get_link_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
-        get_page = await self.get_data(get_link_url, "json")
-        return get_page
-
-    def parse_page_id(self, page_raw):
-        page_raw = page_raw['query']['pages']
-        page_list = iter(page_raw)
-        page_id = page_list.__next__()
-        return page_id
-
-    async def research_page(self):
-        try:
-            query_string = {'action': 'query', 'list': 'search', 'srsearch': self.page_name, 'srwhat': 'text',
-                            'srlimit': '1', 'srenablerewrites': '', 'format': 'json'}
-            search_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
-            get_sec_json = await self.get_data(search_url, "json", self.headers)
-            sec_title = get_sec_json['query']['search'][0]['title']
-            if self.interwiki == '':
-                target = ''
-            else:
-                target = f'{self.interwiki}:'
-            prompt = f'找不到{target}{self.page_name}，您是否要找的是：[{target}{sec_title}]？'
-            title_split = self.page_name.split(':')
-            if len(title_split) > 1:
-                try:
-                    get_namespace = await self.get_namespace()
-                    if title_split[0] not in get_namespace:
-                        prompt += f'\n提示：此Wiki上找不到“{title_split[0]}”命名空间，请检查是否设置了对应的Interwiki（使用~wiki iw list命令可以查询当前已设置的Interwiki）。'
-                except:
-                    traceback.print_exc()
-            if self.template_prompt:
-                prompt = self.template_prompt + prompt
-            if await self.danger_text_check(prompt):
-                return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
-            return {'status': 'wait', 'title': f'{target}{sec_title}', 'text': prompt}
+            api_match = re.match(r'(https?://.*?/api.php$)', self.url)
+            wiki_api_link = api_match.group(1)
         except Exception:
-            traceback.print_exc()
-            return {'status': 'done', 'text': '找不到条目。'}
-
-    async def page_not_found(self):
-        if 'invalid' in self.psepgraw:
-            rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
-                         self.psepgraw['invalidreason'])
-            rs = '发生错误：“' + rs1 + '”。'
-            rs = re.sub('".”', '"”', rs)
-            return {'status': 'done', 'text': rs}
-        if 'missing' in self.psepgraw:
-            self.rspt = await self.research_page()
-            return self.rspt
-        msg = await self.get_article_path(self.wiki_api_endpoint) + urllib.parse.quote(self.page_name.encode('UTF-8'))
-        return {'status': 'done', 'text': msg}
-
-    async def get_desc(self):
+            try:
+                get_page = await get_url(self.url, fmt='text', headers=self.headers)
+                if get_page.find('<title>Attention Required! | Cloudflare</title>') != -1:
+                    return WikiStatus(available=False, value=False, message='CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。')
+                m = re.findall(
+                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
+                    get_page)
+                api_match = m[0]
+                if api_match.startswith('//'):
+                    api_match = self.url.split('//')[0] + api_match
+                # Logger.info(api_match)
+                wiki_api_link = api_match
+            except (TimeoutError, asyncio.TimeoutError):
+                return WikiStatus(available=False, value=False, message='错误：尝试建立连接超时。')
+            except Exception as e:
+                traceback.print_exc()
+                if e.args == (403,):
+                    message = '服务器拒绝了机器人的请求。'
+                elif not re.match(r'^(https?://).*', self.url):
+                    message = '所给的链接没有指明协议头（链接应以http://或https://开头）。'
+                else:
+                    message = '此站点也许不是一个有效的Mediawiki：' + str(e)
+                if self.url.find('moegirl.org.cn') != -1:
+                    message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
+                return WikiStatus(available=False, value=False, message=message)
+        get_cache_info = DBSiteInfo(wiki_api_link).get()
+        if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
+            return WikiStatus(available=True,
+                              value=self.rearrange_siteinfo(get_cache_info[0], wiki_api_link),
+                              message='')
         try:
-            query_string = {'action': 'query', 'prop': 'info|pageprops|extracts',
-                            'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
-                            'exsectionformat': 'plain', 'exchars': '200', 'format': 'json',
-                            'titles': self.query_text_name}
-            desc_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
-            load_text = await self.get_data(desc_url, "json", self.headers)
-            page_id = self.parse_page_id(load_text)
-            desc = load_text['query']['pages'][page_id]['extract'].split('\n')
+            get_json = await self.get_json_from_api(wiki_api_link, log=True,
+                                                    action='query',
+                                                    meta='siteinfo',
+                                                    siprop='general|namespaces|namespacealiases|interwikimap|extensions')
+        except Exception as e:
+            traceback.print_exc()
+            message = '从API获取信息时出错：' + str(e)
+            if self.url.find('moegirl.org.cn') != -1:
+                message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
+            return WikiStatus(available=False, value=False, message=message)
+        DBSiteInfo(wiki_api_link).update(get_json)
+        info = self.rearrange_siteinfo(get_json, wiki_api_link)
+        return WikiStatus(available=True, value=info,
+                          message='警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
+                          if 'TextExtracts' not in info.extensions else '')
+
+    async def fixup_wiki_info(self):
+        if self.wiki_info.api == '':
+            wiki_info = await self.check_wiki_available()
+            if wiki_info.available:
+                self.wiki_info = wiki_info.value
+            else:
+                raise InvalidWikiError(wiki_info.message if wiki_info.message != '' else '')
+
+    async def get_json(self, **kwargs) -> dict:
+        await self.fixup_wiki_info()
+        api = self.wiki_info.api
+        return await self.get_json_from_api(api, **kwargs)
+
+    @staticmethod
+    def parse_text(text):
+        try:
+            desc = text.split('\n')
             desc_list = []
             for x in desc:
                 if x != '':
@@ -297,224 +265,404 @@ class wikilib:
             desc = '\n'.join(desc_list)
             desc_end = re.findall(r'(.*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc, re.S | re.M)
             if desc_end:
+                if re.findall(r'[({\[>\"\'《【‘“「（]', desc_end[0]):
+                    desc_end = re.findall(r'(.*?[)}\]>\"\'》】’”」）].*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc, re.S | re.M)
                 desc = desc_end[0]
         except Exception:
             traceback.print_exc()
             desc = ''
         if desc in ['...', '…']:
             desc = ''
-        return desc
+        ell = False
+        if len(desc) > 250:
+            desc = desc[0:250]
+            ell = True
+        split_desc = desc.split('\n')
+        for d in split_desc:
+            if d == '':
+                split_desc.remove('')
+        if len(split_desc) > 5:
+            split_desc = split_desc[0:5]
+            ell = True
+        return '\n'.join(split_desc) + ('...' if ell else '')
 
-    async def get_first_line(self):
-        try:
-            query_string = {'action': 'parse', 'page': self.query_text_name, 'prop': 'text',
-                            'format': 'json'}
-            desc_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
-            load_desc = await self.get_data(desc_url, 'json', self.headers)
-            h = html2text.HTML2Text()
-            h.ignore_links = True
-            h.ignore_images = True
-            h.ignore_tables = True
-            desc_raw = h.handle(load_desc['parse']['text']['*']).split('\n')
-            desc_list = []
-            for x in desc_raw:
-                if x != '':
-                    if x not in desc_list:
-                        desc_list.append(x)
-            desc_raw = '\n'.join(desc_list)
-            cut_desc = re.findall(r'(.*?(?:!\s|\?\s|\.\s|！|？|。)).*', desc_raw, re.S | re.M)
-            if cut_desc:
-                desc = cut_desc[0]
-            else:
-                desc = desc_raw
-        except Exception:
-            traceback.print_exc()
-            desc = ''
-        return desc
+    async def get_html_to_text(self, page_name, section=None):
+        await self.fixup_wiki_info()
+        get_parse = await self.get_json(action='parse',
+                                        page=page_name,
+                                        prop='text')
+        h = html2text.HTML2Text()
+        h.ignore_links = True
+        h.ignore_images = True
+        h.ignore_tables = True
+        h.single_line_break = True
+        t = h.handle(get_parse['parse']['text']['*'])
+        if section is not None:
+            s = re.split(r'(.*##[^#].*\[.*?])', t, re.M | re.S)
+            ls = len(s)
+            if ls > 1:
+                i = 0
+                for x in s:
+                    i += 1
+                    if re.match(r'##[^#]' + section + r'\[.*?]', x):
+                        break
+                if i != ls:
+                    t = ''.join(s[i:])
+        return t
 
-    async def get_all_wikitext(self):
+    async def get_wikitext(self, page_name):
+        await self.fixup_wiki_info()
         try:
-            query_string = {'action': 'parse', 'page': self.query_text_name, 'prop': 'wikitext', 'format': 'json'}
-            desc_url = self.wiki_api_endpoint + self.encode_query_string(query_string)
-            load_desc = await self.get_data(desc_url, 'json', self.headers)
+            load_desc = await self.get_json(action='parse',
+                                            page=page_name,
+                                            prop='wikitext')
             desc = load_desc['parse']['wikitext']['*']
         except Exception:
             traceback.print_exc()
             desc = ''
         return desc
 
-    async def step1(self):
-        try:
-            self.page_id = self.parse_page_id(self.page_raw)
-        except:
-            return {'status': 'done', 'text': '发生错误：无法获取到页面，请检查是否设置了对应Interwiki。'}
-        self.psepgraw = self.page_raw['query']['pages'][self.page_id]
+    async def search_page(self, search_text, namespace='*', limit=10):
+        await self.fixup_wiki_info()
+        title_split = search_text.split(':')
+        if title_split[0] in self.wiki_info.interwiki:
+            search_text = ':'.join(title_split[1:])
+            q_site = WikiLib(self.wiki_info.interwiki[title_split[0]], self.headers)
+            result = await q_site.search_page(search_text, namespace, limit)
+            result_ = []
+            for r in result:
+                result_.append(title_split[0] + ':' + r)
+            return result_
+        get_page = await self.get_json(action='query',
+                                       list='search',
+                                       srsearch=search_text,
+                                       srnamespace=namespace,
+                                       srwhat='text',
+                                       srlimit=limit,
+                                       srenablerewrites=True)
+        pagenames = []
+        for x in get_page['query']['search']:
+            pagenames.append(x['title'])
+        return pagenames
 
-        if self.page_id == '-1':
-            if self.template == True:
-                self.page_name = self.orginpagename = re.sub(r'^Template:', '', self.page_name)
-                self.template = False
-                if self.interwiki == '':
-                    target = ''
+    async def research_page(self, page_name: str, namespace='*'):
+        await self.fixup_wiki_info()
+        get_titles = await self.search_page(page_name, namespace=namespace, limit=1)
+        new_page_name = get_titles[0] if len(get_titles) > 0 else None
+        title_split = page_name.split(':')
+        invalid_namespace = False
+        if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces \
+            and title_split[0].lower() not in self.wiki_info.namespacealiases:
+            invalid_namespace = title_split[0]
+        return new_page_name, invalid_namespace
+
+    async def parse_page_info(self, title: str = None, pageid: int = None, inline=False, lang=None, _doc=False,
+                              _tried=0, _prefix='', _iw=False, _search=False) -> PageInfo:
+        """
+        :param title: 页面标题，如果为None，则使用pageid
+        :param pageid: 页面id
+        :param inline: 是否为inline模式
+        :param lang: 所需的对应语言版本
+        :param _doc: 是否为文档模式，仅用作内部递归调用判断
+        :param _tried: 尝试iw跳转的次数，仅用作内部递归调用判断
+        :param _prefix: iw前缀，仅用作内部递归调用判断
+        :param _iw: 是否为iw模式，仅用作内部递归调用判断
+        :param _search: 是否为搜索模式，仅用作内部递归调用判断
+        :return:
+        """
+        try:
+            await self.fixup_wiki_info()
+        except InvalidWikiError as e:
+            link = None
+            if self.url.find('$1') != -1:
+                link = self.url.replace('$1', title)
+            return PageInfo(title=title if title is not None else pageid, id=pageid,
+                            link=link, desc='发生错误：' + str(e), info=self.wiki_info)
+        ban = False
+        if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
+            ban = True
+        if _tried > 5:
+            if Config('enable_tos'):
+                raise WhatAreUDoingError
+        section = None
+        if title is not None:
+            if title == '':
+                return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
+                                interwiki_prefix=_prefix)
+            if inline:
+                split_name = re.split(r'([#])', title)
+            else:
+                split_name = re.split(r'([#?])', title)
+            title = re.sub('_', ' ', split_name[0])
+            arg_list = []
+            _arg_list = []
+            section_list = []
+            quote_code = False
+            for a in split_name[1:]:
+                if len(a) > 0:
+                    if a[0] == '#':
+                        quote_code = True
+                    if a[0] == '?':
+                        quote_code = False
+                    if quote_code:
+                        arg_list.append(urllib.parse.quote(a))
+                        section_list.append(a)
+                    else:
+                        _arg_list.append(a)
+            _arg = ''.join(_arg_list)
+            if _arg.find('=') != -1:
+                arg_list.append(_arg)
+            else:
+                if len(arg_list) > 0:
+                    arg_list[-1] += _arg
                 else:
-                    target = self.interwiki + ':'
-                self.template_prompt = f'提示：[{target}Template:{self.page_name}]不存在，已自动回滚搜索页面。\n'
-                return await self.step1()
-            return await self.page_not_found()
+                    title += _arg
+            if len(section_list) > 1:
+                section = ''.join(section_list)[1:]
+            page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
+            page_info.section = section
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url',
+                            'inprop': 'url', 'iiprop': 'url',
+                            'redirects': 'True', 'titles': title}
+        elif pageid is not None:
+            page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url', 'inprop': 'url',
+                            'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
         else:
-            return await self.step2()
-
-    async def step2(self):
-        try:
-            full_url = self.psepgraw['fullurl']
-            try:
-                geturl_pagename = full_url.split(self.wiki_articlepath)
-                geturl_pagename = geturl_pagename[1]
-            except:
-                geturl_pagename = full_url
-            self.query_text_name = urllib.parse.unquote(geturl_pagename)
-            query_text_name_split = self.query_text_name.split(':')
-            if len(query_text_name_split) > 1:
-                namespaces = await self.get_namespace()
-                if query_text_name_split[0] in namespaces:
-                    if namespaces[query_text_name_split[0]] == 'Template':
-                        get_all_text = await self.get_all_wikitext()
-                        try:
-                            match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
-                            match_link = re.match(r'link=(.*)', match_doc.group(1), re.I | re.S)
-                            if match_link:
-                                get_doc = match_link.group(1)
-                                get_doc_raw = await self.get_page_link(get_doc)
-                                get_doc_id = self.parse_page_id(get_doc_raw)
-                                get_doc_link = get_doc_raw['query']['pages'][get_doc_id]['fullurl']
-                                get_doc_pagename = get_doc_link.split(self.wiki_articlepath)[1]
-                                self.query_text_name = get_doc_pagename
+            raise ValueError('title and pageid cannot be both None')
+        use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
+        if use_textextracts and section is None:
+            query_string.update({'prop': 'info|imageinfo|langlinks|extracts|pageprops',
+                                 'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
+                                 'exsectionformat': 'plain', 'exchars': '200'})
+        get_page = await self.get_json(**query_string)
+        query = get_page.get('query')
+        if query is None:
+            return PageInfo(title=title, link=None, desc='发生错误：API未返回任何内容，请联系此站点管理员获取原因。',
+                            info=self.wiki_info)
+        redirects_: List[Dict[str, str]] = query.get('redirects')
+        if redirects_ is not None:
+            for r in redirects_:
+                if r['from'] == title:
+                    page_info.before_title = r['from']
+                    page_info.title = r['to']
+        normalized_: List[Dict[str, str]] = query.get('normalized')
+        if normalized_ is not None:
+            for n in normalized_:
+                if n['from'] == title:
+                    page_info.before_title = n['from']
+                    page_info.title = n['to']
+        pages: Dict[str, dict] = query.get('pages')
+        # print(pages)
+        if pages is not None:
+            for page_id in pages:
+                page_info.status = False
+                page_info.id = int(page_id)
+                page_raw = pages[page_id]
+                if 'missing' in page_raw:
+                    if 'title' in page_raw:
+                        if 'invalid' in page_raw:
+                            rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
+                                         page_raw['invalidreason'])
+                            rs = '发生错误：“' + rs1 + '”。'
+                            rs = re.sub('".”', '"”', rs)
+                            page_info.desc = rs
+                        elif 'known' in page_raw:
+                            full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')),
+                                              self.wiki_info.articlepath) \
+                                       + page_info.args
+                            page_info.link = full_url
+                            file = None
+                            if 'imageinfo' in page_raw:
+                                file = page_raw['imageinfo'][0]['url']
+                            page_info.file = file
+                            page_info.status = True
+                        else:
+                            split_title = title.split(':')
+                            reparse = False
+                            if (len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template'):
+                                rstitle = ':'.join(split_title[1:]) + page_info.args
+                                reparse = await self.parse_page_info(rstitle)
+                                page_info.before_page_property = 'template'
+                            elif len(split_title) > 1 and split_title[
+                                0].lower() in self.wiki_info.namespacealiases and not _search:
+                                rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
+                                          + ':'.join(split_title[1:]) + page_info.args
+                                reparse = await self.parse_page_info(rstitle, _search=True)
+                            if reparse:
+                                page_info.title = reparse.title
+                                page_info.link = reparse.link
+                                page_info.desc = reparse.desc
+                                page_info.file = reparse.file
+                                page_info.before_title = title
+                                page_info.status = reparse.status
+                                page_info.invalid_namespace = reparse.invalid_namespace
                             else:
-                                self.query_text_name = geturl_pagename + '/doc'
-                        except AttributeError:
-                            self.query_text_name = geturl_pagename + '/doc'
-            enabled_extensions = await self.get_enabled_extensions()
-            if 'TextExtracts' in enabled_extensions:
-                desc = await self.get_desc()
-            else:
-                desc = await self.get_first_line()
-            print(desc)
-            fin_page_name = geturl_pagename
-            try:
-                section = re.match(r'.*(#.*)', self.page_name)
-                if section:
-                    fin_page_name = geturl_pagename + urllib.parse.quote(section.group(1).encode('UTF-8'))
-                    full_url = self.psepgraw['fullurl'] + urllib.parse.quote(section.group(1).encode('UTF-8'))
-            except Exception:
-                traceback.print_exc()
-            try:
-                pgstr = re.match(r'.*(\?.*)', self.page_name)
-                if pgstr:
-                    fin_page_name = geturl_pagename + pgstr.group(1)
-                    full_url = full_url + pgstr.group(1)
-            except Exception:
-                traceback.print_exc()
-            fin_page_name = urllib.parse.unquote(fin_page_name)
-            fin_page_name = re.sub('_', ' ', fin_page_name)
-            if fin_page_name == self.orginpagename:
-                rmlstlb = re.sub('\n$', '', desc)
-            else:
-                if self.interwiki == '':
-                    target = ''
+                                if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces:
+                                    research = await self.research_page(title,
+                                                                        self.wiki_info.namespaces[split_title[0]])
+                                else:
+                                    research = await self.research_page(title)
+                                page_info.title = research[0]
+                                page_info.before_title = title
+                                page_info.invalid_namespace = research[1]
                 else:
-                    target = f'{self.interwiki}:'
-                rmlstlb = re.sub('\n$', '',
-                                 f'（重定向[{target}{self.orginpagename}] -> [{target}{fin_page_name}]）' + (
-                                     '\n' if desc != '' else '') + f'{desc}')
-            rmlstlb = re.sub('\n\n', '\n', rmlstlb)
-            if len(rmlstlb) > 250:
-                rmlstlb = rmlstlb[0:250] + '...'
-            try:
-                rm5lline = re.findall(r'.*\n.*\n.*\n.*\n.*\n', rmlstlb)
-                result = rm5lline[0] + '...'
-            except Exception:
-                result = rmlstlb
-            msgs = {'status': 'done', 'url': full_url, 'text': result, 'apilink': self.wiki_api_endpoint}
-            match_img = re.match(r'File:.*?\.(?:png|gif|jpg|jpeg|webp|bmp|ico)', self.page_name, re.I)
-            if match_img:
-                getimg = await self.get_image(self.page_name)
-                if getimg:
-                    msgs['net_image'] = getimg
-            match_aud = re.match(r'File:.*?\.(?:oga|ogg|flac|mp3|wav)', self.page_name, re.I)
-            if match_aud:
-                getaud = await self.get_image(self.page_name)
-                if getaud:
-                    msgs['net_audio'] = getaud
-            if result != '' and await self.danger_text_check(result):
-                return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
-            return msgs
-        except Exception as e:
-            traceback.print_exc()
-            return {'status': 'done', 'text': ErrorMessage(str(e))}
+                    page_info.status = True
+                    if 'special' in page_raw:
+                        full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
+                                   + page_info.args
+                        page_info.link = full_url
+                        page_info.status = True
+                    else:
+                        query_langlinks = False
+                        if lang is not None:
+                            langlinks_ = {}
+                            for x in page_raw['langlinks']:
+                                langlinks_[x['lang']] = x['url']
+                            if lang in langlinks_:
+                                query_wiki = WikiLib(url=self.wiki_info.interwiki[lang], headers=self.headers)
+                                await query_wiki.fixup_wiki_info()
+                                query_wiki_info = query_wiki.wiki_info
+                                q_articlepath = query_wiki_info.articlepath.replace('$1', '(.*)')
+                                get_title = re.sub(r'' + q_articlepath, '\\1', langlinks_[lang])
+                                query_langlinks = await query_wiki.parse_page_info(get_title)
+                            if 'WikibaseClient' in self.wiki_info.extensions and not query_langlinks:
+                                title = (await self.parse_page_info(title)).title
+                                qc_string = {'action': 'query', 'meta': 'wikibase', 'wbprop': 'url|siteid'}
+                                query_client_info = await self.get_json(**qc_string)
+                                repo_url = query_client_info['query']['wikibase']['repo']['url']['base']
+                                siteid = query_client_info['query']['wikibase']['siteid']
+                                query_target_site = WikiLib(self.wiki_info.interwiki[lang], headers=self.headers)
+                                target_siteid = (await query_target_site.get_json(**qc_string))['query']['wikibase']['siteid']
+                                qr_wiki_info = WikiLib(repo_url)
+                                qr_string = {'action': 'wbgetentities', 'sites': siteid, 'titles': title,
+                                             'props': 'sitelinks/urls', 'redirects': 'yes'}
+                                qr = await qr_wiki_info.get_json(**qr_string)
+                                if 'entities' in qr:
+                                    qr_result = qr['entities']
+                                    for x in qr_result:
+                                        if 'missing' not in qr_result[x]:
+                                            target_site_page_title = qr_result[x]['sitelinks'][target_siteid]['title']
+                                            q_target = await query_target_site.parse_page_info(target_site_page_title)
+                                            if q_target.status:
+                                                query_langlinks = q_target
+                                                break
 
-    async def main(self, api_endpoint_link, page_name, interwiki=None, template=False, headers=None, tryiw=0):
-        print(api_endpoint_link)
-        print(page_name)
-        print(interwiki)
-        try:
-            if page_name == '':
-                article_path = await self.get_article_path(api_endpoint_link)
-                if not article_path:
-                    article_path = '发生错误：此站点或许不是有效的Mediawiki网站。' + api_endpoint_link
-                return {'status': 'done', 'text': article_path}
-            page_name = re.sub('_', ' ', page_name)
-            page_name = page_name.split('|')[0]
-            self.wiki_api_endpoint = api_endpoint_link
-            danger_check = self.danger_wiki_check()
-            if danger_check:
-                if await self.danger_text_check(page_name):
-                    return {'status': 'done', 'text': 'https://wdf.ink/6OUp'}
-            self.orginpagename = page_name
-            self.page_name = page_name
-            if interwiki == None:
-                self.interwiki = ''
-            else:
-                self.interwiki = interwiki
-            self.wiki_info = await self.get_wiki_info()
-            self.wiki_namespace = await self.get_namespace()
-            real_wiki_url = await self.get_real_address()
-            api_endpoint = re.match(r'^https?://.*?/(.*)', api_endpoint_link)
-            self.wiki_api_endpoint = real_wiki_url + '/' + api_endpoint.group(1)
-            self.wiki_articlepath = await self.get_article_path()
-            self.template = template
-            self.template_prompt = None
-            self.headers = headers
-            if self.template:
-                if not re.match('^Template:', self.page_name, re.I):
-                    self.page_name = 'Template:' + self.page_name
-            self.page_raw = await self.get_page_link()
-        except asyncio.exceptions.TimeoutError:
-            return {'status': 'done',
-                    'text': ErrorMessage('请求页面超时。')}
-        except Exception as e:
-            traceback.print_exc()
-            return {'status': 'done',
-                    'text': ErrorMessage(str(e))}
-        if 'interwiki' in self.page_raw['query']:
-            iwp = self.page_raw['query']['interwiki'][0]
-            match_interwiki = re.match(r'^' + iwp['iw'] + r':(.*)', iwp['title'])
-            if tryiw <= 10:
-                iw_list = await self.get_interwiki(self.wiki_api_endpoint)
-                interwiki_link = iw_list[iwp['iw']]
-                check = await self.check_wiki_available(interwiki_link)
-                if check[0]:
-                    return await self.main(check[0], match_interwiki.group(1),
-                                           ((interwiki + ':') if interwiki is not None else '') + iwp['iw'],
-                                           self.template, headers, tryiw + 1)
-                else:
-                    return {'status': 'done',
-                            'text': f'发生错误：指向的interwiki或许不是一个有效的MediaWiki。{interwiki_link}{match_interwiki.group(1)}'}
-            else:
-                return {'status': 'warn', 'text': '警告：尝试重定向已超过10次，继续尝试将有可能导致你被机器人加入黑名单。'}
-        if 'redirects' in self.page_raw['query']:
-            self.page_name = self.page_raw['query']['redirects'][0]['to']
-        try:
-            return await self.step1()
-        except Exception as e:
-            traceback.print_exc()
-            return ErrorMessage(str(e))
+                            if lang in self.wiki_info.interwiki and not query_langlinks:
+                                query_wiki = WikiLib(url=self.wiki_info.interwiki[lang], headers=self.headers)
+                                await query_wiki.fixup_wiki_info()
+                                query_wiki_info = query_wiki.wiki_info
+                                q_articlepath = query_wiki_info.articlepath
+                                get_title_schema = re.sub(r'' + q_articlepath.replace('$1', '(.*)'), '\\1',
+                                                          self.wiki_info.interwiki[lang])
+                                query_langlinks_ = await query_wiki.parse_page_info(
+                                    get_title_schema.replace('$1', title))
+                                if query_langlinks_.status:
+                                    query_langlinks = query_langlinks_
+
+                        if not query_langlinks:
+                            title = page_raw['title']
+                            page_desc = ''
+                            split_title = title.split(':')
+                            get_desc = True
+                            if not _doc and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                                get_all_text = await self.get_wikitext(title)
+                                match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
+                                if match_doc:
+                                    match_link = re.match(r'link=(.*)', match_doc.group(1), re.I | re.S)
+                                    if match_link:
+                                        get_doc = match_link.group(1)
+                                    else:
+                                        get_doc = title + '/doc'
+                                    get_desc = False
+                                    get_doc_desc = await self.parse_page_info(get_doc, _doc=True)
+                                    page_desc = get_doc_desc.desc
+                                    page_info.before_page_property = page_info.page_property = 'template'
+                            if get_desc:
+                                if use_textextracts and section is None:
+                                    raw_desc = page_raw.get('extract')
+                                    if raw_desc is not None:
+                                        page_desc = self.parse_text(raw_desc)
+                                else:
+                                    page_desc = self.parse_text(await self.get_html_to_text(title, section))
+                            full_url = page_raw['fullurl'] + page_info.args
+                            file = None
+                            if 'imageinfo' in page_raw:
+                                file = page_raw['imageinfo'][0]['url']
+                            page_info.title = title
+                            page_info.link = full_url
+                            page_info.file = file
+                            page_info.desc = page_desc
+                            if not _iw and page_info.args == '':
+                                page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
+                        else:
+                            page_info.title = query_langlinks.title
+                            page_info.before_title = query_langlinks.title
+                            page_info.link = query_langlinks.link
+                            page_info.file = query_langlinks.file
+                            page_info.desc = query_langlinks.desc
+        interwiki_: List[Dict[str, str]] = query.get('interwiki')
+        if interwiki_ is not None:
+            for i in interwiki_:
+                if i['title'] == page_info.title:
+                    iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
+                    iw_title = iw_title.group(1)
+                    _prefix += i['iw'] + ':'
+                    _iw = True
+                    iw_query = await WikiLib(url=self.wiki_info.interwiki[i['iw']], headers=self.headers) \
+                        .parse_page_info(iw_title, lang=lang,
+                                         _tried=_tried + 1,
+                                         _prefix=_prefix,
+                                         _iw=_iw)
+                    before_page_info = page_info
+                    page_info = iw_query
+                    if iw_query.title == '':
+                        page_info.title = ''
+                    else:
+                        page_info.before_title = before_page_info.title
+                        t = page_info.title
+                        if t != '':
+                            if before_page_info.args is not None:
+                                page_info.before_title += urllib.parse.unquote(before_page_info.args)
+                                t += urllib.parse.unquote(before_page_info.args)
+                                if page_info.link is not None:
+                                    page_info.link += before_page_info.args
+                            else:
+                                page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
+                            if _tried == 0:
+                                page_info.title = (page_info.interwiki_prefix if lang is None else '') + t
+                                if lang is not None:
+                                    page_info.before_title = page_info.title
+                                if before_page_info.section is not None:
+                                    page_info.section = before_page_info.section
+        if not self.wiki_info.in_allowlist:
+            checklist = []
+            if page_info.title is not None:
+                checklist.append(page_info.title)
+            if page_info.before_title is not None:
+                checklist.append(page_info.before_title)
+            if page_info.desc is not None:
+                checklist.append(page_info.desc)
+            chk = await check(*checklist)
+            for x in chk:
+                if not x['status']:
+                    ban = True
+        if ban:
+            page_info.status = False
+            page_info.title = page_info.before_title = None
+            page_info.id = -1
+            page_info.desc = str(Url(page_info.link, use_mm=True))
+            page_info.link = None
+        return page_info
+
+    async def random_page(self) -> PageInfo:
+        """
+        获取随机页面
+        :return: 页面信息
+        """
+        await self.fixup_wiki_info()
+        random_url = await self.get_json(action='query', list='random')
+        page_title = random_url['query']['random'][0]['title']
+        return await self.parse_page_info(page_title)

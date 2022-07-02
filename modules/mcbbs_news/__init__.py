@@ -1,5 +1,5 @@
 from core.component import on_command
-from core.elements import MessageSession
+from core.builtins.message import MessageSession
 
 from .mcbbs_news import news
 
@@ -22,4 +22,4 @@ async def main(msg: MessageSession):
         for i in res:
             lst += [f'{i["count"]}. {i["title"]} - {i["url"]}']
         message = '\n'.join(lst)
-    await msg.sendMessage(message)
+    await msg.finish(message)

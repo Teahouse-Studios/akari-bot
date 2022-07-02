@@ -1,7 +1,12 @@
 import re
+from typing import Union
+
+from discord import Embed as DiscordEmbed
+
+from core.elements.message.internal import Embed, EmbedField
 
 
-def remove_ineffective_text(prefix: str, lst: list) -> list:
+def removeIneffectiveText(prefix: str, lst: list) -> list:
     '''删除命令首尾的空格和换行以及重复命令。
     
     :param prefix: 机器人的命令前缀。
@@ -20,7 +25,8 @@ def remove_ineffective_text(prefix: str, lst: list) -> list:
                         del split_list[-1]
             for _ in split_list:
                 if len(split_list) > 0:
-                    if split_list[0][0] in prefix:
+                    spl0 = split_list[0][0]
+                    if spl0 in prefix and spl0 != '':
                         split_list[0] = re.sub(r'^' + split_list[0][0], '', split_list[0])
             list_cache.append(x.join(split_list))
         lst = list_cache
@@ -32,7 +38,7 @@ def remove_ineffective_text(prefix: str, lst: list) -> list:
     return lst
 
 
-def RemoveDuplicateSpace(text: str) -> str:
+def removeDuplicateSpace(text: str) -> str:
     '''删除命令中间多余的空格。
 
     :param text: 字符串。
@@ -44,3 +50,40 @@ def RemoveDuplicateSpace(text: str) -> str:
             display_list.append(x)
     text = ' '.join(display_list)
     return text
+
+
+def convertDiscordEmbed(embed: Union[DiscordEmbed, dict]) -> Embed:
+    '''将DiscordEmbed转换为Embed。
+    :param embed: DiscordEmbed。
+    :returns: Embed。'''
+    embed_ = Embed()
+    if isinstance(embed, DiscordEmbed):
+        embed = embed.to_dict()
+    if isinstance(embed, dict):
+        if 'title' in embed:
+            embed_.title = embed['title']
+        if 'description' in embed:
+            embed_.description = embed['description']
+        if 'url' in embed:
+            embed_.url = embed['url']
+        if 'color' in embed:
+            embed_.color = embed['color']
+        if 'timestamp' in embed:
+            embed_.timestamp = embed['timestamp']
+        if 'footer' in embed:
+            embed_.footer = embed['footer']['text']
+        if 'image' in embed:
+            embed_.image = embed['image']
+        if 'thumbnail' in embed:
+            embed_.thumbnail = embed['thumbnail']
+        if 'author' in embed:
+            embed_.author = embed['author']
+        if 'fields' in embed:
+            fields = []
+            for field_value in embed['fields']:
+                fields.append(EmbedField(field_value['name'], field_value['value'], field_value['inline']))
+            embed_.fields = fields
+    return embed_
+
+
+__all__ = ['removeDuplicateSpace', 'removeIneffectiveText', 'convertDiscordEmbed']

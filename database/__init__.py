@@ -1,26 +1,16 @@
 import datetime
+import ujson as json
+from typing import Union
 
 from tenacity import retry, stop_after_attempt
 
 from config import Config
-from core.elements.message import MessageSession
+from core.elements.message import MessageSession, FetchTarget
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
-from database.orm import DBSession
-from database.tables import EnabledModules, MuteList, SenderInfo, TargetAdmin, CommandTriggerTime, GroupAllowList
+from database.orm import Session
+from database.tables import *
 
 cache = Config('db_cache')
-
-
-def convert_list_to_str(lst: list) -> str:
-    filter_lst = []
-    for x in lst:
-        if x != '':
-            filter_lst.append(x)
-    return '|'.join(filter_lst)
-
-
-def convert_str_to_list(s: str) -> list:
-    return s.split('|')
 
 
 class Dict2Object(dict):
@@ -31,7 +21,7 @@ class Dict2Object(dict):
         self[key] = value
 
 
-session = DBSession().session
+session = Session.session
 
 
 def auto_rollback_error(func):
@@ -46,6 +36,8 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
+    database_version = 1
+
     class Module:
         @retry(stop=stop_after_attempt(3))
         def __init__(self, msg: [MessageSession, str]):
@@ -62,7 +54,7 @@ class BotDBUtil:
                     self.enable_modules_list = []
                 else:
                     query_ = query.enabledModules
-                    self.enable_modules_list = convert_str_to_list(query_)
+                    self.enable_modules_list = json.loads(query_)
                 if cache:
                     EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
 
@@ -87,7 +79,7 @@ class BotDBUtil:
                 for x in module_name:
                     if x not in self.enable_modules_list:
                         self.enable_modules_list.append(x)
-            value = convert_list_to_str(self.enable_modules_list)
+            value = json.dumps(self.enable_modules_list)
             if self.need_insert:
                 table = EnabledModules(targetId=self.targetId,
                                        enabledModules=value)
@@ -111,7 +103,7 @@ class BotDBUtil:
                     if x in self.enable_modules_list:
                         self.enable_modules_list.remove(x)
             if not self.need_insert:
-                self.query_EnabledModules.enabledModules = convert_list_to_str(self.enable_modules_list)
+                self.query_EnabledModules.enabledModules = json.dumps(self.enable_modules_list)
                 session.commit()
                 session.expire_all()
                 if cache:
@@ -125,7 +117,7 @@ class BotDBUtil:
             query = session.query(EnabledModules).filter(EnabledModules.enabledModules.like(f'%{module_name}%'))
             targetIds = []
             for x in query:
-                enabled_list = convert_str_to_list(x.enabledModules)
+                enabled_list = json.loads(x.enabledModules)
                 if module_name in enabled_list:
                     targetIds.append(x.targetId)
             return targetIds
@@ -187,6 +179,7 @@ class BotDBUtil:
             if query:
                 session.delete(query)
                 session.commit()
+            return True
 
     class CoolDown:
         @retry(stop=stop_after_attempt(3))
@@ -194,7 +187,7 @@ class BotDBUtil:
         def __init__(self, msg: MessageSession, name):
             self.msg = msg
             self.name = name
-            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.targetId),
+            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.senderId),
                                                                      commandName=name).first()
             self.need_insert = True if self.query is None else False
 
@@ -212,7 +205,7 @@ class BotDBUtil:
             if not self.need_insert:
                 session.delete(self.query)
                 session.commit()
-            session.add_all([CommandTriggerTime(targetId=self.msg.target.targetId, commandName=self.name)])
+            session.add_all([CommandTriggerTime(targetId=self.msg.target.senderId, commandName=self.name)])
             session.commit()
 
     @staticmethod
@@ -252,6 +245,58 @@ class BotDBUtil:
             if self.query is not None:
                 session.delete(self.query)
                 session.commit()
+
+    class Data:
+        def __init__(self, msg: Union[MessageSession, FetchTarget]):
+            self.targetName = msg.target.clientName if isinstance(msg, MessageSession) else msg.name
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add(self, name, value: str):
+            session.add(StoredData(name=f'{self.targetName}|{name}', value=value))
+            session.commit()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def get(self, name):
+            return session.query(StoredData).filter_by(name=f'{self.targetName}|{name}').first()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def update(self, name, value: str):
+            exists = self.get(name)
+            if exists is None:
+                self.add(name=name, value=value)
+            else:
+                exists.value = value
+                session.commit()
+            return True
+
+    class Options:
+        def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
+            self.targetId = msg.target.targetId if isinstance(msg, (MessageSession, FetchTarget)) else msg
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def edit(self, k, v):
+            get_ = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
+            if get_ is None:
+                session.add_all([TargetOptions(targetId=self.targetId, options=json.dumps({k: v}))])
+            else:
+                get_.options = json.dumps({**json.loads(get_.options), k: v})
+            session.commit()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def get(self, k=None):
+            query = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
+            if query is None:
+                return {}
+            value: dict = json.loads(query.options)
+            if k is None:
+                return value
+            else:
+                return value.get(k)
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

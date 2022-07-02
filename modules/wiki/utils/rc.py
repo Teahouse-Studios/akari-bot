@@ -1,7 +1,7 @@
 from core.dirty_check import check
 from core.elements import Url
 from modules.wiki.utils.UTC8 import UTC8
-from modules.wiki.wikilib_v2 import WikiLib
+from modules.wiki.wikilib import WikiLib
 
 
 async def rc(wiki_url):
@@ -10,7 +10,8 @@ async def rc(wiki_url):
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
     d = []
     for x in query['query']['recentchanges'][:5]:
-        d.append(x['title'] + ' - ' + x['user'] + ' ' + UTC8(x['timestamp'], 'onlytime'))
+        d.append(x['title'] + ' - ' + x['user'] +
+                 ' ' + UTC8(x['timestamp'], 'onlytime'))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:

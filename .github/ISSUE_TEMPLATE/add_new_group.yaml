@@ -8,16 +8,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        你好哇！感谢您使用小可，想必您一定想要让小可为您的QQ群聊或者频道效劳吧？填写下方的表单，让我们马上开始。
+        你好哇！感谢您使用小可，想必您一定想要让小可为您的QQ群聊或者频道效劳吧？填写下方的表单，让我们马上开始。申请提交后，我们将会在24小时内进行处理。
   - type: checkboxes
     id: preflight
     attributes:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已阅读并同意小可 [服务条款](https://bot.teahou.se/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahou.se/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
-          required: true
-        - label: 我已事先添加当前机器人的账号 `2314163511` 为好友，且已发送群聊邀请/频道通行证至机器人。
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
           required: true
   - type: dropdown
     id: group-type
@@ -41,7 +39,7 @@ body:
     id: group-id
     attributes:
       label: QQ群
-      description: 您想要让机器人加入的群的群号，如您要申请的是频道，请将通行证发送给机器人，然后在此处备注即可。
+      description: 您想要让机器人加入的群的群号，如您要申请的是频道，请将通行证链接发送到此处即可。
       placeholder: e.g. 1000000
     validations:
       required: true
@@ -50,6 +48,6 @@ body:
     attributes:
       label: 备注
       description: 你还想告诉我们什么？
-      placeholder: 什么都可以哦，没有就算了吧。
+      placeholder: 什么都可以哦，没有就算了吧。（如果需要入群答案请备注于此，如未备注而入群需要答案将会默认填写为“机器人申请”）
     validations:
       required: false

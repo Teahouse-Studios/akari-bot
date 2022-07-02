@@ -106,7 +106,7 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     if not official:
         b30img.alpha_composite(ptttext, (1713, 1157))
     else:
-        b30img.alpha_composite(ptttext, (b30img.width - 512, -1))
+        b30img.alpha_composite(ptttext, (b30img.width - 512, 0))
     # username
     userfont = ImageFont.truetype(f'{assets_path}/Fonts/GeosansLight.ttf', 45)
     textdraw = ImageDraw.Draw(b30img)

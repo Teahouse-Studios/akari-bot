@@ -1,8 +1,9 @@
 import traceback
 
-from core.elements import MessageSession, Url
+from core.builtins.message import MessageSession
+from core.elements import Url
 from core.elements.others import ErrorMessage
-from core.utils.bot import get_url
+from core.utils import get_url
 from modules.github.utils import dirty_check, darkCheck
 
 
@@ -25,10 +26,10 @@ async def search(msg: MessageSession):
         if is_dirty:
             message = 'https://wdf.ink/6OUp'
 
-        await msg.sendMessage(message)
+        await msg.finish(message)
     except Exception as error:
         if result['message'] == 'Not Found':
-            await msg.sendMessage('发生错误：查无此人，请检查拼写是否正确。')
+            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
         else:
             await msg.sendMessage(ErrorMessage(str(error)))
             traceback.print_exc()

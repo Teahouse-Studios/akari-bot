@@ -1,7 +1,8 @@
 import datetime
 
 from core.component import on_command
-from core.elements import MessageSession, Embed, Image, EmbedField
+from core.builtins.message import MessageSession
+from core.elements import Embed, Image, EmbedField
 
 t = on_command('embed_test', required_superuser=True)
 

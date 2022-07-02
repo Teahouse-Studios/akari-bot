@@ -1,6 +1,7 @@
 import ujson as json
 
-from core.elements import MessageSession, Plain, Image
+from core.elements import Plain, Image
+from core.builtins.message import MessageSession
 from core.utils import get_url
 from .dbutils import CytoidBindInfoManager
 
@@ -63,4 +64,4 @@ async def cytoid_profile(msg: MessageSession):
            f'Rating: {rating}\n' + \
            f'Grade: {gradet}'
     msgchain = [Image(path=avatar), Plain(text)]
-    await msg.sendMessage(msgchain)
+    await msg.finish(msgchain)

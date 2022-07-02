@@ -66,21 +66,26 @@ class MessageChain:
                         return False
             elif isinstance(v, Embed):
                 for secret in Secret.list:
-                    if v.title.upper().find(secret.upper()) != -1:
-                        Logger.warn(unsafeprompt('Embed.title', secret, v.title))
-                        return False
-                    if v.description.upper().find(secret.upper()) != -1:
-                        Logger.warn(unsafeprompt('Embed.description', secret, v.description))
-                        return False
-                    if v.footer.upper().find(secret.upper()) != -1:
-                        Logger.warn(unsafeprompt('Embed.footer', secret, v.footer))
-                        return False
-                    if v.author.upper().find(secret.upper()) != -1:
-                        Logger.warn(unsafeprompt('Embed.author', secret, v.author))
-                        return False
-                    if v.url.upper().find(secret.upper()) != -1:
-                        Logger.warn(unsafeprompt('Embed.url', secret, v.url))
-                        return False
+                    if v.title is not None:
+                        if v.title.upper().find(secret.upper()) != -1:
+                            Logger.warn(unsafeprompt('Embed.title', secret, v.title))
+                            return False
+                    if v.description is not None:
+                        if v.description.upper().find(secret.upper()) != -1:
+                            Logger.warn(unsafeprompt('Embed.description', secret, v.description))
+                            return False
+                    if v.footer is not None:
+                        if v.footer.upper().find(secret.upper()) != -1:
+                            Logger.warn(unsafeprompt('Embed.footer', secret, v.footer))
+                            return False
+                    if v.author is not None:
+                        if v.author.upper().find(secret.upper()) != -1:
+                            Logger.warn(unsafeprompt('Embed.author', secret, v.author))
+                            return False
+                    if v.url is not None:
+                        if v.url.upper().find(secret.upper()) != -1:
+                            Logger.warn(unsafeprompt('Embed.url', secret, v.url))
+                            return False
                     for f in v.fields:
                         if f.name.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.field.name', secret, f.name))
@@ -106,10 +111,10 @@ class MessageChain:
         self.value.remove(element)
 
     def __str__(self):
-        return f'[{", ".join([str(x.__dict__) for x in self.value])}]'
+        return f'[{", ".join([x.__repr__() for x in self.value])}]'
 
     def __repr__(self):
-        return self.value
+        return self.__str__()
 
 
 site_whitelist = ['http.cat']

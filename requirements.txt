@@ -2,8 +2,7 @@ pillow
 aiohttp
 beautifulsoup4
 psutil
-gql[all]
-graiax-silkcoder
+gql==3.0.0
 filetype
 sqlalchemy
 apscheduler
@@ -11,9 +10,14 @@ aioconsole
 aiogram
 ujson
 pymysql
-discord.py
+py-cord==2.0.0b7
 tenacity
 aiocqhttp
 tabulate
 feedparser
+ffmpy
+google_play_scraper
+py-cpuinfo
+aiofile
+loguru
 qq-bot

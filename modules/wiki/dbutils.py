@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from typing import Union
+from urllib.parse import urlparse
 
 import ujson as json
 from tenacity import retry, stop_after_attempt
@@ -138,7 +139,8 @@ class Audit:
     @auto_rollback_error
     def inAllowList(self) -> bool:
         session.expire_all()
-        return True if session.query(WikiAllowList).filter_by(apiLink=self.api_link).first() else False
+        apilink = urlparse(self.api_link).netloc
+        return True if session.query(WikiAllowList).filter(WikiAllowList.apiLink.like(f'%{apilink}%')).first() else False
 
     @property
     @retry(stop=stop_after_attempt(3), reraise=True)
