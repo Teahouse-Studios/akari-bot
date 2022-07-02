@@ -138,7 +138,7 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
     async def timer(start):  # 计时器函数
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if datetime.now().timestamp() - start > 60 * set_timeout:  # 如果超过2分钟
-                await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}', quote=False)
+                await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}')
                 play_state[msg.target.targetId]['active'] = False
             else:  # 如果未超时
                 await asyncio.sleep(1)  # 等待1秒
@@ -146,12 +146,12 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
 
     if not captcha_mode:
         await msg.sendMessage([Image(newpath),
-                           Plain(f'请在{set_timeout}分钟内发送这个化合物的分子式。（使用字母表顺序，如：CHBrClF）')])
+                           Plain(f'请在{set_timeout}分钟内回复这个化合物的分子式。（使用字母表顺序，如：CHBrClF）')])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
-        result = await msg.waitNextMessage([Image(newpath), Plain('请发送这个化合物的分子式。（使用字母表顺序，如：CHBrClF）')])
+        result = await msg.waitNextMessage([Image(newpath), Plain('请回复这个化合物的分子式。（使用字母表顺序，如：CHBrClF）')])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if result.asDisplay() == csr['name']:
                 await result.sendMessage('回答正确。')

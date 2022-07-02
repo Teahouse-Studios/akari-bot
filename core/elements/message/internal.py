@@ -33,7 +33,7 @@ class Url:
     def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
         self.url = url
         if (Url.mm and not disable_mm) or (use_mm and not Url.disable_mm):
-            mm_url = f'https://mm.teahouse.team/?source=akaribot&rot13=%s'
+            mm_url = f'https://middleman.wdf.ink/index.html?source=akaribot&rot13=%s'
             rot13 = str.maketrans(
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                 "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM")

@@ -1,17 +1,14 @@
-import qqbot
+import asyncio
+import re
 
-from core.bots.qqchannel.token import token
-from core.elements import MessageSession as MS, FinishedSession as FinS, Plain
+from core.builtins.message import MessageSession as MS
+from core.elements import FinishedSession as FinS, Plain, Image, ExecutionLockList, confirm_command
 from core.elements.message.chain import MessageChain
-
-msg_api = qqbot.AsyncMessageAPI(token, False)
-member_api = qqbot.AsyncGuildMemberAPI(token, False)
+from core.exceptions import WaitCancelException
+from core.utils import MessageTaskManager
 
 
 class FinishedSession(FinS):
-    def __init__(self, result: list):
-        self.result = result
-
     async def delete(self):
         """
         用于删除这条消息。
@@ -22,44 +19,89 @@ class FinishedSession(FinS):
 class MessageSession(MS):
 
     async def sendMessage(self,
-                          msgchain,
-                          quote=True,
-                          disable_secret_check=False) -> FinishedSession:
+                          msgchain) -> FinishedSession:
         """
         用于向消息发送者回复消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :param quote: 是否引用传入dict中的消息（默认为True）
-        :param disable_secret_check: 是否禁用消息检查（默认为False）
         :return: 被发送的消息链
         """
         ...
         msgchain = MessageChain(msgchain)
         plains = []
+        images = []
         for x in msgchain.asSendable(embed=False):
             if isinstance(x, Plain):
                 plains.append(x)
-        print(plains)
+            elif isinstance(x, Image):
+                images.append(await x.get())
+        sends = []
         if len(plains) != 0:
             msg = '\n'.join([x.text for x in plains])
-            request = qqbot.MessageSendRequest(msg, msg_id=self.session.message.id)
-            print(self.session.target.split('|')[1])
-            send = await msg_api.post_message(self.session.target.split('|')[1], request)
-            return FinishedSession([send.id])
+            send = await self.session.message.reply(content=msg)
+        if len(images) != 0:
+            for i in images:
+                send = await self.session.message.reply(file_image=i)
+                sends.append(send)
+        return FinishedSession([x['id'] for x in sends], sends)
 
-    async def waitConfirm(self, msgchain=None, quote=True):
-        """
-        一次性模板，用于等待触发对象确认。
-        :param msgchain: 需要发送的确认消息，可不填
-        :param quote: 是否引用传入dict中的消息（默认为True）
-        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
-        """
-        ...
+    async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
+        send = None
+        ExecutionLockList.remove(self)
+        if msgchain is not None:
+            msgchain = MessageChain(msgchain)
+            msgchain.append(Plain('（请以“是”或符合确认条件的词语回复本条消息来确认）'))
+            send = await self.sendMessage(msgchain)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self, flag)
+        await flag.wait()
+        result = MessageTaskManager.get_result(self)
+        if result:
+            if result.asDisplay() in confirm_command:
+                return True
+            return False
+        else:
+            raise WaitCancelException
+
+    async def waitNextMessage(self, msgchain=None, quote=True, delete=False):
+        await self.waitConfirm(msgchain, quote, delete)
+
+    async def waitReply(self, msgchain, quote=True):
+        ExecutionLockList.remove(self)
+        msgchain = MessageChain(msgchain)
+        msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
+        send = await self.sendMessage(msgchain)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self, flag, reply=send.messageId)
+        await flag.wait()
+        result = MessageTaskManager.get_result(self)
+        if result:
+            return result
+        else:
+            raise WaitCancelException
+
+    async def waitAnyone(self, msgchain=None, delete=False):
+        send = None
+        ExecutionLockList.remove(self)
+        if msgchain is not None:
+            msgchain = MessageChain(msgchain)
+            msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
+            send = await self.sendMessage(msgchain)
+        flag = asyncio.Event()
+        MessageTaskManager.add_task(self, flag, all_=True)
+        await flag.wait()
+        result = MessageTaskManager.get()[self.target.targetId]['all']
+        if 'result' in result:
+            if send is not None and delete:
+                await send.delete()
+            return MessageTaskManager.get()[self.target.targetId]['all']['result']
+        else:
+            raise WaitCancelException
 
     def asDisplay(self):
         """
         用于将消息转换为一般文本格式。
         """
-        return self.session.message.content
+        return re.sub(r'^<@.*?>(.*)', '\\1', self.session.message.content).strip()
 
     async def delete(self):
         """
@@ -74,13 +116,13 @@ class MessageSession(MS):
         if self.target.senderInfo.check_TargetAdmin(self.target.targetId) \
             or self.target.senderInfo.query.isSuperUser:
             return True
-        return self.checkNativePermission()
+        return await self.checkNativePermission()
 
     async def checkNativePermission(self):
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
         """
-        info = await member_api.get_guild_member(self.session.target.split('|')[0], self.session.sender)
+        info = self.session.message.member.roles
         admins = ["2", "4"]
         for x in admins:
             if x in info.roles:
