@@ -5,9 +5,9 @@ from urllib.parse import urlparse
 
 import ujson as json
 
-from core.elements.others import Secret, ErrorMessage
+from core.elements.others import Secret
 from core.logger import Logger
-from .internal import Plain, Image, Voice, Embed, Url
+from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 
 
 class MessageChain:
