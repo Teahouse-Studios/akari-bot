@@ -4,7 +4,7 @@ import traceback
 import aiohttp
 import ujson as json
 
-from core.elements.others import ErrorMessage
+from core.elements import ErrorMessage
 
 
 async def server(address, raw=False, showplayer=False, mode='j'):

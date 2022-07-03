@@ -4,8 +4,7 @@ import urllib.parse
 
 import aiohttp
 
-from core.elements import Url
-from core.elements.others import ErrorMessage
+from core.elements import Url, ErrorMessage
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.wikilib import WikiLib
 from .gender import gender

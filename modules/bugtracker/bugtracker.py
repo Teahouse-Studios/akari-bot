@@ -1,7 +1,6 @@
 import json
 
-from core.elements import Url
-from core.elements.others import ErrorMessage
+from core.elements import Url, ErrorMessage
 from core.utils import get_url
 
 
