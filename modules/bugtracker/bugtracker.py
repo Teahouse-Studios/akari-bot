@@ -14,9 +14,15 @@ async def bugtracker_get(MojiraID):
     Version = False
     Link = False
     FixVersion = False
+    Translation = False
     ID = str.upper(MojiraID)
     json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + ID
     get_json = await get_url(json_url)
+    get_spx = await get_url('https://bugs.guangyaostore.com/translations')
+    if get_spx:
+        spx = json.loads(get_spx)
+        if ID in spx:
+            Translation = spx[ID]
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''
@@ -29,7 +35,12 @@ async def bugtracker_get(MojiraID):
             if 'fields' in load_json:
                 fields = load_json['fields']
                 if 'summary' in fields:
-                    Title = Title + fields['summary']
+                    if Translation:
+                        Title = Title + \
+                            fields['summary'] + \
+                            f' ({Translation})' if Translation else ''
+                    else:
+                        Title = Title + fields['summary']
                 if 'issuetype' in fields:
                     Type = fields['issuetype']['name']
                 if 'status' in fields:
@@ -49,11 +60,13 @@ async def bugtracker_get(MojiraID):
                     if verlist[0] == verlist[-1]:
                         Version = "Version: " + verlist[0]
                     else:
-                        Version = "Versions: " + verlist[0] + " ~ " + verlist[-1]
+                        Version = "Versions: " + \
+                            verlist[0] + " ~ " + verlist[-1]
                 Link = 'https://bugs.mojang.com/browse/' + str.upper(MojiraID)
                 if 'customfield_12200' in fields:
                     if fields['customfield_12200']:
-                        Priority = "Mojang Priority: " + fields['customfield_12200']['value']
+                        Priority = "Mojang Priority: " + \
+                            fields['customfield_12200']['value']
                 if 'priority' in fields:
                     if fields['priority']:
                         Priority = "Priority: " + fields['priority']['name']
@@ -85,7 +98,8 @@ async def bugtracker_get(MojiraID):
         if Priority:
             msglist.append(Priority)
         if Resolution:
-            Resolution = "Resolution: " + Resolution + ('\nFixed Version: ' + FixVersion if FixVersion else '')
+            Resolution = "Resolution: " + Resolution + \
+                ('\nFixed Version: ' + FixVersion if FixVersion else '')
             msglist.append(Resolution)
         if Version:
             msglist.append(Version)
