@@ -90,7 +90,7 @@ async def arcb30init():
 
     shutil.copytree(cache + '/assets/char', assets + '/char')
     shutil.copytree(cache + '/assets/Fonts', assets + '/Fonts')
-    ratings = ['0', '1', '2', '3', '4', '5', '6', 'off']
+    ratings = ['0', '1', '2', '3', '4', '5', '6', '7', 'off']
     os.mkdir(assets + f'/ptt/')
     for rating in ratings:
         shutil.copy(cache + f'/assets/img/rating_{rating}.png', assets + f'/ptt/rating_{rating}.png')
