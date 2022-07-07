@@ -24,7 +24,9 @@ async def pttimg(msg: MessageSession):
             ptt = float(ptt)
         except ValueError:
             await msg.finish('发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。')
-    if ptt >= 12.50:
+    if ptt >= 13.00:
+        pttimg = 7
+    elif ptt >= 12.50:
         pttimg = 6
     elif ptt >= 12.00:
         pttimg = 5
