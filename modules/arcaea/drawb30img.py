@@ -60,7 +60,9 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
         b30img.alpha_composite(makeShadow(cardoverlay.convert("RGBA"), 2, 3, [3, 3], 'rgba(0,0,0,0)', '#000000'),
                                (b30img.width - 500, 68))
     # ptt
-    if ptt >= 12.50:
+    if ptt >= 13.00:
+        pttimg = 7
+    elif ptt >= 12.50:
         pttimg = 6
     elif ptt >= 12.00:
         pttimg = 5

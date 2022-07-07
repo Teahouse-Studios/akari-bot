@@ -43,6 +43,7 @@ async def pttimg(msg: MessageSession):
     else:
         pttimg = 'off'
     pttimgr = Image.open(f'{assets_path}/ptt/rating_{str(pttimg)}.png')
+    pttimgr = pttimgr.resize((119, 119))
     ptttext = Image.new("RGBA", (119, 119))
     font1 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 49)
     font2 = ImageFont.truetype(os.path.abspath(f'{assets_path}/Fonts/Exo-SemiBold.ttf'), 33)
