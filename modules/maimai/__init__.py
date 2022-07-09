@@ -31,7 +31,7 @@ async def inner_level_q(ds1, ds2=None):
     return result_set
 
 
-mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'])
+mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'], desc='有关maimai相关的工具\n警告：此模块已长时间未更新，可能会出现功能问题。')
 
 
 @mai.handle(['inner <rating> {根据定数查询对应歌曲}',
