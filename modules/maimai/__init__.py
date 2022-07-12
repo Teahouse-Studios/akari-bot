@@ -1,11 +1,11 @@
 import re
-from collections import defaultdict
 
 from core.component import on_command, on_regex
 from core.elements import Plain, Image as BImage
 from core.builtins.message import MessageSession
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
+from modules.maimai.libraries.maimai_best_50 import generate50
 from modules.maimai.libraries.maimaidx_music import *
 from modules.maimai.libraries.tool import hash
 
@@ -14,7 +14,7 @@ total_list = TotalList()
 
 def song_txt(music: Music):
     return [Plain(f"{music.id}. {music.title}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{music.id}.jpg", ),
+            BImage(f"https://www.diving-fish.com/covers/{get_cover_len4_id(music.id)}.png", ),
             Plain(f"\n{'/'.join(music.level)}")]
 
 
@@ -31,7 +31,7 @@ async def inner_level_q(ds1, ds2=None):
     return result_set
 
 
-mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'], desc='有关maimai相关的工具\n警告：此模块已长时间未更新，可能会出现功能问题。')
+mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'], desc='有关maimai相关的工具，移植自mai-bot。')
 
 
 @mai.handle(['inner <rating> {根据定数查询对应歌曲}',
@@ -128,7 +128,7 @@ async def _(message: MessageSession):
             chart = music['charts'][level_index]
             ds = music['ds'][level_index]
             level = music['level'][level_index]
-            file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
+            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
             if len(chart['notes']) == 4:
                 msg = f'''{level_name[level_index]} {level}({ds})
 TAP: {chart['notes'][0]}
@@ -151,7 +151,7 @@ BREAK: {chart['notes'][4]}
         name = groups[1]
         music = (await total_list.get()).by_id(name)
         try:
-            file = f"https://www.diving-fish.com/covers/{music['id']}.jpg"
+            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
             await message.finish([Plain(f"{music['id']}. {music['title']}\n"),
                                        BImage(f"{file}"),
                                        Plain(f"艺术家: {music['basic_info']['artist']}\n"
@@ -187,34 +187,6 @@ async def _(msg: MessageSession):
     s += "刘大鸽提醒您：打机时不要大力拍打或滑动哦\n今日推荐歌曲："
     music = (await total_list.get())[h % len((await total_list.get()))]
     await msg.finish([Plain(s)] + song_txt(music))
-
-
-music_aliases = defaultdict(list)
-f = open('assets/maimai/static/aliases.csv', 'r', encoding='utf-8')
-tmp = f.readlines()
-f.close()
-for t in tmp:
-    arr = t.strip().split('\t')
-    for i in range(len(arr)):
-        if arr[i] != "":
-            music_aliases[arr[i].lower()].append(arr[0])
-
-mfsrgx = on_regex('maimai_find_song_regex', desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                                                 '<歌曲别名>是什么歌 查询乐曲别名对应的乐曲', developers=['mai-bot', 'OasisAkari'])
-
-
-@mfsrgx.handle(r"(.+)是什么歌")
-async def _(msg: MessageSession):
-    name = msg.matched_msg.groups()[0].strip().lower()
-    if name not in music_aliases:
-        await msg.finish("未找到此歌曲\n舞萌 DX 歌曲别名收集计划：https://docs.qq.com/sheet/DQ0pvUHh6b1hjcGpl")
-    result_set = music_aliases[name]
-    if len(result_set) == 1:
-        music = (await total_list.get()).by_title(result_set[0])
-        await msg.finish([Plain('您要找的是不是')] + song_txt(music))
-    else:
-        s = '\n'.join(result_set)
-        await msg.finish(f"您要找的可能是以下歌曲中的其中一首：\n{s}")
 
 
 @mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
@@ -275,6 +247,23 @@ async def _(msg: MessageSession):
     else:
         payload = {'username': username}
     img, success = await generate(payload)
+    if success == 400:
+        await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。")
+    elif success == 403:
+        await msg.finish("该用户禁止了其他人获取数据。")
+    else:
+        if img:
+            await msg.finish([BImage(img)])
+
+
+@mai.handle('b50 <username> {查询B50信息（仅限大陆版maimai使用）}')
+async def _(msg: MessageSession):
+    username = msg.parsed_msg['<username>']
+    if username == "":
+        payload = {'qq': msg.session.sender}
+    else:
+        payload = {'username': username}
+    img, success = await generate50(payload)
     if success == 400:
         await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。")
     elif success == 403:
