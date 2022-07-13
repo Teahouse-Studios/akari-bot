@@ -46,7 +46,11 @@ Ninendo's support knowledgebase at https://en-americas-support.nintendo.com/app/
 # 001: friends module, parental controls, online services in general?
 friends = Module('friends', {
     102: ResultInfo('此错误代表你从网络服务意外掉线。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17043'),
-    721: ResultInfo('此错误代表监护人已设置严格限制网络功能。', 'https://www.nintendo.com.au/help/3ds-error-codes')
+    721: ResultInfo('此错误代表监护人已设置严格限制网络功能。', 'https://www.nintendo.com.au/help/3ds-error-codes'),
+    803: ResultInfo('This error code indicates that the online play server is currently down.',
+                    'https://www.nintendo.co.jp/netinfo/en_US/index.html'),
+    811: ResultInfo('This error code indicates that the online play server is undergoing maintenance.',
+                    'https://www.nintendo.co.jp/netinfo/en_US/index.html')
 })
 
 # 002: bans and other account errors
@@ -67,7 +71,7 @@ internet = Module('internet', {
     1099: ResultInfo('给定SSID的接入点未找到。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4249/kw/003-1099'),
     1101: ResultInfo('错误的接入点密码或配置不兼容3DS'),
-    2001: ResultInfo('DNS未找到，如果你正在使用自定义DNS服务器，请确保设置正确。'),
+    2001: ResultInfo('DNS错误，如果你正在使用自定义DNS服务器，请确保设置正确。'),
     2103: ResultInfo('常见的连接错误（？')
 })
 
@@ -104,6 +108,7 @@ nim = Module('nim', {
 # 006: online matchmaking and gameplay errors
 matchmaking = Module('matchmaking', {
     112: ResultInfo('常见于连接宝可梦银行发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4203/'),
+    332: ResultInfo('可能发生于尝试使用关闭的端口进行通讯（？）'),
     (501, 502): ResultInfo('可能发生于网络对在线游戏阻断通讯。',
                            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4204'),
     612: ResultInfo('这个错误代码可能表示你的网络环境不适合进行端对端通讯，可能与你的网络NAT类型有关。',
@@ -123,6 +128,7 @@ eshop_mint = Module('eshop (mint/api?)', {
     2100: ResultInfo('连接eShop超时。此错误代码通常出现于网络连接质量较差或受到了某网络组织的干扰。',
                      '参见支持页面：https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432\n或任天堂网络状态：https://support.nintendo.com/networkstatus'),
     2670: ResultInfo('尝试连接时发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4383'),
+    2720: ResultInfo('eShop SSL证书错误。'),
     2913: ResultInfo('服务器可能离线，稍后再试。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
     2916: ResultInfo('常见于从eShop下载软件时错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
     2920: ResultInfo(
@@ -151,19 +157,20 @@ eshop_app = Module('eshop (app?)', {
     2995: ResultInfo('这个错误可能出现于下载码输入错误（已激活、失效、输错和区域不对等）。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/13515'),
     4077: ResultInfo(
-        'Cannot start or continue eShop download. This happens due to insufficient free space being available on the SD Card.'),
+        '无法开始或继续eShop下载。会在SD卡没有充足空间的时候出现。'),
     4079: ResultInfo('无法访问内存卡。'),
     4998: ResultInfo('本地内容比服务器的更新，鬼知道为什么会这样。'),
     6106: ResultInfo('NIM的AM报错，可能是坏ticket惹的祸。'),
     8401: ResultInfo('升级数据错误，删了然后重新下载它。'),
-    9001: ResultInfo('Caused by trying to download content with low battery percentage.')
+    9001: ResultInfo('主机电量不足的时候尝试下载内容时出现。')
 })
 
 # 011: eshop website, or other misc/overlapping errors
 eshop_site = Module('eshop (website?)', {
-    3010: ResultInfo('Server timeout due to user inactivity.'),
+    3010: ResultInfo('由于用户不活跃导致的服务器响应超时。'),
     3021: ResultInfo('无法在eShop找到这个应用（错误的区域或者这个东西就根本不存在）'),
     3136: ResultInfo('eShop不可用，等会再试。'),
+    5998: ResultInfo('任天堂eShop正在维护中。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/24326/'),
     6901: ResultInfo('此主机已被任天堂永久封禁（由于某种原因只显示日文）。', is_ban=True)
 })
 
@@ -187,8 +194,9 @@ browser2 = Module('browser (?)', {
 # 022: more account stuff?
 account2 = Module('account', {
     2452: ResultInfo('在你打开了UNITINFO补丁后访问eShop时出现，在Luma设置中关闭。'),
-    (2501, 2591): ResultInfo('NNID已绑定到另外一条主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机），还原备份的NAND然后尝试进入需要NNID的程序看看。'),
+    2501: ResultInfo('NNID已绑定到另外一台主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机）后将备份的NAND还原并尝试进入需要NNID的程序。'),
     2511: ResultInfo('需要系统更新（可能出现于Miiverse？）。'),
+    2591: ResultInfo('NNID已绑定到另外一台主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机）后将备份的NAND还原并尝试进入需要NNID的程序。'),
     2613: ResultInfo('绑定NNID时输入了错误的邮箱或密码，或是在没有绑定NNID的情况下从eShop下载软件时出现。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4314/kw/022-2613'),
     2631: ResultInfo('你输入的NNID已被注销，或是因为数据迁移不可用。数据迁移后NNID只会在迁入的主机可用。',

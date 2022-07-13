@@ -7,36 +7,29 @@ from .types import Module, ResultInfo, ConsoleErrorInfo, ConsoleErrorField, \
 This file contains all currently known Wii U result and error codes.
 There may be inaccuracies here; we'll do our best to correct them
 when we find out more about them.
-
 A "support" code, in contrast to a result code, is a human-readable string like
 102-2811. They're meant to be more user-friendly than result codes, which are
 typically integer values.
-
 Note: the "modules" presented here are more like "categories". However, this difference
 isn't enough to justify creating a different class with the same logic, so we'll just
 refer to them as "modules" from now on.
-
 To add a module so the code understands it, simply add a new module number
 to the 'modules' dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
-
 Once you've added a module, or you want to add a new result code to an existing
 module, add a new description value (for Switch it's the final set of 4 digits after any dashes)
 as the key, and a ResultInfo variable with a text description of the error or result.
 You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all results or errors have support webpages.
-
 Simple example of adding a module with a sample result code:
 test = Module('test', {
     5: ResultInfo('test', 'https://example.com')
 })
-
 modules = {
     9999: test
 }
-
 Sources used to compile this list of results:
 https://github.com/Kinnay/NintendoClients/wiki/Wii-U-Error-Codes
 """
@@ -194,21 +187,21 @@ fp = Module('fp (friends)', {
     812: ResultInfo('Unsupported version.'),
     813: ResultInfo('Unknown error.')
 }, {
-                (100, 199): 'Core',
-                (200, 299): 'DDL',
-                (300, 399): 'Rendezvous',
-                (400, 499): 'Python Core',
-                (500, 599): 'Transport',
-                (600, 699): 'DO Core',
-                (700, 799): 'FPD',
-                (800, 899): 'Authentication',
-                (1100, 1199): 'Ranking',
-                (1200, 1299): 'Data Store',
-                (1500, 1599): 'Service Item',
-                (1800, 1899): 'Matchmaking Referee',
-                (1900, 1999): 'Subscriber',
-                (2000, 2099): 'Ranking2',
-            })
+    (100, 199): 'Core',
+    (200, 299): 'DDL',
+    (300, 399): 'Rendezvous',
+    (400, 499): 'Python Core',
+    (500, 599): 'Transport',
+    (600, 699): 'DO Core',
+    (700, 799): 'FPD',
+    (800, 899): 'Authentication',
+    (1100, 1199): 'Ranking',
+    (1200, 1299): 'Data Store',
+    (1500, 1599): 'Service Item',
+    (1800, 1899): 'Matchmaking Referee',
+    (1900, 1999): 'Subscriber',
+    (2000, 2099): 'Ranking2',
+})
 
 act = Module('act (accounts)', {
     0: ResultInfo('Success.'),
@@ -292,9 +285,7 @@ act = Module('act (accounts)', {
     2813: ResultInfo('Console is banned from a particular game.', is_ban=True),
     2814: ResultInfo('Console is banned from Nintendo\'s online service.', is_ban=True),
     2815: ResultInfo('Console is banned from independent services.', is_ban=True),
-    2816: ResultInfo(
-        'Console is banned for an unknown duration, due to using modified/hacked files in online games like Splatoon.',
-        is_ban=True),
+    2816: ResultInfo('Console is banned for an unknown duration, due to using modified/hacked files in online games like Splatoon.', is_ban=True),
     2821: ResultInfo('Account is temporarily banned.', is_ban=True),
     2822: ResultInfo('Account is temporarily banned from all services.', is_ban=True),
     2823: ResultInfo('Account is temporarily banned from a particular game.', is_ban=True),
@@ -320,24 +311,24 @@ act = Module('act (accounts)', {
     2999: ResultInfo('Unknown authentication failure.'),
 
 }, {
-                 (0, 499): 'Internal',
-                 (500, 599): 'Status changed',
-                 (600, 699): 'Invalid argument',
-                 (700, 709): 'Internal error',
-                 (710, 729): 'File error',
-                 (730, 799): 'Out of resources',
-                 (800, 809): 'UC',
-                 (810, 819): 'MCP',
-                 (820, 849): 'ISO',
-                 (850, 899): 'MXML',
-                 (900, 999): 'IOS',
-                 (1000, 1099): 'Account',
-                 (2100, 2199): 'HTTP',
-                 (2500, 2599): 'Account',
-                 (2670, 2699): 'Credit Card',
-                 (2800, 2835): 'Banned',
-                 (2880, 2899): 'Not available',  # not provided/under maintenance/no longer in service
-             })
+    (0, 499): 'Internal',
+    (500, 599): 'Status changed',
+    (600, 699): 'Invalid argument',
+    (700, 709): 'Internal error',
+    (710, 729): 'File error',
+    (730, 799): 'Out of resources',
+    (800, 809): 'UC',
+    (810, 819): 'MCP',
+    (820, 849): 'ISO',
+    (850, 899): 'MXML',
+    (900, 999): 'IOS',
+    (1000, 1099): 'Account',
+    (2100, 2199): 'HTTP',
+    (2500, 2599): 'Account',
+    (2670, 2699): 'Credit Card',
+    (2800, 2835): 'Banned',
+    (2880, 2899): 'Not available',  # not provided/under maintenance/no longer in service
+})
 
 nex = Module('nex (game servers)', {
     102: ResultInfo('The reason for the error is unknown.'),
@@ -345,12 +336,10 @@ nex = Module('nex (game servers)', {
     104: ResultInfo('The operation specifies or accesses an invalid pointer.'),
     105: ResultInfo('The operation was aborted.'),
     106: ResultInfo('The operation raised an exception.'),
-    107: ResultInfo(
-        'An attempt was made to access data in an incorrect manner. This may be due to inadequate permission or the data, file, etc. not existing.'),
+    107: ResultInfo('An attempt was made to access data in an incorrect manner. This may be due to inadequate permission or the data, file, etc. not existing.'),
     108: ResultInfo('The operation specifies or accesses an invalid DOHandle.'),
     109: ResultInfo('The operation specifies or accesses an invalid index.'),
-    110: ResultInfo(
-        'The system could not allocate or access enough memory or disk space to perform the specified operation.'),
+    110: ResultInfo('The system could not allocate or access enough memory or disk space to perform the specified operation.'),
     111: ResultInfo('Invalid argument were passed with the operation. The argument(s) may be out of range or invalid.'),
     112: ResultInfo('The operation did not complete within the specified timeout for that operation.'),
     113: ResultInfo('Initialization of the component failed.'),
@@ -361,16 +350,12 @@ nex = Module('nex (game servers)', {
     118: ResultInfo('Invalid sequence.'),
     301: ResultInfo('Connection was unable to be established, either with the Rendez-Vous back end or a Peer.'),
     302: ResultInfo('The Principal could not be authenticated by the Authentication Service.'),
-    303: ResultInfo(
-        'The Principal tried to log in with an invalid user name, i.e. the user name does not exist in the database.'),
-    304: ResultInfo(
-        'The Principal either tried to log in with an invalid password for the provided user name or tried to join a Gathering with an invalid password.'),
+    303: ResultInfo('The Principal tried to log in with an invalid user name, i.e. the user name does not exist in the database.'),
+    304: ResultInfo('The Principal either tried to log in with an invalid password for the provided user name or tried to join a Gathering with an invalid password.'),
     305: ResultInfo('The provided user name already exists in the database. All usernames must be unique.'),
-    306: ResultInfo('The Principal\'s account still exists in the database but the account has been disabled.',
-                    is_ban=True),
+    306: ResultInfo('The Principal\'s account still exists in the database but the account has been disabled.', is_ban=True),
     307: ResultInfo('The Principal\'s account still exists in the database but the account has expired.'),
-    308: ResultInfo(
-        'The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained.'),
+    308: ResultInfo('The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained.'),
     309: ResultInfo('Data encryption failed.'),
     310: ResultInfo('The operation specifies or accesses an invalid PrincipalID.'),
     311: ResultInfo('Maximum connnection number is reached.'),
@@ -382,33 +367,30 @@ nex = Module('nex (game servers)', {
     501: ResultInfo('The reason for the error is unknown.'),
     502: ResultInfo('Network connection was unable to be established.'),
     503: ResultInfo('The URL contained in the StationURL is invalid. The syntax may be incorrect.'),
-    504: ResultInfo(
-        'The key used to authenticate a given station is invalid. The secure transport layer uses secret-key based cryptography to ensure the integrity and confidentiality of data sent across the network.'),
+    504: ResultInfo('The key used to authenticate a given station is invalid. The secure transport layer uses secret-key based cryptography to ensure the integrity and confidentiality of data sent across the network.'),
     505: ResultInfo('The specified transport type is invalid.'),
     506: ResultInfo('The Station is already connected via another EndPoint.'),
-    507: ResultInfo(
-        'The data could not be sent across the network. This could be due to an invalid message, packet, or buffer.'),
+    507: ResultInfo('The data could not be sent across the network. This could be due to an invalid message, packet, or buffer.'),
     508: ResultInfo('The operation did not complete within the specified timeout for that operation.'),
     509: ResultInfo('The network connection was reset.'),
     510: ResultInfo('The destination Station did not authenticate itself properly.'),
-    511: ResultInfo(
-        '3rd-party server or device answered with an error code according to protocol used e.g. HTTP error code.'),
+    511: ResultInfo('3rd-party server or device answered with an error code according to protocol used e.g. HTTP error code.'),
 }, {
-                 (100, 199): 'Core',
-                 (200, 299): 'DDL',
-                 (300, 399): 'Rendezvous',
-                 (400, 499): 'Python Core',
-                 (500, 599): 'Transport',
-                 (600, 699): 'DO Core',
-                 (700, 799): 'FPD',
-                 (800, 899): 'Authentication',
-                 (1100, 1199): 'Ranking',
-                 (1200, 1299): 'Data Store',
-                 (1500, 1599): 'Service Item',
-                 (1800, 1899): 'Matchmaking Referee',
-                 (1900, 1999): 'Subscriber',
-                 (2000, 2099): 'Ranking2',
-             })
+    (100, 199): 'Core',
+    (200, 299): 'DDL',
+    (300, 399): 'Rendezvous',
+    (400, 499): 'Python Core',
+    (500, 599): 'Transport',
+    (600, 699): 'DO Core',
+    (700, 799): 'FPD',
+    (800, 899): 'Authentication',
+    (1100, 1199): 'Ranking',
+    (1200, 1299): 'Data Store',
+    (1500, 1599): 'Service Item',
+    (1800, 1899): 'Matchmaking Referee',
+    (1900, 1999): 'Subscriber',
+    (2000, 2099): 'Ranking2',
+})
 
 eshop_api = Module('eshop(api)', {
     3190: ResultInfo('Wishlist is full.')
@@ -423,9 +405,9 @@ eshop_web = Module('eshop (web)', {
 })
 
 unknown2 = Module('unknown (browser?)', {
-    1037: ResultInfo(
-        'Incorrect permissions for the default index.html file which prevents the Internet Browser from reading it.',
-        '[To fix it, follow these steps.](https://wiiu.hacks.guide/#/fix-errcode-112-1037)'),
+    1037: ResultInfo('Incorrect permissions for the default index.html file which prevents the Internet Browser from reading it.', '[To fix it, follow these steps.](https://wiiu.hacks.guide/#/fix-errcode-112-1037)'),
+    1035: ResultInfo('SSL handshake failed due to cipher mismatch.'),
+    1209: ResultInfo('Internet Browser is unable to load a file(?).')
 })
 
 olv = Module('olv (miiverse)', {
@@ -438,10 +420,8 @@ eshop_unk = Module('eShop (unknown)', {
 })
 
 fs = Module('fs', {
-    1031: ResultInfo(
-        'The disc could not be read or is unsupported (i.e. not a Wii or Wii U game). Try cleaning the disc or lens if it is a supported title.'),
-    2031: ResultInfo(
-        'The disc could not be read or is unsupported (i.e. not a Wii or Wii U game). Try cleaning the disc or lens if it is a supported title.'),
+    1031: ResultInfo('The disc could not be read or is unsupported (i.e. not a Wii or Wii U game). Try cleaning the disc or lens if it is a supported title.'),
+    2031: ResultInfo('The disc could not be read or is unsupported (i.e. not a Wii or Wii U game). Try cleaning the disc or lens if it is a supported title.'),
     3032: ResultInfo('Error when attempting to read caused by a permission error.')
 })
 
@@ -451,12 +431,12 @@ syserr = Module('system error', {
     103: ResultInfo('The MLC system memory is corrupted.'),
     104: ResultInfo('The SLC system memory is corrupted.'),
     105: ResultInfo('The USB storage is corrupted.'),
+    2706: ResultInfo('Error when reading from USB storage device'),
     2713: ResultInfo('The USB Storage device has been disconnected.')
 })
 
 unknown = Module('unknown/misc.', {
-    9999: ResultInfo(
-        'Usually indicates an invalid signature, ticket, or corrupted data. Typically happens when running an unsigned program without CFW/signature patches.')
+    9999: ResultInfo('Usually indicates an invalid signature, ticket, or corrupted data. Typically happens when running an unsigned program without CFW/signature patches.')
 })
 
 # We have some modules partially documented, those that aren't have dummy Modules.
@@ -465,7 +445,7 @@ modules = {
     102: act,
     103: Module('ac (internet connection)'),
     104: Module('boss(spotpass)'),
-    105: Module('nim (title installation'),
+    105: Module('nim (title installation)'),
     106: nex,
     107: eshop_api,
     111: eshop_web,
@@ -483,6 +463,7 @@ modules = {
     187: Module('nfp (amiibo)'),
     199: unknown
 }
+
 
 # regex for Wii U result code format "1XX-YYYY"
 RE = re.compile(r'1\d{2}-\d{4}')

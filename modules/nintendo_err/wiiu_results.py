@@ -4,22 +4,17 @@ from .types import Module, ResultInfo, ConsoleErrorInfo, ConsoleErrorField
 This file contains all currently known Wii U result and error codes.
 There may be inaccuracies here; we'll do our best to correct them
 when we find out more about them.
-
 A result code is a 32-bit integer returned when calling various commands in the
 Wii U's operating system, Cafe OS. Its breaks down like so:
-
  Bits | Description
 -------------------
 00-19 | Description
 20-28 | Module
 29-31 | Level
-
 Level: A value indicating the severity of the issue (fatal, temporary, etc.).
 Module: A value indicating who raised the error or returned the result.
 Description: A value indicating exactly what happened.
-
 Alternatively, legacy results break down to:
-
  Bits | Description
 -------------------
 00-09 | Description
@@ -29,40 +24,31 @@ Alternatively, legacy results break down to:
 20-26 | Module
 27-28 | Signature
 29-31 | Unused
-
 Signature: A check to see if its legacy
 Summary: A value indicating a shorter description of what happened.
-
 Unlike the 3DS, the Wii U does not provide a 'summary' field in non legacy result codes.
-
 To add a module so the code understands it, simply add a new module number
 to the 'modules' dictionary, with a Module variable as the value. If the module
 has no known error codes, simply add a dummy Module instead (see the dict for
 more info). See the various module variables for a more in-depth example
  on how to make one.
-
 Once you've added a module, or you want to add a new result code to an existing
 module, add a new description value (for Switch it's the final set of 4 digits after any dashes)
 as the key, and a ResultInfo variable with a text description of the error or result.
 You can also add a second string to the ResultInfo to designate a support URL if
 one exists. Not all results or errors have support webpages.
-
 Simple example of adding a module with a sample result code:
 test = Module('test', {
     5: ResultInfo('test', 'https://example.com')
 })
-
 modules = {
     9999: test
 }
-
 Sources used to compile this list of modules and result parsing:
 https://github.com/devkitPro/wut/blob/b2e6bc52d0d5afa9eb9df21b52d2a61851935f39/include/nn/result.h#L67
-
 And for providing descriptions:
 https://gist.github.com/GaryOderNichts/9032a808534caa03b0c2dcdd583bbf7c
 except for spm, neia, vctl and olv, some further investigation is required
-
 Also thank you for @GaryOderNichts for providing other information and resources!
 """
 
@@ -3317,6 +3303,7 @@ legacy_summary = {
 
 SIGNATURE_IS_LEGACY = 3
 
+
 CONSOLE_NAME = 'Nintendo Wii U'
 
 # Suggested color to use if displaying information through a Discord bot's embed
@@ -3324,7 +3311,6 @@ COLOR = 0x009AC7
 
 
 def is_valid(error: str):
-    err_int = None
     try:
         err_int = int(error, 16)
     except ValueError:
@@ -3339,18 +3325,15 @@ def construct_result(ret, mod, summary, level, desc, is_legacy):
     if is_legacy:
         ret.extra_description = "Legacy result"
     if is_legacy and summary is not None:
-        ret.add_field(
-            ConsoleErrorField('Summary', message_str=legacy_summary.get(summary, ''), supplementary_value=summary))
-    ret.add_field(ConsoleErrorField('Level', message_str=(legacy_levels if is_legacy else levels).get(level, ''),
-                                    supplementary_value=level))
+        ret.add_field(ConsoleErrorField('Summary', message_str=legacy_summary.get(summary, ''), supplementary_value=summary))
+    ret.add_field(ConsoleErrorField('Level', message_str=(legacy_levels if is_legacy else levels).get(level, ''), supplementary_value=level))
     description = module.get_error(desc)
     if description is None:
         description = common.get_error(desc)
         if description is None:
             ret.add_field(ConsoleErrorField('Description', supplementary_value=desc))
         else:
-            ret.add_field(
-                ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
+            ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
     else:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
 
@@ -3358,7 +3341,6 @@ def construct_result(ret, mod, summary, level, desc, is_legacy):
 
 
 def get(error: str):
-    level = None
     err_int = int(error, 16)
     if ((err_int >> 27) & 0x3) == SIGNATURE_IS_LEGACY:
         mod = (err_int >> 20) & 0x7F

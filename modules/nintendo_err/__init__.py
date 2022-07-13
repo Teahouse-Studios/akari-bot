@@ -1,4 +1,4 @@
-# copied from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
+# ported from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
 from core.component import on_command
