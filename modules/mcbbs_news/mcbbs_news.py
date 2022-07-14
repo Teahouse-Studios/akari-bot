@@ -9,8 +9,8 @@ async def get_news():
     publish_time = []
     kinds = []
     links = []
-    mcssb_source_code = await get_url(mcssb_link,headers=headers)
-    BeautifulSoupObject = BeautifulSoup(mcssb_source_code,"html.parser")
+    mcbbs_source_code = await get_url(mcbbs_link,headers=headers)
+    BeautifulSoupObject = BeautifulSoup(mcbbs_source_code,"html.parser")
     information = BeautifulSoupObject.find_all("tbody")
     for i in information:
         if i.get("id") == None:
