@@ -1,31 +1,61 @@
 from bs4 import BeautifulSoup
 
-from config import Config
 from core.elements import Url
 from core.utils import get_url
 
+async def get_news():
+    titles = []
+    authors = []
+    publish_time = []
+    kinds = []
+    links = []
+    mcssb_source_code = await get_url(mcssb_link,headers=headers)
+    BeautifulSoupObject = BeautifulSoup(mcssb_source_code,"html.parser")
+    information = BeautifulSoupObject.find_all("tbody")
+    for i in information:
+        if i.get("id") == None:
+            i.decompose()
+            continue
+        if str(i.get("id")).find("separatorline") != -1:
+            i.decompose()
+            continue
+        if str(i.get("id")).find("stick") != -1:
+            i.decompose()
+            continue
+    available_information = BeautifulSoupObject.find_all("tbody")
 
-async def news():
-    api = 'https://www.mcbbs.net/forum-news-1.html'
-    webrender = Config('web_render')
-    if not webrender:
-        return
-    api = webrender + 'source?url=' + api
-    html = await get_url(api)
-    print(html)
-    bs = BeautifulSoup(html, 'html.parser')
-    results = bs.select('#threadlisttableid > tbody[id^="normalthread_"]')
-    res = []
-    if results is not None:
-        for i in results:
-            if len(res) == 5:
-                break
-            a = i.select_one('a.s.xst')
-            if not a.has_attr('style'):
-                continue
-            title = a.get_text()
-            url = Url('https://www.mcbbs.net/' + a.get('href'))
-            res += [{'count': len(res) + 1, 'title': title, 'url': url}]
-        return res
-    else:
-        return None
+    # 先摆烂，谁愿意合并，请便吧（  ——HornCopper
+    for i in available_information:
+        x = BeautifulSoup(str(i),"html.parser")
+        td = x.find_all("td")
+        try:
+            author = td[1].cite.a.string
+        except:
+            author = td[1].cite.string
+        authors.append(author)
+
+    for i in available_information:
+        x = BeautifulSoup(str(i),"html.parser")
+        em = x.find_all("em")
+        kinds.append(em[0].a.string)
+    
+    for i in available_information:
+        x = BeautifulSoup(str(i),"html.parser")
+        em = x.find_all("em")
+        try:
+            time = em[1].span.span.string
+        except:
+            time = em[1].span.string
+        publish_time.append(time)
+    
+    for i in available_information:
+        x = BeautifulSoup(str(i),"html.parser")
+        a = x.find_all("a")
+        titles.append(a[4].string)
+
+    for i in available_information:
+        x = BeautifulSoup(str(i),"html.parser")
+        link = "https://www.mcbbs.net/"+x.tr.td.a["href"]
+        links.append(Url(link))
+
+    return {"titles":titles,"time":publish_time,"authors":authors,"kinds":kinds,"links":links}
