@@ -8,7 +8,7 @@ mcbbs_news = on_command(
     bind_prefix='mcbbs_news',
     alias=['mn', 'mcbbsnews'],
     desc='获得 MCBBS 幻翼快讯版最新新闻',
-    developers=['HornCopper']
+    developers=['HornCopper','OasisAkari']
 )
 
 
