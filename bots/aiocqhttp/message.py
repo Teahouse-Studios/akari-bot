@@ -12,12 +12,16 @@ from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
+from config import Config
 from core.builtins.message import MessageSession as MS
 from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.logger import Logger
 from database import BotDBUtil
+
+
+enable_analytics = Config('enable_analytics')
 
 
 class FinishedSession(FinS):
@@ -200,6 +204,8 @@ class FetchTarget(FT):
                 try:
                     send = await x.sendDirectMessage(message)
                     send_list.append(send)
+                    if enable_analytics:
+                        BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
@@ -240,6 +246,8 @@ class FetchTarget(FT):
                     try:
                         print(fetch)
                         send = await fetch.sendDirectMessage(message)
+                        if enable_analytics:
+                            BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                         send_list.append(send)
                         await asyncio.sleep(0.5)
                     except Exception:

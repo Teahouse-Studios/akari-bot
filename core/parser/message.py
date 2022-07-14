@@ -18,6 +18,7 @@ from database import BotDBUtil
 
 
 enable_tos = Config('enable_tos')
+enable_analytics = Config('enable_analytics')
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -193,6 +194,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                             await parsed_msg[0].function(msg)  # 将msg传入下游模块
                                     else:
                                         await parsed_msg[0].function(msg)
+                                    raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
                                     await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                                     continue
@@ -209,13 +211,18 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                             await func.function(msg)  # 将msg传入下游模块
                                     else:
                                         await func.function(msg)
+                                    raise FinishedException(msg.sent)  # if not using msg.finish
                     except ActionFailed:
+                        ExecutionLockList.remove(msg)
                         await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                         continue
                     except FinishedException as e:
                         Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}')
                         if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
                             await msg_counter(msg, msg.trigger_msg)
+                        ExecutionLockList.remove(msg)
+                        if enable_analytics:
+                            BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
                         continue
                     except Exception as e:
                         Logger.error(traceback.format_exc())
@@ -266,15 +273,21 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                         await rfunc.function(msg)  # 将msg传入下游模块
                                 else:
                                     await rfunc.function(msg)  # 将msg传入下游模块
-                            ExecutionLockList.remove(msg)
+                                raise FinishedException(msg.sent)  # if not using msg.finish
+
                 except ActionFailed:
+                    ExecutionLockList.remove(msg)
                     await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
                     continue
                 except FinishedException as e:
                     Logger.info(
                         f'Successfully finished session from {identify_str}, returns: {str(e)}')
+                    ExecutionLockList.remove(msg)
+                    if enable_analytics:
+                        BotDBUtil.Analytics(msg).add(msg.trigger_msg, regex, 'regex')
                     if enable_tos:
                         await msg_counter(msg, msg.trigger_msg)
+
                     continue
                 ExecutionLockList.remove(msg)
             return msg

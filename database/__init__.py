@@ -5,10 +5,11 @@ from typing import Union
 from tenacity import retry, stop_after_attempt
 
 from config import Config
-from core.elements.message import MessageSession, FetchTarget
+from core.elements.message import MessageSession, FetchTarget, FetchedSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import Session
 from database.tables import *
+from database.tables import AnalyticsData
 
 cache = Config('db_cache')
 
@@ -297,6 +298,27 @@ class BotDBUtil:
                 return value
             else:
                 return value.get(k)
+
+    class Analytics:
+        def __init__(self, target: Union[MessageSession, FetchedSession]):
+            self.target = target
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add(self, command, module_name, module_type):
+            session.add(AnalyticsData(targetId=self.target.target.targetId,
+                                      senderId=self.target.target.senderId,
+                                      command=command,
+                                      moduleName=module_name, moduleType=module_type))
+            session.commit()
+
+        @staticmethod
+        def get_count():
+            return session.query(AnalyticsData).count()
+
+        @staticmethod
+        def get_first():
+            return session.query(AnalyticsData).filter_by(id=1).first()
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

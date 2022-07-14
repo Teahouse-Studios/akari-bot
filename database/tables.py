@@ -67,6 +67,18 @@ class GroupAllowList(Base):
     targetId = Column(String(512), primary_key=True)
 
 
+class AnalyticsData(Base):
+    """所属赋予的管理员"""
+    __tablename__ = "Analytics"
+    id = Column(Integer, primary_key=True)
+    moduleName = Column(String(512))
+    moduleType = Column(String(512))
+    targetId = Column(String(512))
+    senderId = Column(String(512))
+    command = Column(LONGTEXT if Config('db_path').startswith('mysql') else Text)
+    timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+
+
 class DBVersion(Base):
     __tablename__ = "DBVersion"
     value = Column(String(512), primary_key=True)

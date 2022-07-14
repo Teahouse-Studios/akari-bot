@@ -6,6 +6,7 @@ from typing import List, Union
 import discord
 
 from bots.discord.client import client
+from config import Config
 from core.builtins.message import MessageSession as MS
 from core.elements import Plain, Image, MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
@@ -13,6 +14,9 @@ from core.elements.message.chain import MessageChain
 from core.elements.message.internal import Embed
 from core.logger import Logger
 from database import BotDBUtil
+
+
+enable_analytics = Config('enable_analytics')
 
 
 async def convert_embed(embed: Embed):
@@ -190,6 +194,8 @@ class FetchTarget(FT):
                 try:
                     send = await x.sendDirectMessage(message)
                     send_list.append(send)
+                    if enable_analytics:
+                        BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
@@ -200,6 +206,8 @@ class FetchTarget(FT):
                     try:
                         send = await fetch.sendDirectMessage(message)
                         send_list.append(send)
+                        if enable_analytics:
+                            BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
         return send_list

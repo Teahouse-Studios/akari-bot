@@ -10,6 +10,7 @@ import psutil
 import ujson as json
 from cpuinfo import get_cpu_info
 
+from config import Config
 from core.component import on_command
 from core.builtins.message import MessageSession
 from core.elements import Command, PrivateAssets, Image, Plain, ExecutionLockList
@@ -468,6 +469,18 @@ async def _(msg: MessageSession):
     await msg.finish(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
                           disable_secret_check=True)
 
+
+ana = on_command('analytics', required_superuser=True)
+
+
+@ana.handle()
+async def _(msg: MessageSession):
+    if Config('enable_analytics'):
+        first_record = BotDBUtil.Analytics.get_first()
+        get_counts = BotDBUtil.Analytics.get_count()
+        await msg.finish(f'机器人已执行命令次数（自{str(first_record.timestamp)}开始统计）：{get_counts}')
+    else:
+        await msg.finish('机器人未开启命令统计功能。')
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
 
