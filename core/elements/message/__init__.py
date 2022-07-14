@@ -140,7 +140,7 @@ class MessageSession:
         :param msgchain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
         :param delete: 是否在触发后删除消息
-        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
+        :return: 下一条消息的MessageChain对象
         """
         ...
 
@@ -149,7 +149,7 @@ class MessageSession:
         一次性模板，用于等待触发对象回复消息。
         :param msgchain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
-        :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
+        :return: 回复消息的MessageChain对象
         """
         ...
 
@@ -158,7 +158,7 @@ class MessageSession:
         一次性模板，用于等待触发发送者所属对象内所有成员确认。
         :param msgchain: 需要发送的确认消息，可不填
         :param delete: 是否在触发后删除消息
-        :return: 任意人的一条文本消息。
+        :return: 任意人的MessageChain对象
         """
         ...
 
