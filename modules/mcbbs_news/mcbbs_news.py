@@ -31,7 +31,7 @@ async def get_news():
         td = x.find_all("td")
         try:
             author = td[1].cite.a.string
-        except:
+        except Exception:
             author = td[1].cite.string
         authors.append(author)
 
@@ -45,7 +45,7 @@ async def get_news():
         em = x.find_all("em")
         try:
             time = em[1].span.span.string
-        except:
+        except Exception:
             time = em[1].span.string
         publish_time.append(time)
 
