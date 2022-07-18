@@ -451,7 +451,7 @@ async def search_pages(session: MessageSession, title: Union[str, list, tuple], 
 
 async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
-                      template=False, mediawiki=False, use_prefix=True, inline_mode=False):
+                      template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
     if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
@@ -537,6 +537,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
     render_infobox_list = []
     render_section_list = []
     dl_list = []
+    if preset_message is not None:
+        msg_list.append(Plain(preset_message))
     for q in query_task:
         current_task = query_task[q]
         ready_for_query_pages = current_task['query'] if 'query' in current_task else []
@@ -604,7 +606,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
-                        wait_list.append(display_title)
+                        wait_list.append({display_title: display_before_title})
                     elif r.before_title is not None:
                         plain_slice.append(f'提示：找不到[{display_before_title}]。')
                     elif r.id != -1:
@@ -673,8 +675,14 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             await session.finish(Voice(dl), quote=False)
         if wait_msg_list and session.Feature.wait:
             confirm = await session.waitConfirm(wait_msg_list)
+            preset_message = []
+            wait_list_ = []
+            for w in wait_list:
+                for wd in w:
+                    preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
+                    wait_list_.append(wd)
             if confirm and wait_list:
-                await query_pages(session, wait_list, use_prefix=False)
+                await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message))
         else:
             await session.finish()
     else:
