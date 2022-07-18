@@ -75,7 +75,7 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
     for m in msg.enabled_modules:
         if m in modules:
             enabled_modules.append(m)
-    match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.5)
+    match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.6)
     if match_close_module:
         module = modules[match_close_module[0]]
         none_doc = True  # 检查模块绑定的命令是否有文档
