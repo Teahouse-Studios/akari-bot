@@ -3,21 +3,21 @@ import shlex
 import traceback
 from typing import Union
 
-from core.elements import Command, Schedule, StartUp, RegexCommand, command_prefix, MessageSession
+from core.elements import Command, Schedule, StartUp, RegexCommand, MessageSession
 from core.exceptions import InvalidCommandFormatError, InvalidHelpDocTypeError
 from core.utils.docopt import docopt, DocoptExit
 
-command_prefix_first = command_prefix[0]
-
 
 class CommandParser:
-    def __init__(self, args: Union[str, list, tuple, Command, Schedule, StartUp, RegexCommand], prefix=None,
+    def __init__(self, args: Union[str, list, tuple, Command, Schedule, StartUp, RegexCommand], command_prefixes: list,
+                 bind_prefix=None,
                  msg: MessageSession = None):
         """
         Format: https://github.com/jazzband/docopt-ng#usage-pattern-format
         * {} - Detail help information
         """
-        self.bind_prefix = prefix
+        self.command_prefixes = command_prefixes
+        self.bind_prefix = bind_prefix
         self.origin_template = args
         self.msg: Union[MessageSession, None] = msg
         self.options_desc = []
@@ -52,8 +52,8 @@ class CommandParser:
             for x in args:
                 split = x.split(' ')[0]
                 if self.bind_prefix is not None:
-                    if split not in [command_prefix_first + self.bind_prefix, self.bind_prefix]:
-                        x = f'{command_prefix_first}{self.bind_prefix} {x}'
+                    if split not in [command_prefixes[0] + self.bind_prefix, self.bind_prefix]:
+                        x = f'{command_prefixes[0]}{self.bind_prefix} {x}'
                 arglst_raw.append(x)
                 match_detail_help = re.match('(.*){.*}$', x, re.M | re.S)
                 if match_detail_help:
@@ -71,8 +71,8 @@ class CommandParser:
         if isinstance(args_raw, list):
             arglst = []
             for x in args_raw:
-                if x[0] not in command_prefix:
-                    x = command_prefix_first + x
+                if x[0] not in self.command_prefixes:
+                    x = self.command_prefixes[0] + x
                 match_detail_help = re.match('(.*){(.*)}$', x, re.M | re.S)
                 if match_detail_help:
                     x = f'{match_detail_help.group(1)}- {match_detail_help.group(2)}'
@@ -111,7 +111,7 @@ class CommandParser:
                         if match.help_doc is None:
                             continue
                         try:
-                            sub_args = CommandParser(match.help_doc, prefix=self.bind_prefix).args
+                            sub_args = CommandParser(match.help_doc, bind_prefix=self.bind_prefix, command_prefixes=self.command_prefixes).args
                             if sub_args is not None:
                                 get_parse = docopt(sub_args,
                                                    argvs=split_command[1:], default_help=False)

@@ -122,7 +122,7 @@ async def _(msg: MessageSession):
         else:
             img = False
         if img:
-            mt = f'使用~wiki iw get <Interwiki> 可以获取interwiki对应的链接。'
+            mt = f'使用{msg.prefixes[0]}wiki iw get <Interwiki> 可以获取interwiki对应的链接。'
             if base_interwiki_link is not None:
                 mt += base_interwiki_link_msg
             await msg.finish([Image(img), Plain(mt)])
@@ -370,10 +370,10 @@ async def search_pages(session: MessageSession, title: Union[str, list, tuple], 
     interwiki_list = target.get_interwikis()
     headers = target.get_headers()
     prefix = target.get_prefix()
-    enabled_fandom_addon = BotDBUtil.Options(session).get('wiki_fandom_addon')
+    enabled_fandom_addon = session.options.get('wiki_fandom_addon')
     if start_wiki is None:
-        await session.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
-                                  '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/')
+        await session.sendMessage(f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
+                                  f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if isinstance(title, str):
         title = [title]
@@ -458,7 +458,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         interwiki_list = target.get_interwikis()
         headers = target.get_headers()
         prefix = target.get_prefix()
-        enabled_fandom_addon = BotDBUtil.Options(session).get('wiki_fandom_addon')
+        enabled_fandom_addon = session.options.get('wiki_fandom_addon')
         if enabled_fandom_addon is None:
             enabled_fandom_addon = False
     elif isinstance(session, QueryInfo):
@@ -471,8 +471,9 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         raise TypeError('session must be MessageSession or QueryInfo.')
 
     if start_wiki is None:
-        await session.sendMessage('没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送~wiki set <域名>来设定自定义起始Wiki。'
-                                  '\n例子：~wiki set https://minecraft.fandom.com/zh/wiki/')
+        if isinstance(session, MessageSession):
+            await session.sendMessage(f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
+                                      f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if title is not None:
         if isinstance(title, str):

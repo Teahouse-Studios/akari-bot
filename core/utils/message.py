@@ -25,9 +25,9 @@ def removeIneffectiveText(prefix: str, lst: list) -> list:
                         del split_list[-1]
             for _ in split_list:
                 if len(split_list) > 0:
-                    spl0 = split_list[0][0]
-                    if spl0 in prefix and spl0 != '':
-                        split_list[0] = re.sub(r'^' + split_list[0][0], '', split_list[0])
+                    spl0 = split_list[0]
+                    if spl0.startswith(prefix) and spl0 != '':
+                        split_list[0] = re.sub(r'^' + prefix, '', split_list[0])
             list_cache.append(x.join(split_list))
         lst = list_cache
     duplicated_list = []  # 移除重复命令
@@ -86,4 +86,37 @@ def convertDiscordEmbed(embed: Union[DiscordEmbed, dict]) -> Embed:
     return embed_
 
 
-__all__ = ['removeDuplicateSpace', 'removeIneffectiveText', 'convertDiscordEmbed']
+def split_multi_arguments(lst: list):
+    new_lst = []
+    for x in lst:
+        spl = list(filter(None, re.split(r"(\(.*?\))", x)))
+        if len(spl) > 1:
+            for y in spl:
+                index_y = spl.index(y)
+                mat = re.match(r"\((.*?)\)", y)
+                if mat:
+                    spl1 = mat.group(1).split('|')
+                    for s in spl1:
+                        cspl = spl.copy()
+                        cspl.insert(index_y, s)
+                        del cspl[index_y + 1]
+                        new_lst.append(''.join(cspl))
+        else:
+            mat = re.match(r"\((.*?)\)", spl[0])
+            if mat:
+                spl1 = mat.group(1).split('|')
+                for s in spl1:
+                    new_lst.append(s)
+            else:
+                new_lst.append(spl[0])
+    split_more = False
+    for n in new_lst:
+        if re.match(r"\((.*?)\)", n):
+            split_more = True
+    if split_more:
+        return split_multi_arguments(new_lst)
+    else:
+        return list(set(new_lst))
+
+
+__all__ = ['removeDuplicateSpace', 'removeIneffectiveText', 'convertDiscordEmbed', "split_multi_arguments"]

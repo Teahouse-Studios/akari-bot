@@ -288,11 +288,12 @@ class BotDBUtil:
             session.commit()
 
         @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
         def get(self, k=None):
             query = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
-            if query is None:
+            if query is None and k is None:
                 return {}
+            elif query is None and k is not None:
+                return None
             value: dict = json.loads(query.options)
             if k is None:
                 return value

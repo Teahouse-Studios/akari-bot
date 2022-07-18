@@ -107,7 +107,7 @@ async def config_modules(msg: MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    hdoc = CommandParser(modules_[m], msg=msg).return_formatted_help_doc()
+                    hdoc = CommandParser(modules_[m], msg=msg, command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
                     if modules_[m].desc is not None:
                         recommend_modules_help_doc_list.append(modules_[m].desc)
@@ -190,7 +190,7 @@ async def bot_help(msg: MessageSession):
             module_ = module_list[help_name]
             if module_.desc is not None:
                 msgs.append(module_.desc)
-            help_ = CommandParser(module_list[help_name], msg=msg)
+            help_ = CommandParser(module_list[help_name], msg=msg, command_prefixes=msg.prefixes)
             if help_.args is not None:
                 msgs.append(help_.return_formatted_help_doc())
         if msgs:
@@ -231,7 +231,7 @@ async def _(msg: MessageSession):
             for x in module_list:
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, msg=msg)
+                help_ = CommandParser(module_, msg=msg, command_prefixes=msg.prefixes)
                 doc_ = []
                 if module_.desc is not None:
                     doc_.append(module_.desc)
@@ -258,7 +258,7 @@ async def _(msg: MessageSession):
                 if render:
                     legacy_help = False
                     await msg.finish([Image(render),
-                                           Plain('此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用~module list命令。'
+                                           Plain(f'此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用{msg.prefixes[0]}module list命令。'
                                                  '\n你也可以通过查阅文档获取帮助：'
                                                  '\nhttps://bot.teahouse.team/wiki/'
                                                  '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
@@ -280,7 +280,7 @@ async def _(msg: MessageSession):
         help_msg.append(' | '.join(module_))
         print(help_msg)
         help_msg.append(
-            '使用~help <对应模块名>查看详细信息。\n使用~module list查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
+            f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
             help_msg.append('[本消息将在一分钟后撤回]')
         send = await msg.sendMessage('\n'.join(help_msg))
@@ -303,7 +303,7 @@ async def modules_help(msg: MessageSession):
                 if isinstance(module_, Command) and (module_.base or module_.required_superuser):
                     continue
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_)
+                help_ = CommandParser(module_, command_prefixes=msg.prefixes)
                 doc_ = []
                 if module_.desc is not None:
                     doc_.append(module_.desc)
@@ -344,6 +344,73 @@ async def modules_help(msg: MessageSession):
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()
+
+
+p = on_command('prefix', required_admin=True, base=True)
+
+
+@p.handle('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}', 'reset {重置自定义机器人命令前缀}')
+async def set_prefix(msg: MessageSession):
+    options = BotDBUtil.Options(msg)
+    prefixes = options.get('command_prefix')
+    arg1 = msg.parsed_msg['<prefix>']
+    if prefixes is None:
+        prefixes = []
+    if msg.parsed_msg['add']:
+        if arg1 not in prefixes:
+            prefixes.append(arg1)
+            options.edit('command_prefix', prefixes)
+            await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
+        else:
+            await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
+    elif msg.parsed_msg['remove']:
+        if arg1 in prefixes:
+            prefixes.remove(arg1)
+            options.edit('command_prefix', prefixes)
+            await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
+        else:
+            await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
+    elif msg.parsed_msg['reset']:
+        options.edit('command_prefix', [])
+        await msg.sendMessage('已重置自定义命令前缀列表。')
+
+
+ali = on_command('alias', required_admin=True, base=True)
+
+
+@ali.handle('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}', 'reset {重置自定义命令别名}')
+async def set_alias(msg: MessageSession):
+    options = BotDBUtil.Options(msg)
+    alias = options.get('command_alias')
+    arg1 = msg.parsed_msg['<alias>']
+    arg2 = msg.parsed_msg['<command>']
+    if alias is None:
+        alias = {}
+    if msg.parsed_msg['add']:
+        if arg1 not in alias:
+            has_prefix = False
+            for prefixes in msg.prefixes:
+                if arg2.startswith(prefixes):
+                    has_prefix = True
+                    break
+            if not has_prefix:
+                await msg.sendMessage(f'添加的别名对应的命令必须以命令前缀开头，请检查。')
+                return
+            alias[arg1] = arg2
+            options.edit('command_alias', alias)
+            await msg.sendMessage(f'已添加自定义命令别名：{arg1} -> {arg2}')
+        else:
+            await msg.sendMessage(f'[{arg1}]别名已存在于自定义别名列表。')
+    elif msg.parsed_msg['remove']:
+        if arg1 in alias:
+            del alias[arg1]
+            options.edit('command_alias', alias)
+            await msg.sendMessage(f'已移除自定义命令别名：{arg1}')
+        else:
+            await msg.sendMessage(f'[{arg1}]别名不存在于自定义别名列表。')
+    elif msg.parsed_msg['reset']:
+        options.edit('command_alias', {})
+        await msg.sendMessage('已重置自定义命令别名列表。')
 
 
 version = on_command('version',
@@ -642,6 +709,18 @@ async def _(msg: MessageSession):
     else:
         target.edit('disable_typing', False)
         await msg.finish('成功打开输入提示。')
+
+
+@tog.handle('check {切换是否展示命令错字检查提示}')
+async def _(msg: MessageSession):
+    options = BotDBUtil.Options(msg)
+    state = options.get('typo_check')
+    if state is None:
+        state = False
+    else:
+        state = not state
+    BotDBUtil.Options(msg).edit('typo_check', state)
+    await msg.finish(f'成功{"打开" if state else "关闭"}错字检查提示。')
 
 
 mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True, 

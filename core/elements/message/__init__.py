@@ -76,7 +76,7 @@ class MessageSession:
     """
     消息会话，囊括了处理一条消息所需要的东西。
     """
-    __slots__ = ("target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent")
+    __slots__ = ("target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options", "enabled_modules")
 
     def __init__(self,
                  target: MsgInfo,
@@ -84,6 +84,9 @@ class MessageSession:
         self.target = target
         self.session = session
         self.sent: List[MessageChain] = []
+        self.prefixes: List[str] = []
+        self.options: dict = {}
+        self.enabled_modules: List[str] = []
 
     async def sendMessage(self,
                           msgchain,
