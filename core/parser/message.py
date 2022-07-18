@@ -83,7 +83,7 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
             if func.help_doc is not None:
                 none_doc = False
         len_command_split = len(command_split)
-        if not none_doc:
+        if not none_doc and len_command_split > 1:
             get_submodules = module.match_list.get(msg.target.targetFrom)
             docs = {}  # 根据命令模板的空格数排序命令
             for func in get_submodules:
@@ -105,15 +105,12 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
                             if len_without_options not in docs:
                                 docs[len_without_options] = []
                             docs[len_without_options].append(' '.join(without_options))
-            print(docs)
             if len_command_split - 1 > len(docs):  # 如果空格数远大于命令模板的空格数
                 select_docs = docs[max(docs)]
             else:
                 select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
-            print(select_docs)
             match_close_command: list = difflib.get_close_matches(' '.join(command_split[1:]), select_docs,
                                                                   1, 0.3)  # 进一步匹配命令
-            print(match_close_command)
             if match_close_command:
                 match_split = match_close_command[0]
                 m_split_options = filter(None, re.split(r'(\[.*?])', match_split))  # 切割可选参数
@@ -155,31 +152,37 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
                                         del old_command_split[0]
                             else:
                                 new_command_split.append(mm)
-                wait_confirm = await msg.waitConfirm(
-                    f'您是否想要输入{display_prefix}{" ".join(new_command_split)}？')
-                if wait_confirm:
-                    command_split = new_command_split
-                    command_first_word = new_command_split[0]
-                    msg.trigger_msg = ' '.join(new_command_split)
-                    return msg, command_first_word, command_split
+                new_command_display = " ".join(new_command_split)
+                if new_command_display != msg.trigger_msg:
+                    wait_confirm = await msg.waitConfirm(
+                        f'您是否想要输入{display_prefix}{new_command_display}？')
+                    if wait_confirm:
+                        command_split = new_command_split
+                        command_first_word = new_command_split[0]
+                        msg.trigger_msg = ' '.join(new_command_split)
+                        return msg, command_first_word, command_split
             else:
                 if len_command_split - 1 == 1:
-                    wait_confirm = await msg.waitConfirm(
-                        f'您是否想要输入{display_prefix}{match_close_module[0]} {" ".join(command_split[1:])}？')
-                    if wait_confirm:
-                        command_split = [match_close_module[0]] + command_split[1:]
-                        command_first_word = match_close_module[0]
-                        msg.trigger_msg = ' '.join(command_split)
-                        return msg, command_first_word, command_split
+                    new_command_display = f'{match_close_module[0]} {" ".join(command_split[1:])}'
+                    if new_command_display != msg.trigger_msg:
+                        wait_confirm = await msg.waitConfirm(
+                            f'您是否想要输入{display_prefix}{new_command_display}？')
+                        if wait_confirm:
+                            command_split = [match_close_module[0]] + command_split[1:]
+                            command_first_word = match_close_module[0]
+                            msg.trigger_msg = ' '.join(command_split)
+                            return msg, command_first_word, command_split
 
         else:
-            wait_confirm = await msg.waitConfirm(
-                f'您是否想要输入{display_prefix}{match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}？')
-            if wait_confirm:
-                command_split = [match_close_module[0]]
-                command_first_word = match_close_module[0]
-                msg.trigger_msg = ' '.join(command_split)
-                return msg, command_first_word, command_split
+            new_command_display = f'{match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}'
+            if new_command_display != msg.trigger_msg:
+                wait_confirm = await msg.waitConfirm(
+                    f'您是否想要输入{display_prefix}{new_command_display}？')
+                if wait_confirm:
+                    command_split = [match_close_module[0]]
+                    command_first_word = match_close_module[0]
+                    msg.trigger_msg = ' '.join(command_split)
+                    return msg, command_first_word, command_split
     return None, None, None
 
 
