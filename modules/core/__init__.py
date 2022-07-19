@@ -4,9 +4,10 @@ import platform
 import sys
 import time
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import psutil
+import matplotlib.pyplot as plt
 import ujson as json
 from cpuinfo import get_cpu_info
 
@@ -19,6 +20,7 @@ from core.parser.command import CommandParser, InvalidHelpDocTypeError
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.image_table import ImageTable, image_table_render, web_render
+from core.utils.cache import random_cache_path
 from database import BotDBUtil
 
 module = on_command('module',
@@ -107,7 +109,8 @@ async def config_modules(msg: MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    hdoc = CommandParser(modules_[m], msg=msg, command_prefixes=msg.prefixes).return_formatted_help_doc()
+                    hdoc = CommandParser(modules_[m], msg=msg,
+                                         command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
                     if modules_[m].desc is not None:
                         recommend_modules_help_doc_list.append(modules_[m].desc)
@@ -258,11 +261,11 @@ async def _(msg: MessageSession):
                 if render:
                     legacy_help = False
                     await msg.finish([Image(render),
-                                           Plain(f'此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用{msg.prefixes[0]}module list命令。'
-                                                 '\n你也可以通过查阅文档获取帮助：'
-                                                 '\nhttps://bot.teahouse.team/wiki/'
-                                                 '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
-                                                 '\nhttps://afdian.net/@teahouse')])
+                                      Plain(f'此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用{msg.prefixes[0]}module list命令。'
+                                            '\n你也可以通过查阅文档获取帮助：'
+                                            '\nhttps://bot.teahouse.team/wiki/'
+                                            '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
+                                            '\nhttps://afdian.net/@teahouse')])
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -437,7 +440,6 @@ ping = on_command('ping',
                   developers=['OasisAkari']
                   )
 
-
 started_time = datetime.now()
 
 
@@ -534,7 +536,7 @@ async def _(msg: MessageSession):
     if msg.checkSuperUser():
         rights += '\n（你拥有本机器人的超级用户权限）'
     await msg.finish(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
-                          disable_secret_check=True)
+                     disable_secret_check=True)
 
 
 ana = on_command('analytics', required_superuser=True)
@@ -548,6 +550,31 @@ async def _(msg: MessageSession):
         await msg.finish(f'机器人已执行命令次数（自{str(first_record.timestamp)}开始统计）：{get_counts}')
     else:
         await msg.finish('机器人未开启命令统计功能。')
+
+
+@ana.handle('days')
+async def _(msg: MessageSession):
+    if Config('enable_analytics'):
+        get_ = BotDBUtil.Analytics.get_data_by_times(datetime.now(), datetime.now() - timedelta(days=30))
+        data_ = {}
+        for x in get_:
+            if x.timestamp.day not in data_:
+                data_[x.timestamp.day] = []
+            data_[x.timestamp.day].append(x)
+        data_x = []
+        data_y = []
+        for x in data_:
+            data_x.append(x)
+            data_y.append(len(data_[x]))
+        plt.plot(data_x, data_y)
+        plt.xlabel('Day')
+        plt.ylabel('Counts')
+        plt.gca().xaxis.get_major_locator().set_params(integer=True)
+        plt.gca().yaxis.get_major_locator().set_params(integer=True)
+        path = random_cache_path() + '.png'
+        plt.savefig(path)
+        await msg.finish([Plain('最近30天的命令调用次数统计：'), Image(path)])
+
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
 
@@ -723,8 +750,8 @@ async def _(msg: MessageSession):
     await msg.finish(f'成功{"打开" if state else "关闭"}错字检查提示。')
 
 
-mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True, 
-                   desc='使机器人停止发言。')
+mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True,
+                  desc='使机器人停止发言。')
 
 
 @mute.handle()
