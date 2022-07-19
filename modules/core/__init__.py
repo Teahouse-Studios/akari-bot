@@ -7,6 +7,7 @@ import traceback
 from datetime import datetime, timedelta
 
 import psutil
+import numpy as np
 import matplotlib.pyplot as plt
 import ujson as json
 from cpuinfo import get_cpu_info
@@ -566,11 +567,14 @@ async def _(msg: MessageSession):
         for x in data_:
             data_x.append(x)
             data_y.append(len(data_[x]))
-        plt.plot(data_x, data_y)
-        plt.xlabel('Day')
+        plt.plot(data_x, data_y, "-o")
+        plt.plot(data_x[-1], data_y[-1], "-ro")
+        plt.xlabel('Days')
         plt.ylabel('Counts')
         plt.gca().xaxis.get_major_locator().set_params(integer=True)
         plt.gca().yaxis.get_major_locator().set_params(integer=True)
+        for xitem, yitem in np.nditer([data_x, data_y]):
+            plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
         path = random_cache_path() + '.png'
         plt.savefig(path)
         await msg.finish([Plain('最近30天的命令调用次数统计：'), Image(path)])
