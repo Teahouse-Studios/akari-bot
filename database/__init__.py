@@ -322,9 +322,11 @@ class BotDBUtil:
             return session.query(AnalyticsData).filter_by(id=1).first()
 
         @staticmethod
-        def get_data_by_times(new, old):
-            return session.query(AnalyticsData).filter(AnalyticsData.timestamp <= new,
-                                                       AnalyticsData.timestamp >= old).all()
+        def get_data_by_times(new, old, module_name=None):
+            filter_ = [AnalyticsData.timestamp <= new, AnalyticsData.timestamp >= old]
+            if module_name is not None:
+                filter_.append(AnalyticsData.moduleName == module_name)
+            return session.query(AnalyticsData).filter(*filter_).all()
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

@@ -553,11 +553,14 @@ async def _(msg: MessageSession):
         await msg.finish('机器人未开启命令统计功能。')
 
 
-@ana.handle('days')
+@ana.handle('days [<name>]')
 async def _(msg: MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
-        get_ = BotDBUtil.Analytics.get_data_by_times(datetime.now(), datetime.now() - timedelta(days=30))
+        module_ = None
+        if msg.parsed_msg['<name>']:
+            module_ = msg.parsed_msg['<name>']
+        get_ = BotDBUtil.Analytics.get_data_by_times(datetime.now(), datetime.now() - timedelta(days=30), module_)
         data_ = {}
         for x in get_:
             if x.timestamp.day not in data_:
@@ -579,7 +582,7 @@ async def _(msg: MessageSession):
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish([Plain(f'最近30天的命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'), Image(path)])
+        await msg.finish([Plain(f'最近30天的{module_ if module_ is not None else ""}命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'), Image(path)])
 
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
