@@ -556,6 +556,7 @@ async def _(msg: MessageSession):
 @ana.handle('days')
 async def _(msg: MessageSession):
     if Config('enable_analytics'):
+        first_record = BotDBUtil.Analytics.get_first()
         get_ = BotDBUtil.Analytics.get_data_by_times(datetime.now(), datetime.now() - timedelta(days=30))
         data_ = {}
         for x in get_:
@@ -577,7 +578,7 @@ async def _(msg: MessageSession):
             plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
         path = random_cache_path() + '.png'
         plt.savefig(path)
-        await msg.finish([Plain('最近30天的命令调用次数统计：'), Image(path)])
+        await msg.finish([Plain(f'最近30天的命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'), Image(path)])
 
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
