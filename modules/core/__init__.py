@@ -578,6 +578,7 @@ async def _(msg: MessageSession):
             plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
         path = random_cache_path() + '.png'
         plt.savefig(path)
+        plt.close()
         await msg.finish([Plain(f'最近30天的命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'), Image(path)])
 
 
