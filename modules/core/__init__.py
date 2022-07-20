@@ -569,13 +569,12 @@ async def _(msg: MessageSession):
         data_x = []
         data_y = []
         for x in data_:
-            data_x.append(x)
+            data_x.append(str(x))
             data_y.append(len(data_[x]))
         plt.plot(data_x, data_y, "-o")
         plt.plot(data_x[-1], data_y[-1], "-ro")
         plt.xlabel('Days')
         plt.ylabel('Counts')
-        plt.gca().xaxis.get_major_locator().set_params(integer=True)
         plt.gca().yaxis.get_major_locator().set_params(integer=True)
         for xitem, yitem in np.nditer([data_x, data_y]):
             plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
