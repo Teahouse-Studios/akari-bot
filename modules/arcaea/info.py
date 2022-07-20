@@ -41,7 +41,7 @@ async def get_info(usercode):
         imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
         if not os.path.exists(imgpath):
             imgpath = f'{assets_path}/jacket/{recent["song_id"]}.jpg'
-        realptt = songinfo['rating']
+        realptt = songinfo['rating'] / 10
         ptt = recent['rating']
         score = recent['score']
         shiny_pure = recent['shiny_perfect_count']
@@ -49,7 +49,11 @@ async def get_info(usercode):
         far = recent['near_count']
         lost = recent['miss_count']
         username = get_['content']['account_info']['name']
-        usrptt = int(get_['content']['account_info']['rating']) / 100
+        usrptt = int(get_['content']['account_info']['rating'])
+        if usrptt == -1:
+            usrptt = '--'
+        else:
+            usrptt = usrptt / 100
         time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
         result = [Plain(f'{username} (Ptt: {usrptt})的最近游玩记录：\n'
                         f'{trackname} ({difficulty})\n'

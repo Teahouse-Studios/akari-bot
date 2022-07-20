@@ -1,4 +1,5 @@
 import os
+import os
 import random
 import traceback
 import uuid
@@ -60,24 +61,24 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
         b30img.alpha_composite(makeShadow(cardoverlay.convert("RGBA"), 2, 3, [3, 3], 'rgba(0,0,0,0)', '#000000'),
                                (b30img.width - 500, 68))
     # ptt
-    if ptt >= 13.00:
-        pttimg = 7
-    elif ptt >= 12.50:
-        pttimg = 6
-    elif ptt >= 12.00:
-        pttimg = 5
-    elif ptt >= 11.00:
-        pttimg = 4
-    elif ptt >= 10.00:
-        pttimg = 3
-    elif ptt >= 7.00:
-        pttimg = 2
-    elif ptt >= 3.50:
-        pttimg = 1
-    elif ptt >= 0:
-        pttimg = 0
-    else:
-        pttimg = 'off'
+    pttimg = None
+    if ptt is not None:
+        if ptt >= 13.00:
+            pttimg = 7
+        elif ptt >= 12.50:
+            pttimg = 6
+        elif ptt >= 12.00:
+            pttimg = 5
+        elif ptt >= 11.00:
+            pttimg = 4
+        elif ptt >= 10.00:
+            pttimg = 3
+        elif ptt >= 7.00:
+            pttimg = 2
+        elif ptt >= 3.50:
+            pttimg = 1
+        elif ptt >= 0:
+            pttimg = 0
     pttimg = Image.open(f'{assets_path}/ptt/rating_{str(pttimg)}.png')
     pttimg = pttimg.resize((75, 75))
     if not official:
@@ -87,11 +88,15 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     ptttext = Image.new("RGBA", (200, 200))
     font1 = ImageFont.truetype(f'{assets_path}/Fonts/Exo-SemiBold.ttf', 30)
     font2 = ImageFont.truetype(f'{assets_path}/Fonts/Exo-SemiBold.ttf', 21)
-    rawptt = str(ptt).split('.')
-    ptt1 = rawptt[0]
-    ptt2 = rawptt[1]
-    if len(ptt2) < 2:
-        ptt2 += '0'
+    if ptt is not None:
+        rawptt = str(ptt).split('.')
+        ptt1 = rawptt[0]
+        ptt2 = rawptt[1]
+        if len(ptt2) < 2:
+            ptt2 += '0'
+    else:
+        ptt1 = '0'
+        ptt2 = '00'
     ptttext_width, ptttext_height = ptttext.size
     font1_width, font1_height = font1.getsize(ptt1 + '.')
     font2_width, font2_height = font2.getsize(ptt2)

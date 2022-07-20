@@ -28,13 +28,17 @@ async def getb30_official(usercode):
         return {'text': f'获取失败。'}
     getuserinfo = getuserinfo_json['data']
     username = getuserinfo['display_name']
-    potential = getuserinfo['potential'] / 100
+    potential = getuserinfo['potential']
+    if potential is not None:
+        potential = int(potential) / 100
+    else:
+        potential = '--'
     getb30 = getb30_json['data']
     b30potential = []
     for x in getb30:
         b30potential.append(x['potential_value'])
     b30_avg = round(sum(b30potential) / len(b30potential), 4)
-    r10_avg = round((potential * 40 - b30_avg * 30) / 10, 4)
+    r10_avg = round((potential * 40 - b30_avg * 30) / 10, 4) if potential is not None else '???'
     songsinfo = {}
     getinfos = []
     for x in getb30:

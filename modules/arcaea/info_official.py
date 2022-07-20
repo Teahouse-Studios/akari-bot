@@ -35,7 +35,11 @@ async def get_info_official(usercode):
         return {'success': False, 'msg': '查询失败。'}
     getuserinfo = getuserinfo_json['data']
     username = getuserinfo['display_name']
-    potential = getuserinfo['potential'] / 100
+    potential = getuserinfo['potential']
+    if potential is not None:
+        potential = int(potential) / 100
+    else:
+        potential = '--'
     recent = getuserinfo["last_played_song"]
     if recent is None:
         return [Plain('此用户无游玩记录。')]
