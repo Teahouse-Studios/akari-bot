@@ -18,7 +18,7 @@ async def uuid_to_skin_and_cape(uuid):
     render = await download_to_cache(
         'https://crafatar.com/renders/body/' + uuid + '?overlay')
     skin = await download_to_cache(
-        'https://crafatar.com/skin/' + uuid)
+        'https://crafatar.com/skins/' + uuid)
     is_cape = True
     try:
         await get_url('https://crafatar.com/capes/' + uuid, status_code=200)
