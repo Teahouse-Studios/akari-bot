@@ -25,10 +25,11 @@ async def main(msg: MessageSession):
             name = arg
             uuid = await name_to_uuid(arg)
         sac = await uuid_to_skin_and_cape(uuid)
+        render = sac['render']
         skin = sac['skin']
         cape = sac['cape']
         namemc = 'https://namemc.com/profile/' + name
-        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(skin)]
+        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(render), Image(skin)]
         if cape:
             chain.append(Image(cape))
     except ValueError:
