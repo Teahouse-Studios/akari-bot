@@ -70,7 +70,7 @@ async def temp_ban_check(msg: MessageSession):
                 raise AbuseWarning('无视临时封禁警告')
 
 
-async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word,  command_split):
+async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
     enabled_modules = []
     for m in msg.enabled_modules:
         if m in modules:
@@ -277,10 +277,11 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                 if command_first_word not in modules:
                     if msg.options.get('typo_check', True):  # 判断是否开启错字检查
-                        nmsg, command_first_word, command_split = await typo_check(msg, display_prefix, modules, command_first_word, command_split)
+                        nmsg, command_first_word, command_split = await typo_check(msg, display_prefix, modules,
+                                                                                   command_first_word, command_split)
                         if nmsg is None:
                             return ExecutionLockList.remove(msg)
-                        nmsg = msg
+                        msg = nmsg
 
                 sudo = False
                 mute = False
@@ -362,10 +363,11 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     except InvalidCommandFormatError:
                                         await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
                                         if msg.options.get('typo_check', True):  # 判断是否开启错字检查
-                                            nmsg, command_first_word, command_split = await typo_check(msg, display_prefix,
-                                                                                                      modules,
-                                                                                                      command_first_word,
-                                                                                                      command_split)
+                                            nmsg, command_first_word, command_split = await typo_check(msg,
+                                                                                                       display_prefix,
+                                                                                                       modules,
+                                                                                                       command_first_word,
+                                                                                                       command_split)
                                             if nmsg is None:
                                                 return ExecutionLockList.remove(msg)
                                             msg = nmsg
@@ -375,6 +377,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     Logger.error(traceback.format_exc())
                                     await msg.sendMessage(ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
                                     return
+
                             await execute_submodule(msg, command_first_word, command_split)
                         else:  # 如果没有，直接传入下游模块
                             msg.parsed_msg = None
@@ -437,6 +440,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 matched = True
 
                         if matched:  # 如果匹配成功
+                            Logger.info(
+                                f'{identify_str} -> [Bot]: {display}')
                             if regex_module.required_superuser:
                                 if not msg.checkSuperUser():
                                     continue
