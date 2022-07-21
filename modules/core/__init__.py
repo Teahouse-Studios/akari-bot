@@ -486,21 +486,25 @@ async def _(msg: MessageSession):
 admin = on_command('admin',
                    base=True,
                    required_admin=True,
-                   developers=['OasisAkari']
+                   developers=['OasisAkari'],
+                   desc='用于设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。'
                    )
 
 
 @admin.handle(['add <UserID> {设置成员为机器人管理员}', 'del <UserID> {取消成员的机器人管理员}'])
 async def config_gu(msg: MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
     if msg.parsed_msg['add']:
-        user = msg.parsed_msg['<UserID>']
-        if user and not BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").check_TargetAdmin(msg.target.targetId):
-            if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").add_TargetAdmin(msg.target.targetId):
+        if user and not BotDBUtil.SenderInfo(user).check_TargetAdmin(msg.target.targetId):
+            if BotDBUtil.SenderInfo(user).add_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")
+        else:
+            await msg.finish("此成员已经是机器人管理员。")
     if msg.parsed_msg['del']:
-        user = msg.parsed_msg['<UserID>']
         if user:
-            if BotDBUtil.SenderInfo(f"{msg.target.senderFrom}|{user}").remove_TargetAdmin(msg.target.targetId):
+            if BotDBUtil.SenderInfo(user).remove_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")
 
 
