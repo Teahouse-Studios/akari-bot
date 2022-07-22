@@ -8,7 +8,7 @@ from typing import Union
 import traceback
 import socket
 import re
-import urllib
+import urllib.parse
 
 
 def private_ip_check(hostname: str) -> bool:
@@ -20,7 +20,7 @@ def private_ip_check(hostname: str) -> bool:
     private_ips = re.compile(
         r'^(?:127\.|0?10\.|172\.0?1[6-9]\.|172\.0?2[0-9]\.172\.0?3[01]\.|192\.168\.|169\.254\.|::1|[fF][cCdD][0-9a-fA-F]{2}:|[fF][eE][89aAbB][0-9a-fA-F]:)')
     addr = addr_info[0][4][0]
-    return private_ips.match(addr)
+    return True if private_ips.match(addr) else False
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
@@ -77,10 +77,10 @@ async def post_url(url: str, data: any, headers: dict = None):
 
 
 @ retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def download_to_cache(link: str) -> Union[str, bool]:
+async def download_to_cache(url: str) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
 
-    :param link: 需要获取的link。
+    :param url: 需要获取的url。
     :returns: 文件的相对路径，若获取失败则返回False。'''
     hostname = urllib.parse.urlparse(url).hostname
     check = private_ip_check(hostname)
@@ -90,7 +90,7 @@ async def download_to_cache(link: str) -> Union[str, bool]:
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(link) as resp:
+            async with session.get(url) as resp:
                 res = await resp.read()
                 ftt = ft.match(res).extension
                 path = f'{random_cache_path()}.{ftt}'
