@@ -526,7 +526,7 @@ class WikiLib:
                                 query_wiki_info = query_wiki.wiki_info
                                 q_articlepath = query_wiki_info.articlepath.replace('$1', '(.*)')
                                 get_title = re.sub(r'' + q_articlepath, '\\1', langlinks_[lang])
-                                query_langlinks = await query_wiki.parse_page_info(get_title)
+                                query_langlinks = await query_wiki.parse_page_info(urllib.parse.unquote(get_title))
                             if 'WikibaseClient' in self.wiki_info.extensions and not query_langlinks:
                                 title = (await self.parse_page_info(title)).title
                                 qc_string = {'action': 'query', 'meta': 'wikibase', 'wbprop': 'url|siteid'}
