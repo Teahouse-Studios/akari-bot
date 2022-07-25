@@ -79,8 +79,6 @@ async def fetch_daily_trials(gametag: str, xbox_token: str):
                 return False
 
 
-
-
 async def fetch_device_token():
     data = {
         'RelyingParty': 'http://auth.xboxlive.com',
