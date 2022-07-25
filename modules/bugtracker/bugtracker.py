@@ -6,14 +6,14 @@ from core.utils import get_url
 
 async def bugtracker_get(mojiraId: str):
     data = {}
-    ID = mojiraId.upper()
-    json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + ID
+    id_ = mojiraId.upper()
+    json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
     get_json = await get_url(json_url)
     get_spx = await get_url('https://bugs.guangyaostore.com/translations')
     if get_spx:
         spx = json.loads(get_spx)
-        if ID in spx:
-            data["translation"] = spx[ID]
+        if id_ in spx:
+            data["translation"] = spx[id_]
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''
@@ -47,7 +47,7 @@ async def bugtracker_get(mojiraId: str):
                     else:
                         data['version'] = "Versions: " + \
                             verlist[0] + " ~ " + verlist[-1]
-                data["link"] = 'https://bugs.mojang.com/browse/' + ID
+                data["link"] = 'https://bugs.mojang.com/browse/' + id_
                 if 'customfield_12200' in fields:
                     if fields['customfield_12200']:
                         data["priority"] = "Mojang Priority: " + \
