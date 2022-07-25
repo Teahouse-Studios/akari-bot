@@ -328,5 +328,12 @@ class BotDBUtil:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).all()
 
+        @staticmethod
+        def get_count_by_times(new, old, module_name=None):
+            filter_ = [AnalyticsData.timestamp <= new, AnalyticsData.timestamp >= old]
+            if module_name is not None:
+                filter_.append(AnalyticsData.moduleName == module_name)
+            return session.query(AnalyticsData).filter(*filter_).count()
+
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

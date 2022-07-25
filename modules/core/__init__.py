@@ -556,7 +556,6 @@ async def _(msg: MessageSession):
     else:
         await msg.finish('机器人未开启命令统计功能。')
 
-
 @ana.handle('days [<name>]')
 async def _(msg: MessageSession):
     if Config('enable_analytics'):
@@ -564,28 +563,35 @@ async def _(msg: MessageSession):
         module_ = None
         if msg.parsed_msg['<name>']:
             module_ = msg.parsed_msg['<name>']
-        get_ = BotDBUtil.Analytics.get_data_by_times(datetime.now(), datetime.now() - timedelta(days=30), module_)
         data_ = {}
-        for x in get_:
-            if x.timestamp.day not in data_:
-                data_[x.timestamp.day] = []
-            data_[x.timestamp.day].append(x)
+        for d in range(30):
+            new = datetime.now() - timedelta(days=30 - d - 1)
+            old = datetime.now() - timedelta(days=30 - d)
+            print(old.day)
+            get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
+            print(get_)
+            data_[new.day] = get_
         data_x = []
         data_y = []
         for x in data_:
             data_x.append(str(x))
-            data_y.append(len(data_[x]))
+            data_y.append(data_[x])
+        print(data_y)
         plt.plot(data_x, data_y, "-o")
         plt.plot(data_x[-1], data_y[-1], "-ro")
         plt.xlabel('Days')
         plt.ylabel('Counts')
+        plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
+
         plt.gca().yaxis.get_major_locator().set_params(integer=True)
         for xitem, yitem in np.nditer([data_x, data_y]):
             plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish([Plain(f'最近30天的{module_ if module_ is not None else ""}命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'), Image(path)])
+        await msg.finish(
+            [Plain(f'最近30天的{module_ if module_ is not None else ""}命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'),
+             Image(path)])
 
 
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
