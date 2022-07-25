@@ -4,25 +4,16 @@ from core.elements import Url, ErrorMessage
 from core.utils import get_url
 
 
-async def bugtracker_get(MojiraID):
-    Title = False
-    Type = False
-    TStatus = False
-    Project = False
-    Resolution = False
-    Priority = False
-    Version = False
-    Link = False
-    FixVersion = False
-    Translation = False
-    ID = str.upper(MojiraID)
+async def bugtracker_get(mojiraId: str):
+    data = {}
+    ID = mojiraId.upper()
     json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + ID
     get_json = await get_url(json_url)
     get_spx = await get_url('https://bugs.guangyaostore.com/translations')
     if get_spx:
         spx = json.loads(get_spx)
         if ID in spx:
-            Translation = spx[ID]
+            data["translation"] = spx[ID]
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''
@@ -31,79 +22,74 @@ async def bugtracker_get(MojiraID):
                 errmsg += '\n' + msg
         else:
             if 'key' in load_json:
-                Title = f'[{load_json["key"]}] '
+                data["title"] = f'[{load_json["key"]}] '
             if 'fields' in load_json:
                 fields = load_json['fields']
                 if 'summary' in fields:
-                    if Translation:
-                        Title = Title + \
-                            fields['summary'] + \
-                            f' ({Translation})' if Translation else ''
-                    else:
-                        Title = Title + fields['summary']
+                    data["title"] = data["title"] + \
+                        fields['summary'] + (
+                        f' ({data["translation"]})' if data.get("translation", False) else '')
                 if 'issuetype' in fields:
-                    Type = fields['issuetype']['name']
+                    data["type"] = fields['issuetype']['name']
                 if 'status' in fields:
-                    TStatus = fields['status']['name']
+                    data["status"] = fields['status']['name']
                 if 'project' in fields:
-                    Project = fields['project']['name']
+                    data["project"] = fields['project']['name']
                 if 'resolution' in fields:
-                    if fields['resolution'] is not None:
-                        Resolution = fields['resolution']['name']
-                    else:
-                        Resolution = 'Unresolved'
+                    data["resolution"] = fields['resolution']['name'] if fields['resolution'] is not None else 'Unresolved'
                 if 'versions' in load_json['fields']:
                     Versions = fields['versions']
                     verlist = []
                     for item in Versions[:]:
                         verlist.append(item['name'])
                     if verlist[0] == verlist[-1]:
-                        Version = "Version: " + verlist[0]
+                        data['version'] = "Version: " + verlist[0]
                     else:
-                        Version = "Versions: " + \
+                        data['version'] = "Versions: " + \
                             verlist[0] + " ~ " + verlist[-1]
-                Link = 'https://bugs.mojang.com/browse/' + str.upper(MojiraID)
+                data["link"] = 'https://bugs.mojang.com/browse/' + ID
                 if 'customfield_12200' in fields:
                     if fields['customfield_12200']:
-                        Priority = "Mojang Priority: " + \
+                        data["priority"] = "Mojang Priority: " + \
                             fields['customfield_12200']['value']
                 if 'priority' in fields:
                     if fields['priority']:
-                        Priority = "Priority: " + fields['priority']['name']
+                        data["priority"] = "Priority: " + fields['priority']['name']
                 if 'fixVersions' in fields:
-                    if TStatus == 'Resolved':
+                    if data["status"] == 'Resolved':
                         if fields['fixVersions']:
-                            print(fields['fixVersions'])
-                            FixVersion = fields['fixVersions'][0]['name']
+                            data["fixversion"] = fields['fixVersions'][0]['name']
     else:
         return ErrorMessage('获取Json失败。')
     msglist = []
     if errmsg != '':
         msglist.append(errmsg)
     else:
-        if Title:
-            msglist.append(Title)
-        if Type:
-            Type = 'Type: ' + Type
-            if TStatus in ['Open', 'Resolved']:
-                Type = f'{Type} | Status: {TStatus}'
-            msglist.append(Type)
-        if Project:
-            Project = 'Project: ' + Project
-            msglist.append(Project)
-        if TStatus:
-            if TStatus not in ['Open', 'Resolved']:
-                TStatus = 'Status: ' + TStatus
-                msglist.append(TStatus)
-        if Priority:
-            msglist.append(Priority)
-        if Resolution:
-            Resolution = "Resolution: " + Resolution + \
-                ('\nFixed Version: ' + FixVersion if FixVersion else '')
-            msglist.append(Resolution)
-        if Version:
-            msglist.append(Version)
-        if Link:
-            msglist.append(str(Url(Link)))
-        msg = '\n'.join(msglist)
+        if title := data.get("title", False):
+            msglist.append(title)
+        if type_ := data.get("type", False):
+            type_ = 'Type: ' + type_
+            if status_ := data.get("status", False):
+                if status_ in ['Open', 'Resolved']:
+                    Type = f'{type_} | Status: {status_}'
+            msglist.append(type_)
+        if project := data.get("project", False):
+            project = 'Project: ' + project
+            msglist.append(project)
+        if status_ := data.get("status", False):
+            if status_ not in ['Open', 'Resolved']:
+                status_ = 'Status: ' + status_
+                msglist.append(status_)
+        if priority := data.get("priority", False):
+            msglist.append(priority)
+        if resolution := data.get("resolution", False):
+            resolution = "Resolution: " + resolution
+            msglist.append(resolution)
+        if fixversion := data.get("fixversion", False):
+            msglist.append("Fixed Version: " + fixversion)
+        if version := data.get("version", False):
+            msglist.append(version)
+        if link := data.get("link", False):
+            msglist.append(str(Url(link)))
+    msg = '\n'.join(msglist)
     return msg
