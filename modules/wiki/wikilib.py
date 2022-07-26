@@ -623,7 +623,6 @@ class WikiLib:
                     else:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
-                        print(t)
                         if t != '' and t is not None:
                             if before_page_info.args is not None:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
@@ -633,9 +632,10 @@ class WikiLib:
                             else:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if _tried == 0:
-                                page_info.title = (page_info.interwiki_prefix if lang is None else '') + t
-                                if lang is not None:
+                                if lang is not None and page_info.status:
                                     page_info.before_title = page_info.title
+                                else:
+                                    page_info.title = page_info.interwiki_prefix + t
                                 if before_page_info.section is not None:
                                     page_info.section = before_page_info.section
         if not self.wiki_info.in_allowlist:

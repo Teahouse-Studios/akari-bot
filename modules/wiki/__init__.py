@@ -682,7 +682,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
                     wait_list_.append(wd)
             if confirm and wait_list:
-                await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message))
+                await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message), lang=lang)
         else:
             await session.finish()
     else:
