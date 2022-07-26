@@ -9,7 +9,7 @@ usr = on_command('user', alias=['u'],
                  developers=['OasisAkari'])
 
 
-@usr.handle('<username> [-r|-p] {获取一个MediaWiki用户的信息。（-r - 获取详细信息。-p - 生成一张图片。）}')
+@usr.handle('<username> [-p] {获取一个MediaWiki用户的信息。（-p - 生成一张图片。）}')
 async def user(msg: MessageSession):
     target = WikiTargetInfo(msg)
     get_url = target.get_start_wiki()
