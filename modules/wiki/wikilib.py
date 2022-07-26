@@ -459,15 +459,15 @@ class WikiLib:
                 page_info.status = False
                 page_info.id = int(page_id)
                 page_raw = pages[page_id]
-                if 'missing' in page_raw:
+                if 'invalid' in page_raw:
+                    rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
+                                 page_raw['invalidreason'])
+                    rs = '发生错误：“' + rs1 + '”。'
+                    rs = re.sub('".”', '"”', rs)
+                    page_info.desc = rs
+                elif 'missing' in page_raw:
                     if 'title' in page_raw:
-                        if 'invalid' in page_raw:
-                            rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
-                                         page_raw['invalidreason'])
-                            rs = '发生错误：“' + rs1 + '”。'
-                            rs = re.sub('".”', '"”', rs)
-                            page_info.desc = rs
-                        elif 'known' in page_raw:
+                        if 'known' in page_raw:
                             full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')),
                                               self.wiki_info.articlepath) \
                                        + page_info.args
