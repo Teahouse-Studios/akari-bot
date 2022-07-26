@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup, Comment
 
 from config import Config
 from core.logger import Logger
+from core.dirty_check import check
 
 web_render = Config('web_render')
 
@@ -24,7 +25,6 @@ async def get_pic(link, source) -> Union[str, bool]:
             async with aiohttp.ClientSession() as session:
                 async with session.get(web_render + 'source?url=' + link, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
-                    print(html)
         except:
             traceback.print_exc()
             return False
@@ -89,14 +89,21 @@ async def get_pic(link, source) -> Union[str, bool]:
                     r'url\(/(.*)\)', 'url(' + link + '\\1)', x.get('style'))
         if source == 'collins':
             open_file.write('<div id="main_content" class="he dc page">')
-            content = soup.select_one('.dictionary > .dictionary')
-            for s in content.select('.hwd_sound, .cobuild-logo, .pronIPASymbol, .title_frequency_container'):
-                s.decompose()
-            open_file.write(str(content))
+            content = soup.select_one(
+                '.dictionaries > .dictionary, .dictionaries.dictionary')
+            trash = content.select(
+                '.hwd_sound, .cobuild-logo, .pronIPASymbol, .title_frequency_container')
+            if trash is not None:
+                for x in trash:
+                    x.decompose()
         elif source == 'yd':
             open_file.write('<div class="simple basic">')
             content = soup.select_one('.basic')
-            open_file.write(str(content))
+        else:
+            return False
+        content_str = str(content)
+        chk = await check(content_str)
+        open_file.write(str(chk[0]['content']))
         w = 1000
         open_file.write('</div></body>')
         open_file.write('</html>')
