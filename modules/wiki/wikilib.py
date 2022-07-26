@@ -623,7 +623,8 @@ class WikiLib:
                     else:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
-                        if t != '' or t is not None:
+                        print(t)
+                        if t != '' and t is not None:
                             if before_page_info.args is not None:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
