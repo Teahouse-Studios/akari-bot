@@ -16,7 +16,10 @@ async def nbnhhsh(term: str):
                                                       'Content-Length': str(len(req))})
         print(text)
         data = json.loads(text)
-        result = data[0]
+        try:
+            result = data[0]
+        except IndexError:
+            return '[nbnhhsh] 没有找到相关结果。'
         if 'trans' in result:
             trans = result['trans']
             count = trans.__len__()
