@@ -9,10 +9,10 @@ from PIL import ImageFont
 
 def tpg(favicon, wikiname, username, gender, registertime, contributionwikis, createcount, editcount, deletecount,
         patrolcount, sitetop, globaltop, wikipoint, blockbyuser='0', blocktimestamp1='0', blocktimestamp2='0',
-        blockreason='0', bantype='None'):
+        blockreason='0', bantype=None):
     font = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 40)
     font1 = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 70)
-    if bantype == 'None':
+    if bantype is None:
         img = Image.open(abspath('./assets/base.png'))
     elif bantype == 'Y' or bantype == 'YN':
         img = Image.open(abspath('./assets/ban.png'))
