@@ -7,11 +7,10 @@ from urllib.parse import urljoin
 
 import aiohttp
 import ujson as json
-from bs4 import BeautifulSoup, Comment
+from bs4 import BeautifulSoup
 
 from config import Config
 from core.logger import Logger
-from core.dirty_check import check
 
 web_render = Config('web_render')
 
@@ -101,9 +100,7 @@ async def get_pic(link, source) -> Union[str, bool]:
             content = soup.select_one('.basic')
         else:
             return False
-        content_str = str(content)
-        chk = await check(content_str)
-        open_file.write(str(chk[0]['content']))
+        open_file.write(str(content))
         w = 1000
         open_file.write('</div></body>')
         open_file.write('</html>')
