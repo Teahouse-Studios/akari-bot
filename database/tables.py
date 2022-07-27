@@ -84,6 +84,16 @@ class DBVersion(Base):
     value = Column(String(512), primary_key=True)
 
 
+class UnfriendlyActionsTable(Base):
+    __tablename__ = "unfriendly_action"
+    id = Column(Integer, primary_key=True)
+    targetId = Column(String(512))
+    senderId = Column(String(512))
+    action = Column(String(512))
+    detail = Column(String(512))
+    timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+
+
 Session.create()
 __all__ = ["EnabledModules", "TargetAdmin", "SenderInfo", "TargetOptions", "CommandTriggerTime", "GroupAllowList",
-           "StoredData", "DBVersion", "MuteList"]
+           "StoredData", "DBVersion", "MuteList", "AnalyticsData", "UnfriendlyActionsTable"]

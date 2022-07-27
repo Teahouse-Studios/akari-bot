@@ -9,7 +9,6 @@ from core.elements.message import MessageSession, FetchTarget, FetchedSession
 from core.elements.temp import EnabledModulesCache, SenderInfoCache
 from database.orm import Session
 from database.tables import *
-from database.tables import AnalyticsData
 
 cache = Config('db_cache')
 
@@ -334,6 +333,51 @@ class BotDBUtil:
             if module_name is not None:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).count()
+
+    class UnfriendlyActions:
+        def __init__(self, targetId, senderId):
+            self.targetId = targetId
+            self.senderId = senderId
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def check_mute(self) -> bool:
+            """
+
+            :return: True = yes, False = no
+            """
+            query = session.query(UnfriendlyActionsTable).filter_by(targetId=self.targetId).all()
+            unfriendly_list = []
+            for records in query:
+                if datetime.datetime.now().timestamp() - records.timestamp.timestamp() < 432000:
+                    unfriendly_list.append(records)
+            if len(unfriendly_list) > 5:
+                return True
+            count = {}
+            for criminal in unfriendly_list:
+                if datetime.datetime.now().timestamp() - criminal.timestamp.timestamp() < 86400:
+                    if criminal.senderId not in count:
+                        count[criminal.senderId] = 0
+                    else:
+                        count[criminal.senderId] += 1
+            if len(count) >= 3:
+                return True
+            for convict in count:
+                if count[convict] >= 3:
+                    return True
+            return False
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add_and_check(self, action='default', detail='') -> bool:
+            """
+
+            :return: True = yes, False = no
+            """
+            session.add_all(
+                [UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action, detail=detail)])
+            session.commit()
+            return self.check_mute()
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

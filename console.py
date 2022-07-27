@@ -54,7 +54,7 @@ async def send_command(msg, interactions=None):
                                                          senderFrom='TEST|Console', clientName='TEST', messageId=0, replyId=None),
                                           session=AutoSession(message=msg, target='TEST|0', sender='TEST|0',
                                                               auto_interactions=interactions)))
-    print(returns)
+    # print(returns)
     Logger.info('----Process end----')
     usage_time = datetime.now() - time
     Logger.info('Usage time:' + str(usage_time))

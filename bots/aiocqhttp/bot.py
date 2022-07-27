@@ -12,8 +12,6 @@ from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets,
 from core.parser.message import parser
 from core.utils import init, load_prompt, init_async, MessageTaskManager
 from database import BotDBUtil
-from database.logging_message import UnfriendlyActions
-
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
@@ -108,8 +106,8 @@ async def _(event: Event):
         if event.duration >= 259200:
             result = True
         else:
-            result = UnfriendlyActions(targetId=event.group_id,
-                                       senderId=event.operator_id).add_and_check('mute', str(event.duration))
+            result = BotDBUtil.UnfriendlyActions(targetId=event.group_id,
+                                                 senderId=event.operator_id).add_and_check('mute', str(event.duration))
         if result:
             await bot.call_action('set_group_leave', group_id=event.group_id)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)

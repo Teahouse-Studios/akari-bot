@@ -15,7 +15,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from config import Config
 from core.elements import EnableDirtyWordCheck
 from core.logger import Logger
-from database.logging_message import DirtyWordCache
+from database.local import DirtyWordCache
 
 
 def hash_hmac(key, code, sha1):

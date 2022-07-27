@@ -34,8 +34,8 @@ async def remove_temp_ban(msg: MessageSession):
 
 async def msg_counter(msg: MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
-    if same is None or datetime.now().timestamp() - same['ts'] > 300 or same[
-        'command'] != command:  # 检查是否滥用（重复使用同一命令）
+    if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
+        # 检查是否滥用（重复使用同一命令）
         counter_same[msg.target.senderId] = {'command': command, 'count': 1,
                                              'ts': datetime.now().timestamp()}
     else:
