@@ -63,9 +63,12 @@ async def pttimg(msg: MessageSession):
         print(font2_width, font2_height)
         pttimg = Image.new("RGBA", (font1_width + font2_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
-        drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
+        stroke_color = '#52495d'
+        if int(ptt1) >= 13:
+            stroke_color = '#81122F'
+        drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=3, stroke_fill=stroke_color)
         print(int(int(font1_height) - int(font2_height)))
-        drawptt.text((font1_width, int(int(font1_height) - int(font2_height))), ptt2, 'white', font=font2, stroke_width=3, stroke_fill='#52495d')
+        drawptt.text((font1_width, int(int(font1_height) - int(font2_height))), ptt2, 'white', font=font2, stroke_width=3, stroke_fill=stroke_color)
     elif ptt == -1:
         ptt = '--'
         ptttext_width, ptttext_height = ptttext.size

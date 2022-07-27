@@ -104,9 +104,12 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     print(font2_width, font2_height)
     pttimg = Image.new("RGBA", (font1_width + font2_width + 4, font1_height + 4))
     drawptt = ImageDraw.Draw(pttimg)
-    drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=2, stroke_fill='#52495d')
+    stroke_color = '#52495d'
+    if int(ptt1) >= 13:
+        stroke_color = '#81122F'
+    drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=2, stroke_fill=stroke_color)
     print(int(int(font1_height) - int(font2_height)))
-    drawptt.text((font1_width, 9), ptt2, 'white', font=font2, stroke_width=2, stroke_fill='#52495d')
+    drawptt.text((font1_width, 9), ptt2, 'white', font=font2, stroke_width=2, stroke_fill=stroke_color)
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2)))
