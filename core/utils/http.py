@@ -1,3 +1,4 @@
+from config import Config
 from .cache import random_cache_path
 from core.logger import Logger
 from tenacity import retry, wait_fixed, stop_after_attempt
@@ -35,11 +36,13 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
     :param timeout: 超时时间。
     :returns: 指定url的内容（字符串）。
     """
-    hostname = urllib.parse.urlparse(url).hostname
-    check = private_ip_check(hostname)
-    if check:
-        raise ValueError(
-            f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
+
+    if not Config('allow_request_localhost'):
+        hostname = urllib.parse.urlparse(url).hostname
+        check = private_ip_check(hostname)
+        if check:
+            raise ValueError(
+                f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers) as req:
@@ -65,11 +68,13 @@ async def post_url(url: str, data: any, headers: dict = None):
     :param data: 需要发送的数据。
     :param headers: 请求时使用的http头。
     :returns: 发送请求后的响应。'''
-    hostname = urllib.parse.urlparse(url).hostname
-    check = private_ip_check(hostname)
-    if check:
-        raise ValueError(
-            'Attempt of requesting private IP addresses is not allowed.')
+
+    if not Config('allow_request_localhost'):
+        hostname = urllib.parse.urlparse(url).hostname
+        check = private_ip_check(hostname)
+        if check:
+            raise ValueError(
+                f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.post(url, data=data, headers=headers) as req:
@@ -82,11 +87,13 @@ async def download_to_cache(url: str) -> Union[str, bool]:
 
     :param url: 需要获取的url。
     :returns: 文件的相对路径，若获取失败则返回False。'''
-    hostname = urllib.parse.urlparse(url).hostname
-    check = private_ip_check(hostname)
-    if check:
-        raise ValueError(
-            'Attempt of requesting private IP addresses is not allowed.')
+    
+    if not Config('allow_request_localhost'):
+        hostname = urllib.parse.urlparse(url).hostname
+        check = private_ip_check(hostname)
+        if check:
+            raise ValueError(
+                f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
     try:
         async with aiohttp.ClientSession() as session:
