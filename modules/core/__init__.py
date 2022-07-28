@@ -565,11 +565,11 @@ async def _(msg: MessageSession):
         if msg.parsed_msg['<name>']:
             module_ = msg.parsed_msg['<name>']
         data_ = {}
-        for d in range(30):
-            new = datetime.now().replace(hour=0, minute=0, second=0) - timedelta(days=30 - d - 1)
-            old = datetime.now().replace(hour=0, minute=0, second=0) - timedelta(days=30 - d)
+        for d in range(29):
+            new = datetime.now().replace(hour=0, minute=0, second=0) - timedelta(days=29 - d - 1)
+            old = datetime.now().replace(hour=0, minute=0, second=0) - timedelta(days=29 - d)
             get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
-            data_[new.day] = get_
+            data_[old.day] = get_
         today = datetime.now().replace(hour=0, minute=0, second=0)
         now = datetime.now()
         data_.update({now.day: BotDBUtil.Analytics.get_count_by_times(now, today, module_)})
