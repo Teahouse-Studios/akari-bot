@@ -87,7 +87,7 @@ async def download_to_cache(url: str) -> Union[str, bool]:
 
     :param url: 需要获取的url。
     :returns: 文件的相对路径，若获取失败则返回False。'''
-    
+
     if not Config('allow_request_localhost'):
         hostname = urllib.parse.urlparse(url).hostname
         check = private_ip_check(hostname)
