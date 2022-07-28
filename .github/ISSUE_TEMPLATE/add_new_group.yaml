@@ -49,7 +49,7 @@ body:
     id: qq-id
     attributes:
       label: QQ号
-      description: 您的QQ号，您必须为本群/频道的群主或管理员才能申请让机器人加群。
+      description: 您的QQ号。
       placeholder: e.g. 10000
     validations:
       required: true
