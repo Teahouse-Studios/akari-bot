@@ -15,8 +15,22 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)、问谛居 [用户协议](https://doc.wd-ljt.com/policy/user/) 和 [隐私政策](https://doc.wd-ljt.com/policy/privacy/)
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)
           required: true
+  - type: makrdown
+    attributes:
+      value: |
+        我们知道您不想阅读冗长的服务条款。因此，我们另想请特别注意：
+        - 您不得在使用本服务时利用提供的功能或漏洞，直接或间接地诱导小可发送违反法律法规、欺诈、虚假或产生误导的信息。
+        - 无论小可是否处于运行状态，都不得对小可进行言论攻击、滥用服务以及无故禁言等不友善行为。
+        - 我们会根据实际情况自行裁定不友善行为，并不限于此处列出的类型。
+        - 不得利用漏洞或使用相关工具对服务器进行攻击，如发现应及时向我们报告。
+        - 您不得规避本服务的任何访问或可用性限制。不得侵犯他人的权利。
+        - 您不得帮助他人违反这些规则。
+        
+        对于任何违反上述协议、或是由我们判定为出现其它不合适的行为，我们将视情况终止对您的服务，并有权利公开相关的不良行为。
+        
+        请注意：上述提示不能视为对服务条款的替代。
   - type: dropdown
     id: group-type
     attributes:
