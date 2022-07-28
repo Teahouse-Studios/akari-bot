@@ -17,7 +17,7 @@ body:
       options:
         - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)
           required: true
-  - type: makrdown
+  - type: markdown
     attributes:
       value: |
         我们知道您不想阅读冗长的服务条款。因此，我们另想请特别注意：
