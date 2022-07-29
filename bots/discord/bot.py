@@ -43,10 +43,10 @@ async def on_message(message):
     if message.reference is not None:
         replyId = message.reference.message_id
     prefix = None
-    if match_at := re.match(r'^<@(.*)>', message.content):
+    if match_at := re.match(r'^<@(.*?)>', message.content):
         if match_at.group(1) == str(client.user.id):
             prefix = ['']
-            message.content = re.sub(r'<@(.*)>', '', message.content)
+            message.content = re.sub(r'<@(.*?)>', '', message.content)
 
     msg = MessageSession(target=MsgInfo(targetId=targetId,
                                         senderId=f"Discord|Client|{message.author.id}",
