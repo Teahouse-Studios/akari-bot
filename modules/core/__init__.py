@@ -566,8 +566,8 @@ async def _(msg: MessageSession):
             module_ = msg.parsed_msg['<name>']
         data_ = {}
         for d in range(30):
-            new = datetime.now().replace(hour=0, minute=0, second=0) - timedelta(days=30 - d - 1)
-            old = datetime.now().replace(hour=0, minute=0, second=0) - timedelta(days=30 - d)
+            new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
+            old = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d)
             get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
             data_[old.day] = get_
         data_x = []
