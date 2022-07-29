@@ -28,7 +28,7 @@ async def get_user_info(wikiurl, username, pic=False):
     if 'missing' in base_user_info:
         return [Plain('没有找到此用户。')]
     data['username'] = base_user_info['name']
-    data['url'] = re.sub(r'\$1', 'User:' + username, wiki.wiki_info.articlepath)
+    data['url'] = re.sub(r'\$1', urllib.parse.quote('User:' + username), wiki.wiki_info.articlepath)
     groups = {}
     get_groups = await wiki.get_json(action='query', meta='allmessages', amprefix='group-')
     for a in get_groups['query']['allmessages']:
@@ -73,7 +73,7 @@ async def get_user_info(wikiurl, username, pic=False):
         data['global_rank'] = dd[6].text
         data['friends_count'] = dd[7].text
         data['wikipoints'] = gp_clawler.find('div', class_='score').text
-        data['url'] = re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath)
+        data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
     except Exception:
         traceback.print_exc()
     if 'blockedby' in base_user_info:
@@ -130,7 +130,8 @@ async def get_user_info(wikiurl, username, pic=False):
     else:
         msgs = []
         if user := data.get('username', False):
-            msgs.append('用户' + user + (' | 编辑数：' + data['edited_count'] if 'edited_count' in data else ''))
+            msgs.append('用户：' + user + (' | 编辑数：' + data['edited_count']
+                                        if 'edited_count' in data and 'created_page_count' not in data else ''))
         if users_groups := data.get('users_groups', False):
             msgs.append('用户组：' + '、'.join(users_groups))
         if gender_ := data.get('gender', False):
@@ -143,7 +144,7 @@ async def get_user_info(wikiurl, username, pic=False):
         sub_edit_counts1 = []
         if created_page_count := data.get('created_page_count', False):
             sub_edit_counts1.append('创建数：' + created_page_count)
-        if edited_count := data.get('edited_count', False):
+        if edited_count := data.get('edited_count', False) and created_page_count:
             sub_edit_counts1.append('编辑数：' + edited_count)
         sub_edit_counts2 = []
         if deleted_count := data.get('deleted_count', False):

@@ -18,4 +18,4 @@ tg_token =
 slower_schedule = False
 enable_tos = False
 enable_analytics = True
-allow_request_localhost = False
+allow_request_private_ip = True
