@@ -1,4 +1,5 @@
 import os
+import re
 
 import discord
 
@@ -30,6 +31,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    print(message.content)
     # don't respond to ourselves
     if message.author == client.user:
         return
@@ -40,6 +42,11 @@ async def on_message(message):
     replyId = None
     if message.reference is not None:
         replyId = message.reference.message_id
+    prefix = None
+    if match_at := re.match(r'^<@(.*)>', message.content):
+        if match_at.group(1) == str(client.user.id):
+            prefix = ['']
+            message.content = re.sub(r'<@(.*)>', '', message.content)
 
     msg = MessageSession(target=MsgInfo(targetId=targetId,
                                         senderId=f"Discord|Client|{message.author.id}",
@@ -49,7 +56,7 @@ async def on_message(message):
                                         replyId=replyId),
                          session=Session(message=message, target=message.channel, sender=message.author))
     MessageTaskManager.check(msg)
-    await parser(msg)
+    await parser(msg, prefix=prefix)
 
 
 dc_token = Config('dc_token')

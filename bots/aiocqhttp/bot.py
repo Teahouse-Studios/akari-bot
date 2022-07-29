@@ -17,6 +17,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
 Url.disable_mm = not Config('qq_enable_urlmanager')
 init()
+qq_account = Config("qq_account")
 
 
 @bot.on_startup
@@ -42,6 +43,12 @@ async def _(event: Event):
     match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
     if match_reply:
         replyId = int(match_reply.group(1))
+
+    prefix = None
+    if match_at := re.match(r'^\[CQ:at,qq=(.*?)].*', event.message):
+        if match_at.group(1) == qq_account:
+            prefix = ['']
+
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
 
     msg = MessageSession(MsgInfo(targetId=targetId,
@@ -54,7 +61,7 @@ async def _(event: Event):
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
     MessageTaskManager.check(msg)
-    await parser(msg, running_mention=True)
+    await parser(msg, running_mention=True, prefix=prefix)
 
 
 class GuildAccountInfo:
@@ -102,7 +109,7 @@ async def _(event: Event):
 
 @bot.on_notice('group_ban')
 async def _(event: Event):
-    if event.user_id == int(Config("qq_account")):
+    if event.user_id == int(qq_account):
         if event.duration >= 259200:
             result = True
         else:
