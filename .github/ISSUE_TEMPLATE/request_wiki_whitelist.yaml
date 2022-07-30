@@ -1,0 +1,30 @@
+name: 申请Wiki链接白名单
+description: 提交申请Wiki链接白名单，使使用Wiki模块查询对象Wiki时直接展示Wiki链接而不是”非官方页面“跳转链接。
+title: "[Whitelist Request]: Wiki链接白名单申请"
+labels: ["request"]
+assignees:
+  - OasisAkari
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 开始之前……
+      options:
+        - label: 我已确定此Wiki中的内容没有任何涉嫌政治、色情、谩骂、暴力等不良内容。
+          required: true
+  - type: input
+    id: user-id
+    attributes:
+      label: Wiki链接
+      description: 您需要申请白名单的Wiki的链接。
+      placeholder: e.g. https://minecraft.fandom.com/zh/wiki/Minecraft_Wiki
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: 备注
+      description: 你还想告诉我们什么？
+      placeholder: 什么都可以哦，没有就算了吧。
+    validations:
+      required: false
