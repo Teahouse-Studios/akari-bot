@@ -88,7 +88,10 @@ async def load_prompt(bot) -> None:
         open_loader_cache = open(loader_cache, 'r')
         m = await bot.fetch_target(author)
         if m:
-            await m.sendDirectMessage(open_loader_cache.read())
+            if (read := open_loader_cache.read()) != '':
+                await m.sendDirectMessage('加载模块中发生了以下错误，对应模块未加载：\n' + read)
+            else:
+                await m.sendDirectMessage('所有模块已正常加载。')
             open_loader_cache.close()
             open_author_cache.close()
             os.remove(author_cache)

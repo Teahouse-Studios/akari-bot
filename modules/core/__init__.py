@@ -22,6 +22,7 @@ from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.image_table import ImageTable, image_table_render, web_render
 from core.utils.cache import random_cache_path
+from core.utils.tasks import MessageTaskManager
 from database import BotDBUtil
 
 module = on_command('module',
@@ -679,6 +680,14 @@ async def wait_for_restart(msg: MessageSession):
             return await wait_for_restart(msg)
         else:
             await msg.sendMessage('重启中...')
+            get_wait_list = MessageTaskManager.get()
+            for x in get_wait_list:
+                for y in get_wait_list[x]:
+                    if get_wait_list[x][y]['active']:
+                        print(x, y)
+                        await get_wait_list[x][y]['original_session'].sendMessage('由于机器人正在重启，您此次执行命令的后续操作已被强制取消。'
+                                                                                  '请稍后重新执行命令，对此带来的不便，我们深感抱歉。')
+
     else:
         await msg.sendMessage('等待已超时，强制重启中...')
 

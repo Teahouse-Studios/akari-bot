@@ -19,7 +19,8 @@ class MessageTaskManager:
 
         MessageTaskManager._list.update(
             {session.target.targetId: {sender: {'flag': flag, 'active': True,
-                                                'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp()}}})
+                                                'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp(),
+                                                'original_session': session}}})
 
     @staticmethod
     def get_result(session: MessageSession):
