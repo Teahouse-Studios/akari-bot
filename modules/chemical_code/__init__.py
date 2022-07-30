@@ -18,10 +18,10 @@ from core.logger import Logger
 
 from PIL import Image as PILImage
 
-
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
-              "4514330", "4514408", "4514534", "4514586", "4514603", "4515054", "4573995", "4574465", "4575369", "4575370",
+              "4514330", "4514408", "4514534", "4514586", "4514603", "4515054", "4573995", "4574465", "4575369",
+              "4575370",
               "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276", "21865280"]
 
 
@@ -48,7 +48,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
         wh = 500
     return {'id': answer_id, 'name': name,
             'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
-            (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
+                     (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
 
 
 cc = on_command('chemical_code', alias={'cc': 'chemical_code',
@@ -91,7 +91,8 @@ async def chemical_code_by_id(msg: MessageSession):
 
 
 async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
-    if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
+    if msg.target.targetId in play_state and play_state[msg.target.targetId][
+        'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish('当前有一局游戏正在进行中。')
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
     try:
@@ -146,16 +147,15 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
 
     if not captcha_mode:
         await msg.sendMessage([Image(newpath),
-                           Plain(f'请在{set_timeout}分钟内发送这个化合物的分子式。（使用字母表顺序，如：CHBrClF）')])
+                               Plain(f'请在{set_timeout}分钟内发送这个化合物的分子式。（除C、H外使用字母表顺序，如：CHBrClF）')])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
-        result = await msg.waitNextMessage([Image(newpath), Plain('请发送这个化合物的分子式。（使用字母表顺序，如：CHBrClF）')])
+        result = await msg.waitNextMessage([Image(newpath), Plain('请发送这个化合物的分子式。（除C、H外使用字母表顺序，如：CHBrClF）')])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if result.asDisplay() == csr['name']:
                 await result.sendMessage('回答正确。')
             else:
                 await result.sendMessage('回答错误，正确答案是 ' + csr['name'])
             play_state[msg.target.targetId]['active'] = False
-
