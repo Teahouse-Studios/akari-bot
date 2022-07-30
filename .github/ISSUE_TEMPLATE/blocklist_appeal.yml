@@ -1,7 +1,7 @@
 name: 账号滥用警告/封禁解除
 description: 申请解除因违反服务条款所受的警告或封禁。注：仅接受对机器人误判发出的异议。
 title: "[APPEAL]: 解除账号封禁"
-labels: ["request"]
+labels: ["appeal"]
 assignees:
   - OasisAkari
 body:
