@@ -1,6 +1,6 @@
 name: 加入新群/频道
 description: 让机器人加入一个新群/频道
-title: "加入新群"
+title: "[NEW]: 加入新群"
 labels: ["New"]
 assignees:
   - OasisAkari
