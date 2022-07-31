@@ -22,7 +22,8 @@ async def get_pic(link, source) -> Union[str, bool]:
         Logger.info('Starting find section..')
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(web_render + 'source?url=' + link, timeout=aiohttp.ClientTimeout(total=20)) as req:
+                async with session.get(web_render + 'source?url=' + link,
+                                       timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
         except:
             traceback.print_exc()

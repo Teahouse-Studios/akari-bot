@@ -152,9 +152,9 @@ async def fetch_token(access_token, devicetoken):
             "SiteName": "user.auth.xboxlive.com",
             "RpsTicket": access_token,
         }}
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), headers={'Content-Type': 'application/json'}) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False),
+                                     headers={'Content-Type': 'application/json'}) as session:
         async with session.post(url, data=json.dumps(data)) as resp:
-
             json_data = await resp.json()
             user_token = json_data['Token']
             auth_uhs = json_data['DisplayClaims']['xui'][0]['uhs']
@@ -169,7 +169,8 @@ async def fetch_token(access_token, devicetoken):
             "DeviceToken": devicetoken,
             "SandboxId": "RETAIL",
         }}
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), headers={'Content-Type': 'application/json'}) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False),
+                                     headers={'Content-Type': 'application/json'}) as session:
         async with session.post(url, data=json.dumps(data)) as resp:
             json_data = await resp.json()
             auth_token = json_data['Token']

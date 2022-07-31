@@ -140,7 +140,8 @@ class Audit:
     def inAllowList(self) -> bool:
         session.expire_all()
         apilink = urlparse(self.api_link).netloc
-        return True if session.query(WikiAllowList).filter(WikiAllowList.apiLink.like(f'%{apilink}%')).first() else False
+        return True if session.query(WikiAllowList).filter(
+            WikiAllowList.apiLink.like(f'%{apilink}%')).first() else False
 
     @property
     @retry(stop=stop_after_attempt(3), reraise=True)

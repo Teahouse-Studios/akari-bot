@@ -69,4 +69,3 @@ class DirtyWordCache:
             return json.loads(self.query.result)
         else:
             return False
-

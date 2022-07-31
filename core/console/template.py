@@ -20,6 +20,7 @@ class FinishedSession(FinS):
 
 class Template(MS):
     session: Union[Session, AS]
+
     class Feature:
         image = True
         voice = False

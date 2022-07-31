@@ -9,4 +9,3 @@ q = session.query(EnabledModules).all()
 for x in q:
     x.enabledModules = json.dumps(x.enabledModules.split('|'))
     session.commit()
-

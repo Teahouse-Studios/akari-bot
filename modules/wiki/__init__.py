@@ -326,6 +326,7 @@ async def _(msg: MessageSession):
             wikis.append(f'{bl[0]}（by {bl[1]}）')
         await msg.finish('\n'.join(wikis))
 
+
 wiki_inline = on_regex('wiki_inline',
                        desc='开启后将自动解析消息中带有的[[]]或{{}}字符串并自动查询Wiki，如[[海晶石]]',
                        alias='wiki_regex', developers=['OasisAkari'])
@@ -472,8 +473,9 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
 
     if start_wiki is None:
         if isinstance(session, MessageSession):
-            await session.sendMessage(f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
-                                      f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
+            await session.sendMessage(
+                f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
+                f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if title is not None:
         if isinstance(title, str):
@@ -682,7 +684,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
                     wait_list_.append(wd)
             if confirm and wait_list:
-                await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message), lang=lang)
+                await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
+                                  lang=lang)
         else:
             await session.finish()
     else:

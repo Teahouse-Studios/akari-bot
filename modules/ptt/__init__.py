@@ -68,7 +68,8 @@ async def pttimg(msg: MessageSession):
             stroke_color = '#81122F'
         drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=3, stroke_fill=stroke_color)
         print(int(int(font1_height) - int(font2_height)))
-        drawptt.text((font1_width, int(int(font1_height) - int(font2_height))), ptt2, 'white', font=font2, stroke_width=3, stroke_fill=stroke_color)
+        drawptt.text((font1_width, int(int(font1_height) - int(font2_height))), ptt2, 'white', font=font2,
+                     stroke_width=3, stroke_fill=stroke_color)
     elif ptt == -1:
         ptt = '--'
         ptttext_width, ptttext_height = ptttext.size

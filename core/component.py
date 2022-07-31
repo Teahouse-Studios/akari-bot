@@ -38,6 +38,7 @@ class Bind:
                                                                             available_for=available_for,
                                                                             exclude_from=exclude_from))
                 return function
+
             return decorator
 
     class Regex:
@@ -52,6 +53,7 @@ class Bind:
                                                                           flags=flags,
                                                                           show_typing=show_typing))
                 return function
+
             return decorator
 
     class Schedule:
@@ -62,6 +64,7 @@ class Bind:
             def decorator(function):
                 ModulesManager.bind_to_module(self.bind_prefix, ScheduleMeta(function=function))
                 return function
+
             return decorator
 
 
@@ -147,6 +150,7 @@ def on_regex(
                           )
     ModulesManager.add_module(module)
     return Bind.Regex(bind_prefix)
+
 
 def on_schedule(
     bind_prefix: str,

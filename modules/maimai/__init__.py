@@ -69,7 +69,8 @@ async def _(msg: MessageSession):
             if res.groups()[1] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=['绿黄红紫白'.index(res.groups()[1])], type=tp)
+                music_data = (await total_list.get()).filter(level=level, diff=['绿黄红紫白'.index(res.groups()[1])],
+                                                             type=tp)
             if len(music_data) == 0:
                 rand_result = "没有这样的乐曲哦。"
             else:
@@ -153,12 +154,12 @@ BREAK: {chart['notes'][4]}
         try:
             file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
             await message.finish([Plain(f"{music['id']}. {music['title']}\n"),
-                                       BImage(f"{file}"),
-                                       Plain(f"艺术家: {music['basic_info']['artist']}\n"
-                                             f"分类: {music['basic_info']['genre']}\n"
-                                             f"BPM: {music['basic_info']['bpm']}\n"
-                                             f"版本: {music['basic_info']['from']}\n"
-                                             f"难度: {'/'.join(music['level'])}")])
+                                  BImage(f"{file}"),
+                                  Plain(f"艺术家: {music['basic_info']['artist']}\n"
+                                        f"分类: {music['basic_info']['genre']}\n"
+                                        f"BPM: {music['basic_info']['bpm']}\n"
+                                        f"版本: {music['basic_info']['from']}\n"
+                                        f"难度: {'/'.join(music['level'])}")])
         except Exception:
             await message.finish("未找到该乐曲")
 

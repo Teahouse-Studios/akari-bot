@@ -284,4 +284,3 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
     img.alpha_composite(type_text, (23, 29))
     Logger.info('Image generated: ' + str(rank))
     img.save(workdir + '/' + str(rank) + '.png')
-

@@ -23,7 +23,8 @@ async def msg_handler(message: types.Message):
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'Telegram|User|{message.from_user.id}',
                                  targetFrom=f'Telegram|{message.chat.type}',
-                                 senderFrom='Telegram|User', senderName=message.from_user.username, clientName='Telegram',
+                                 senderFrom='Telegram|User', senderName=message.from_user.username,
+                                 clientName='Telegram',
                                  messageId=message.message_id,
                                  replyId=replyId),
                          Session(message=message, target=message.chat.id, sender=message.from_user.id))

@@ -61,7 +61,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                 return text
 
 
-@ retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def post_url(url: str, data: any, headers: dict = None):
     '''发送POST请求。
     :param url: 需要发送的url。
@@ -77,7 +77,7 @@ async def post_url(url: str, data: any, headers: dict = None):
             return await req.text()
 
 
-@ retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
 async def download_to_cache(url: str) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
 

@@ -20,8 +20,9 @@ async def user(msg: MessageSession):
         if match_interwiki:
             interwikis = target.get_interwikis()
             if match_interwiki.group(1) in interwikis:
-                return await msg.finish(await get_user_info(interwikis[match_interwiki.group(1)], match_interwiki.group(2),
-                                                            pic=msg.parsed_msg['-p']))
+                return await msg.finish(
+                    await get_user_info(interwikis[match_interwiki.group(1)], match_interwiki.group(2),
+                                        pic=msg.parsed_msg['-p']))
         await msg.finish(await get_user_info(metaurl, username, pic=msg.parsed_msg['-p']))
     else:
         await msg.finish('未设置起始wiki。')

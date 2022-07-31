@@ -10,11 +10,14 @@ dict_module = on_command('dictionary', alias=["dict"],
 @dict_module.handle(help_doc='<term> {在科林斯词典中查询单词，暂仅支持英文}')
 async def _(msg: MessageSession):
     print(str(msg.parsed_msg['<term>']).replace(' ', '-').lower())
-    pic_collins = await get_pic('https://www.collinsdictionary.com/dictionary/english/' + str(msg.parsed_msg['<term>']).replace(' ', '-').lower(), 'collins')
+    pic_collins = await get_pic(
+        'https://www.collinsdictionary.com/dictionary/english/' + str(msg.parsed_msg['<term>']).replace(' ',
+                                                                                                        '-').lower(),
+        'collins')
     # pic_yd = await get_pic('https://www.youdao.com/result?word=' + msg.parsed_msg['<term>'] + '&lang=en', 'yd')
     # if pic_collins or pic_yd:
     if pic_collins:
         # await msg.finish([Image(pic_collins), Image(pic_yd),
         await msg.finish([Image(pic_collins), Plain(
-                          f'https://www.collinsdictionary.com/dictionary/english/{msg.parsed_msg["<term>"]}')])
+            f'https://www.collinsdictionary.com/dictionary/english/{msg.parsed_msg["<term>"]}')])
 # 有道：https://www.youdao.com/result?lang=en&word={msg.parsed_msg["<term>"]}'''])

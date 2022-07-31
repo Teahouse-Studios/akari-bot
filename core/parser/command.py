@@ -111,7 +111,8 @@ class CommandParser:
                         if match.help_doc is None:
                             continue
                         try:
-                            sub_args = CommandParser(match.help_doc, bind_prefix=self.bind_prefix, command_prefixes=self.command_prefixes).args
+                            sub_args = CommandParser(match.help_doc, bind_prefix=self.bind_prefix,
+                                                     command_prefixes=self.command_prefixes).args
                             if sub_args is not None:
                                 get_parse = docopt(sub_args,
                                                    argvs=split_command[1:], default_help=False)

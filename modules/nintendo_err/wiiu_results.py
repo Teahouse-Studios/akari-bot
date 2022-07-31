@@ -3303,7 +3303,6 @@ legacy_summary = {
 
 SIGNATURE_IS_LEGACY = 3
 
-
 CONSOLE_NAME = 'Nintendo Wii U'
 
 # Suggested color to use if displaying information through a Discord bot's embed
@@ -3325,15 +3324,18 @@ def construct_result(ret, mod, summary, level, desc, is_legacy):
     if is_legacy:
         ret.extra_description = "Legacy result"
     if is_legacy and summary is not None:
-        ret.add_field(ConsoleErrorField('Summary', message_str=legacy_summary.get(summary, ''), supplementary_value=summary))
-    ret.add_field(ConsoleErrorField('Level', message_str=(legacy_levels if is_legacy else levels).get(level, ''), supplementary_value=level))
+        ret.add_field(
+            ConsoleErrorField('Summary', message_str=legacy_summary.get(summary, ''), supplementary_value=summary))
+    ret.add_field(ConsoleErrorField('Level', message_str=(legacy_levels if is_legacy else levels).get(level, ''),
+                                    supplementary_value=level))
     description = module.get_error(desc)
     if description is None:
         description = common.get_error(desc)
         if description is None:
             ret.add_field(ConsoleErrorField('Description', supplementary_value=desc))
         else:
-            ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
+            ret.add_field(
+                ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
     else:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=desc))
 

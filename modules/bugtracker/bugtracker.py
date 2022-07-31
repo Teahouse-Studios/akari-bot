@@ -27,8 +27,8 @@ async def bugtracker_get(mojiraId: str):
                 fields = load_json['fields']
                 if 'summary' in fields:
                     data["title"] = data["title"] + \
-                        fields['summary'] + (
-                        f' ({data["translation"]})' if data.get("translation", False) else '')
+                                    fields['summary'] + (
+                                        f' ({data["translation"]})' if data.get("translation", False) else '')
                 if 'issuetype' in fields:
                     data["type"] = fields['issuetype']['name']
                 if 'status' in fields:
@@ -36,7 +36,8 @@ async def bugtracker_get(mojiraId: str):
                 if 'project' in fields:
                     data["project"] = fields['project']['name']
                 if 'resolution' in fields:
-                    data["resolution"] = fields['resolution']['name'] if fields['resolution'] is not None else 'Unresolved'
+                    data["resolution"] = fields['resolution']['name'] if fields[
+                                                                             'resolution'] is not None else 'Unresolved'
                 if 'versions' in load_json['fields']:
                     Versions = fields['versions']
                     verlist = []
@@ -46,12 +47,12 @@ async def bugtracker_get(mojiraId: str):
                         data['version'] = "Version: " + verlist[0]
                     else:
                         data['version'] = "Versions: " + \
-                            verlist[0] + " ~ " + verlist[-1]
+                                          verlist[0] + " ~ " + verlist[-1]
                 data["link"] = 'https://bugs.mojang.com/browse/' + id_
                 if 'customfield_12200' in fields:
                     if fields['customfield_12200']:
                         data["priority"] = "Mojang Priority: " + \
-                            fields['customfield_12200']['value']
+                                           fields['customfield_12200']['value']
                 if 'priority' in fields:
                     if fields['priority']:
                         data["priority"] = "Priority: " + fields['priority']['name']

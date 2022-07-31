@@ -1,16 +1,22 @@
 # 简介
+
 本文将会教你如何搭建自己的小可机器人。
 
 # 准备
+
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
 3. 对应你需要运行的平台所需要的必要内容（环境、token等）。
 
 # 基础部分部署
+
 ## 安装基础依赖
+
 1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。
 2. 解压源代码，然后打开终端，输入 `pip install -r requirements.txt` 来安装依赖。
+
 ## 配置
+
 进入 `config` 文件夹，将 `config.cfg.example` 重命名为 `config.cfg`，然后开始配置你所需要的内容。
 
 对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
@@ -103,7 +109,6 @@ servers:
 
 `dc_token =` - 填写你获取到的机器人 Token。
 
-
 ### Telegram
 
 我们在这里使用了 [AIOGram](https://github.com/aiogram/aiogram) 来异步调用 Telegram API。
@@ -150,16 +155,21 @@ servers:
 此为小可的外置服务。主要用于处理 html 渲染图片及部分功能的访问代理。
 
 #### 部署
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，你需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
+
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，你需要安装好 [Node.js](https://nodejs.org/)
+   环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
 2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
+
 ```
 CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
 FC_SERVER_PORT=15551 # 填写服务运行的端口
 ```
+
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 
 你亦可使用云服务产商的 Serverless 服务来部署本服务。
+
 #### 字段填写
 
 `web_render =` - Webrender 的地址（IP 或域名）及端口
@@ -171,6 +181,7 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 ### 模块
 
 #### Arcaea
+
 Arcaea 模块使用了 Lowiro 官方的 ArcaeaLimitedAPI 和 BotArcAPI 进行开发。
 
 ArcaeaLimitedAPI 需要向 Lowiro 官方发送邮件申请以获得 Token。
@@ -185,13 +196,16 @@ ArcaeaLimitedAPI 需要向 Lowiro 官方发送邮件申请以获得 Token。
 
 `botarcapi_agent =` - 填写 BotArcAPI 公用实例申请到的 UA 名
 
-填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot 启动后使用 `~arcaea initialize` 来初始化资源文件。
+填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
+启动后使用 `~arcaea initialize` 来初始化资源文件。
 
 #### maimai
+
 maimai 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
 
 1. 下载 [资源文件](https://www.diving-fish.com/maibot/static.zip) ，并于 `assets` 目录下创建一个 `maimai` 文件夹。
 2. 解压资源文件，形成以下目录结构：
+
 ```angular2html
 assets
 └─maimai
@@ -205,13 +219,15 @@ assets
 ```
 
 #### secret
+
 此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
 
 ### 其他功能
 
 `qq_msg_logging_to_db = True` - 将 QQ 平台内的命令触发消息记录至 `database/msg.db` 中，有助于判断是否存在违规使用机器人的情况。
 
-`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami` 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
+`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami`
+命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
 `slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
@@ -223,7 +239,8 @@ assets
 
 #### 自定义确认词及命令前缀
 
-你可以通过编辑 `core/elements/others/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix` 变量来增加（或删除）可使用的命令前缀。
+你可以通过编辑 `core/elements/others/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix`
+变量来增加（或删除）可使用的命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 

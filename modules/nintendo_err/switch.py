@@ -490,61 +490,61 @@ fs = Module('fs', {
     7916: ResultInfo('DBM directory name is too long.'),
     7917: ResultInfo('DBM filename is too long.')
 }, {
-    (30, 33): 'Not enough free space.',
-    (34, 38): 'Not enough BIS free space.',
-    (39, 45): 'Not enough free space.',
-    (2000, 2499): 'Failed to access SD card.',
-    (2500, 2999): 'Failed to access Game Card.',
-    (3200, 3499): 'Allocation failed.',
-    (3500, 3999): 'Failed to access eMMC.',
-    # (4001, 4200): 'ROM is corrupted.',
-    (4001, 4010): 'ROM is corrupted.',
-    (4011, 4019): 'AES-CTR CounterExtendedStorage is corrupted.',
-    (4021, 4029): 'Indirect storage is corrupted.',
-    (4031, 4039): 'Bucket tree is corrupted.',
-    (4041, 4050): 'ROM NCA is corrupted.',
-    (4051, 4069): 'ROM NCA filesystem is corrupted.',
-    (4071, 4079): 'ROM NCA hierarchical SHA256 storage is corrupted.',
-    (4141, 4150): 'ROM integrity verification storage is corrupted.',
-    (4151, 4159): 'ROM real data verification failed.',
-    (4160, 4079): 'ROM integrity verification storage is corrupted.',
-    (4181, 4199): 'ROM partition filesystem is corrupted.',
-    (4201, 4219): 'ROM built-in storage is corrupted.',
-    (4241, 4259): 'ROM host filesystem is corrupted.',
-    (4261, 4279): 'ROM database is corrupted.',
-    (4280, 4299): 'ROM is corrupted.',
-    (4301, 4499): 'Savedata is corrupted.',
-    (4501, 4510): 'NCA is corrupted.',
-    (4511, 4529): 'NCA filesystem is corrupted.',
-    (4531, 4539): 'NCA hierarchical SHA256 storage is corrupted.',
-    (4540, 4599): 'NCA is corrupted.',
-    (4601, 4610): 'Integrity verification storage is corrupted.',
-    (4611, 4619): 'Real data verification failed.',
-    (4620, 4639): 'Integrity verification storage is corrupted.',
-    (4641, 4659): 'Partition filesystem is corrupted.',
-    (4661, 4679): 'Built-in storage is corrupted.',
-    (4681, 4699): 'FAT filesystem is corrupted.',
-    (4701, 4719): 'Host filesystem is corrupted.',
-    (4721, 4739): 'Database is corrupted.',
-    (4741, 4759): 'AEX-XTS filesystem is corrupted.',
-    (4761, 4769): 'Savedata transfer data is corrupted.',
-    (4771, 4779): 'Signed system partition data is corrupted.',
-    (4800, 4999): 'The data is corrupted.',
-    (5000, 5999): 'Unexpected.',
-    (6002, 6029): 'Invalid path.',
-    (6030, 6059): 'Invalid path for operation.',
-    (6080, 6099): 'Invalid enum value.',
-    (6100, 6199): 'Invalid argument.',
-    (6200, 6299): 'Invalid operation for open mode.',
-    (6300, 6399): 'Unsupported operation.',
-    (6400, 6449): 'Permission denied.',
-    (6600, 6699): 'Not found.',
-    (6700, 6799): 'Out of resources.',
-    (6800, 6899): 'Mapping failed.',
-    (6900, 6999): 'Bad state.',
-    (7901, 7904): 'DBM not found.',
-    (7910, 7912): 'DBM find finished.',
-})
+                (30, 33): 'Not enough free space.',
+                (34, 38): 'Not enough BIS free space.',
+                (39, 45): 'Not enough free space.',
+                (2000, 2499): 'Failed to access SD card.',
+                (2500, 2999): 'Failed to access Game Card.',
+                (3200, 3499): 'Allocation failed.',
+                (3500, 3999): 'Failed to access eMMC.',
+                # (4001, 4200): 'ROM is corrupted.',
+                (4001, 4010): 'ROM is corrupted.',
+                (4011, 4019): 'AES-CTR CounterExtendedStorage is corrupted.',
+                (4021, 4029): 'Indirect storage is corrupted.',
+                (4031, 4039): 'Bucket tree is corrupted.',
+                (4041, 4050): 'ROM NCA is corrupted.',
+                (4051, 4069): 'ROM NCA filesystem is corrupted.',
+                (4071, 4079): 'ROM NCA hierarchical SHA256 storage is corrupted.',
+                (4141, 4150): 'ROM integrity verification storage is corrupted.',
+                (4151, 4159): 'ROM real data verification failed.',
+                (4160, 4079): 'ROM integrity verification storage is corrupted.',
+                (4181, 4199): 'ROM partition filesystem is corrupted.',
+                (4201, 4219): 'ROM built-in storage is corrupted.',
+                (4241, 4259): 'ROM host filesystem is corrupted.',
+                (4261, 4279): 'ROM database is corrupted.',
+                (4280, 4299): 'ROM is corrupted.',
+                (4301, 4499): 'Savedata is corrupted.',
+                (4501, 4510): 'NCA is corrupted.',
+                (4511, 4529): 'NCA filesystem is corrupted.',
+                (4531, 4539): 'NCA hierarchical SHA256 storage is corrupted.',
+                (4540, 4599): 'NCA is corrupted.',
+                (4601, 4610): 'Integrity verification storage is corrupted.',
+                (4611, 4619): 'Real data verification failed.',
+                (4620, 4639): 'Integrity verification storage is corrupted.',
+                (4641, 4659): 'Partition filesystem is corrupted.',
+                (4661, 4679): 'Built-in storage is corrupted.',
+                (4681, 4699): 'FAT filesystem is corrupted.',
+                (4701, 4719): 'Host filesystem is corrupted.',
+                (4721, 4739): 'Database is corrupted.',
+                (4741, 4759): 'AEX-XTS filesystem is corrupted.',
+                (4761, 4769): 'Savedata transfer data is corrupted.',
+                (4771, 4779): 'Signed system partition data is corrupted.',
+                (4800, 4999): 'The data is corrupted.',
+                (5000, 5999): 'Unexpected.',
+                (6002, 6029): 'Invalid path.',
+                (6030, 6059): 'Invalid path for operation.',
+                (6080, 6099): 'Invalid enum value.',
+                (6100, 6199): 'Invalid argument.',
+                (6200, 6299): 'Invalid operation for open mode.',
+                (6300, 6399): 'Unsupported operation.',
+                (6400, 6449): 'Permission denied.',
+                (6600, 6699): 'Not found.',
+                (6700, 6799): 'Out of resources.',
+                (6800, 6899): 'Mapping failed.',
+                (6900, 6999): 'Bad state.',
+                (7901, 7904): 'DBM not found.',
+                (7910, 7912): 'DBM find finished.',
+            })
 
 os = Module('os', {
     4: ResultInfo('Busy.'),
@@ -565,7 +565,8 @@ os = Module('os', {
 ncm = Module('ncm', {
     1: ResultInfo('Invalid ContentStorageBase.'),
     2: ResultInfo('Placeholder already exists.'),
-    3: ResultInfo('Placeholder not found (issue related to the SD card in use).', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22393/kw/2005-0003'),
+    3: ResultInfo('Placeholder not found (issue related to the SD card in use).',
+                  'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22393/kw/2005-0003'),
     4: ResultInfo('Content already exists.'),
     5: ResultInfo('Content not found.'),
     7: ResultInfo('Content meta not found.'),
@@ -603,11 +604,11 @@ ncm = Module('ncm', {
     380: ResultInfo('Invalid firmware variation.'),
     8182: ResultInfo('Invalid offset.')
 }, {
-    (250, 258): 'Content storage is not active.',
-    (260, 268): 'Content meta database is not active.',
-    (290, 299): 'Install task was cancelled.',
-    (8181, 8191): 'Invalid argument.'
-})
+                 (250, 258): 'Content storage is not active.',
+                 (260, 268): 'Content meta database is not active.',
+                 (290, 299): 'Install task was cancelled.',
+                 (8181, 8191): 'Invalid argument.'
+             })
 
 lr = Module('lr', {
     2: ResultInfo('Program not found.'),
@@ -678,10 +679,10 @@ sf = Module('sf', {
     802: ResultInfo('Request invalidated by user.'),
     812: ResultInfo('Request deferred by user.'),
 }, {
-    (800, 809): 'Request invalidated.',
-    (810, 819): 'Request deferred.',
-    (820, 899): 'Request context changed.'
-})
+                (800, 809): 'Request invalidated.',
+                (810, 819): 'Request deferred.',
+                (820, 899): 'Request context changed.'
+            })
 
 hipc = Module('hipc', {
     1: ResultInfo('Unsupported operation.'),
@@ -696,8 +697,8 @@ hipc = Module('hipc', {
     491: ResultInfo('Target is not a domain.'),
     492: ResultInfo('Domain object was not found.')
 }, {
-    (100, 299): 'Out of resources.'
-})
+                  (100, 299): 'Out of resources.'
+              })
 
 dmnt = Module('dmnt', {
     1: ResultInfo('Unknown error.'),
@@ -717,9 +718,9 @@ dmnt = Module('dmnt', {
     6603: ResultInfo('Address is out of resources.'),
     6700: ResultInfo('Virtual machine condition depth is invalid.')
 }, {
-    (6500, 6599): 'Cheat engine error.',
-    (6600, 6699): 'Frozen address error.'
-})
+                  (6500, 6599): 'Cheat engine error.',
+                  (6600, 6699): 'Frozen address error.'
+              })
 
 pm = Module('pm', {
     1: ResultInfo('Process not found.'),
@@ -744,7 +745,8 @@ ns = Module('ns', {
     802: ResultInfo('SystemDeliveryInfo system_delivery_protocol_version is greater than the system setting.'),
     892: ResultInfo('Unknown state: reference count is zero.'),
     931: ResultInfo('Invalid SystemDeliveryInfo HMAC/invalid Meta ID.'),
-    2101: ResultInfo('Inserted region-locked Tencent-Nintendo (Chinese) game cartridge into a non-Chinese console.', 'https://nintendoswitch.com.cn/support/')
+    2101: ResultInfo('Inserted region-locked Tencent-Nintendo (Chinese) game cartridge into a non-Chinese console.',
+                     'https://nintendoswitch.com.cn/support/')
 })
 
 kvdb = Module('kvdb', {
@@ -771,8 +773,8 @@ sm = Module('sm', {
     1000: ResultInfo('Should forward to session.'),
     1100: ResultInfo('Process is not associated.')
 }, {
-    (1000, 2000): 'Atmosphere man-in-the-middle (MITM) extension result.'
-})
+                (1000, 2000): 'Atmosphere man-in-the-middle (MITM) extension result.'
+            })
 
 ro = Module('ro', {
     2: ResultInfo('Out of address space.'),
@@ -809,8 +811,8 @@ spl = Module('spl', {
     107: ResultInfo('Boot reason was not set.'),
     108: ResultInfo('Invalid argument.')
 }, {
-    (0, 99): 'Secure monitor error.'
-})
+                 (0, 99): 'Secure monitor error.'
+             })
 
 i2c = Module('i2c', {
     1: ResultInfo('No ACK.'),
@@ -938,13 +940,14 @@ settings = Module('settings', {
     1275: ResultInfo('Amiibo ECQV BLS certificate.'),
     1276: ResultInfo('Amiibo ECQV BLS root certificate.')
 }, {
-    (100, 149): 'Internal error.',
-    (200, 399): 'Invalid argument.',
-    (621, 1276): 'Setting buffer is null.',
-})
+                      (100, 149): 'Internal error.',
+                      (200, 399): 'Invalid argument.',
+                      (621, 1276): 'Setting buffer is null.',
+                  })
 
 nifm = Module('nifm', {
-    3400: ResultInfo('The internet connection you are using requires authentication or a user agreement.' 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22569/kw/2110-3400'),
+    3400: ResultInfo(
+        'The internet connection you are using requires authentication or a user agreement.' 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22569/kw/2110-3400'),
 })
 
 vi = Module('vi', {
@@ -974,8 +977,8 @@ time = Module('time', {
     989: ResultInfo('TimeZone location name not found.'),
     990: ResultInfo('Unimplemented.')
 }, {
-    (900, 919): 'Invalid argument.'
-})
+                  (900, 919): 'Invalid argument.'
+              })
 
 friends = Module('friends', {
     6: ResultInfo('IsAnyInternetRequestAccepted with the output from GetClientId returned false.'),
@@ -997,7 +1000,8 @@ bcat = Module('bcat', {
 })
 
 ssl = Module('ssl', {
-    11: ResultInfo('Returned during various NSS SEC, NSPR and NSS SSL errors.', 'https://switchbrew.org/wiki/Error_codes'),
+    11: ResultInfo('Returned during various NSS SEC, NSPR and NSS SSL errors.',
+                   'https://switchbrew.org/wiki/Error_codes'),
     13: ResultInfo('Unrecognized error.'),
     102: ResultInfo('Out of memory or table full (NSS SEC error -8173 or NSPR errors -6000, -5974, -5971).'),
     116: ResultInfo('NSPR error -5999 (PR_BAD_DESCRIPTOR_ERROR).'),
@@ -1013,24 +1017,31 @@ ssl = Module('ssl', {
     218: ResultInfo('Maximum number of ServerPki objects were already imported.'),
     301: ResultInfo('NSS SSL error -12276 (SSL_ERROR_BAD_CERT_DOMAIN).'),
     302: ResultInfo('NSS SSL error -12285 (SSL_ERROR_NO_CERTIFICATE).'),
-    303: ResultInfo('NSS SEC errors: -8181 (SEC_ERROR_EXPIRED_CERTIFICATE), -8162 (SEC_ERROR_EXPIRED_ISSUER_CERTIFICATE).'),
+    303: ResultInfo(
+        'NSS SEC errors: -8181 (SEC_ERROR_EXPIRED_CERTIFICATE), -8162 (SEC_ERROR_EXPIRED_ISSUER_CERTIFICATE).'),
     304: ResultInfo('NSS SEC error -8180 (SEC_ERROR_REVOKED_CERTIFICATE).'),
     305: ResultInfo('NSS SEC error -8183 (SEC_ERROR_BAD_DER).'),
     306: ResultInfo('NSS SEC errors: -8102 (SEC_ERROR_INADEQUATE_KEY_USAGE), -8101 (SEC_ERROR_INADEQUATE_CERT_TYPE).'),
-    307: ResultInfo('NSS SEC errors: -8185 (SEC_ERROR_INVALID_AVA), -8182 (SEC_ERROR_BAD_SIGNATURE), -8158 (SEC_ERROR_EXTENSION_VALUE_INVALID), -8156 (SEC_ERROR_CA_CERT_INVALID), -8151 (SEC_ERROR_UNKNOWN_CRITICAL_EXTENSION), -8080 (SEC_ERROR_CERT_NOT_IN_NAME_SPACE).'),
-    308: ResultInfo('NSS SEC errors: -8179 (SEC_ERROR_UNKNOWN_ISSUER), -8172 (SEC_ERROR_UNTRUSTED_ISSUER), -8014 (SEC_ERROR_APPLICATION_CALLBACK_ERROR).'),
+    307: ResultInfo(
+        'NSS SEC errors: -8185 (SEC_ERROR_INVALID_AVA), -8182 (SEC_ERROR_BAD_SIGNATURE), -8158 (SEC_ERROR_EXTENSION_VALUE_INVALID), -8156 (SEC_ERROR_CA_CERT_INVALID), -8151 (SEC_ERROR_UNKNOWN_CRITICAL_EXTENSION), -8080 (SEC_ERROR_CERT_NOT_IN_NAME_SPACE).'),
+    308: ResultInfo(
+        'NSS SEC errors: -8179 (SEC_ERROR_UNKNOWN_ISSUER), -8172 (SEC_ERROR_UNTRUSTED_ISSUER), -8014 (SEC_ERROR_APPLICATION_CALLBACK_ERROR).'),
     309: ResultInfo('NSS SEC error -8171 (SEC_ERROR_UNTRUSTED_CERT).'),
-    310: ResultInfo('NSS SSL errors: -12233 (SSL_ERROR_RX_UNKNOWN_RECORD_TYPE), -12232 (SSL_ERROR_RX_UNKNOWN_HANDSHAKE), -12231 (SSL_ERROR_RX_UNKNOWN_ALERT). This is also returned by ImportClientPki when import fails.'),
+    310: ResultInfo(
+        'NSS SSL errors: -12233 (SSL_ERROR_RX_UNKNOWN_RECORD_TYPE), -12232 (SSL_ERROR_RX_UNKNOWN_HANDSHAKE), -12231 (SSL_ERROR_RX_UNKNOWN_ALERT). This is also returned by ImportClientPki when import fails.'),
     311: ResultInfo('NSS SSL errors: One of various malformed request errors. See Switchbrew for the complete list.'),
     312: ResultInfo('NSS SEC errors: One of various unexpected request errors. See Switchbrew for the complete list.'),
-    313: ResultInfo(' NSS SSL errors: -12237 (SSL_ERROR_RX_UNEXPECTED_CHANGE_CIPHER), -12236 (SSL_ERROR_RX_UNEXPECTED_ALERT), -12235 (SSL_ERROR_RX_UNEXPECTED_HANDSHAKE), -12234 (SSL_ERROR_RX_UNEXPECTED_APPLICATION_DATA).'),
+    313: ResultInfo(
+        ' NSS SSL errors: -12237 (SSL_ERROR_RX_UNEXPECTED_CHANGE_CIPHER), -12236 (SSL_ERROR_RX_UNEXPECTED_ALERT), -12235 (SSL_ERROR_RX_UNEXPECTED_HANDSHAKE), -12234 (SSL_ERROR_RX_UNEXPECTED_APPLICATION_DATA).'),
     314: ResultInfo('NSS SSL error -12263 (SSL_ERROR_RX_RECORD_TOO_LONG).'),
     315: ResultInfo('NSS SSL error -12165 (SSL_ERROR_RX_UNEXPECTED_HELLO_VERIFY_REQUEST).'),
     316: ResultInfo('NSS SSL error -12163 (SSL_ERROR_RX_UNEXPECTED_CERT_STATUS).'),
     317: ResultInfo('NSS SSL error -12160 (SSL_ERROR_INCORRECT_SIGNATURE_ALGORITHM).'),
-    318: ResultInfo('NSS SSL errors: -12173 (SSL_ERROR_WEAK_SERVER_EPHEMERAL_DH_KEY), -12156 (SSL_ERROR_WEAK_SERVER_CERT_KEY).'),
+    318: ResultInfo(
+        'NSS SSL errors: -12173 (SSL_ERROR_WEAK_SERVER_EPHEMERAL_DH_KEY), -12156 (SSL_ERROR_WEAK_SERVER_CERT_KEY).'),
     319: ResultInfo('NSS SSL error -12273 (SSL_ERROR_BAD_MAC_READ).'),
-    321: ResultInfo('NSS SSL errors: -12215 (SSL_ERROR_MD5_DIGEST_FAILURE), -12214 (SSL_ERROR_SHA_DIGEST_FAILURE), -12161 (SSL_ERROR_DIGEST_FAILURE).'),
+    321: ResultInfo(
+        'NSS SSL errors: -12215 (SSL_ERROR_MD5_DIGEST_FAILURE), -12214 (SSL_ERROR_SHA_DIGEST_FAILURE), -12161 (SSL_ERROR_DIGEST_FAILURE).'),
     322: ResultInfo('NSS SSL error -12213 (SSL_ERROR_MAC_COMPUTATION_FAILURE).'),
     324: ResultInfo('NSS SEC error -8157 (SEC_ERROR_EXTENSION_NOT_FOUND).'),
     325: ResultInfo('NSS SEC error -8049 (SEC_ERROR_UNRECOGNIZED_OID).'),
@@ -1071,14 +1082,22 @@ ssl = Module('ssl', {
 
 account = Module('account', {
     59: ResultInfo('IsAnyInternetRequestAccepted with the output from GetClientId returned false.'),
-    3000: ResultInfo('System update is required.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/27166/'),
-    4007: ResultInfo('Console is permanently banned.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/', is_ban=True),
-    4025: ResultInfo('Game Card is banned. If you have a legitimate cartridge and this happened to you, contact Nintendo.', is_ban=True),
+    3000: ResultInfo('System update is required.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/27166/'),
+    4007: ResultInfo('Console is permanently banned.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/', is_ban=True),
+    4025: ResultInfo(
+        'Game Card is banned. If you have a legitimate cartridge and this happened to you, contact Nintendo.',
+        is_ban=True),
     4027: ResultInfo('Console (and Nintendo Account) are temporarily banned from a game.', is_ban=True),
-    4508: ResultInfo('Console is permanently banned.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/', is_ban=True),
-    4517: ResultInfo('Console is permanently banned.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/43652/', is_ban=True),
-    4609: ResultInfo('The online service is no longer available.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/46482/'),
-    4621: ResultInfo('Tencent-Nintendo (Chinese) consoles cannot use online features in foreign games.' 'https://nintendoswitch.com.cn/support/'),
+    4508: ResultInfo('Console is permanently banned.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28046/', is_ban=True),
+    4517: ResultInfo('Console is permanently banned.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/43652/', is_ban=True),
+    4609: ResultInfo('The online service is no longer available.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/46482/'),
+    4621: ResultInfo(
+        'Tencent-Nintendo (Chinese) consoles cannot use online features in foreign games.' 'https://nintendoswitch.com.cn/support/'),
     5111: ResultInfo('Complete account ban.', is_ban=True)
 })
 
@@ -1099,7 +1118,8 @@ am = Module('am', {
     502: ResultInfo('IStorage is already opened.'),
     503: ResultInfo('IStorage read/write out of bounds.'),
     506: ResultInfo('Invalid parameters.'),
-    511: ResultInfo('IStorage opened as wrong type (e.g. data opened as TransferMemory, or TransferMemory opened as data.'),
+    511: ResultInfo(
+        'IStorage opened as wrong type (e.g. data opened as TransferMemory, or TransferMemory opened as data.'),
     518: ResultInfo('Null object.'),
     600: ResultInfo('Failed to allocate memory for IStorage.'),
     712: ResultInfo('Thread stack pool exhausted.'),
@@ -1133,9 +1153,9 @@ prepo = Module('prepo', {
     2503: ResultInfo('Status 503.'),
     2504: ResultInfo('Status 504.'),
 }, {
-    (1005, 1060): 'HTTP error.',
-    (2400, 2504): 'Server error.'
-})
+                   (1005, 1060): 'HTTP error.',
+                   (2400, 2504): 'Server error.'
+               })
 
 pcv = Module('pcv', {
     2: ResultInfo('Invalid DVFS table ID.'),
@@ -1149,12 +1169,14 @@ nim = Module('nim', {
     40: ResultInfo('Memory allocation failed (due to bad input?).'),
     70: ResultInfo('HTTP connection canceled.'),
     330: ResultInfo('ContentMetaType does not match SystemUpdate.'),
-    5001: ResultInfo('A socket error occurred (ENETDOWN, ECONNRESET, EHOSTDOWN, EHOSTUNREACH, or EPIPE). Also occurs when the received size doesn\'t match the expected size (recvfrom() ret with meta_size data receiving).'),
+    5001: ResultInfo(
+        'A socket error occurred (ENETDOWN, ECONNRESET, EHOSTDOWN, EHOSTUNREACH, or EPIPE). Also occurs when the received size doesn\'t match the expected size (recvfrom() ret with meta_size data receiving).'),
     5010: ResultInfo('Socket was shutdown due to the async operation being cancelled.'),
     5020: ResultInfo('Too many internal input entries with nim command 42, or an unrecognized socket error occurred.'),
     5100: ResultInfo('Connection time-out.'),
     5410: ResultInfo('Invalid ID.'),
-    5420: ResultInfo('Invalid magicnum. Can also be caused by the connection being closed by the peer, since non-negative return values from recv() are ignored in this case.'),
+    5420: ResultInfo(
+        'Invalid magicnum. Can also be caused by the connection being closed by the peer, since non-negative return values from recv() are ignored in this case.'),
     5430: ResultInfo('Invalid data_size.'),
     5440: ResultInfo('The input ContentMetaKey doesn\'t match the ContentMetaKey in state.'),
     5450: ResultInfo('Invalid meta_size.'),
@@ -1257,7 +1279,8 @@ fatal = Module('fatal', {
 })
 
 ec = Module('ec', {
-    20: ResultInfo('Unable to start the software.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22539/kw/2164-0020'),
+    20: ResultInfo('Unable to start the software.',
+                   'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22539/kw/2164-0020'),
     56: ResultInfo('IsAnyInternetRequestAccepted with the output from GetClientId returned false.')
 })
 
@@ -1284,7 +1307,8 @@ jit = Module('jit', {
 })
 
 dauth = Module('dauth', {
-    4008: ResultInfo('Console is permanently banned by Nintendo.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/42061/kw/2181-4008', is_ban=True)
+    4008: ResultInfo('Console is permanently banned by Nintendo.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/42061/kw/2181-4008', is_ban=True)
 })
 
 dbg = Module('dbg', {
@@ -1343,18 +1367,18 @@ capsrv = Module('capsrv (capture)', {
     1907: ResultInfo('Error when reading the file.'),
     1908: ResultInfo('Error when writing the file.')
 }, {
-    (10, 19): 'Album: invalid file ID.',
-    (90, 99): 'Album: filesystem error.',
-    (800, 899): 'Control error.',
-    # (1024, 2047): 'Internal error.',
-    (1200, 1299): 'Internal JPEG encoder error.',
-    (1300, 1399): 'Internal file data verification error.',
-    (1400, 1499): 'Internal album limitation error.',
-    (1500, 1599): 'Internal signature error.',
-    (1700, 1799): 'Internal album session error.',
-    (1900, 1999): 'Internal album temporary file error.'
+                    (10, 19): 'Album: invalid file ID.',
+                    (90, 99): 'Album: filesystem error.',
+                    (800, 899): 'Control error.',
+                    # (1024, 2047): 'Internal error.',
+                    (1200, 1299): 'Internal JPEG encoder error.',
+                    (1300, 1399): 'Internal file data verification error.',
+                    (1400, 1499): 'Internal album limitation error.',
+                    (1500, 1599): 'Internal signature error.',
+                    (1700, 1799): 'Internal album session error.',
+                    (1900, 1999): 'Internal album temporary file error.'
 
-})
+                })
 
 pgl = Module('pgl', {
     2: ResultInfo('Not available.'),
@@ -1365,18 +1389,24 @@ pgl = Module('pgl', {
 })
 
 web_applet = Module('web applet', {
-    1006: ResultInfo('This error code indicates an issue with the DNS used or that the connection timed out.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/25859/p/897'),
-    1028: ResultInfo('This error code generally indicates that your connection to the Nintendo eShop has timed out.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22503/p/897'),
+    1006: ResultInfo('This error code indicates an issue with the DNS used or that the connection timed out.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/25859/p/897'),
+    1028: ResultInfo('This error code generally indicates that your connection to the Nintendo eShop has timed out.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22503/p/897'),
     2750: ResultInfo('MP4 parsing failed.'),
-    5001: ResultInfo('This error code indicates an error occurred when connecting to the service, likely the result of the network environment.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22392/p/897'),
+    5001: ResultInfo(
+        'This error code indicates an error occurred when connecting to the service, likely the result of the network environment.',
+        'https://en-americas-support.nintendo.com/app/answers/detail/a_id/22392/p/897'),
 })
 
 youtube_app = Module('youtube', {
-    0: ResultInfo('This error typically occurs when your system clock isn\'t set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop.')
+    0: ResultInfo(
+        'This error typically occurs when your system clock isn\'t set correctly. If the problem persists, try reinstalling YouTube from the Nintendo eShop.')
 })
 
 arms_game = Module('ARMS', {
-    1021: ResultInfo('This error code indicates the connection has likely timed out during a download.', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26250/~/error-code%3A-2-aabqa-1021')
+    1021: ResultInfo('This error code indicates the connection has likely timed out during a download.',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26250/~/error-code%3A-2-aabqa-1021')
 })
 
 splatoon_game = Module('Splatoon 2', {
@@ -1458,12 +1488,14 @@ hb_abi = Module('homebrew ABI', {
 hbl = Module('homebrew loader', {
     1: ResultInfo('Failed to initialize sm.'),
     2: ResultInfo('Failed to initialize fs.'),
-    3: ResultInfo('Next NRO to run was not found. This is usually caused by `hbmenu.nro` not being found on the root of the SD card.'),
+    3: ResultInfo(
+        'Next NRO to run was not found. This is usually caused by `hbmenu.nro` not being found on the root of the SD card.'),
     4: ResultInfo('Failed to read NRO.'),
     5: ResultInfo('NRO header magic is invalid.'),
     6: ResultInfo('NRO size does not match size indicated by header.'),
     7: ResultInfo('Failed to read the rest of the NRO.'),
-    8: ResultInfo('Reached an unreachable location in hbloader main(). What are you doing here? This area is off-limits.'),
+    8: ResultInfo(
+        'Reached an unreachable location in hbloader main(). What are you doing here? This area is off-limits.'),
     9: ResultInfo('Unable to set heap size, or heap address was NULL.'),
     10: ResultInfo('Failed to create service thread.'),
     12: ResultInfo('Unable to create svc session.'),

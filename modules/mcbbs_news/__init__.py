@@ -22,5 +22,5 @@ async def main(msg: MessageSession):
         for i in res:
             lst += [f'{i["count"]}. [{i["category"]}] {i["title"]} - {i["author"]} @ {i["time"]}\n{i["url"]}']
         message = '\n'.join(lst) + '\n更多资讯详见 ' + \
-            Url('https://www.mcbbs.net/forum-news-1.html').url
+                  Url('https://www.mcbbs.net/forum-news-1.html').url
     await msg.finish(message)

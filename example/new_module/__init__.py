@@ -24,4 +24,3 @@ async def _(session: MessageSession):
 @test.handle('image')
 async def _(session: MessageSession):
     await session.sendMessage([Plain('A picture:'), Image('https://http.cat/100.jpg')])
-

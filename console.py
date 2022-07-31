@@ -51,7 +51,8 @@ async def send_command(msg, interactions=None):
                                                          senderId='TEST|0',
                                                          senderName='',
                                                          targetFrom='TEST|Console',
-                                                         senderFrom='TEST|Console', clientName='TEST', messageId=0, replyId=None),
+                                                         senderFrom='TEST|Console', clientName='TEST', messageId=0,
+                                                         replyId=None),
                                           session=AutoSession(message=msg, target='TEST|0', sender='TEST|0',
                                                               auto_interactions=interactions)))
     # print(returns)

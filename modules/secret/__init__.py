@@ -25,7 +25,7 @@ async def newbie(bot: FetchTarget):
         for xz in qqqq['query']['logevents'][:]:
             if xz['title'] not in qq:
                 prompt = UTC8(xz['timestamp'], 'onlytime') + \
-                    '新增新人：\n' + xz['title']
+                         '新增新人：\n' + xz['title']
                 s = await check(prompt)
                 Logger.info(s)
                 for z in s:

@@ -31,7 +31,8 @@ async def get_article(version):
                + f'-pre-release-{match_prerelease.group(2)}'
     match_release_candidate = re.match(r'(.*?)-rc(.*[0-9])', version)
     if match_release_candidate:
-        link = f'https://www.minecraft.net/en-us/article/minecraft-' + re.sub("\.", "-", match_release_candidate.group(1))\
+        link = f'https://www.minecraft.net/en-us/article/minecraft-' + re.sub("\.", "-",
+                                                                              match_release_candidate.group(1)) \
                + f'-release-candidate-{match_release_candidate.group(2)}'
     if not link:
         link = 'https://www.minecraft.net/en-us/article/minecraft-java-edition-' + re.sub("\.", "-", version)

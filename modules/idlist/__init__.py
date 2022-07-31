@@ -27,6 +27,3 @@ async def _(msg: MessageSession):
         await msg.finish('\n'.join(plain_texts))
     else:
         await msg.finish('没有找到结果。')
-
-
-

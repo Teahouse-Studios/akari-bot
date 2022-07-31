@@ -5,8 +5,8 @@ from core.component import on_command
 from core.elements import MessageSession, Image
 from .daily_trials import fetch_daily_trials, json_render
 
-dun = on_command('dungeons_trials', alias=['dungeons', 'dungeon', 'dungeonstrials', 'dungeontrials', 'dungeon_trials'], desc='获取Minecraft Dungeons每日挑战信息。缓存12小时重置一次。')
-
+dun = on_command('dungeons_trials', alias=['dungeons', 'dungeon', 'dungeonstrials', 'dungeontrials', 'dungeon_trials'],
+                 desc='获取Minecraft Dungeons每日挑战信息。缓存12小时重置一次。')
 
 records = {'ts': 0}
 
@@ -40,4 +40,3 @@ async def _(msg: MessageSession):
         qc.reset()
     else:
         await msg.sendMessage(f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为一天。')"""
-

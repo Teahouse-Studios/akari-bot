@@ -40,7 +40,8 @@ class Article:
 
 
 @on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
-             recommend_modules=['feedback_news'], trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
+             recommend_modules=['feedback_news'],
+             trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
              desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
 async def start_check_news(bot: FetchTarget):
     baseurl = 'https://www.minecraft.net'

@@ -57,8 +57,8 @@ class ModulesManager:
             ModulesManager.modules[bind_prefix].match_list.add(meta)
 
     @staticmethod
-    def return_modules_list_as_dict(targetFrom: str = None) ->\
-            Dict[str, Union[Command, RegexCommand, Schedule, StartUp]]:
+    def return_modules_list_as_dict(targetFrom: str = None) -> \
+        Dict[str, Union[Command, RegexCommand, Schedule, StartUp]]:
         if targetFrom is not None:
             returns = {}
             for m in ModulesManager.modules:
@@ -107,7 +107,7 @@ class ModulesManager:
     @staticmethod
     def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp],
                                       targetFrom: str = None) \
-            -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp]]:
+        -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()
         for m in modules:
