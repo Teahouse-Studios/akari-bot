@@ -1,7 +1,6 @@
-from core.component import on_command
 from core.builtins.message import MessageSession
+from core.component import on_command
 from core.elements import Url
-
 from .mcbbs_news import news
 
 mcbbs_news = on_command(

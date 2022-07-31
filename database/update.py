@@ -1,7 +1,7 @@
-from database.orm import Session
-from database.tables import EnabledModules
 import ujson as json
 
+from database.orm import Session
+from database.tables import EnabledModules
 
 session = Session.session
 

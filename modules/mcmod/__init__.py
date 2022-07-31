@@ -1,6 +1,5 @@
-from core.component import on_command
 from core.builtins.message import MessageSession
-
+from core.component import on_command
 from .mcmod import mcmod as m
 
 mcmod = on_command(

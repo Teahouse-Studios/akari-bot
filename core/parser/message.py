@@ -1,6 +1,6 @@
+import difflib
 import re
 import traceback
-import difflib
 from datetime import datetime
 
 from aiocqhttp.exceptions import ActionFailed

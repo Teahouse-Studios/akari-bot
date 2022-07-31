@@ -20,7 +20,6 @@ from core.elements.message.chain import MessageChain
 from core.logger import Logger
 from database import BotDBUtil
 
-
 enable_analytics = Config('enable_analytics')
 
 

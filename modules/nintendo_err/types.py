@@ -1,5 +1,6 @@
-from core.elements import Url
 from typing import Optional
+
+from core.elements import Url
 
 
 class Module:

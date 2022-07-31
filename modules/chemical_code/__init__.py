@@ -3,20 +3,17 @@ import os
 import random
 import re
 import traceback
-
-from bs4 import BeautifulSoup
-
-from tenacity import retry, stop_after_attempt
-
 from datetime import datetime
 
+from PIL import Image as PILImage
+from bs4 import BeautifulSoup
+from tenacity import retry, stop_after_attempt
+
+from core.builtins.message import MessageSession
 from core.component import on_command
 from core.elements import Image, Plain
-from core.builtins.message import MessageSession
-from core.utils import get_url, download_to_cache, random_cache_path
 from core.logger import Logger
-
-from PIL import Image as PILImage
+from core.utils import get_url, download_to_cache, random_cache_path
 
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",

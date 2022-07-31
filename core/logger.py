@@ -5,7 +5,6 @@ import sys
 
 from loguru import logger
 
-
 logpath = os.path.abspath('./logs')
 if not os.path.exists(logpath):
     os.mkdir(logpath)

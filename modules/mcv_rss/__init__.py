@@ -1,4 +1,3 @@
-import os
 import re
 import traceback
 from urllib.parse import quote
@@ -9,7 +8,7 @@ from google_play_scraper import app as google_play_scraper
 
 from config import Config
 from core.component import on_schedule
-from core.elements import FetchTarget, IntervalTrigger, PrivateAssets
+from core.elements import FetchTarget, IntervalTrigger
 from core.logger import Logger
 from core.utils import get_stored_list, update_stored_list, get_url
 

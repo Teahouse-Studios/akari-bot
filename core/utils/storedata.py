@@ -1,7 +1,6 @@
 import ujson as json
 
 from core.elements import FetchTarget
-
 from database import BotDBUtil
 
 

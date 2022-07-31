@@ -8,12 +8,10 @@ from threading import Thread
 from time import sleep
 
 import psutil
+from loguru import logger
 
 from config import Config
 from database import BotDBUtil, session, DBVersion
-
-from loguru import logger
-
 
 encode = 'UTF-8'
 

@@ -1,7 +1,7 @@
 import re
 
-from core.component import on_command
 from core.builtins.message import MessageSession
+from core.component import on_command
 from modules.wiki.dbutils import WikiTargetInfo
 from .user import get_user_info
 

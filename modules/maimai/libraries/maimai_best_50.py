@@ -1,9 +1,10 @@
-import os
 import math
+import os
 from typing import Optional, Dict, List, Tuple
 
 import aiohttp
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
 from .maimaidx_music import get_cover_len4_id, TotalList
 
 total_list = TotalList()

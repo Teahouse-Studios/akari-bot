@@ -1,5 +1,6 @@
-from bs4 import BeautifulSoup
 import datetime
+
+from bs4 import BeautifulSoup
 
 from config import Config
 from core.elements import Url

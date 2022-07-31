@@ -15,7 +15,6 @@ from core.elements.message.internal import Embed
 from core.logger import Logger
 from database import BotDBUtil
 
-
 enable_analytics = Config('enable_analytics')
 
 

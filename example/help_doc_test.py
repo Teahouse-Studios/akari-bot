@@ -1,5 +1,5 @@
-from core.parser.command import CommandParser
 from core.elements.others import command_prefix
+from core.parser.command import CommandParser
 
 c = CommandParser(('~wiki <PageName> {搜索一个Wiki页面}',
                    '~wiki random {从Wiki获取随机页面}',

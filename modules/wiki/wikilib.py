@@ -8,13 +8,12 @@ from typing import Union, Dict, List
 import ujson as json
 
 import core.utils.html2text as html2text
+from config import Config
 from core.dirty_check import check
 from core.elements import Url
 from core.logger import Logger
 from core.utils import get_url
 from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
-
-from config import Config
 
 
 class InvalidPageIDError(Exception):

@@ -3,9 +3,8 @@ import urllib.parse
 
 from bs4 import BeautifulSoup
 
-from core.component import on_command
-from core.elements import Url
 from core.builtins.message import MessageSession
+from core.component import on_command
 from core.utils import get_url
 
 mod_dl = on_command(

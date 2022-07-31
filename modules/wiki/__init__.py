@@ -6,9 +6,9 @@ from typing import Union
 import filetype
 import ujson as json
 
+from core.builtins.message import MessageSession
 from core.component import on_command, on_regex
 from core.elements import Plain, Image, Voice, Url
-from core.builtins.message import MessageSession
 from core.exceptions import AbuseWarning
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable

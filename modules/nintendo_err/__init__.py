@@ -1,8 +1,8 @@
 # ported from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
-from core.component import on_command
 from core.builtins.message import MessageSession
+from core.component import on_command
 from core.utils.message import convertDiscordEmbed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 

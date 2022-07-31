@@ -1,7 +1,6 @@
-from core.component import on_command
 from core.builtins.message import MessageSession
+from core.component import on_command
 from core.elements import Plain, Image, Url
-
 from .mojang_api import *
 
 mcplayer = on_command(
@@ -13,8 +12,8 @@ mcplayer = on_command(
 
 @mcplayer.handle('<username_or_uuid> {通过玩家名或玩家 UUID 获取玩家信息。}')
 async def main(msg: MessageSession):
+    arg = msg.parsed_msg['<username_or_uuid>']
     try:
-        arg = msg.parsed_msg['<username_or_uuid>']
         if len(arg) == 32:
             name = await uuid_to_name(arg)
             uuid = arg

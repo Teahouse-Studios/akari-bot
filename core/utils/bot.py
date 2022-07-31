@@ -2,19 +2,17 @@ import asyncio
 import logging
 import os
 import traceback
+from configparser import ConfigParser
+from os.path import abspath
 
 import ujson as json
 
 from core.elements import PrivateAssets, StartUp, Schedule, Secret
-from core.loader import load_modules, ModulesManager
-from core.scheduler import Scheduler
 from core.exceptions import ConfigFileNotFound
+from core.loader import load_modules, ModulesManager
 from core.logger import Logger
+from core.scheduler import Scheduler
 from core.utils.http import get_url
-
-from configparser import ConfigParser
-from os.path import abspath
-
 
 bot_version = 'v4.0.0'
 

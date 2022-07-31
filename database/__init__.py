@@ -1,7 +1,7 @@
 import datetime
-import ujson as json
 from typing import Union
 
+import ujson as json
 from tenacity import retry, stop_after_attempt
 
 from config import Config

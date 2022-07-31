@@ -1,20 +1,19 @@
 import asyncio
 import os
-import shutil
 import time
 import traceback
 import uuid
 from datetime import datetime, timedelta
 from os.path import abspath
-from config import Config
 
 import aiohttp
 import ujson as json
-from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageEnhance, ImageFont, ImageDraw, ImageOps
 from aiofile import async_open
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
+from config import Config
 from core.logger import Logger
 from core.utils import get_url
 
@@ -73,7 +72,6 @@ async def get_rating(uid, query_type):
         """)
 
         result = await client.execute_async(query)
-        print(result)
         workdir = os.path.abspath(Config("cache_path") + str(uuid.uuid4()))
         os.mkdir(workdir)
         bestRecords = result['profile'][query_type]
@@ -111,8 +109,9 @@ async def get_rating(uid, query_type):
                 havecover = True
             else:
                 havecover = False
-            songcards.append(make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
-                          havecover))
+            songcards.append(
+                make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
+                              havecover))
 
         for x in bestRecords:
             rank += 1
@@ -286,20 +285,3 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
     Logger.info('Image generated: ' + str(rank))
     img.save(workdir + '/' + str(rank) + '.png')
 
-
-async def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour):
-    fullWidth = image.size[0] + abs(offset[0]) + 2 * border
-    fullHeight = image.size[1] + abs(offset[1]) + 2 * border
-    shadow = Image.new(image.mode, (fullWidth, fullHeight), backgroundColour)
-    shadowLeft = border + max(offset[0], 0)
-    shadowTop = border + max(offset[1], 0)
-    shadow.paste(shadowColour,
-                 [shadowLeft, shadowTop,
-                  shadowLeft + image.size[0],
-                  shadowTop + image.size[1]])
-    for i in range(iterations):
-        shadow = shadow.filter(ImageFilter.BLUR)
-    imgLeft = border - min(offset[0], 0)
-    imgTop = border - min(offset[1], 0)
-    shadow.paste(image, (imgLeft, imgTop))
-    return shadow

@@ -1,10 +1,10 @@
-from itertools import count
 import traceback
+
 from bs4 import BeautifulSoup
 
+from config import Config
 from core.elements import Url
 from core.utils import get_url
-from config import Config
 
 
 async def jiki(term: str):

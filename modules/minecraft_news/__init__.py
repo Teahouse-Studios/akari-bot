@@ -1,4 +1,4 @@
-import os
+import random
 import random
 import traceback
 from datetime import datetime, timedelta
@@ -8,7 +8,7 @@ import ujson as json
 
 from config import Config
 from core.component import on_schedule
-from core.elements import FetchTarget, IntervalTrigger, PrivateAssets, Url
+from core.elements import FetchTarget, IntervalTrigger, Url
 from core.logger import Logger
 from core.utils import get_url, get_stored_list, update_stored_list
 

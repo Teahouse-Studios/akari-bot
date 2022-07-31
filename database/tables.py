@@ -1,11 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
-from database.orm_base import Base
-
-from database.orm import Session
-
 from config import Config
+from database.orm import Session
+from database.orm_base import Base
 
 
 class EnabledModules(Base):

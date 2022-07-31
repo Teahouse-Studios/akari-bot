@@ -1,11 +1,9 @@
 # https://github.com/XeroAlpha/caidlist/blob/master/backend/API.md
-import re
 import urllib.parse
 
-from core.component import on_command
 from core.builtins.message import MessageSession
+from core.component import on_command
 from core.utils import get_url
-
 
 api = 'https://ca.projectxero.top/idlist/search'
 

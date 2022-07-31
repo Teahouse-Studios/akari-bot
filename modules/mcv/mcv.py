@@ -4,6 +4,7 @@ import re
 from google_play_scraper import app as google_play_scraper
 
 from core.elements import ErrorMessage
+from core.logger import Logger
 from core.utils import get_url
 
 
@@ -75,9 +76,9 @@ async def mcdv():
 async def mcev():
     try:
         data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt')
-        print(data)
-        version = re.search(r'(?<=\[)(.*?)(?=\])', data)[0]
-        print(version)
+        Logger.info(data)
+        version = re.search(r'(?<=\[)(.*?)(?=])', data)[0]
+        Logger.info(version)
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage('土豆熟了')
     return f'最新版：{version}'
