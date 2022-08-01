@@ -1,3 +1,4 @@
+import asyncio.exceptions
 import re
 import socket
 import traceback
@@ -45,20 +46,23 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
         private_ip_check(url)
 
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers) as req:
-            if log:
-                Logger.info(await req.read())
-            if status_code and req.status != status_code:
-                raise ValueError(
-                    f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
-            if fmt is not None:
-                if hasattr(req, fmt):
-                    return await getattr(req, fmt)()
+        try:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers) as req:
+                if log:
+                    Logger.info(await req.read())
+                if status_code and req.status != status_code:
+                    raise ValueError(
+                        f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
+                if fmt is not None:
+                    if hasattr(req, fmt):
+                        return await getattr(req, fmt)()
+                    else:
+                        raise ValueError(f"NoSuchMethod: {fmt}")
                 else:
-                    raise ValueError(f"NoSuchMethod: {fmt}")
-            else:
-                text = await req.text()
-                return text
+                    text = await req.text()
+                    return text
+        except asyncio.exceptions.TimeoutError:
+            raise ValueError(f'Request timeout.')
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)

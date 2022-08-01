@@ -15,7 +15,7 @@ async def cytoid_profile(msg: MessageSession):
         if query_id is None:
             return await msg.sendMessage('未绑定用户，请使用~cytoid bind <friendcode>绑定一个用户。')
     profile_url = 'http://services.cytoid.io/profile/' + query_id
-    profile = json.loads(await get_url(profile_url))
+    profile = json.loads(await get_url(profile_url, status_code=200))
     if 'statusCode' in profile:
         if profile['statusCode'] == 404:
             await msg.sendMessage('发生错误：此用户不存在。')

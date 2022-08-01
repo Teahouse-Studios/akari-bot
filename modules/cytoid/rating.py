@@ -25,7 +25,7 @@ async def get_rating(uid, query_type):
         elif query_type == 'r30':
             query_type = 'recentRecords'
         Profile_url = 'http://services.cytoid.io/profile/' + uid
-        Profile_json = json.loads(await get_url(Profile_url))
+        Profile_json = json.loads(await get_url(Profile_url, 200))
         if 'statusCode' in Profile_json:
             if Profile_json['statusCode'] == 404:
                 return {'status': False, 'text': '发生错误：此用户不存在。'}
