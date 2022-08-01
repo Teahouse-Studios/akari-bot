@@ -77,8 +77,11 @@ async def post_url(url: str, data: any, headers: dict = None):
         private_ip_check(url)
 
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.post(url, data=data, headers=headers) as req:
-            return await req.text()
+        try:
+            async with session.post(url, data=data, headers=headers) as req:
+                return await req.text()
+        except asyncio.exceptions.TimeoutError:
+            raise ValueError(f'Request timeout.')
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
@@ -100,6 +103,9 @@ async def download_to_cache(url: str) -> Union[str, bool]:
                 async with async_open(path, 'wb+') as file:
                     await file.write(res)
                     return path
+    except asyncio.exceptions.TimeoutError:
+        Logger.error(f'Request timeout.')
+        return False
     except Exception:
         Logger.error(traceback.format_exc())
         return False
