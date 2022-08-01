@@ -17,7 +17,7 @@ async def jiki(term: str):
         webrender = Config('web_render')
         if webrender:
             api = webrender + 'source?url=' + api
-        html = await get_url(api)
+        html = await get_url(api, 200)
         print(html)
         bs = BeautifulSoup(html, 'html.parser')
         result = bs.select_one('[data-index="0"]')

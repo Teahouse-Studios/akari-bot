@@ -12,7 +12,7 @@ async def news():
     webrender = Config('web_render')
     if webrender:
         api = webrender + 'source?url=' + api
-    html = await get_url(api)
+    html = await get_url(api, 200)
     print(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.select('#threadlisttableid > tbody[id^="normalthread_"]')

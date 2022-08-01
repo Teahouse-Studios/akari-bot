@@ -14,7 +14,9 @@ api_url = Config("botarcapi_url")
 async def get_info(usercode):
     headers = {"User-Agent": Config('botarcapi_agent')}
     try:
-        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True", headers=headers,
+        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True",
+                             status_code=200,
+                             headers=headers,
                              fmt='json')
     except ValueError as e:
         return [Plain('查询失败：' + str(e))]

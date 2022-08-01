@@ -15,7 +15,7 @@ async def _(msg: MessageSession):
     query = msg.parsed_msg['<query>']
     query_options = {'q': query, 'limit': '6'}
     query_url = api + '?' + urllib.parse.urlencode(query_options)
-    resp = await get_url(query_url, fmt='json')
+    resp = await get_url(query_url, 200, fmt='json')
     result = resp['data']['result']
     plain_texts = []
     if result:

@@ -123,7 +123,7 @@ async def mcbv_rss(bot: FetchTarget):
 async def mcv_jira_rss(bot: FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions'))
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200))
         releases = []
         for v in file:
             if not v['archived']:
@@ -157,7 +157,7 @@ async def mcv_jira_rss(bot: FetchTarget):
 async def mcbv_jira_rss(bot: FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcbv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions'))
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
         releases = []
         for v in file:
             if not v['archived']:
@@ -186,7 +186,7 @@ async def mcbv_jira_rss(bot: FetchTarget):
 async def mcdv_jira_rss(bot: FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcdv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions'))
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
         releases = []
         for v in file:
             if not v['archived']:

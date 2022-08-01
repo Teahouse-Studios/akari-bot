@@ -11,7 +11,8 @@ from .teahouse import get_rss as get_teahouse_rss
 
 async def get_weekly():
     result = json.loads(await get_url(
-        'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid&format=json'))
+        'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid&format=json',
+        200))
     html = result['parse']['text']['*']
     text = re.sub(r'<p>', '\n', html)  # 分段
     text = re.sub(r'<(.*?)>', '', text, flags=re.DOTALL)  # 移除所有 HTML 标签

@@ -5,12 +5,12 @@ from core.utils import get_url, download_to_cache
 
 
 async def uuid_to_name(uuid):
-    res = json.loads(await get_url(f'https://api.mojang.com/user/profiles/{uuid}/names'))
+    res = json.loads(await get_url(f'https://api.mojang.com/user/profiles/{uuid}/names', 200))
     return res[0]['name']
 
 
 async def name_to_uuid(name):
-    res = json.loads(await get_url(f'https://api.mojang.com/users/profiles/minecraft/{name}'))
+    res = json.loads(await get_url(f'https://api.mojang.com/users/profiles/minecraft/{name}', 200))
     return res['id']
 
 

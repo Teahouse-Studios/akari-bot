@@ -10,12 +10,12 @@ from core.utils import get_url
 
 async def mcv():
     try:
-        data = json.loads(await get_url('http://launchermeta.mojang.com/mc/game/version_manifest.json'))
+        data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
         message1 = f"最新版：{data['latest']['release']}，最新快照：{data['latest']['snapshot']}"
     except (ConnectionError, OSError):  # Probably...
         message1 = "获取manifest.json失败。"
     try:
-        mojira = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions'))
+        mojira = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200))
         release = []
         prefix = ' | '
         for v in mojira:
@@ -37,7 +37,7 @@ async def mcbv():
     except Exception:
         play_store_version = '获取失败'
     try:
-        data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions'))
+        data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage('土豆熟了')
     beta = []
@@ -63,7 +63,7 @@ Mojira上所记录最新版本为：
 
 async def mcdv():
     try:
-        data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions'))
+        data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage('土豆熟了')
     release = []
@@ -75,7 +75,7 @@ async def mcdv():
 
 async def mcev():
     try:
-        data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt')
+        data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt', 200)
         Logger.info(data)
         version = re.search(r'(?<=\[)(.*?)(?=])', data)[0]
         Logger.info(version)

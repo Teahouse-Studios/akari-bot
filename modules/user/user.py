@@ -62,7 +62,7 @@ async def get_user_info(wikiurl, username, pic=False):
 
 
     try:
-        gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile: ' + username, wiki.wiki_info.articlepath)), 'html.parser')
+        gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile: ' + username, wiki.wiki_info.articlepath), 200), 'html.parser')
         dd = gp_clawler.find('div', class_='section stats').find_all('dd')
         data['edited_wiki_count'] = dd[0].text
         data['created_page_count'] = dd[1].text

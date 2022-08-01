@@ -8,8 +8,8 @@ async def bugtracker_get(mojiraId: str):
     data = {}
     id_ = mojiraId.upper()
     json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
-    get_json = await get_url(json_url)
-    get_spx = await get_url('https://bugs.guangyaostore.com/translations')
+    get_json = await get_url(json_url, 200)
+    get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
     if get_spx:
         spx = json.loads(get_spx)
         if id_ in spx:

@@ -17,7 +17,7 @@ async def mcmod(keyword: str, detail: bool = False):
     if not webrender:
         return
     search_url = webrender + 'source?url=' + quote(search_url)
-    html = await get_url(search_url)
+    html = await get_url(search_url, 200)
     print(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.find_all('div', class_='result-item')

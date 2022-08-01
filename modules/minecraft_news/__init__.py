@@ -51,7 +51,7 @@ async def start_check_news(bot: FetchTarget):
     if not webrender:
         return
     get = webrender + 'source?url=' + url
-    getpage = await get_url(get)
+    getpage = await get_url(get, 200)
     if getpage:
         alist = get_stored_list(bot, 'mcnews')
         o_json = json.loads(getpage)
@@ -83,7 +83,7 @@ async def feedback_news(bot: FetchTarget):
     for section in sections:
         try:
             alist = get_stored_list(bot, 'mcfeedbacknews')
-            get = await get_url(section['url'])
+            get = await get_url(section['url'], 200)
             res = json.loads(get)
             articles = []
             for i in res['articles']:
