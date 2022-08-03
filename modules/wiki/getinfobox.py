@@ -36,6 +36,7 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
             os.remove(url)
         Logger.info('Downloaded raw.')
         open_file = open(url, 'a', encoding='utf-8')
+        timeless_fix = False
 
         def join_url(base, target):
             target = target.split(' ')
@@ -62,7 +63,10 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
         open_file.write('<head>\n')
         for x in soup.find_all(rel='stylesheet'):
             if x.has_attr('href'):
-                x.attrs['href'] = re.sub(';', '&', urljoin(link, x.get('href')))
+                get_herf = x.get('href')
+                if get_herf.find('timeless') != -1:
+                    timeless_fix = True
+                x.attrs['href'] = re.sub(';', '&', urljoin(link, get_herf))
             open_file.write(str(x))
 
         for x in soup.find_all():
@@ -249,6 +253,9 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
                 background-color: #cccccc;\
                 text-shadow: none;\
             }</style>')
+        if timeless_fix:
+            open_file.write('<style>body {\
+                            background: white!important}</style>')
         open_file.write('</html>')
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
