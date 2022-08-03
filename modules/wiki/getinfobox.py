@@ -139,6 +139,9 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
                         if x.has_attr('class') and x.has_attr('data-src'):
                             x.attrs['class'] = 'image'
                             x.attrs['src'] = x.attrs['data-src']
+
+                    open_file.write('<div class="mw-parser-output">')
+
                     open_file.write(str(find_infobox))
                     w = 500
                     open_file.write('</div>')
