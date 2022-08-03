@@ -621,12 +621,12 @@ async def _(msg: MessageSession):
 
 @ae.handle('revoke <user> [<count>]')
 async def _(msg: MessageSession):
-    count = 0 - int(msg.parsed_msg['<count>'] or -1)
+    count = 0 - int(msg.parsed_msg['<count>'] or 1)
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
-    await msg.finish(f'成功移除警告 {user} 的 {count} 次警告。此用户已被警告 {warn_count} 次。')
+    await msg.finish(f'成功移除警告 {user} 的 {msg.parsed_msg["<count>"]} 次警告。此用户已被警告 {warn_count} 次。')
 
 
 @ae.handle('clear <user>')
