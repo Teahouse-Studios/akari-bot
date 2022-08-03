@@ -653,7 +653,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
-        await msg.finish(f'成功将 {user} 加入黑名单。')
+        await msg.finish(f'成功成功封禁 {user}。')
 
 
 @ae.handle('unban <user>')
@@ -662,7 +662,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
-        await msg.finish(f'成功将 {user} 移出黑名单。')
+        await msg.finish(f'成功解除 {user} 的封禁。')
 
 
 """
