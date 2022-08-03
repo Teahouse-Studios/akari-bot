@@ -177,13 +177,17 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
                 element.extract()
             selected = False
             x = None
-            for x in soup.find_all('h2'):
-                for y in x.find_all('span', id=section):
-                    if y != '':
-                        selected = True
-                        break
+            hx = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
+            for h in hx:
                 if selected:
                     break
+                for x in soup.find_all(h):
+                    for y in x.find_all('span', id=section):
+                        if y != '':
+                            selected = True
+                            break
+                    if selected:
+                        break
             if not selected:
                 Logger.info('Found nothing...')
                 return False
