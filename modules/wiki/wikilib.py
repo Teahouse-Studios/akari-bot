@@ -404,8 +404,11 @@ class WikiLib:
                     if a[0] == '?':
                         quote_code = False
                     if quote_code:
-                        arg_list.append(urllib.parse.quote(a))
-                        section_list.append(a)
+                        if a == '#':
+                            arg_list.append('#')
+                        else:
+                            arg_list.append(urllib.parse.quote(a))
+                            section_list.append(a)
                     else:
                         _arg_list.append(a)
             _arg = ''.join(_arg_list)
