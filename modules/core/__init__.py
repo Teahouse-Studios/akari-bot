@@ -626,7 +626,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
-    await msg.finish(f'成功移除警告 {user} 的 {msg.parsed_msg["<count>"]} 次警告。此用户已被警告 {warn_count} 次。')
+    await msg.finish(f'成功移除警告 {user} 的 {abs(count)} 次警告。此用户已被警告 {warn_count} 次。')
 
 
 @ae.handle('clear <user>')
@@ -644,7 +644,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     await remove_temp_ban(user)
-    await msg.finish(f'成功解除 {user} 的临时封禁。')
+    await msg.finish(f'成功解除 {user} 的临时限制。')
 
 
 @ae.handle('ban <user>')
@@ -653,7 +653,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
-        await msg.finish(f'成功封禁 {user}。')
+        await msg.finish(f'成功将 {user} 加入黑名单。')
 
 
 @ae.handle('unban <user>')
@@ -662,7 +662,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
-        await msg.finish(f'成功解除 {user} 的封禁。')
+        await msg.finish(f'成功将 {user} 移出黑名单。')
 
 
 """
