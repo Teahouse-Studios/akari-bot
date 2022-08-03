@@ -749,7 +749,7 @@ async def _(msg: MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
 
-tog = on_command('toggle', developers=['OasisAkari'], base=True)
+tog = on_command('toggle', developers=['OasisAkari'], base=True, required_admin=True)
 
 
 @tog.handle('typing {切换是否展示输入提示}')
