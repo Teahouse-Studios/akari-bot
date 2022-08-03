@@ -515,7 +515,8 @@ su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang2
 @su.handle('add <user>')
 async def add_su(message: MessageSession):
     user = message.parsed_msg['<user>']
-    print(message.parsed_msg)
+    if not user.startswith(f'{message.target.senderFrom}|'):
+        await message.finish(f'ID格式错误，请对象使用{message.prefixes[0]}whoami命令查看用户ID。')
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
             await message.finish('操作成功：已将' + user + '设置为超级用户。')
@@ -524,6 +525,8 @@ async def add_su(message: MessageSession):
 @su.handle('del <user>')
 async def del_su(message: MessageSession):
     user = message.parsed_msg['<user>']
+    if not user.startswith(f'{message.target.senderFrom}|'):
+        await message.finish(f'ID格式错误，请对象使用{message.prefixes[0]}whoami命令查看用户ID。')
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
             await message.finish('操作成功：已将' + user + '移出超级用户。')
@@ -600,6 +603,8 @@ ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_sup
 @ae.handle('check <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     warns = BotDBUtil.SenderInfo(user).query.warns
     await msg.finish(f'{user} 已被警告 {warns} 次。')
 
@@ -608,6 +613,8 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     count = int(msg.parsed_msg['<count>'] or 1)
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
     await msg.finish(f'成功警告 {user} {count} 次。此用户已被警告 {warn_count} 次。')
 
@@ -616,6 +623,8 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     count = 0 - int(msg.parsed_msg['<count>'] or -1)
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
     await msg.finish(f'成功移除警告 {user} 的 {count} 次警告。此用户已被警告 {warn_count} 次。')
 
@@ -623,6 +632,8 @@ async def _(msg: MessageSession):
 @ae.handle('clear <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     await pardon_user(user)
     await msg.finish(f'成功清除 {user} 的警告。')
 
@@ -630,6 +641,8 @@ async def _(msg: MessageSession):
 @ae.handle('untempban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     await remove_temp_ban(user)
     await msg.finish(f'成功解除 {user} 的临时封禁。')
 
@@ -637,6 +650,8 @@ async def _(msg: MessageSession):
 @ae.handle('ban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
         await msg.finish(f'成功封禁 {user}。')
 
@@ -644,6 +659,8 @@ async def _(msg: MessageSession):
 @ae.handle('unban <user>')
 async def _(msg: MessageSession):
     user = msg.parsed_msg['<user>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
         await msg.finish(f'成功解除 {user} 的封禁。')
 
