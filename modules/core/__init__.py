@@ -626,7 +626,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     warn_count = await warn_user(user, count)
-    await msg.finish(f'成功移除警告 {user} 的 {msg.parsed_msg["<count>"]} 次警告。此用户已被警告 {warn_count} 次。')
+    await msg.finish(f'成功移除警告 {user} 的 {abs(count)} 次警告。此用户已被警告 {warn_count} 次。')
 
 
 @ae.handle('clear <user>')
