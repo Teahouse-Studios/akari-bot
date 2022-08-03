@@ -59,12 +59,12 @@ async def temp_ban_check(msg: MessageSession):
         if ban_time < 300:
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
-                return await msg.sendMessage('提示：\n'
+                return await msg.finish('提示：\n'
                                              '由于你的行为触发了警告，我们已对你进行临时封禁。\n'
                                              f'距离解封时间还有{str(int(300 - ban_time))}秒。')
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
-                return await msg.sendMessage('即使是触发了临时封禁，继续使用命令还是可能会导致你被再次警告。\n'
+                return await msg.finish('即使是触发了临时封禁，继续使用命令还是可能会导致你被再次警告。\n'
                                              f'距离解封时间还有{str(int(300 - ban_time))}秒。')
             else:
                 raise AbuseWarning('无视临时封禁警告')
@@ -442,6 +442,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         if matched:  # 如果匹配成功
                             Logger.info(
                                 f'{identify_str} -> [Bot]: {display}')
+                            if enable_tos:
+                                await temp_ban_check(msg)
                             if regex_module.required_superuser:
                                 if not msg.checkSuperUser():
                                     continue
