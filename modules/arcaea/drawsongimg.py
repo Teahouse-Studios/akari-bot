@@ -9,17 +9,17 @@ assets_path = os.path.abspath('./assets/arcaea')
 
 def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, playtime, path=''):
     # score rating
-    if score > 9900000:
+    if score >= 9900000:
         scoretype = 'EX+'
-    elif score > 9800000:
+    elif score >= 9800000:
         scoretype = 'EX'
-    elif score > 9500000:
+    elif score >= 9500000:
         scoretype = 'AA'
-    elif score > 9200000:
+    elif score >= 9200000:
         scoretype = 'A'
-    elif score > 8900000:
+    elif score >= 8900000:
         scoretype = 'B'
-    elif score > 8600000:
+    elif score >= 8600000:
         scoretype = 'C'
     else:
         scoretype = 'D'
