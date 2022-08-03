@@ -185,6 +185,7 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
             selected = False
             x = None
             hx = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
+            selected_hx = None
             for h in hx:
                 if selected:
                     break
@@ -192,6 +193,7 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
                     for y in x.find_all('span', id=section):
                         if y != '':
                             selected = True
+                            selected_hx = h
                             break
                     if selected:
                         break
@@ -207,7 +209,7 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
                 if b is None:
                     break
 
-                if b.name == 'h2':
+                if b.name == selected_hx:
                     break
                 if b not in bl:
                     bl.append(str(b))
