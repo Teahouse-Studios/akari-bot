@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 from config import Config
 from core.elements import Url
+from core.logger import Logger
 from core.utils import get_url
 
 api = 'https://search.mcmod.cn/s?key='
@@ -18,7 +19,7 @@ async def mcmod(keyword: str, detail: bool = False):
         return
     search_url = webrender + 'source?url=' + quote(search_url)
     html = await get_url(search_url, 200)
-    print(html)
+    Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.find_all('div', class_='result-item')
     if results:

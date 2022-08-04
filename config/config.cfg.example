@@ -1,4 +1,5 @@
 [cfg]
+debug = False
 cache_path = ./cache/
 db_path = mysql+pymysql://
 db_cache = False

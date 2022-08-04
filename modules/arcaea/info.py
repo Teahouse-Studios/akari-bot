@@ -4,6 +4,7 @@ from datetime import datetime
 
 from config import Config
 from core.elements import Plain, Image
+from core.logger import Logger
 from core.utils import get_url
 from modules.arcaea.errcode import errcode
 
@@ -23,7 +24,7 @@ async def get_info(usercode):
     except Exception:
         traceback.print_exc()
         return [Plain('查询失败。')]
-    print(get_)
+    Logger.debug(get_)
     if get_["status"] == 0:
         recent = get_['content']["recent_score"]
         if len(recent) < 0:

@@ -3,6 +3,7 @@ import re
 from core.builtins.message import MessageSession
 from core.component import on_command, on_regex
 from core.elements import Plain, Image as BImage
+from core.logger import Logger
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
 from modules.maimai.libraries.maimai_best_50 import generate50
@@ -77,7 +78,7 @@ async def _(msg: MessageSession):
                 rand_result = song_txt(music_data.random())
             await msg.finish(rand_result)
         except Exception as e:
-            print(e)
+            Logger.error(e)
             await msg.finish("随机命令错误，请检查语法")
 
 

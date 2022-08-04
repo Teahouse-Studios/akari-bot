@@ -27,7 +27,7 @@ async def newbie(bot: FetchTarget):
                 prompt = UTC8(xz['timestamp'], 'onlytime') + \
                          '新增新人：\n' + xz['title']
                 s = await check(prompt)
-                Logger.info(s)
+                Logger.debug(s)
                 for z in s:
                     sz = z['content']
                     if not z['status']:
@@ -67,7 +67,7 @@ async def _(bot: FetchTarget):
                 s += '处理结果：' + result + '\n'
                 s += UTC8(y['timestamp'], 'full')
                 chk = await check(s)
-                Logger.info(chk)
+                Logger.debug(chk)
                 for z in chk:
                     sz = z['content']
                     if not z['status']:

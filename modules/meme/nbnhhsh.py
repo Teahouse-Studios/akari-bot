@@ -2,6 +2,7 @@ import traceback
 
 import ujson as json
 
+from core.logger import Logger
 from core.utils import post_url
 
 
@@ -14,7 +15,7 @@ async def nbnhhsh(term: str):
         req = json.dumps({'text': term})
         text = await post_url(url, data=req, headers={'Content-Type': 'application/json', 'Accept': '*/*',
                                                       'Content-Length': str(len(req))})
-        print(text)
+        Logger.debug(text)
         data = json.loads(text)
         try:
             result = data[0]

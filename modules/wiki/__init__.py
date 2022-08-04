@@ -10,6 +10,7 @@ from core.builtins.message import MessageSession
 from core.component import on_command, on_regex
 from core.elements import Plain, Image, Voice, Url
 from core.exceptions import AbuseWarning
+from core.logger import Logger
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
 from database import BotDBUtil
@@ -40,7 +41,7 @@ async def _(msg: MessageSession):
     page_id: str = msg.parsed_msg['<PageID>']
     if not page_id.isdigit():
         await msg.finish('错误：页面ID必须是数字。')
-    print(msg.parsed_msg)
+    Logger.debug(msg.parsed_msg)
     if not iw:
         iw = ''
     await query_pages(msg, pageid=page_id, iw=iw)
@@ -345,7 +346,7 @@ async def _(msg: MessageSession):
 @wiki_inline.handle(r'\{\{(.*?)}}', mode='A', flags=re.I)
 async def _(msg: MessageSession):
     query_list = []
-    print(msg.matched_msg)
+    Logger.debug(msg.matched_msg)
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
             query_list.append(x.split("|")[0])
@@ -356,7 +357,7 @@ async def _(msg: MessageSession):
 @wiki_inline.handle(r'≺(.*?)≻|⧼(.*?)⧽', mode='A', flags=re.I, show_typing=False)
 async def _(msg: MessageSession):
     query_list = []
-    print(msg.matched_msg)
+    Logger.debug(msg.matched_msg)
     for x in msg.matched_msg:
         for y in x:
             if y != '' and y not in query_list and y[0] != '#':
@@ -420,7 +421,7 @@ async def search_pages(session: MessageSession, title: Union[str, list, tuple], 
                                 matched = True
             if not matched:
                 query_task[start_wiki]['query'].append(t)
-    print(query_task)
+    Logger.debug(query_task)
     msg_list = []
     wait_msg_list = []
     for q in query_task:
@@ -532,7 +533,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 'queryid': [pageid], 'iw_prefix': iw}}
     else:
         raise ValueError('title or pageid must be specified.')
-    print(query_task)
+    Logger.debug(query_task)
     msg_list = []
     wait_msg_list = []
     wait_list = []
@@ -565,7 +566,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)))
             query = await asyncio.gather(*tasks)
             for result in query:
-                print(result.__dict__)
+                Logger.debug(result.__dict__)
                 r: PageInfo = result
                 display_title = None
                 display_before_title = None

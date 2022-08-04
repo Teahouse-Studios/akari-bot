@@ -6,6 +6,7 @@ import aiohttp
 import ujson as json
 
 from config import Config
+from core.logger import Logger
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
 from .errcode import errcode
@@ -69,7 +70,7 @@ async def getb30(usercode, official=False):
 
                     run_lst.append(draw_jacket(x, d))
                 await asyncio.gather(*run_lst)
-                print(tracknames)
+                Logger.debug(tracknames)
                 for last5 in loadjson["content"]["best30_list"][-5:]:
                     last5rank += 1
                     if last5['difficulty'] == 0:
@@ -85,7 +86,7 @@ async def getb30(usercode, official=False):
                     ptt = ptts[last5['song_id'] + difficulty]
                     score = scores[last5['song_id'] + difficulty]
                     last5list += f'[{last5rank}] {trackname}\n[{last5rank}] {score} / {realptt / 10} -> {round(ptt, 4)}\n'
-                print(last5list)
+                Logger.debug(last5list)
                 username = loadjson["content"]['account_info']['name']
                 ptt = int(loadjson["content"]['account_info']['rating']) / 100
                 character = loadjson["content"]['account_info']['character']

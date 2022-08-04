@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 from config import Config
 from core.elements import Url
+from core.logger import Logger
 from core.utils import get_url
 
 
@@ -13,7 +14,7 @@ async def news():
     if webrender:
         api = webrender + 'source?url=' + api
     html = await get_url(api, 200)
-    print(html)
+    Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.select('#threadlisttableid > tbody[id^="normalthread_"]')
     res = []

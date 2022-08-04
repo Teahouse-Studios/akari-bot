@@ -7,6 +7,7 @@ import traceback
 import uuid
 
 from config import Config
+from core.logger import Logger
 from core.utils import get_url
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
@@ -126,7 +127,7 @@ async def getb30_official(usercode):
         score = scores[last5['song_id'] + difficulty]
         last5list += f'[{last5rank}] {trackname}\n' \
                      f'[{last5rank}] {score} / {realptt / 10} -> {round(ptt, 4)}\n'
-    print(last5list)
+    Logger.debug(last5list)
     filename = drawb30(username, b30_avg, r10_avg, potential, 0, newdir, official=True)
     filelist = os.listdir(newdir)
     for x in filelist:

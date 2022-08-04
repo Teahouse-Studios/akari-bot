@@ -29,10 +29,8 @@ class Template(MS):
         wait = True
 
     async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
-        Logger.info(msgchain)
         msgchain = MessageChain(msgchain)
         self.sent.append(msgchain)
-        Logger.info(msgchain)
         msg_list = []
         for x in msgchain.asSendable(embed=False):
             if isinstance(x, Plain):

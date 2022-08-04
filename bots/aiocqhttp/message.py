@@ -231,7 +231,7 @@ class FetchTarget(FT):
                     continue
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x)
-                Logger.info(fetch)
+                Logger.debug(fetch)
                 if fetch:
                     if fetch.target.targetFrom == 'QQ|Group':
                         if int(fetch.session.target) not in group_list:

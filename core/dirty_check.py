@@ -30,7 +30,6 @@ def computeMD5hash(my_string):
 
 
 def parse_data(result: dict):
-    print(result)
     original_content = content = result['content']
     status = True
     for itemResult in result['results']:
@@ -84,7 +83,6 @@ async def check(*text) -> list:
             if not query_list[q][pq]:
                 if pq not in call_api_list:
                     call_api_list.update({pq: []})
-                print(call_api_list)
                 call_api_list[pq].append(q)
     call_api_list_ = [x for x in call_api_list]
     if call_api_list_:
@@ -134,17 +132,15 @@ async def check(*text) -> list:
             async with session.post('{}{}'.format(root, url), data=json.dumps(body)) as resp:
                 if resp.status == 200:
                     result = await resp.json()
-                    print(result)
                     for item in result['data']:
                         content = item['content']
                         for n in call_api_list[content]:
-                            print(n)
                             query_list.update({n: {content: parse_data(item)}})
                         DirtyWordCache(content).update(item)
                 else:
                     raise ValueError(await resp.text())
     results = []
-    print(query_list)
+    Logger.debug(query_list)
     for x in query_list:
         for y in query_list[x]:
             results.append(query_list[x][y])

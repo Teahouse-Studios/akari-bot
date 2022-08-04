@@ -5,6 +5,11 @@ import sys
 
 from loguru import logger
 
+from config import Config
+
+
+debug = Config('debug')
+
 logpath = os.path.abspath('./logs')
 if not os.path.exists(logpath):
     os.mkdir(logpath)
@@ -17,7 +22,7 @@ class Logginglogger:
     def __init__(self):
         self.log = logger
         self.log.remove()
-        self.log.add(sys.stderr, format=basic_logger_format, level="INFO", colorize=True)
+        self.log.add(sys.stderr, format=basic_logger_format, level="DEBUG" if debug else "INFO", colorize=True)
         self.log.add(logpath + '/' + bot_name + "_{time:YYYY-MM-DD}.log", format=basic_logger_format,
                      retention="10 days")
         self.info = self.log.info
@@ -25,6 +30,8 @@ class Logginglogger:
         self.debug = self.log.debug
         self.warn = self.log.warning
         self.exception = self.log.exception
+        if debug:
+            self.log.warning("Debug mode is enabled.")
 
 
 Logger = Logginglogger()

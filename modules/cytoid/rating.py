@@ -228,7 +228,7 @@ async def download_cover_thumb(uid):
 
 
 async def download_avatar_thumb(link, id):
-    Logger.info(f'Downloading avatar for {str(id)}')
+    Logger.debug(f'Downloading avatar for {str(id)}')
     try:
         d = abspath('./assets/cytoid-avatar/')
         if not os.path.exists(d):
@@ -282,5 +282,5 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
     draw_typetext = ImageDraw.Draw(type_text)
     draw_typetext.text(((32 - font3.getsize(type_)[0] - font.getoffset(type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
     img.alpha_composite(type_text, (23, 29))
-    Logger.info('Image generated: ' + str(rank))
+    Logger.debug('Image generated: ' + str(rank))
     img.save(workdir + '/' + str(rank) + '.png')

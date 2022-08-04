@@ -283,7 +283,6 @@ async def _(msg: MessageSession):
             if x in target_enabled_list:
                 module_.append(x)
         help_msg.append(' | '.join(module_))
-        print(help_msg)
         help_msg.append(
             f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
@@ -579,7 +578,6 @@ async def _(msg: MessageSession):
         for x in data_:
             data_x.append(str(x))
             data_y.append(data_[x])
-        print(data_y)
         plt.plot(data_x, data_y, "-o")
         plt.plot(data_x[-1], data_y[-1], "-ro")
         plt.xlabel('Days')
@@ -701,7 +699,6 @@ async def wait_for_restart(msg: MessageSession):
             for x in get_wait_list:
                 for y in get_wait_list[x]:
                     if get_wait_list[x][y]['active']:
-                        print(x, y)
                         await get_wait_list[x][y]['original_session'].sendMessage('由于机器人正在重启，您此次执行命令的后续操作已被强制取消。'
                                                                                   '请稍后重新执行命令，对此带来的不便，我们深感抱歉。')
 

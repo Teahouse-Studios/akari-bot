@@ -29,7 +29,7 @@ def load_modules():
         except:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
-            Logger.info(errmsg)
+            Logger.error(errmsg)
             err_prompt.append(errmsg)
     loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
     openloadercache = open(loadercache, 'w')

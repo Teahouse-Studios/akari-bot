@@ -46,7 +46,6 @@ class MessageSession(MS):
             #    msg = msg + MessageSegment.record(Path(x.path).as_uri())
             count += 1
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
-        Logger.info(self.session.target)
         match_guild = re.match(r'(.*)\|(.*)', self.session.target)
         send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
                                      channel_id=int(match_guild.group(2)), message=msg)

@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from core.builtins.message import MessageSession
 from core.component import on_command
 from core.elements import Image as Img
+from core.logger import Logger
 from core.utils.cache import random_cache_path
 
 assets_path = os.path.abspath('./assets/arcaea')
@@ -59,15 +60,15 @@ async def pttimg(msg: MessageSession):
         ptttext_width, ptttext_height = ptttext.size
         font1_width, font1_height = font1.getsize(ptt1 + '.')
         font2_width, font2_height = font2.getsize(ptt2)
-        print(font1_width, font1_height)
-        print(font2_width, font2_height)
+        Logger.debug(font1_width, font1_height)
+        Logger.debug(font2_width, font2_height)
         pttimg = Image.new("RGBA", (font1_width + font2_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
         stroke_color = '#52495d'
         if int(ptt1) >= 13:
             stroke_color = '#81122F'
         drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=3, stroke_fill=stroke_color)
-        print(int(int(font1_height) - int(font2_height)))
+        Logger.debug(int(int(font1_height) - int(font2_height)))
         drawptt.text((font1_width, int(int(font1_height) - int(font2_height))), ptt2, 'white', font=font2,
                      stroke_width=3, stroke_fill=stroke_color)
     elif ptt == -1:

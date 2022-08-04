@@ -1,5 +1,6 @@
 import re
 
+from core.logger import Logger
 from modules.wiki import query_pages
 from modules.wiki.wikilib import QueryInfo
 
@@ -17,10 +18,10 @@ async def moegirl(term: str):
             msg += msg_item.text
     if result['wait_msg_list']:
         for msg_item in result['wait_msg_list']:
-            print('msg_item.text: ', msg_item.text)
+            Logger.debug('msg_item.text: ', msg_item.text)
             redirect = re.search(
                 r'(?<=是：\[)(.*?)(?=\]。)', msg_item.text).group(0)
-            print(redirect)
+            Logger.debug(redirect)
             if redirect:
                 wait = await query_pages(QueryInfo('https://zh.moegirl.org.cn/api.php', headers={'accept': '*/*',
                                                                                                  'accept-encoding': 'gzip, deflate',

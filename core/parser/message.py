@@ -489,7 +489,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             return
 
     except WaitCancelException:  # 出现于等待被取消的情况
-        Logger.info('Waiting task cancelled by user.')
+        Logger.warn('Waiting task cancelled by user.')
 
     except Exception:
         Logger.error(traceback.format_exc())

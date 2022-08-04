@@ -6,6 +6,8 @@ import zipfile
 
 from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 
+from core.logger import Logger
+
 
 async def arcb30init():
     cache = os.path.abspath('./cache')
@@ -27,7 +29,7 @@ async def arcb30init():
         os.makedirs(jacket_output)
     for file in songdirs:
         filename = os.path.abspath(f'{copysongpath}/{file}')
-        print(filename)
+        Logger.debug(filename)
         if os.path.isdir(filename):
             file = re.sub('dl_', '', file)
             filename_base = filename + '/base.jpg'

@@ -1,5 +1,6 @@
 from config import Config
 from core.dirty_check import check
+from core.logger import Logger
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.wikilib import WikiLib
 
@@ -55,5 +56,5 @@ async def ab_qq(wiki_url):
                     "content": [{"type": "text", "data": {"text": x}}],
                 }
             })
-    print(nodelist)
+    Logger.debug(nodelist)
     return nodelist

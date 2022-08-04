@@ -52,8 +52,6 @@ def run_bot():
         with open(pid_cache, 'r') as f:
             pid_last = f.read().split('\n')
             running_pids = get_pid('python')
-            print(running_pids)
-            print(pid_last)
             for pid in pid_last:
                 if int(pid) in running_pids:
                     try:

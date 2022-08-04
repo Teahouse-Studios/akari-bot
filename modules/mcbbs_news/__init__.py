@@ -1,6 +1,7 @@
 from core.builtins.message import MessageSession
 from core.component import on_command
 from core.elements import Url
+from core.logger import Logger
 from .mcbbs_news import news
 
 mcbbs_news = on_command(
@@ -14,7 +15,7 @@ mcbbs_news = on_command(
 @mcbbs_news.handle()
 async def main(msg: MessageSession):
     res = await news()
-    print('res' + str(res))
+    Logger.debug('res' + str(res))
     if res is None:
         message = '没有找到任何新闻。'
     else:

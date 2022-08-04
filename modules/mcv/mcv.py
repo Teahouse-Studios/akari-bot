@@ -76,9 +76,9 @@ async def mcdv():
 async def mcev():
     try:
         data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt', 200)
-        Logger.info(data)
+        Logger.debug(data)
         version = re.search(r'(?<=\[)(.*?)(?=])', data)[0]
-        Logger.info(version)
+        Logger.debug(version)
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage('土豆熟了')
     return f'最新版：{version}'

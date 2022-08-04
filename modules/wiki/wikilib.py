@@ -130,7 +130,7 @@ class WikiLib:
     async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
-            Logger.info(api)
+            Logger.debug(api)
         else:
             raise ValueError('kwargs is None')
         try:

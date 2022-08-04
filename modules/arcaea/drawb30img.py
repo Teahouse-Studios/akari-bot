@@ -5,6 +5,8 @@ import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
+from core.logger import Logger
+
 assets_path = os.path.abspath('./assets/arcaea')
 
 
@@ -99,15 +101,15 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     ptttext_width, ptttext_height = ptttext.size
     font1_width, font1_height = font1.getsize(ptt1 + '.')
     font2_width, font2_height = font2.getsize(ptt2)
-    print(font1_width, font1_height)
-    print(font2_width, font2_height)
+    Logger.debug(font1_width, font1_height)
+    Logger.debug(font2_width, font2_height)
     pttimg = Image.new("RGBA", (font1_width + font2_width + 4, font1_height + 4))
     drawptt = ImageDraw.Draw(pttimg)
     stroke_color = '#52495d'
     if int(ptt1) >= 13:
         stroke_color = '#81122F'
     drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=2, stroke_fill=stroke_color)
-    print(int(int(font1_height) - int(font2_height)))
+    Logger.debug(int(int(font1_height) - int(font2_height)))
     drawptt.text((font1_width, 9), ptt2, 'white', font=font2, stroke_width=2, stroke_fill=stroke_color)
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
