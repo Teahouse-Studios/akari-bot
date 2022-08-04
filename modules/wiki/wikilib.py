@@ -297,16 +297,18 @@ class WikiLib:
         h.single_line_break = True
         t = h.handle(get_parse['parse']['text']['*'])
         if section is not None:
-            s = re.split(r'(.*##[^#].*\[.*?])', t, re.M | re.S)
-            ls = len(s)
-            if ls > 1:
-                i = 0
-                for x in s:
-                    i += 1
-                    if re.match(r'##[^#]' + section + r'\[.*?]', x):
+            for i in range(1, 7):
+                s = re.split(r'(.*' + '#' * i + r'[^#].*\[.*?])', t, re.M | re.S)
+                ls = len(s)
+                if ls > 1:
+                    ii = 0
+                    for x in s:
+                        ii += 1
+                        if re.match(r'' + '#' * i + '[^#]' + section + r'\[.*?]', x):
+                            break
+                    if ii != ls:
+                        t = ''.join(s[ii:])
                         break
-                if i != ls:
-                    t = ''.join(s[i:])
         return t
 
     async def get_wikitext(self, page_name):
