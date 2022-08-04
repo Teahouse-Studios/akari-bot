@@ -618,7 +618,6 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                     pi += 1
                                     wait_plain_slice.append(
                                         f'{pi}. {p}')
-                                print(r.possible_research_title)
                                 wait_plain_slice.append(f'请回复指定序号获取对应内容，若回复“是”，'
                                                         f'则默认选择{str(r.possible_research_title.index(display_title) + 1)}号内容。')
                                 wait_possible_list.append({display_before_title: {display_title: r.possible_research_title}})
