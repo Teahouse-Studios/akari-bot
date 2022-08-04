@@ -103,7 +103,8 @@ class PageInfo:
                  status: bool = True,
                  before_page_property: str = 'page',
                  page_property: str = 'page',
-                 invalid_namespace: Union[str, bool] = False
+                 invalid_namespace: Union[str, bool] = False,
+                 possible_research_title: List[str] = None
                  ):
         self.info = info
         self.id = id
@@ -119,6 +120,7 @@ class PageInfo:
         self.before_page_property = before_page_property
         self.page_property = page_property
         self.invalid_namespace = invalid_namespace
+        self.possible_research_title = possible_research_title
 
 
 class WikiLib:
@@ -323,7 +325,7 @@ class WikiLib:
             desc = ''
         return desc
 
-    async def search_page(self, search_text, namespace='*', limit=10):
+    async def search_page(self, search_text, namespace='*', limit=10, srwhat='text'):
         await self.fixup_wiki_info()
         title_split = search_text.split(':')
         if title_split[0] in self.wiki_info.interwiki:
@@ -338,7 +340,7 @@ class WikiLib:
                                        list='search',
                                        srsearch=search_text,
                                        srnamespace=namespace,
-                                       srwhat='text',
+                                       srwhat=srwhat,
                                        srlimit=limit,
                                        srenablerewrites=True)
         pagenames = []
@@ -346,9 +348,9 @@ class WikiLib:
             pagenames.append(x['title'])
         return pagenames
 
-    async def research_page(self, page_name: str, namespace='*'):
+    async def research_page(self, page_name: str, namespace='*', srwhat='text'):
         await self.fixup_wiki_info()
-        get_titles = await self.search_page(page_name, namespace=namespace, limit=1)
+        get_titles = await self.search_page(page_name, namespace=namespace, limit=1, srwhat=srwhat)
         new_page_name = get_titles[0] if len(get_titles) > 0 else None
         title_split = page_name.split(':')
         invalid_namespace = False
@@ -391,7 +393,7 @@ class WikiLib:
                 return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
                                 interwiki_prefix=_prefix)
             if inline:
-                split_name = re.split(r'([#])', title)
+                split_name = re.split(r'(#)', title)
             else:
                 split_name = re.split(r'([#?])', title)
             title = re.sub('_', ' ', split_name[0])
@@ -500,14 +502,42 @@ class WikiLib:
                                 page_info.status = reparse.status
                                 page_info.invalid_namespace = reparse.invalid_namespace
                             else:
+                                namespace = '*'
                                 if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces:
-                                    research = await self.research_page(title,
-                                                                        self.wiki_info.namespaces[split_title[0]])
-                                else:
-                                    research = await self.research_page(title)
-                                page_info.title = research[0]
+                                    namespace = self.wiki_info.namespaces[split_title[0]]
+                                srwhats = ['text', 'title', 'nearmatch']
+                                preferred = None
+                                invalid_namespace = False
+
+                                async def search_something(srwhat):
+                                    try:
+                                        research = await self.research_page(title, namespace, srwhat=srwhat)
+                                        if srwhat == 'text':
+                                            nonlocal preferred
+                                            nonlocal invalid_namespace
+                                            preferred = research[0]
+                                            invalid_namespace = research[1]
+                                        return research
+                                    except Exception:
+                                        Logger.debug(traceback.format_exc())
+                                        return None, False
+                                searches = []
+                                for srwhat in srwhats:
+                                    searches.append(search_something(srwhat))
+                                gather_search = await asyncio.gather(*searches)
+                                searched_result = []
+                                for search in gather_search:
+                                    if search[0] is not None and search[0] not in searched_result:
+                                        searched_result.append(search[0])
+
+                                if preferred is None and searched_result:
+                                    preferred = searched_result[0]
+
+                                page_info.title = preferred
                                 page_info.before_title = title
-                                page_info.invalid_namespace = research[1]
+                                page_info.invalid_namespace = invalid_namespace
+                                page_info.possible_research_title = searched_result
+
                 else:
                     page_info.status = True
                     if 'special' in page_raw:
@@ -637,6 +667,10 @@ class WikiLib:
                                     page_info.before_title = page_info.title
                                 else:
                                     page_info.title = page_info.interwiki_prefix + t
+                                    if page_info.possible_research_title is not None:
+                                        page_info.possible_research_title = [page_info.interwiki_prefix + possible_title
+                                                                             for possible_title in page_info.possible_research_title]
+
                                 if before_page_info.section is not None:
                                     page_info.section = before_page_info.section
         if not self.wiki_info.in_allowlist:

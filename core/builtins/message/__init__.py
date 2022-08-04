@@ -29,15 +29,17 @@ class MessageSession(MessageSession):
             raise WaitCancelException
 
     async def waitNextMessage(self, msgchain=None, quote=True, delete=False) -> MessageSession:
-        send = None
+        sent = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
-            await self.sendMessage(msgchain, quote)
+            sent = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
+        if delete and sent is not None:
+            await sent.delete()
         if result:
             return result
         else:

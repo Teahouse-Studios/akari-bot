@@ -166,7 +166,7 @@ class MessageSession:
         """
         ...
 
-    def asDisplay(self):
+    def asDisplay(self) -> str:
         """
         用于将消息转换为一般文本格式。
         """

@@ -8,7 +8,7 @@ import ujson as json
 
 from core.builtins.message import MessageSession
 from core.component import on_command, on_regex
-from core.elements import Plain, Image, Voice, Url
+from core.elements import Plain, Image, Voice, Url, confirm_command
 from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils import download_to_cache
@@ -537,6 +537,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
     msg_list = []
     wait_msg_list = []
     wait_list = []
+    wait_possible_list = []
     render_infobox_list = []
     render_section_list = []
     dl_list = []
@@ -574,6 +575,11 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     display_title = iw_prefix + r.title
                 if r.before_title is not None:
                     display_before_title = iw_prefix + r.before_title
+                new_possible_title_list = []
+                if r.possible_research_title is not None:
+                    for possible in r.possible_research_title:
+                        new_possible_title_list.append(iw_prefix + possible)
+                r.possible_research_title = new_possible_title_list
                 if r.status:
                     plain_slice = []
                     if display_before_title is not None and display_before_title != display_title:
@@ -604,12 +610,26 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     wait_plain_slice = []
                     if display_title is not None and display_before_title is not None:
                         if isinstance(session, MessageSession) and session.Feature.wait:
-                            wait_plain_slice.append(
-                                f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                            if len(r.possible_research_title) > 1:
+                                wait_plain_slice.append(
+                                    f'提示：[{display_before_title}]不存在，您是否想要找的是：')
+                                pi = 0
+                                for p in r.possible_research_title:
+                                    pi += 1
+                                    wait_plain_slice.append(
+                                        f'{pi}. {p}')
+                                print(r.possible_research_title)
+                                wait_plain_slice.append(f'请回复指定序号获取对应内容，若回复“是”，'
+                                                        f'则默认选择{str(r.possible_research_title.index(display_title) + 1)}号内容。')
+                                wait_possible_list.append({display_before_title: {display_title: r.possible_research_title}})
+                            else:
+                                wait_plain_slice.append(
+                                    f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
-                        wait_list.append({display_title: display_before_title})
+                        if len(r.possible_research_title) == 1:
+                            wait_list.append({display_title: display_before_title})
                     elif r.before_title is not None:
                         plain_slice.append(f'提示：找不到[{display_before_title}]。')
                     elif r.id != -1:
@@ -637,7 +657,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 msg_list.append(Plain(f'发生错误：' + str(e)))
     if isinstance(session, MessageSession):
         if msg_list:
-            if all([not render_infobox_list, not render_section_list, not dl_list, not wait_list]):
+            if all([not render_infobox_list, not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
                 await session.finish(msg_list)
             else:
                 await session.sendMessage(msg_list)
@@ -651,7 +671,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             if infobox_msg_list:
                 await session.finish(infobox_msg_list, quote=False)
         else:
-            if all([not render_section_list, not dl_list, not wait_list]):
+            if all([not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
                 await session.finish()
         if render_section_list and session.Feature.image:
             section_msg_list = []
@@ -663,7 +683,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             if section_msg_list:
                 await session.finish(section_msg_list, quote=False)
         else:
-            if all([not dl_list, not wait_list]):
+            if all([not dl_list, not wait_list, not wait_possible_list]):
                 await session.finish()
         if dl_list:
             for f in dl_list:
@@ -677,14 +697,36 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         if session.Feature.voice:
                             await session.finish(Voice(dl), quote=False)
         if wait_msg_list and session.Feature.wait:
-            confirm = await session.waitConfirm(wait_msg_list)
+            confirm = await session.waitNextMessage(wait_msg_list, delete=True)
+            auto_index = False
+            index = 0
+            if confirm.asDisplay() in confirm_command:
+                auto_index = True
+            elif confirm.asDisplay().isdigit():
+                index = int(confirm.asDisplay()) - 1
+            else:
+                await session.finish()
             preset_message = []
             wait_list_ = []
             for w in wait_list:
                 for wd in w:
                     preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
                     wait_list_.append(wd)
-            if confirm and wait_list:
+            if auto_index:
+                for wp in wait_possible_list:
+                    for wpk in wp:
+                        keys = list(wp[wpk].keys())
+                        preset_message.append(f'（已指定[{wpk}]更正为[{keys[0]}]。）')
+                        wait_list_.append(keys[0])
+            else:
+                for wp in wait_possible_list:
+                    for wpk in wp:
+                        keys = list(wp[wpk].keys())
+                        if len(wp[wpk][keys[0]]) > index:
+                            preset_message.append(f'（已指定[{wpk}]更正为[{wp[wpk][keys[0]][index]}]。）')
+                            wait_list_.append(wp[wpk][keys[0]][index])
+
+            if wait_list_:
                 await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
                                   lang=lang)
         else:

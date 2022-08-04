@@ -122,8 +122,7 @@ class MessageSession(MS):
 
     async def delete(self):
         try:
-            for x in self.session.message:
-                await x.delete()
+            await self.session.message.delete()
         except Exception:
             Logger.error(traceback.format_exc())
 
