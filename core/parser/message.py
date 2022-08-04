@@ -428,55 +428,55 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             continue
 
                     for rfunc in regex_module.match_list.set:  # 遍历正则模块的表达式
-                        msg.matched_msg = False
-                        matched = False
-                        if rfunc.mode.upper() in ['M', 'MATCH']:
-                            msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
-                            if msg.matched_msg is not None:
-                                matched = True
-                        elif rfunc.mode.upper() in ['A', 'FINDALL']:
-                            msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
-                            if msg.matched_msg:
-                                matched = True
+                        try:
+                            msg.matched_msg = False
+                            matched = False
+                            if rfunc.mode.upper() in ['M', 'MATCH']:
+                                msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
+                                if msg.matched_msg is not None:
+                                    matched = True
+                            elif rfunc.mode.upper() in ['A', 'FINDALL']:
+                                msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
+                                if msg.matched_msg:
+                                    matched = True
 
-                        if matched:  # 如果匹配成功
-                            Logger.info(
-                                f'{identify_str} -> [Bot]: {display}')
-                            if enable_tos:
-                                await temp_ban_check(msg)
-                            if regex_module.required_superuser:
-                                if not msg.checkSuperUser():
-                                    continue
-                            elif regex_module.required_admin:
-                                if not await msg.checkPermission():
-                                    continue
-                            if not ExecutionLockList.check(msg):
-                                ExecutionLockList.add(msg)
-                            else:
-                                return await msg.sendMessage('您有命令正在执行，请稍后再试。')
-                            if rfunc.show_typing and not senderInfo.query.disable_typing:
-                                async with msg.Typing(msg):
+                            if matched:  # 如果匹配成功
+                                Logger.info(
+                                    f'{identify_str} -> [Bot]: {display}')
+                                if enable_tos:
+                                    await temp_ban_check(msg)
+                                if regex_module.required_superuser:
+                                    if not msg.checkSuperUser():
+                                        continue
+                                elif regex_module.required_admin:
+                                    if not await msg.checkPermission():
+                                        continue
+                                if not ExecutionLockList.check(msg):
+                                    ExecutionLockList.add(msg)
+                                else:
+                                    return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                                if rfunc.show_typing and not senderInfo.query.disable_typing:
+                                    async with msg.Typing(msg):
+                                        await rfunc.function(msg)  # 将msg传入下游模块
+                                else:
                                     await rfunc.function(msg)  # 将msg传入下游模块
-                            else:
-                                await rfunc.function(msg)  # 将msg传入下游模块
-                            raise FinishedException(msg.sent)  # if not using msg.finish
+                                raise FinishedException(msg.sent)  # if not using msg.finish
+                        except FinishedException as e:
+                            Logger.info(
+                                f'Successfully finished session from {identify_str}, returns: {str(e)}')
+                            ExecutionLockList.remove(msg)
+
+                            if enable_analytics:
+                                BotDBUtil.Analytics(msg).add(msg.trigger_msg, regex, 'regex')
+
+                            if enable_tos:
+                                await msg_counter(msg, msg.trigger_msg)
+
+                            continue
 
             except ActionFailed:
                 ExecutionLockList.remove(msg)
                 await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
-                continue
-
-            except FinishedException as e:
-                Logger.info(
-                    f'Successfully finished session from {identify_str}, returns: {str(e)}')
-                ExecutionLockList.remove(msg)
-
-                if enable_analytics:
-                    BotDBUtil.Analytics(msg).add(msg.trigger_msg, regex, 'regex')
-
-                if enable_tos:
-                    await msg_counter(msg, msg.trigger_msg)
-
                 continue
 
             ExecutionLockList.remove(msg)
