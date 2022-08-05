@@ -814,3 +814,12 @@ async def _(msg: MessageSession):
     if confirm:
         await msg.sendMessage('已执行。')
         await msg.call_api('set_group_leave', group_id=msg.session.target)
+
+
+if Config('enable_eval'):
+    _eval = on_command('eval', developers=['Dianliang233'], required_superuser=True)
+
+
+    @_eval.handle('<display_msg>')
+    async def _(msg: MessageSession):
+        await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
