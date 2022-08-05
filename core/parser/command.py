@@ -5,7 +5,9 @@ from typing import Union
 
 from core.elements import Command, Schedule, StartUp, RegexCommand, MessageSession
 from core.exceptions import InvalidCommandFormatError, InvalidHelpDocTypeError
-from core.utils.docopt import docopt, DocoptExit
+
+from .args import parse_template, parse_argv
+from ..logger import Logger
 
 
 class CommandParser:
@@ -43,36 +45,21 @@ class CommandParser:
             return
         if isinstance(args, str):
             args = [args]
-            self.args_raw = args
         elif isinstance(args, tuple):
             args = list(args)
         if isinstance(args, list):
-            arglst_raw = []
-            arglst = []
-            for x in args:
-                split = x.split(' ')[0]
-                if self.bind_prefix is not None:
-                    if split not in [command_prefixes[0] + self.bind_prefix, self.bind_prefix]:
-                        x = f'{command_prefixes[0]}{self.bind_prefix} {x}'
-                arglst_raw.append(x)
-                match_detail_help = re.match('(.*){.*}$', x, re.M | re.S)
-                if match_detail_help:
-                    x = match_detail_help.group(1)
-                arglst.append(x)
-            self.args_raw = arglst_raw
-            self.args = 'Usage:\n  ' + '\n  '.join(y for y in arglst)
+            self.args = args
         else:
             raise InvalidHelpDocTypeError
 
     def return_formatted_help_doc(self) -> str:
         if self.args is None:
             return '（此模块没有帮助信息）'
-        args_raw = self.args_raw
-        if isinstance(args_raw, list):
+        if isinstance(self.args, list):
             arglst = []
-            for x in args_raw:
-                if x[0] not in self.command_prefixes:
-                    x = self.command_prefixes[0] + x
+            for x in self.args:
+                if not x.startswith([self.command_prefixes[0] + self.bind_prefix]):
+                    x = f'{self.command_prefixes[0]}{self.bind_prefix} {x}'
                 match_detail_help = re.match('(.*){(.*)}$', x, re.M | re.S)
                 if match_detail_help:
                     x = f'{match_detail_help.group(1)}- {match_detail_help.group(2)}'
@@ -92,11 +79,13 @@ class CommandParser:
             split_command = shlex.split(command)
         except ValueError:
             split_command = command.split(' ')
+        Logger.debug(split_command)
+        argv_template = parse_template(self.args)
         try:
             if not isinstance(self.origin_template, Command):
                 if len(split_command) == 1:
                     return None
-                return docopt(self.args, argvs=split_command[1:], default_help=False)
+                return parse_argv(split_command[1:], argv_template)
             else:
                 if len(split_command) == 1:
                     for match in (self.origin_template.match_list.set if self.msg is None else
@@ -105,7 +94,7 @@ class CommandParser:
                             return match, None
                     raise InvalidCommandFormatError
                 else:
-                    base_match = docopt(self.args, argvs=split_command[1:], default_help=False)
+                    base_match = parse_argv(split_command[1:], argv_template)
                     for match in (self.origin_template.match_list.set if self.msg is None else
                     self.origin_template.match_list.get(self.msg.target.targetFrom)):
                         if match.help_doc is None:
@@ -114,11 +103,12 @@ class CommandParser:
                             sub_args = CommandParser(match.help_doc, bind_prefix=self.bind_prefix,
                                                      command_prefixes=self.command_prefixes).args
                             if sub_args is not None:
-                                get_parse = docopt(sub_args,
-                                                   argvs=split_command[1:], default_help=False)
+                                sub_args = parse_template(sub_args)
+                                Logger.debug(sub_args)
+                                get_parse = parse_argv(split_command[1:], sub_args)
                             else:
                                 continue
-                        except DocoptExit:
+                        except InvalidCommandFormatError:
                             continue
                         correct = True
                         for g in get_parse:
@@ -127,7 +117,6 @@ class CommandParser:
                         if correct:
                             return match, get_parse
 
-
-        except DocoptExit:
+        except InvalidCommandFormatError:
             traceback.print_exc()
             raise InvalidCommandFormatError

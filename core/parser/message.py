@@ -343,6 +343,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                         parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
                                         submodule = parsed_msg[0]
                                         msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
+                                        Logger.debug(msg.parsed_msg)
 
                                         if submodule.required_superuser:
                                             if not msg.checkSuperUser():

@@ -30,9 +30,15 @@ wiki = on_command('wiki',
                   developers=['OasisAkari'])
 
 
-@wiki.handle('<PageName> {查询一个Wiki页面，若查询“随机页面”则随机一个页面。}')
+@wiki.handle('<PageName> [-l <lang>] {查询一个Wiki页面，若查询“随机页面”则随机一个页面。}',
+             options_desc={'-l': '查找本页面的对应语言版本，若无结果则返回当前语言。'})
 async def _(msg: MessageSession):
-    await query_pages(msg, msg.parsed_msg['<PageName>'])
+    lang = msg.parsed_msg.get('-l', False)
+    if lang:
+        lang = lang['<lang>']
+    else:
+        lang = None
+    await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
 
 
 @wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID查询一个Wiki页面。}')
@@ -45,12 +51,6 @@ async def _(msg: MessageSession):
     if not iw:
         iw = ''
     await query_pages(msg, pageid=page_id, iw=iw)
-
-
-@wiki.handle('-l <lang> <PageName> {查找本页面的对应语言版本，若无结果则返回当前语言。}')
-async def _(msg: MessageSession):
-    lang = msg.parsed_msg['<lang>']
-    await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang if lang else None)
 
 
 @wiki.handle('search <PageName> {搜索一个Wiki页面。}')
@@ -117,7 +117,7 @@ async def _(msg: MessageSession):
             base_interwiki_link = base_interwiki_link.link
     base_interwiki_link_msg = f'\n此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
     if query != {}:
-        if not msg.parsed_msg['legacy'] and msg.Feature.image:
+        if 'legacy' not in msg.parsed_msg and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
             img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:
