@@ -56,24 +56,13 @@ class Optional:
 
 
 class MatchedResult:
-    def __init__(self, args: dict, priority: int = 1):
+    def __init__(self, args: dict, original_template, priority: int = 1):
         self.args = args
+        self.original_template = original_template
         self.priority = priority
 
     def __str__(self):
         return 'MatchedResult({}, {})'.format(self.args, self.priority)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-class Command:
-    def __init__(self, args: str, priority: int = 1):
-        self.args = args
-        self.priority = priority
-
-    def __str__(self):
-        return 'Command("{}", {})'.format(self.args, self.priority)
 
     def __repr__(self):
         return self.__str__()
@@ -112,22 +101,17 @@ def split_multi_arguments(lst: list):
         return list(set(new_lst))
 
 
-def parse_template(argv: Union[List[str], List[Command]]) -> List[Template]:
+def parse_template(argv: List[str]) -> List[Template]:
     templates = []
     argv_ = []
     for a in argv:
         if isinstance(a, str):
-            argv_ += split_multi_arguments([a])
-        elif isinstance(a, Command):
-            spl = split_multi_arguments([a.args])
+            spl = split_multi_arguments([a])
             for split in spl:
-                argv_.append(Command(split, a.priority))
+                argv_.append(split)
 
     for a in argv_:
         template = Template([])
-        if isinstance(a, Command):
-            template.priority = a.priority
-            a = a.args
         patterns = filter(None, re.split(r'(\[.*?])|(<.*?>)|(\{.*?})| ', a))
         for p in patterns:
             strip_pattern = p.strip()
@@ -151,7 +135,7 @@ def parse_template(argv: Union[List[str], List[Command]]) -> List[Template]:
     return templates
 
 
-def parse_argv(argv: List[str], templates: List[Template]) -> Dict[str, Union[str, dict, bool]]:
+def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
     matched_result = []
     for template in templates:
         try:
@@ -170,7 +154,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> Dict[str, Union[st
                             len_t_args = len(a.args[0].args)
                             if len(argv_copy[index_flag:]) >= len_t_args:
                                 sub_argv = argv_copy[index_flag + 1: index_flag + len_t_args + 1]
-                                parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args), flagged=True)
+                                parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
                                 del argv_copy[index_flag: index_flag + len_t_args + 1]
                     template.args.remove(a)
             for a in template.args:
@@ -191,7 +175,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> Dict[str, Union[st
                     if last_template_arguments.name.startswith('<'):  # if last arg is variable
                         parsed_argv[list(parsed_argv.keys())[-1]].value += ' ' + ' '.join(argv_copy)
                         del argv_copy[0]
-            matched_result.append(MatchedResult(parsed_argv, template.priority))
+            matched_result.append(MatchedResult(parsed_argv, original_template, template.priority))
         except TypeError:
             traceback.print_exc()
             continue
@@ -227,8 +211,8 @@ def parse_argv(argv: List[str], templates: List[Template]) -> Dict[str, Union[st
                 priority_result[priority] = [f]
             else:
                 priority_result[priority].append(f)
-        return priority_result[max(priority_result.keys())][0].args
+        return priority_result[max(priority_result.keys())][0]
     elif len_filtered_result == 0:
         raise InvalidCommandFormatError
     else:
-        return filtered_result[0].args
+        return filtered_result[0]

@@ -333,7 +333,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                         none_doc = True  # 检查模块绑定的命令是否有文档
                         for func in module.match_list.get(msg.target.targetFrom):
-                            if func.help_doc is not None:
+                            if func.help_doc:
                                 none_doc = False
                         if not none_doc:  # 如果有，送入命令解析
                             async def execute_submodule(msg: MessageSession, command_first_word, command_split):
@@ -383,7 +383,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         else:  # 如果没有，直接传入下游模块
                             msg.parsed_msg = None
                             for func in module.match_list.set:
-                                if func.help_doc is None:
+                                if not func.help_doc:
                                     if not senderInfo.query.disable_typing:
                                         async with msg.Typing(msg):
                                             await func.function(msg)  # 将msg传入下游模块
