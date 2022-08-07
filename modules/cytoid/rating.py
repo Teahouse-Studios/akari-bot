@@ -74,7 +74,6 @@ async def get_rating(uid, query_type):
             good
             bad
             miss
-            maxCombo
           }}
         }}
         """)
