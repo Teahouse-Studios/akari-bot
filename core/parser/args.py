@@ -1,6 +1,6 @@
 import re
 import traceback
-from typing import List, Union, Dict
+from typing import List, Dict
 
 from core.exceptions import InvalidTemplatePattern, InvalidCommandFormatError
 
@@ -39,6 +39,17 @@ class OptionalPattern(Pattern):
 
     def __str__(self):
         return 'OptionalPattern("{}", {})'.format(self.flag, self.args)
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class DescPattern(Pattern):
+    def __init__(self, text: str):
+        self.text = text
+
+    def __str__(self):
+        return 'DescPattern("{}")'.format(self.text)
 
     def __repr__(self):
         return self.__str__()
@@ -127,12 +138,34 @@ def parse_template(argv: List[str]) -> List[Template]:
             elif strip_pattern.startswith('{'):
                 if not strip_pattern.endswith('}'):
                     raise InvalidTemplatePattern(p)
+                template.args.append(DescPattern(strip_pattern[1:-1]))
             else:
                 if strip_pattern.startswith('<') and not strip_pattern.endswith('>'):
                     raise InvalidTemplatePattern(p)
                 template.args.append(ArgumentPattern(strip_pattern))
         templates.append(template)
     return templates
+
+
+def templates_to_str(templates: List[Template], with_desc=False) -> List[str]:
+    text = []
+    for template in templates:
+        arg_text = []
+        for arg in template.args:
+            if isinstance(arg, ArgumentPattern):
+                arg_text.append(arg.name)
+            elif isinstance(arg, OptionalPattern):
+                t = '['
+                t += arg.flag
+                if arg.args:
+                    t += ' '.join(templates_to_str(arg.args))
+                t += ']'
+                arg_text.append(t)
+            elif isinstance(arg, DescPattern):
+                if with_desc:
+                    arg_text.append('- ' + arg.text)
+        text.append(" ".join(arg_text))
+    return text
 
 
 def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
@@ -142,6 +175,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
             argv_copy = argv.copy()  # copy argv to avoid changing original argv
             parsed_argv = {}
             original_template = template
+            template.args = [x for x in template.args if not isinstance(x, DescPattern)]
             for a in template.args:  # optional first
                 if isinstance(a, OptionalPattern):
                     parsed_argv[a.flag] = Optional({}, flagged=False)
@@ -211,7 +245,21 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                 priority_result[priority] = [f]
             else:
                 priority_result[priority].append(f)
-        return priority_result[max(priority_result.keys())][0]
+        max_ = max(priority_result.keys())
+        if len(priority_result[max_]) > 1:  # if still...
+            new_priority_result = {}
+            for p in priority_result[max_]:
+                new_priority = p.priority
+                for keys in p.args:
+                    if p.args[keys]:
+                        new_priority += 1
+                if new_priority not in new_priority_result:
+                    new_priority_result[new_priority] = [p]
+                else:
+                    new_priority_result[new_priority].append(p)
+            max_ = max(new_priority_result.keys())
+            return new_priority_result[max_][0]
+        return priority_result[max_][0]
     elif len_filtered_result == 0:
         raise InvalidCommandFormatError
     else:

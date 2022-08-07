@@ -43,8 +43,8 @@ async def _(msg: MessageSession):
 
 
 @module.handle(['enable (<module>...|all) [-g] {开启一个/多个或所有模块}',
-                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为文字频道内全局操作}',
-                'list {查看所有可用模块}'],
+                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块}',
+                'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
     if msg.parsed_msg['list']:
@@ -111,7 +111,7 @@ async def config_modules(msg: MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    hdoc = CommandParser(modules_[m], msg=msg,
+                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
                     if modules_[m].desc is not None:
@@ -195,7 +195,8 @@ async def bot_help(msg: MessageSession):
             module_ = module_list[help_name]
             if module_.desc is not None:
                 msgs.append(module_.desc)
-            help_ = CommandParser(module_list[help_name], msg=msg, command_prefixes=msg.prefixes)
+            help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
+                                  command_prefixes=msg.prefixes)
             if help_.args is not None:
                 msgs.append(help_.return_formatted_help_doc())
         if msgs:
@@ -236,7 +237,7 @@ async def _(msg: MessageSession):
             for x in module_list:
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, msg=msg, command_prefixes=msg.prefixes)
+                help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
                 doc_ = []
                 if module_.desc is not None:
                     doc_.append(module_.desc)
@@ -307,7 +308,7 @@ async def modules_help(msg: MessageSession):
                 if isinstance(module_, Command) and (module_.base or module_.required_superuser):
                     continue
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, command_prefixes=msg.prefixes)
+                help_ = CommandParser(module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
                 doc_ = []
                 if module_.desc is not None:
                     doc_.append(module_.desc)

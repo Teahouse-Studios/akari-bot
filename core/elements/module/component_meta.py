@@ -1,5 +1,7 @@
 import re
-from typing import Callable, Union
+from typing import Callable, Union, List
+
+from core.parser.args import Template
 
 
 class Meta:
@@ -10,7 +12,7 @@ class Meta:
 class CommandMeta:
     def __init__(self,
                  function: Callable = None,
-                 help_doc: Union[str, list, tuple] = None,
+                 help_doc: List[Template] = None,
                  options_desc: dict = None,
                  required_admin: bool = False,
                  required_superuser: bool = False,
