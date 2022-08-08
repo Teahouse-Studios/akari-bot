@@ -338,7 +338,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         if not none_doc:  # 如果有，送入命令解析
                             async def execute_submodule(msg: MessageSession, command_first_word, command_split):
                                 try:
-                                    command_parser = CommandParser(module, msg=msg, command_prefixes=msg.prefixes)
+                                    command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word
+                                                                   , command_prefixes=msg.prefixes)
                                     try:
                                         parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
                                         submodule = parsed_msg[0]

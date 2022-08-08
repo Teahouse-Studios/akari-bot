@@ -175,10 +175,17 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
             argv_copy = argv.copy()  # copy argv to avoid changing original argv
             parsed_argv = {}
             original_template = template
+            afters = []
             template.args = [x for x in template.args if not isinstance(x, DescPattern)]
+            if not template.args:
+                continue
             for a in template.args:  # optional first
                 if isinstance(a, OptionalPattern):
                     parsed_argv[a.flag] = Optional({}, flagged=False)
+                    if a.flag.startswith('<'):
+                        afters.append(a.flag)
+                        template.args.remove(a)
+                        continue
                     if a.flag in argv_copy:  # if flag is in argv
                         if not a.args:  # no args
                             parsed_argv[a.flag] = Optional({}, flagged=True)
@@ -204,11 +211,17 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                         if parsed_argv[a.name]:
                             argv_copy.remove(a.name)
             if argv_copy:  # if there are still some argv left
-                last_template_arguments = original_template.args[-1]
-                if isinstance(last_template_arguments, ArgumentPattern):
-                    if last_template_arguments.name.startswith('<'):  # if last arg is variable
-                        parsed_argv[list(parsed_argv.keys())[-1]].value += ' ' + ' '.join(argv_copy)
-                        del argv_copy[0]
+                if afters:
+                    for a in afters:
+                        if a.startswith('<'):
+                            parsed_argv[a] = Argument(argv_copy[0])
+                            argv_copy.remove(argv_copy[0])
+                if argv_copy:
+                    last_template_arguments = original_template.args[-1]
+                    if isinstance(last_template_arguments, ArgumentPattern):
+                        if last_template_arguments.name.startswith('<'):  # if last arg is variable
+                            parsed_argv[list(parsed_argv.keys())[-1]].value += ' ' + ' '.join(argv_copy)
+                            del argv_copy[0]
             matched_result.append(MatchedResult(parsed_argv, original_template, template.priority))
         except TypeError:
             traceback.print_exc()

@@ -88,6 +88,7 @@ class MessageSession:
         self.prefixes: List[str] = []
         self.options: dict = {}
         self.enabled_modules: List[str] = []
+        self.parsed_msg: dict
 
     async def sendMessage(self,
                           msgchain,
