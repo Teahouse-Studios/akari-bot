@@ -1,3 +1,4 @@
+import copy
 import re
 import traceback
 from typing import List, Dict
@@ -132,9 +133,17 @@ def parse_template(argv: List[str]) -> List[Template]:
                 if not strip_pattern.endswith(']'):
                     raise InvalidTemplatePattern(p)
                 optional_patterns = strip_pattern[1:-1].split(' ')
-                template.args.append(OptionalPattern(flag=optional_patterns[0],
-                                                     args=parse_template([' '.join(optional_patterns[1:]).strip()]) if len(
-                                                  optional_patterns) > 1 else []))
+                flag = None
+                args = []
+                if optional_patterns[0][0] == '-':
+                    flag = optional_patterns[0]
+                    args += optional_patterns[1:]
+                else:
+                    args += optional_patterns
+                template.args.append(OptionalPattern(flag=flag,
+                                                     args=parse_template(
+                                                         [' '.join(args).strip()]) if len(
+                                                         args) > 0 else []))
             elif strip_pattern.startswith('{'):
                 if not strip_pattern.endswith('}'):
                     raise InvalidTemplatePattern(p)
@@ -181,11 +190,10 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                 continue
             for a in template.args:  # optional first
                 if isinstance(a, OptionalPattern):
-                    parsed_argv[a.flag] = Optional({}, flagged=False)
-                    if a.flag.startswith('<'):
-                        afters.append(a.flag)
-                        template.args.remove(a)
+                    if a.flag is None:
+                        afters.append(a.args[0])
                         continue
+                    parsed_argv[a.flag] = Optional({}, flagged=False)
                     if a.flag in argv_copy:  # if flag is in argv
                         if not a.args:  # no args
                             parsed_argv[a.flag] = Optional({}, flagged=True)
@@ -197,7 +205,6 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                                 sub_argv = argv_copy[index_flag + 1: index_flag + len_t_args + 1]
                                 parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
                                 del argv_copy[index_flag: index_flag + len_t_args + 1]
-                    template.args.remove(a)
             for a in template.args:
                 if isinstance(a, ArgumentPattern):
                     if a.name.startswith('<'):
@@ -212,10 +219,19 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                             argv_copy.remove(a.name)
             if argv_copy:  # if there are still some argv left
                 if afters:
-                    for a in afters:
-                        if a.startswith('<'):
-                            parsed_argv[a] = Argument(argv_copy[0])
-                            argv_copy.remove(argv_copy[0])
+                    for arg in afters:
+                        for sub_args in arg.args:
+                            if isinstance(sub_args, ArgumentPattern):
+                                if sub_args.name.startswith('<'):
+                                    if len(argv_copy) > 0:
+                                        parsed_argv[sub_args.name] = Argument(argv_copy[0])
+                                        del argv_copy[0]
+                                    else:
+                                        parsed_argv[sub_args.name] = False
+                                else:
+                                    parsed_argv[sub_args.name] = sub_args.name in argv_copy
+                                    if parsed_argv[sub_args.name]:
+                                        argv_copy.remove(sub_args.name)
                 if argv_copy:
                     last_template_arguments = original_template.args[-1]
                     if isinstance(last_template_arguments, ArgumentPattern):

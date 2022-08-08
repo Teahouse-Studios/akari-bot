@@ -37,7 +37,7 @@ module = on_command('module',
                 'disable (<module>...|all) {关闭一个/多个或所有模块}',
                 'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: MessageSession):
-    if msg.parsed_msg['list']:
+    if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
@@ -47,7 +47,7 @@ async def _(msg: MessageSession):
                 'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
-    if msg.parsed_msg['list']:
+    if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
@@ -56,7 +56,7 @@ async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
-    wait_config = msg.parsed_msg['<module>']
+    wait_config = msg.parsed_msg.get('<module>', [])
     wait_config_list = []
     for module_ in wait_config:
         if module_ not in wait_config_list:
@@ -68,9 +68,9 @@ async def config_modules(msg: MessageSession):
     msglist = []
     recommend_modules_list = []
     recommend_modules_help_doc_list = []
-    if msg.parsed_msg['enable']:
+    if msg.parsed_msg.get('enable', False):
         enable_list = []
-        if wait_config_list == ['all']:
+        if msg.parsed_msg.get('all', False):
             for function in modules_:
                 if function[0] == '_':
                     continue
@@ -119,7 +119,7 @@ async def config_modules(msg: MessageSession):
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
-    elif msg.parsed_msg['disable']:
+    elif msg.parsed_msg.get('disable', False):
         disable_list = []
         if wait_config_list == ['all']:
             for function in modules_:
@@ -195,10 +195,11 @@ async def bot_help(msg: MessageSession):
             module_ = module_list[help_name]
             if module_.desc is not None:
                 msgs.append(module_.desc)
-            help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
-                                  command_prefixes=msg.prefixes)
-            if help_.args is not None:
-                msgs.append(help_.return_formatted_help_doc())
+            if isinstance(module_, Command):
+                help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
+                                      command_prefixes=msg.prefixes)
+                if help_.args is not None:
+                    msgs.append(help_.return_formatted_help_doc())
         if msgs:
             doc = '\n'.join(msgs)
             module_alias = ModulesManager.return_module_alias(help_name)
