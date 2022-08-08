@@ -158,7 +158,7 @@ def templates_to_str(templates: List[Template], with_desc=False) -> List[str]:
                 t = '['
                 t += arg.flag
                 if arg.args:
-                    t += ' '.join(templates_to_str(arg.args))
+                    t += ' ' + ' '.join(templates_to_str(arg.args))
                 t += ']'
                 arg_text.append(t)
             elif isinstance(arg, DescPattern):

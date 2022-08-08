@@ -237,12 +237,17 @@ async def _(msg: MessageSession):
             for x in module_list:
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
                 doc_ = []
-                if module_.desc is not None:
-                    doc_.append(module_.desc)
-                if help_.args is not None:
-                    doc_.append(help_.return_formatted_help_doc())
+                if isinstance(module_, Command):
+                    help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
+                    if help_.args is not None:
+                        doc_.append(help_.return_formatted_help_doc())
+                else:
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
                 doc = '\n'.join(doc_)
                 appends.append(doc)
                 module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
@@ -308,12 +313,16 @@ async def modules_help(msg: MessageSession):
                 if isinstance(module_, Command) and (module_.base or module_.required_superuser):
                     continue
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
                 doc_ = []
-                if module_.desc is not None:
-                    doc_.append(module_.desc)
-                if help_.args is not None:
-                    doc_.append(help_.return_formatted_help_doc())
+                if isinstance(module_, Command):
+                    help_ = CommandParser(module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
+                    if help_.args is not None:
+                        doc_.append(help_.return_formatted_help_doc())
+                else:
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
                 doc = '\n'.join(doc_)
                 appends.append(doc)
                 module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
