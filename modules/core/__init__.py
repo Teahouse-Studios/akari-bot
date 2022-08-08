@@ -371,21 +371,21 @@ async def set_prefix(msg: MessageSession):
     arg1 = msg.parsed_msg['<prefix>']
     if prefixes is None:
         prefixes = []
-    if msg.parsed_msg['add']:
+    if 'add' in msg.parsed_msg:
         if arg1 not in prefixes:
             prefixes.append(arg1)
             options.edit('command_prefix', prefixes)
             await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
         else:
             await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
-    elif msg.parsed_msg['remove']:
+    elif 'remove' in msg.parsed_msg:
         if arg1 in prefixes:
             prefixes.remove(arg1)
             options.edit('command_prefix', prefixes)
             await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
         else:
             await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
-    elif msg.parsed_msg['reset']:
+    elif 'reset' in msg.parsed_msg:
         options.edit('command_prefix', [])
         await msg.sendMessage('已重置自定义命令前缀列表。')
 
@@ -401,7 +401,7 @@ async def set_alias(msg: MessageSession):
     arg2 = msg.parsed_msg['<command>']
     if alias is None:
         alias = {}
-    if msg.parsed_msg['add']:
+    if 'add' in msg.parsed_msg:
         if arg1 not in alias:
             has_prefix = False
             for prefixes in msg.prefixes:
@@ -416,7 +416,7 @@ async def set_alias(msg: MessageSession):
             await msg.sendMessage(f'已添加自定义命令别名：{arg1} -> {arg2}')
         else:
             await msg.sendMessage(f'[{arg1}]别名已存在于自定义别名列表。')
-    elif msg.parsed_msg['remove']:
+    elif 'remove' in msg.parsed_msg:
         if arg1 in alias:
             del alias[arg1]
             options.edit('command_alias', alias)
@@ -507,13 +507,13 @@ async def config_gu(msg: MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
-    if msg.parsed_msg['add']:
+    if 'add' in msg.parsed_msg:
         if user and not BotDBUtil.SenderInfo(user).check_TargetAdmin(msg.target.targetId):
             if BotDBUtil.SenderInfo(user).add_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")
         else:
             await msg.finish("此成员已经是机器人管理员。")
-    if msg.parsed_msg['del']:
+    if 'del' in msg.parsed_msg:
         if user:
             if BotDBUtil.SenderInfo(user).remove_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")

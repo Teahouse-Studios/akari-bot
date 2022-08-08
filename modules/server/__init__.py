@@ -9,7 +9,7 @@ from .server import server
 s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.handle('<ServerIP>:<Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
+@s.handle('<ServerIP:Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
           options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: MessageSession):
     enabled_addon = msg.options.get('server_revoke')
@@ -19,7 +19,7 @@ async def main(msg: MessageSession):
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
-            msg, f'{msg.parsed_msg["<ServerIP>:<Port>"]}', msg.parsed_msg['-r'], msg.parsed_msg['-p'], x,
+            msg, f'{msg.parsed_msg["<ServerIP:Port>"]}', msg.parsed_msg['-r'], msg.parsed_msg['-p'], x,
             enabled_addon)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
