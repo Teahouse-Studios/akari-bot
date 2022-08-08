@@ -223,7 +223,7 @@ async def bot_help(msg: MessageSession):
             await msg.finish('此模块可能不存在，请检查输入。')
 
 
-@hlp.handle()
+@hlp.handle('{查看帮助列表}')
 async def _(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()

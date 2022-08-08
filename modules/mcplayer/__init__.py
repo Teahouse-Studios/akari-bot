@@ -3,6 +3,7 @@ from core.component import on_command
 from core.elements import Plain, Image, Url
 from .mojang_api import *
 
+
 mcplayer = on_command(
     bind_prefix='mcplayer',
     desc='从 Mojang API 获取 Minecraft Java 版玩家信息',

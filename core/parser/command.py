@@ -5,7 +5,7 @@ from typing import Union, Dict
 
 from core.elements import Command, MessageSession
 from core.exceptions import InvalidCommandFormatError, InvalidHelpDocTypeError
-from .args import parse_argv, Template, templates_to_str
+from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..logger import Logger
 
 
@@ -61,6 +61,9 @@ class CommandParser:
                     print(self.args)
                     if '' in self.args:
                         return self.args['']['meta'], None
+                    for arg in self.args:
+                        if len(arg.args) == 1 and isinstance(arg.args[0], DescPattern):
+                            return self.args[arg]['meta'], None
                     raise InvalidCommandFormatError
                 else:
                     base_match = parse_argv(split_command[1:], [args for args in self.args if args != ''])

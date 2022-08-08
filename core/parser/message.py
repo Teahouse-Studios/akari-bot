@@ -60,12 +60,12 @@ async def temp_ban_check(msg: MessageSession):
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
                 return await msg.finish('提示：\n'
-                                             '由于你的行为触发了警告，我们已对你进行临时限制。\n'
-                                             f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+                                        '由于你的行为触发了警告，我们已对你进行临时限制。\n'
+                                        f'距离解封时间还有{str(int(300 - ban_time))}秒。')
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
                 return await msg.finish('即使是触发了临时限制，继续使用命令还是可能会导致你被再次警告。\n'
-                                             f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+                                        f'距离解封时间还有{str(int(300 - ban_time))}秒。')
             else:
                 raise AbuseWarning('无视临时限制警告')
 
