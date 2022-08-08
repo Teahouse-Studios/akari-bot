@@ -68,6 +68,13 @@ async def get_rating(uid, query_type):
           score
           accuracy
           rating
+          details {{
+            perfect
+            great
+            good
+            bad
+            miss
+          }}
         }}
         """)
 
@@ -87,6 +94,7 @@ async def get_rating(uid, query_type):
             score = str(x['score'])
             acc = x['accuracy']
             rt = x['rating']
+            details = x['details']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
             local_time = _date + timedelta(hours=8)
             playtime = local_time.timestamp()
@@ -110,7 +118,7 @@ async def get_rating(uid, query_type):
             else:
                 havecover = False
             songcards.append(
-                make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
+                make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
                               havecover))
 
         for x in bestRecords:
@@ -248,7 +256,7 @@ async def download_avatar_thumb(link, id):
         return False
 
 
-async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank,
+async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
                         havecover=True):
     if havecover:
         try:
@@ -272,7 +280,8 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
     drawtext = ImageDraw.Draw(img)
     drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), chart_name, '#ffffff', font=font)
-    drawtext.text((20, 185), f'Accuracy: {acc}\nRating: {rt}', font=font2)
+    drawtext.text((20, 185), f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
+                             f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
     playtime_width = font3.getsize(playtime)[0]
     songimg_width = 384
