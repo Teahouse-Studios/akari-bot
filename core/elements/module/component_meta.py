@@ -25,7 +25,7 @@ class CommandMeta:
             help_doc = [help_doc]
         elif isinstance(help_doc, tuple):
             help_doc = list(help_doc)
-        self.help_doc: list = help_doc
+        self.help_doc: List[Template] = help_doc
         self.options_desc = options_desc
         self.required_admin = required_admin
         self.required_superuser = required_superuser

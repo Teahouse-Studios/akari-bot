@@ -2,16 +2,19 @@ import difflib
 import re
 import traceback
 from datetime import datetime
+from typing import List
 
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
 from core.builtins.message import MessageSession
 from core.elements import Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
+from core.elements.module.component_meta import CommandMeta
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException
 from core.loader import ModulesManager
 from core.logger import Logger
+from core.parser.args import Template, ArgumentPattern, templates_to_str
 from core.parser.command import CommandParser
 from core.tos import warn_target
 from core.utils import removeIneffectiveText, removeDuplicateSpace, split_multi_arguments
@@ -68,122 +71,6 @@ async def temp_ban_check(msg: MessageSession):
                                         f'距离解封时间还有{str(int(300 - ban_time))}秒。')
             else:
                 raise AbuseWarning('无视临时限制警告')
-
-
-async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
-    enabled_modules = []
-    for m in msg.enabled_modules:
-        if m in modules:
-            enabled_modules.append(m)
-    match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.6)
-    if match_close_module:
-        module = modules[match_close_module[0]]
-        none_doc = True  # 检查模块绑定的命令是否有文档
-        for func in module.match_list.get(msg.target.targetFrom):
-            if func.help_doc is not None:
-                none_doc = False
-        len_command_split = len(command_split)
-        if not none_doc and len_command_split > 1:
-            get_submodules = module.match_list.get(msg.target.targetFrom)
-            docs = {}  # 根据命令模板的空格数排序命令
-            for func in get_submodules:
-                help_doc = func.help_doc
-                for h_ in help_doc:
-                    match_detail_help = re.match('(.*){.*}$', h_, re.M | re.S)  # 去掉帮助简介
-                    if match_detail_help:
-                        h_ = match_detail_help.group(1).strip()
-                    split_len = len(h_.split(' '))  # 计算命令模板的空格数
-                    if split_len not in docs:
-                        docs[split_len] = []
-                    for s in split_multi_arguments([h_]):
-                        docs[split_len].append(s)
-                        split_options = list(filter(None, re.split(r'(\[.*?])', s)))
-                        if len(split_options) > 1:
-                            without_options = list(
-                                filter(None, ''.join([x for x in split_options if not x.startswith('[')]).split(' ')))
-                            len_without_options = len(without_options)
-                            if len_without_options not in docs:
-                                docs[len_without_options] = []
-                            docs[len_without_options].append(' '.join(without_options))
-            if len_command_split - 1 > len(docs):  # 如果空格数远大于命令模板的空格数
-                select_docs = docs[max(docs)]
-            else:
-                select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
-            match_close_command: list = difflib.get_close_matches(' '.join(command_split[1:]), select_docs,
-                                                                  1, 0.3)  # 进一步匹配命令
-            if match_close_command:
-                match_split = match_close_command[0]
-                m_split_options = filter(None, re.split(r'(\[.*?])', match_split))  # 切割可选参数
-                old_command_split = command_split.copy()
-                del old_command_split[0]
-                new_command_split = [match_close_module[0]]
-                for m_ in m_split_options:
-                    if m_.startswith('['):  # 如果是可选参数
-                        m_split = m_.split(' ')  # 切割可选参数中的空格（说明存在多个子必须参数）
-                        if len(m_split) > 1:
-                            match_close_options = difflib.get_close_matches(m_split[0][1:], old_command_split, 1,
-                                                                            0.3)  # 进一步匹配可选参数
-                            if match_close_options:
-                                position = old_command_split.index(match_close_options[0])  # 定位可选参数的位置
-                                new_command_split.append(m_split[0][1:])  # 将可选参数插入到新命令列表中
-                                new_command_split += old_command_split[position + 1: position + len(m_split)]
-                                del old_command_split[position: position + len(m_split)]  # 删除原命令列表中的可选参数
-                        else:
-                            if m_split[0][1] == '<':
-                                new_command_split.append(old_command_split[0])
-                                del old_command_split[0]
-                            else:
-                                new_command_split.append(m_split[0][1:-1])
-                    else:
-                        m__ = filter(None, m_.split(' '))  # 必须参数
-                        for mm in m__:
-                            if len(old_command_split) > 0:
-                                if mm.startswith('<'):
-                                    new_command_split.append(old_command_split[0])
-                                    del old_command_split[0]
-                                else:
-                                    match_close_args = difflib.get_close_matches(old_command_split[0], [mm], 1,
-                                                                                 0.5)  # 进一步匹配参数
-                                    if match_close_args:
-                                        new_command_split.append(mm)
-                                        del old_command_split[0]
-                                    else:
-                                        new_command_split.append(old_command_split[0])
-                                        del old_command_split[0]
-                            else:
-                                new_command_split.append(mm)
-                new_command_display = " ".join(new_command_split)
-                if new_command_display != msg.trigger_msg:
-                    wait_confirm = await msg.waitConfirm(
-                        f'您是否想要输入{display_prefix}{new_command_display}？')
-                    if wait_confirm:
-                        command_split = new_command_split
-                        command_first_word = new_command_split[0]
-                        msg.trigger_msg = ' '.join(new_command_split)
-                        return msg, command_first_word, command_split
-            else:
-                if len_command_split - 1 == 1:
-                    new_command_display = f'{match_close_module[0]} {" ".join(command_split[1:])}'
-                    if new_command_display != msg.trigger_msg:
-                        wait_confirm = await msg.waitConfirm(
-                            f'您是否想要输入{display_prefix}{new_command_display}？')
-                        if wait_confirm:
-                            command_split = [match_close_module[0]] + command_split[1:]
-                            command_first_word = match_close_module[0]
-                            msg.trigger_msg = ' '.join(command_split)
-                            return msg, command_first_word, command_split
-
-        else:
-            new_command_display = f'{match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}'
-            if new_command_display != msg.trigger_msg:
-                wait_confirm = await msg.waitConfirm(
-                    f'您是否想要输入{display_prefix}{new_command_display}？')
-                if wait_confirm:
-                    command_split = [match_close_module[0]]
-                    command_first_word = match_close_module[0]
-                    msg.trigger_msg = ' '.join(command_split)
-                    return msg, command_first_word, command_split
-    return None, None, None
 
 
 async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
@@ -496,3 +383,112 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     except Exception:
         Logger.error(traceback.format_exc())
     ExecutionLockList.remove(msg)
+
+
+async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
+    enabled_modules = []
+    for m in msg.enabled_modules:
+        if m in modules:
+            enabled_modules.append(m)
+    match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.6)
+    if match_close_module:
+        module = modules[match_close_module[0]]
+        none_doc = True  # 检查模块绑定的命令是否有文档
+        for func in module.match_list.get(msg.target.targetFrom):
+            if func.help_doc is not None:
+                none_doc = False
+        len_command_split = len(command_split)
+        if not none_doc and len_command_split > 1:
+            get_submodules: List[CommandMeta] = module.match_list.get(msg.target.targetFrom)
+            docs = {}  # 根据命令模板的空格数排序命令
+            for func in get_submodules:
+                help_doc: List[Template] = func.help_doc
+                if not help_doc:
+                    ...  # todo: ...此处应该有一个处理例外情况的逻辑
+
+                for h_ in help_doc:
+                    h_.args = [a for a in h_.args if isinstance(a, ArgumentPattern)]
+                    if (len_args := len(h_.args)) not in docs:
+                        docs[len_args] = [h_]
+                    else:
+                        docs[len_args].append(h_)
+
+            if len_command_split - 1 > len(docs):  # 如果空格数远大于命令模板的空格数
+                select_docs = docs[max(docs)]
+            else:
+                select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
+            match_close_command: list = difflib.get_close_matches(' '.join(command_split[1:]), templates_to_str(select_docs),
+                                                                  1, 0.3)  # 进一步匹配命令
+            if match_close_command:
+                match_split = match_close_command[0]
+                m_split_options = filter(None, re.split(r'(\[.*?])', match_split))  # 切割可选参数
+                old_command_split = command_split.copy()
+                del old_command_split[0]
+                new_command_split = [match_close_module[0]]
+                for m_ in m_split_options:
+                    if m_.startswith('['):  # 如果是可选参数
+                        m_split = m_.split(' ')  # 切割可选参数中的空格（说明存在多个子必须参数）
+                        if len(m_split) > 1:
+                            match_close_options = difflib.get_close_matches(m_split[0][1:], old_command_split, 1,
+                                                                            0.3)  # 进一步匹配可选参数
+                            if match_close_options:
+                                position = old_command_split.index(match_close_options[0])  # 定位可选参数的位置
+                                new_command_split.append(m_split[0][1:])  # 将可选参数插入到新命令列表中
+                                new_command_split += old_command_split[position + 1: position + len(m_split)]
+                                del old_command_split[position: position + len(m_split)]  # 删除原命令列表中的可选参数
+                        else:
+                            if m_split[0][1] == '<':
+                                new_command_split.append(old_command_split[0])
+                                del old_command_split[0]
+                            else:
+                                new_command_split.append(m_split[0][1:-1])
+                    else:
+                        m__ = filter(None, m_.split(' '))  # 必须参数
+                        for mm in m__:
+                            if len(old_command_split) > 0:
+                                if mm.startswith('<'):
+                                    new_command_split.append(old_command_split[0])
+                                    del old_command_split[0]
+                                else:
+                                    match_close_args = difflib.get_close_matches(old_command_split[0], [mm], 1,
+                                                                                 0.5)  # 进一步匹配参数
+                                    if match_close_args:
+                                        new_command_split.append(mm)
+                                        del old_command_split[0]
+                                    else:
+                                        new_command_split.append(old_command_split[0])
+                                        del old_command_split[0]
+                            else:
+                                new_command_split.append(mm)
+                new_command_display = " ".join(new_command_split)
+                if new_command_display != msg.trigger_msg:
+                    wait_confirm = await msg.waitConfirm(
+                        f'您是否想要输入{display_prefix}{new_command_display}？')
+                    if wait_confirm:
+                        command_split = new_command_split
+                        command_first_word = new_command_split[0]
+                        msg.trigger_msg = ' '.join(new_command_split)
+                        return msg, command_first_word, command_split
+            else:
+                if len_command_split - 1 == 1:
+                    new_command_display = f'{match_close_module[0]} {" ".join(command_split[1:])}'
+                    if new_command_display != msg.trigger_msg:
+                        wait_confirm = await msg.waitConfirm(
+                            f'您是否想要输入{display_prefix}{new_command_display}？')
+                        if wait_confirm:
+                            command_split = [match_close_module[0]] + command_split[1:]
+                            command_first_word = match_close_module[0]
+                            msg.trigger_msg = ' '.join(command_split)
+                            return msg, command_first_word, command_split
+
+        else:
+            new_command_display = f'{match_close_module[0] + (" " + " ".join(command_split[1:]) if len(command_split) > 1 else "")}'
+            if new_command_display != msg.trigger_msg:
+                wait_confirm = await msg.waitConfirm(
+                    f'您是否想要输入{display_prefix}{new_command_display}？')
+                if wait_confirm:
+                    command_split = [match_close_module[0]]
+                    command_first_word = match_close_module[0]
+                    msg.trigger_msg = ' '.join(command_split)
+                    return msg, command_first_word, command_split
+    return None, None, None
