@@ -56,7 +56,7 @@ async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
-    wait_config = msg.parsed_msg.get('<module>', [])
+    wait_config = [msg.parsed_msg.get('<module>')] + msg.parsed_msg.get('...', [])
     wait_config_list = []
     for module_ in wait_config:
         if module_ not in wait_config_list:
@@ -121,7 +121,7 @@ async def config_modules(msg: MessageSession):
                     pass
     elif msg.parsed_msg.get('disable', False):
         disable_list = []
-        if wait_config_list == ['all']:
+        if msg.parsed_msg.get('all', False):
             for function in modules_:
                 if function[0] == '_':
                     continue

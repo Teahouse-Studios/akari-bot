@@ -10,6 +10,8 @@ from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.utils import init, init_async, load_prompt, MessageTaskManager
+from core.loader import ModulesManager
+
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()
@@ -26,6 +28,14 @@ async def on_ready():
         await init_async(FetchTarget)
         await load_prompt(FetchTarget)
         count = 1
+
+
+"""modules = [x for x in ModulesManager.return_modules_list_as_dict()]
+for module in modules:
+    name = re.sub(r'\W*', '', module)
+    @client.slash_command(guild_ids=[557879624575614986], name=name)  # Create a slash command
+    async def hello(ctx: discord.ApplicationContext):
+        await ctx.respond(f"Hello {ctx.author}!")"""
 
 
 @client.event

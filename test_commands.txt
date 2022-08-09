@@ -122,4 +122,4 @@
 
 ~wiki -p 119917
 
-~wiki -p 119917 wp
+~wiki -p 119917 -i wp

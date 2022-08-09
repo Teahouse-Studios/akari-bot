@@ -214,6 +214,11 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                             del argv_copy[0]
                         else:
                             parsed_argv[a.name] = False
+                    elif a.name == '...':
+                        if len(template.args) - 1 == template.args.index(a):
+                            afters.append(Template([a]))
+                        else:
+                            raise InvalidTemplatePattern('... must be the last argument')
                     else:
                         parsed_argv[a.name] = a.name in argv_copy
                         if parsed_argv[a.name]:
@@ -229,6 +234,9 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                                         del argv_copy[0]
                                     else:
                                         parsed_argv[sub_args.name] = False
+                                elif sub_args.name == '...':
+                                    parsed_argv[sub_args.name] = [Argument(x) for x in argv_copy]
+                                    del argv_copy[:]
                                 else:
                                     parsed_argv[sub_args.name] = sub_args.name in argv_copy
                                     if parsed_argv[sub_args.name]:
@@ -258,6 +266,8 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                         args_[keys] = args_[keys].args
             elif isinstance(args_[keys], Argument):
                 args_[keys] = args_[keys].value
+            elif isinstance(args_[keys], list):
+                args_[keys] = [v.value for v in args_[keys] if isinstance(v, Argument)]
             elif isinstance(args_[keys], bool):
                 if not args_[keys]:
                     filtered = True

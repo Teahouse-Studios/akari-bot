@@ -10,7 +10,7 @@ aioconsole
 aiogram
 ujson
 pymysql
-py-cord==2.0.0b7
+py-cord==2.0.0
 tenacity
 aiocqhttp
 tabulate

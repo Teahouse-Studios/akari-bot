@@ -17,7 +17,7 @@ from core.logger import Logger
 from core.parser.args import Template, ArgumentPattern, templates_to_str
 from core.parser.command import CommandParser
 from core.tos import warn_target
-from core.utils import removeIneffectiveText, removeDuplicateSpace, split_multi_arguments
+from core.utils import removeIneffectiveText, removeDuplicateSpace
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
@@ -287,6 +287,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}')
                         if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
                             await msg_counter(msg, msg.trigger_msg)
+                        else:
+                            Logger.debug(f'Tos is disabled, check the configuration is correct.')
                         ExecutionLockList.remove(msg)
                         if enable_analytics:
                             BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
@@ -360,6 +362,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                             if enable_tos:
                                 await msg_counter(msg, msg.trigger_msg)
+                            else:
+                                Logger.debug(f'Tos is disabled, check the configuration is correct.')
 
                             continue
 
