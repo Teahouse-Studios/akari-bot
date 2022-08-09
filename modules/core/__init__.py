@@ -542,10 +542,10 @@ async def del_su(message: MessageSession):
             await message.finish('操作成功：已将' + user + '移出超级用户。')
 
 
-whoami = on_command('whoami', developers=['Dianliang233'], desc='获取发送命令的账号在机器人内部的 ID', base=True)
+whoami = on_command('whoami', developers=['Dianliang233'], base=True)
 
 
-@whoami.handle()
+@whoami.handle('{获取发送命令的账号在机器人内部的 ID}')
 async def _(msg: MessageSession):
     rights = ''
     if await msg.checkNativePermission():
@@ -576,7 +576,7 @@ async def _(msg: MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         module_ = None
-        if msg.parsed_msg['<name>']:
+        if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
         data_ = {}
         for d in range(30):
@@ -620,7 +620,7 @@ async def _(msg: MessageSession):
 
 @ae.handle('warn <user> [<count>]')
 async def _(msg: MessageSession):
-    count = int(msg.parsed_msg['<count>'] or 1)
+    count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -630,7 +630,7 @@ async def _(msg: MessageSession):
 
 @ae.handle('revoke <user> [<count>]')
 async def _(msg: MessageSession):
-    count = 0 - int(msg.parsed_msg['<count>'] or 1)
+    count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')

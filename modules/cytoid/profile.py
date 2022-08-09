@@ -7,7 +7,7 @@ from .dbutils import CytoidBindInfoManager
 
 
 async def cytoid_profile(msg: MessageSession):
-    pat = msg.parsed_msg['<UserID>']
+    pat = msg.parsed_msg.get('<UserID>', False)
     if pat:
         query_id = pat
     else:

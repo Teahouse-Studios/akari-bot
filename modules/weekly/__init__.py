@@ -32,10 +32,10 @@ async def get_weekly():
     return msg_list
 
 
-wky = on_command('weekly', developers=['Dianliang233'], desc='获取中文 Minecraft Wiki 的每周页面')
+wky = on_command('weekly', developers=['Dianliang233'])
 
 
-@wky.handle()
+@wky.handle('{获取中文 Minecraft Wiki 的每周页面}')
 async def _(msg: MessageSession):
     weekly = await get_weekly()
     await msg.finish(weekly)

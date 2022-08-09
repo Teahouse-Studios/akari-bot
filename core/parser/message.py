@@ -225,8 +225,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         if not none_doc:  # 如果有，送入命令解析
                             async def execute_submodule(msg: MessageSession, command_first_word, command_split):
                                 try:
-                                    command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word
-                                                                   , command_prefixes=msg.prefixes)
+                                    command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
+                                                                   command_prefixes=msg.prefixes)
                                     try:
                                         parsed_msg = command_parser.parse(msg.trigger_msg)  # 解析命令对应的子模块
                                         submodule = parsed_msg[0]
@@ -392,7 +392,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 async def typo_check(msg: MessageSession, display_prefix, modules, command_first_word, command_split):
     enabled_modules = []
     for m in msg.enabled_modules:
-        if m in modules:
+        if m in modules and isinstance(modules[m], Command):
             enabled_modules.append(m)
     match_close_module: list = difflib.get_close_matches(command_first_word, enabled_modules, 1, 0.6)
     if match_close_module:
