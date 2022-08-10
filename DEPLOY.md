@@ -243,17 +243,3 @@ assets
 变量来增加（或删除）可使用的命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
-
-# 疑难排查
-
-## QQ：Attempt to access request outside of a relevant context
-
-造成此报错的原因未知，推测是 `quart` 库不允许小可的命令处理库 `docopt` 进行一些非常规调用而导致。
-
-### 解决方法
-
-暂时无根本的解决方法，当前可行的方法是将 `quart` 降级到 0.14 版本。
-
-`pip install quart==0.14 jinja2==3.0.3 werkzeug==2.0.3`
-
-
