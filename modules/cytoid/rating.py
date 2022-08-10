@@ -118,7 +118,7 @@ async def get_rating(uid, query_type):
             else:
                 havecover = False
             songcards.append(
-                make_songcard(workdir, thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
+                make_songcard(thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
                               havecover))
 
         for x in bestRecords:
@@ -126,7 +126,12 @@ async def get_rating(uid, query_type):
             resources.append(mkresources(x, rank))
 
         await asyncio.gather(*resources)
-        await asyncio.gather(*songcards)
+        cards_ = await asyncio.gather(*songcards)
+        cards_d = {}
+        for x in cards_:
+            for k in x:
+                cards_d[k] = x[k]
+        cards = [cards_d[x] for x in cards_d]
 
         # b30card
         b30img = Image.new("RGBA", (1975, 1610), '#1e2129')
@@ -179,9 +184,8 @@ async def get_rating(uid, query_type):
         fname = 1
         t = 0
         s = 0
-        while True:
+        for card in cards:
             try:
-                cardimg = Image.open(f'{workdir}/{str(fname)}.png')
                 w = 15 + 384 * i
                 h = 135
                 if s == 5:
@@ -190,12 +194,9 @@ async def get_rating(uid, query_type):
                 h = h + 240 * t
                 w = w - 384 * 5 * t
                 i += 1
-                # cardimg = await makeShadow(cardimg, 4, 9, [0, 3], 'rgba(0,0,0,0)', '#000000')
-                b30img.alpha_composite(cardimg, (w, h))
+                b30img.alpha_composite(card, (w, h))
                 fname += 1
                 s += 1
-            except FileNotFoundError:
-                break
             except Exception:
                 traceback.print_exc()
                 break
@@ -256,7 +257,7 @@ async def download_avatar_thumb(link, id):
         return False
 
 
-async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
+async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
                         havecover=True):
     if havecover:
         try:
@@ -292,4 +293,4 @@ async def make_songcard(workdir, coverpath, chart_type, difficulty, chart_name, 
     draw_typetext.text(((32 - font3.getsize(type_)[0] - font.getoffset(type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
     img.alpha_composite(type_text, (23, 29))
     Logger.debug('Image generated: ' + str(rank))
-    img.save(workdir + '/' + str(rank) + '.png')
+    return {int(rank): img}
