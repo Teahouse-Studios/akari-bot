@@ -10,8 +10,6 @@ from core.elements import MsgInfo, Session, PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.utils import init, init_async, load_prompt, MessageTaskManager
-from core.loader import ModulesManager
-
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 init()

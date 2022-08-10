@@ -7,7 +7,6 @@ from core.elements import Plain, Image as BImage, Session, MsgInfo, FetchTarget 
     FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
-from core.logger import Logger
 
 
 class FinishedSession(FinS):
