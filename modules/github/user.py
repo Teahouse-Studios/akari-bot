@@ -7,8 +7,10 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
 async def user(msg: MessageSession):
-    result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
     try:
+        result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
+        if result['message'] == 'Not Found':
+            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
         optional = []
         if 'hireable' in result and result['hireable'] is True:
             optional.append('Hireable')
@@ -42,9 +44,8 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
             message = 'https://wdf.ink/6OUp'
 
         await msg.finish(message)
+    except ValueError:
+        await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
     except Exception as error:
-        if result['message'] == 'Not Found':
-            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
-        else:
-            await msg.sendMessage(ErrorMessage(str(error)))
-            traceback.print_exc()
+        await msg.sendMessage(ErrorMessage(str(error)))
+        traceback.print_exc()

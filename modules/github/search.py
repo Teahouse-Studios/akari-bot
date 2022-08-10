@@ -7,8 +7,11 @@ from modules.github.utils import dirty_check, darkCheck
 
 
 async def search(msg: MessageSession):
-    result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200, fmt='json')
     try:
+        result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200,
+                               fmt='json')
+        if result['message'] == 'Not Found':
+            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
         items = result['items']
         item_count_expected = int(result['total_count']) if result['total_count'] < 5 else 5
         items_out = []
@@ -26,9 +29,8 @@ async def search(msg: MessageSession):
             message = 'https://wdf.ink/6OUp'
 
         await msg.finish(message)
+    except ValueError:
+        await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
     except Exception as error:
-        if result['message'] == 'Not Found':
-            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
-        else:
-            await msg.sendMessage(ErrorMessage(str(error)))
-            traceback.print_exc()
+        await msg.sendMessage(ErrorMessage(str(error)))
+        traceback.print_exc()

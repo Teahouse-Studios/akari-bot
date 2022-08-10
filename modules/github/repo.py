@@ -7,12 +7,12 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
 async def repo(msg: MessageSession):
-    result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
     try:
+        result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
-            raise RuntimeError('此仓库不存在。')
+            await msg.finish('此仓库不存在，请检查输入。')
         elif 'message' in result and result['message']:
-            raise RuntimeError(result['message'])
+            await msg.finish(result['message'])
         rlicense = 'Unknown'
         if 'license' in result and result['license'] is not None:
             if 'spdx_id' in result['license']:
@@ -61,9 +61,8 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         else:
             await msg.finish([Plain(message), Image(
                 path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
+    except ValueError:
+        await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
     except Exception as e:
-        if result['message'] == 'Not Found':
-            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
-        else:
-            await msg.sendMessage(ErrorMessage(str(e)))
-            traceback.print_exc()
+        await msg.sendMessage(ErrorMessage(str(e)))
+        traceback.print_exc()
