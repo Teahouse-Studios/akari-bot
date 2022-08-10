@@ -74,4 +74,4 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
         return False
 
 
-__all__ = ['ImageTable', 'image_table_render']
+__all__ = ['ImageTable', 'image_table_render', 'web_render']

@@ -17,7 +17,8 @@ from core.builtins.message import MessageSession
 from core.component import on_command
 from core.elements import Command, PrivateAssets, Image, Plain, ExecutionLockList
 from core.loader import ModulesManager
-from core.parser.command import CommandParser, InvalidHelpDocTypeError
+from core.parser.command import CommandParser
+from core.exceptions import InvalidHelpDocTypeError
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
