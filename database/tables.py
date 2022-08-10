@@ -76,6 +76,8 @@ class AnalyticsData(Base):
     command = Column(LONGTEXT if Config('db_path').startswith('mysql') else Text)
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
+
 
 class DBVersion(Base):
     __tablename__ = "DBVersion"
