@@ -37,17 +37,17 @@ module = on_command('module',
                 'disable (<module>...|all) {关闭一个/多个或所有模块}',
                 'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: MessageSession):
-    if msg.parsed_msg['list']:
+    if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
 
 @module.handle(['enable (<module>...|all) [-g] {开启一个/多个或所有模块}',
-                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块\n [-g] - 为文字频道内全局操作}',
-                'list {查看所有可用模块}'],
+                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块}',
+                'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
-    if msg.parsed_msg['list']:
+    if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
@@ -56,7 +56,7 @@ async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
-    wait_config = msg.parsed_msg['<module>']
+    wait_config = [msg.parsed_msg.get('<module>')] + msg.parsed_msg.get('...', [])
     wait_config_list = []
     for module_ in wait_config:
         if module_ not in wait_config_list:
@@ -68,9 +68,9 @@ async def config_modules(msg: MessageSession):
     msglist = []
     recommend_modules_list = []
     recommend_modules_help_doc_list = []
-    if msg.parsed_msg['enable']:
+    if msg.parsed_msg.get('enable', False):
         enable_list = []
-        if wait_config_list == ['all']:
+        if msg.parsed_msg.get('all', False):
             for function in modules_:
                 if function[0] == '_':
                     continue
@@ -111,7 +111,7 @@ async def config_modules(msg: MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    hdoc = CommandParser(modules_[m], msg=msg,
+                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
                     if modules_[m].desc is not None:
@@ -119,9 +119,9 @@ async def config_modules(msg: MessageSession):
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
-    elif msg.parsed_msg['disable']:
+    elif msg.parsed_msg.get('disable', False):
         disable_list = []
-        if wait_config_list == ['all']:
+        if msg.parsed_msg.get('all', False):
             for function in modules_:
                 if function[0] == '_':
                     continue
@@ -195,9 +195,11 @@ async def bot_help(msg: MessageSession):
             module_ = module_list[help_name]
             if module_.desc is not None:
                 msgs.append(module_.desc)
-            help_ = CommandParser(module_list[help_name], msg=msg, command_prefixes=msg.prefixes)
-            if help_.args is not None:
-                msgs.append(help_.return_formatted_help_doc())
+            if isinstance(module_, Command):
+                help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
+                                      command_prefixes=msg.prefixes)
+                if help_.args is not None:
+                    msgs.append(help_.return_formatted_help_doc())
         if msgs:
             doc = '\n'.join(msgs)
             module_alias = ModulesManager.return_module_alias(help_name)
@@ -222,7 +224,7 @@ async def bot_help(msg: MessageSession):
             await msg.finish('此模块可能不存在，请检查输入。')
 
 
-@hlp.handle()
+@hlp.handle('{查看帮助列表}')
 async def _(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
     target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
@@ -236,12 +238,17 @@ async def _(msg: MessageSession):
             for x in module_list:
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, msg=msg, command_prefixes=msg.prefixes)
                 doc_ = []
-                if module_.desc is not None:
-                    doc_.append(module_.desc)
-                if help_.args is not None:
-                    doc_.append(help_.return_formatted_help_doc())
+                if isinstance(module_, Command):
+                    help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
+                    if help_.args is not None:
+                        doc_.append(help_.return_formatted_help_doc())
+                else:
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
                 doc = '\n'.join(doc_)
                 appends.append(doc)
                 module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
@@ -307,12 +314,16 @@ async def modules_help(msg: MessageSession):
                 if isinstance(module_, Command) and (module_.base or module_.required_superuser):
                     continue
                 appends = [module_.bind_prefix]
-                help_ = CommandParser(module_, command_prefixes=msg.prefixes)
                 doc_ = []
-                if module_.desc is not None:
-                    doc_.append(module_.desc)
-                if help_.args is not None:
-                    doc_.append(help_.return_formatted_help_doc())
+                if isinstance(module_, Command):
+                    help_ = CommandParser(module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
+                    if help_.args is not None:
+                        doc_.append(help_.return_formatted_help_doc())
+                else:
+                    if module_.desc is not None:
+                        doc_.append(module_.desc)
                 doc = '\n'.join(doc_)
                 appends.append(doc)
                 module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
@@ -360,21 +371,21 @@ async def set_prefix(msg: MessageSession):
     arg1 = msg.parsed_msg['<prefix>']
     if prefixes is None:
         prefixes = []
-    if msg.parsed_msg['add']:
+    if 'add' in msg.parsed_msg:
         if arg1 not in prefixes:
             prefixes.append(arg1)
             options.edit('command_prefix', prefixes)
             await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
         else:
             await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
-    elif msg.parsed_msg['remove']:
+    elif 'remove' in msg.parsed_msg:
         if arg1 in prefixes:
             prefixes.remove(arg1)
             options.edit('command_prefix', prefixes)
             await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
         else:
             await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
-    elif msg.parsed_msg['reset']:
+    elif 'reset' in msg.parsed_msg:
         options.edit('command_prefix', [])
         await msg.sendMessage('已重置自定义命令前缀列表。')
 
@@ -390,7 +401,7 @@ async def set_alias(msg: MessageSession):
     arg2 = msg.parsed_msg['<command>']
     if alias is None:
         alias = {}
-    if msg.parsed_msg['add']:
+    if 'add' in msg.parsed_msg:
         if arg1 not in alias:
             has_prefix = False
             for prefixes in msg.prefixes:
@@ -405,7 +416,7 @@ async def set_alias(msg: MessageSession):
             await msg.sendMessage(f'已添加自定义命令别名：{arg1} -> {arg2}')
         else:
             await msg.sendMessage(f'[{arg1}]别名已存在于自定义别名列表。')
-    elif msg.parsed_msg['remove']:
+    elif 'remove' in msg.parsed_msg:
         if arg1 in alias:
             del alias[arg1]
             options.edit('command_alias', alias)
@@ -496,13 +507,13 @@ async def config_gu(msg: MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
-    if msg.parsed_msg['add']:
+    if 'add' in msg.parsed_msg:
         if user and not BotDBUtil.SenderInfo(user).check_TargetAdmin(msg.target.targetId):
             if BotDBUtil.SenderInfo(user).add_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")
         else:
             await msg.finish("此成员已经是机器人管理员。")
-    if msg.parsed_msg['del']:
+    if 'del' in msg.parsed_msg:
         if user:
             if BotDBUtil.SenderInfo(user).remove_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")
@@ -531,10 +542,10 @@ async def del_su(message: MessageSession):
             await message.finish('操作成功：已将' + user + '移出超级用户。')
 
 
-whoami = on_command('whoami', developers=['Dianliang233'], desc='获取发送命令的账号在机器人内部的 ID', base=True)
+whoami = on_command('whoami', developers=['Dianliang233'], base=True)
 
 
-@whoami.handle()
+@whoami.handle('{获取发送命令的账号在机器人内部的 ID}')
 async def _(msg: MessageSession):
     rights = ''
     if await msg.checkNativePermission():
@@ -565,7 +576,7 @@ async def _(msg: MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         module_ = None
-        if msg.parsed_msg['<name>']:
+        if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
         data_ = {}
         for d in range(30):
@@ -609,7 +620,7 @@ async def _(msg: MessageSession):
 
 @ae.handle('warn <user> [<count>]')
 async def _(msg: MessageSession):
-    count = int(msg.parsed_msg['<count>'] or 1)
+    count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -619,7 +630,7 @@ async def _(msg: MessageSession):
 
 @ae.handle('revoke <user> [<count>]')
 async def _(msg: MessageSession):
-    count = 0 - int(msg.parsed_msg['<count>'] or 1)
+    count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')

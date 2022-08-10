@@ -55,12 +55,12 @@ cc = on_command('chemical_code', alias={'cc': 'chemical_code',
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
-@cc.handle()  # 直接使用 cc 命令将触发此装饰器
+@cc.handle('{普通样式（时间限制，多人）}')  # 直接使用 cc 命令将触发此装饰器
 async def chemical_code_by_random(msg: MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
-@cc.handle('captcha {验证码样式（不支持指定ID）}')
+@cc.handle('captcha {验证码样式（不支持指定ID，只限一次，单人）}')
 async def _(msg: MessageSession):
     await chemical_code(msg, captcha_mode=True)
 

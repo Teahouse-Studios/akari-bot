@@ -7,7 +7,6 @@ from loguru import logger
 
 from config import Config
 
-
 debug = Config('debug')
 
 logpath = os.path.abspath('./logs')

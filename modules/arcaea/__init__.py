@@ -27,9 +27,9 @@ async def _(msg: MessageSession):
     if not os.path.exists(assets_path):
         await msg.finish('未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
     query_code = None
-    unofficial = msg.parsed_msg['unofficial']
-    friendcode: str = msg.parsed_msg['<friendcode>']
-    if friendcode is not None:
+    unofficial = msg.parsed_msg.get('unofficial', False)
+    friendcode: str = msg.parsed_msg.get('<friendcode>', False)
+    if friendcode:
         if friendcode.isdigit():
             if len(friendcode) == 9:
                 query_code = friendcode
@@ -74,9 +74,9 @@ async def _(msg: MessageSession):
         await msg.sendMessage('未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
         return
     query_code = None
-    unofficial = msg.parsed_msg['unofficial']
-    friendcode = msg.parsed_msg['<friendcode>']
-    if friendcode is not None:
+    unofficial = msg.parsed_msg.get('unofficial', False)
+    friendcode = msg.parsed_msg.get('<friendcode>', False)
+    if friendcode:
         if friendcode.isdigit():
             if len(friendcode) == 9:
                 query_code = friendcode
@@ -175,7 +175,7 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
-    if msg.parsed_msg['free']:
+    if msg.parsed_msg.get('free', False):
         resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
     else:
         resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/paid/', 200, fmt='json')

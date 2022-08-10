@@ -19,13 +19,13 @@ async def _(msg: MessageSession):
 
 @cytoid.handle('(b30|r30) [<UserID>] {查询一个用户的b30/r30记录}')
 async def _(msg: MessageSession):
-    if msg.parsed_msg['b30']:
+    if 'b30' in msg.parsed_msg:
         query = 'b30'
-    elif msg.parsed_msg['r30']:
+    elif 'r30' in msg.parsed_msg:
         query = 'r30'
     else:
         query = False
-    pat = msg.parsed_msg['<UserID>']
+    pat = msg.parsed_msg.get('<UserID>', False)
     if pat:
         query_id = pat
     else:

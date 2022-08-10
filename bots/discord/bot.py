@@ -28,6 +28,14 @@ async def on_ready():
         count = 1
 
 
+"""modules = [x for x in ModulesManager.return_modules_list_as_dict()]
+for module in modules:
+    name = re.sub(r'\W*', '', module)
+    @client.slash_command(guild_ids=[557879624575614986], name=name)  # Create a slash command
+    async def hello(ctx: discord.ApplicationContext):
+        await ctx.respond(f"Hello {ctx.author}!")"""
+
+
 @client.event
 async def on_message(message):
     # don't respond to ourselves

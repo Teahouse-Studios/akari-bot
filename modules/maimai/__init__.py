@@ -38,7 +38,7 @@ mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'], 
 @mai.handle(['inner <rating> {根据定数查询对应歌曲}',
              'inner <rating_min> <rating_max> {根据定数查询对应歌曲}'])
 async def _(msg: MessageSession):
-    if msg.parsed_msg['<rating>'] is not None:
+    if '<rating>' in msg.parsed_msg:
         result_set = await inner_level_q(float(msg.parsed_msg['<rating>']))
     else:
         result_set = await inner_level_q(float(msg.parsed_msg['<rating_min>']), float(msg.parsed_msg['<rating_max>']))
