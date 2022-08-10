@@ -7,8 +7,8 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
 async def repo(msg: MessageSession):
+    result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
     try:
-        result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
             raise RuntimeError('此仓库不存在。')
         elif 'message' in result and result['message']:

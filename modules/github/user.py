@@ -7,8 +7,8 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
 async def user(msg: MessageSession):
+    result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
     try:
-        result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
         optional = []
         if 'hireable' in result and result['hireable'] is True:
             optional.append('Hireable')

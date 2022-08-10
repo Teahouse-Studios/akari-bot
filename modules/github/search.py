@@ -7,8 +7,8 @@ from modules.github.utils import dirty_check, darkCheck
 
 
 async def search(msg: MessageSession):
+    result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200, fmt='json')
     try:
-        result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200, fmt='json')
         items = result['items']
         item_count_expected = int(result['total_count']) if result['total_count'] < 5 else 5
         items_out = []
