@@ -39,7 +39,10 @@ async def getb30_official(usercode):
     for x in getb30:
         b30potential.append(x['potential_value'])
     b30_avg = round(sum(b30potential) / len(b30potential), 4)
-    r10_avg = round((potential * 40 - b30_avg * 30) / 10, 4) if potential is not None else '???'
+    if potential is not None:
+        r10_avg = round((potential * 40 - b30_avg * 30) / 10, 4)
+    else:
+        r10_avg = '???'
     songsinfo = {}
     getinfos = []
     for x in getb30:

@@ -62,7 +62,7 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
         b30img.alpha_composite(makeShadow(cardoverlay.convert("RGBA"), 2, 3, [3, 3], 'rgba(0,0,0,0)', '#000000'),
                                (b30img.width - 500, 68))
     # ptt
-    pttimg = None
+    pttimg = 'off'
     if ptt is not None:
         if ptt >= 13.00:
             pttimg = 7
