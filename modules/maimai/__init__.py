@@ -195,9 +195,9 @@ async def _(msg: MessageSession):
              'scoreline help {查看分数线帮助}'])
 async def _(msg: MessageSession):
     r = "([绿黄红紫白])(id)?([0-9]+)"
-    arg1 = msg.parsed_msg['<difficulty+sid>']
-    args2 = msg.parsed_msg['<scoreline>']
-    argh = msg.parsed_msg['help']
+    arg1 = msg.parsed_msg.get('<difficulty+sid>')
+    args2 = msg.parsed_msg.get('<scoreline>')
+    argh = msg.parsed_msg.get('help', False)
     if argh:
         s = '''此功能为查找某首歌分数线设计。
 命令格式：maimai scoreline <difficulty+sid> <scoreline>
