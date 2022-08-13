@@ -45,6 +45,7 @@ class Template(MS):
         if msgchain is not None:
             send = await self.sendMessage(msgchain)
             print("（发送“是”或符合确认条件的词语来确认）")
+        print(self.session.auto_interactions)
         if self.session.auto_interactions:
             c = self.session.auto_interactions[0]
             del self.session.auto_interactions[0]

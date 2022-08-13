@@ -149,7 +149,7 @@ async def get_rating(uid, query_type):
                 output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
                 output.putalpha(mask)
                 output.convert('RGBA')
-                b30img.alpha_composite(output, (1825, 25))
+                b30img.alpha_composite(output, (1825, 24))
             except:
                 traceback.print_exc()
 

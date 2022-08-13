@@ -60,7 +60,6 @@ async def _(event: Event):
                          Session(message=event,
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
-    MessageTaskManager.check(msg)
     await parser(msg, running_mention=True, prefix=prefix)
 
 

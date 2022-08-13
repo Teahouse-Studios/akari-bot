@@ -17,7 +17,7 @@ from core.logger import Logger
 from core.parser.args import Template, ArgumentPattern, templates_to_str
 from core.parser.command import CommandParser
 from core.tos import warn_target
-from core.utils import removeIneffectiveText, removeDuplicateSpace
+from core.utils import removeIneffectiveText, removeDuplicateSpace, MessageTaskManager
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
@@ -86,6 +86,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     identify_str = f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}]'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
+        MessageTaskManager.check(msg)
         modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
         modulesAliases = ModulesManager.return_modules_alias_map()
         modulesRegex = ModulesManager.return_specified_type_modules(RegexCommand, targetFrom=msg.target.targetFrom)

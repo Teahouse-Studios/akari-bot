@@ -35,8 +35,8 @@ async def console_scheduler():
 async def console_command():
     try:
         m = await aioconsole.ainput('> ')
+        asyncio.create_task(console_command())
         await send_command(m)
-        await console_command()
     except KeyboardInterrupt:
         print('Exited.')
         exit()

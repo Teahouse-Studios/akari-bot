@@ -28,7 +28,6 @@ async def msg_handler(message: types.Message):
                                  messageId=message.message_id,
                                  replyId=replyId),
                          Session(message=message, target=message.chat.id, sender=message.from_user.id))
-    MessageTaskManager.check(msg)
     await parser(msg)
 
 
