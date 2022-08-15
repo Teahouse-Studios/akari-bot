@@ -1,4 +1,5 @@
 import re
+import copy
 import shlex
 import traceback
 from typing import Union, Dict
@@ -28,7 +29,7 @@ class CommandParser:
             if match.options_desc is not None:
                 for m in match.options_desc:
                     self.options_desc.append(f'{m}  {match.options_desc[m]}')
-        self.args: Dict[Union[Template, ''], dict] = help_docs
+        self.args: Dict[Union[Template, ''], dict] = copy.deepcopy(help_docs)
 
     def return_formatted_help_doc(self) -> str:
         if not self.args:
