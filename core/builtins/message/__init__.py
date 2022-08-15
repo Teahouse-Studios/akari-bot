@@ -33,6 +33,7 @@ class MessageSession(MessageSession):
         ExecutionLockList.remove(self)
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
+            msgchain.append(Plain('（发送符合条件的词语来确认）'))
             sent = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
