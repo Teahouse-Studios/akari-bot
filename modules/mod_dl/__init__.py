@@ -28,7 +28,7 @@ source_url = 'https://files.xmdhs.com/curseforge/'
 @mod_dl.handle('<mod_name> [<version>] {通过模组名获取模组下载链接，CloudFlare CDN支持。}')
 async def main(msg: MessageSession):
     mod_name = msg.parsed_msg['<mod_name>']
-    ver = msg.parsed_msg['<version>']
+    ver = msg.parsed_msg.get('<version>', False)
     if ver:
         match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', ver)
         if match_ver is None:
