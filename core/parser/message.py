@@ -251,7 +251,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                             await parsed_msg[0].function(msg)
                                         raise FinishedException(msg.sent)  # if not using msg.finish
                                     except InvalidCommandFormatError:
-                                        await msg.sendMessage('语法错误。\n' + command_parser.return_formatted_help_doc())
+                                        await msg.sendMessage(f'语法错误。\n使用~help {command_first_word}查看帮助。')
                                         if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                             nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                        display_prefix,

@@ -58,7 +58,6 @@ class CommandParser:
                     return None, None
             else:
                 if len(split_command) == 1:
-                    print(self.args)
                     if '' in self.args:
                         return self.args['']['meta'], None
                     for arg in self.args:

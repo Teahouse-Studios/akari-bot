@@ -43,7 +43,10 @@ async def _(msg: MessageSession):
 
 @wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID查询一个Wiki页面。}')
 async def _(msg: MessageSession):
-    iw: str = msg.parsed_msg['-i'].get('<CustomIW>', False) if msg.parsed_msg['-i'] else False
+    if msg.parsed_msg.get('-i', False):
+        iw: str = msg.parsed_msg['-i'].get('<CustomIW>', False)
+    else:
+        iw = False
     page_id: str = msg.parsed_msg['<PageID>']
     if not page_id.isdigit():
         await msg.finish('错误：页面ID必须是数字。')

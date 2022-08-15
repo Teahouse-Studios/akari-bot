@@ -13,7 +13,7 @@ async def cytoid_profile(msg: MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            return await msg.sendMessage('未绑定用户，请使用~cytoid bind <friendcode>绑定一个用户。')
+            return await msg.sendMessage('未绑定用户，请使用~cytoid bind <username>绑定一个用户。')
     profile_url = 'http://services.cytoid.io/profile/' + query_id
     profile = json.loads(await get_url(profile_url, status_code=200))
     if 'statusCode' in profile:

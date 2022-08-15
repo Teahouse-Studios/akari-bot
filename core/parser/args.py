@@ -155,25 +155,39 @@ def parse_template(argv: List[str]) -> List[Template]:
     return templates
 
 
-def templates_to_str(templates: List[Template], with_desc=False) -> List[str]:
+def templates_to_str(templates: List[Template], with_desc=False, simplify=True) -> List[str]:
     text = []
+    last_desc = None
     for template in templates:
         arg_text = []
+        sub_arg_text = []
+        has_desc = False
         for arg in template.args:
             if isinstance(arg, ArgumentPattern):
-                arg_text.append(arg.name)
+                sub_arg_text.append(arg.name)
             elif isinstance(arg, OptionalPattern):
                 t = '['
                 if arg.flag is not None:
                     t += arg.flag
                 if arg.args:
-                    t += ' ' + ' '.join(templates_to_str(arg.args))
+                    t += ' ' + ' '.join(templates_to_str(arg.args, simplify=False))
                 t += ']'
-                arg_text.append(t)
-            elif isinstance(arg, DescPattern):
+                sub_arg_text.append(t)
+            if isinstance(arg, DescPattern):
+                has_desc = True
+                sub_arg_text_ = ' '.join(sub_arg_text)
+                sub_arg_text.clear()
+                if simplify:
+                    if last_desc == arg.text:
+                        continue
                 if with_desc:
-                    arg_text.append('- ' + arg.text)
-        text.append(" ".join(arg_text))
+                    arg_text.append(sub_arg_text_ + ' - ' + arg.text)
+                last_desc = arg.text
+        if not has_desc:
+            arg_text.append(' '.join(sub_arg_text))
+            sub_arg_text.clear()
+        if arg_text:
+            text.append(" ".join(arg_text))
     return text
 
 
