@@ -37,7 +37,7 @@ async def _(msg: MessageSession):
             c = 0
         else:
             qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
-            c = qc.check(300)
+            c = qc.check(150)
         if c == 0:
             img = await get_rating(query_id, query)
             if 'path' in img:
@@ -48,7 +48,7 @@ async def _(msg: MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            await msg.sendMessage(f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为300秒。')
+            await msg.sendMessage(f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为150秒。（据官方人员所述，此API的调用十分昂贵，故手动做出这一限制，请谅解。）')
 
 
 @cytoid.handle('bind <username> {绑定一个Cytoid用户}')
