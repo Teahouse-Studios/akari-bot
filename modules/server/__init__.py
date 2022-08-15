@@ -19,7 +19,7 @@ async def main(msg: MessageSession):
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
-            msg, f'{msg.parsed_msg["<ServerIP:Port>"]}', msg.parsed_msg['-r'], msg.parsed_msg['-p'], x,
+            msg, f'{msg.parsed_msg["<ServerIP:Port>"]}', msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False), x,
             enabled_addon)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:

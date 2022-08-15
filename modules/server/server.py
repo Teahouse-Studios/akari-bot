@@ -5,6 +5,7 @@ import aiohttp
 import ujson as json
 
 from core.elements import ErrorMessage
+from core.logger import Logger
 
 
 async def server(address, raw=False, showplayer=False, mode='j'):
@@ -94,11 +95,10 @@ async def server(address, raw=False, showplayer=False, mode='j'):
             async with aiohttp.ClientSession() as session2:
                 async with session2.get(beurl, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
-                        print(await req.text())
+                        Logger.debug(await req.text())
                     else:
                         bemotd = await req.text()
                         bejson = json.loads(bemotd)
-                        print(bejson)
                         unpack_data = bejson['data'].split(';')
                         motd_1 = unpack_data[1]
                         motd_2 = unpack_data[7]
