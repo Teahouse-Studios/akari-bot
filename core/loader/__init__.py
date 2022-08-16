@@ -16,11 +16,14 @@ def load_modules():
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:
         try:
-            file_path = f'{load_dir_path}/{file_name}'
+            file_path = os.path.join(load_dir_path, file_name)
             fun_file = None
             if os.path.isdir(file_path):
                 if file_name[0] != '_':
                     fun_file = file_name
+            elif os.path.isfile(file_path):
+                if file_name[0] != '_' and file_name.endswith('.py'):
+                    fun_file = file_name[:-3]
             if fun_file is not None:
                 Logger.info(f'Loading modules.{fun_file}...')
                 modules = 'modules.' + fun_file
