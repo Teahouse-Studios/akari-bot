@@ -91,4 +91,3 @@ async def on_message(message):
 dc_token = Config('dc_token')
 if dc_token:
     client.run(dc_token)
-    client.register_commands(force=True)

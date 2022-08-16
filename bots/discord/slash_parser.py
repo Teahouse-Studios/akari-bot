@@ -20,6 +20,6 @@ async def slash_parser(ctx: discord.ApplicationContext, command: str):
                                             clientName='Discord|Slash',
                                             messageId=0),
                              session=Session(message=ctx, target=ctx.channel, sender=ctx.author))
-    session.command = f'{str(ctx.command).split(" ")[0]} {command}'
+    session.command = f'/{str(ctx.command).split(" ")[0]} {command}'
     Logger.info(f'parsing..')
-    await parser(session, prefix=[''])
+    await parser(session, prefix=['/'])

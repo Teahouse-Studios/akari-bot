@@ -21,9 +21,9 @@ async def search(ctx: discord.ApplicationContext, title: str):
     await slash_parser(ctx, f'search {title}')
 
 
-@wiki.command(name="pageid", description="根据页面ID查询一个wiki页面")
+@wiki.command(name="id", description="根据页面ID查询一个wiki页面")
 @discord.option(name="pid", description="页面ID")
-async def pageid(ctx: discord.ApplicationContext, pid: str):
+async def page_id(ctx: discord.ApplicationContext, pid: str):
     await slash_parser(ctx, f'-p {pid}')
 
 
@@ -51,13 +51,13 @@ async def iw_remove(ctx: discord.ApplicationContext, iw: str):
 
 @iw.command(name="list", description="查看所有已自定义的Interwiki")
 async def iw_list(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, 'list')
+    await slash_parser(ctx, 'iw list')
 
 
 @iw.command(description="获取自定义Interwiki的链接")
 @discord.option(name="iw", description="自定义interwiki名")
 async def get(ctx: discord.ApplicationContext, iw: str):
-    await slash_parser(ctx, f'get {iw}')
+    await slash_parser(ctx, f'iw get {iw}')
 
 
 headers = wiki.create_subgroup("headers", "设置有关自定义header的命令")
