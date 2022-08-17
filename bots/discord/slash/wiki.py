@@ -61,7 +61,7 @@ async def page_id(ctx: discord.ApplicationContext, pid: str):
 
 
 @wiki.command(name="set", description="设置起始查询wiki")
-@discord.option(name="link", description="页面链接", autocomplete=)
+@discord.option(name="link", description="页面链接", autocomplete=default_wiki)
 async def set_base(ctx: discord.ApplicationContext, link: str):
     await slash_parser(ctx, f'set {link}')
 
