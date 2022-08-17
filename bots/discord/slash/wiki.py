@@ -39,7 +39,7 @@ async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
 
 async def default_wiki(ctx: discord.AutocompleteContext):
     if ctx.options["wiki"] == '':
-        return 'https://minecraft.fandom.com/zh/'
+        return ['https://minecraft.fandom.com/zh/']
 
 
 @wiki.command(description="根据页面名称查询一个wiki页面")
