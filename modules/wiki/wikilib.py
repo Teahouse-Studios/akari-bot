@@ -699,6 +699,6 @@ class WikiLib:
         :return: 页面信息
         """
         await self.fixup_wiki_info()
-        random_url = await self.get_json(action='query', list='random')
+        random_url = await self.get_json(action='query', list='random', rnnamespace='0')
         page_title = random_url['query']['random'][0]['title']
         return await self.parse_page_info(page_title)

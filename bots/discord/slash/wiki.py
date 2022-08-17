@@ -1,16 +1,44 @@
-import asyncio
+import re
 
 import discord
 
 from bots.discord.client import client
-from bots.discord.slash_parser import slash_parser
-
+from bots.discord.slash_parser import slash_parser, ctx_to_session
+from modules.wiki import WikiLib, WikiTargetInfo
 
 wiki = client.create_group("wiki", "查询Mediawiki的相关信息", guild_ids=[557879624575614986])
 
 
+async def auto_search(ctx: discord.AutocompleteContext):
+    title = ctx.options["title"]
+    iw = ''
+    target = WikiTargetInfo(ctx_to_session(ctx))
+    iws = target.get_interwikis()
+    query_wiki = target.get_start_wiki()
+    if match_iw := re.match(r'(.*?):(.*)', title):
+        if match_iw.group(1) in iws:
+            query_wiki = iws[match_iw.group(1)]
+            iw = match_iw.group(1) + ':'
+            title = match_iw.group(2)
+    if query_wiki is None:
+        return []
+    wiki = WikiLib(query_wiki)
+    if title != "":
+        return [iw + x for x in (await wiki.search_page(title))]
+    else:
+        return [iw + (await wiki.get_json(action='query', list='random', rnnamespace='0'))['query']['random'][0]['title']]
+
+
+async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
+    target = WikiTargetInfo(ctx_to_session(ctx)).get_interwikis()
+    if not target:
+        return []
+    else:
+        return list(target.keys())
+
+
 @wiki.command(description="根据页面名称查询一个wiki页面")
-@discord.option(name="title", description="页面名称")
+@discord.option(name="title", description="页面名称", autocomplete=auto_search)
 async def query(ctx: discord.ApplicationContext, title: str):
     await slash_parser(ctx, title)
 
@@ -28,7 +56,7 @@ async def page_id(ctx: discord.ApplicationContext, pid: str):
 
 
 @wiki.command(name="set", description="设置起始查询wiki")
-@discord.option(name="link", description="页面链接")
+@discord.option(name="link", description="页面链接", autocomplete=['https://minecraft.fandom.com/zh/'])
 async def set_base(ctx: discord.ApplicationContext, link: str):
     await slash_parser(ctx, f'set {link}')
 
@@ -43,8 +71,8 @@ async def add(ctx: discord.ApplicationContext, iw: str, link: str):
     await slash_parser(ctx, f'iw add {iw} {link}')
 
 
-@iw.command(name='remove',description="删除自定义Interwiki")
-@discord.option(name="iw", description="自定义iw名")
+@iw.command(name='remove', description="删除自定义Interwiki")
+@discord.option(name="iw", description="自定义iw名", autocomplete=auto_get_custom_iw_list)
 async def iw_remove(ctx: discord.ApplicationContext, iw: str):
     await slash_parser(ctx, f'iw rm {iw}')
 
@@ -55,7 +83,7 @@ async def iw_list(ctx: discord.ApplicationContext):
 
 
 @iw.command(description="获取自定义Interwiki的链接")
-@discord.option(name="iw", description="自定义interwiki名")
+@discord.option(name="iw", description="自定义interwiki名", autocomplete=auto_get_custom_iw_list)
 async def get(ctx: discord.ApplicationContext, iw: str):
     await slash_parser(ctx, f'iw get {iw}')
 
