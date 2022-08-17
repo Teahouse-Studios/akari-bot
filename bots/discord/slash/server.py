@@ -7,7 +7,7 @@ from bots.discord.slash_parser import slash_parser
 async def auto_search(ctx: discord.AutocompleteContext):
     if ctx.options["address"].find(":") == -1:
         return [f'{ctx.options["address"]}:19132', f'{ctx.options["address"]}:25565']
-    return []
+    return [ctx.options["address"]]
 
 
 @client.slash_command(description="获取一个Minecraft服务器的信息")

@@ -15,7 +15,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
     query_url = api + '?' + urllib.parse.urlencode(query_options)
     resp = await get_url(query_url, 200, fmt='json')
     result_ = resp['data']['result']
-    results = []
+    results = [title]
     if result_:
         for x in result_:
             results.append(f'{x["enumName"]} {x["key"]}')
