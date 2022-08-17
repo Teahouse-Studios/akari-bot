@@ -44,22 +44,33 @@ class MessageSession(MS):
         self.sent.append(msgchain)
         count = 0
         send = []
+        first_send = True
         for x in msgchain.asSendable():
             if isinstance(x, Plain):
-                send_ = await self.session.message.respond(x.text)
+                if first_send:
+                    send_ = await self.session.message.respond(x.text)
+                else:
+                    send_ = await self.session.message.send(x.text)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
-                send_ = await self.session.message.respond(file=discord.File(await x.get()))
+                if first_send:
+                    send_ = await self.session.message.respond(file=discord.File(await x.get()))
+                else:
+                    send_ = await self.session.message.send(file=discord.File(await x.get()))
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
-                send_ = await self.session.message.respond(embed=embeds)
+                if first_send:
+                    send_ = await self.session.message.respond(embed=embeds)
+                else:
+                    send_ = await self.session.message.send(embed=embeds)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Embed: {str(x.__dict__)}')
             else:
                 send_ = False
             if send_:
                 send.append(send_)
             count += 1
+            first_send = False
         msgIds = []
         for x in send:
             msgIds.append(x.id)

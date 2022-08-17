@@ -1,12 +1,10 @@
-import re
-
 import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser, ctx_to_session
 
 
-arcaea = client.create_group("arcaea", "查询arcaea的相关信息", guild_ids=[557879624575614986])
+arcaea = client.create_group("arcaea", "查询arcaea的相关信息")
 
 
 @arcaea.command(description="查询best30列表")
@@ -40,14 +38,14 @@ async def random(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "random")
 
 
-rank = arcaea.subgroup("rank", "查询arcaea日排行榜的相关信息")
+rank = arcaea.create_subgroup("rank", "查询arcaea日排行榜的相关信息")
 
 
 @rank.command(description="查询arcaea免费包当前日排行榜")
 async def free(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "free")
+    await slash_parser(ctx, "rank free")
 
 
 @rank.command(description="查询arcaea收费包当前日排行榜")
 async def paid(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "paid")
+    await slash_parser(ctx, "rank paid")

@@ -6,7 +6,7 @@ from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser, ctx_to_session
 from modules.wiki import WikiLib, WikiTargetInfo
 
-wiki = client.create_group("wiki", "查询Mediawiki的相关信息", guild_ids=[557879624575614986])
+wiki = client.create_group("wiki", "查询Mediawiki的相关信息")
 
 
 async def auto_search(ctx: discord.AutocompleteContext):
