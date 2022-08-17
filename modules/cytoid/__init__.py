@@ -72,3 +72,5 @@ async def _(msg: MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:
         await msg.finish('取消绑定成功。')
+    else:
+        await msg.finish('未绑定用户。')
