@@ -37,6 +37,11 @@ async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
         return list(target.keys())
 
 
+async def default_wiki(ctx: discord.AutocompleteContext):
+    if ctx.options["wiki"] == '':
+        return 'https://minecraft.fandom.com/zh/'
+
+
 @wiki.command(description="根据页面名称查询一个wiki页面")
 @discord.option(name="title", description="页面名称", autocomplete=auto_search)
 async def query(ctx: discord.ApplicationContext, title: str):
@@ -56,7 +61,7 @@ async def page_id(ctx: discord.ApplicationContext, pid: str):
 
 
 @wiki.command(name="set", description="设置起始查询wiki")
-@discord.option(name="link", description="页面链接", autocomplete=['https://minecraft.fandom.com/zh/'])
+@discord.option(name="link", description="页面链接", autocomplete=)
 async def set_base(ctx: discord.ApplicationContext, link: str):
     await slash_parser(ctx, f'set {link}')
 
