@@ -15,7 +15,7 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
         if isinstance(ctx.channel, discord.DMChannel):
             target = "Discord|DM|Channel"
         targetId = f"{target}|{ctx.channel.id}"
-        senderId = f"Discord|Client|{ctx.author.id}",
+        senderId = f"Discord|Client|{ctx.author.id}"
     else:
         if isinstance(ctx.interaction.channel, discord.PartialMessage):
             target = "Discord|DM|Channel"
@@ -39,4 +39,4 @@ async def slash_parser(ctx: discord.ApplicationContext, command: str):
     session = ctx_to_session(ctx)
     session.command = f'/{str(ctx.command).split(" ")[0]} {command}'
     Logger.info(f'parsing..')
-    await parser(session, prefix=['~', '/'])
+    await parser(session, prefix=['~', '/'], require_enable_modules=False)
