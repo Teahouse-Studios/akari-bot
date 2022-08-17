@@ -38,7 +38,7 @@ async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):
-    if ctx.options["wiki"] == '':
+    if ctx.options["link"] == '':
         return ['https://minecraft.fandom.com/zh/']
 
 
