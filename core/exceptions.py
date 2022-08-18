@@ -24,3 +24,7 @@ class WaitCancelException(BaseException):
 
 class InvalidTemplatePattern(Exception):
     pass
+
+
+class NoReportException(Exception):
+    pass

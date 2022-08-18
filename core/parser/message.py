@@ -11,7 +11,7 @@ from core.builtins.message import MessageSession
 from core.elements import Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
 from core.elements.module.component_meta import CommandMeta
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
-    WaitCancelException
+    WaitCancelException, NoReportException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.args import Template, ArgumentPattern, templates_to_str
@@ -293,6 +293,13 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         ExecutionLockList.remove(msg)
                         if enable_analytics:
                             BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
+                        continue
+
+                    except NoReportException as e:
+                        Logger.error(traceback.format_exc())
+                        ExecutionLockList.remove(msg)
+                        await msg.sendMessage('执行命令时发生错误：\n' + str(e) + '\n此问题并非机器人程序错误（API请求出错等），'
+                                                                        '请勿将此消息报告给机器人开发者。')
                         continue
 
                     except Exception as e:

@@ -13,6 +13,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from config import Config
 from core.logger import Logger
 from .cache import random_cache_path
+from ..exceptions import NoReportException
 
 
 def private_ip_check(url: str):
@@ -62,7 +63,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                     text = await req.text()
                     return text
         except asyncio.exceptions.TimeoutError:
-            raise ValueError(f'Request timeout.')
+            raise NoReportException(f'请求API超时。')
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
