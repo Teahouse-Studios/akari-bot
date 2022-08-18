@@ -6,3 +6,4 @@ from .message import *
 from .message import *
 from .storedata import *
 from .tasks import *
+from .i18n import *
