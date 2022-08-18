@@ -1,6 +1,10 @@
 from typing import List, TypedDict
 import ujson as json
 import os
+from collections.abc import MutableMapping
+
+from core.elements.message import MessageSession
+from database import BotDBUtil
 
 # Load all locale files into memory
 
@@ -8,12 +12,23 @@ import os
 # locale files get too large
 locale_cache = {}
 
+# From https://stackoverflow.com/a/6027615
+def flatten(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, MutableMapping):
+            items.extend(flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
 def load_locale_file():
     locales = os.listdir('./locales')
     for l in locales:
         with open(f'./locales/{l}', 'r', encoding='utf-8') as f:
-            locale_cache[l.removesuffix('.json')] = json.load(f)
-
+            locale_cache[l.removesuffix('.json')] = flatten(json.load(f))
 load_locale_file()
 
 class LocaleFile(TypedDict):
@@ -52,4 +67,16 @@ class Locale:
                     return string # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         return key # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-__all__ = ['Locale', 'load_locale_file']
+def get_target_locale_setting(msg: MessageSession):
+    return BotDBUtil.TargetInfo(targetId=msg.target.targetId).query.locale
+
+
+def get_target_locale(msg: MessageSession):
+    return Locale(get_target_locale_setting(msg))
+
+
+def get_available_locales():
+    return list(locale_cache.keys())
+
+
+__all__ = ['Locale', 'load_locale_file', 'get_target_locale', 'get_target_locale_setting', 'get_available_locales']

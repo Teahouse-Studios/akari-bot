@@ -22,6 +22,7 @@ from core.exceptions import InvalidHelpDocTypeError
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
+from core.utils.i18n import get_available_locales, get_target_locale
 from core.utils.image_table import ImageTable, image_table_render, web_render
 from core.utils.tasks import MessageTaskManager
 from database import BotDBUtil
@@ -519,6 +520,25 @@ async def config_gu(msg: MessageSession):
             if BotDBUtil.SenderInfo(user).remove_TargetAdmin(msg.target.targetId):
                 await msg.finish("成功")
 
+
+locale = on_command('locale',
+                   base=True,
+                   required_admin=True,
+                   developers=['Dianliang233'],
+                   desc='用于设置机器人运行语言。'
+                   )
+
+
+@locale.handle(['<lang> {设置机器人运行语言}'])
+async def config_gu(msg: MessageSession):
+    t = get_target_locale(msg)
+    lang = msg.parsed_msg['<lang>']
+    if lang in ['zh_cn', 'en_us']:
+        if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
+            t = get_target_locale(msg)
+            await msg.finish(t.t('success'))
+    else:
+        await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
 
 su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 

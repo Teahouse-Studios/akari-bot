@@ -27,6 +27,18 @@ class SenderInfoCache:
         return SenderInfoCache._cache.get(key, False)
 
 
+class TargetInfoCache:
+    _cache = {}
+
+    @staticmethod
+    def add_cache(key, value):
+        TargetInfoCache._cache[key] = value
+
+    @staticmethod
+    def get_cache(key) -> Union[dict, bool]:
+        return TargetInfoCache._cache.get(key, False)
+
+
 class ExecutionLockList:
     _list = set()
 

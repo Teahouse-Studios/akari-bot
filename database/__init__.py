@@ -6,9 +6,10 @@ from tenacity import retry, stop_after_attempt
 
 from config import Config
 from core.elements.message import MessageSession, FetchTarget, FetchedSession
-from core.elements.temp import EnabledModulesCache, SenderInfoCache
+from core.elements.temp import EnabledModulesCache, SenderInfoCache, TargetInfoCache
 from database.orm import Session
 from database.tables import *
+from database.tables import TargetInfo
 
 cache = Config('db_cache')
 
@@ -298,6 +299,41 @@ class BotDBUtil:
                 return value
             else:
                 return value.get(k)
+
+    class TargetInfo:
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def __init__(self, targetId):
+            self.targetId = targetId
+            query_cache = TargetInfoCache.get_cache(self.targetId) if cache else False
+            if query_cache:
+                self.query = Dict2Object(query_cache)
+            else:
+                self.query = self.query_TargetInfo
+                if self.query is None:
+                    session.add_all([TargetInfo(targetId=self.targetId)])
+                    session.commit()
+                    self.query = session.query(TargetInfo).filter_by(targetId=self.targetId).first()
+                if cache:
+                    TargetInfoCache.add_cache(self.targetId, self.query.__dict__)
+
+        @property
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def query_TargetInfo(self):
+            return session.query(TargetInfo).filter_by(targetId=self.targetId).first()
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def edit(self, column: str, value):
+            query = self.query_TargetInfo
+            setattr(query, column, value)
+            session.commit()
+            session.expire_all()
+            if cache:
+                TargetInfoCache.add_cache(self.targetId, query.__dict__)
+            return True
+
 
     class Analytics:
         def __init__(self, target: Union[MessageSession, FetchedSession]):

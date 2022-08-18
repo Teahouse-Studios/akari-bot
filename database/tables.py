@@ -1,3 +1,4 @@
+from email.policy import default
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text
 from sqlalchemy.dialects.mysql import LONGTEXT
 
@@ -23,6 +24,12 @@ class SenderInfo(Base):
     warns = Column(Integer, default='0')
     disable_typing = Column(Boolean, default=False)
 
+
+# TODO: 合并
+class TargetInfo(Base):
+    __tablename__ = "TargetInfo"
+    targetId = Column(String(512), primary_key=True)
+    locale = Column(String(512), default='zh_cn')
 
 class TargetOptions(Base):
     """对象设置的参数"""
