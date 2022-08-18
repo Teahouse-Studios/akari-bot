@@ -9,8 +9,10 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 async def user(msg: MessageSession):
     try:
         result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
-        if result['message'] == 'Not Found':
-            await msg.finish('发生错误：查无此人，请检查拼写是否正确。')
+        if 'message' in result and result['message'] == 'Not Found':
+            await msg.finish('查无此人，请检查输入。')
+        elif 'message' in result and result['message']:
+            await msg.finish(result['message'])
         optional = []
         if 'hireable' in result and result['hireable'] is True:
             optional.append('Hireable')

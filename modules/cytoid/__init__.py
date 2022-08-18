@@ -31,7 +31,7 @@ async def _(msg: MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            await msg.finish('未绑定用户，请使用~cytoid bind <friendcode>绑定一个用户。')
+            await msg.finish('未绑定用户，请使用~cytoid bind <username>绑定一个用户。')
     if query:
         if msg.target.targetFrom == 'TEST|Console':
             c = 0
