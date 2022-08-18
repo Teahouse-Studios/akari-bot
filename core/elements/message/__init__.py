@@ -3,7 +3,6 @@ from typing import List, Union
 
 from core.elements.message.chain import MessageChain
 from core.exceptions import FinishedException
-from core.utils.i18n import get_target_locale
 
 
 class MsgInfo:
@@ -139,7 +138,6 @@ class MessageSession:
         :param delete: 是否在触发后删除消息
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
-        ...
 
     async def waitNextMessage(self, msgchain=None, quote=True, delete=False):
         """
@@ -149,7 +147,6 @@ class MessageSession:
         :param delete: 是否在触发后删除消息
         :return: 下一条消息的MessageChain对象
         """
-        ...
 
     async def waitReply(self, msgchain, quote=True):
         """
@@ -158,7 +155,6 @@ class MessageSession:
         :param quote: 是否引用传入dict中的消息（默认为True）
         :return: 回复消息的MessageChain对象
         """
-        ...
 
     async def waitAnyone(self, msgchain=None, delete=False):
         """
@@ -167,20 +163,16 @@ class MessageSession:
         :param delete: 是否在触发后删除消息
         :return: 任意人的MessageChain对象
         """
-        ...
 
     def asDisplay(self) -> str:
         """
         用于将消息转换为一般文本格式。
         """
-        ...
 
     def t(self, *args, **kwargs) -> str:
         """
         获取本地化字符串。
         """
-        return get_target_locale(self).t(*args, **kwargs)
-
 
     async def delete(self):
         """
@@ -204,20 +196,17 @@ class MessageSession:
         """
         用于发送假转发消息（QQ）。
         """
-        ...
 
     async def get_text_channel_list(self):
         """
         用于获取子文字频道列表（QQ）。
         """
-        ...
 
     class Typing:
         def __init__(self, msg):
             """
             :param msg: 本条消息，由于此class需要被一同传入下游方便调用，所以作为子class存在，将来可能会有其他的解决办法。
             """
-            ...
 
         async def __aenter__(self):
             pass
@@ -229,7 +218,6 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
-        ...
 
     async def sleep(self, s):
         await asyncio.sleep(s)
@@ -281,14 +269,12 @@ class FetchTarget:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
-        ...
 
     @staticmethod
     async def fetch_target_list(targetList: list) -> List[FetchedSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
-        ...
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None):

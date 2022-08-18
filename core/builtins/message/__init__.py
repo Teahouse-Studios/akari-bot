@@ -5,6 +5,7 @@ from core.elements.message import *
 from core.elements.message.chain import MessageChain
 from core.exceptions import WaitCancelException
 from core.utils import MessageTaskManager
+from core.utils.i18n import get_target_locale
 
 
 class MessageSession(MessageSession):
@@ -85,6 +86,9 @@ class MessageSession(MessageSession):
 
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
+
+    def t(self, *args, **kwargs) -> str:
+        return get_target_locale(self).t(*args, **kwargs)
 
 
 __all__ = ["MessageSession"]
