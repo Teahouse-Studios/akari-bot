@@ -1,6 +1,7 @@
 from typing import List, TypedDict
 import ujson as json
 import os
+from string import Template
 from collections.abc import MutableMapping
 
 from core.elements.message import MessageSession
@@ -37,7 +38,7 @@ class LocaleFile(TypedDict):
 
 
 class Locale:
-    def __init__(self, locale: str, fallback_lng: List[str] = ('zh_cn', 'en_us')):
+    def __init__(self, locale: str, fallback_lng: List[str] = ['zh_cn', 'en_us']):
         '''创建一个本地化对象'''
 
         self.locale = locale
@@ -50,9 +51,10 @@ class Locale:
     def __contains__(self, key: str):
         return key in self.data
 
-    def t(self, key: str) -> str:
+    def t(self, key: str, *args, **kwargs) -> str:
         '''获取本地化字符串'''
-        return self.get_string_with_fallback(key)
+        localized = self.get_string_with_fallback(key)
+        return Template(localized).safe_substitute(*args, **kwargs)
 
     def get_string_with_fallback(self, key: str) -> str:
         value = self.data.get(key, None)
@@ -72,7 +74,7 @@ def get_target_locale_setting(msg: MessageSession):
 
 
 def get_target_locale(msg: MessageSession):
-    return Locale(get_target_locale_setting(msg))
+    return Locale(str(get_target_locale_setting(msg)))
 
 
 def get_available_locales():

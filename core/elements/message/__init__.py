@@ -3,6 +3,7 @@ from typing import List, Union
 
 from core.elements.message.chain import MessageChain
 from core.exceptions import FinishedException
+from core.utils.i18n import get_target_locale
 
 
 class MsgInfo:
@@ -173,6 +174,13 @@ class MessageSession:
         用于将消息转换为一般文本格式。
         """
         ...
+
+    def t(self, *args, **kwargs) -> str:
+        """
+        获取本地化字符串。
+        """
+        return get_target_locale(self).t(*args, **kwargs)
+
 
     async def delete(self):
         """
