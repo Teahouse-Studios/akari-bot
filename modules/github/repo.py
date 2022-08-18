@@ -2,7 +2,7 @@ import traceback
 
 from core.builtins.message import MessageSession
 from core.elements import Image, Plain, Url, ErrorMessage
-from core.utils import get_url
+from core.utils import get_url, download_to_cache
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -59,8 +59,10 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             message = 'https://wdf.ink/6OUp'
             await msg.finish([Plain(message)])
         else:
-            await msg.finish([Plain(message), Image(
-                path=f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')])
+            await msg.sendMessage([Plain(message)])
+            download_pic = await download_to_cache(f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
+            if download_pic:
+                await msg.finish([Image(download_pic)])
     except ValueError:
         await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
     except Exception as e:
