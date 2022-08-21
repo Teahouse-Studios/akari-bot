@@ -13,6 +13,7 @@ Check_accessKeySecret =
 qq_enable_dirty_check = True
 qq_enable_urlmanager = True
 web_render =
+web_render_local =
 botarcapi_url =
 botarcapi_agent =
 tg_token =

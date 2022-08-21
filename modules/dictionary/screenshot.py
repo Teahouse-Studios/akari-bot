@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from config import Config
 from core.logger import Logger
 
-web_render = Config('web_render')
+web_render = Config('web_render_local')
 
 
 async def get_pic(link, source) -> Union[str, bool]:

@@ -31,7 +31,7 @@ def private_ip_check(url: str):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False, timeout=20):
+async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, log=False, timeout=20, request_private_ip=False):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -40,10 +40,11 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
     :param fmt: 指定返回的格式。
     :param log: 是否输出日志。
     :param timeout: 超时时间。
+    :param request_private_ip: 是否允许请求私有IP。
     :returns: 指定url的内容（字符串）。
     """
 
-    if not Config('allow_request_private_ip'):
+    if not Config('allow_request_private_ip') and not request_private_ip:
         private_ip_check(url)
 
     async with aiohttp.ClientSession(headers=headers) as session:
@@ -67,14 +68,15 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def post_url(url: str, data: any, headers: dict = None):
+async def post_url(url: str, data: any, headers: dict = None, request_private_ip=False):
     '''发送POST请求。
     :param url: 需要发送的url。
     :param data: 需要发送的数据。
     :param headers: 请求时使用的http头。
+    :param request_private_ip: 是否允许请求私有IP。
     :returns: 发送请求后的响应。'''
 
-    if not Config('allow_request_private_ip'):
+    if not Config('allow_request_private_ip') and not request_private_ip:
         private_ip_check(url)
 
     async with aiohttp.ClientSession(headers=headers) as session:
@@ -86,13 +88,14 @@ async def post_url(url: str, data: any, headers: dict = None):
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def download_to_cache(url: str) -> Union[str, bool]:
+async def download_to_cache(url: str, request_private_ip=False) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
 
     :param url: 需要获取的url。
+    :param request_private_ip: 是否允许请求私有IP。
     :returns: 文件的相对路径，若获取失败则返回False。'''
 
-    if not Config('allow_request_private_ip'):
+    if not Config('allow_request_private_ip') and not request_private_ip:
         private_ip_check(url)
 
     try:

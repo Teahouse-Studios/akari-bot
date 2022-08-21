@@ -12,7 +12,7 @@ from config import Config
 from core.logger import Logger
 from .cache import random_cache_path
 
-web_render = Config('web_render')
+web_render = Config('web_render_local')
 
 
 class ImageTable:

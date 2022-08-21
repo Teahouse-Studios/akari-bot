@@ -174,6 +174,8 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 `web_render =` - Webrender 的地址（IP 或域名）及端口
 
+`web_render_local =` - 本地 Webrender 的地址（可与上一字段同一参数）
+
 **示例**
 
 `web_render = 127.0.0.1:15551`
