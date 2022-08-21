@@ -60,8 +60,6 @@ async def pttimg(msg: MessageSession):
         ptttext_width, ptttext_height = ptttext.size
         font1_width, font1_height = font1.getsize(ptt1 + '.')
         font2_width, font2_height = font2.getsize(ptt2)
-        Logger.debug(font1_width, font1_height)
-        Logger.debug(font2_width, font2_height)
         pttimg = Image.new("RGBA", (font1_width + font2_width + 6, font1_height + 6))
         drawptt = ImageDraw.Draw(pttimg)
         stroke_color = '#52495d'
