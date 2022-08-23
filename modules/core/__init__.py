@@ -35,8 +35,10 @@ module = on_command('module',
                     )
 
 
-@module.handle(['enable (<module>...|all) {开启一个/多个或所有模块}',
-                'disable (<module>...|all) {关闭一个/多个或所有模块}',
+@module.handle(['enable <module>... {开启一个/多个模块}',
+                'enable all {开启所有模块}',
+                'disable <module>... {关闭一个/多个模块}',
+                'disable all {关闭所有模块。}',
                 'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -44,8 +46,10 @@ async def _(msg: MessageSession):
     await config_modules(msg)
 
 
-@module.handle(['enable (<module>...|all) [-g] {开启一个/多个或所有模块}',
-                'disable (<module>...|all) [-g] {关闭一个/多个或所有模块}',
+@module.handle(['enable <module>... [-g] {开启一个/多个模块}',
+                'enable all [-g] {开启所有模块}',
+                'disable <module> [-g] {关闭一个/多个模块}',
+                'disable all [-g] {关闭所有模块。}',
                 'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
@@ -242,7 +246,8 @@ async def _(msg: MessageSession):
                 appends = [module_.bind_prefix]
                 doc_ = []
                 if isinstance(module_, Command):
-                    help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+                    help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
+                                          command_prefixes=msg.prefixes)
 
                     if module_.desc is not None:
                         doc_.append(module_.desc)
@@ -272,11 +277,12 @@ async def _(msg: MessageSession):
                 if render:
                     legacy_help = False
                     await msg.finish([Image(render),
-                                      Plain(f'此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用{msg.prefixes[0]}module list命令。'
-                                            '\n你也可以通过查阅文档获取帮助：'
-                                            '\nhttps://bot.teahouse.team/wiki/'
-                                            '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
-                                            '\nhttps://afdian.net/@teahouse')])
+                                      Plain(
+                                          f'此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用{msg.prefixes[0]}module list命令。'
+                                          '\n你也可以通过查阅文档获取帮助：'
+                                          '\nhttps://bot.teahouse.team/wiki/'
+                                          '\n若您有经济实力，欢迎给孩子们在爱发电上打钱：'
+                                          '\nhttps://afdian.net/@teahouse')])
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -366,7 +372,8 @@ async def modules_help(msg: MessageSession):
 p = on_command('prefix', required_admin=True, base=True)
 
 
-@p.handle('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}', 'reset {重置自定义机器人命令前缀}')
+@p.handle('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}',
+          'reset {重置自定义机器人命令前缀}')
 async def set_prefix(msg: MessageSession):
     options = BotDBUtil.Options(msg)
     prefixes = options.get('command_prefix')
@@ -395,7 +402,8 @@ async def set_prefix(msg: MessageSession):
 ali = on_command('alias', required_admin=True, base=True)
 
 
-@ali.handle('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}', 'reset {重置自定义命令别名}')
+@ali.handle('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}',
+            'reset {重置自定义命令别名}')
 async def set_alias(msg: MessageSession):
     options = BotDBUtil.Options(msg)
     alias = options.get('command_alias')
@@ -522,11 +530,11 @@ async def config_gu(msg: MessageSession):
 
 
 locale = on_command('locale',
-                   base=True,
-                   required_admin=True,
-                   developers=['Dianliang233'],
-                   desc='用于设置机器人运行语言。'
-                   )
+                    base=True,
+                    required_admin=True,
+                    developers=['Dianliang233'],
+                    desc='用于设置机器人运行语言。'
+                    )
 
 
 @locale.handle(['<lang> {设置机器人运行语言}'])
@@ -539,6 +547,7 @@ async def config_gu(msg: MessageSession):
             await msg.finish(t.t('success'))
     else:
         await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
+
 
 su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -623,7 +632,8 @@ async def _(msg: MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish(
-            [Plain(f'最近30天的{module_ if module_ is not None else ""}命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'),
+            [Plain(
+                f'最近30天的{module_ if module_ is not None else ""}命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'),
              Image(path)])
 
 

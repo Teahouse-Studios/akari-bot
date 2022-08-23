@@ -1,3 +1,4 @@
+import copy
 import difflib
 import re
 import traceback
@@ -414,12 +415,12 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
             get_submodules: List[CommandMeta] = module.match_list.get(msg.target.targetFrom)
             docs = {}  # 根据命令模板的空格数排序命令
             for func in get_submodules:
-                help_doc: List[Template] = func.help_doc
+                help_doc: List[Template] = copy.deepcopy(func.help_doc)
                 if not help_doc:
                     ...  # todo: ...此处应该有一个处理例外情况的逻辑
 
                 for h_ in help_doc:
-                    h_.args = [a for a in h_.args if isinstance(a, ArgumentPattern)]
+                    h_.args_ = [a for a in h_.args if isinstance(a, ArgumentPattern)]
                     if (len_args := len(h_.args)) not in docs:
                         docs[len_args] = [h_]
                     else:

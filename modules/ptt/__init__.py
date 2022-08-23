@@ -41,6 +41,7 @@ async def pttimg(msg: MessageSession):
         pttimg = 1
     elif ptt >= 0:
         pttimg = 0
+
     else:
         pttimg = 'off'
     pttimgr = Image.open(f'{assets_path}/ptt/rating_{str(pttimg)}.png')

@@ -11,8 +11,12 @@ class Pattern:
 
 class Template:
     def __init__(self, args: List[Pattern], priority: int = 1):
-        self.args = args
+        self.args_ = args
         self.priority = priority
+
+    @property
+    def args(self):
+        return self.args_
 
     def __str__(self):
         return 'Template({})'.format(self.args)
@@ -201,10 +205,10 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
             parsed_argv = {}
             original_template = template
             afters = []
-            template.args = [x for x in template.args if not isinstance(x, DescPattern)]
-            if not template.args:
+            args = [x for x in template.args if not isinstance(x, DescPattern)]
+            if not args:
                 continue
-            for a in template.args:  # optional first
+            for a in args:  # optional first
                 if isinstance(a, OptionalPattern):
                     if a.flag is None:
                         afters.append(a.args[0])
@@ -221,7 +225,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                                 sub_argv = argv_copy[index_flag + 1: index_flag + len_t_args + 1]
                                 parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
                                 del argv_copy[index_flag: index_flag + len_t_args + 1]
-            for a in template.args:
+            for a in args:
                 if isinstance(a, ArgumentPattern):
                     if a.name.startswith('<'):
                         if len(argv_copy) > 0:
@@ -230,7 +234,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                         else:
                             parsed_argv[a.name] = False
                     elif a.name == '...':
-                        if len(template.args) - 1 == template.args.index(a):
+                        if len(args) - 1 == args.index(a):
                             afters.append(Template([a]))
                         else:
                             raise InvalidTemplatePattern('... must be the last argument')
@@ -257,7 +261,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                                     if parsed_argv[sub_args.name]:
                                         argv_copy.remove(sub_args.name)
                 if argv_copy:
-                    template_arguments = [arg for arg in template.args if isinstance(arg, ArgumentPattern)]
+                    template_arguments = [arg for arg in args if isinstance(arg, ArgumentPattern)]
                     if template_arguments:
                         if isinstance(template_arguments[-1], ArgumentPattern):
                             if template_arguments[-1].name.startswith('<'):  # if last arg is variable
