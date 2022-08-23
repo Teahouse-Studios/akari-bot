@@ -250,7 +250,8 @@ async def _(msg: MessageSession):
         payload = {'username': username}
     img, success = await generate(payload)
     if success == 400:
-        await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。")
+        await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
+                         "\n查分器地址：https://www.diving-fish.com/maimaidx/prober/")
     elif success == 403:
         await msg.finish("该用户禁止了其他人获取数据。")
     else:
@@ -267,7 +268,8 @@ async def _(msg: MessageSession):
         payload = {'username': username}
     img, success = await generate50(payload)
     if success == 400:
-        await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。")
+        await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
+                         "\n查分器地址：https://www.diving-fish.com/maimaidx/prober/")
     elif success == 403:
         await msg.finish("该用户禁止了其他人获取数据。")
     else:
