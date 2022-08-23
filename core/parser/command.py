@@ -14,6 +14,7 @@ class CommandParser:
     def __init__(self, args: Command, command_prefixes: list,
                  bind_prefix=None,
                  msg: MessageSession = None):
+        args = copy.deepcopy(args)
         self.command_prefixes = command_prefixes
         self.bind_prefix = bind_prefix
         self.origin_template = args
@@ -29,7 +30,7 @@ class CommandParser:
             if match.options_desc is not None:
                 for m in match.options_desc:
                     self.options_desc.append(f'{m}  {match.options_desc[m]}')
-        self.args: Dict[Union[Template, ''], dict] = copy.deepcopy(help_docs)
+        self.args: Dict[Union[Template, ''], dict] = help_docs
 
     def return_formatted_help_doc(self) -> str:
         if not self.args:
