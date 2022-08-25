@@ -101,9 +101,11 @@ def run_bot():
                                        + line.decode(e)[:-1])
                         break
                     except Exception:
-                        logger.error(f'Cannot decode string from {e}, '
-                                     + (f'attempting with {encode_list[encode_list.index(e) + 1]}.'
-                                        if encode_list[-1] != e else 'no more attempts.'))
+                        if encode_list[-1] != e:
+                            logger.warning(f'Cannot decode string from {e}, '
+                                           f'attempting with {encode_list[encode_list.index(e) + 1]}.')
+                        else:
+                            logger.error(f'Cannot decode string from {e}, no more attempts.')
 
         # break when all processes are done.
         if all(p.poll() is not None for p in runlst):
