@@ -100,7 +100,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList:
             return ExecutionLockList.remove(msg)
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
-        msg.options = BotDBUtil.Options(msg).get()  # 获取对象设置的参数
         get_custom_alias = msg.options.get('command_alias')
         if get_custom_alias is not None:
             get_display_alias = get_custom_alias.get(msg.trigger_msg)
@@ -109,7 +108,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix is not None:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
-        msg.enabled_modules = BotDBUtil.Module(msg).check_target_enabled_module_list()
 
         disable_prefix = False
         if prefix is not None:  # 如果上游指定了命令前缀，则使用指定的命令前缀
@@ -184,7 +182,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     command_first_word = command_split[0].lower()
                     msg.trigger_msg = ' '.join(command_split)
 
-                in_mute = BotDBUtil.Muting(msg).check()
+                in_mute = msg.muted
                 if in_mute and not mute:
                     return ExecutionLockList.remove(msg)
 

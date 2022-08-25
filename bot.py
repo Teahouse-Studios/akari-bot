@@ -130,7 +130,7 @@ if __name__ == '__main__':
     try:
         while True:
             try:
-                run_bot()
+                run_bot()  # Process will block here so
                 logger.error('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:

@@ -208,7 +208,7 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name)
             group_list_raw = await bot.call_action('get_group_list')
             group_list = []
             for g in group_list_raw:

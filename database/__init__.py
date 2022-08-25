@@ -3,23 +3,10 @@ from typing import Union
 
 import ujson as json
 from tenacity import retry, stop_after_attempt
-
-from config import Config
 from core.elements.message import MessageSession, FetchTarget, FetchedSession
-from core.elements.temp import EnabledModulesCache, SenderInfoCache, TargetInfoCache
 from database.orm import Session
 from database.tables import *
 from database.tables import TargetInfo
-
-cache = Config('db_cache')
-
-
-class Dict2Object(dict):
-    def __getattr__(self, key):
-        return self.get(key)
-
-    def __setattr__(self, key, value):
-        self[key] = value
 
 
 session = Session.session
@@ -39,83 +26,161 @@ def auto_rollback_error(func):
 class BotDBUtil:
     database_version = 1
 
-    class Module:
-        @retry(stop=stop_after_attempt(3))
-        def __init__(self, msg: [MessageSession, str]):
-            if isinstance(msg, MessageSession):
+    class TargetInfo:
+        def __init__(self, msg: [MessageSession, FetchTarget, str]):
+            if isinstance(msg, (MessageSession, FetchTarget)):
                 self.targetId = str(msg.target.targetId)
             else:
                 self.targetId = msg
-            self.need_insert = False
-            self.enable_modules_list = EnabledModulesCache.get_cache(self.targetId) if cache else False
-            if not self.enable_modules_list:
-                query = self.query_EnabledModules
-                if query is None:
-                    self.need_insert = True
-                    self.enable_modules_list = []
-                else:
-                    query_ = query.enabledModules
-                    self.enable_modules_list = json.loads(query_)
-                if cache:
-                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
+            self.query = self.query_data
 
         @property
-        @auto_rollback_error
-        def query_EnabledModules(self):
-            return session.query(EnabledModules).filter_by(targetId=self.targetId).first()
+        def query_data(self):
+            return session.query(TargetInfo).filter_by(targetId=self.targetId).first()
 
-        def check_target_enabled_module_list(self) -> list:
-            return self.enable_modules_list
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def init(self):
+            session.add_all([TargetInfo(targetId=self.targetId)])
+            return self.query_data
+
+        @property
+        def enabled_modules(self) -> list:
+            if self.query is None:
+                return []
+            return json.loads(self.query.enabledModules)
 
         def check_target_enabled_module(self, module_name) -> bool:
-            return True if module_name in self.enable_modules_list else False
+            return True if module_name in self.enabled_modules else False
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def enable(self, module_name) -> bool:
+            if self.query is None:
+                self.query = self.init()
             if isinstance(module_name, str):
-                if module_name not in self.enable_modules_list:
-                    self.enable_modules_list.append(module_name)
+                if module_name not in self.enabled_modules:
+                    self.enabled_modules.append(module_name)
             elif isinstance(module_name, (list, tuple)):
                 for x in module_name:
-                    if x not in self.enable_modules_list:
-                        self.enable_modules_list.append(x)
-            value = json.dumps(self.enable_modules_list)
-            if self.need_insert:
-                table = EnabledModules(targetId=self.targetId,
-                                       enabledModules=value)
-                session.add_all([table])
-            else:
-                self.query_EnabledModules.enabledModules = value
+                    if x not in self.enabled_modules:
+                        self.enabled_modules.append(x)
+            self.query.enabledModules = json.dumps(self.enabled_modules)
             session.commit()
             session.expire_all()
-            if cache:
-                EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
             return True
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def disable(self, module_name) -> bool:
-            if isinstance(module_name, str):
-                if module_name in self.enable_modules_list:
-                    self.enable_modules_list.remove(module_name)
-            elif isinstance(module_name, (list, tuple)):
-                for x in module_name:
-                    if x in self.enable_modules_list:
-                        self.enable_modules_list.remove(x)
-            if not self.need_insert:
-                self.query_EnabledModules.enabledModules = json.dumps(self.enable_modules_list)
+            if self.query is not None:
+                if isinstance(module_name, str):
+                    if module_name in self.enabled_modules:
+                        self.enabled_modules.remove(module_name)
+                elif isinstance(module_name, (list, tuple)):
+                    for x in module_name:
+                        if x in self.enabled_modules:
+                            self.enabled_modules.remove(x)
+                self.query.enabledModules = json.dumps(self.enabled_modules)
                 session.commit()
                 session.expire_all()
-                if cache:
-                    EnabledModulesCache.add_cache(self.targetId, self.enable_modules_list)
             return True
 
-        @staticmethod
+        @property
+        def is_muted(self):
+            if self.query is None:
+                return False
+            return self.query.muted
+
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
+        def switch_mute(self) -> bool:
+            if self.query is None:
+                self.query = self.init()
+            self.query.muted = not self.query.muted
+            session.commit()
+            return self.query.muted
+
+        @property
+        def options(self):
+            if self.query is None:
+                return {}
+            return json.loads(self.query.options)
+
+        def get_option(self, k=None):
+            if self.query is None and k is None:
+                return {}
+            elif self.query is None and k is not None:
+                return None
+            if k is None:
+                return self.options
+            else:
+                return self.options.get(k)
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def edit_option(self, k, v) -> bool:
+            if self.query is None:
+                self.query = self.init()
+            self.query.options = json.dumps({**json.loads(self.query.options), k: v})
+            session.commit()
+            return True
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def remove_option(self, k) -> bool:
+            if self.query is not None:
+                self.options.pop(k)
+                self.query.options = self.options
+                session.commit()
+            return True
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def edit(self, column: str, value):
+            if self.query is None:
+                self.query = self.init()
+            query = self.query
+            setattr(query, column, value)
+            session.commit()
+            session.expire_all()
+            return True
+
+        @property
+        def custom_admins(self):
+            if self.query is None:
+                return []
+            return json.loads(self.query.custom_admins)
+
+        def check_custom_target_admin(self, sender_id) -> bool:
+            return sender_id in self.custom_admins
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add_custom_admin(self, sender_id) -> bool:
+            if self.query is None:
+                self.query = self.init()
+            if sender_id not in self.custom_admins:
+                self.custom_admins.append(sender_id)
+            self.query.custom_admins = json.dumps(self.custom_admins)
+            session.commit()
+            return True
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def remove_custom_admin(self, sender_id) -> bool:
+            if self.query is not None:
+                self.custom_admins.remove(sender_id)
+                self.query.custom_admins = json.dumps(self.custom_admins)
+            return True
+
+        @property
+        def locale(self):
+            return self.query.locale
+
+        @staticmethod
         def get_enabled_this(module_name):
-            query = session.query(EnabledModules).filter(EnabledModules.enabledModules.like(f'%{module_name}%'))
+            query = session.query(TargetInfo).filter(TargetInfo.enabledModules.like(f'%{module_name}%'))
             targetIds = []
             for x in query:
                 enabled_list = json.loads(x.enabledModules)
@@ -128,17 +193,11 @@ class BotDBUtil:
         @auto_rollback_error
         def __init__(self, senderId):
             self.senderId = senderId
-            query_cache = SenderInfoCache.get_cache(self.senderId) if cache else False
-            if query_cache:
-                self.query = Dict2Object(query_cache)
-            else:
-                self.query = self.query_SenderInfo
-                if self.query is None:
-                    session.add_all([SenderInfo(id=senderId)])
-                    session.commit()
-                    self.query = session.query(SenderInfo).filter_by(id=senderId).first()
-                if cache:
-                    SenderInfoCache.add_cache(self.senderId, self.query.__dict__)
+            self.query = self.query_SenderInfo
+            if self.query is None:
+                session.add_all([SenderInfo(id=senderId)])
+                session.commit()
+                self.query = session.query(SenderInfo).filter_by(id=senderId).first()
 
         @property
         @retry(stop=stop_after_attempt(3))
@@ -153,33 +212,6 @@ class BotDBUtil:
             setattr(query, column, value)
             session.commit()
             session.expire_all()
-            if cache:
-                SenderInfoCache.add_cache(self.senderId, query.__dict__)
-            return True
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def check_TargetAdmin(self, targetId):
-            query = session.query(TargetAdmin).filter_by(senderId=self.senderId, targetId=targetId).first()
-            if query is not None:
-                return query
-            return False
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def add_TargetAdmin(self, targetId):
-            if not self.check_TargetAdmin(targetId):
-                session.add_all([TargetAdmin(senderId=self.senderId, targetId=targetId)])
-                session.commit()
-            return True
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def remove_TargetAdmin(self, targetId):
-            query = self.check_TargetAdmin(targetId)
-            if query:
-                session.delete(query)
-                session.commit()
             return True
 
     class CoolDown:
@@ -219,34 +251,6 @@ class BotDBUtil:
             return True
         return False
 
-    class Muting:
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def __init__(self, msg: MessageSession):
-            self.msg = msg
-            self.targetId = msg.target.targetId
-            self.query = session.query(MuteList).filter_by(targetId=self.targetId).first()
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def check(self):
-            if self.query is not None:
-                return True
-            return False
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def add(self):
-            session.add(MuteList(targetId=self.targetId))
-            session.commit()
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def remove(self):
-            if self.query is not None:
-                session.delete(self.query)
-                session.commit()
-
     class Data:
         def __init__(self, msg: Union[MessageSession, FetchTarget]):
             self.targetName = msg.target.clientName if isinstance(msg, MessageSession) else msg.name
@@ -272,68 +276,6 @@ class BotDBUtil:
                 exists.value = value
                 session.commit()
             return True
-
-    class Options:
-        def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
-            self.targetId = msg.target.targetId if isinstance(msg, (MessageSession, FetchTarget)) else msg
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def edit(self, k, v):
-            get_ = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
-            if get_ is None:
-                session.add_all([TargetOptions(targetId=self.targetId, options=json.dumps({k: v}))])
-            else:
-                get_.options = json.dumps({**json.loads(get_.options), k: v})
-            session.commit()
-
-        @retry(stop=stop_after_attempt(3))
-        def get(self, k=None):
-            query = session.query(TargetOptions).filter_by(targetId=self.targetId).first()
-            if query is None and k is None:
-                return {}
-            elif query is None and k is not None:
-                return None
-            value: dict = json.loads(query.options)
-            if k is None:
-                return value
-            else:
-                return value.get(k)
-
-    class TargetInfo:
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def __init__(self, targetId):
-            self.targetId = targetId
-            query_cache = TargetInfoCache.get_cache(self.targetId) if cache else False
-            if query_cache:
-                self.query = Dict2Object(query_cache)
-            else:
-                self.query = self.query_TargetInfo
-                if self.query is None:
-                    session.add_all([TargetInfo(targetId=self.targetId)])
-                    session.commit()
-                    self.query = session.query(TargetInfo).filter_by(targetId=self.targetId).first()
-                if cache:
-                    TargetInfoCache.add_cache(self.targetId, self.query.__dict__)
-
-        @property
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def query_TargetInfo(self):
-            return session.query(TargetInfo).filter_by(targetId=self.targetId).first()
-
-        @retry(stop=stop_after_attempt(3))
-        @auto_rollback_error
-        def edit(self, column: str, value):
-            query = self.query_TargetInfo
-            setattr(query, column, value)
-            session.commit()
-            session.expire_all()
-            if cache:
-                TargetInfoCache.add_cache(self.targetId, query.__dict__)
-            return True
-
 
     class Analytics:
         def __init__(self, target: Union[MessageSession, FetchedSession]):

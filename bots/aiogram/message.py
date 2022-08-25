@@ -156,7 +156,7 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name)
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x)
                 if fetch:
