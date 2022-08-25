@@ -2,7 +2,7 @@ pillow
 aiohttp
 beautifulsoup4
 psutil
-gql==3.0.0
+gql[all]
 filetype
 sqlalchemy
 apscheduler
@@ -10,7 +10,7 @@ aioconsole
 aiogram
 ujson
 pymysql
-py-cord==2.0.1
+py-cord
 tenacity
 aiocqhttp
 tabulate
