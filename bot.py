@@ -92,9 +92,18 @@ def run_bot():
             pass
         else:
             try:
-                logger.info(line[:-1].decode(encode))
-            except Exception:
-                logger.error(traceback.format_exc())
+                logger.info(line.decode(encode)[:-1])
+            except UnicodeDecodeError:
+                encode_list = ['GBK']
+                for e in encode_list:
+                    try:
+                        logger.warning(f'Cannot decode string from UTF-8, decode with {e}: '
+                                       + line.decode(e)[:-1])
+                        break
+                    except Exception:
+                        logger.error(f'Cannot decode string from {e}, '
+                                     + (f'attempting with {encode_list[encode_list.index(e) + 1]}.'
+                                        if encode_list[-1] != e else 'no more attempts.'))
 
         # break when all processes are done.
         if all(p.poll() is not None for p in runlst):
@@ -114,7 +123,7 @@ if __name__ == '__main__':
     logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).all()
     if not query_dbver:
-        session.add_all([DBVersion(value=1)])
+        session.add_all([DBVersion(value='1')])
         session.commit()
     try:
         while True:
