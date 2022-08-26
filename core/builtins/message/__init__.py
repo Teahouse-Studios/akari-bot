@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 
 from core.elements import ExecutionLockList, Plain, confirm_command
 from core.elements.message import *
@@ -11,7 +12,13 @@ from database import BotDBUtil
 
 
 class MessageSession(MessageSession):
-    def __init__(self):
+    def __init__(self,
+                 target: MsgInfo,
+                 session: Session):
+        self.target = target
+        self.session = session
+        self.sent: List[MessageChain] = []
+        self.prefixes: List[str] = []
         self.data = BotDBUtil.TargetInfo(self.target.targetId)
         self.muted = self.data.is_muted
         self.options = self.data.options

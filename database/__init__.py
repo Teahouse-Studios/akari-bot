@@ -41,8 +41,12 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def init(self):
-            session.add_all([TargetInfo(targetId=self.targetId)])
-            return self.query_data
+            if self.query is None:
+                session.add_all([TargetInfo(targetId=self.targetId)])
+                session.commit()
+                return self.query_data
+            else:
+                return self.query
 
         @property
         def enabled_modules(self) -> list:
@@ -58,14 +62,15 @@ class BotDBUtil:
         def enable(self, module_name) -> bool:
             if self.query is None:
                 self.query = self.init()
+            enabled_modules = self.enabled_modules.copy()
             if isinstance(module_name, str):
-                if module_name not in self.enabled_modules:
-                    self.enabled_modules.append(module_name)
+                if module_name not in enabled_modules:
+                    enabled_modules.append(module_name)
             elif isinstance(module_name, (list, tuple)):
                 for x in module_name:
-                    if x not in self.enabled_modules:
-                        self.enabled_modules.append(x)
-            self.query.enabledModules = json.dumps(self.enabled_modules)
+                    if x not in enabled_modules:
+                        enabled_modules.append(x)
+            self.query.enabledModules = json.dumps(enabled_modules)
             session.commit()
             session.expire_all()
             return True
@@ -74,14 +79,15 @@ class BotDBUtil:
         @auto_rollback_error
         def disable(self, module_name) -> bool:
             if self.query is not None:
+                enabled_modules = self.enabled_modules.copy()
                 if isinstance(module_name, str):
-                    if module_name in self.enabled_modules:
-                        self.enabled_modules.remove(module_name)
+                    if module_name in enabled_modules:
+                        enabled_modules.remove(module_name)
                 elif isinstance(module_name, (list, tuple)):
                     for x in module_name:
-                        if x in self.enabled_modules:
-                            self.enabled_modules.remove(x)
-                self.query.enabledModules = json.dumps(self.enabled_modules)
+                        if x in enabled_modules:
+                            enabled_modules.remove(x)
+                self.query.enabledModules = json.dumps(enabled_modules)
                 session.commit()
                 session.expire_all()
             return True
@@ -176,6 +182,8 @@ class BotDBUtil:
 
         @property
         def locale(self):
+            if self.query is None:
+                self.query = self.init()
             return self.query.locale
 
         @staticmethod

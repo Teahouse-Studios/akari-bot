@@ -209,10 +209,10 @@ async def _(msg: MessageSession):
 @wiki.handle('fandom enable {禁用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}', required_admin=True)
 async def _(msg: MessageSession):
     if msg.parsed_msg.get('enable', False):
-        BotDBUtil.Options(msg).edit('wiki_fandom_addon', True)
+        msg.data.edit_option('wiki_fandom_addon', True)
         await msg.finish('已启用Fandom全局Interwiki查询。')
     else:
-        BotDBUtil.Options(msg).edit('wiki_fandom_addon', False)
+        msg.data.edit_option('wiki_fandom_addon', False)
         await msg.finish('已禁用Fandom全局Interwiki查询。')
 
 

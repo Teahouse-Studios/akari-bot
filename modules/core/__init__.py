@@ -70,7 +70,6 @@ async def config_modules(msg: MessageSession):
                 wait_config_list.append(alias[module_])
             else:
                 wait_config_list.append(module_)
-    query = BotDBUtil.TargetInfo(msg)
     msglist = []
     recommend_modules_list = []
     recommend_modules_help_doc_list = []
@@ -108,7 +107,7 @@ async def config_modules(msg: MessageSession):
             for x in enable_list:
                 msglist.append(f'成功：为所有文字频道打开“{x}”模块')
         else:
-            if query.enable(enable_list):
+            if msg.data.enable(enable_list):
                 for x in enable_list:
                     if x in enabled_modules_list:
                         msglist.append(f'失败：“{x}”模块已经开启')
@@ -117,12 +116,14 @@ async def config_modules(msg: MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
-                                         command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
+
                     if modules_[m].desc is not None:
                         recommend_modules_help_doc_list.append(modules_[m].desc)
-                    recommend_modules_help_doc_list.append(hdoc)
+                    if isinstance(modules_[m], Command):
+                        hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
+                                             command_prefixes=msg.prefixes).return_formatted_help_doc()
+                        recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
     elif msg.parsed_msg.get('disable', False):
@@ -154,7 +155,7 @@ async def config_modules(msg: MessageSession):
             for x in disable_list:
                 msglist.append(f'成功：为所有文字频道关闭“{x}”模块')
         else:
-            if query.disable(disable_list):
+            if msg.data.disable(disable_list):
                 for x in disable_list:
                     if x not in enabled_modules_list:
                         msglist.append(f'失败：“{x}”模块已经关闭')
@@ -171,8 +172,7 @@ async def config_modules(msg: MessageSession):
                                         '\n'.join(recommend_modules_help_doc_list) +
                                         '\n是否一并打开？')
         if confirm:
-            query = BotDBUtil.TargetInfo(msg)
-            if query.enable(recommend_modules_list):
+            if msg.data.enable(recommend_modules_list):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(f'成功：打开模块“{x}”')
@@ -233,7 +233,7 @@ async def bot_help(msg: MessageSession):
 @hlp.handle('{查看帮助列表}')
 async def _(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
-    target_enabled_list = BotDBUtil.TargetInfo(msg).enabled_modules
+    target_enabled_list = msg.enabled_modules
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if web_render and msg.Feature.image:
