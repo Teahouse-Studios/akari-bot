@@ -67,7 +67,8 @@ class MessageSession(MS):
         quote = True
         wait = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False, allow_split_image=True
+                          ) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')

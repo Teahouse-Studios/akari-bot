@@ -10,7 +10,7 @@ from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
 from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
-from core.utils import init, load_prompt, init_async, MessageTaskManager
+from core.utils import init, load_prompt, init_async
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
@@ -88,7 +88,6 @@ async def _(event):
                               Session(message=event,
                                       target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                       sender=event.user_id))
-    MessageTaskManager.check(msg)
     await parser(msg, running_mention=True)
 
 

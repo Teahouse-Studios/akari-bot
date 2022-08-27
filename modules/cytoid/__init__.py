@@ -41,7 +41,7 @@ async def _(msg: MessageSession):
         if c == 0:
             img = await get_rating(query_id, query)
             if 'path' in img:
-                await msg.sendMessage([Image(path=img['path'])])
+                await msg.sendMessage([Image(path=img['path'])], allow_split_image=False)
             if 'text' in img:
                 await msg.sendMessage(img['text'])
             if msg.target.targetFrom != 'TEST|Console':

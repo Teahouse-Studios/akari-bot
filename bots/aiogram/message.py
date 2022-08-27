@@ -9,6 +9,7 @@ from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as 
     FinishedSession as FinS
 from core.elements.message.chain import MessageChain
 from core.logger import Logger
+from core.utils import image_split
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
@@ -36,7 +37,8 @@ class MessageSession(MS):
         quote = True
         wait = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False,
+                          allow_split_image=True) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage('https://wdf.ink/6Oup')
@@ -49,24 +51,40 @@ class MessageSession(MS):
                                                reply_to_message_id=self.session.message.message_id if quote
                                                                                                       and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
+                send.append(send_)
+                count += 1
             elif isinstance(x, Image):
-                with open(await x.get(), 'rb') as image:
-                    send_ = await bot.send_photo(self.session.target, image,
-                                                 reply_to_message_id=self.session.message.message_id if quote
-                                                                                                        and count == 0
-                                                                                                        and self.session.message else None)
-                    Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
+                if allow_split_image:
+                    split = await image_split(x)
+                    for xs in split:
+                        with open(await xs.get(), 'rb') as image:
+                            send_ = await bot.send_photo(self.session.target, image,
+                                                         reply_to_message_id=self.session.message.message_id
+                                                         if quote
+                                                            and count == 0
+                                                            and self.session.message else None)
+                            Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(xs.__dict__)}')
+                            send.append(send_)
+                            count += 1
+                else:
+                    with open(await x.get(), 'rb') as image:
+                        send_ = await bot.send_photo(self.session.target, image,
+                                                     reply_to_message_id=self.session.message.message_id
+                                                     if quote
+                                                        and count == 0
+                                                        and self.session.message else None)
+                        Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
+                        send.append(send_)
+                        count += 1
             elif isinstance(x, Voice):
                 with open(x.path, 'rb') as voice:
                     send_ = await bot.send_audio(self.session.target, voice,
                                                  reply_to_message_id=self.session.message.message_id if quote
                                                                                                         and count == 0 and self.session.message else None)
                     Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
-            else:
-                send_ = False
-            if send_:
-                send.append(send_)
-            count += 1
+                    send.append(send_)
+                    count += 1
+
         msgIds = []
         for x in send:
             msgIds.append(x.message_id)
@@ -74,7 +92,7 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
+            or self.target.senderInfo.query.isSuperUser:
             return True
         admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
         if self.session.sender in admins:

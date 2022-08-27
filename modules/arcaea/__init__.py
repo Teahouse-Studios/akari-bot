@@ -48,7 +48,7 @@ async def _(msg: MessageSession):
                 msgchain = [Plain(resp['text'])]
                 if 'file' in resp and msg.Feature.image:
                     msgchain.append(Image(path=resp['file']))
-                await msg.sendMessage(msgchain)
+                await msg.sendMessage(msgchain, allow_split_image=False)
             except Exception:
                 traceback.print_exc()
                 await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
