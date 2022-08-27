@@ -382,19 +382,19 @@ async def set_prefix(msg: MessageSession):
     if 'add' in msg.parsed_msg:
         if arg1 not in prefixes:
             prefixes.append(arg1)
-            msg.data.edit_options('command_prefix', prefixes)
+            msg.data.edit_option('command_prefix', prefixes)
             await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
         else:
             await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
     elif 'remove' in msg.parsed_msg:
         if arg1 in prefixes:
             prefixes.remove(arg1)
-            msg.data.edit_options('command_prefix', prefixes)
+            msg.data.edit_option('command_prefix', prefixes)
             await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
         else:
             await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
     elif 'reset' in msg.parsed_msg:
-        msg.data.edit_options('command_prefix', [])
+        msg.data.edit_option('command_prefix', [])
         await msg.sendMessage('已重置自定义命令前缀列表。')
 
 
@@ -420,19 +420,19 @@ async def set_alias(msg: MessageSession):
                 await msg.sendMessage(f'添加的别名对应的命令必须以命令前缀开头，请检查。')
                 return
             alias[arg1] = arg2
-            msg.data.edit_options('command_alias', alias)
+            msg.data.edit_option('command_alias', alias)
             await msg.sendMessage(f'已添加自定义命令别名：{arg1} -> {arg2}')
         else:
             await msg.sendMessage(f'[{arg1}]别名已存在于自定义别名列表。')
     elif 'remove' in msg.parsed_msg:
         if arg1 in alias:
             del alias[arg1]
-            msg.data.edit_options('command_alias', alias)
+            msg.data.edit_option('command_alias', alias)
             await msg.sendMessage(f'已移除自定义命令别名：{arg1}')
         else:
             await msg.sendMessage(f'[{arg1}]别名不存在于自定义别名列表。')
     elif msg.parsed_msg['reset']:
-        msg.data.edit_options('command_alias', {})
+        msg.data.edit_option('command_alias', {})
         await msg.sendMessage('已重置自定义命令别名列表。')
 
 
