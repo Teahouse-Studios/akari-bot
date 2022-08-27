@@ -48,7 +48,8 @@ class MessageSession(MS):
         wait = True
         quote = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False,
+                          allow_split_image=True) -> FinishedSession:
         msg = MessageSegment.text('')
         if quote and self.target.targetFrom == 'QQ|Group' and self.session.message:
             msg = MessageSegment.reply(self.session.message.message_id)
