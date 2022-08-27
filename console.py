@@ -46,13 +46,13 @@ async def console_command():
 
 async def send_command(msg, interactions=None):
     Logger.info('-------Start-------')
-    returns = await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
+    returns = await parser(MessageSession(target=MsgInfo(targetId='TEST|Console|0',
                                                          senderId='TEST|0',
                                                          senderName='',
                                                          targetFrom='TEST|Console',
-                                                         senderFrom='TEST|Console', clientName='TEST', messageId=0,
+                                                         senderFrom='TEST', clientName='TEST', messageId=0,
                                                          replyId=None),
-                                          session=AutoSession(message=msg, target='TEST|0', sender='TEST|0',
+                                          session=AutoSession(message=msg, target='TEST|Console|0', sender='TEST|0',
                                                               auto_interactions=interactions)))
     # print(returns)
     Logger.info('----Process end----')

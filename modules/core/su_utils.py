@@ -11,6 +11,7 @@ from config import Config
 from core.builtins.message import MessageSession
 from core.component import on_command
 from core.elements import PrivateAssets, Image, Plain, ExecutionLockList
+from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
@@ -89,6 +90,47 @@ async def _(msg: MessageSession):
                 Image(path)])
 
 
+set_ = on_command('set', required_superuser=True)
+
+
+@set_.handle('modules <targetId> <modules> ...')
+async def _(msg: MessageSession):
+    target = msg.parsed_msg['<targetId>']
+    if not target.startswith(f'{msg.target.targetFrom}|'):
+        await msg.finish(f'ID格式错误。')
+    target_data = BotDBUtil.TargetInfo(target)
+    if target_data.query is None:
+        wait_confirm = await msg.waitConfirm('该群未初始化，确认进行操作吗？')
+        if not wait_confirm:
+            return
+    modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
+               if m in ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)]
+    target_data.enable(modules)
+    await msg.finish(f'成功为对象配置了以下模块：{", ".join(modules)}')
+
+
+@set_.handle('option <targetId> <k> <v>')
+async def _(msg: MessageSession):
+    target = msg.parsed_msg['<targetId>']
+    k = msg.parsed_msg['<k>']
+    v = msg.parsed_msg['<v>']
+    if not target.startswith(f'{msg.target.targetFrom}|'):
+        await msg.finish(f'ID格式错误。')
+    target_data = BotDBUtil.TargetInfo(target)
+    if target_data.query is None:
+        wait_confirm = await msg.waitConfirm('该群未初始化，确认进行操作吗？')
+        if not wait_confirm:
+            return
+    if v.startswith(('[', '{')):
+        v = json.loads(v)
+    elif v == 'True':
+        v = True
+    elif v == 'False':
+        v = False
+    target_data.edit_option(k, v)
+    await msg.finish(f'成功为对象设置了以下参数：{k} -> {str(v)}')
+
+
 ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
 
 
@@ -156,12 +198,6 @@ async def _(msg: MessageSession):
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
         await msg.finish(f'成功解除 {user} 的封禁。')
 
-
-"""
-@on_command('set_modules', required_superuser=True, help_doc='set_modules <>')
-async def set_modules(display_msg: dict):
-    ...
-"""
 
 rst = on_command('restart', developers=['OasisAkari'], required_superuser=True)
 
