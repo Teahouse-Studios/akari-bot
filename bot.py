@@ -132,7 +132,7 @@ if __name__ == '__main__':
         logger.info(f'Updating database from {current_ver} to {target_ver}...')
         from database.update import update_database
         update_database()
-        logger.info(f'Database updated successfully!')
+        logger.info('Database updated successfully!')
     try:
         while True:
             try:
