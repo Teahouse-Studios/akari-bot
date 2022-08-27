@@ -45,7 +45,6 @@ async def console_command():
 
 
 async def send_command(msg, interactions=None):
-    time = datetime.now()
     Logger.info('-------Start-------')
     returns = await parser(MessageSession(target=MsgInfo(targetId='TEST|0',
                                                          senderId='TEST|0',
@@ -57,8 +56,6 @@ async def send_command(msg, interactions=None):
                                                               auto_interactions=interactions)))
     # print(returns)
     Logger.info('----Process end----')
-    usage_time = datetime.now() - time
-    Logger.info('Usage time:' + str(usage_time))
     return returns
 
 

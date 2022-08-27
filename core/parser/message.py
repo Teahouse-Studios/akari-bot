@@ -187,6 +187,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     return ExecutionLockList.remove(msg)
 
                 if command_first_word in modules:  # 检查触发命令是否在模块列表中
+                    time_start = datetime.now()
                     try:
                         if enable_tos:
                             await temp_ban_check(msg)
@@ -284,7 +285,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         continue
 
                     except FinishedException as e:
-                        Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}')
+                        time_used = datetime.now() - time_start
+                        Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
+                                    f'Times take up: {str(time_used)}')
                         if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
                             await msg_counter(msg, msg.trigger_msg)
                         else:
@@ -326,6 +329,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             continue
 
                     for rfunc in regex_module.match_list.set:  # 遍历正则模块的表达式
+                        time_start = datetime.now()
                         try:
                             msg.matched_msg = False
                             matched = False
@@ -360,8 +364,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     await rfunc.function(msg)  # 将msg传入下游模块
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                         except FinishedException as e:
+                            time_used = datetime.now() - time_start
                             Logger.info(
-                                f'Successfully finished session from {identify_str}, returns: {str(e)}')
+                                f'Successfully finished session from {identify_str}, returns: {str(e)}. '
+                                f'Times take up: {time_used}')
                             ExecutionLockList.remove(msg)
 
                             if enable_analytics:
