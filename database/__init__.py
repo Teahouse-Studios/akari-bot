@@ -24,7 +24,7 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 1
+    database_version = 2
 
     class TargetInfo:
         def __init__(self, msg: [MessageSession, FetchTarget, str]):
@@ -136,8 +136,10 @@ class BotDBUtil:
         @auto_rollback_error
         def remove_option(self, k) -> bool:
             if self.query is not None:
-                self.options.pop(k)
-                self.query.options = self.options
+                options = self.options.copy()
+                if k in options:
+                    options.pop(k)
+                self.query.options = options
                 session.commit()
             return True
 
@@ -166,9 +168,10 @@ class BotDBUtil:
         def add_custom_admin(self, sender_id) -> bool:
             if self.query is None:
                 self.query = self.init()
-            if sender_id not in self.custom_admins:
-                self.custom_admins.append(sender_id)
-            self.query.custom_admins = json.dumps(self.custom_admins)
+            custom_admins = self.custom_admins.copy()
+            if sender_id not in custom_admins:
+                custom_admins.append(sender_id)
+            self.query.custom_admins = json.dumps(custom_admins)
             session.commit()
             return True
 
@@ -176,8 +179,10 @@ class BotDBUtil:
         @auto_rollback_error
         def remove_custom_admin(self, sender_id) -> bool:
             if self.query is not None:
-                self.custom_admins.remove(sender_id)
-                self.query.custom_admins = json.dumps(self.custom_admins)
+                custom_admins = self.custom_admins.copy()
+                if sender_id in custom_admins:
+                    custom_admins.remove(sender_id)
+                self.query.custom_admins = json.dumps(custom_admins)
             return True
 
         @property

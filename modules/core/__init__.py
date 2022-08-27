@@ -517,13 +517,13 @@ async def config_gu(msg: MessageSession):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
-            if msg.data.add_custom_admin():
+            if msg.data.add_custom_admin(user):
                 await msg.finish("成功")
         else:
             await msg.finish("此成员已经是机器人管理员。")
     if 'del' in msg.parsed_msg:
         if user:
-            if msg.data.remove_custom_admin(msg.target.targetId):
+            if msg.data.remove_custom_admin(user):
                 await msg.finish("成功")
 
 

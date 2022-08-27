@@ -107,13 +107,13 @@ class MessageSession(MS):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
             or isinstance(self.session.message.channel, discord.DMChannel) \
             or self.target.senderInfo.query.isSuperUser \
-            or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
+                or self.target.senderId in self.custom_admins:
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-            or isinstance(self.session.message.channel, discord.DMChannel):
+                or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 

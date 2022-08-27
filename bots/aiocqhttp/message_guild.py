@@ -53,7 +53,7 @@ class MessageSession(MS):
         return FinishedSession(send['message_id'], [send])
 
     async def checkPermission(self):
-        if self.target.senderInfo.check_TargetAdmin(self.target.targetId) or self.target.senderInfo.query.isSuperUser:
+        if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
             return True
         return await self.checkNativePermission()
 
