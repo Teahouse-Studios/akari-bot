@@ -27,7 +27,8 @@ class Template(MS):
         delete = True
         wait = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False) -> FinishedSession:
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False,
+                          allow_split_image=True) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         self.sent.append(msgchain)
         msg_list = []
