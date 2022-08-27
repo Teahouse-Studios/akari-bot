@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 
 from core.elements import ExecutionLockList, Plain, confirm_command
 from core.elements.message import *
@@ -7,8 +8,24 @@ from core.exceptions import WaitCancelException
 from core.utils import MessageTaskManager
 from core.utils.i18n import get_target_locale
 
+from database import BotDBUtil
+
 
 class MessageSession(MessageSession):
+    def __init__(self,
+                 target: MsgInfo,
+                 session: Session):
+        self.target = target
+        self.session = session
+        self.sent: List[MessageChain] = []
+        self.prefixes: List[str] = []
+        self.data = BotDBUtil.TargetInfo(self.target.targetId)
+        self.muted = self.data.is_muted
+        self.options = self.data.options
+        self.custom_admins = self.data.custom_admins
+        self.enabled_modules = self.data.enabled_modules
+        self.locale = self.data.locale
+
     async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
         send = None
         ExecutionLockList.remove(self)

@@ -81,7 +81,7 @@ class Locale:
 
 
 def get_target_locale_setting(msg: MessageSession):
-    return BotDBUtil.TargetInfo(targetId=msg.target.targetId).query.locale
+    return msg.locale
 
 
 def get_target_locale(msg: MessageSession):

@@ -36,10 +36,10 @@ async def main(msg: MessageSession):
 @s.handle('revoke (enable|disable) {是否启用自动撤回功能（默认为是）。}')
 async def revoke(msg: MessageSession):
     if msg.parsed_msg['enable']:
-        BotDBUtil.Options(msg).edit('server_revoke', True)
+        msg.data.edit_option('server_revoke', True)
         await msg.finish('已启用自动撤回功能。')
     else:
-        BotDBUtil.Options(msg).edit('server_revoke', False)
+        msg.data.edit_option(msg).edit('server_revoke', False)
         await msg.finish('已禁用自动撤回功能。')
 
 

@@ -73,8 +73,8 @@ class MessageSession(MS):
         return FinishedSession(msgIds, send)
 
     async def checkPermission(self):
-        if self.session.message.chat.type == 'private' or self.target.senderInfo.check_TargetAdmin(
-            self.target.targetId) or self.target.senderInfo.query.isSuperUser:
+        if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \
+                or self.target.senderInfo.query.isSuperUser:
             return True
         admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
         if self.session.sender in admins:
@@ -156,7 +156,7 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.Module.get_enabled_this(module_name)
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name)
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x)
                 if fetch:

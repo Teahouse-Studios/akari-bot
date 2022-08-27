@@ -123,14 +123,20 @@ if __name__ == '__main__':
     init_bot()
     logger.remove()
     logger.add(sys.stderr, format='{message}', level="INFO")
-    query_dbver = session.query(DBVersion).all()
-    if not query_dbver:
-        session.add_all([DBVersion(value='1')])
+    query_dbver = session.query(DBVersion).first()
+    if query_dbver is None:
+        session.add_all([DBVersion(value='2')])
         session.commit()
+        query_dbver = session.query(DBVersion).first()
+    if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
+        logger.info(f'Updating database from {current_ver} to {target_ver}...')
+        from database.update import update_database
+        update_database()
+        logger.info(f'Database updated successfully!')
     try:
         while True:
             try:
-                run_bot()
+                run_bot()  # Process will block here so
                 logger.error('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:

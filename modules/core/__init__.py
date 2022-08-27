@@ -61,7 +61,7 @@ async def _(msg: MessageSession):
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
-    enabled_modules_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
+    enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
     wait_config = [msg.parsed_msg.get('<module>')] + msg.parsed_msg.get('...', [])
     wait_config_list = []
     for module_ in wait_config:
@@ -70,7 +70,6 @@ async def config_modules(msg: MessageSession):
                 wait_config_list.append(alias[module_])
             else:
                 wait_config_list.append(module_)
-    query = BotDBUtil.Module(msg)
     msglist = []
     recommend_modules_list = []
     recommend_modules_help_doc_list = []
@@ -103,12 +102,12 @@ async def config_modules(msg: MessageSession):
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
+                query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
                 msglist.append(f'成功：为所有文字频道打开“{x}”模块')
         else:
-            if query.enable(enable_list):
+            if msg.data.enable(enable_list):
                 for x in enable_list:
                     if x in enabled_modules_list:
                         msglist.append(f'失败：“{x}”模块已经开启')
@@ -117,12 +116,14 @@ async def config_modules(msg: MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
-                                         command_prefixes=msg.prefixes).return_formatted_help_doc()
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
+
                     if modules_[m].desc is not None:
                         recommend_modules_help_doc_list.append(modules_[m].desc)
-                    recommend_modules_help_doc_list.append(hdoc)
+                    if isinstance(modules_[m], Command):
+                        hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
+                                             command_prefixes=msg.prefixes).return_formatted_help_doc()
+                        recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
     elif msg.parsed_msg.get('disable', False):
@@ -149,12 +150,12 @@ async def config_modules(msg: MessageSession):
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
             get_all_channel = await msg.get_text_channel_list()
             for x in get_all_channel:
-                query = BotDBUtil.Module(f'{msg.target.targetFrom}|{x}')
+                query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
                 query.disable(disable_list)
             for x in disable_list:
                 msglist.append(f'成功：为所有文字频道关闭“{x}”模块')
         else:
-            if query.disable(disable_list):
+            if msg.data.disable(disable_list):
                 for x in disable_list:
                     if x not in enabled_modules_list:
                         msglist.append(f'失败：“{x}”模块已经关闭')
@@ -171,8 +172,7 @@ async def config_modules(msg: MessageSession):
                                         '\n'.join(recommend_modules_help_doc_list) +
                                         '\n是否一并打开？')
         if confirm:
-            query = BotDBUtil.Module(msg)
-            if query.enable(recommend_modules_list):
+            if msg.data.enable(recommend_modules_list):
                 msglist = []
                 for x in recommend_modules_list:
                     msglist.append(f'成功：打开模块“{x}”')
@@ -233,7 +233,7 @@ async def bot_help(msg: MessageSession):
 @hlp.handle('{查看帮助列表}')
 async def _(msg: MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
-    target_enabled_list = BotDBUtil.Module(msg).check_target_enabled_module_list()
+    target_enabled_list = msg.enabled_modules
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if web_render and msg.Feature.image:
@@ -375,27 +375,28 @@ p = on_command('prefix', required_admin=True, base=True)
 @p.handle('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}',
           'reset {重置自定义机器人命令前缀}')
 async def set_prefix(msg: MessageSession):
-    options = BotDBUtil.Options(msg)
-    prefixes = options.get('command_prefix')
-    arg1 = msg.parsed_msg['<prefix>']
+    prefixes = msg.options.get('command_prefix')
+    arg1 = msg.parsed_msg.get('<prefix>', False)
     if prefixes is None:
         prefixes = []
     if 'add' in msg.parsed_msg:
-        if arg1 not in prefixes:
-            prefixes.append(arg1)
-            options.edit('command_prefix', prefixes)
-            await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
-        else:
-            await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
+        if arg1:
+            if arg1 not in prefixes:
+                prefixes.append(arg1)
+                msg.data.edit_option('command_prefix', prefixes)
+                await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
+            else:
+                await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
     elif 'remove' in msg.parsed_msg:
-        if arg1 in prefixes:
-            prefixes.remove(arg1)
-            options.edit('command_prefix', prefixes)
-            await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
-        else:
-            await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
+        if arg1:
+            if arg1 in prefixes:
+                prefixes.remove(arg1)
+                msg.data.edit_option('command_prefix', prefixes)
+                await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
+            else:
+                await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
     elif 'reset' in msg.parsed_msg:
-        options.edit('command_prefix', [])
+        msg.data.edit_option('command_prefix', [])
         await msg.sendMessage('已重置自定义命令前缀列表。')
 
 
@@ -405,10 +406,9 @@ ali = on_command('alias', required_admin=True, base=True)
 @ali.handle('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}',
             'reset {重置自定义命令别名}')
 async def set_alias(msg: MessageSession):
-    options = BotDBUtil.Options(msg)
-    alias = options.get('command_alias')
-    arg1 = msg.parsed_msg['<alias>']
-    arg2 = msg.parsed_msg['<command>']
+    alias = msg.options.get('command_alias')
+    arg1 = msg.parsed_msg.get('<alias>', False)
+    arg2 = msg.parsed_msg.get('<command>', False)
     if alias is None:
         alias = {}
     if 'add' in msg.parsed_msg:
@@ -422,19 +422,19 @@ async def set_alias(msg: MessageSession):
                 await msg.sendMessage(f'添加的别名对应的命令必须以命令前缀开头，请检查。')
                 return
             alias[arg1] = arg2
-            options.edit('command_alias', alias)
+            msg.data.edit_option('command_alias', alias)
             await msg.sendMessage(f'已添加自定义命令别名：{arg1} -> {arg2}')
         else:
             await msg.sendMessage(f'[{arg1}]别名已存在于自定义别名列表。')
     elif 'remove' in msg.parsed_msg:
         if arg1 in alias:
             del alias[arg1]
-            options.edit('command_alias', alias)
+            msg.data.edit_option('command_alias', alias)
             await msg.sendMessage(f'已移除自定义命令别名：{arg1}')
         else:
             await msg.sendMessage(f'[{arg1}]别名不存在于自定义别名列表。')
-    elif msg.parsed_msg['reset']:
-        options.edit('command_alias', {})
+    elif 'reset' in msg.parsed_msg:
+        msg.data.edit_option('command_alias', {})
         await msg.sendMessage('已重置自定义命令别名列表。')
 
 
@@ -518,14 +518,14 @@ async def config_gu(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
     if 'add' in msg.parsed_msg:
-        if user and not BotDBUtil.SenderInfo(user).check_TargetAdmin(msg.target.targetId):
-            if BotDBUtil.SenderInfo(user).add_TargetAdmin(msg.target.targetId):
+        if user and user not in msg.custom_admins:
+            if msg.data.add_custom_admin(user):
                 await msg.finish("成功")
         else:
             await msg.finish("此成员已经是机器人管理员。")
     if 'del' in msg.parsed_msg:
         if user:
-            if BotDBUtil.SenderInfo(user).remove_TargetAdmin(msg.target.targetId):
+            if msg.data.remove_custom_admin(user):
                 await msg.finish("成功")
 
 
@@ -822,13 +822,12 @@ async def _(msg: MessageSession):
 
 @tog.handle('check {切换是否展示命令错字检查提示}')
 async def _(msg: MessageSession):
-    options = BotDBUtil.Options(msg)
-    state = options.get('typo_check')
+    state = msg.options.get('typo_check')
     if state is None:
         state = False
     else:
         state = not state
-    BotDBUtil.Options(msg).edit('typo_check', state)
+    msg.data.edit_option('typo_check', state)
     await msg.finish(f'成功{"打开" if state else "关闭"}错字检查提示。')
 
 
@@ -838,12 +837,7 @@ mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin
 
 @mute.handle()
 async def _(msg: MessageSession):
-    if BotDBUtil.Muting(msg).check():
-        BotDBUtil.Muting(msg).remove()
-        await msg.finish('成功取消禁言。')
-    else:
-        BotDBUtil.Muting(msg).add()
-        await msg.finish('成功禁言。')
+    await msg.finish('成功禁言。' if msg.data.switch_mute() else '成功取消禁言。')
 
 
 leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
