@@ -2,7 +2,6 @@ import os
 import shutil
 import subprocess
 import sys
-import traceback
 from queue import Queue, Empty
 from threading import Thread
 from time import sleep

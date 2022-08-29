@@ -209,15 +209,11 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name)
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "QQ")
             group_list_raw = await bot.call_action('get_group_list')
-            group_list = []
-            for g in group_list_raw:
-                group_list.append(g['group_id'])
+            group_list = [g['group_id'] for g in group_list_raw]
             friend_list_raw = await bot.call_action('get_friend_list')
-            friend_list = []
-            for f in friend_list_raw:
-                friend_list.append(f['user_id'])
+            friend_list = [f['user_id'] for f in friend_list_raw]
             guild_list_raw = await bot.call_action('get_guild_list')
             guild_list = []
             for g in guild_list_raw:
@@ -231,7 +227,7 @@ class FetchTarget(FT):
                     traceback.print_exc()
                     continue
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x)
+                fetch = await FetchTarget.fetch_target(x.targetId)
                 Logger.debug(fetch)
                 if fetch:
                     if fetch.target.targetFrom == 'QQ|Group':
@@ -244,7 +240,6 @@ class FetchTarget(FT):
                         if fetch.session.target not in guild_list:
                             continue
                     try:
-                        print(fetch)
                         send = await fetch.sendDirectMessage(message)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')

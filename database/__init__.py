@@ -1,5 +1,5 @@
 import datetime
-from typing import Union
+from typing import Union, List
 
 import ujson as json
 from tenacity import retry, stop_after_attempt
@@ -192,14 +192,11 @@ class BotDBUtil:
             return self.query.locale
 
         @staticmethod
-        def get_enabled_this(module_name):
-            query = session.query(TargetInfo).filter(TargetInfo.enabledModules.like(f'%{module_name}%'))
-            targetIds = []
-            for x in query:
-                enabled_list = json.loads(x.enabledModules)
-                if module_name in enabled_list:
-                    targetIds.append(x.targetId)
-            return targetIds
+        def get_enabled_this(module_name, id_prefix=None) -> List[TargetInfo]:
+            filter_ = [TargetInfo.enabledModules.like(f'%"{module_name}"%')]
+            if id_prefix is not None:
+                filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
+            return session.query(TargetInfo).filter(*filter_).all()
 
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
