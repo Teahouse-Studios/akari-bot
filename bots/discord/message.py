@@ -187,12 +187,10 @@ class FetchTarget(FT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None):
-        send_list = []
         if user_list is not None:
             for x in user_list:
                 try:
-                    send = await x.sendDirectMessage(message)
-                    send_list.append(send)
+                    await x.sendDirectMessage(message)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
@@ -203,10 +201,8 @@ class FetchTarget(FT):
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
-                        send = await fetch.sendDirectMessage(message)
-                        send_list.append(send)
+                        await fetch.sendDirectMessage(message)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
-        return send_list

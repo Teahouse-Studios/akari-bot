@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import html
+import ujson as json
 import random
 import re
 import traceback
@@ -198,16 +199,17 @@ class FetchTarget(FT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None):
-        send_list = []
+        async def post_(fetch_):
+            try:
+                await fetch_.sendDirectMessage(message)
+                if enable_analytics:
+                    BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
+                await asyncio.sleep(0.5)
+            except Exception:
+                Logger.error(traceback.format_exc())
         if user_list is not None:
             for x in user_list:
-                try:
-                    send = await x.sendDirectMessage(message)
-                    send_list.append(send)
-                    if enable_analytics:
-                        BotDBUtil.Analytics(x).add('', module_name, 'schedule')
-                except Exception:
-                    Logger.error(traceback.format_exc())
+                await post_(x)
         else:
             get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "QQ")
             group_list_raw = await bot.call_action('get_group_list')
@@ -226,6 +228,9 @@ class FetchTarget(FT):
                 except Exception:
                     traceback.print_exc()
                     continue
+
+            in_whitelist = []
+            else_ = []
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 Logger.debug(fetch)
@@ -239,12 +244,31 @@ class FetchTarget(FT):
                     if fetch.target.targetFrom == 'QQ|Guild':
                         if fetch.session.target not in guild_list:
                             continue
-                    try:
-                        send = await fetch.sendDirectMessage(message)
-                        if enable_analytics:
-                            BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
-                        send_list.append(send)
-                        await asyncio.sleep(0.5)
-                    except Exception:
-                        Logger.error(traceback.format_exc())
-        return send_list
+
+                    load_options: dict = json.loads(x.options)
+                    if load_options.get('in_post_whitelist', False):
+                        in_whitelist.append(post_(fetch))
+                    else:
+                        else_.append(post_(fetch))
+
+            if in_whitelist:
+                for x in in_whitelist:
+                    await x
+                    random_sleep = random.randint(1, 5)
+                    Logger.info(random_sleep)
+                    await asyncio.sleep(random_sleep)
+
+            async def post_not_in_whitelist(lst):
+                for f in lst:
+                    await f
+                    random_sleep = random.randint(30, 300)
+                    Logger.info(random_sleep)
+                    await asyncio.sleep(random_sleep)
+
+            if else_:
+                asyncio.create_task(post_not_in_whitelist(else_))
+            Logger.info(f"Post done. but there are still {len(else_)} processes running.")
+
+
+
+
