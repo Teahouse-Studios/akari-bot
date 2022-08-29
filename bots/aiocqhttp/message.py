@@ -254,16 +254,12 @@ class FetchTarget(FT):
             if in_whitelist:
                 for x in in_whitelist:
                     await x
-                    random_sleep = random.randint(1, 5)
-                    Logger.info(random_sleep)
-                    await asyncio.sleep(random_sleep)
+                    await asyncio.sleep(random.randint(1, 5))
 
             async def post_not_in_whitelist(lst):
                 for f in lst:
                     await f
-                    random_sleep = random.randint(30, 300)
-                    Logger.info(random_sleep)
-                    await asyncio.sleep(random_sleep)
+                    await asyncio.sleep(random.randint(30, 300))
 
             if else_:
                 asyncio.create_task(post_not_in_whitelist(else_))
