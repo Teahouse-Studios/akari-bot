@@ -660,76 +660,79 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 await session.finish(msg_list)
             else:
                 await session.sendMessage(msg_list)
-        if render_infobox_list and session.Feature.image:
-            infobox_msg_list = []
-            for i in render_infobox_list:
-                for ii in i:
-                    get_infobox = await get_pic(i[ii]['url'], ii, headers, allow_special_page=i[ii]['in_allowlist'])
-                    if get_infobox:
-                        infobox_msg_list.append(Image(get_infobox))
-            if infobox_msg_list:
-                await session.finish(infobox_msg_list, quote=False)
-        else:
-            if all([not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
-                await session.finish()
-        if render_section_list and session.Feature.image:
-            section_msg_list = []
-            for i in render_section_list:
-                for ii in i:
-                    get_section = await get_pic(i[ii]['url'], ii, headers, section=i[ii]['section'])
-                    if get_section:
-                        section_msg_list.append(Image(get_section))
-            if section_msg_list:
-                await session.finish(section_msg_list, quote=False)
-        else:
-            if all([not dl_list, not wait_list, not wait_possible_list]):
-                await session.finish()
-        if dl_list:
-            for f in dl_list:
-                dl = await download_to_cache(f)
-                guess_type = filetype.guess(dl)
-                if guess_type is not None:
-                    if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
-                        if session.Feature.image:
-                            await session.finish(Image(dl), quote=False)
-                    elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
-                        if session.Feature.voice:
-                            await session.finish(Voice(dl), quote=False)
-        if wait_msg_list and session.Feature.wait:
-            confirm = await session.waitNextMessage(wait_msg_list, delete=True)
-            auto_index = False
-            index = 0
-            if confirm.asDisplay() in confirm_command:
-                auto_index = True
-            elif confirm.asDisplay().isdigit():
-                index = int(confirm.asDisplay()) - 1
-            else:
-                await session.finish()
-            preset_message = []
-            wait_list_ = []
-            for w in wait_list:
-                for wd in w:
-                    preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
-                    wait_list_.append(wd)
-            if auto_index:
-                for wp in wait_possible_list:
-                    for wpk in wp:
-                        keys = list(wp[wpk].keys())
-                        preset_message.append(f'（已指定[{wpk}]更正为[{keys[0]}]。）')
-                        wait_list_.append(keys[0])
-            else:
-                for wp in wait_possible_list:
-                    for wpk in wp:
-                        keys = list(wp[wpk].keys())
-                        if len(wp[wpk][keys[0]]) > index:
-                            preset_message.append(f'（已指定[{wpk}]更正为[{wp[wpk][keys[0]][index]}]。）')
-                            wait_list_.append(wp[wpk][keys[0]][index])
 
-            if wait_list_:
-                await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
-                                  lang=lang)
-        else:
-            await session.finish()
+        async def background_task():
+            if render_infobox_list and session.Feature.image:
+                infobox_msg_list = []
+                for i in render_infobox_list:
+                    for ii in i:
+                        get_infobox = await get_pic(i[ii]['url'], ii, headers, allow_special_page=i[ii]['in_allowlist'])
+                        if get_infobox:
+                            infobox_msg_list.append(Image(get_infobox))
+                if infobox_msg_list:
+                    await session.sendMessage(infobox_msg_list, quote=False)
+            else:
+                if all([not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
+                    return
+            if render_section_list and session.Feature.image:
+                section_msg_list = []
+                for i in render_section_list:
+                    for ii in i:
+                        get_section = await get_pic(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                        if get_section:
+                            section_msg_list.append(Image(get_section))
+                if section_msg_list:
+                    await session.sendMessage(section_msg_list, quote=False)
+            else:
+                if all([not dl_list, not wait_list, not wait_possible_list]):
+                    return
+            if dl_list:
+                for f in dl_list:
+                    dl = await download_to_cache(f)
+                    guess_type = filetype.guess(dl)
+                    if guess_type is not None:
+                        if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
+                            if session.Feature.image:
+                                await session.sendMessage(Image(dl), quote=False)
+                        elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
+                            if session.Feature.voice:
+                                await session.sendMessage(Voice(dl), quote=False)
+            if wait_msg_list and session.Feature.wait:
+                confirm = await session.waitNextMessage(wait_msg_list, delete=True)
+                auto_index = False
+                index = 0
+                if confirm.asDisplay() in confirm_command:
+                    auto_index = True
+                elif confirm.asDisplay().isdigit():
+                    index = int(confirm.asDisplay()) - 1
+                else:
+                    return
+                preset_message = []
+                wait_list_ = []
+                for w in wait_list:
+                    for wd in w:
+                        preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
+                        wait_list_.append(wd)
+                if auto_index:
+                    for wp in wait_possible_list:
+                        for wpk in wp:
+                            keys = list(wp[wpk].keys())
+                            preset_message.append(f'（已指定[{wpk}]更正为[{keys[0]}]。）')
+                            wait_list_.append(keys[0])
+                else:
+                    for wp in wait_possible_list:
+                        for wpk in wp:
+                            keys = list(wp[wpk].keys())
+                            if len(wp[wpk][keys[0]]) > index:
+                                preset_message.append(f'（已指定[{wpk}]更正为[{wp[wpk][keys[0]][index]}]。）')
+                                wait_list_.append(wp[wpk][keys[0]][index])
+
+                if wait_list_:
+                    await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
+                                      lang=lang)
+            else:
+                return
+        asyncio.create_task(background_task())
     else:
         return {'msg_list': msg_list, 'web_render_list': render_infobox_list, 'dl_list': dl_list,
                 'wait_list': wait_list, 'wait_msg_list': wait_msg_list}
