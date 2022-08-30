@@ -267,7 +267,3 @@ class FetchTarget(FT):
             if else_:
                 asyncio.create_task(post_not_in_whitelist(else_))
             Logger.info(f"Post done. but there are still {len(else_)} processes running.")
-
-
-
-
