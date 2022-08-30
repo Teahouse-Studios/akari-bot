@@ -1,0 +1,30 @@
+name: 申请推送白名单
+description: 提交申请推送白名单，使QQ侧公共实例订阅模块优先推送消息到本群。
+title: "[REQUEST]: Wiki链接白名单申请"
+labels: ["request"]
+assignees:
+  - OasisAkari
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 开始之前……
+      options:
+        - label: 我确定本群需要使用小可的推送模块（如mcv_rss、minecraft_news等），且消息需要及时推送。
+          required: true
+  - type: input
+    id: qq-id
+    attributes:
+      label: QQ号
+      description: 您的QQ号。
+      placeholder: e.g. 10000
+    validations:
+      required: true
+  - type: input
+    id: group-id
+    attributes:
+      label: QQ群
+      description: 您想要申请的群号。
+      placeholder: e.g. 1000000
+    validations:
+      required: true

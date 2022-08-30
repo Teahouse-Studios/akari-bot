@@ -245,11 +245,14 @@ class FetchTarget(FT):
                         if fetch.session.target not in guild_list:
                             continue
 
-                    load_options: dict = json.loads(x.options)
-                    if load_options.get('in_post_whitelist', False):
+                    if fetch.target.targetFrom == 'QQ|Guild':
                         in_whitelist.append(post_(fetch))
                     else:
-                        else_.append(post_(fetch))
+                        load_options: dict = json.loads(x.options)
+                        if load_options.get('in_post_whitelist', False):
+                            in_whitelist.append(post_(fetch))
+                        else:
+                            else_.append(post_(fetch))
 
             if in_whitelist:
                 for x in in_whitelist:
