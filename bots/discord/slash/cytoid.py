@@ -3,7 +3,6 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
-
 cytoid = client.create_group("cytoid", "查询Cytoid的相关信息")
 
 

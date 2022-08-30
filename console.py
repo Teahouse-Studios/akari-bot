@@ -14,8 +14,6 @@ import asyncio
 import traceback
 import aioconsole
 
-from datetime import datetime
-
 from bot import init_bot
 from core.elements import MsgInfo, AutoSession, PrivateAssets, EnableDirtyWordCheck, Plain
 from core.console.template import Template as MessageSession, FetchTarget

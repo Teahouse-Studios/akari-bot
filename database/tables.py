@@ -4,7 +4,6 @@ from sqlalchemy.dialects.mysql import LONGTEXT
 from database.orm import Session, DB_LINK
 from database.orm_base import Base
 
-
 is_mysql = DB_LINK.startswith('mysql')
 
 

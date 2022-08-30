@@ -7,7 +7,6 @@ from core.elements.message.chain import MessageChain
 from core.exceptions import WaitCancelException
 from core.utils import MessageTaskManager
 from core.utils.i18n import get_target_locale
-
 from database import BotDBUtil
 
 

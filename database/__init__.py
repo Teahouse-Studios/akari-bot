@@ -3,11 +3,11 @@ from typing import Union, List
 
 import ujson as json
 from tenacity import retry, stop_after_attempt
+
 from core.elements.message import MessageSession, FetchTarget, FetchedSession
 from database.orm import Session
 from database.tables import *
 from database.tables import TargetInfo
-
 
 session = Session.session
 

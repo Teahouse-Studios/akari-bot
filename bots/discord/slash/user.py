@@ -1,7 +1,7 @@
 import discord
 
 from bots.discord.client import client
-from bots.discord.slash_parser import slash_parser, ctx_to_session
+from bots.discord.slash_parser import slash_parser
 
 
 @client.slash_command(description="查询一个已记录在Mediawiki上的用户信息")

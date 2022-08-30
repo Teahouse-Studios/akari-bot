@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import html
-import ujson as json
 import random
 import re
 import traceback
@@ -9,6 +8,7 @@ from pathlib import Path
 from typing import List, Union
 
 import aiocqhttp.exceptions
+import ujson as json
 from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot

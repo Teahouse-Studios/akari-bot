@@ -1,8 +1,7 @@
 import discord
 
 from bots.discord.client import client
-from bots.discord.slash_parser import slash_parser, ctx_to_session
-
+from bots.discord.slash_parser import slash_parser
 
 arcaea = client.create_group("arcaea", "查询arcaea的相关信息")
 

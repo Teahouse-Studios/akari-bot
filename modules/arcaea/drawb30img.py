@@ -5,8 +5,6 @@ import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-from core.logger import Logger
-
 assets_path = os.path.abspath('./assets/arcaea')
 
 

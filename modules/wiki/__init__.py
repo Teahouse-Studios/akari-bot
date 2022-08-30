@@ -13,7 +13,6 @@ from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils import download_to_cache
 from core.utils.image_table import image_table_render, ImageTable
-from database import BotDBUtil
 from .dbutils import WikiTargetInfo, Audit
 from .getinfobox import get_pic
 from .utils.ab import ab
@@ -33,9 +32,9 @@ wiki = on_command('wiki',
 @wiki.handle('<PageName> [-l <lang>] {查询一个Wiki页面，若查询“随机页面”则随机一个页面。}',
              options_desc={'-l': '查找本页面的对应语言版本，若无结果则返回当前语言。'})
 async def _(msg: MessageSession):
-    lang = msg.parsed_msg.get('-l', False)
-    if lang:
-        lang = lang['<lang>']
+    get_lang: dict = msg.parsed_msg.get('-l', False)
+    if get_lang:
+        lang = get_lang['<lang>']
     else:
         lang = None
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
@@ -44,15 +43,13 @@ async def _(msg: MessageSession):
 @wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID查询一个Wiki页面。}')
 async def _(msg: MessageSession):
     if msg.parsed_msg.get('-i', False):
-        iw: str = msg.parsed_msg['-i'].get('<CustomIW>', False)
+        iw: str = msg.parsed_msg['-i'].get('<CustomIW>', '')
     else:
-        iw = False
+        iw = ''
     page_id: str = msg.parsed_msg['<PageID>']
     if not page_id.isdigit():
         await msg.finish('错误：页面ID必须是数字。')
     Logger.debug(msg.parsed_msg)
-    if not iw:
-        iw = ''
     await query_pages(msg, pageid=page_id, iw=iw)
 
 

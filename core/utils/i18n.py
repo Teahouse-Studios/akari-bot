@@ -1,11 +1,11 @@
-from typing import List, TypedDict
-import ujson as json
 import os
-from string import Template
 from collections.abc import MutableMapping
+from string import Template
+from typing import TypedDict
+
+import ujson as json
 
 from core.elements.message import MessageSession
-from database import BotDBUtil
 
 # Load all locale files into memory
 
