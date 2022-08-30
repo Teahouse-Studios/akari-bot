@@ -661,7 +661,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
             else:
                 await session.sendMessage(msg_list)
 
-        async def background_task():
+        async def infobox():
             if render_infobox_list and session.Feature.image:
                 infobox_msg_list = []
                 for i in render_infobox_list:
@@ -671,9 +671,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             infobox_msg_list.append(Image(get_infobox))
                 if infobox_msg_list:
                     await session.sendMessage(infobox_msg_list, quote=False)
-            else:
-                if all([not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
-                    return
+
+        async def section():
             if render_section_list and session.Feature.image:
                 section_msg_list = []
                 for i in render_section_list:
@@ -683,9 +682,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             section_msg_list.append(Image(get_section))
                 if section_msg_list:
                     await session.sendMessage(section_msg_list, quote=False)
-            else:
-                if all([not dl_list, not wait_list, not wait_possible_list]):
-                    return
+
+        async def image_and_voice():
             if dl_list:
                 for f in dl_list:
                     dl = await download_to_cache(f)
@@ -697,6 +695,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                             if session.Feature.voice:
                                 await session.sendMessage(Voice(dl), quote=False)
+                                
+        async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
                 confirm = await session.waitNextMessage(wait_msg_list, delete=True)
                 auto_index = False
@@ -730,9 +730,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 if wait_list_:
                     await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
                                       lang=lang)
-            else:
-                return
-        asyncio.create_task(background_task())
+        asyncio.create_task(infobox())
+        asyncio.create_task(section())
+        asyncio.create_task(image_and_voice())
+        asyncio.create_task(wait_confirm())
     else:
         return {'msg_list': msg_list, 'web_render_list': render_infobox_list, 'dl_list': dl_list,
                 'wait_list': wait_list, 'wait_msg_list': wait_msg_list}
