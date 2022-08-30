@@ -63,7 +63,7 @@ trigger_times = 60 if not Config('slower_schedule') else 180
              developers=['OasisAkari', 'Dianliang233'],
              recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
              trigger=IntervalTrigger(seconds=trigger_times),
-             desc='开启后当Minecraft启动器更新时将会自动推送消息。', alias='mcvrss')
+             desc='开启后当Minecraft启动器更新Java版Minecraft时将会自动推送消息。', alias='mcvrss')
 async def mcv_rss(bot: FetchTarget):
     url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:

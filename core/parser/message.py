@@ -163,12 +163,12 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 command_first_word = command_split[0].lower()
 
                 if command_first_word not in modules:
-                    if msg.options.get('typo_check', True):  # 判断是否开启错字检查
+                    """if msg.options.get('typo_check', True):  # 判断是否开启错字检查  todo: alias检查
                         nmsg, command_first_word, command_split = await typo_check(msg, display_prefix, modules,
                                                                                    command_first_word, command_split)
                         if nmsg is None:
                             return ExecutionLockList.remove(msg)
-                        msg = nmsg
+                        msg = nmsg"""
 
                 sudo = False
                 mute = False
@@ -252,7 +252,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                         raise FinishedException(msg.sent)  # if not using msg.finish
                                     except InvalidCommandFormatError:
                                         await msg.sendMessage(f'语法错误。\n使用~help {command_first_word}查看帮助。')
-                                        if msg.options.get('typo_check', True):  # 判断是否开启错字检查
+                                        """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                             nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                        display_prefix,
                                                                                                        modules,
@@ -261,7 +261,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                             if nmsg is None:
                                                 return ExecutionLockList.remove(msg)
                                             msg = nmsg
-                                            await execute_submodule(msg, command_first_word, command_split)
+                                            await execute_submodule(msg, command_first_word, command_split)"""
                                         return
                                 except InvalidHelpDocTypeError:
                                     Logger.error(traceback.format_exc())
