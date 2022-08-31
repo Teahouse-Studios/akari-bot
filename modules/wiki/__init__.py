@@ -373,6 +373,8 @@ async def _(msg: MessageSession):
     Logger.info(msg.trigger_msg)
     Logger.info(msg.matched_msg)
     async def bgtask():
+        match_msg = msg.matched_msg
+        Logger.info(match_msg)
         query_list = []
         target = WikiTargetInfo(msg)
         headers = target.get_headers()
