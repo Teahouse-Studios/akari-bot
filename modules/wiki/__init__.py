@@ -376,7 +376,8 @@ async def _(msg: MessageSession):
         headers = target.get_headers()
         iws = target.get_interwikis()
         wikis = [target.get_start_wiki()] + [iws[w] for w in iws]
-        Logger.debug(msg.matched_msg)
+        Logger.info(msg.trigger_msg)
+        Logger.info(msg.matched_msg)
         for x in msg.matched_msg:
             if wiki_ := await WikiLib(x).check_wiki_available():
                 if wiki_.available and wiki_.value.api in wikis:
