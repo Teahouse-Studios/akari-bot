@@ -339,7 +339,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     matched = True
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
                                 msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
-                                if msg.matched_msg:
+                                if msg.matched_msg and msg.matched_msg is not None:
                                     matched = True
 
                             if matched:  # 如果匹配成功
