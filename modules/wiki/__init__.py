@@ -370,7 +370,7 @@ async def _(msg: MessageSession):
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
     mode='A', show_typing=False)
 async def _(msg: MessageSession):
-    async def bgtask(msg: MessageSession):
+    async def bgtask():
         query_list = []
         target = WikiTargetInfo(msg)
         headers = target.get_headers()
@@ -437,7 +437,7 @@ async def _(msg: MessageSession):
                 asyncio.create_task(infobox())
                 asyncio.create_task(section())
                 asyncio.create_task(image_and_voice())
-    asyncio.create_task(bgtask(msg))
+    asyncio.create_task(bgtask())
 
 
 async def search_pages(session: MessageSession, title: Union[str, list, tuple], use_prefix=True):
