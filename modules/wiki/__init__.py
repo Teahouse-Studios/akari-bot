@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import re
 import traceback
 import urllib.parse
@@ -371,11 +370,8 @@ async def _(msg: MessageSession):
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
     mode='A', show_typing=False)
 async def _(msg: MessageSession):
-    Logger.info(msg.trigger_msg)
-    Logger.info(msg.matched_msg)
     match_msg = msg.matched_msg
     async def bgtask():
-        Logger.info(match_msg)
         query_list = []
         target = WikiTargetInfo(msg)
         headers = target.get_headers()
