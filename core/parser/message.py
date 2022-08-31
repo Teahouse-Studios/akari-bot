@@ -373,10 +373,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             if enable_analytics:
                                 BotDBUtil.Analytics(msg).add(msg.trigger_msg, regex, 'regex')
 
-                            if enable_tos:
+                            if enable_tos and rfunc.show_typing:
                                 await msg_counter(msg, msg.trigger_msg)
                             else:
-                                Logger.debug(f'Tos is disabled, check the configuration is correct.')
+                                Logger.debug(f'Tos is disabled.')
 
                             continue
 
