@@ -231,7 +231,7 @@ class WikiLib:
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
-            traceback.print_exc()
+            Logger.debug(traceback.print_exc())
             message = '从API获取信息时出错：' + str(e)
             if self.url.find('moegirl.org.cn') != -1:
                 message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
