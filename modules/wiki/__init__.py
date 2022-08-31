@@ -373,7 +373,7 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     Logger.info(msg.trigger_msg)
     Logger.info(msg.matched_msg)
-    match_msg = copy.deepcopy(msg.matched_msg)
+    match_msg = msg.matched_msg
     async def bgtask():
         Logger.info(match_msg)
         query_list = []
