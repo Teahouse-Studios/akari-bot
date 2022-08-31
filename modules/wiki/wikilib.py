@@ -210,7 +210,7 @@ class WikiLib:
             except (TimeoutError, asyncio.TimeoutError):
                 return WikiStatus(available=False, value=False, message='错误：尝试建立连接超时。')
             except Exception as e:
-                traceback.print_exc()
+                Logger.debug(traceback.format_exc())
                 if e.args == (403,):
                     message = '服务器拒绝了机器人的请求。'
                 elif not re.match(r'^(https?://).*', self.url):
@@ -231,7 +231,7 @@ class WikiLib:
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
-            Logger.debug(traceback.print_exc())
+            Logger.debug(traceback.format_exc())
             message = '从API获取信息时出错：' + str(e)
             if self.url.find('moegirl.org.cn') != -1:
                 message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
