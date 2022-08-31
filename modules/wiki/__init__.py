@@ -365,10 +365,10 @@ async def _(msg: MessageSession):
     if query_list:
         await query_pages(msg, query_list, mediawiki=True, inline_mode=True)
 
-
+"""
 @wiki_inline.handle(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
-    mode='A', show_typing=False)
+    mode='A', show_typing=False)"""
 async def _(msg: MessageSession):
     async def bgtask(msg: MessageSession):
         query_list = []
