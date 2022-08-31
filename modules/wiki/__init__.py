@@ -370,14 +370,14 @@ async def _(msg: MessageSession):
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
     mode='A', show_typing=False)
 async def _(msg: MessageSession):
+    Logger.info(msg.trigger_msg)
+    Logger.info(msg.matched_msg)
     async def bgtask():
         query_list = []
         target = WikiTargetInfo(msg)
         headers = target.get_headers()
         iws = target.get_interwikis()
         wikis = [target.get_start_wiki()] + [iws[w] for w in iws]
-        Logger.info(msg.trigger_msg)
-        Logger.info(msg.matched_msg)
         for x in msg.matched_msg:
             if wiki_ := await WikiLib(x).check_wiki_available():
                 if wiki_.available and wiki_.value.api in wikis:
