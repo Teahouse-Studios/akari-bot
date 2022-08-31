@@ -345,7 +345,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             if matched:  # 如果匹配成功
                                 Logger.info(
                                     f'{identify_str} -> [Bot]: {display}')
-                                if enable_tos:
+                                if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
                                 if regex_module.required_superuser:
                                     if not msg.checkSuperUser():
