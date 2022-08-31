@@ -45,7 +45,7 @@ class CommandMeta:
 class RegexMeta:
     def __init__(self,
                  function: Callable = None,
-                 pattern: str = None,
+                 pattern: Union[str, re.Pattern] = None,
                  mode: str = None,
                  flags: re.RegexFlag = 0,
                  show_typing: bool = True,

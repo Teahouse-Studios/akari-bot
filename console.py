@@ -10,6 +10,9 @@ if not Config('db_path'):
                          '(Also you can fill in the above example directly,'
                          ' bot will automatically create a SQLite database in the "./database/save.db")')
 
+from database import BotDBUtil, session
+from database.tables import DBVersion
+
 import asyncio
 import traceback
 import aioconsole
@@ -20,6 +23,22 @@ from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
 from core.utils import init, init_async
 from core.logger import Logger
+
+
+query_dbver = session.query(DBVersion).first()
+if query_dbver is None:
+    session.add_all([DBVersion(value='2')])
+    session.commit()
+    query_dbver = session.query(DBVersion).first()
+
+if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
+    print(f'Updating database from {current_ver} to {target_ver}...')
+    from database.update import update_database
+
+    update_database()
+    print('Database updated successfully! Please restart the program.')
+    sys.exit()
+
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))

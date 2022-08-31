@@ -7,6 +7,7 @@ from core.elements import Plain, Image as BImage, Session, MsgInfo, FetchTarget 
     FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
 from core.elements.message.chain import MessageChain
 from core.elements.others import confirm_command
+from core.logger import Logger
 
 
 class FinishedSession(FinS):
@@ -36,9 +37,12 @@ class Template(MS):
             if isinstance(x, Plain):
                 msg_list.append(x.text)
                 print(x.text)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             if isinstance(x, BImage):
-                img = Image.open(await x.get())
+                image_path = await x.get()
+                img = Image.open(image_path)
                 img.show()
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {image_path}')
         return FinishedSession([0], ['There should be a callable here... hmm...'])
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True):
