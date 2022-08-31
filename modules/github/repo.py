@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 
 from core.builtins.message import MessageSession
@@ -60,9 +61,14 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             await msg.finish([Plain(message)])
         else:
             await msg.sendMessage([Plain(message)])
-            download_pic = await download_to_cache(f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
-            if download_pic:
-                await msg.finish([Image(download_pic)])
+
+            async def download():
+                download_pic = await download_to_cache(f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
+                if download_pic:
+                    await msg.finish([Image(download_pic)])
+
+            asyncio.create_task(download())
+
     except ValueError:
         await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
     except Exception as e:
