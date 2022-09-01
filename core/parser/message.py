@@ -370,7 +370,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 f'Times take up: {time_used}')
                             ExecutionLockList.remove(msg)
 
-                            if enable_analytics:
+                            if enable_analytics and rfunc.show_typing:
                                 BotDBUtil.Analytics(msg).add(msg.trigger_msg, regex, 'regex')
 
                             if enable_tos and rfunc.show_typing:
