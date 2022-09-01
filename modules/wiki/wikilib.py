@@ -242,6 +242,14 @@ class WikiLib:
                           message='警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
                           if 'TextExtracts' not in info.extensions else '')
 
+    async def check_wiki_info_from_database_cache(self):
+        parse_url = urllib.parse.urlparse(self.url)
+        get = DBSiteInfo.get_like_this(parse_url.netloc)
+        if get is not None:
+            return WikiStatus(available=True, value=self.rearrange_siteinfo(get.siteInfo, get.apiLink), message='')
+        else:
+            return WikiStatus(available=False, value=False, message='')
+
     async def fixup_wiki_info(self):
         if self.wiki_info.api == '':
             wiki_info = await self.check_wiki_available()

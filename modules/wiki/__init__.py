@@ -378,7 +378,7 @@ async def _(msg: MessageSession):
         iws = target.get_interwikis()
         wikis = [target.get_start_wiki()] + [iws[w] for w in iws]
         for x in match_msg:
-            if wiki_ := await WikiLib(x).check_wiki_available():
+            if wiki_ := await WikiLib(x).check_wiki_info_from_database_cache():
                 if wiki_.available and wiki_.value.api in wikis:
                     query_list.append({x: wiki_.value})
         if query_list:

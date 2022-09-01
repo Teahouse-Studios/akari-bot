@@ -129,6 +129,10 @@ class WikiSiteInfo:
         session.commit()
         return True
 
+    @staticmethod
+    def get_like_this(t: str):
+        return session.query(WikiInfo).filter(WikiInfo.apiLink.like(f"%{t}%")).first()
+
 
 class Audit:
     def __init__(self, api_link):
