@@ -662,10 +662,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     if r.link is not None:
                         plain_slice.append(
                             str(Url(r.link, use_mm=not r.info.in_allowlist)))
-                    if plain_slice:
-                        msg_list.append(Plain('\n'.join(plain_slice)))
+
                     if r.file is not None:
                         dl_list.append(r.file)
+                        plain_slice.append('此页面包含以下文件：\n' + r.file)
                     else:
                         if r.link is not None and r.section is None:
                             render_infobox_list.append(
@@ -673,6 +673,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section}})
+                    if plain_slice:
+                        msg_list.append(Plain('\n'.join(plain_slice)))
                 else:
                     plain_slice = []
                     wait_plain_slice = []
