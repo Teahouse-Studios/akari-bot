@@ -381,7 +381,8 @@ async def _(msg: MessageSession):
             wiki_ = WikiLib(x)
             if check_from_database := await wiki_.check_wiki_info_from_database_cache():
                 if check_from_database.available:
-                    if check_from_api := await wiki_.check_wiki_available():
+                    check_from_api = await wiki_.check_wiki_available()
+                    if check_from_api.available:
                         query_list.append({x: check_from_api.value})
         if query_list:
             for q in query_list:
