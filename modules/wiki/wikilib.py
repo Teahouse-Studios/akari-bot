@@ -243,6 +243,7 @@ class WikiLib:
                           if 'TextExtracts' not in info.extensions else '')
 
     async def check_wiki_info_from_database_cache(self):
+        """检查wiki信息是否已记录在数据库缓存（由于部分wiki通过path区分语言，此处仅模糊查询域名部分，返回结果可能不准确）"""
         parse_url = urllib.parse.urlparse(self.url)
         get = DBSiteInfo.get_like_this(parse_url.netloc)
         if get is not None:
