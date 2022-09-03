@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 from core.builtins.message import MessageSession
@@ -30,9 +31,9 @@ async def regex_bugtracker(msg: MessageSession):
         await msg.finish(result)
 
 
-"""rlink = re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)')
-    findlink = re.findall(rlink, display_msg)
-    for link in findlink:
-        matchbug = re.match(rlink, link)
-        if matchbug:
-            await msg.sendMessage(await bugtracker_get(matchbug.group(1)))"""
+@rbug.handle(re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)'), mode='A')
+async def _(msg: MessageSession):
+    async def bgtask(msg: MessageSession):
+        for title in msg.matched_msg:
+            await msg.sendMessage(await bugtracker_get(title, nolink=True))
+    asyncio.create_task(bgtask(msg))
