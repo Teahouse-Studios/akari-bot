@@ -405,11 +405,13 @@ async def _(msg: MessageSession):
                             if guess_type is not None:
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                                     if msg.Feature.image:
-                                        await msg.sendMessage(Image(dl), quote=False)
+                                        await msg.sendMessage([Plain(f'此页面包括以下文件：{get_page.file}'), Image(dl)],
+                                                              quote=False)
                                         img_send = True
                                 elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                                     if msg.Feature.voice:
-                                        await msg.sendMessage(Voice(dl), quote=False)
+                                        await msg.sendMessage([Plain(f'此页面包括以下文件：{get_page.file}'), Voice(dl)],
+                                                              quote=False)
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:
