@@ -11,7 +11,7 @@ from modules.weekly.teahouse import get_rss as get_teahouse_rss
 async def weekly_rss(bot: FetchTarget):
     Logger.info('Checking MCWZH weekly...')
 
-    weekly = await get_weekly()
+    weekly = await get_weekly(True if bot.name == 'QQ' else False)
     await bot.post_message('weekly_rss', weekly)
     Logger.info('Weekly checked.')
 

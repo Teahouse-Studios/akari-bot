@@ -9,7 +9,7 @@ from core.utils import get_url
 from .teahouse import get_rss as get_teahouse_rss
 
 
-async def get_weekly():
+async def get_weekly(with_img=False):
     result = json.loads(await get_url(
         'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid&format=json',
         200))
@@ -27,7 +27,8 @@ async def get_weekly():
                               f'\n\n页面链接：' + str(Url(f'https://minecraft.fandom.com{page[0]}')) +
                               f'\n每周页面：' + str(
             Url(f'https://minecraft.fandom.com/zh/wiki/?oldid={str(result["parse"]["revid"])}'))))
-        msg_list.append(Image(path=img[0][0]))
+        if with_img:
+            msg_list.append(Image(path=img[0][0]))
 
     return msg_list
 
@@ -37,7 +38,7 @@ wky = on_command('weekly', developers=['Dianliang233'])
 
 @wky.handle('{获取中文 Minecraft Wiki 的每周页面}')
 async def _(msg: MessageSession):
-    weekly = await get_weekly()
+    weekly = await get_weekly(True if msg.target.clientName == 'QQ' else False)
     await msg.finish(weekly)
 
 
