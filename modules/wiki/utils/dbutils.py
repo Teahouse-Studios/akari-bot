@@ -8,7 +8,7 @@ from tenacity import retry, stop_after_attempt
 
 from core.elements import MessageSession
 from database import session, auto_rollback_error
-from .orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList
+from modules.wiki.utils.orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList
 
 
 class WikiTargetInfo:

@@ -2,7 +2,7 @@ import re
 
 from core.logger import Logger
 from modules.wiki import query_pages
-from modules.wiki.wikilib import QueryInfo
+from modules.wiki.utils.wikilib import QueryInfo
 
 
 async def moegirl(term: str):

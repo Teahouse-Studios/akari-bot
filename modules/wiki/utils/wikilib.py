@@ -13,7 +13,7 @@ from core.dirty_check import check
 from core.elements import Url
 from core.logger import Logger
 from core.utils import get_url
-from .dbutils import WikiSiteInfo as DBSiteInfo, Audit
+from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 
 class InvalidPageIDError(Exception):

@@ -1,5 +1,5 @@
 from core.dirty_check import check
-from modules.wiki.wikilib import WikiLib
+from modules.wiki.utils.wikilib import WikiLib
 
 
 async def newbie(wiki_url):

@@ -4,7 +4,7 @@ from core.elements import FetchTarget
 from core.logger import Logger
 from core.scheduler import Scheduler
 from modules.wiki.utils.UTC8 import UTC8
-from modules.wiki.wikilib import WikiLib
+from modules.wiki.utils.wikilib import WikiLib
 
 wiki = WikiLib('https://minecraft.fandom.com/zh/api.php')
 
