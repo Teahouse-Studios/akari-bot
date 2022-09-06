@@ -471,6 +471,8 @@ class WikiLib:
                 page_info.status = False
                 page_info.id = int(page_id)
                 page_raw = pages[page_id]
+                if 'title' in page_raw:
+                    page_info.title = page_raw['title']
                 if 'invalid' in page_raw:
                     rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
                                  page_raw['invalidreason'])
@@ -480,7 +482,7 @@ class WikiLib:
                 elif 'missing' in page_raw:
                     if 'title' in page_raw:
                         if 'known' in page_raw:
-                            full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')),
+                            full_url = re.sub(r'\$1', urllib.parse.quote(page_info.title.encode('UTF-8')),
                                               self.wiki_info.articlepath) \
                                        + page_info.args
                             page_info.link = full_url
@@ -503,11 +505,11 @@ class WikiLib:
                                           + ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle, _search=True)
                             if reparse:
+                                page_info.before_title = page_info.title
                                 page_info.title = reparse.title
                                 page_info.link = reparse.link
                                 page_info.desc = reparse.desc
                                 page_info.file = reparse.file
-                                page_info.before_title = title
                                 page_info.status = reparse.status
                                 page_info.invalid_namespace = reparse.invalid_namespace
                             else:
@@ -520,7 +522,7 @@ class WikiLib:
 
                                 async def search_something(srwhat):
                                     try:
-                                        research = await self.research_page(title, namespace, srwhat=srwhat)
+                                        research = await self.research_page(page_info.title, namespace, srwhat=srwhat)
                                         if srwhat == 'text':
                                             nonlocal preferred
                                             nonlocal invalid_namespace
@@ -542,8 +544,8 @@ class WikiLib:
                                 if preferred is None and searched_result:
                                     preferred = searched_result[0]
 
+                                page_info.before_title = page_info.title
                                 page_info.title = preferred
-                                page_info.before_title = title
                                 page_info.invalid_namespace = invalid_namespace
                                 page_info.possible_research_title = searched_result
 
