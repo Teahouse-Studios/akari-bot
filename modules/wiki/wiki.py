@@ -201,7 +201,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
-                                {r.link: {'url': r.info.realurl, 'section': r.section}})
+                                {r.link: {'url': r.info.realurl, 'section': r.section, 'in_allowlist': r.info.in_allowlist}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                 else:
