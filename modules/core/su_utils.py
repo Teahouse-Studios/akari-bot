@@ -187,7 +187,7 @@ async def _(msg: MessageSession):
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
-        await msg.finish(f'成功成功封禁 {user}。')
+        await msg.finish(f'成功封禁 {user}。')
 
 
 @ae.handle('unban <user>')
