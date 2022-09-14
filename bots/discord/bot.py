@@ -63,7 +63,7 @@ load_slashcommands()
 @client.event
 async def on_message(message):
     # don't respond to ourselves
-    if message.author == client.user:
+    if message.author == client.user or message.author.bot:
         return
     target = "Discord|Channel"
     if isinstance(message.channel, discord.DMChannel):
