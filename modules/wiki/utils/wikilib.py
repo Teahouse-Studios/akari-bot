@@ -198,7 +198,8 @@ class WikiLib:
             try:
                 get_page = await get_url(self.url, fmt='text', headers=self.headers)
                 if get_page.find('<title>Attention Required! | Cloudflare</title>') != -1:
-                    return WikiStatus(available=False, value=False, message='CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。')
+                    return WikiStatus(available=False, value=False,
+                                      message='CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。')
                 m = re.findall(
                     r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
                     get_page)
@@ -532,6 +533,7 @@ class WikiLib:
                                     except Exception:
                                         Logger.debug(traceback.format_exc())
                                         return None, False
+
                                 searches = []
                                 for srwhat in srwhats:
                                     searches.append(search_something(srwhat))
@@ -576,7 +578,8 @@ class WikiLib:
                                 repo_url = query_client_info['query']['wikibase']['repo']['url']['base']
                                 siteid = query_client_info['query']['wikibase']['siteid']
                                 query_target_site = WikiLib(self.wiki_info.interwiki[lang], headers=self.headers)
-                                target_siteid = (await query_target_site.get_json(**qc_string))['query']['wikibase']['siteid']
+                                target_siteid = (await query_target_site.get_json(**qc_string))['query']['wikibase'][
+                                    'siteid']
                                 qr_wiki_info = WikiLib(repo_url)
                                 qr_string = {'action': 'wbgetentities', 'sites': siteid, 'titles': title,
                                              'props': 'sitelinks/urls', 'redirects': 'yes'}
@@ -680,7 +683,8 @@ class WikiLib:
                                     page_info.title = page_info.interwiki_prefix + t
                                     if page_info.possible_research_title is not None:
                                         page_info.possible_research_title = [page_info.interwiki_prefix + possible_title
-                                                                             for possible_title in page_info.possible_research_title]
+                                                                             for possible_title in
+                                                                             page_info.possible_research_title]
 
                                 if before_page_info.section is not None:
                                     page_info.section = before_page_info.section

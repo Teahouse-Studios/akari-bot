@@ -45,9 +45,6 @@ async def _(msg: MessageSession):
     await query_pages(msg, pageid=page_id, iw=iw)
 
 
-
-
-
 async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
@@ -201,7 +198,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
-                                {r.link: {'url': r.info.realurl, 'section': r.section, 'in_allowlist': r.info.in_allowlist}})
+                                {r.link: {'url': r.info.realurl, 'section': r.section,
+                                          'in_allowlist': r.info.in_allowlist}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                 else:
@@ -217,12 +215,16 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                     pi += 1
                                     wait_plain_slice.append(
                                         f'{pi}. {p}')
-                                wait_plain_slice.append(f'请回复指定序号获取对应内容，若回复“是”，'
-                                                        f'则默认选择{str(r.possible_research_title.index(display_title) + 1)}号内容。')
-                                wait_possible_list.append({display_before_title: {display_title: r.possible_research_title}})
+                                wait_plain_slice.append(f'请直接发送指定序号获取对应内容，若回复“是”，'
+                                                        f'则默认选择'
+                                                        f'{str(r.possible_research_title.index(display_title) + 1)}'
+                                                        f'号内容，发送其他内容则代表取消获取。')
+                                wait_possible_list.append({display_before_title: {display_title:
+                                                                                      r.possible_research_title}})
                             else:
                                 wait_plain_slice.append(
-                                    f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？')
+                                    f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？\n'
+                                    f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
@@ -255,7 +257,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 msg_list.append(Plain(f'发生错误：' + str(e)))
     if isinstance(session, MessageSession):
         if msg_list:
-            if all([not render_infobox_list, not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
+            if all(
+                [not render_infobox_list, not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
                 await session.finish(msg_list)
             else:
                 await session.sendMessage(msg_list)
@@ -330,6 +333,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 if wait_list_:
                     await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
                                       lang=lang)
+
         asyncio.create_task(infobox())
         asyncio.create_task(section())
         asyncio.create_task(image_and_voice())

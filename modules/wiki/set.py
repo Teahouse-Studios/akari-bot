@@ -153,7 +153,8 @@ async def _(msg: MessageSession):
         await msg.finish(f'成功重置请求时所使用的前缀。')
 
 
-@wiki.handle('fandom enable {禁用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}', required_admin=True)
+@wiki.handle('fandom enable {禁用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}',
+             required_admin=True)
 async def _(msg: MessageSession):
     if msg.parsed_msg.get('enable', False):
         msg.data.edit_option('wiki_fandom_addon', True)

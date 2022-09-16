@@ -121,4 +121,5 @@ async def _(msg: MessageSession):
                                 get_section = await get_pic(q[qq].realurl, qq, headers, section=s)
                                 if get_section:
                                     await msg.sendMessage(Image(get_section))
+
     asyncio.create_task(bgtask())
