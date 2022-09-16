@@ -64,8 +64,6 @@ class MessageSession(MessageSession):
             raise WaitCancelException
 
     async def waitReply(self, msgchain, quote=True) -> MessageSession:
-        if self.target.targetFrom == 'QQ':  # https://github.com/Mrs4s/go-cqhttp/issues/1608
-            return await self.waitNextMessage(msgchain, quote)
         ExecutionLockList.remove(self)
         msgchain = MessageChain(msgchain)
         msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
