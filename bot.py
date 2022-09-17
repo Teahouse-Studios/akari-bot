@@ -1,21 +1,22 @@
+import asyncio
+import asyncio.subprocess
 import os
 import shutil
 import subprocess
 import sys
-from queue import Queue, Empty
-from threading import Thread
 from time import sleep
 
 import psutil
 from loguru import logger
 
 from config import Config
-from database import BotDBUtil, session, DBVersion
+from database import BotDBUtil, session
+from database.tables import DBVersion
 
 encode = 'UTF-8'
 
 
-class RestartBot(Exception):
+class RestartBot(BaseException):
     pass
 
 
@@ -45,7 +46,7 @@ def init_bot():
 pidlst = []
 
 
-def run_bot():
+async def run_bot():
     pid_cache = os.path.abspath('.pid_last')
     if os.path.exists(pid_cache):
         with open(pid_cache, 'r') as f:
@@ -62,60 +63,52 @@ def run_bot():
     envs['PYTHONIOENCODING'] = 'UTF-8'
     envs['PYTHONPATH'] = os.path.abspath('.')
     botdir = './bots/'
-    lst = os.listdir(botdir)
-    runlst = []
-    for x in lst:
-        bot = os.path.abspath(f'{botdir}{x}/bot.py')
+    bots_list = os.listdir(botdir)
+
+    async def get_async(process: asyncio.subprocess.Process):
+        line = await process.stderr.readline()
+        try:
+            logger.info(line.decode(encode)[:-1])
+        except UnicodeDecodeError:
+            encode_list = ['GBK']
+            for e in encode_list:
+                try:
+                    logger.warning(f'Cannot decode string from UTF-8, decode with {e}: '
+                                   + line.decode(e)[:-1])
+                    break
+                except Exception:
+                    if encode_list[-1] != e:
+                        logger.warning(f'Cannot decode string from {e}, '
+                                       f'attempting with {encode_list[encode_list.index(e) + 1]}.')
+                    else:
+                        logger.error(f'Cannot decode string from {e}, no more attempts.')
+
+        if process.returncode == 233:
+            logger.warning(f'{process.pid} exited with code 233, restart all bots.')
+            pidlst.remove(process.pid)
+            raise RestartBot
+
+        if process.returncode is not None:
+            return
+
+        return await get_async(process)
+
+    tasks = []
+
+    for b in bots_list:
+        bot = os.path.abspath(f'{botdir}{b}/bot.py')
         if os.path.exists(bot):
-            p = subprocess.Popen(['python', bot], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 cwd=os.path.abspath('.'), env=envs)
-            runlst.append(p)
+            p = await asyncio.create_subprocess_shell(f'python {bot}', stdout=asyncio.subprocess.PIPE,
+                                                      stderr=asyncio.subprocess.PIPE,
+                                                      cwd=os.path.abspath('.'), env=envs)
             pidlst.append(p.pid)
+            tasks.append(get_async(p))
+            tasks.append(p.wait())
 
     with open(pid_cache, 'w') as c:
         c.write('\n'.join(str(p) for p in pidlst))
 
-    q = Queue()
-    threads = []
-    for p in runlst:
-        threads.append(Thread(target=enqueue_output, args=(p.stdout, q)))
-
-    for t in threads:
-        t.daemon = True
-        t.start()
-
-    while True:
-        try:
-            line = q.get_nowait()
-        except Empty:
-            pass
-        else:
-            try:
-                logger.info(line.decode(encode)[:-1])
-            except UnicodeDecodeError:
-                encode_list = ['GBK']
-                for e in encode_list:
-                    try:
-                        logger.warning(f'Cannot decode string from UTF-8, decode with {e}: '
-                                       + line.decode(e)[:-1])
-                        break
-                    except Exception:
-                        if encode_list[-1] != e:
-                            logger.warning(f'Cannot decode string from {e}, '
-                                           f'attempting with {encode_list[encode_list.index(e) + 1]}.')
-                        else:
-                            logger.error(f'Cannot decode string from {e}, no more attempts.')
-
-        # break when all processes are done.
-        if all(p.poll() is not None for p in runlst):
-            break
-
-        for p in runlst:
-            if p.poll() == 233:
-                logger.warning(f'{p.pid} exited with code 233, restart all bots.')
-                pidlst.remove(p.pid)
-                raise RestartBot
-        sleep(0.001)
+    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 if __name__ == '__main__':
@@ -130,12 +123,13 @@ if __name__ == '__main__':
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
         logger.info(f'Updating database from {current_ver} to {target_ver}...')
         from database.update import update_database
+
         update_database()
         logger.info('Database updated successfully!')
     try:
         while True:
             try:
-                run_bot()  # Process will block here so
+                asyncio.run(run_bot())  # Process will block here so
                 logger.error('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:
