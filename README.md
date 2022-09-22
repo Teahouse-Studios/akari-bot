@@ -1,5 +1,8 @@
-# 小可 · AkariBot v4
+<div align="center">
+  <img width="256" src="./assets/character_marked.png" alt="logo">
 
+# 小可 · AkariBot v4
+</div>
 ![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/bot) ![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/bot) ![License](https://img.shields.io/github/license/Teahouse-Studios/bot) ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/bot?style=social) ![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/bot?include_prereleases)
 
 ## 介绍
