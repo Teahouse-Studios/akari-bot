@@ -61,7 +61,7 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
                                (b30img.width - 500, 68))
     # ptt
     pttimg = 'off'
-    if ptt is not None:
+    if ptt is not None and isinstance(ptt, (int, float)):
         if ptt >= 13.00:
             pttimg = 7
         elif ptt >= 12.50:
@@ -85,27 +85,30 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     else:
         b30img.alpha_composite(pttimg.convert("RGBA"), (b30img.width - 450, 67))
     ptttext = Image.new("RGBA", (200, 200))
+    ptttext_width, ptttext_height = ptttext.size
     font1 = ImageFont.truetype(f'{assets_path}/Fonts/Exo-SemiBold.ttf', 30)
     font2 = ImageFont.truetype(f'{assets_path}/Fonts/Exo-SemiBold.ttf', 21)
-    if ptt is not None:
+    if ptt is not None and isinstance(ptt, (int, float)):
         rawptt = str(ptt).split('.')
         ptt1 = rawptt[0]
         ptt2 = rawptt[1]
         if len(ptt2) < 2:
             ptt2 += '0'
+        font1_width, font1_height = font1.getsize(ptt1 + '.')
+        font2_width, font2_height = font2.getsize(ptt2)
+        pttimg = Image.new("RGBA", (font1_width + font2_width + 4, font1_height + 4))
+        drawptt = ImageDraw.Draw(pttimg)
+        stroke_color = '#52495d'
+        if int(ptt1) >= 13:
+            stroke_color = '#81122F'
+        drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=2, stroke_fill=stroke_color)
+        drawptt.text((font1_width, 9), ptt2, 'white', font=font2, stroke_width=2, stroke_fill=stroke_color)
     else:
-        ptt1 = '0'
-        ptt2 = '00'
-    ptttext_width, ptttext_height = ptttext.size
-    font1_width, font1_height = font1.getsize(ptt1 + '.')
-    font2_width, font2_height = font2.getsize(ptt2)
-    pttimg = Image.new("RGBA", (font1_width + font2_width + 4, font1_height + 4))
-    drawptt = ImageDraw.Draw(pttimg)
-    stroke_color = '#52495d'
-    if int(ptt1) >= 13:
-        stroke_color = '#81122F'
-    drawptt.text((0, 0), ptt1 + '.', 'white', font=font1, stroke_width=2, stroke_fill=stroke_color)
-    drawptt.text((font1_width, 9), ptt2, 'white', font=font2, stroke_width=2, stroke_fill=stroke_color)
+        font1_width, font1_height = font1.getsize('--')
+        pttimg = Image.new("RGBA", (font1_width, font1_height))
+        drawptt = ImageDraw.Draw(pttimg)
+        drawptt.text((0, 0), '--', 'white', font=font1, stroke_width=2, stroke_fill='#52495d')
+
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2)))
