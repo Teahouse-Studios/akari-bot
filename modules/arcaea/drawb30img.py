@@ -15,9 +15,9 @@ def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour
     shadowLeft = border + max(offset[0], 0)
     shadowTop = border + max(offset[1], 0)
     shadow.paste(shadowColour,
-                 [shadowLeft, shadowTop,
+                 (shadowLeft, shadowTop,
                   shadowLeft + image.size[0],
-                  shadowTop + image.size[1]])
+                  shadowTop + image.size[1]))
     for i in range(iterations):
         shadow = shadow.filter(ImageFilter.BLUR)
     imgLeft = border - min(offset[0], 0)
@@ -27,7 +27,7 @@ def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour
 
 
 def drawb30(Username, b30, r10, ptt, character, path='', official=False):
-    # backgroud
+    # background
     if not official:
         bgimgpath = f'{assets_path}/world/'
     else:
