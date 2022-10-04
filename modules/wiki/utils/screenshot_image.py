@@ -80,7 +80,7 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
         if section is None:
             find_diff = None
             if allow_special_page:
-                find_diff = soup.find('table', class_=re.compile('diff diff-contentalign-left'))
+                find_diff = soup.find('table', class_=re.compile('diff'))
                 if find_diff is not None:
                     Logger.info('Found diff...')
                     for x in soup.find_all('body'):
