@@ -28,9 +28,9 @@ async def _(msg: MessageSession):
     await config_modules(msg)
 
 
-@module.handle(['enable <module>... [-g] {开启一个/多个模块}',
+@module.handle(['enable [-g] <module>... {开启一个/多个模块}',
                 'enable all [-g] {开启所有模块}',
-                'disable <module> [-g] {关闭一个/多个模块}',
+                'disable [-g] <module>... {关闭一个/多个模块}',
                 'disable all [-g] {关闭所有模块。}',
                 'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
