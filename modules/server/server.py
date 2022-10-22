@@ -9,7 +9,7 @@ from core.logger import Logger
 
 
 async def server(address, raw=False, showplayer=False, mode='j'):
-    matchObj = re.match(r'(.*)[\s?|:?](.*)', address, re.M | re.I)
+    matchObj = re.match(r'(.*)[\s:]~server 111.9.62.18:4104(.*)', address, re.M | re.I)
     servers = []
     n = '\n'
 
