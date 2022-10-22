@@ -97,7 +97,7 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
     except Exception as e:  # 意外情况
         traceback.print_exc()  # 打印错误信息
         play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
-        return await msg.finish('发生错误：拉取题目失败，可能是因为请求超时或 ID 无效。请重新发起游戏。')
+        return await msg.finish('发生错误：拉取题目失败，可能是因为请求超时或 ID 无效，请重新发起游戏。')
     # print(csr)
     play_state[msg.target.targetId]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
     Logger.info(f'Answer: {csr["name"]}')  # 在日志中输出正确答案
