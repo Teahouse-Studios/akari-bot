@@ -144,12 +144,12 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
 
     if not captcha_mode:
         await msg.sendMessage([Image(newpath),
-                               Plain(f'请在{set_timeout}分钟内发送这个化合物的分子式。（除C、H外使用字母表顺序，如：CHBrClF）')])
+                               Plain(f'请在 {set_timeout} 分钟内发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
-        result = await msg.waitNextMessage([Image(newpath), Plain('请发送这个化合物的分子式。（除C、H外使用字母表顺序，如：CHBrClF）')])
+        result = await msg.waitNextMessage([Image(newpath), Plain('请发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if result.asDisplay() == csr['name']:
                 await result.sendMessage('回答正确。')
