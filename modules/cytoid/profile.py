@@ -33,34 +33,34 @@ async def cytoid_profile(msg: MessageSession):
     nextLevelExp = profile['exp']['nextLevelExp']
     rating = profile['rating']
     grade: dict = profile['grade']
-    gradet = ''
+    grade_t = []
     max = grade.get('MAX')
     if max is not None:
-        gradet += f'MAX: {max},'
+        grade_t.append(f'MAX: {max}')
     sss = grade.get('SSS')
     if sss is not None:
-        gradet += f' SSS: {sss},'
+        grade_t.append(f'SSS: {sss}')
     ss = grade.get('SS')
     if ss is not None:
-        gradet += f' SS: {ss},'
+        grade_t.append(f'SS: {ss}')
     s = grade.get('S')
     if s is not None:
-        gradet += f' S: {s},'
+        grade_t.append(f'S: {s}')
     a = grade.get('A')
     if a is not None:
-        gradet += f' A: {a},'
+        grade_t.append(f'A: {a}')
     b = grade.get('B')
     if b is not None:
-        gradet += f' B: {b},'
+        grade_t.append(f'B: {b}')
     c = grade.get('C')
     if c is not None:
-        gradet += f' C: {c},'
+        grade_t.append(f'C: {c}')
     d = grade.get('D')
     if d is not None:
-        gradet += f' D: {d},'
+        grade_t.append(f'D: {d}')
     f = grade.get('F')
     if f is not None:
-        gradet += f' F: {f}'
+        grade_t.append(f'F: {f}')
     text = f'UID: {uid}\n' + \
            (f'Nickname: {nick}\n' if nick else '') + \
            f'BasicExp: {basicExp}\n' + \
@@ -69,6 +69,6 @@ async def cytoid_profile(msg: MessageSession):
            f'CurrentLevel: {currentLevel}\n' + \
            f'NextLevelExp: {nextLevelExp}\n' + \
            f'Rating: {rating}\n' + \
-           f'Grade: {gradet}'
+           f'Grade: {", ".join(grade_t)}'
     msgchain = [Image(path=avatar), Plain(text)]
     await msg.finish(msgchain)
