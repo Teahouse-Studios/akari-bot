@@ -34,9 +34,21 @@ async def cytoid_profile(msg: MessageSession):
     rating = profile['rating']
     grade: dict = profile['grade']
     gradet = ''
+    max = grade.get('MAX')
+    if max is not None:
+        gradet += f'MAX: {max},'
+    sss = grade.get('SSS')
+    if sss is not None:
+        gradet += f' SSS: {sss},'
+    ss = grade.get('SS')
+    if ss is not None:
+        gradet += f' SS: {ss},'
+    s = grade.get('S')
+    if s is not None:
+        gradet += f' S: {s},'
     a = grade.get('A')
     if a is not None:
-        gradet += f'A: {a},'
+        gradet += f' A: {a},'
     b = grade.get('B')
     if b is not None:
         gradet += f' B: {b},'
@@ -46,15 +58,9 @@ async def cytoid_profile(msg: MessageSession):
     d = grade.get('D')
     if d is not None:
         gradet += f' D: {d},'
-    e = grade.get('E')
-    if e is not None:
-        gradet += f' E: {e},'
-    s = grade.get('S')
-    if s is not None:
-        gradet += f' S: {s},'
-    ss = grade.get('SS')
-    if ss is not None:
-        gradet += f' SS: {ss}'
+    f = grade.get('F')
+    if f is not None:
+        gradet += f' F: {f}'
     text = f'UID: {uid}\n' + \
            (f'Nickname: {nick}\n' if nick else '') + \
            f'BasicExp: {basicExp}\n' + \
