@@ -38,8 +38,14 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
     bg = bg.resize((bg.size[0] * 2, bg.size[1] * 2))
     offset = random.randint(0, 1024)
     if not official:
+        if bg.width < 2489:
+            bgmut = 2489 / bg.width
+            bg = bg.resize((int(bg.width * bgmut), int(bg.height * bgmut)))
         b30img = bg.crop((0, offset, 2489, 1400 + offset))
     else:
+        if bg.width < 1975:
+            bgmut = 1975 / bg.width
+            bg = bg.resize((int(bg.width * bgmut), int(bg.height * bgmut)))
         b30img = bg.crop((0, offset, 1975, 1610 + offset))
 
     if not official:
