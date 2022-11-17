@@ -108,11 +108,10 @@ async def _(event: Event):
 @bot.on_notice('group_ban')
 async def _(event: Event):
     if event.user_id == int(qq_account):
+        result = BotDBUtil.UnfriendlyActions(targetId=event.group_id,
+                                             senderId=event.operator_id).add_and_check('mute', str(event.duration))
         if event.duration >= 259200:
             result = True
-        else:
-            result = BotDBUtil.UnfriendlyActions(targetId=event.group_id,
-                                                 senderId=event.operator_id).add_and_check('mute', str(event.duration))
         if result:
             await bot.call_action('set_group_leave', group_id=event.group_id)
             BotDBUtil.SenderInfo('QQ|' + str(event.operator_id)).edit('isInBlockList', True)
