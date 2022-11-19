@@ -1,3 +1,4 @@
+import asyncio
 import os
 import traceback
 from datetime import datetime
@@ -7,6 +8,7 @@ from core.elements import Plain, Image
 from core.logger import Logger
 from core.utils import get_url
 from modules.arcaea.errcode import errcode
+from modules.arcaea.utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
@@ -68,6 +70,9 @@ async def get_info(usercode):
                         f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)')]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
+        else:
+            asyncio.create_task(autofix_b30_song_background(recent["song_id"],
+                                                            byd=False if recent["difficulty"] != 3 else True))
         return result
     else:
         if get_['status'] in errcode:

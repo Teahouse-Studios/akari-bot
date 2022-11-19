@@ -1,9 +1,12 @@
+import asyncio
 import os
 import random
 import traceback
 import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
+from .utils import autofix_character
 
 assets_path = os.path.abspath('./assets/arcaea')
 
@@ -53,11 +56,13 @@ def drawb30(Username, b30, r10, ptt, character, path='', official=False):
         tg = Image.open(f'{assets_path}/triangle.png')
         b30img.alpha_composite(tg.convert("RGBA"), (1580, 550))
         # character
-        try:
-            character = Image.open(f'{assets_path}/char/{str(character)}.png')
+        character_img_path = f'{assets_path}/char/{str(character)}.png'
+        if os.path.exists(character_img_path):
+            character = Image.open(character_img_path)
             b30img.alpha_composite(character.convert("RGBA"), (1660, 350))
-        except Exception:
-            pass
+        else:
+            asyncio.create_task(autofix_character(str(character)))
+
     # usercard overlay
     cardoverlay = Image.open(f'{assets_path}/card_overlay.png')
     if not official:

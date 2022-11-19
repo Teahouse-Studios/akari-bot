@@ -88,10 +88,12 @@ async def post_url(url: str, data: any, headers: dict = None, request_private_ip
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
-async def download_to_cache(url: str, request_private_ip=False) -> Union[str, bool]:
+async def download_to_cache(url: str, filename=None, headers: dict = None, request_private_ip=False) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
 
     :param url: 需要获取的url。
+    :param filename: 指定保存的文件名，默认为随机文件名。
+    :param headers: 请求时使用的http头。
     :param request_private_ip: 是否允许请求私有IP。
     :returns: 文件的相对路径，若获取失败则返回False。'''
 
@@ -99,11 +101,14 @@ async def download_to_cache(url: str, request_private_ip=False) -> Union[str, bo
         private_ip_check(url)
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(url, headers=headers) as resp:
                 res = await resp.read()
                 ftt = ft.match(res).extension
-                path = f'{random_cache_path()}.{ftt}'
+                if filename is None:
+                    path = f'{random_cache_path()}.{ftt}'
+                else:
+                    path = Config("cache_path") + f'/{filename}'
                 async with async_open(path, 'wb+') as file:
                     await file.write(res)
                     return path

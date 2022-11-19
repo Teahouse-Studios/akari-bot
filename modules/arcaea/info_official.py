@@ -1,3 +1,6 @@
+"""
+This service utilizes API functionality provided by and with permission from lowiro. It is not affiliated with or endorsed by lowiro.
+"""
 import os
 import traceback
 from datetime import datetime

@@ -11,6 +11,7 @@ from core.logger import Logger
 from core.utils import get_url
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
+from .utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 
@@ -89,7 +90,6 @@ async def getb30_official(usercode):
             imgpath = f'{assets_path}/b30background_img_official/{x["song_id"]}_{str(x["difficulty"])}.jpg'
             if not os.path.exists(imgpath):
                 imgpath = f'{assets_path}/b30background_img_official/{x["song_id"]}.jpg'
-
             score = x['score']
             if not realptt:
                 realptt = x['potential_value']
@@ -106,6 +106,8 @@ async def getb30_official(usercode):
             scores[x['song_id'] + difficulty] = score
             if not os.path.exists(imgpath):
                 imgpath = f'{assets_path}/b30background_img_official/random.jpg'
+                asyncio.create_task(autofix_b30_song_background(x['song_id'],
+                                                                byd=False if x['difficulty'] != 3 else True))
             dsimg(os.path.abspath(imgpath), d, trackname, x['difficulty'], score, ptt, realptt,
                   x['pure_count'], x['far_count'], x['lost_count'], x['time_played'], newdir)
 
