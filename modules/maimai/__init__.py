@@ -263,9 +263,9 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     username = msg.parsed_msg['<username>']
     if username == "":
-        payload = {'qq': msg.session.sender}
+        payload = {'qq': msg.session.sender, 'b50':  True}
     else:
-        payload = {'username': username}
+        payload = {'username': username, 'b50':  True}
     img, success = await generate50(payload)
     if success == 400:
         await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
