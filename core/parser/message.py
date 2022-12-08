@@ -367,9 +367,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                         except FinishedException as e:
                             time_used = datetime.now() - time_start
-                            Logger.info(
-                                f'Successfully finished session from {identify_str}, returns: {str(e)}. '
-                                f'Times take up: {time_used}')
+                            if rfunc.logging:
+                                Logger.info(
+                                    f'Successfully finished session from {identify_str}, returns: {str(e)}. '
+                                    f'Times take up: {time_used}')
                             ExecutionLockList.remove(msg)
 
                             if enable_analytics and rfunc.show_typing:
