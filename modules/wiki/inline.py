@@ -8,6 +8,7 @@ from core.builtins.message import MessageSession
 from core.component import on_regex
 from core.dirty_check import check
 from core.elements import Plain, Image, Voice
+from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import get_pic
@@ -52,7 +53,7 @@ async def _(msg: MessageSession):
 
 @wiki_inline.handle(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
-    mode='A', show_typing=False)
+    mode='A', show_typing=False, logging=False)
 async def _(msg: MessageSession):
     match_msg = msg.matched_msg
 
@@ -60,8 +61,6 @@ async def _(msg: MessageSession):
         query_list = []
         target = WikiTargetInfo(msg)
         headers = target.get_headers()
-        iws = target.get_interwikis()
-        wikis = [target.get_start_wiki()] + [iws[w] for w in iws]
         for x in match_msg:
             wiki_ = WikiLib(x)
             if check_from_database := await wiki_.check_wiki_info_from_database_cache():
@@ -70,6 +69,7 @@ async def _(msg: MessageSession):
                     if check_from_api.available:
                         query_list.append({x: check_from_api.value})
         if query_list:
+            Logger.info(query_list)
             for q in query_list:
                 img_send = False
                 for qq in q:

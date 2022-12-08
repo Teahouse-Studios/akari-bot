@@ -3,7 +3,7 @@ import difflib
 import re
 import traceback
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 from aiocqhttp.exceptions import ActionFailed
 
@@ -90,7 +90,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         MessageTaskManager.check(msg)
         modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
         modulesAliases = ModulesManager.return_modules_alias_map()
-        modulesRegex = ModulesManager.return_specified_type_modules(RegexCommand, targetFrom=msg.target.targetFrom)
+        modulesRegex: Dict[str, RegexCommand] = ModulesManager.return_specified_type_modules(RegexCommand,
+                                                                                             targetFrom=msg.target.targetFrom)
 
         display = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
         if len(display) == 0:
@@ -343,8 +344,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     matched = True
 
                             if matched:  # 如果匹配成功
-                                Logger.info(
-                                    f'{identify_str} -> [Bot]: {display}')
+                                if rfunc.logging:
+                                    Logger.info(
+                                        f'{identify_str} -> [Bot]: {display}')
                                 if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
                                 if regex_module.required_superuser:

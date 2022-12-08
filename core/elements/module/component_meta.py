@@ -49,12 +49,14 @@ class RegexMeta:
                  mode: str = None,
                  flags: re.RegexFlag = 0,
                  show_typing: bool = True,
+                 logging: bool = True
                  ):
         self.function = function
         self.pattern = pattern
         self.mode = mode
         self.flags = flags
         self.show_typing = show_typing
+        self.logging = logging
 
 
 class ScheduleMeta:

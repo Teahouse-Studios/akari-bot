@@ -52,13 +52,14 @@ class Bind:
             self.bind_prefix = bind_prefix
 
         def handle(self, pattern: Union[str, re.Pattern], mode: str = "M", flags: re.RegexFlag = 0,
-                   show_typing: bool = True):
+                   show_typing: bool = True, logging: bool = True):
             def decorator(function):
                 ModulesManager.bind_to_module(self.bind_prefix, RegexMeta(function=function,
                                                                           pattern=pattern,
                                                                           mode=mode,
                                                                           flags=flags,
-                                                                          show_typing=show_typing))
+                                                                          show_typing=show_typing,
+                                                                          logging=logging))
                 return function
 
             return decorator
