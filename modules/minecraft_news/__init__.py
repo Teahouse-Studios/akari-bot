@@ -97,4 +97,5 @@ async def feedback_news(bot: FetchTarget):
                     alist.append(name)
                     update_stored_list(bot, 'mcfeedbacknews', alist)
         except Exception:
-            traceback.print_exc()
+            if Config('debug'):
+                Logger.error(traceback.format_exc())
