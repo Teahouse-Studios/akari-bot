@@ -32,13 +32,13 @@ async def main(msg: MessageSession):
             await msg.finish()
 
 
-@s.handle('revoke (enable|disable) {是否启用自动撤回功能（默认为是）。}')
+@s.handle('revoke <enable|disable> {是否启用自动撤回功能（默认为是）。}')
 async def revoke(msg: MessageSession):
-    if msg.parsed_msg['enable']:
+    if msg.parsed_msg.get('<enable|disable>') == 'enable':
         msg.data.edit_option('server_revoke', True)
         await msg.finish('已启用自动撤回功能。')
-    else:
-        msg.data.edit_option(msg).edit('server_revoke', False)
+    elif msg.parsed_msg.get('<enable|disable>') == 'disable':
+        msg.data.edit_option('server_revoke', False)
         await msg.finish('已禁用自动撤回功能。')
 
 
