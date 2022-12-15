@@ -24,19 +24,22 @@ async def server(address, raw=False, showplayer=False, mode='j'):
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', serip)
     if matchserip:
         try:
+            is_local_ip = False
             if matchserip.group(1) == '192':
                 if matchserip.group(2) == '168':
-                    return '¿'
+                    is_local_ip = True
             if matchserip.group(1) == '172':
                 if 16 <= int(matchserip.group(2)) <= 31:
-                    return '¿'
+                    is_local_ip = True
             if matchserip.group(1) == '10':
                 if 0 <= int(matchserip.group(2)) <= 255:
-                    return '¿'
+                    is_local_ip = True
             if matchserip.group(1) == '0':
                 if matchserip.group(2) == '0':
                     if matchserip.group(3) == '0':
-                        return '¿'
+                        is_local_ip = True
+            if is_local_ip:
+                return '你最好有事'
         except:
             traceback.print_exc()
     if mode == 'j':
