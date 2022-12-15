@@ -21,27 +21,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
         serip = address
         port1 = '25565'
         port2 = '19132'
-    matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', serip)
-    if matchserip:
-        try:
-            is_local_ip = False
-            if matchserip.group(1) == '192':
-                if matchserip.group(2) == '168':
-                    is_local_ip = True
-            if matchserip.group(1) == '172':
-                if 16 <= int(matchserip.group(2)) <= 31:
-                    is_local_ip = True
-            if matchserip.group(1) == '10':
-                if 0 <= int(matchserip.group(2)) <= 255:
-                    is_local_ip = True
-            if matchserip.group(1) == '0':
-                if matchserip.group(2) == '0':
-                    if matchserip.group(3) == '0':
-                        is_local_ip = True
-            if is_local_ip:
-                return '你最好有事'
-        except:
-            traceback.print_exc()
+
     if mode == 'j':
         try:
             url = 'http://motd.wd-api.com/v1/java?host=' + serip + '&port=' + port1
