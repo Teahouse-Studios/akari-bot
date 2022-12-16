@@ -111,7 +111,7 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
                     w = 2000
             if find_diff is None:
                 infoboxes = ['notaninfobox', 'portable-infobox', 'infobox', 'tpl-infobox', 'infoboxtable',
-                             'infotemplatebox', 'skin-infobox', 'arcaeabox']
+                             'infotemplatebox', 'skin-infobox', 'arcaeabox', 'moe-infobox']
                 find_infobox = None
                 for i in infoboxes:
                     find_infobox = soup.find(class_=i)
