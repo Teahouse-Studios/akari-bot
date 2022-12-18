@@ -49,27 +49,30 @@ async def start_check_news(bot: FetchTarget):
     webrender = Config('web_render')
     if not webrender:
         return
-    get = webrender + 'source?url=' + url
-    getpage = await get_url(get, 200)
-    if getpage:
-        alist = get_stored_list(bot, 'mcnews')
-        o_json = json.loads(getpage)
-        o_nws = o_json['article_grid']
-        Article.count = o_json['article_count']
-        for o_article in o_nws:
-            default_tile = o_article['default_tile']
-            title = default_tile['title']
-            desc = default_tile['sub_header']
-            link = baseurl + o_article['article_url']
-            articletext = f'Minecraft官网发布了新的文章：\n{title}\n  {desc}\n{str(Url(link))}'
-            if title not in alist:
-                publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
-                now = datetime.now()
-                if now - publish_date < timedelta(days=2):
-                    await bot.post_message('minecraft_news', articletext)
-                alist.append(title)
-                update_stored_list(bot, 'mcnews', alist)
-
+    try:
+        get = webrender + 'source?url=' + url
+        getpage = await get_url(get, 200)
+        if getpage:
+            alist = get_stored_list(bot, 'mcnews')
+            o_json = json.loads(getpage)
+            o_nws = o_json['article_grid']
+            Article.count = o_json['article_count']
+            for o_article in o_nws:
+                default_tile = o_article['default_tile']
+                title = default_tile['title']
+                desc = default_tile['sub_header']
+                link = baseurl + o_article['article_url']
+                articletext = f'Minecraft官网发布了新的文章：\n{title}\n  {desc}\n{str(Url(link))}'
+                if title not in alist:
+                    publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
+                    now = datetime.now()
+                    if now - publish_date < timedelta(days=2):
+                        await bot.post_message('minecraft_news', articletext)
+                    alist.append(title)
+                    update_stored_list(bot, 'mcnews', alist)
+    except Exception:
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
 
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
              trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。',
