@@ -154,7 +154,11 @@ async def _(msg: MessageSession):
     if diff == -1:
         await msg.finish('请输入正确的谱面难度！')
     songname = ' '.join(songname_split)
-    await msg.finish(Plain(await get_song_info(songname, diff)))
+    usercode = None
+    get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
+    if get_friendcode_from_db is not None:
+        usercode = get_friendcode_from_db
+    await msg.finish(Plain(await get_song_info(songname, diff, usercode)))
 
 
 @arc.handle('bind <friendcode/username> {绑定一个Arcaea用户}')

@@ -8,6 +8,8 @@ from core.elements import Plain, Image
 from core.logger import Logger
 from core.utils import get_url
 
+from .utils import errcode
+
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
 
@@ -49,7 +51,28 @@ async def get_song_info(sid, diff: int, usercode=None):
         msg.append('上架日期：' + datetime.fromtimestamp(difficulties[diff]["date"]).strftime("%Y-%m-%d"))
         msg.append('需要通过世界解锁：' + ('是' if difficulties[diff]['world_unlock'] else '否'))
         msg.append('需要下载：' + ('是' if difficulties[diff]['remote_download'] else '否'))
+        if usercode:
+            try:
+                play_info = await get_url(f'{api_url}user/best?usercode={usercode}&songid={song_info["content"]["song_id"]}&'
+                                          f'difficulty={diff}',
+                                          headers=headers, status_code=200,
+                                          fmt='json')
+                if play_info["status"] == 0:
+                    msg.append('最佳成绩：' + str(play_info["content"]["record"]["score"]) +
+                               f'\n({str(play_info["content"]["record"]["rating"])}, '
+                               f'P: {str(play_info["content"]["record"]["perfect_count"])}'
+                               f'({str(play_info["content"]["record"]["shiny_perfect_count"])}), '
+                               f'F: {str(play_info["content"]["record"]["near_count"])}, '
+                               f'L: {str(play_info["content"]["record"]["miss_count"])})')
+            except Exception:
+                traceback.print_exc()
+
         return '\n'.join(msg)
+    elif song_info['status'] in errcode:
+        return Plain(f'查询失败：{errcode[song_info["status"]]}')
+    else:
+        return Plain('查询失败。' + song_info)
+
 
 
 
