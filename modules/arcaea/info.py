@@ -7,8 +7,7 @@ from config import Config
 from core.elements import Plain, Image
 from core.logger import Logger
 from core.utils import get_url
-from modules.arcaea.errcode import errcode
-from modules.arcaea.utils import autofix_b30_song_background
+from modules.arcaea.utils import autofix_b30_song_background, errcode
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
@@ -74,8 +73,7 @@ async def get_info(usercode):
             asyncio.create_task(autofix_b30_song_background(recent["song_id"],
                                                             byd=False if recent["difficulty"] != 3 else True))
         return result
+    elif get_['status'] in errcode:
+        return Plain(f'查询失败：{errcode[get_["status"]]}')
     else:
-        if get_['status'] in errcode:
-            return Plain(f'查询失败：{errcode[get_["status"]]}')
-        else:
-            return Plain('查询失败。' + get_)
+        return Plain('查询失败。' + get_)

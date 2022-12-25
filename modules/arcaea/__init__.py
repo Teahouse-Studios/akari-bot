@@ -12,6 +12,7 @@ from .getb30_official import getb30_official
 from .info import get_info
 from .info_official import get_info_official
 from .initialize import arcb30init
+from .song import get_song_info
 from .utils import get_userinfo
 
 arc = on_command('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关内容。',
@@ -130,6 +131,30 @@ async def _(msg: MessageSession):
                 await msg.finish('使用非官方API获取失败。')
     else:
         await msg.finish('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
+
+
+@arc.handle('song <songname+prs/pst/byd> {查询一首Arcaea谱面的信息}')
+async def _(msg: MessageSession):
+    songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
+    songname_split = songname_.split(' ')
+    diff = -1
+    for s in songname_split:
+        s = s.lower()
+        if s == 'prs':
+            diff = 0
+        elif s == 'pst':
+            diff = 1
+        elif s == 'ftr':
+            diff = 2
+        elif s == 'byd':
+            diff = 3
+        if diff != -1:
+            songname_split.remove(s)
+            break
+    if diff == -1:
+        await msg.finish('请输入正确的谱面难度！')
+    songname = ' '.join(songname_split)
+    await msg.finish(Plain(await get_song_info(songname, diff)))
 
 
 @arc.handle('bind <friendcode/username> {绑定一个Arcaea用户}')

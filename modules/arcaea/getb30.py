@@ -9,8 +9,7 @@ from config import Config
 from core.logger import Logger
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
-from .errcode import errcode
-from .utils import autofix_b30_song_background
+from .utils import autofix_b30_song_background, errcode
 
 assets_path = os.path.abspath('./assets/arcaea')
 
