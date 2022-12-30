@@ -21,7 +21,7 @@ class CFG:
             return False
         if value.upper() == 'TRUE':
             return True
-        if value.upper() == 'FALSE':
+        if value.upper() in ['', 'FALSE']:
             return False
         return value
 
