@@ -12,6 +12,8 @@ from .utils import errcode
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
+api_url_official = Config('arcapi_official_url')
+headers_official = {'Authorization': Config('arcapi_official_token')}
 
 
 async def get_song_info(sid, diff: int, usercode=None):
@@ -53,19 +55,43 @@ async def get_song_info(sid, diff: int, usercode=None):
         msg.append('需要下载：' + ('是' if difficulties[diff]['remote_download'] else '否'))
         if usercode:
             try:
-                play_info = await get_url(f'{api_url}user/best?usercode={usercode}&songid={song_info["content"]["song_id"]}&'
-                                          f'difficulty={diff}',
-                                          headers=headers, status_code=200,
-                                          fmt='json')
-                if play_info["status"] == 0:
-                    msg.append('最佳成绩：' + str(play_info["content"]["record"]["score"]) +
-                               f'\n({str(play_info["content"]["record"]["rating"])}, '
-                               f'P: {str(play_info["content"]["record"]["perfect_count"])}'
-                               f'({str(play_info["content"]["record"]["shiny_perfect_count"])}), '
-                               f'F: {str(play_info["content"]["record"]["near_count"])}, '
-                               f'L: {str(play_info["content"]["record"]["miss_count"])})')
+                getuserinfo_json = await get_url(f'{api_url_official}user/{usercode}/score?'
+                                                 f'song_id={song_info["content"]["song_id"]}&difficulty={diff}',
+                                                 headers=headers_official, status_code=200,
+                                                 fmt='json')
+                getuserinfo = getuserinfo_json['data']
+                score = getuserinfo["score"]
+                ptt = rating
+                if score >= 10000000:
+                    ptt += 2
+                elif score >= 9800000:
+                    ptt += 1 + (score - 9800000) / 200000
+                elif score <= 9500000:
+                    ptt += (score - 9500000) / 300000
+
+                msg.append('最佳成绩：' + str(score) +
+                           f'\n({ptt}, '
+                           f'P: {str(getuserinfo["pure_count"])}'
+                           f'({str(getuserinfo["shiny_pure_count"])}), '
+                           f'F: {str(getuserinfo["far_count"])}, '
+                           f'L: {str(getuserinfo["lost_count"])})')
+
             except Exception:
                 traceback.print_exc()
+                try:
+                    play_info = await get_url(f'{api_url}user/best?usercode={usercode}&songid={song_info["content"]["song_id"]}&'
+                                              f'difficulty={diff}',
+                                              headers=headers, status_code=200,
+                                              fmt='json')
+                    if play_info["status"] == 0:
+                        msg.append('最佳成绩：' + str(play_info["content"]["record"]["score"]) +
+                                   f'\n({str(play_info["content"]["record"]["rating"])}, '
+                                   f'P: {str(play_info["content"]["record"]["perfect_count"])}'
+                                   f'({str(play_info["content"]["record"]["shiny_perfect_count"])}), '
+                                   f'F: {str(play_info["content"]["record"]["near_count"])}, '
+                                   f'L: {str(play_info["content"]["record"]["miss_count"])})')
+                except Exception:
+                    traceback.print_exc()
 
         return '\n'.join(msg)
     elif song_info['status'] in errcode:
