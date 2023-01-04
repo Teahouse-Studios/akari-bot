@@ -74,6 +74,7 @@ async def start_check_news(bot: FetchTarget):
         if Config('debug'):
             Logger.error(traceback.format_exc())
 
+
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
              trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。',
              alias='feedbacknews')
