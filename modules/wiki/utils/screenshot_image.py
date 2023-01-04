@@ -210,6 +210,9 @@ async def get_pic(link, page_link, headers, section=None, allow_special_page=Fal
 
                 if b.name == selected_hx:
                     break
+                if b.name in hx:
+                    if hx.index(selected_hx) >= hx.index(b.name):
+                        break
                 if b not in bl:
                     bl.append(str(b))
             open_file.write(''.join(bl))
