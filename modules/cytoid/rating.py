@@ -149,7 +149,7 @@ async def get_rating(uid, query_type):
                 output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
                 output.putalpha(mask)
                 output.convert('RGBA')
-                b30img.alpha_composite(output, (1825, 24))
+                b30img.alpha_composite(output, (1825, 22))
             except:
                 traceback.print_exc()
 
@@ -269,7 +269,25 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
         img = Image.new('RGBA', (384, 240), 'black')
     img = img.convert('RGBA')
     downlight = ImageEnhance.Brightness(img)
-    img = downlight.enhance(0.5).resize((384, 240))
+    img_size = downlight.image.size
+    resize_multiplier = 384 / img_size[0]
+    img_h = int(img_size[1] * resize_multiplier)
+    if img_h < 240:
+        resize_multiplier = 240 / img_size[1]
+        resize_img_w = int(img_size[0] * resize_multiplier)
+        resize_img_h = int(img_size[1] * resize_multiplier)
+        crop_start_x = int((resize_img_w - 384) / 2)
+        crop_start_y = int((resize_img_h - 240) / 2)
+        img = downlight.enhance(0.5).resize((resize_img_w,
+                                             resize_img_h),
+                                            Image.ANTIALIAS).crop((crop_start_x, crop_start_y,
+                                                                   384 + crop_start_x, 240 + crop_start_y))
+    elif img_h > 240:
+        crop_start_y = int((img_h - 240) / 2)
+        img = downlight.enhance(0.5).resize((384, img_h), Image.ANTIALIAS)\
+            .crop((0, crop_start_y, 384, 240 + crop_start_y))
+    else:
+        img = downlight.enhance(0.5).resize((384, img_h), Image.ANTIALIAS)
     img_type = Image.open(f'./assets/cytoid/{chart_type}.png')
     img_type = img_type.convert('RGBA')
     img_type = img_type.resize((40, 40))
@@ -281,8 +299,9 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     drawtext = ImageDraw.Draw(img)
     drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), chart_name, '#ffffff', font=font)
-    drawtext.text((20, 185), f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
-                             f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
+    drawtext.text((20, 185),
+                  f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
+                  f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
     playtime_width = font3.getsize(playtime)[0]
     songimg_width = 384
