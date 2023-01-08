@@ -280,14 +280,14 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
         crop_start_y = int((resize_img_h - 240) / 2)
         img = downlight.enhance(0.5).resize((resize_img_w,
                                              resize_img_h),
-                                            Image.ANTIALIAS).crop((crop_start_x, crop_start_y,
+                                            ).crop((crop_start_x, crop_start_y,
                                                                    384 + crop_start_x, 240 + crop_start_y))
     elif img_h > 240:
         crop_start_y = int((img_h - 240) / 2)
-        img = downlight.enhance(0.5).resize((384, img_h), Image.ANTIALIAS)\
+        img = downlight.enhance(0.5).resize((384, img_h))\
             .crop((0, crop_start_y, 384, 240 + crop_start_y))
     else:
-        img = downlight.enhance(0.5).resize((384, img_h), Image.ANTIALIAS)
+        img = downlight.enhance(0.5).resize((384, img_h))
     img_type = Image.open(f'./assets/cytoid/{chart_type}.png')
     img_type = img_type.convert('RGBA')
     img_type = img_type.resize((40, 40))
