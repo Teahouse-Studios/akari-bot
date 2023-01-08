@@ -134,7 +134,7 @@ async def get_rating(uid, query_type):
         cards = [cards_d[x] for x in cards_d]
 
         # b30card
-        b30img = Image.new("RGBA", (1975, 1610), '#1e2129')
+        b30img = Image.new("RGBA", (1955, 1600), '#1e2129')
         avatar_path = await download_avatar_thumb(Avatar_img, ProfileId)
         if avatar_path:
             im = Image.open(avatar_path)
@@ -157,7 +157,7 @@ async def get_rating(uid, query_type):
         drawtext = ImageDraw.Draw(b30img)
         get_name_width = font4.getsize(nick)[0]
         get_img_width = b30img.width
-        drawtext.text((get_img_width - get_name_width - 160, 30), nick, '#ffffff', font=font4)
+        drawtext.text((get_img_width - get_name_width - 150, 30), nick, '#ffffff', font=font4)
 
         font5 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
         level_text = f'等级 {ProfileLevel}'
