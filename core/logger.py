@@ -23,7 +23,7 @@ class Logginglogger:
         self.log.remove()
         self.log.add(sys.stderr, format=basic_logger_format, level="DEBUG" if debug else "INFO", colorize=True)
         self.log.add(logpath + '/' + bot_name + "_{time:YYYY-MM-DD}.log", format=basic_logger_format,
-                     retention="10 days")
+                     retention="10 days", encoding="utf8")
         self.info = self.log.info
         self.error = self.log.error
         self.debug = self.log.debug
