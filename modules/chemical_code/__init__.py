@@ -136,7 +136,7 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
     async def timer(start):  # 计时器函数
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if datetime.now().timestamp() - start > 60 * set_timeout:  # 如果超过2分钟
-                await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}', quote=False)
+                await msg.sendMessage(f'已超时，正确答案是 {play_state[msg.target.targetId]["answer"]}')
                 play_state[msg.target.targetId]['active'] = False
             else:  # 如果未超时
                 await asyncio.sleep(1)  # 等待1秒

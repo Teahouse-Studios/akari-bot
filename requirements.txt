@@ -22,3 +22,4 @@ aiofile
 loguru
 numpy
 matplotlib
+qq-botpy

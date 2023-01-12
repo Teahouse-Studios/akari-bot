@@ -6,7 +6,8 @@ from .mcbbs_news import news
 
 mcbbs_news = on_command(
     bind_prefix='mcbbs_news',
-    alias=['mn', 'mcbbsnews'],
+    alias=['mn', 'mcbbsnews', 'mcbbs'],
+    desc='获得 MCBBS 幻翼快讯版最新新闻（未被版主高亮过的新闻将被忽略）',
     developers=['Dianliang233']
 )
 

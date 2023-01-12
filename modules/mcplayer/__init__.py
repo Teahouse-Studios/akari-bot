@@ -6,6 +6,7 @@ from .mojang_api import *
 
 mcplayer = on_command(
     bind_prefix='mcplayer',
+    alias=['mcp'],
     desc='从 Mojang API 获取 Minecraft Java 版玩家信息',
     developers=['Dianliang233'],
 )

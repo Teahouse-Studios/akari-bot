@@ -22,3 +22,6 @@ enable_tos = False
 enable_analytics = True
 allow_request_private_ip = False
 enable_eval = True
+qqchannel_appid =
+qqchannel_token =
+qqchannel_secret =
