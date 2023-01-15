@@ -13,10 +13,9 @@ async def nbnhhsh(term: str):
     try:
         url = 'https://lab.magiconch.com/api/nbnhhsh/guess'
         req = json.dumps({'text': term})
-        text = await post_url(url, data=req, headers={'Content-Type': 'application/json', 'Accept': '*/*',
-                                                      'Content-Length': str(len(req))})
-        Logger.debug(text)
-        data = json.loads(text)
+        data = await post_url(url, data=req, headers={'Content-Type': 'application/json', 'Accept': '*/*',
+                                                      'Content-Length': str(len(req))}, fmt='json')
+        Logger.debug(data)
         try:
             result = data[0]
         except IndexError:

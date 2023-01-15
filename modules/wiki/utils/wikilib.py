@@ -129,14 +129,14 @@ class WikiLib:
         self.wiki_info = WikiInfo()
         self.headers = headers
 
-    async def get_json_from_api(self, api, log=False, **kwargs) -> dict:
+    async def get_json_from_api(self, api, **kwargs) -> dict:
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
             Logger.debug(api)
         else:
             raise ValueError('kwargs is None')
         try:
-            return await get_url(api, status_code=200, headers=self.headers, fmt="json", log=log)
+            return await get_url(api, status_code=200, headers=self.headers, fmt="json")
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
                 raise InvalidWikiError('尝试请求萌娘百科失败，可能站点正在遭受攻击。请直接访问萌娘百科以获取信息。')
@@ -227,7 +227,7 @@ class WikiLib:
                               value=self.rearrange_siteinfo(get_cache_info[0], wiki_api_link),
                               message='')
         try:
-            get_json = await self.get_json_from_api(wiki_api_link, log=True,
+            get_json = await self.get_json_from_api(wiki_api_link,
                                                     action='query',
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
