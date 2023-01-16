@@ -195,7 +195,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     else:
                         if r.link is not None and r.section is None:
                             render_infobox_list.append(
-                                {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist}})
+                                {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
+                                          'has_doc': r.has_template_doc}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section,
@@ -257,8 +258,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 msg_list.append(Plain(f'发生错误：' + str(e)))
     if isinstance(session, MessageSession):
         if msg_list:
-            if all(
-                [not render_infobox_list, not render_section_list, not dl_list, not wait_list, not wait_possible_list]):
+            if all([not render_infobox_list, not render_section_list,
+                    not dl_list, not wait_list, not wait_possible_list]):
                 await session.finish(msg_list)
             else:
                 await session.sendMessage(msg_list)
@@ -268,7 +269,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 infobox_msg_list = []
                 for i in render_infobox_list:
                     for ii in i:
-                        get_infobox = await generate_screenshot(ii, allow_special_page=i[ii]['in_allowlist'])
+                        get_infobox = await generate_screenshot(ii, allow_special_page=i[ii]['in_allowlist'],
+                                                                doc_mode=i[ii]['has_doc'])
                         if get_infobox:
                             infobox_msg_list.append(Image(get_infobox))
                             infobox_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
@@ -286,7 +288,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             if get_section:
                                 section_msg_list.append(Image(get_section))
                                 section_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
-                                                          'https://s.wd-ljt.com/botreportbug'))
+                                                              'https://s.wd-ljt.com/botreportbug'))
                 if section_msg_list:
                     await session.sendMessage(section_msg_list, quote=False)
 

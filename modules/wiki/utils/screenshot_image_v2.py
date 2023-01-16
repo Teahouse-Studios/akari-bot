@@ -10,13 +10,16 @@ from core.utils import download_to_cache
 web_render = Config('web_render_local')
 
 
-async def generate_screenshot(page_link, section=None, allow_special_page=False) -> Union[str, bool]:
-    elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable',
-                '.infotemplatebox', '.skin-infobox', '.arcaeabox', '.moe-infobox']
+async def generate_screenshot(page_link, section=None, allow_special_page=False, doc_mode=False) -> Union[str, bool]:
+    elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
+                '.skin-infobox', '.arcaeabox', '.moe-infobox']
     if not web_render:
         return False
     if section is None:
-        if allow_special_page:
+        if allow_special_page and doc_mode:
+            page_link += '/doc'
+            elements.insert(0, '.mw-parser-output')
+        if allow_special_page and not doc_mode:
             elements.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
         try:

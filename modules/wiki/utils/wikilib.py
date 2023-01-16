@@ -103,6 +103,7 @@ class PageInfo:
                  status: bool = True,
                  before_page_property: str = 'page',
                  page_property: str = 'page',
+                 has_template_doc: bool = False,
                  invalid_namespace: Union[str, bool] = False,
                  possible_research_title: List[str] = None
                  ):
@@ -119,6 +120,7 @@ class PageInfo:
         self.status = status
         self.before_page_property = before_page_property
         self.page_property = page_property
+        self.has_template_doc = has_template_doc
         self.invalid_namespace = invalid_namespace
         self.possible_research_title = possible_research_title
 
@@ -625,6 +627,8 @@ class WikiLib:
                                     get_desc = False
                                     get_doc_desc = await self.parse_page_info(get_doc, _doc=True)
                                     page_desc = get_doc_desc.desc
+                                    if page_desc is not None:
+                                        page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = 'template'
                             if get_desc:
                                 if use_textextracts and section is None:
