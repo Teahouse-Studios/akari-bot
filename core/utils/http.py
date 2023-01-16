@@ -16,6 +16,9 @@ from .cache import random_cache_path
 from ..exceptions import NoReportException
 
 
+logging_resp = False
+
+
 def private_ip_check(url: str):
     '''检查是否为私有IP，若是则抛出ValueError异常。
 
@@ -55,7 +58,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers) as req:
                     Logger.debug(f'[{req.status}] {url}')
-                    Logger.debug(await req.read())
+                    if logging_resp:
+                        Logger.debug(await req.read())
                     if status_code and req.status != status_code:
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
@@ -98,7 +102,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                 async with session.post(url, data=data, headers=headers,
                                         timeout=aiohttp.ClientTimeout(total=timeout)) as req:
                     Logger.debug(f'[{req.status}] {url}')
-                    Logger.debug(await req.read())
+                    if logging_resp:
+                        Logger.debug(await req.read())
                     if status_code and req.status != status_code:
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
