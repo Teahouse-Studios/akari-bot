@@ -11,7 +11,7 @@ from core.elements import Plain, Image, Voice
 from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
-from modules.wiki.utils.screenshot_image import get_pic
+from modules.wiki.utils.screenshot_image_v2 import generate_screenshot
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import query_pages
 
@@ -101,7 +101,7 @@ async def _(msg: MessageSession):
                     return
                 if msg.Feature.image:
                     for qq in q:
-                        get_infobox = await get_pic(q[qq].realurl, qq, headers, allow_special_page=q[qq].in_allowlist)
+                        get_infobox = await generate_screenshot(qq, allow_special_page=q[qq].in_allowlist)
                         if get_infobox:
                             await msg.sendMessage(Image(get_infobox), quote=False)
 
@@ -118,7 +118,7 @@ async def _(msg: MessageSession):
                         if section_:
                             s = urllib.parse.unquote(''.join(section_)[1:])
                             if q[qq].realurl:
-                                get_section = await get_pic(q[qq].realurl, qq, headers, section=s)
+                                get_section = await generate_screenshot(qq, section=s)
                                 if get_section:
                                     await msg.sendMessage(Image(get_section))
 
