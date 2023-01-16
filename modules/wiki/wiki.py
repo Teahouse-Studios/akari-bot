@@ -11,7 +11,7 @@ from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
-from modules.wiki.utils.screenshot_image import get_pic
+from modules.wiki.utils.screenshot_image_v2 import generate_screenshot
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = on_command('wiki',
@@ -268,7 +268,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 infobox_msg_list = []
                 for i in render_infobox_list:
                     for ii in i:
-                        get_infobox = await get_pic(i[ii]['url'], ii, headers, allow_special_page=i[ii]['in_allowlist'])
+                        get_infobox = await generate_screenshot(ii, allow_special_page=i[ii]['in_allowlist'])
                         if get_infobox:
                             infobox_msg_list.append(Image(get_infobox))
                 if infobox_msg_list:
@@ -280,7 +280,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 for i in render_section_list:
                     for ii in i:
                         if i[ii]['in_allowlist']:
-                            get_section = await get_pic(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                            get_section = await generate_screenshot(ii, section=i[ii]['section'])
                             if get_section:
                                 section_msg_list.append(Image(get_section))
                 if section_msg_list:
