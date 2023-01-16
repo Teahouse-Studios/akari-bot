@@ -1,0 +1,889 @@
+# Default Pint units definition file
+# Based on the International System of Units
+# Language: chinese
+# :copyright: 2013,2019 by Pint Authors, see AUTHORS for more details.
+
+# Syntax
+# ======
+# Units
+# -----
+# <canonical name> = <relation to another unit or dimension> [= <symbol>] [= <alias>] [ = <alias> ] [...]
+#
+# The canonical name and aliases should be expressed in singular form.
+# Pint automatically deals with plurals built by adding 's' to the singular form; plural
+# forms that don't follow this rule should be instead explicitly listed as aliases.
+#
+# If a unit has no symbol and one wants to define aliases, then the symbol should be
+# conventionally set to _.
+#
+# Example:
+#     millennium = 1e3 * year = _ = millennia
+#
+#
+# Prefixes
+# --------
+# <prefix>- = <amount> [= <symbol>] [= <alias>] [ = <alias> ] [...]
+#
+# Example:
+#     deca- =  1e+1  = da- = deka-
+#
+#
+# Derived dimensions
+# ------------------
+# [dimension name] = <relation to other dimensions>
+#
+# Example:
+#     [density] = [mass] / [volume]
+#
+# Note that primary dimensions don't need to be declared; they can be
+# defined for the first time in a unit definition.
+# E.g. see below `meter = [length]`
+#
+#
+# Additional aliases
+# ------------------
+# @alias <canonical name or previous alias> = <alias> [ = <alias> ] [...]
+#
+# Used to add aliases to already existing unit definitions.
+# Particularly useful when one wants to enrich definitions
+# from defaults_en.txt with custom aliases.
+#
+# Example:
+#     @alias meter = my_meter
+
+# See also: https://pint.readthedocs.io/en/latest/defining.html
+
+@defaults
+    group = international
+    system = mks
+@end
+
+
+#### PREFIXES ####
+
+# decimal prefixes
+quecto- = 1e-30 = q- # zh-CN SI name not decided yet
+ronto- = 1e-27 = r- # zh-CN SI name not decided yet
+yocto- = 1e-24 = y- = 幺科托- = 幺-
+zepto- = 1e-21 = z- = 仄普托- = 仄-
+atto- =  1e-18 = a- = 阿托- = 阿-
+femto- = 1e-15 = f- = 飞母托- = 飞-
+pico- =  1e-12 = p- = 皮可- = 皮-
+nano- =  1e-9  = n- = 纳诺- = 纳-
+# The micro (U+00B5) and Greek mu (U+03BC) are both valid prefixes,
+# and they often use the same glyph.
+micro- = 1e-6  = µ- = μ- = u- = 微-
+milli- = 1e-3  = m- = 毫-
+centi- = 1e-2  = c- = 厘-
+deci- =  1e-1  = d- = 分-
+deca- =  1e+1  = da- = deka- = 十-
+hecto- = 1e2   = h- = 百-
+kilo- =  1e3   = k- = 千-
+mega- =  1e6   = M- = 兆-
+giga- =  1e9   = G- = 吉咖- = 吉-
+tera- =  1e12  = T- = 太拉- = 太-
+peta- =  1e15  = P- = 拍它- = 拍-
+exa- =   1e18  = E- = 艾可萨- = 艾-
+zetta- = 1e21  = Z- = 泽它- = 泽-
+yotta- = 1e24  = Y- = 尧它- = 尧-
+ronna- = 1e27 = R- # zh-CN SI name not decided yet
+quetta- = 1e30 = Q- # zh-CN SI name not decided yet
+
+# binary_prefixes
+kibi- = 2**10 = Ki-
+mebi- = 2**20 = Mi-
+gibi- = 2**30 = Gi-
+tebi- = 2**40 = Ti-
+pebi- = 2**50 = Pi-
+exbi- = 2**60 = Ei-
+zebi- = 2**70 = Zi-
+yobi- = 2**80 = Yi-
+
+# extra_prefixes
+semi- = 0.5 = _ = demi- = 半-
+sesqui- = 1.5
+
+
+#### BASE UNITS ####
+
+米 = [length] = m = meter = metre
+秒 = [time] = s = sec = second
+安 = [current] = A = amp = 安培 = ampere
+坎 = [luminosity] = cd = candle = 坎德拉 = candela
+克 = [mass] = g = gram
+摩 = [substance] = mol = 摩尔 = mole
+开 = [temperature]; offset: 0 = K = degK = °K = degree_Kelvin = degreeK = 开尔文 = kelvin  # older names supported for compatibility
+弧度 = [] = rad = radian
+比特 = [] = bit
+个 = [] = count
+
+
+#### CONSTANTS ####
+
+@import constants_bi_zh-cn_en.txt
+
+
+#### UNITS ####
+# Common and less common, grouped by quantity.
+# Conversion factors are exact (except when noted),
+# although floating-point conversion may introduce inaccuracies
+
+# Angle
+转 = 2 * π * radian = _ = revolution = cycle = circle = turn
+度 = degree = π / 180 * radian = deg = arcdeg = arcdegree = angular_degree = 角度
+角分 = degree / 60 = arcmin = arc_minute = angular_minute = 弧分 = arcminute
+角秒 = arcsecond = arcminute / 60 = arcsec = arc_second = angular_second = 角秒 = arcsecond
+毫角秒 = 1e-3 * arcsecond = mas = 毫弧秒 = milliarcsecond
+梯度 = π / 200 * radian = grad = gon = 百分度 = grade
+密位 = π / 32000 * radian = 毫弧度 = mil
+
+# Solid angle
+球面度 = radian ** 2 = sr = steradian
+平方度 = (π / 180) ** 2 * sr = sq_deg = sqdeg = square_degree
+
+# Information
+波特 = bit / second = Bd = bps = 比特每秒 = baud
+
+字节 = 8 * bit = B = octet = byte
+# byte = 8 * bit = _ = octet = 字节
+## NOTE: B (byte) symbol can conflict with Bell
+
+# Ratios
+百分 = 0.01 = % = percent
+分比 = 1e-6 = ppm
+
+# Length
+埃 = 1e-10 * meter = Å = ångström = Å = 埃格斯特朗 = angstrom
+微米 = micrometer = µ = μ = micron
+费米 = femtometer = fm = fermi
+光年 = speed_of_light * julian_year = ly = lightyear = light_year
+天文单位 = 149597870700 * meter = au = astronomical_unit # since Aug 2012
+秒差距 = 1 / tansec * astronomical_unit = pc = parsec
+海里 = 1852 * meter = nmi = nautical_mile
+波尔 = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = bohr
+铜的X射线波长 = K_alpha_Cu_d_220 * d_220 / 1537.4 = Xu_Cu = 铜的X单位 = x_unit_Cu
+钼的X射线波长 = K_alpha_Mo_d_220 * d_220 / 707.831 = Xu_Mo = 钼的X单位 = x_unit_Mo
+埃星 = K_alpha_W_d_220 * d_220 / 0.2090100 = Å_star = angstrom_star
+普朗克长度 = (hbar * gravitational_constant / c ** 3) ** 0.5 = planck_length
+
+
+# Mass
+公吨 = 1e3 * kilogram = t = tonne = metric_ton
+原子质量单位 = atomic_mass_constant = u = amu = unified_atomic_mass_unit
+道尔顿 = atomic_mass_constant = Da = dalton
+格令 = 64.79891 * milligram = gr = grain
+伽玛质量 = microgram = gamma_mass
+克拉 = 200 * milligram = ct = karat = carat
+普朗克质量 = (hbar * c / gravitational_constant) ** 0.5 = planck_mass
+
+# Time
+分钟 = 60 * second = min = minute
+小时 = 60 * minute = h = hr = hour
+天 = 24 * hour = d = day
+星期 = 7 * day = week
+两星期 = 2 * week = fortnight
+年 = 365.25 * day = a = yr = julian_year = year
+月 = year / 12 = month
+
+# decade = 10 * year
+## NOTE: decade [time] can conflict with decade [dimensionless]
+
+世纪 = 100 * year = _ = centuries = century
+千年 = 1e3 * year = _ = millennia = millennium
+宙 = 1e9 * year = eon
+抖 = 1e-8 * second = shake
+斯维德伯格 = 1e-13 * second = svedberg
+原子单位时间 = hbar / E_h = a_u_time = atomic_unit_of_time
+公历年 = 365.2425 * day = gregorian_year
+恒星年 = 365.256363004 * day = sidereal_year
+回归年 = 365.242190402 * day = tropical_year
+平年 = 365 * day = common_year
+闰年 = 366 * day = leap_year
+恒星日 = day / 1.00273790935079524 = sidereal_day
+恒星月 = 27.32166155 * day = sidereal_month
+回归月 = 27.321582 * day = tropical_month
+同步月 = 29.530589 * day = _ = lunar_month = synodic_month
+普朗克时间 = (hbar * gravitational_constant / c ** 5) ** 0.5 = planck_time
+
+# Temperature
+摄氏度 = kelvin; offset: 273.15 = °C = celsius = degC = degreeC = degree_Celsius
+兰氏度 = 5 / 9 * kelvin; offset: 0 = °R = rankine = degR = degreeR = degree_Rankine
+华氏度 = 5 / 9 * kelvin; offset: 233.15 + 200 / 9 = °F = fahrenheit = degF = degreeF = degree_Fahrenheit
+列氏度 = 4 / 5 * kelvin; offset: 273.15 = °Re = reaumur = degRe = degreeRe = degree_Réaumur = réaumur
+原子单位温度 = E_h / k = a_u_temp = atomic_unit_of_temperature
+普朗克温度 = (hbar * c ** 5 / gravitational_constant / k ** 2) ** 0.5 = planck_temperature
+
+# Area
+[area] = [length] ** 2
+are = 100 * meter ** 2
+barn = 1e-28 * meter ** 2 = b
+darcy = centipoise * centimeter ** 2 / (second * atmosphere)
+hectare = 100 * are = ha
+
+# Volume
+[volume] = [length] ** 3
+公亩 = 100 * meter ** 2 = are
+贝纳 = 1e-28 * meter ** 2 = b = barn
+达西 = centipoise * centimeter ** 2 / (second * atmosphere) = darcy
+公顷 = 100 * are = ha = hectare
+
+# Frequency
+[frequency] = 1 / [time]
+赫兹 = 1 / second = Hz = hertz
+转每分 = revolution / minute = rpm = revolutions_per_minute
+转每秒 = revolution / second = rps = revolutions_per_second
+次每秒 = count / second = cps = counts_per_second
+
+# Wavenumber
+[wavenumber] = 1 / [length]
+倒数厘米 = 1 / cm = cm_1 = kayser = reciprocal_centimeter
+
+# Velocity
+[velocity] = [length] / [time]
+[speed] = [velocity]
+节 = nautical_mile / hour = kt = knot_international = international_knot = knot
+英里每小时 = mile / hour = mph = MPH = mile_per_hour
+千米每小时 = kilometer / hour = kph = KPH = kilometer_per_hour
+千米每秒 = kilometer / second = kps = kilometer_per_second
+米每秒 = meter / second = mps = meter_per_second
+英尺每秒 = foot / second = fps = foot_per_second
+
+# Volumetric Flow Rate
+[volumetric_flow_rate] = [volume] / [time]
+斯维德鲁普 = 1e6 * meter ** 3 / second = sv = sverdrup
+
+# Acceleration
+[acceleration] = [velocity] / [time]
+伽利略 = centimeter / second ** 2 = Gal = galileo
+
+# Force
+[force] = [mass] * [acceleration]
+牛顿 = kilogram * meter / second ** 2 = N = newton
+丁 = gram * centimeter / second ** 2 = dyn = dyne
+千克力 = g_0 * kilogram = kgf = kilogram_force = pond = force_kilogram
+克力 = g_0 * gram = gf = gram_force = force_gram
+公吨力 = g_0 * metric_ton = tf = metric_ton_force = force_t = t_force = force_metric_ton
+原子单位力 = E_h / a_0 = a_u_force = atomic_unit_of_force
+
+# Energy
+[energy] = [force] * [length]
+焦耳 = newton * meter = J = joule
+尔格 = dyne * centimeter = erg
+瓦时 = watt * hour = Wh = watthour = watt_hour
+电子伏特 = e * volt = eV = electron_volt
+里德伯格 = ℎ * c * R_inf = Ry = rydberg
+哈特里 = 2 * rydberg = E_h = Eh = hartree_energy = atomic_unit_of_energy = a_u_energy = hartree
+卡路里 = 4.184 * joule = cal = thermochemical_calorie = cal_th = calorie
+国际卡路里 = 4.1868 * joule = cal_it = international_steam_table_calorie = international_calorie
+卡路里15度 = 4.1855 * joule = cal_15 = fifteen_degree_calorie
+英热单位 = 1055.056 * joule = Btu = BTU = Btu_iso = british_thermal_unit
+国际英热单位 = 1e3 * pound / kilogram * degR / kelvin * international_calorie = Btu_it = international_british_thermal_unit
+热化学英热单位 = 1e3 * pound / kilogram * degR / kelvin * calorie = Btu_th = thermochemical_british_thermal_unit
+兆英热单位 = 1e15 * Btu = quad = quadrillion_Btu
+热量 = 1e5 * Btu = thm = EC_therm = therm
+美国热量 = 1.054804e8 * joule = US_therm
+吨TNT = 1e9 * calorie = tTNT = ton_TNT
+吨油当量 = 1e10 * international_calorie = toe = tonne_of_oil_equivalent
+气体升 = atmosphere * liter = atm_l = atmosphere_liter
+
+# Power
+[power] = [energy] / [time]
+瓦特 = joule / second = W = watt
+伏特安培 = volt * ampere = VA = volt_ampere
+马力 = 550 * foot * force_pound / second = hp = UK_horsepower = hydraulic_horsepower = horsepower
+锅炉马力 = 33475 * Btu / hour = boiler_horsepower
+公制马力 = 75 * force_kilogram * meter / second = metric_horsepower
+电马力 = 746 * watt = electrical_horsepower
+制冷吨 = 12e3 * Btu / hour = _ = ton_of_refrigeration = refrigeration_ton
+冷却塔吨 = 1.25 * refrigeration_ton = cooling_tower_ton
+标准升每分钟 = atmosphere * liter / minute = slpm = slm = standard_liter_per_minute
+传统瓦特90 = K_J90 ** 2 * R_K90 / (K_J ** 2 * R_K) * watt = W_90 = conventional_watt_90
+
+# Momentum
+[momentum] = [length] * [mass] / [time]
+
+# Density (as auxiliary for pressure)
+[density] = [mass] / [volume]
+水银 = 13.5951 * kilogram / liter = Hg = Hg_0C = Hg_32F = conventional_mercury = mercury
+水 = 1.0 * kilogram / liter = H2O = conventional_water = water
+水银60华氏度 = 13.5568 * kilogram / liter = Hg_60F = mercury_60F
+水4摄氏度 = 0.999972 * kilogram / liter = water_4C = water_39F
+水60华氏度 = 0.999001 * kilogram / liter = water_60F
+
+# Pressure
+[pressure] = [force] / [area]
+帕斯卡 = newton / meter ** 2 = Pa = pascal
+微巴 = dyne / centimeter ** 2 = Ba = barie = barad = barrie = baryd = barye
+巴 = 1e5 * pascal = bar
+技术大气 = kilogram * g_0 / centimeter ** 2 = at = technical_atmosphere
+托尔 = atm / 760 = torr
+每平方英寸磅力 = force_pound / inch ** 2 = psi = pound_force_per_square_inch
+每平方英寸千磅力 = kip / inch ** 2 = ksi = kip_per_square_inch
+毫米水银 = millimeter * Hg * g_0 = mmHg = mm_Hg = millimeter_Hg_0C
+厘米水银 = centimeter * Hg * g_0 = cmHg = cm_Hg = centimeter_Hg_0C
+英寸水银 = inch * Hg * g_0 = inHg = in_Hg = inch_Hg_32F
+英寸水银60华氏度 = inch * Hg_60F * g_0 = inch_Hg_60F
+英寸水39华氏度 = inch * water_39F * g_0 = inch_H2O_39F
+英寸水60华氏度 = inch * water_60F * g_0 = inch_H2O_60F
+英尺水 = foot * water * g_0 = ftH2O = feet_H2O
+厘米水 = centimeter * water * g_0 = cmH2O = cm_H2O
+声压级 = 20e-6 * pascal = SPL = sound_pressure_level
+
+# Torque
+[torque] = [force] * [length]
+英尺磅 = foot * force_pound = ft_lb = footpound = foot_pound
+
+# Viscosity
+[viscosity] = [pressure] * [time]
+泊伊斯 = 0.1 * Pa * second = P = poise
+雷恩 = psi * second = reyn
+
+# Kinematic viscosity
+[kinematic_viscosity] = [area] / [time]
+斯托克斯 = centimeter ** 2 / second = St = stokes
+
+# Fluidity
+[fluidity] = 1 / [viscosity]
+莱 = 1 / poise = rhe
+
+# Amount of substance
+粒子 = 1 / N_A = _ = molec = molecule = particle
+
+# Concentration
+[concentration] = [substance] / [volume]
+体积摩尔 = mole / liter = M = molar
+
+# Catalytic activity
+[activity] = [substance] / [time]
+卡塔尔 = mole / second = kat = katal
+酶单位 = micromole / minute = U = enzymeunit = enzyme_unit
+
+# Entropy
+[entropy] = [energy] / [temperature]
+克劳西斯 = calorie / kelvin = Cl = clausius
+
+# Molar entropy
+[molar_entropy] = [entropy] / [substance]
+熵单位 = calorie / kelvin / mole = eu = entropy_unit
+
+# Radiation
+贝可勒尔 = counts_per_second = Bq = becquerel
+居里 = 3.7e10 * becquerel = Ci = curie
+卢瑟福 = 1e6 * becquerel = Rd = rutherford
+格雷 = joule / kilogram = Gy = gray
+西弗 = joule / kilogram = Sv = sievert
+拉德斯 = 0.01 * gray = rads
+雷质 = 0.01 * sievert = rem
+伦琴 = 2.58e-4 * coulomb / kilogram = _ = röntgen = roentgen
+
+# Heat transimission
+[heat_transmission] = [energy] / [area]
+峰值太阳小时 = 1e3 * watt_hour / meter ** 2 = PSH = peak_sun_hour
+兰利 = thermochemical_calorie / centimeter ** 2 = Ly = langley
+
+# Luminance
+[luminance] = [luminosity] / [area]
+尼特 = candela / meter ** 2 = nit
+斯蒂尔布 = candela / centimeter ** 2 = stilb
+兰伯特 = 1 / π * candela / centimeter ** 2 = lambert
+
+# Luminous flux
+[luminous_flux] = [luminosity]
+流明 = candela * steradian = lm = lumen
+
+# Illuminance
+[illuminance] = [luminous_flux] / [area]
+勒克斯 = lumen / meter ** 2 = lx = lux
+
+# Intensity
+[intensity] = [power] / [area]
+原子单位光强 = 0.5 * ε_0 * c * atomic_unit_of_electric_field ** 2 = a_u_intensity = atomic_unit_of_intensity
+
+# Current
+比奥 = 10 * ampere = Bi = biot
+绝对安培 = biot = abA = abampere
+原子单位电流 = e / atomic_unit_of_time = a_u_current = atomic_unit_of_current
+平均国际安培 = mean_international_volt / mean_international_ohm = A_it = mean_international_ampere
+美国国际安培 = US_international_volt / US_international_ohm = A_US = US_international_ampere
+传统安培90 = K_J90 * R_K90 / (K_J * R_K) * ampere = A_90 = conventional_ampere_90
+普朗克电流 = (c ** 6 / gravitational_constant / k_C) ** 0.5 = planck_current
+
+# Charge
+[charge] = [current] * [time]
+库仑 = ampere * second = C = coulomb
+绝对库伦 = 10 * C = abC = abcoulomb
+法拉第 = e * N_A * mole = faraday
+传统库伦90 = K_J90 * R_K90 / (K_J * R_K) * coulomb = C_90 = conventional_coulomb_90
+安培时 = ampere * hour = Ah = ampere_hour
+
+# Electric potential
+[electric_potential] = [energy] / [charge]
+伏特 = joule / coulomb = V = volt
+绝对伏特 = 1e-8 * volt = abV = abvolt
+平均国际伏特 = 1.00034 * volt = V_it = mean_international_volt # approximate
+美国国际伏特 = 1.00033 * volt = V_US = US_international_volt # approximate
+传统伏特90 = K_J90 / K_J * volt = V_90 = conventional_volt_90
+
+# Electric field
+[electric_field] = [electric_potential] / [length]
+原子单位电场 = e * k_C / a_0 ** 2 = a_u_electric_field = atomic_unit_of_electric_field
+
+# Electric displacement field
+[electric_displacement_field] = [charge] / [area]
+
+# Resistance
+[resistance] = [electric_potential] / [current]
+欧姆 = volt / ampere = Ω = ohm
+绝对欧姆 = 1e-9 * ohm = abΩ = abohm
+平均国际欧姆 = 1.00049 * ohm = Ω_it = ohm_it = mean_international_ohm # approximate
+美国国际欧姆 = 1.000495 * ohm = Ω_US = ohm_US = US_international_ohm # approximate
+传统欧姆90 = R_K / R_K90 * ohm = Ω_90 = ohm_90 = conventional_ohm_90
+
+# Resistivity
+[resistivity] = [resistance] * [length]
+
+# Conductance
+[conductance] = [current] / [electric_potential]
+西门子 = ampere / volt = S = mho = siemens
+绝对西门子 = 1e9 * siemens = abS = abmho = absiemens
+
+# Capacitance
+[capacitance] = [charge] / [electric_potential]
+法拉 = coulomb / volt = F = farad
+绝对法拉 = 1e9 * farad = abF = abfarad
+常用法拉_90 = R_K90 / R_K * farad = F_90 = conventional_farad_90
+
+# Magnetic flux
+[magnetic_flux] = [electric_potential] * [time]
+韦伯 = volt * second = Wb = weber
+单位极 = µ_0 * biot * centimeter = unit_pole
+
+# Inductance
+[inductance] = [magnetic_flux] / [current]
+亨利 = weber / ampere = H = henry
+绝对亨利 = 1e-9 * henry = abH = abhenry
+常用亨利_90 = R_K / R_K90 * henry = H_90 = conventional_henry_90
+
+# Magnetic field
+[magnetic_field] = [magnetic_flux] / [area]
+特斯拉 = weber / meter ** 2 = T = tesla
+伽玛 = 1e-9 * tesla = γ = gamma
+
+# Magnetomotive force
+[magnetomotive_force] = [current]
+安培匝 = ampere = At = ampere_turn
+比奥特匝 = biot = biot_turn
+吉尔伯特 = 1 / (4 * π) * biot_turn = Gb = gilbert
+
+# Magnetic field strength
+[magnetic_field_strength] = [current] / [length]
+
+# Electric dipole moment
+[electric_dipole] = [charge] * [length]
+德拜 = 1e-9 / ζ * coulomb * angstrom = D = debye  # formally 1 D = 1e-10 Fr*Å, but we generally want to use it outside the Gaussian context
+
+# Electric quadrupole moment
+[electric_quadrupole] = [charge] * [area]
+巴金汉姆 = debye * angstrom = buckingham
+
+# Magnetic dipole moment
+[magnetic_dipole] = [current] * [area]
+波尔磁子 = e * hbar / (2 * m_e) = µ_B = mu_B = bohr_magneton
+核磁子 = e * hbar / (2 * m_p) = µ_N = mu_N = nuclear_magneton
+
+# Logaritmic Unit Definition
+#  Unit = scale; logbase; logfactor
+#  x_dB = [logfactor] * log( x_lin / [scale] ) / log( [logbase] )
+
+# Logaritmic Units of dimensionless quantity: [ https://en.wikipedia.org/wiki/Level_(logarithmic_quantity) ]
+
+分贝毫瓦 = 1e-3 watt; logbase: 10; logfactor: 10 = dBm = decibelmilliwatt
+分贝微瓦 = 1e-6 watt; logbase: 10; logfactor: 10 = dBu = decibelmicrowatt
+
+decibel = 1 ; logbase: 10; logfactor: 10 = dB
+# bell = 1 ; logbase: 10; logfactor: = B
+## NOTE: B (Bell) symbol conflicts with byte
+
+decade = 1 ; logbase: 10; logfactor: 1
+## NOTE: decade [time] can conflict with decade [dimensionless]
+
+octave = 1 ; logbase: 2; logfactor: 1 = oct
+
+neper = 1 ; logbase: 2.71828182845904523536028747135266249775724709369995; logfactor: 0.5 = Np
+# neper = 1 ; logbase: eulers_number; logfactor: 0.5 = Np
+
+#### UNIT GROUPS ####
+# Mostly for length, area, volume, mass, force
+# (customary or specialized units)
+
+@group USCSLengthInternational
+    thou = 1e-3 * inch = th = mil_length
+    inch = yard / 36 = in = international_inch = inches = international_inches
+    hand = 4 * inch
+    foot = yard / 3 = ft = international_foot = feet = international_feet
+    yard = 0.9144 * meter = yd = international_yard  # since Jul 1959
+    mile = 1760 * yard = mi = international_mile
+
+    circular_mil = π / 4 * mil_length ** 2 = cmil
+    square_inch = inch ** 2 = sq_in = square_inches
+    square_foot = foot ** 2 = sq_ft = square_feet
+    square_yard = yard ** 2 = sq_yd
+    square_mile = mile ** 2 = sq_mi
+
+    cubic_inch = in ** 3 = cu_in
+    cubic_foot = ft ** 3 = cu_ft = cubic_feet
+    cubic_yard = yd ** 3 = cu_yd
+@end
+
+@group USCSLengthSurvey
+    link = 1e-2 * chain = li = survey_link
+    survey_foot = 1200 / 3937 * meter = sft
+    fathom = 6 * survey_foot
+    rod = 16.5 * survey_foot = rd = pole = perch
+    chain = 4 * rod
+    furlong = 40 * rod = fur
+    cables_length = 120 * fathom
+    survey_mile = 5280 * survey_foot = smi = us_statute_mile
+    league = 3 * survey_mile
+
+    square_rod = rod ** 2 = sq_rod = sq_pole = sq_perch
+    acre = 10 * chain ** 2
+    square_survey_mile = survey_mile ** 2 = _ = section
+    square_league = league ** 2
+
+    acre_foot = acre * survey_foot = _ = acre_feet
+@end
+
+@group USCSDryVolume
+    dry_pint = bushel / 64 = dpi = US_dry_pint
+    dry_quart = bushel / 32 = dqt = US_dry_quart
+    dry_gallon = bushel / 8 = dgal = US_dry_gallon
+    peck = bushel / 4 = pk
+    bushel = 2150.42 cubic_inch = bu
+    dry_barrel = 7056 cubic_inch = _ = US_dry_barrel
+    board_foot = ft * ft * in = FBM = board_feet = BF = BDFT = super_foot = superficial_foot = super_feet = superficial_feet
+@end
+
+@group USCSLiquidVolume
+    minim = pint / 7680
+    fluid_dram = pint / 128 = fldr = fluidram = US_fluid_dram = US_liquid_dram
+    fluid_ounce = pint / 16 = floz = US_fluid_ounce = US_liquid_ounce
+    gill = pint / 4 = gi = liquid_gill = US_liquid_gill
+    pint = quart / 2 = pt = liquid_pint = US_pint
+    fifth = gallon / 5 = _ = US_liquid_fifth
+    quart = gallon / 4 = qt = liquid_quart = US_liquid_quart
+    gallon = 231 * cubic_inch = gal = liquid_gallon = US_liquid_gallon
+@end
+
+@group USCSVolumeOther
+    teaspoon = fluid_ounce / 6 = tsp
+    tablespoon = fluid_ounce / 2 = tbsp
+    shot = 3 * tablespoon = jig = US_shot
+    cup = pint / 2 = cp = liquid_cup = US_liquid_cup
+    barrel = 31.5 * gallon = bbl
+    oil_barrel = 42 * gallon = oil_bbl
+    beer_barrel = 31 * gallon = beer_bbl
+    hogshead = 63 * gallon
+@end
+
+@group Avoirdupois
+    dram = pound / 256 = dr = avoirdupois_dram = avdp_dram = drachm
+    ounce = pound / 16 = oz = avoirdupois_ounce = avdp_ounce
+    pound = 7e3 * grain = lb = avoirdupois_pound = avdp_pound
+    stone = 14 * pound
+    quarter = 28 * stone
+    bag = 94 * pound
+    hundredweight = 100 * pound = cwt = short_hundredweight
+    long_hundredweight = 112 * pound
+    ton = 2e3 * pound = _ = short_ton
+    long_ton = 2240 * pound
+    slug = g_0 * pound * second ** 2 / foot
+    slinch = g_0 * pound * second ** 2 / inch = blob = slugette
+
+    force_ounce = g_0 * ounce = ozf = ounce_force
+    force_pound = g_0 * pound = lbf = pound_force
+    force_ton = g_0 * ton = _ = ton_force = force_short_ton = short_ton_force
+    force_long_ton = g_0 * long_ton = _ = long_ton_force
+    kip = 1e3 * force_pound
+    poundal = pound * foot / second ** 2 = pdl
+@end
+
+@group AvoirdupoisUK using Avoirdupois
+    UK_hundredweight = long_hundredweight = UK_cwt
+    UK_ton = long_ton
+    UK_force_ton = force_long_ton = _ = UK_ton_force
+@end
+
+@group AvoirdupoisUS using Avoirdupois
+    US_hundredweight = hundredweight = US_cwt
+    US_ton = ton
+    US_force_ton = force_ton = _ = US_ton_force
+@end
+
+@group Troy
+    pennyweight = 24 * grain = dwt
+    troy_ounce = 480 * grain = toz = ozt
+    troy_pound = 12 * troy_ounce = tlb = lbt
+@end
+
+@group Apothecary
+    scruple = 20 * grain
+    apothecary_dram = 3 * scruple = ap_dr
+    apothecary_ounce = 8 * apothecary_dram = ap_oz
+    apothecary_pound = 12 * apothecary_ounce = ap_lb
+@end
+
+@group ImperialVolume
+    imperial_minim = imperial_fluid_ounce / 480
+    imperial_fluid_scruple = imperial_fluid_ounce / 24
+    imperial_fluid_drachm = imperial_fluid_ounce / 8 = imperial_fldr = imperial_fluid_dram
+    imperial_fluid_ounce = imperial_pint / 20 = imperial_floz = UK_fluid_ounce
+    imperial_gill = imperial_pint / 4 = imperial_gi = UK_gill
+    imperial_cup = imperial_pint / 2 = imperial_cp = UK_cup
+    imperial_pint = imperial_gallon / 8 = imperial_pt = UK_pint
+    imperial_quart = imperial_gallon / 4 = imperial_qt = UK_quart
+    imperial_gallon = 4.54609 * liter = imperial_gal = UK_gallon
+    imperial_peck = 2 * imperial_gallon = imperial_pk = UK_pk
+    imperial_bushel = 8 * imperial_gallon = imperial_bu = UK_bushel
+    imperial_barrel = 36 * imperial_gallon = imperial_bbl = UK_bbl
+@end
+
+@group Printer
+    pica = inch / 6 = _ = printers_pica
+    point = pica / 12 = pp = printers_point = big_point = bp
+    didot = 1 / 2660 * m
+    cicero = 12 * didot
+    tex_point = inch / 72.27
+    tex_pica = 12 * tex_point
+    tex_didot = 1238 / 1157 * tex_point
+    tex_cicero = 12 * tex_didot
+    scaled_point = tex_point / 65536
+    css_pixel = inch / 96 = px
+
+    pixel = [printing_unit] = _ = dot = pel = picture_element
+    pixels_per_centimeter = pixel / cm = PPCM
+    pixels_per_inch = pixel / inch = dots_per_inch = PPI = ppi = DPI = printers_dpi
+    bits_per_pixel = bit / pixel = bpp
+@end
+
+@group Textile
+    tex = gram / kilometer = Tt
+    dtex = decitex
+    denier = gram / (9 * kilometer) = den = Td
+    jute = pound / (14400 * yard) = Tj
+    aberdeen = jute = Ta
+    RKM  = gf / tex
+
+    number_english = 840 * yard / pound = Ne = NeC = ECC
+    number_meter = kilometer / kilogram = Nm
+@end
+
+
+#### CGS ELECTROMAGNETIC UNITS ####
+
+# === Gaussian system of units ===
+@group Gaussian
+    franklin = erg ** 0.5 * centimeter ** 0.5 = Fr = statcoulomb = statC = esu
+    statvolt = erg / franklin = statV
+    statampere = franklin / second = statA
+    gauss = dyne / franklin = G
+    maxwell = gauss * centimeter ** 2 = Mx
+    oersted = dyne / maxwell = Oe = ørsted
+    statohm = statvolt / statampere = statΩ
+    statfarad = franklin / statvolt = statF
+    statmho = statampere / statvolt
+@end
+# Note this system is not commensurate with SI, as ε_0 and µ_0 disappear;
+# some quantities with different dimensions in SI have the same
+# dimensions in the Gaussian system (e.g. [Mx] = [Fr], but [Wb] != [C]),
+# and therefore the conversion factors depend on the context (not in pint sense)
+[gaussian_charge] = [length] ** 1.5 * [mass] ** 0.5 / [time]
+[gaussian_current] = [gaussian_charge] / [time]
+[gaussian_electric_potential] = [gaussian_charge] / [length]
+[gaussian_electric_field] = [gaussian_electric_potential] / [length]
+[gaussian_electric_displacement_field] = [gaussian_charge] / [area]
+[gaussian_electric_flux] = [gaussian_charge]
+[gaussian_electric_dipole] = [gaussian_charge] * [length]
+[gaussian_electric_quadrupole] = [gaussian_charge] * [area]
+[gaussian_magnetic_field] = [force] / [gaussian_charge]
+[gaussian_magnetic_field_strength] = [gaussian_magnetic_field]
+[gaussian_magnetic_flux] = [gaussian_magnetic_field] * [area]
+[gaussian_magnetic_dipole] = [energy] / [gaussian_magnetic_field]
+[gaussian_resistance] = [gaussian_electric_potential] / [gaussian_current]
+[gaussian_resistivity] = [gaussian_resistance] * [length]
+[gaussian_capacitance] = [gaussian_charge] / [gaussian_electric_potential]
+[gaussian_inductance] = [gaussian_electric_potential] * [time] / [gaussian_current]
+[gaussian_conductance] = [gaussian_current] / [gaussian_electric_potential]
+@context Gaussian = Gau
+    [gaussian_charge] -> [charge]: value / k_C ** 0.5
+    [charge] -> [gaussian_charge]: value * k_C ** 0.5
+    [gaussian_current] -> [current]: value / k_C ** 0.5
+    [current] -> [gaussian_current]: value * k_C ** 0.5
+    [gaussian_electric_potential] -> [electric_potential]: value * k_C ** 0.5
+    [electric_potential] -> [gaussian_electric_potential]: value / k_C ** 0.5
+    [gaussian_electric_field] -> [electric_field]: value * k_C ** 0.5
+    [electric_field] -> [gaussian_electric_field]: value / k_C ** 0.5
+    [gaussian_electric_displacement_field] -> [electric_displacement_field]: value / (4 * π / ε_0) ** 0.5
+    [electric_displacement_field] -> [gaussian_electric_displacement_field]: value * (4 * π / ε_0) ** 0.5
+    [gaussian_electric_dipole] -> [electric_dipole]: value / k_C ** 0.5
+    [electric_dipole] -> [gaussian_electric_dipole]: value * k_C ** 0.5
+    [gaussian_electric_quadrupole] -> [electric_quadrupole]: value / k_C ** 0.5
+    [electric_quadrupole] -> [gaussian_electric_quadrupole]: value * k_C ** 0.5
+    [gaussian_magnetic_field] -> [magnetic_field]: value / (4 * π / µ_0) ** 0.5
+    [magnetic_field] -> [gaussian_magnetic_field]: value * (4 * π / µ_0) ** 0.5
+    [gaussian_magnetic_flux] -> [magnetic_flux]: value / (4 * π / µ_0) ** 0.5
+    [magnetic_flux] -> [gaussian_magnetic_flux]: value * (4 * π / µ_0) ** 0.5
+    [gaussian_magnetic_field_strength] -> [magnetic_field_strength]: value / (4 * π * µ_0) ** 0.5
+    [magnetic_field_strength] -> [gaussian_magnetic_field_strength]: value * (4 * π * µ_0) ** 0.5
+    [gaussian_magnetic_dipole] -> [magnetic_dipole]: value * (4 * π / µ_0) ** 0.5
+    [magnetic_dipole] -> [gaussian_magnetic_dipole]: value / (4 * π / µ_0) ** 0.5
+    [gaussian_resistance] -> [resistance]: value * k_C
+    [resistance] -> [gaussian_resistance]: value / k_C
+    [gaussian_resistivity] -> [resistivity]: value * k_C
+    [resistivity] -> [gaussian_resistivity]: value / k_C
+    [gaussian_capacitance] -> [capacitance]: value / k_C
+    [capacitance] -> [gaussian_capacitance]: value * k_C
+    [gaussian_inductance] -> [inductance]: value * k_C
+    [inductance] -> [gaussian_inductance]: value / k_C
+    [gaussian_conductance] -> [conductance]: value / k_C
+    [conductance] -> [gaussian_conductance]: value * k_C
+@end
+
+# === ESU system of units ===
+#   (where different from Gaussian)
+#   See note for Gaussian system too
+@group ESU using Gaussian
+    statweber = statvolt * second = statWb
+    stattesla = statweber / centimeter ** 2 = statT
+    stathenry = statweber / statampere = statH
+@end
+[esu_charge] = [length] ** 1.5 * [mass] ** 0.5 / [time]
+[esu_current] = [esu_charge] / [time]
+[esu_electric_potential] = [esu_charge] / [length]
+[esu_magnetic_flux] = [esu_electric_potential] * [time]
+[esu_magnetic_field] = [esu_magnetic_flux] / [area]
+[esu_magnetic_field_strength] = [esu_current] / [length]
+[esu_magnetic_dipole] = [esu_current] * [area]
+@context ESU = esu
+    [esu_magnetic_field] -> [magnetic_field]: value * k_C ** 0.5
+    [magnetic_field] -> [esu_magnetic_field]: value / k_C ** 0.5
+    [esu_magnetic_flux] -> [magnetic_flux]: value * k_C ** 0.5
+    [magnetic_flux] -> [esu_magnetic_flux]: value / k_C ** 0.5
+    [esu_magnetic_field_strength] -> [magnetic_field_strength]: value / (4 * π / ε_0) ** 0.5
+    [magnetic_field_strength] -> [esu_magnetic_field_strength]: value * (4 * π / ε_0) ** 0.5
+    [esu_magnetic_dipole] -> [magnetic_dipole]: value / k_C ** 0.5
+    [magnetic_dipole] -> [esu_magnetic_dipole]: value * k_C ** 0.5
+@end
+
+
+#### CONVERSION CONTEXTS ####
+
+@context(n=1) spectroscopy = sp
+    # n index of refraction of the medium.
+    [length] <-> [frequency]: speed_of_light / n / value
+    [frequency] -> [energy]: planck_constant * value
+    [energy] -> [frequency]: value / planck_constant
+    # allow wavenumber / kayser
+    [wavenumber] <-> [length]: 1 / value
+@end
+
+@context boltzmann
+    [temperature] -> [energy]: boltzmann_constant * value
+    [energy] -> [temperature]: value / boltzmann_constant
+@end
+
+@context energy
+    [energy] -> [energy] / [substance]: value * N_A
+    [energy] / [substance] -> [energy]: value / N_A
+    [energy] -> [mass]: value / c ** 2
+    [mass] -> [energy]: value * c ** 2
+@end
+
+@context(mw=0,volume=0,solvent_mass=0) chemistry = chem
+    # mw is the molecular weight of the species
+    # volume is the volume of the solution
+    # solvent_mass is the mass of solvent in the solution
+
+    # moles -> mass require the molecular weight
+    [substance] -> [mass]: value * mw
+    [mass] -> [substance]: value / mw
+
+    # moles/volume -> mass/volume and moles/mass -> mass/mass
+    # require the  molecular weight
+    [substance] / [volume] -> [mass] / [volume]: value * mw
+    [mass] / [volume] -> [substance] / [volume]: value / mw
+    [substance] / [mass] -> [mass] / [mass]: value * mw
+    [mass] / [mass] -> [substance] / [mass]: value / mw
+
+    # moles/volume -> moles requires the solution volume
+    [substance] / [volume] -> [substance]: value * volume
+    [substance] -> [substance] / [volume]: value / volume
+
+    # moles/mass -> moles requires the solvent (usually water) mass
+    [substance] / [mass] -> [substance]: value * solvent_mass
+    [substance] -> [substance] / [mass]: value / solvent_mass
+
+    # moles/mass -> moles/volume require the solvent mass and the volume
+    [substance] / [mass] -> [substance]/[volume]: value * solvent_mass / volume
+    [substance] / [volume] -> [substance] / [mass]: value / solvent_mass * volume
+
+@end
+
+@context textile
+    # Allow switching between Direct count system (i.e. tex) and
+    # Indirect count system (i.e. Ne, Nm)
+    [mass] / [length] <-> [length] / [mass]: 1 / value
+@end
+
+
+#### SYSTEMS OF UNITS ####
+
+@system SI
+    second
+    meter
+    kilogram
+    ampere
+    kelvin
+    mole
+    candela
+@end
+
+@system mks using international
+    meter
+    kilogram
+    second
+@end
+
+@system cgs using international, Gaussian, ESU
+    centimeter
+    gram
+    second
+@end
+
+@system atomic using international
+    # based on unit m_e, e, hbar, k_C, k
+    bohr: meter
+    electron_mass: gram
+    atomic_unit_of_time: second
+    atomic_unit_of_current: ampere
+    atomic_unit_of_temperature: kelvin
+@end
+
+@system Planck using international
+    # based on unit c, gravitational_constant, hbar, k_C, k
+    planck_length: meter
+    planck_mass: gram
+    planck_time: second
+    planck_current: ampere
+    planck_temperature: kelvin
+@end
+
+@system imperial using ImperialVolume, USCSLengthInternational, AvoirdupoisUK
+    yard
+    pound
+@end
+
+@system US using USCSLiquidVolume, USCSDryVolume, USCSVolumeOther, USCSLengthInternational, USCSLengthSurvey, AvoirdupoisUS
+    yard
+    pound
+@end
