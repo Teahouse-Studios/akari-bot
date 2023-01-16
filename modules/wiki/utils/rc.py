@@ -10,8 +10,9 @@ async def rc(wiki_url):
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
     d = []
     for x in query['query']['recentchanges'][:5]:
-        d.append(x['title'] + ' - ' + x['user'] +
-                 ' ' + UTC8(x['timestamp'], 'onlytime'))
+        if 'title' in x:
+            d.append(x['title'] + ' - ' + x['user'] +
+                     ' ' + UTC8(x['timestamp'], 'onlytime'))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:

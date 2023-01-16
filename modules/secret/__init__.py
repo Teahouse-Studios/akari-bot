@@ -16,25 +16,27 @@ async def newbie(bot: FetchTarget):
     Logger.info('Start newbie monitoring...')
     file = await wiki.get_json(action='query', list='logevents', letype='newusers')
     qq = []
-    for x in file['query']['logevents'][:]:
-        qq.append(x['title'])
+    for x in file['query']['logevents']:
+        if 'title' in x:
+            qq.append(x['title'])
 
     @Scheduler.scheduled_job('interval', seconds=60)
     async def check_newbie():
         qqqq = await wiki.get_json(action='query', list='logevents', letype='newusers')
-        for xz in qqqq['query']['logevents'][:]:
-            if xz['title'] not in qq:
-                prompt = UTC8(xz['timestamp'], 'onlytime') + \
-                         '新增新人：\n' + xz['title']
-                s = await check(prompt)
-                Logger.debug(s)
-                for z in s:
-                    sz = z['content']
-                    if not z['status']:
-                        sz = sz + '\n检测到外来信息介入，请前往日志查看所有消息。' \
-                                  'https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers'
-                    await bot.post_message('__check_newbie__', sz)
-                    qq.append(xz['title'])
+        for xz in qqqq['query']['logevents']:
+            if 'title' in xz:
+                if xz['title'] not in qq:
+                    prompt = UTC8(xz['timestamp'], 'onlytime') + \
+                             '新增新人：\n' + xz['title']
+                    s = await check(prompt)
+                    Logger.debug(s)
+                    for z in s:
+                        sz = z['content']
+                        if not z['status']:
+                            sz = sz + '\n检测到外来信息介入，请前往日志查看所有消息。' \
+                                      'https://minecraft.fandom.com/zh/wiki/Special:%E6%97%A5%E5%BF%97?type=newusers'
+                        await bot.post_message('__check_newbie__', sz)
+                        qq.append(xz['title'])
 
 
 @on_startup('__check_abuse__', required_superuser=True, developers=['OasisAkari'])

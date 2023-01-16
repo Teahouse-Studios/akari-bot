@@ -10,9 +10,10 @@ async def ab(wiki_url):
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:AbuseLog')
     d = []
     for x in query['query']['abuselog'][:5]:
-        d.append(
-            '•' + x['title'] + ' - ' + x['user'] + '于' + UTC8(x['timestamp'], 'onlytimenoutc') + '\n过滤器名：' + x[
-                'filter'] + '\n处理结果：' + x['result'])
+        if 'title' in x:
+            d.append(
+                '•' + x['title'] + ' - ' + x['user'] + '于' + UTC8(x['timestamp'], 'onlytimenoutc') + '\n过滤器名：' + x[
+                    'filter'] + '\n处理结果：' + x['result'])
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:

@@ -1,17 +1,11 @@
-import os
-import re
 import traceback
-import uuid
 from typing import Union
-from urllib.parse import urljoin
 
-import aiohttp
 import ujson as json
-from bs4 import BeautifulSoup, Comment
 
 from config import Config
 from core.logger import Logger
-from core.utils import post_url, random_cache_path, download_to_cache
+from core.utils import download_to_cache
 
 web_render = Config('web_render_local')
 
@@ -32,10 +26,11 @@ async def generate_screenshot(page_link, section=None, allow_special_page=False)
                                            post_data=json.dumps({
                                                'url': page_link,
                                                'element': elements}),
-                                           attempt=1,
+                                           attempt=1, timeout=50,
                                            request_private_ip=True
                                            )
         except ValueError:
+            traceback.print_exc()
             Logger.info('[Webrender] Generating Failed.')
             return False
     else:
@@ -51,5 +46,6 @@ async def generate_screenshot(page_link, section=None, allow_special_page=False)
                                            request_private_ip=True
                                            )
         except ValueError:
+            traceback.print_exc()
             Logger.info('[Webrender] Generating Failed.')
             return False

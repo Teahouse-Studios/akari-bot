@@ -9,7 +9,8 @@ async def newbie(wiki_url):
         '$1', 'Special:Log?type=newusers')
     d = []
     for x in query['query']['logevents'][:5]:
-        d.append(x['title'])
+        if 'title' in x:
+            d.append(x['title'])
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     g = f'{pageurl}\n{y}\n...仅显示前5条内容'

@@ -24,8 +24,9 @@ async def ab_qq(wiki_url):
     userlist = []
     titlelist = []
     for x in query["query"]["abuselog"]:
-        userlist.append(x['user'])
-        titlelist.append(x['title'])
+        if 'title' in x:
+            userlist.append(x['user'])
+            titlelist.append(x['title'])
     checked_userlist = await check(*userlist)
     user_checked_map = {}
     for u in checked_userlist:
