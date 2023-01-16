@@ -50,7 +50,7 @@ class ErrorMessage:
     def __init__(self, error_message):
         self.error_message = '发生错误：' + error_message + '\n错误汇报地址： ' + \
                              str(Url(
-                                 'https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+'))
+                                 'https://s.wd-ljt.com/botreportbug'))
 
     def __str__(self):
         return self.error_message

@@ -271,6 +271,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         get_infobox = await generate_screenshot(ii, allow_special_page=i[ii]['in_allowlist'])
                         if get_infobox:
                             infobox_msg_list.append(Image(get_infobox))
+                            infobox_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
+                                                          'https://s.wd-ljt.com/botreportbug'))
                 if infobox_msg_list:
                     await session.sendMessage(infobox_msg_list, quote=False)
 
@@ -283,6 +285,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             get_section = await generate_screenshot(ii, section=i[ii]['section'])
                             if get_section:
                                 section_msg_list.append(Image(get_section))
+                                section_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
+                                                          'https://s.wd-ljt.com/botreportbug'))
                 if section_msg_list:
                     await session.sendMessage(section_msg_list, quote=False)
 
