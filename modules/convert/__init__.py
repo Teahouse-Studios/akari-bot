@@ -4,7 +4,7 @@ from pint import UnitRegistry
 from decimal import Decimal
 import os
 
-ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__))+'./default_bi_zh-cn_en.txt', non_int_type=Decimal)
+ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__))+'/default_bi_zh-cn_en.txt', non_int_type=Decimal)
 # type: ignoreQ_ = ureg.Quantity
 
 i = on_command('convert', alias=('conv', 'unit'), desc='全能单位转换。',
