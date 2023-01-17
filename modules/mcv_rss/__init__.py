@@ -42,7 +42,7 @@ async def get_article(version):
     get = webrender + 'source?url=' + quote(link)
 
     try:
-        html = await get_url(get)
+        html = await get_url(get, attempt=1)
 
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -68,7 +68,7 @@ async def mcv_rss(bot: FetchTarget):
     url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:
         verlist = get_stored_list(bot, 'mcv_rss')
-        file = json.loads(await get_url(url))
+        file = json.loads(await get_url(url, attempt=1))
         release = file['latest']['release']
         snapshot = file['latest']['snapshot']
         if release not in verlist:
@@ -123,7 +123,7 @@ async def mcbv_rss(bot: FetchTarget):
 async def mcv_jira_rss(bot: FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200))
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200, attempt=1))
         releases = []
         for v in file:
             if not v['archived']:
@@ -157,7 +157,7 @@ async def mcv_jira_rss(bot: FetchTarget):
 async def mcbv_jira_rss(bot: FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcbv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200, attempt=1))
         releases = []
         for v in file:
             if not v['archived']:
@@ -186,7 +186,7 @@ async def mcbv_jira_rss(bot: FetchTarget):
 async def mcdv_jira_rss(bot: FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcdv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200, attempt=1))
         releases = []
         for v in file:
             if not v['archived']:
