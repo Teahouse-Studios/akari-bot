@@ -29,7 +29,7 @@ async def generate_screenshot(page_link, section=None, allow_special_page=False,
                                            post_data=json.dumps({
                                                'url': page_link,
                                                'element': elements}),
-                                           attempt=1, timeout=50,
+                                           attempt=1, timeout=30,
                                            request_private_ip=True
                                            )
         except ValueError:
@@ -46,6 +46,7 @@ async def generate_screenshot(page_link, section=None, allow_special_page=False,
                                                'url': page_link,
                                                'section': section}),
                                            attempt=1,
+                                           timeout=30,
                                            request_private_ip=True
                                            )
         except ValueError:
