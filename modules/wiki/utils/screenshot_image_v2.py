@@ -34,7 +34,7 @@ async def generate_screenshot(page_link, section=None, allow_special_page=False,
                                            )
         except ValueError:
             traceback.print_exc()
-            Logger.info('[Webrender] Generating Failed.')
+            Logger.info('[Webrender] Generation Failed.')
             return False
     else:
         Logger.info('[Webrender] Generating section screenshot...')
@@ -50,5 +50,5 @@ async def generate_screenshot(page_link, section=None, allow_special_page=False,
                                            )
         except ValueError:
             traceback.print_exc()
-            Logger.info('[Webrender] Generating Failed.')
+            Logger.info('[Webrender] Generation Failed.')
             return False

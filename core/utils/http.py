@@ -61,6 +61,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                     if logging_resp:
                         Logger.debug(await req.read())
                     if status_code and req.status != status_code:
+                        if not logging_resp:
+                            Logger.error(await req.read())
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
                     if fmt is not None:
@@ -105,6 +107,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                     if logging_resp:
                         Logger.debug(await req.read())
                     if status_code and req.status != status_code:
+                        if not logging_resp:
+                            Logger.error(await req.read())
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
                     if fmt is not None:
