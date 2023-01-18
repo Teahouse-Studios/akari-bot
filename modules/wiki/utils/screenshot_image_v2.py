@@ -10,7 +10,7 @@ from core.utils import download_to_cache
 web_render = Config('web_render_local')
 
 
-async def generate_screenshot(page_link, section=None, allow_special_page=False, doc_mode=False) -> Union[str, bool]:
+async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, doc_mode=False) -> Union[str, bool]:
     elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
                 '.skin-infobox', '.arcaeabox', '.moe-infobox']
     if not web_render:
