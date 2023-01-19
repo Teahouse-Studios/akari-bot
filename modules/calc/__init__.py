@@ -6,6 +6,8 @@ from core.component import on_command
 
 import asyncio
 
+from core.logger import Logger
+
 c = on_command('calc', developers=[
     'Dianliang233'], desc='安全地计算 Python ast 表达式。')
 
@@ -36,8 +38,8 @@ c = on_command('calc', developers=[
                                              })
 async def _(msg: MessageSession):
     try:
-        p = await asyncio.create_subprocess_shell(" ".join(
-                                 ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]),
+        p = await asyncio.create_subprocess_shell(
+            f'python "{os.path.abspath("./modules/calc/calc.py")}" "{msg.parsed_msg["<math_expression>"]}"',
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -54,5 +56,8 @@ async def _(msg: MessageSession):
                 await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
             else:
                 await msg.finish(f'表达式无效：{res[7:]}')
+        else:
+            Logger.error(f'calc.py exited with code {p.returncode}')
+            Logger.error(f'calc.py stderr: {stderr_data.decode("utf-8")}')
     except Exception as e:
         raise NoReportException(e)
