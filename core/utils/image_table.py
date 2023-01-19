@@ -54,7 +54,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
               padding: 15px;
               text-align: left;
             }</style>"""
-        html = {'content': tblst + css, 'width': w}
+        html = {'content': tblst + css, 'width': w, 'mw': False}
         if save_source:
             fname = random_cache_path() + '.html'
             with open(fname, 'w') as fi:
