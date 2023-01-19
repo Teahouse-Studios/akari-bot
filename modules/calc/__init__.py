@@ -13,7 +13,7 @@ from typing import Callable, Any
 
 def func_wrapper(func: Callable[..., Any], *args, **kwargs):
     for arg in args:
-        if isinstance(arg, (int, float)) and arg > 4000000:
+        if isinstance(arg, (int, float)) and arg > 100000:
             raise NoReportException('参数过大，无法计算。')
     return func(*args)
 
@@ -35,6 +35,8 @@ add_func(statistics)
 s_eval = SimpleEval(
     operators={
         **DEFAULT_OPERATORS,
+        ast.Pow: lambda *args, item=op, **kwargs: func_wrapper(
+            item, *args, **kwargs),
         ast.BitOr: op.or_,
         ast.BitAnd: op.and_,
         ast.BitXor: op.xor,
@@ -50,7 +52,7 @@ s_eval = SimpleEval(
     },)
 
 c = on_command('calc', developers=[
-               'Dianliang233'], desc='安全地计算 Python ast 表达式。',)
+               'Dianliang233'], desc='安全地计算 Python ast 表达式。', required_superuser=True)
 
 
 @c.handle('<math_expression>', options_desc={'+': '和/正数：1 + 2 -> 3',
