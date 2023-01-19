@@ -1,58 +1,13 @@
-from .constant import consts
+import os
+
 from core.exceptions import NoReportException
 from core.builtins.message import MessageSession
 from core.component import on_command
-from simpleeval import InvalidExpression, SimpleEval, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
-import ast
-import operator as op
-import asyncio
-import math
-import statistics
-from typing import Callable, Any
 
-
-def func_wrapper(func: Callable[..., Any], *args, **kwargs):
-    for arg in args:
-        if isinstance(arg, (int, float)) and arg > 100000:
-            raise NoReportException('参数过大，无法计算。')
-    return func(*args)
-
-
-funcs = {}
-
-
-def add_func(module):
-    for name in dir(module):
-        item = getattr(module, name)
-        if not name.startswith('_') and callable(item):
-            funcs[name] = lambda *args, item = item, **kwargs: func_wrapper(
-                item, *args, **kwargs)
-
-
-add_func(math)
-add_func(statistics)
-
-s_eval = SimpleEval(
-    operators={
-        **DEFAULT_OPERATORS,
-        ast.Pow: lambda *args, item=op, **kwargs: func_wrapper(
-            item, *args, **kwargs),
-        ast.BitOr: op.or_,
-        ast.BitAnd: op.and_,
-        ast.BitXor: op.xor,
-        ast.Invert: op.invert,
-    },
-    functions={**funcs, **DEFAULT_FUNCTIONS},
-    names={
-        **DEFAULT_NAMES, **consts,
-        'pi': math.pi,
-        'e': math.e,
-        'tau': math.tau,
-        'inf': math.inf, 'nan': math.nan,
-    },)
+import subprocess
 
 c = on_command('calc', developers=[
-               'Dianliang233'], desc='安全地计算 Python ast 表达式。', required_superuser=True)
+    'Dianliang233'], desc='安全地计算 Python ast 表达式。')
 
 
 @c.handle('<math_expression>', options_desc={'+': '和/正数：1 + 2 -> 3',
@@ -81,20 +36,11 @@ c = on_command('calc', developers=[
                                              })
 async def _(msg: MessageSession):
     try:
-        res = await asyncio.wait_for(async_eval(msg.parsed_msg["<math_expression>"]), 15)
-        await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {str(res)}')
-    except InvalidExpression as e:
-        await msg.finish(f"表达式无效：{e}")
-    except asyncio.TimeoutError:
-        raise TimeoutException()
+        res = subprocess.check_output(
+            f'python {os.path.abspath("./modules/calc/calc.py")} {msg.parsed_msg["<math_expression>"]}'
+            , timeout=10)
+        await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res.decode("utf-8")[:-1]}')
+    except subprocess.TimeoutExpired:
+        raise NoReportException('计算超时。')
     except Exception as e:
         raise NoReportException(e)
-
-
-async def async_eval(expr: str):
-    return s_eval.eval(expr)
-
-
-class TimeoutException(NoReportException):
-    '''计算超时，最大计算时间为 15 秒。'''
-    pass
