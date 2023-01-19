@@ -37,7 +37,7 @@ c = on_command('calc', developers=[
 async def _(msg: MessageSession):
     try:
         res = subprocess.check_output(
-            ['python', 'os.path.abspath("./modules/calc/calc.py")', msg.parsed_msg["<math_expression>"]]
+            ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
             , timeout=10, shell=False)
         await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res.decode("utf-8")[:-1]}')
     except subprocess.TimeoutExpired:
