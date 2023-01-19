@@ -61,13 +61,15 @@ async def check_ip(ip: str):
         'asn': None,
         'asn_organization': None,
         'offset': None,
-        'reverse': [],
+        'reverse': None,
         'ip_property': ip_property,
         'real_ip': real_ip
     }
     if not skip_geoip:
         data = json.loads(await get_url('https://api.ip.sb/geoip/' + ip))
         reverse = socket.getnameinfo((ip, 0), 0)
+        print(reverse)
+        print(reverse[0])
         res['reverse'] = reverse[0]
         for key in res:
             if key in data:
