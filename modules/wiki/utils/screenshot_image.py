@@ -309,7 +309,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
         open_file.write('</html>')
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
-        html = {'content': read_file.read(), 'width': w, 'mw': true}
+        html = {'content': read_file.read(), 'width': w, 'mw': True}
         Logger.info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
