@@ -122,7 +122,7 @@ async def _(msg: MessageSession):
                                 section_.append(qs)
                         if section_:
                             s = urllib.parse.unquote(''.join(section_)[1:])
-                            if q[qq].realurl:
+                            if q[qq].realurl and q[qq].in_allowlist:
                                 if q[qq].realurl in generate_screenshot_v2_blocklist:
                                     get_section = await generate_screenshot_v1(q[qq].realurl, qq, headers, section=s)
                                 else:
