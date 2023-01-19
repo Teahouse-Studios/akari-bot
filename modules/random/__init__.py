@@ -14,7 +14,7 @@ async def _(msg: MessageSession):
     await msg.finish(''+str(random))
 
 
-@r.handle('choice ... {从选项中选择一个}',)
+@r.handle('choice ... {从集合中选择元素}',)
 async def _(msg: MessageSession):
     choices = msg.parsed_msg['...']
     await msg.finish(secrets.choice(choices))
