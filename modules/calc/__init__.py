@@ -1,3 +1,5 @@
+from .constant import consts
+from core.exceptions import NoReportException
 from core.builtins.message import MessageSession
 from core.component import on_command
 from simpleeval import InvalidExpression, SimpleEval, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
@@ -5,15 +7,22 @@ import ast
 import operator as op
 import asyncio
 import math
+from typing import Callable, Any, Union
 
-from core.exceptions import NoReportException
-from .constant import consts
+
+def func_wrapper(func: Callable[..., Any], *args, **kwargs):
+    for arg in args:
+        if isinstance(arg, (int, float)) and arg > 4000000:
+            raise NoReportException('参数过大，无法计算。')
+    return func(*args)
+
 
 funcs = {}
-# for name in dir(math):
-#     item = getattr(math, name)
-#     if not name.startswith('_') and callable(item):
-#         funcs[name] = item
+for name in dir(math):
+    item = getattr(math, name)
+    if not name.startswith('_') and callable(item):
+        funcs[name] = lambda *args, item = item, **kwargs: func_wrapper(
+            item, *args, **kwargs)
 
 s_eval = SimpleEval(
     operators={
@@ -23,7 +32,7 @@ s_eval = SimpleEval(
         ast.BitXor: op.xor,
         ast.Invert: op.invert,
     },
-    functions={**DEFAULT_FUNCTIONS, **funcs},
+    functions={**funcs, **DEFAULT_FUNCTIONS},
     names={
         **DEFAULT_NAMES, **consts,
         'pi': math.pi,
