@@ -4,7 +4,7 @@ from core.exceptions import NoReportException
 from core.builtins.message import MessageSession
 from core.component import on_command
 
-import subprocess
+import asyncio
 
 c = on_command('calc', developers=[
     'Dianliang233'], desc='安全地计算 Python ast 表达式。')
@@ -36,14 +36,23 @@ c = on_command('calc', developers=[
                                              })
 async def _(msg: MessageSession):
     try:
-        res = subprocess.check_output(
-            ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
-            , timeout=10, shell=False).decode('utf-8')
-        if res[0:6] == 'Result':
-            await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
-        else:
-            await msg.finish(f'表达式无效：{res[7:]}')
-    except subprocess.TimeoutExpired:
-        raise NoReportException('计算超时。')
+        p = await asyncio.create_subprocess_shell(" ".join(
+                                 ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            await asyncio.wait_for(p.wait(), timeout=10)
+        except asyncio.TimeoutError:
+            p.kill()
+            raise NoReportException('计算超时。')
+        stdout_data, stderr_data = await p.communicate()
+        if p.returncode == 0:
+            res = stdout_data.decode('utf-8')
+
+            if res[0:6] == 'Result':
+                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
+            else:
+                await msg.finish(f'表达式无效：{res[7:]}')
     except Exception as e:
         raise NoReportException(e)
