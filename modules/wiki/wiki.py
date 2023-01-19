@@ -12,8 +12,7 @@ from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
 
-from modules.wiki.utils.screenshot_image import generate_screenshot_v1
-from modules.wiki.utils.screenshot_image_v2 import generate_screenshot_v2
+from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']

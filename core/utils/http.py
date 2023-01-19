@@ -34,7 +34,7 @@ def private_ip_check(url: str):
 
 
 async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, timeout=20, attempt=3,
-                  request_private_ip=False):
+                  request_private_ip=False, logging_err_resp=True):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -44,6 +44,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
     :returns: 指定url的内容（字符串）。
     """
 
@@ -61,7 +62,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                     if logging_resp:
                         Logger.debug(await req.read())
                     if status_code and req.status != status_code:
-                        if not logging_resp:
+                        if not logging_resp and logging_err_resp:
                             Logger.error(await req.read())
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
@@ -80,8 +81,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
 
 
 async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt=None, timeout=20,
-                   attempt=3,
-                   request_private_ip=False):
+                   attempt=3, request_private_ip=False, logging_err_resp=True):
     '''发送POST请求。
     :param url: 需要发送的url。
     :param data: 需要发送的数据。
@@ -91,6 +91,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
     :returns: 发送请求后的响应。'''
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
@@ -107,7 +108,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                     if logging_resp:
                         Logger.debug(await req.read())
                     if status_code and req.status != status_code:
-                        if not logging_resp:
+                        if not logging_resp and logging_err_resp:
                             Logger.error(await req.read())
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
@@ -126,7 +127,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
 
 
 async def download_to_cache(url: str, filename=None, status_code: int = False, method="GET", post_data=None,
-                            headers: dict = None, timeout=20, attempt=3, request_private_ip=False) -> Union[str, bool]:
+                            headers: dict = None, timeout=20, attempt=3, request_private_ip=False,
+                            logging_err_resp=True) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
 
     :param url: 需要获取的url。
@@ -138,6 +140,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
+    :param logging_err_resp: 是否记录错误响应。
     :returns: 文件的相对路径，若获取失败则返回False。'''
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
@@ -149,10 +152,11 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
 
         if method.upper() == 'GET':
             data = await get_url(url, status_code=status_code, headers=headers, fmt='read', timeout=timeout, attempt=1,
-                                 request_private_ip=request_private_ip)
+                                 request_private_ip=request_private_ip, logging_err_resp=logging_err_resp)
         if method.upper() == 'POST':
             data = await post_url(url, data=post_data, status_code=status_code, headers=headers, fmt='read',
-                                  timeout=timeout, attempt=1, request_private_ip=request_private_ip)
+                                  timeout=timeout, attempt=1, request_private_ip=request_private_ip,
+                                  logging_err_resp=logging_err_resp)
 
         if data is not None:
             ftt = ft.match(data).extension
@@ -163,6 +167,8 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
             async with async_open(path, 'wb+') as file:
                 await file.write(data)
                 return path
+        else:
+            return False
     return await download_()
 
 

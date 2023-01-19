@@ -11,8 +11,7 @@ from core.elements import Plain, Image, Voice
 from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
-from modules.wiki.utils.screenshot_image import generate_screenshot_v1
-from modules.wiki.utils.screenshot_image_v2 import generate_screenshot_v2
+from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import query_pages, generate_screenshot_v2_blocklist
 

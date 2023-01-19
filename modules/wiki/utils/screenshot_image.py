@@ -11,8 +11,55 @@ from bs4 import BeautifulSoup, Comment
 
 from config import Config
 from core.logger import Logger
+from core.utils import download_to_cache
 
 web_render = Config('web_render_local')
+elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
+            '.skin-infobox', '.arcaeabox', '.moe-infobox']
+
+
+async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, doc_mode=False) -> Union[str, bool]:
+    elements_ = elements.copy()
+    if not web_render:
+        return False
+    if section is None:
+        if allow_special_page and doc_mode:
+            page_link += '/doc'
+            elements_.insert(0, '.mw-parser-output')
+        if allow_special_page and not doc_mode:
+            elements_.insert(0, '.diff')
+        Logger.info('[Webrender] Generating element screenshot...')
+        try:
+            return await download_to_cache(web_render + 'element_screenshot', status_code=200,
+                                           headers={'Content-Type': 'application/json'},
+                                           method="POST",
+                                           post_data=json.dumps({
+                                               'url': page_link,
+                                               'element': elements_}),
+                                           attempt=1, timeout=30,
+                                           request_private_ip=True
+                                           )
+        except ValueError:
+            traceback.print_exc()
+            Logger.info('[Webrender] Generation Failed.')
+            return False
+    else:
+        Logger.info('[Webrender] Generating section screenshot...')
+        try:
+            return await download_to_cache(web_render + 'section_screenshot', status_code=200,
+                                           headers={'Content-Type': 'application/json'},
+                                           method="POST",
+                                           post_data=json.dumps({
+                                               'url': page_link,
+                                               'section': section}),
+                                           attempt=1,
+                                           timeout=30,
+                                           request_private_ip=True
+                                           )
+        except ValueError:
+            traceback.print_exc()
+            Logger.info('[Webrender] Generation Failed.')
+            return False
 
 
 async def generate_screenshot_v1(link, page_link, headers, section=None, allow_special_page=False) -> Union[str, bool]:
@@ -110,11 +157,10 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
                     open_file.write(str(find_diff))
                     w = 2000
             if find_diff is None:
-                infoboxes = ['notaninfobox', 'portable-infobox', 'infobox', 'tpl-infobox', 'infoboxtable',
-                             'infotemplatebox', 'skin-infobox', 'arcaeabox', 'moe-infobox']
+                infoboxes = elements.copy()
                 find_infobox = None
                 for i in infoboxes:
-                    find_infobox = soup.find(class_=i)
+                    find_infobox = soup.find(class_=i[1:])
                     if find_infobox is not None:
                         break
                 if find_infobox is None:
