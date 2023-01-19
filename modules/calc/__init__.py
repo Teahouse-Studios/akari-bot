@@ -38,8 +38,11 @@ async def _(msg: MessageSession):
     try:
         res = subprocess.check_output(
             ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
-            , timeout=10, shell=False)
-        await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res.decode("utf-8")[:-1]}')
+            , timeout=10, shell=False).decode('utf-8')
+        if res[0:6] == 'Result':
+            await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
+        else:
+            await msg.finish(f'表达式无效：{res[7:]}')
     except subprocess.TimeoutExpired:
         raise NoReportException('计算超时。')
     except Exception as e:

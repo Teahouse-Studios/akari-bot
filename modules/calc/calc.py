@@ -1,5 +1,7 @@
+import traceback
+
 from constant import consts
-from simpleeval import InvalidExpression, SimpleEval, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
+from simpleeval import SimpleEval, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 import ast
 import sys
 import operator as op
@@ -34,6 +36,9 @@ s_eval = SimpleEval(
         'e': math.e,
         'tau': math.tau,
         'inf': math.inf, 'nan': math.nan,
-    },)
+    }, )
 
-print(s_eval.eval(' '.join(sys.argv[1:])))
+try:  # rina's rina solution :rina:
+    print('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
+except Exception as e:
+    print('Failed ' + str(e))
