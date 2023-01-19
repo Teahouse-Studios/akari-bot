@@ -16,8 +16,6 @@ async def check_ip(ip: str):
     skip_geoip = False
     if info.is_global:
         ip_property = 'global'
-    elif info.is_private:
-        ip_property = 'private'
         skip_geoip = True
     elif info.is_reserved:
         ip_property = 'reserved'
@@ -33,6 +31,8 @@ async def check_ip(ip: str):
     elif info.is_unspecified:
         ip_property = 'unspecified'
         skip_geoip = True
+    elif info.is_private:
+        ip_property = 'private'
     elif isinstance(info, ipaddress.IPv6Address):
         if info.ipv4_mapped:
             ip_property = 'ipv4_mapped'
