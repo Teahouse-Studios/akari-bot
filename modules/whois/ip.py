@@ -14,25 +14,26 @@ async def check_ip(ip: str):
     ip_property = ''
     real_ip = None
     skip_geoip = False
-    if info.is_global:
-        ip_property = 'global'
-        skip_geoip = True
-    elif info.is_reserved:
-        ip_property = 'reserved'
-        skip_geoip = True
-    elif info.is_multicast:
+    if info.is_multicast:
         ip_property = 'multicast'
-    elif info.is_link_local:
-        ip_property = 'link_local'
-        skip_geoip = True
+    elif info.is_global:
+        ip_property = 'global'
     elif info.is_loopback:
         ip_property = 'loopback'
         skip_geoip = True
     elif info.is_unspecified:
         ip_property = 'unspecified'
         skip_geoip = True
+    elif info.is_link_local:
+        ip_property = 'link_local'
+        skip_geoip = True
+    elif info.is_reserved:
+        ip_property = 'reserved'
+        skip_geoip = True
     elif isinstance(info, ipaddress.IPv6Address):
-        if info.ipv4_mapped:
+        if info.is_site_local:
+            ip_property = 'site_local'
+        elif info.ipv4_mapped:
             ip_property = 'ipv4_mapped'
             real_ip = info.ipv4_mapped.compressed
         elif info.sixtofour:
@@ -41,8 +42,6 @@ async def check_ip(ip: str):
         elif info.teredo:
             ip_property = 'teredo'
             ip = str(info.teredo)
-        elif info.is_site_local:
-            ip_property = 'site_local'
     elif info.is_private:
         ip_property = 'private'
 
