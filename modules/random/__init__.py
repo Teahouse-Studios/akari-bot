@@ -3,7 +3,7 @@ from core.component import on_command
 import secrets
 
 r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'dice': 'random number 1 6', 'random dice': 'random number 1 6'}, developers=[
-               'Dianliang233'], desc='密码学安全随机数生成器',)
+               'Dianliang233'], desc='随机数生成器（密码学安全）',)
 
 
 @r.handle('number <min> <max> {生成区间内的随机整数}',)

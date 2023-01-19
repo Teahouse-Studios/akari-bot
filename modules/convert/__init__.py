@@ -4,7 +4,8 @@ from pint import UnitRegistry
 from decimal import Decimal
 import os
 
-ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__))+'/default_bi_zh-cn_en.txt', non_int_type=Decimal)
+ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
+                    '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
 # type: ignoreQ_ = ureg.Quantity
 
 i = on_command('convert', alias=('conv', 'unit'), desc='全能单位转换。',
@@ -18,4 +19,4 @@ async def _(msg: MessageSession):
     ori = ureg.parse_expression(from_val)
     res = ureg.parse_expression(from_val).to(to_unit)
 
-    await msg.finish(f"{ori:~P} = {res:~P}")
+    await msg.finish(f"{ori:~Pg} = {res:~Pg}")
