@@ -7,7 +7,8 @@ import ast
 import operator as op
 import asyncio
 import math
-from typing import Callable, Any, Union
+import statistics
+from typing import Callable, Any
 
 
 def func_wrapper(func: Callable[..., Any], *args, **kwargs):
@@ -18,11 +19,18 @@ def func_wrapper(func: Callable[..., Any], *args, **kwargs):
 
 
 funcs = {}
-for name in dir(math):
-    item = getattr(math, name)
-    if not name.startswith('_') and callable(item):
-        funcs[name] = lambda *args, item = item, **kwargs: func_wrapper(
-            item, *args, **kwargs)
+
+
+def add_func(module):
+    for name in dir(module):
+        item = getattr(module, name)
+        if not name.startswith('_') and callable(item):
+            funcs[name] = lambda *args, item = item, **kwargs: func_wrapper(
+                item, *args, **kwargs)
+
+
+add_func(math)
+add_func(statistics)
 
 s_eval = SimpleEval(
     operators={
@@ -66,7 +74,8 @@ c = on_command('calc', developers=[
                                              'int()': '转换为整数：int(1.5) -> 1',
                                              'float()': '转换为浮点数：float(1) -> 1.0',
                                              'str()': '转换为字符串：str(1) -> "1"',
-                                             '更多数学函数': 'https://docs.python.org/zh-cn/3/library/math.html'
+                                             '更多数学函数': 'https://docs.python.org/zh-cn/3/library/math.html',
+                                             '更多统计函数': 'https://docs.python.org/zh-cn/3/library/statistics.html',
                                              })
 async def _(msg: MessageSession):
     try:
