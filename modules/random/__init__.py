@@ -2,7 +2,7 @@ from core.builtins.message import MessageSession
 from core.component import on_command
 import secrets
 
-r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'dice': 'random number 1 6', 'random dice': 'random number 1 6', 'coin': 'random choice 正面 反面', 'random coin': 'random choice 正面 反面'}, developers=[
+r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'coin': 'random choice 正面 反面', 'random coin': 'random choice 正面 反面'}, developers=[
                'Dianliang233'], desc='随机数生成器（密码学安全）',)
 
 
