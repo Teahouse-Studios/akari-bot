@@ -10,10 +10,10 @@ from core.exceptions import NoReportException
 from .constant import consts
 
 funcs = {}
-for name in dir(math):
-    item = getattr(math, name)
-    if not name.startswith('_') and callable(item):
-        funcs[name] = item
+# for name in dir(math):
+#     item = getattr(math, name)
+#     if not name.startswith('_') and callable(item):
+#         funcs[name] = item
 
 s_eval = SimpleEval(
     operators={
