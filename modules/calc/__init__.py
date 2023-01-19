@@ -2,6 +2,8 @@ from core.builtins.message import MessageSession
 from core.component import on_command
 from simpleeval import simple_eval, InvalidExpression
 
+from core.exceptions import NoReportException
+
 c = on_command('calc', developers=[
                'Dianliang233'], desc='安全地计算 Python ast 表达式。',)
 
@@ -30,3 +32,5 @@ async def _(msg: MessageSession):
         await msg.finish(str(simple_eval(msg.parsed_msg['<math_expression>'])))
     except InvalidExpression as e:
         await msg.finish(f"表达式无效：{e}")
+    except Exception as e:
+        raise NoReportException(e)
