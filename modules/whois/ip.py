@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 import json
 import socket
 import ipaddress
@@ -82,7 +82,7 @@ def parse_coordinate(axis: str, value: float):
         return f'{value}°{"E" if value > 0 else "W"}'
 
 
-async def format_ip(info: dict[str, Any]):
+async def format_ip(info: Dict[str, Any]):
     ip_property = {
         'global': '全局',
         'private': '私有',
