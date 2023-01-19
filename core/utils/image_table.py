@@ -21,7 +21,7 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=False):
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True):
     if not web_render:
         return False
     try:
