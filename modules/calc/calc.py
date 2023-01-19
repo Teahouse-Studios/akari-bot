@@ -38,7 +38,7 @@ s_eval = SimpleEval(
         'inf': math.inf, 'nan': math.nan,
     }, )
 
-try:  # rina's rina solution :rina:
+try:  # rina's rina lazy solution :rina:
     print('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
 except Exception as e:
     print('Failed ' + str(e))
