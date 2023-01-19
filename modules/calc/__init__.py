@@ -61,7 +61,7 @@ c = on_command('calc', developers=[
                                              })
 async def _(msg: MessageSession):
     try:
-        res = asyncio.wait_for(s_eval.eval(
+        res = await asyncio.wait_for(s_eval.eval(
             msg.parsed_msg["<math_expression>"]), 15)
         await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {str(res)}')
     except InvalidExpression as e:
