@@ -11,8 +11,12 @@ from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
-from modules.wiki.utils.screenshot_image_v2 import generate_screenshot
+
+from modules.wiki.utils.screenshot_image import generate_screenshot_v1
+from modules.wiki.utils.screenshot_image_v2 import generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
+
+generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 
 wiki = on_command('wiki',
                   alias={'wiki_start_site': 'wiki set',
@@ -269,12 +273,19 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 infobox_msg_list = []
                 for i in render_infobox_list:
                     for ii in i:
-                        get_infobox = await generate_screenshot(ii, allow_special_page=i[ii]['in_allowlist'],
-                                                                doc_mode=i[ii]['has_doc'])
-                        if get_infobox:
-                            infobox_msg_list.append(Image(get_infobox))
-                            infobox_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
-                                                          'https://s.wd-ljt.com/botreportbug'))
+                        Logger.info(i[ii]['url'])
+                        if i[ii]['url'] not in generate_screenshot_v2_blocklist:
+                            get_infobox = await generate_screenshot_v2(ii, allow_special_page=i[ii]['in_allowlist'],
+                                                                       doc_mode=i[ii]['has_doc'])
+                            if get_infobox:
+                                infobox_msg_list.append(Image(get_infobox))
+                                infobox_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
+                                                              'https://s.wd-ljt.com/botreportbug'))
+                        else:
+                            get_infobox = await generate_screenshot_v1(i[ii]['url'], ii, headers,
+                                                                       allow_special_page=i[ii]['in_allowlist'])
+                            if get_infobox:
+                                infobox_msg_list.append(Image(get_infobox))
                 if infobox_msg_list:
                     await session.sendMessage(infobox_msg_list, quote=False)
 
@@ -284,11 +295,16 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                 for i in render_section_list:
                     for ii in i:
                         if i[ii]['in_allowlist']:
-                            get_section = await generate_screenshot(ii, section=i[ii]['section'])
-                            if get_section:
-                                section_msg_list.append(Image(get_section))
-                                section_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
-                                                              'https://s.wd-ljt.com/botreportbug'))
+                            if i[ii]['url'] not in generate_screenshot_v2_blocklist:
+                                get_section = await generate_screenshot_v2(ii, section=i[ii]['section'])
+                                if get_section:
+                                    section_msg_list.append(Image(get_section))
+                                    section_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
+                                                                  'https://s.wd-ljt.com/botreportbug'))
+                            else:
+                                get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                                if get_section:
+                                    section_msg_list.append(Image(get_section))
                 if section_msg_list:
                     await session.sendMessage(section_msg_list, quote=False)
 

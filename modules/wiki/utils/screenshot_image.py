@@ -15,7 +15,7 @@ from core.logger import Logger
 web_render = Config('web_render_local')
 
 
-async def get_pic(link, page_link, headers, section=None, allow_special_page=False) -> Union[str, bool]:
+async def generate_screenshot_v1(link, page_link, headers, section=None, allow_special_page=False) -> Union[str, bool]:
     if not web_render:
         return False
     try:
