@@ -61,8 +61,9 @@ c = on_command('calc', developers=[
                                              })
 async def _(msg: MessageSession):
     try:
-        async with asyncio.timeout(15):
-            await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {str(s_eval.eval(msg.parsed_msg["<math_expression>"]))}')
+        res = asyncio.wait_for(s_eval.eval(
+            msg.parsed_msg["<math_expression>"]), 15)
+        await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {str(res)}')
     except InvalidExpression as e:
         await msg.finish(f"表达式无效：{e}")
     except asyncio.TimeoutError:
