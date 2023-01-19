@@ -61,8 +61,7 @@ c = on_command('calc', developers=[
                                              })
 async def _(msg: MessageSession):
     try:
-        res = await asyncio.wait_for(s_eval.eval(
-            msg.parsed_msg["<math_expression>"]), 15)
+        res = await asyncio.wait_for(async_eval(msg.parsed_msg["<math_expression>"]), 15)
         await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {str(res)}')
     except InvalidExpression as e:
         await msg.finish(f"表达式无效：{e}")
@@ -70,6 +69,10 @@ async def _(msg: MessageSession):
         raise TimeoutException()
     except Exception as e:
         raise NoReportException(e)
+
+
+async def async_eval(expr: str):
+    return s_eval.eval(expr)
 
 
 class TimeoutException(NoReportException):
