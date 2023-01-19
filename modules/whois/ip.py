@@ -6,7 +6,7 @@ from core.utils import get_url
 import os
 
 iso = json.load(open(os.path.dirname(os.path.abspath(
-    __file__)) + './iso.json', 'r', encoding='utf-8'))
+    __file__)) + '/iso.json', 'r', encoding='utf-8'))
 
 
 async def check_ip(ip: str):
