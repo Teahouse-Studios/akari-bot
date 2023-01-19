@@ -315,18 +315,18 @@ water_60F = 0.999001 * kilogram / liter = 水60华氏度
 pascal = newton / meter ** 2 = Pa = 帕斯卡
 barye = dyne / centimeter ** 2 = Ba = barie = barad = barrie = baryd = 微巴
 bar = 1e5 * pascal = 巴
-technical_atmosphere = kilogram * g_0 / centimeter ** 2 = at = 技术大气
-torr = atm / 760 = 托尔
+technical_atmosphere = kilogram * g_0 / centimeter ** 2 = at = 工程大气压
+torr = atm / 760 = 托
 pound_force_per_square_inch = force_pound / inch ** 2 = psi = 每平方英寸磅力
 kip_per_square_inch = kip / inch ** 2 = ksi = 每平方英寸千磅力
-millimeter_Hg_0C = millimeter * Hg * g_0 = mmHg = mm_Hg = 毫米水银
-centimeter_Hg_0C = centimeter * Hg * g_0 = cmHg = cm_Hg = 厘米水银
-inch_Hg_32F = inch * Hg * g_0 = inHg = in_Hg = 英寸水银
-inch_Hg_60F = inch * Hg_60F * g_0 = 英寸水银60华氏度
-inch_H2O_39F = inch * water_39F * g_0 = 英寸水39华氏度
-inch_H2O_60F = inch * water_60F * g_0 = 英寸水60华氏度
-feet_H2O = foot * water * g_0 = ftH2O = 英尺水
-cm_H2O = centimeter * water * g_0 = cmH2O = 厘米水
+millimeter_Hg_0C = millimeter * Hg * g_0 = mmHg = mm_Hg = 毫米汞柱
+centimeter_Hg_0C = centimeter * Hg * g_0 = cmHg = cm_Hg = 厘米汞柱
+inch_Hg_32F = inch * Hg * g_0 = inHg = in_Hg = 英寸汞柱
+inch_Hg_60F = inch * Hg_60F * g_0 = 英寸汞柱60华氏度
+inch_H2O_39F = inch * water_39F * g_0 = 英寸水柱39华氏度
+inch_H2O_60F = inch * water_60F * g_0 = 英寸水柱60华氏度
+feet_H2O = foot * water * g_0 = ftH2O = 英尺水柱
+cm_H2O = centimeter * water * g_0 = cmH2O = 厘米水柱
 sound_pressure_level = 20e-6 * pascal = SPL = 声压级
 
 # Torque
@@ -371,7 +371,7 @@ becquerel = counts_per_second = Bq = 贝可勒尔
 curie = 3.7e10 * becquerel = Ci = 居里
 rutherford = 1e6 * becquerel = Rd = 卢瑟福
 gray = joule / kilogram = Gy = 格雷
-sievert = joule / kilogram = Sv = 西弗
+sievert = joule / kilogram = Sv = 希沃特
 rads = 0.01 * gray = 拉德斯
 rem = 0.01 * sievert = 雷质
 roentgen = 2.58e-4 * coulomb / kilogram = _ = röntgen = 伦琴
