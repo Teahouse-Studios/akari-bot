@@ -1,10 +1,13 @@
 import os
+import sys
+import shlex
 
 from core.exceptions import NoReportException
 from core.builtins.message import MessageSession
 from core.component import on_command
 
 import asyncio
+import subprocess
 
 from core.logger import Logger
 
@@ -37,27 +40,38 @@ c = on_command('calc', developers=[
                                              '更多统计函数': 'https://docs.python.org/zh-cn/3/library/statistics.html',
                                              })
 async def _(msg: MessageSession):
-    try:
-        p = await asyncio.create_subprocess_shell(
-            f'python "{os.path.abspath("./modules/calc/calc.py")}" "{msg.parsed_msg["<math_expression>"]}"',
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
+    if sys.platform == 'win32':
         try:
-            await asyncio.wait_for(p.wait(), timeout=10)
-        except asyncio.TimeoutError:
-            p.kill()
-            raise NoReportException('计算超时。')
-        stdout_data, stderr_data = await p.communicate()
-        if p.returncode == 0:
-            res = stdout_data.decode('utf-8')
-
+            res = subprocess.check_output(
+                ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
+                , timeout=10, shell=False).decode('utf-8')
             if res[0:6] == 'Result':
-                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
+                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:-1]}')
             else:
-                await msg.finish(f'表达式无效：{res[7:]}')
-        else:
-            Logger.error(f'calc.py exited with code {p.returncode}')
-            Logger.error(f'calc.py stderr: {stderr_data.decode("utf-8")}')
-    except Exception as e:
-        raise NoReportException(e)
+                await msg.finish(f'表达式无效：{res[7:-1]}')
+        except subprocess.TimeoutExpired:
+            raise NoReportException('计算超时。')
+    else:
+        try:
+            p = await asyncio.create_subprocess_shell(f'python {shlex.quote(os.path.abspath("./modules/calc/calc.py"))} {shlex.quote(msg.parsed_msg["<math_expression>"])}',
+                                                      stdout=asyncio.subprocess.PIPE,
+                                                      stderr=asyncio.subprocess.PIPE
+                                                      )
+            try:
+                await asyncio.wait_for(p.wait(), timeout=10)
+            except asyncio.TimeoutError:
+                p.kill()
+                raise NoReportException('计算超时。')
+            stdout_data, stderr_data = await p.communicate()
+            if p.returncode == 0:
+                res = stdout_data.decode('utf-8')
+
+                if res[0:6] == 'Result':
+                    await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:-1]}')
+                else:
+                    await msg.finish(f'表达式无效：{res[7:-1]}')
+            else:
+                Logger.error(f'calc.py exited with code {p.returncode}')
+                Logger.error(f'calc.py stderr: {stderr_data.decode("utf-8")}')
+        except Exception as e:
+            raise NoReportException(e)
