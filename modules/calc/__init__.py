@@ -1,6 +1,5 @@
 import os
 import sys
-import shlex
 
 from core.exceptions import NoReportException
 from core.builtins.message import MessageSession
@@ -28,6 +27,10 @@ c = on_command('calc', developers=[
                                              '<=': '小于等于：1 <= 2 -> True',
                                              '>>': 'x 右移 y 位（相当于 x / (2 ** y)，y < 10000）：32 >> 5 -> 1',
                                              '<<': 'x 左移 y 位（相当于 x * (2 ** y)，y < 10000）：1 << 5 -> 32',
+                                             '&': '按位与：1 & 1 -> 1',
+                                             '|': '按位或：1 | 1 -> 1',
+                                             '^': '按位异或：1 ^ 1 -> 0',
+                                             '~': '按位取反：~1 -> -2',
                                              'in': 'x 在 y 中："hat" in "what" -> True',
                                              'not': '非：not True -> False',
                                              'is': 'x 与 y 是同一个对象：1 is 1 -> True',
