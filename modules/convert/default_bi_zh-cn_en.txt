@@ -355,7 +355,7 @@ molar = mole / liter = M = 体积摩尔
 
 # Catalytic activity
 [activity] = [substance] / [time]
-katal = mole / second = kat = 卡塔尔
+katal = mole / second = kat = 开特
 enzyme_unit = micromole / minute = U = enzymeunit = 酶单位
 
 # Entropy
@@ -367,10 +367,10 @@ clausius = calorie / kelvin = Cl = 克劳西斯
 entropy_unit = calorie / kelvin / mole = eu = 熵单位
 
 # Radiation
-becquerel = counts_per_second = Bq = 贝可勒尔
+becquerel = counts_per_second = Bq = 贝克勒尔 = 贝克
 curie = 3.7e10 * becquerel = Ci = 居里
 rutherford = 1e6 * becquerel = Rd = 卢瑟福
-gray = joule / kilogram = Gy = 格雷
+gray = joule / kilogram = Gy = 戈瑞
 sievert = joule / kilogram = Sv = 希沃特
 rads = 0.01 * gray = 拉德斯
 rem = 0.01 * sievert = 雷质
@@ -418,7 +418,7 @@ ampere_hour = ampere * hour = Ah = 安培时
 
 # Electric potential
 [electric_potential] = [energy] / [charge]
-volt = joule / coulomb = V = 伏特
+volt = joule / coulomb = V = 伏特 = 伏
 abvolt = 1e-8 * volt = abV = 绝对伏特
 mean_international_volt  = 1.00034 * volt = V_it = 平均国际伏特 # approximate
 US_international_volt  = 1.00033 * volt = V_US = 美国国际伏特 # approximate
@@ -433,7 +433,7 @@ atomic_unit_of_electric_field = e * k_C / a_0 ** 2 = a_u_electric_field = 原子
 
 # Resistance
 [resistance] = [electric_potential] / [current]
-ohm = volt / ampere = Ω = 欧姆
+ohm = volt / ampere = Ω = 欧姆 = 欧
 abohm = 1e-9 * ohm = abΩ = 绝对欧姆
 mean_international_ohm  = 1.00049 * ohm = Ω_it = ohm_it = 平均国际欧姆 # approximate
 US_international_ohm  = 1.000495 * ohm = Ω_US = ohm_US = 美国国际欧姆 # approximate
@@ -444,7 +444,7 @@ conventional_ohm_90 = R_K / R_K90 * ohm = Ω_90 = ohm_90 = 传统欧姆90
 
 # Conductance
 [conductance] = [current] / [electric_potential]
-siemens = ampere / volt = S = mho = 西门子
+siemens = ampere / volt = S = mho = 西门子 = 西门
 absiemens = 1e9 * siemens = abS = abmho = 绝对西门子
 
 # Capacitance
