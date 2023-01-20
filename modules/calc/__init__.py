@@ -46,9 +46,9 @@ async def _(msg: MessageSession):
                 ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
                 , timeout=10, shell=False).decode('utf-8')
             if res[0:6] == 'Result':
-                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:-1]}')
+                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
             else:
-                await msg.finish(f'表达式无效：{res[7:-1]}')
+                await msg.finish(f'表达式无效：{res[7:]}')
         except subprocess.TimeoutExpired:
             raise NoReportException('计算超时。')
     else:
@@ -67,9 +67,9 @@ async def _(msg: MessageSession):
                 res = stdout_data.decode('utf-8')
 
                 if res[0:6] == 'Result':
-                    await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:-1]}')
+                    await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
                 else:
-                    await msg.finish(f'表达式无效：{res[7:-1]}')
+                    await msg.finish(f'表达式无效：{res[7:]}')
             else:
                 Logger.error(f'calc.py exited with code {p.returncode}')
                 Logger.error(f'calc.py stderr: {stderr_data.decode("utf-8")}')
