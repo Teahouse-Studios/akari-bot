@@ -154,13 +154,13 @@ ppm = 1e-6 = 分比
 
 # Length
 angstrom = 1e-10 * meter = Å = ångström = Å = 埃格斯特朗 = 埃
-micron = micrometer = µ = μ = 微米
+micron = micrometer = µm = μ = 微米
 fermi = femtometer = fm = 费米
 light_year = speed_of_light * julian_year = ly = lightyear = 光年
 astronomical_unit = 149597870700 * meter = au = 天文单位 # since Aug 2012
 parsec = 1 / tansec * astronomical_unit = pc = 秒差距
-nautical_mile = 1852 * meter = nmi = 海里
-bohr = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = 波尔
+nautical_mile = 1852 * meter = nmi = 海里 = 浬
+bohr = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = 玻尔半径 = 原子单位长度
 x_unit_Cu = K_alpha_Cu_d_220 * d_220 / 1537.4 = Xu_Cu = 铜的X单位 = 铜的X射线波长
 x_unit_Mo = K_alpha_Mo_d_220 * d_220 / 707.831 = Xu_Mo = 钼的X单位 = 钼的X射线波长
 angstrom_star = K_alpha_W_d_220 * d_220 / 0.2090100 = Å_star = 埃星
@@ -168,7 +168,7 @@ planck_length = (hbar * gravitational_constant / c ** 3) ** 0.5 = 普朗克长�
 
 
 # Mass
-metric_ton = 1e3 * kilogram = t = tonne = 公吨
+metric_ton = 1e3 * kilogram = t = tonne = 吨 = 公吨
 unified_atomic_mass_unit = atomic_mass_constant = u = amu = 原子质量单位
 dalton = atomic_mass_constant = Da = 道尔顿
 grain = 64.79891 * milligram = gr = 格令
@@ -177,22 +177,22 @@ carat = 200 * milligram = ct = karat = 克拉
 planck_mass = (hbar * c / gravitational_constant) ** 0.5 = 普朗克质量
 
 # Time
-minute = 60 * second = min = 分钟
+minute = 60 * second = min = 分钟 = 分
 hour = 60 * minute = h = hr = 小时
-day = 24 * hour = d = 天
-week = 7 * day = 星期
+day = 24 * hour = d = 日 = 天
+week = 7 * day = 星期 = 周 = 礼拜
 fortnight = 2 * week = 两星期
-year = 365.25 * day = a = yr = julian_year = 年
+year = 365.25 * day = a = yr = julian_year = 年 = 儒略年
 month = year / 12 = 月
 
 # decade = 10 * year
 ## NOTE: decade [time] can conflict with decade [dimensionless]
 
 century = 100 * year = _ = centuries = 世纪
-millennium = 1e3 * year = _ = millennia = 千年
+millennium = 1e3 * year = _ = millennia = 千年纪 = 千纪 = 千年
 eon = 1e9 * year = 宙
 shake = 1e-8 * second = 抖
-svedberg = 1e-13 * second = 斯维德伯格
+svedberg = 1e-13 * second = 斯韦德贝里 = 斯维德伯格
 atomic_unit_of_time = hbar / E_h = a_u_time = 原子单位时间
 gregorian_year = 365.2425 * day = 公历年
 sidereal_year = 365.256363004 * day = 恒星年
@@ -202,7 +202,7 @@ leap_year = 366 * day = 闰年
 sidereal_day = day / 1.00273790935079524 = 恒星日
 sidereal_month = 27.32166155 * day = 恒星月
 tropical_month = 27.321582 * day = 回归月
-synodic_month = 29.530589 * day = _ = lunar_month = 同步月
+synodic_month = 29.530589 * day = _ = lunar_month = 同步月 = 朔望月
 planck_time = (hbar * gravitational_constant / c ** 5) ** 0.5 = 普朗克时间
 
 # Temperature
@@ -229,7 +229,7 @@ stere = meter ** 3
 
 # Frequency
 [frequency] = 1 / [time]
-hertz = 1 / second = Hz = 赫兹
+hertz = 1 / second = Hz = 赫兹 = 赫
 revolutions_per_minute = revolution / minute = rpm = 转每分
 revolutions_per_second = revolution / second = rps = 转每秒
 counts_per_second = count / second = cps = 次每秒
