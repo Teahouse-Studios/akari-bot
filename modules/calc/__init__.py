@@ -39,6 +39,7 @@ c = on_command('calc', developers=[
                                              'int()': '转换为整数：int(1.5) -> 1',
                                              'float()': '转换为浮点数：float(1) -> 1.0',
                                              'str()': '转换为字符串：str(1) -> "1"',
+                                             'complex()': '转换为复数：complex(1) -> (1 + 0j)',
                                              '更多数学函数（无需前缀）': 'https://docs.python.org/zh-cn/3/library/math.html',
                                              '更多统计函数（无需前缀）': 'https://docs.python.org/zh-cn/3/library/statistics.html',
                                              '更多复数运算函数（需要 cmath. 前缀）': 'https://docs.python.org/zh-cn/3/library/cmath.html',
