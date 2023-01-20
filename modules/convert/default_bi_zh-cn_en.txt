@@ -258,7 +258,7 @@ galileo = centimeter / second ** 2 = Gal = 伽利略
 
 # Force
 [force] = [mass] * [acceleration]
-newton = kilogram * meter / second ** 2 = N = 牛顿
+newton = kilogram * meter / second ** 2 = N = 牛顿 = 牛
 dyne = gram * centimeter / second ** 2 = dyn = 丁
 force_kilogram = g_0 * kilogram = kgf = kilogram_force = pond = 千克力
 force_gram = g_0 * gram = gf = gram_force = 克力
