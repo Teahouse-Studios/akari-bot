@@ -40,7 +40,7 @@ c = on_command('calc', developers=[
                                              '更多统计函数': 'https://docs.python.org/zh-cn/3/library/statistics.html',
                                              })
 async def _(msg: MessageSession):
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' and sys.version_info.minor == 10:
         try:
             res = subprocess.check_output(
                 ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
@@ -53,7 +53,7 @@ async def _(msg: MessageSession):
             raise NoReportException('计算超时。')
     else:
         try:
-            p = await asyncio.create_subprocess_shell(f'python {shlex.quote(os.path.abspath("./modules/calc/calc.py"))} {shlex.quote(msg.parsed_msg["<math_expression>"])}',
+            p = await asyncio.create_subprocess_shell(f'python "{os.path.abspath("./modules/calc/calc.py")}" "{msg.parsed_msg["<math_expression>"]}"',
                                                       stdout=asyncio.subprocess.PIPE,
                                                       stderr=asyncio.subprocess.PIPE
                                                       )
