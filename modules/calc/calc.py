@@ -12,8 +12,8 @@ funcs = {}
 
 
 def add_func(module):
-    for name in dir(math):
-        item = getattr(math, name)
+    for name in dir(module):
+        item = getattr(module, name)
         if not name.startswith('_') and callable(item):
             funcs[name] = item
 
