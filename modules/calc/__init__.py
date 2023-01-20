@@ -53,7 +53,7 @@ async def _(msg: MessageSession):
             res = stdout_data.decode('utf-8')
 
             if res[0:6] == 'Result':
-                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
+                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:-2]}')
             else:
                 await msg.finish(f'表达式无效：{res[7:]}')
         else:
