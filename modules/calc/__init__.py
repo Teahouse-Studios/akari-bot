@@ -36,15 +36,15 @@ c = on_command('calc', developers=[
                                              'int()': '转换为整数：int(1.5) -> 1',
                                              'float()': '转换为浮点数：float(1) -> 1.0',
                                              'str()': '转换为字符串：str(1) -> "1"',
-                                             '更多数学函数': 'https://docs.python.org/zh-cn/3/library/math.html',
-                                             '更多统计函数': 'https://docs.python.org/zh-cn/3/library/statistics.html',
+                                             '更多数学函数（无需前缀）': 'https://docs.python.org/zh-cn/3/library/math.html',
+                                             '更多统计函数（无需前缀）': 'https://docs.python.org/zh-cn/3/library/statistics.html',
+                                             '更多复数运算函数（需要 cmath. 前缀）': 'https://docs.python.org/zh-cn/3/library/cmath.html',
                                              })
 async def _(msg: MessageSession):
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
             res = subprocess.check_output(
-                ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]]
-                , timeout=10, shell=False).decode('utf-8')
+                ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]], timeout=10, shell=False).decode('utf-8')
             if res[0:6] == 'Result':
                 await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
             else:
