@@ -60,6 +60,7 @@ s_eval = EvalWithCompoundTypes(
     }, )
 
 try:  # rina's rina lazy solution :rina:
-    print('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
+    sys.stdout.write('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
 except Exception as e:
-    print('Failed ' + str(e))
+    sys.stdout.write('Failed ' + str(e))
+sys.exit()
