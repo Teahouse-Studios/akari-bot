@@ -215,17 +215,17 @@ planck_temperature = (hbar * c ** 5 / gravitational_constant / k ** 2) ** 0.5 = 
 
 # Area
 [area] = [length] ** 2
-are = 100 * meter ** 2
-b = 1e-28 * meter ** 2 = barn
-darcy = centipoise * centimeter ** 2 / (second * atmosphere) = 达西
-ha = 100 * are = hectare
-
-# Volume
-[volume] = [length] ** 3
 are = 100 * meter ** 2 = 公亩
 barn = 1e-28 * meter ** 2 = b = 贝纳
 darcy = centipoise * centimeter ** 2 / (second * atmosphere) = 达西
 hectare = 100 * are = ha = 公顷
+
+# Volume
+[volume] = [length] ** 3
+liter = decimeter ** 3 = l = L = litre = 升
+cubic_centimeter = centimeter ** 3 = cc = 立方厘米
+lambda = microliter = λ
+stere = meter ** 3
 
 # Frequency
 [frequency] = 1 / [time]
