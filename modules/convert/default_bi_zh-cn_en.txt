@@ -207,7 +207,7 @@ planck_time = (hbar * gravitational_constant / c ** 5) ** 0.5 = 普朗克时间
 
 # Temperature
 degree_Celsius = kelvin; offset: 273.15 = °C = celsius = degC = degreeC = 摄氏度
-degree_Rankine = 5 / 9 * kelvin; offset: 0 = °R = rankine = degR = degreeR = 兰氏度
+degree_Rankine = 5 / 9 * kelvin; offset: 0 = °R = °Ra = rankine = degR = degreeR = 兰氏度
 degree_Fahrenheit = 5 / 9 * kelvin; offset: 233.15 + 200 / 9 = °F = fahrenheit = degF = degreeF = 华氏度
 réaumur = 4 / 5 * kelvin; offset: 273.15 = °Re = reaumur = degRe = degreeRe = degree_Réaumur = 列氏度
 atomic_unit_of_temperature = E_h / k = a_u_temp = 原子单位温度
@@ -216,7 +216,7 @@ planck_temperature = (hbar * c ** 5 / gravitational_constant / k ** 2) ** 0.5 = 
 # Area
 [area] = [length] ** 2
 are = 100 * meter ** 2 = 公亩
-barn = 1e-28 * meter ** 2 = b = 贝纳
+barn = 1e-28 * meter ** 2 = b = 靶恩
 darcy = centipoise * centimeter ** 2 / (second * atmosphere) = 达西
 hectare = 100 * are = ha = 公顷
 
@@ -242,7 +242,7 @@ reciprocal_centimeter = 1 / cm = cm_1 = kayser = 倒数厘米
 [velocity] = [length] / [time]
 [speed] = [velocity]
 knot = nautical_mile / hour = kt = knot_international = international_knot = 节
-mile_per_hour = mile / hour = mph = MPH = 英里每小时
+mile_per_hour = mile / hour = mph = MPH = 英里每小时 = 迈
 kilometer_per_hour = kilometer / hour = kph = KPH = 千米每小时
 kilometer_per_second = kilometer / second = kps = 千米每秒
 meter_per_second = meter / second = mps = 米每秒
@@ -282,7 +282,7 @@ thermochemical_british_thermal_unit = 1e3 * pound / kilogram * degR / kelvin * c
 quadrillion_Btu = 1e15 * Btu = quad = 兆英热单位
 therm = 1e5 * Btu = thm = EC_therm = 热量
 US_therm = 1.054804e8 * joule = 美国热量
-ton_TNT = 1e9 * calorie = tTNT = 吨TNT
+ton_TNT = 1e9 * calorie = tTNT = TNT当量
 tonne_of_oil_equivalent = 1e10 * international_calorie = toe = 吨油当量
 atmosphere_liter = atmosphere * liter = atm_l = 气体升
 
@@ -400,7 +400,7 @@ lux = lumen / meter ** 2 = lx = 勒克斯
 atomic_unit_of_intensity = 0.5 * ε_0 * c * atomic_unit_of_electric_field ** 2 = a_u_intensity = 原子单位光强
 
 # Current
-biot = 10 * ampere = Bi = 比奥
+biot = 10 * ampere = Bi = 毕奥
 abampere = biot = abA = 绝对安培
 atomic_unit_of_current = e / atomic_unit_of_time = a_u_current = 原子单位电流
 mean_international_ampere = mean_international_volt / mean_international_ohm = A_it = 平均国际安培
