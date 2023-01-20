@@ -1,5 +1,3 @@
-import traceback
-
 from constant import consts
 from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 import ast
