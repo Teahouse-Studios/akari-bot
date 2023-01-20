@@ -1,14 +1,16 @@
 import traceback
 
 from constant import consts
-from simpleeval import SimpleEval, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
+from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 import ast
 import sys
 import operator as op
 import math
 import statistics
+import cmath
 
 funcs = {}
+named_funcs = {}
 
 
 def add_func(module):
@@ -18,10 +20,19 @@ def add_func(module):
             funcs[name] = item
 
 
+def add_named_func(module):
+    named_funcs[module.__name__] = {}
+    for name in dir(module):
+        item = getattr(module, name)
+        if not name.startswith('_') and callable(item):
+            named_funcs[module.__name__][name] = item
+
+
 add_func(math)
 add_func(statistics)
+add_named_func(cmath)
 
-s_eval = SimpleEval(
+s_eval = EvalWithCompoundTypes(
     operators={
         **DEFAULT_OPERATORS,
         ast.BitOr: op.or_,
@@ -31,11 +42,21 @@ s_eval = SimpleEval(
     },
     functions={**funcs, **DEFAULT_FUNCTIONS},
     names={
-        **DEFAULT_NAMES, **consts,
+        **DEFAULT_NAMES, **consts, **named_funcs,
         'pi': math.pi,
         'e': math.e,
         'tau': math.tau,
         'inf': math.inf, 'nan': math.nan,
+        'cmath': {
+            'pi': cmath.pi,
+            'e': cmath.e,
+            'tau': cmath.tau,
+            'inf': cmath.inf,
+            'infj': cmath.infj,
+            'nan': cmath.nan,
+            'nanj': cmath.nanj,
+            **named_funcs['cmath'],
+        },
     }, )
 
 try:  # rina's rina lazy solution :rina:
