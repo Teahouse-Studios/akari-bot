@@ -6,6 +6,8 @@ import operator as op
 import math
 import statistics
 import cmath
+import decimal
+import fractions
 
 funcs = {}
 named_funcs = {}
@@ -29,6 +31,8 @@ def add_named_func(module):
 add_func(math)
 add_func(statistics)
 add_named_func(cmath)
+add_named_func(decimal)
+add_named_func(fractions)
 
 s_eval = EvalWithCompoundTypes(
     operators={
@@ -38,7 +42,8 @@ s_eval = EvalWithCompoundTypes(
         ast.BitXor: op.xor,
         ast.Invert: op.invert,
     },
-    functions={**funcs, **DEFAULT_FUNCTIONS, 'complex': complex},
+    functions={**funcs, **DEFAULT_FUNCTIONS, 'complex': complex,
+               'divmod': divmod, 'len': len, 'round': round},
     names={
         **DEFAULT_NAMES, **consts, **named_funcs,
         'pi': math.pi,
