@@ -132,10 +132,10 @@ count = [] = 个
 turn = 2 * π * radian = _ = revolution = cycle = circle = 转
 degree = π / 180 * radian = deg = arcdeg = arcdegree = 度 = 角度
 arcminute = degree / 60 = arcmin = arc_minute = angular_minute = 弧分 = 角分
-arcsecond = arcminute / 60 = arcsec = arc_second = angular_second = 角秒 = 角秒
+arcsecond = arcminute / 60 = arcsec = arc_second = angular_second = 弧秒 = 角秒
 milliarcsecond = 1e-3 * arcsecond = mas = 毫弧秒 = 毫角秒
 grade = π / 200 * radian = grad = gon = 百分度 = 梯度
-mil = π / 32000 * radian = 毫弧度 = 密位
+milliradian = π / 32000 * radian = mil = 毫弧度 = 密位
 
 # Solid angle
 steradian = radian ** 2 = sr = 球面度
@@ -259,10 +259,10 @@ galileo = centimeter / second ** 2 = Gal = 伽利略
 # Force
 [force] = [mass] * [acceleration]
 newton = kilogram * meter / second ** 2 = N = 牛顿 = 牛
-dyne = gram * centimeter / second ** 2 = dyn = 丁
+dyne = gram * centimeter / second ** 2 = dyn = 达因
 force_kilogram = g_0 * kilogram = kgf = kilogram_force = pond = 千克力
 force_gram = g_0 * gram = gf = gram_force = 克力
-force_metric_ton = g_0 * metric_ton = tf = metric_ton_force = force_t = t_force = 公吨力
+force_metric_ton = g_0 * metric_ton = tf = metric_ton_force = force_t = t_force = 公吨力 = 吨力
 atomic_unit_of_force = E_h / a_0 = a_u_force = 原子单位力
 
 # Energy
@@ -317,16 +317,16 @@ barye = dyne / centimeter ** 2 = Ba = barie = barad = barrie = baryd = 微巴
 bar = 1e5 * pascal = 巴
 technical_atmosphere = kilogram * g_0 / centimeter ** 2 = at = 工程大气压
 torr = atm / 760 = 托
-pound_force_per_square_inch = force_pound / inch ** 2 = psi = 每平方英寸磅力
-kip_per_square_inch = kip / inch ** 2 = ksi = 每平方英寸千磅力
+pound_force_per_square_inch = force_pound / inch ** 2 = psi = 磅力每平方英寸
+kip_per_square_inch = kip / inch ** 2 = ksi = 千磅力每平方英寸
 millimeter_Hg_0C = millimeter * Hg * g_0 = mmHg = mm_Hg = 毫米汞柱
 centimeter_Hg_0C = centimeter * Hg * g_0 = cmHg = cm_Hg = 厘米汞柱
 inch_Hg_32F = inch * Hg * g_0 = inHg = in_Hg = 英寸汞柱
-inch_Hg_60F = inch * Hg_60F * g_0 = 英寸汞柱60华氏度
-inch_H2O_39F = inch * water_39F * g_0 = 英寸水柱39华氏度
-inch_H2O_60F = inch * water_60F * g_0 = 英寸水柱60华氏度
+inch_Hg_60F = inch * Hg_60F * g_0 = 60华氏度英寸汞柱
+inch_H2O_39F = inch * water_39F * g_0 = 39华氏度英寸水柱
+inch_H2O_60F = inch * water_60F * g_0 = 60华氏度英寸水柱
 feet_H2O = foot * water * g_0 = ftH2O = 英尺水柱
-cm_H2O = centimeter * water * g_0 = cmH2O = 厘米水柱
+centimeter_H2O = cm_H2O = centimeter * water * g_0 = cmH2O = 厘米水柱
 sound_pressure_level = 20e-6 * pascal = SPL = 声压级
 
 # Torque
