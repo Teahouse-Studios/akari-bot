@@ -42,8 +42,16 @@ s_eval = EvalWithCompoundTypes(
         ast.BitXor: op.xor,
         ast.Invert: op.invert,
     },
-    functions={**funcs, **DEFAULT_FUNCTIONS, 'complex': complex,
-               'divmod': divmod, 'len': len, 'round': round},
+    functions={**funcs, **DEFAULT_FUNCTIONS, 
+        'bin': bin,
+        'bool': bool,
+        'complex': complex,
+        'divmod': divmod, 
+        'hex': hex,
+        'len': len, 
+        'oct': oct,
+        'round': round
+    },
     names={
         **DEFAULT_NAMES, **consts, **named_funcs,
         'pi': math.pi,
