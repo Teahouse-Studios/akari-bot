@@ -24,3 +24,4 @@ numpy
 matplotlib
 pint
 simpleeval
+pywin32; sys_platform == 'win32'
