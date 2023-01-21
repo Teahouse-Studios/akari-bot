@@ -34,8 +34,10 @@ c = on_command('calc', developers=[
                                              'float()': '转换为浮点数：float(1) -> 1.0',
                                              'str()': '转换为字符串：str(1) -> "1"',
                                              'complex()': '转换为复数：complex(1) -> (1 + 0j)',
-                                             'abs()': '绝对值（复数：模）：abs(-1) -> 1',
                                              'bool()': '转换为布尔值：bool(1) -> True',
+                                             'bin()': '转换为二进制：bin(268) -> 0b100001100',
+                                             'oct()': '转换为八进制：oct(268) ->  0o414',
+                                             'hex()': '转换为十六进制：hex(268) -> 0x10c',
                                              '更多可用运算符和函数': 'https://bot.teahouse.team/-/340',
                                              })
 async def _(msg: MessageSession):
