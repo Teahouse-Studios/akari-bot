@@ -72,6 +72,11 @@ async def _(msg: MessageSession):
                     await msg.finish(f'表达式无效：{res[7:]}')
             else:
                 Logger.error(f'calc.py exited with code {p.returncode}')
-                Logger.error(f'calc.py stderr: {stderr_data.decode("gbk")}')
+                try:
+                    Logger.error(
+                        f'calc.py stderr: {stderr_data.decode("utf-8")}')
+                except UnicodeDecodeError:
+                    Logger.error(
+                        f'calc.py stderr: {stderr_data.decode("gbk")}')
         except Exception as e:
             raise NoReportException(e)
