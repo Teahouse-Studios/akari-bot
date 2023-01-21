@@ -53,10 +53,10 @@ async def _(msg: MessageSession):
             raise NoReportException('计算超时。')
     else:
         try:
-            p = await asyncio.create_subprocess_shell(f'python "{os.path.abspath("./modules/calc/calc.py")}" "{msg.parsed_msg["<math_expression>"]}"',
-                                                      stdout=asyncio.subprocess.PIPE,
-                                                      stderr=asyncio.subprocess.PIPE
-                                                      )
+            p = await asyncio.create_subprocess_exec('python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"],
+                                                     stdout=asyncio.subprocess.PIPE,
+                                                     stderr=asyncio.subprocess.PIPE
+                                                     )
             try:
                 await asyncio.wait_for(p.wait(), timeout=10)
             except asyncio.TimeoutError:
@@ -72,6 +72,6 @@ async def _(msg: MessageSession):
                     await msg.finish(f'表达式无效：{res[7:]}')
             else:
                 Logger.error(f'calc.py exited with code {p.returncode}')
-                Logger.error(f'calc.py stderr: {stderr_data.decode("utf-8")}')
+                Logger.error(f'calc.py stderr: {stderr_data.decode("gbk")}')
         except Exception as e:
             raise NoReportException(e)

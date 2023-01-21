@@ -8,6 +8,23 @@ import statistics
 import cmath
 import decimal
 import fractions
+import os
+
+if os.name == 'posix':
+    os.nice(15)
+    import resource
+    resource.setrlimit(resource.RLIMIT_AS,
+                       (16 * 1024 * 1024, 16 * 1024 * 1024))
+    resource.setrlimit(resource.RLIMIT_DATA,
+                       (16 * 1024 * 1024, 16 * 1024 * 1024))
+    resource.setrlimit(resource.RLIMIT_STACK,
+                       (16 * 1024 * 1024, 16 * 1024 * 1024))
+elif os.name == 'nt':
+    import win32process
+    win32process.SetPriorityClass(win32process.GetCurrentProcess(
+    ), 16384)
+    win32process.SetProcessWorkingSetSize(
+        win32process.GetCurrentProcess(), 1, 16 * 1024 * 1024)
 
 funcs = {}
 named_funcs = {}
@@ -42,16 +59,16 @@ s_eval = EvalWithCompoundTypes(
         ast.BitXor: op.xor,
         ast.Invert: op.invert,
     },
-    functions={**funcs, **DEFAULT_FUNCTIONS, 
-        'bin': bin,
-        'bool': bool,
-        'complex': complex,
-        'divmod': divmod, 
-        'hex': hex,
-        'len': len, 
-        'oct': oct,
-        'round': round
-    },
+    functions={**funcs, **DEFAULT_FUNCTIONS,
+               'bin': bin,
+               'bool': bool,
+               'complex': complex,
+               'divmod': divmod,
+               'hex': hex,
+               'len': len,
+               'oct': oct,
+               'round': round
+               },
     names={
         **DEFAULT_NAMES, **consts, **named_funcs,
         'pi': math.pi,
