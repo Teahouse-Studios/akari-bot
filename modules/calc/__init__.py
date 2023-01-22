@@ -41,19 +41,20 @@ c = on_command('calc', developers=[
                                              '更多可用运算符和函数': 'https://bot.teahouse.team/-/340',
                                              })
 async def _(msg: MessageSession):
+    expr = msg.asDisplay().split(' ', 1)[1]
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
             res = subprocess.check_output(
-                ['python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"]], timeout=10, shell=False).decode('utf-8')
+                ['python', os.path.abspath("./modules/calc/calc.py"), expr], timeout=10, shell=False).decode('utf-8')
             if res[0:6] == 'Result':
-                await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
+                await msg.finish(f'{(expr)} = {res[7:]}')
             else:
                 await msg.finish(f'表达式无效：{res[7:]}')
         except subprocess.TimeoutExpired:
             raise NoReportException('计算超时。')
     else:
         try:
-            p = await asyncio.create_subprocess_exec('python', os.path.abspath("./modules/calc/calc.py"), msg.parsed_msg["<math_expression>"],
+            p = await asyncio.create_subprocess_exec('python', os.path.abspath("./modules/calc/calc.py"), expr,
                                                      stdout=asyncio.subprocess.PIPE,
                                                      stderr=asyncio.subprocess.PIPE
                                                      )
@@ -67,7 +68,7 @@ async def _(msg: MessageSession):
                 res = stdout_data.decode('utf-8')
 
                 if res[0:6] == 'Result':
-                    await msg.finish(f'{(msg.parsed_msg["<math_expression>"])} = {res[7:]}')
+                    await msg.finish(f'{(expr)} = {res[7:]}')
                 else:
                     await msg.finish(f'表达式无效：{res[7:]}')
             else:
