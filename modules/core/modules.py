@@ -11,7 +11,8 @@ from database import BotDBUtil
 
 module = on_command('module',
                     base=True,
-                    alias={'enable': 'module enable', 'disable': 'module disable'},
+                    alias={'enable': 'module enable',
+                           'disable': 'module disable'},
                     developers=['OasisAkari'],
                     required_admin=True
                     )
@@ -42,9 +43,11 @@ async def _(msg: MessageSession):
 
 async def config_modules(msg: MessageSession):
     alias = ModulesManager.return_modules_alias_map()
-    modules_ = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
+    modules_ = ModulesManager.return_modules_list_as_dict(
+        targetFrom=msg.target.targetFrom)
     enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
-    wait_config = [msg.parsed_msg.get('<module>')] + msg.parsed_msg.get('...', [])
+    wait_config = [msg.parsed_msg.get(
+        '<module>')] + msg.parsed_msg.get('...', [])
     wait_config_list = []
     for module_ in wait_config:
         if module_ not in wait_config_list:
@@ -62,7 +65,7 @@ async def config_modules(msg: MessageSession):
                 if function[0] == '_':
                     continue
                 if isinstance(modules_[function], Command) and (
-                    modules_[function].base or modules_[function].required_superuser):
+                        modules_[function].base or modules_[function].required_superuser):
                     continue
                 enable_list.append(function)
         else:
@@ -101,7 +104,8 @@ async def config_modules(msg: MessageSession):
                     recommend_modules_help_doc_list.append(f'模块{m}的帮助信息：')
 
                     if modules_[m].desc is not None:
-                        recommend_modules_help_doc_list.append(modules_[m].desc)
+                        recommend_modules_help_doc_list.append(
+                            modules_[m].desc)
                     if isinstance(modules_[m], Command):
                         hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                              command_prefixes=msg.prefixes).return_formatted_help_doc()
@@ -115,7 +119,7 @@ async def config_modules(msg: MessageSession):
                 if function[0] == '_':
                     continue
                 if isinstance(modules_[function], Command) and (
-                    modules_[function].base or modules_[function].required_superuser):
+                        modules_[function].base or modules_[function].required_superuser):
                     continue
                 disable_list.append(function)
         else:
@@ -163,7 +167,6 @@ async def config_modules(msg: MessageSession):
         await msg.finish()
 
 
-
 hlp = on_command('help',
                  base=True,
                  developers=['OasisAkari', 'Dianliang233'],
@@ -172,7 +175,8 @@ hlp = on_command('help',
 
 @hlp.handle('<module> {查看一个模块的详细信息}')
 async def bot_help(msg: MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
+    module_list = ModulesManager.return_modules_list_as_dict(
+        targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
     if msg.parsed_msg is not None:
@@ -200,7 +204,8 @@ async def bot_help(msg: MessageSession):
             if help_name in developers:
                 dev_list = developers[help_name]
                 if isinstance(dev_list, (list, tuple)):
-                    devs = '、'.join(developers[help_name]) if developers[help_name] is not None else ''
+                    devs = '、'.join(
+                        developers[help_name]) if developers[help_name] is not None else ''
                 elif isinstance(dev_list, str):
                     devs = dev_list
                 else:
@@ -208,6 +213,7 @@ async def bot_help(msg: MessageSession):
             else:
                 devs = ''
             devs_msg = '\n模块作者：' + devs if devs != '' else ''
+            wiki_msg = f'\n模块文档：https://bot.teahouse.team/wiki/' + help_name
             await msg.finish(doc + devs_msg)
         else:
             await msg.finish('此模块可能不存在，请检查输入。')
@@ -215,7 +221,8 @@ async def bot_help(msg: MessageSession):
 
 @hlp.handle('{查看帮助列表}')
 async def _(msg: MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
+    module_list = ModulesManager.return_modules_list_as_dict(
+        targetFrom=msg.target.targetFrom)
     target_enabled_list = msg.enabled_modules
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
@@ -241,18 +248,21 @@ async def _(msg: MessageSession):
                         doc_.append(module_.desc)
                 doc = '\n'.join(doc_)
                 appends.append(doc)
-                module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
+                module_alias = ModulesManager.return_module_alias(
+                    module_.bind_prefix)
                 malias = []
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
-                appends.append('、'.join(developers[x]) if developers.get(x) is not None else '')
+                appends.append('、'.join(developers[x]) if developers.get(
+                    x) is not None else '')
                 if isinstance(module_, Command) and module_.base:
                     essential.append(appends)
                 if x in target_enabled_list:
                     m.append(appends)
             if essential:
-                tables.append(ImageTable(essential, ['基础模块列表', '帮助信息', '命令别名', '作者']))
+                tables.append(ImageTable(
+                    essential, ['基础模块列表', '帮助信息', '命令别名', '作者']))
             if m:
                 tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
             if tables:
@@ -291,7 +301,8 @@ async def _(msg: MessageSession):
 
 
 async def modules_help(msg: MessageSession):
-    module_list = ModulesManager.return_modules_list_as_dict(targetFrom=msg.target.targetFrom)
+    module_list = ModulesManager.return_modules_list_as_dict(
+        targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if web_render and msg.Feature.image:
@@ -307,7 +318,8 @@ async def modules_help(msg: MessageSession):
                 appends = [module_.bind_prefix]
                 doc_ = []
                 if isinstance(module_, Command):
-                    help_ = CommandParser(module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+                    help_ = CommandParser(
+                        module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
                     if module_.desc is not None:
                         doc_.append(module_.desc)
                     if help_.args is not None:
@@ -317,12 +329,14 @@ async def modules_help(msg: MessageSession):
                         doc_.append(module_.desc)
                 doc = '\n'.join(doc_)
                 appends.append(doc)
-                module_alias = ModulesManager.return_module_alias(module_.bind_prefix)
+                module_alias = ModulesManager.return_module_alias(
+                    module_.bind_prefix)
                 malias = []
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
-                appends.append('、'.join(developers[x]) if developers.get(x) is not None else '')
+                appends.append('、'.join(developers[x]) if developers.get(
+                    x) is not None else '')
                 m.append(appends)
             if m:
                 tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
