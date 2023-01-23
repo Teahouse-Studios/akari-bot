@@ -26,6 +26,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         if allow_special_page and doc_mode:
             page_link += '/doc'
             elements_.insert(0, '.mw-parser-output')
+            elements_.insert(0, '.documentation')
         if allow_special_page and not doc_mode:
             elements_.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
