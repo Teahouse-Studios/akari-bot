@@ -46,6 +46,9 @@ async def cytoid_profile(msg: MessageSession):
     s = grade.get('S')
     if s is not None:
         grade_t.append(f'S: {s}')
+    aa = grade.get('AA')
+    if aa is not None:
+        grade_t.append(f'AA: {aa}')
     a = grade.get('A')
     if a is not None:
         grade_t.append(f'A: {a}')
