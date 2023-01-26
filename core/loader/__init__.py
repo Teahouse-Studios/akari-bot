@@ -2,6 +2,7 @@ import importlib
 import os
 import re
 import traceback
+import sys
 from typing import Dict, Union
 
 from core.elements import Command, Schedule, RegexCommand, StartUp, PrivateAssets
@@ -53,6 +54,13 @@ class ModulesManager:
             ModulesManager.modules.update({module.bind_prefix: module})
         else:
             raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
+
+    @staticmethod
+    def remove_module(module_name):
+        if module_name in ModulesManager.modules:
+            ModulesManager.modules.pop(module_name)
+        else:
+            raise ValueError(f'Moudule "{module_name}" is not exist')  
 
     @staticmethod
     def bind_to_module(bind_prefix: str, meta):
@@ -125,3 +133,27 @@ class ModulesManager:
                 else:
                     d.update({module.bind_prefix: module})
         return d
+
+    @staticmethod
+    def reload_module(module_name:str):
+        """
+        重载该模块
+        """
+        try:
+            module = sys.modules['modules.' + module_name]
+            if module_name in ModulesManager.modules:
+                ModulesManager.remove_module(module_name)
+            cnt = 0
+            loadedModList = list(sys.modules.keys())
+            for mod in loadedModList:
+                if mod.startswith(f'modules.{module_name}.'):
+                    importlib.reload(sys.modules[mod])
+                    cnt += 1
+            importlib.reload(module)
+            Logger.info(f'Succeeded reloaded modules.{module_name}!')
+            return cnt
+        except:
+            tb = traceback.format_exc()
+            errmsg = f'Failed to reload {module_name}: \n{tb}'
+            Logger.error(errmsg)
+            return -1
