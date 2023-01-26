@@ -151,18 +151,18 @@ async def config_modules(msg: MessageSession):
                     else:
                         msglist.append(f'成功：关闭模块“{x}”')
     elif msg.parsed_msg.get('reload', False):
-        if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
-            msglist.append(module_reload(module_))
-        else:
-            if module_ not in modules_:
+        if msg.checkSuperUser():
+            if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
+                msglist.append(module_reload(module_))
+            elif module_ not in modules_:
                 msglist.append(f'失败：“{module_}”模块尚未绑定')
             else:
-                if not msg.checkSuperUser():
-                    msglist.append(f'失败：你没有重载模块的权限。')
-                elif isinstance(modules_[module_], Command) and modules_[module_].base:
+                if isinstance(modules_[module_], Command) and modules_[module_].base:
                     msglist.append(f'失败：“{module_}”为基础模块，无法重载。')
                 else:
                     msglist.append(module_reload(module_))
+        else:
+            msglist.append(f'失败：你没有重载模块的权限。')
     if msglist is not None:
         if not recommend_modules_help_doc_list:
             await msg.finish('\n'.join(msglist))
