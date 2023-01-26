@@ -160,7 +160,14 @@ async def config_modules(msg: MessageSession):
                 if isinstance(modules_[module_], Command) and modules_[module_].base:
                     msglist.append(f'失败：“{module_}”为基础模块，无法重载。')
                 else:
-                    msglist.append(module_reload(module_))
+                    extra_reload_modules = ModulesManager.search_related_module(module_,False)
+                    if len(extra_reload_modules):
+                        confirm = await msg.waitConfirm('该操作将额外同时重载以下模块：\n' +
+                                                        '\n'.join(extra_reload_modules) +
+                                                        '\n是否继续?' )
+                        if not confirm:
+                            return
+                    msglist.append(module_reload(module_,extra_reload_modules))
         else:
             msglist.append(f'失败：你没有重载模块的权限。')
     if msglist is not None:
@@ -381,11 +388,11 @@ async def modules_help(msg: MessageSession):
         await msg.sleep(60)
         await send.delete()
 
-def module_reload(module_):
+def module_reload(module_,extra_modules):
     reloadCnt = ModulesManager.reload_module(module_)
-    if reloadCnt > 0:
-        return f'成功：重载模块“{module_}”以及该模块下的{reloadCnt}个文件。'
-    elif reloadCnt == 0:
-        return f'成功：重载模块“{module_}”，未发现已加载的其余文件'
+    if reloadCnt > 1:
+        return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + f' ，以及该模块下的{reloadCnt - 1}个文件。'
+    elif reloadCnt == 1:
+        return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + ' ，未发现已加载的其余文件'
     else:
-        return f'重载模块“{module_}”失败。'
+        return f'重载模块失败。'

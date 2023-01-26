@@ -47,21 +47,47 @@ def load_modules():
 
 class ModulesManager:
     modules: Dict[str, Union[Command, Schedule, RegexCommand, StartUp]] = {}
+    modulesOrigin: Dict[str,str] = {}
 
     @staticmethod
-    def add_module(module: Union[Command, Schedule, RegexCommand, StartUp]):
+    def add_module(module: Union[Command, Schedule, RegexCommand, StartUp],py_module_name: str):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
+            ModulesManager.modulesOrigin.update({module.bind_prefix: py_module_name})
         else:
             raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
 
     @staticmethod
-    def remove_module(module_name):
-        if module_name in ModulesManager.modules:
-            ModulesManager.modules.pop(module_name)
-        else:
-            raise ValueError(f'Moudule "{module_name}" is not exist')  
+    def remove_modules(modules):
+        for module in modules:
+            if module in ModulesManager.modules:
+                Logger.info(f'Removing...{module}')
+                ModulesManager.modules.pop(module)
+                ModulesManager.modulesOrigin.pop(module)
+            else:
+                raise ValueError(f'Module "{module}" is not exist')
 
+    @staticmethod
+    def search_related_module(module,includeSelf = True):
+        if module in ModulesManager.modulesOrigin:
+            modules = []
+            py_module = ModulesManager.return_py_module(module)
+            for m in ModulesManager.modulesOrigin:
+                if ModulesManager.modulesOrigin[m].startswith(py_module):
+                    modules.append(m)
+            if not includeSelf:
+                modules.remove(module)
+            return modules
+        else:
+            raise ValueError(f'Could not find "{module}" in modulesOrigin dict')
+    
+    @staticmethod
+    def return_py_module(module):
+        if module in ModulesManager.modulesOrigin:
+            return re.match(r'^modules(\.[a-zA-Z0-9]*)?', ModulesManager.modulesOrigin[module]).group()
+        else:
+            return None
+    
     @staticmethod
     def bind_to_module(bind_prefix: str, meta):
         if bind_prefix in ModulesManager.modules:
@@ -137,23 +163,31 @@ class ModulesManager:
     @staticmethod
     def reload_module(module_name:str):
         """
-        重载该模块
+        重载该小可模块（以及该模块所在文件的其它模块）
+        """
+        py_module = ModulesManager.return_py_module(module_name)
+        unbind_modules = ModulesManager.search_related_module(module_name)
+        ModulesManager.remove_modules(unbind_modules)
+        return ModulesManager.reload_py_module(py_module)
+                    
+    @staticmethod
+    def reload_py_module(module_name:str):
+        """
+        重载该py模块
         """
         try:
-            module = sys.modules['modules.' + module_name]
-            if module_name in ModulesManager.modules:
-                ModulesManager.remove_module(module_name)
+            Logger.info(f'Reloding {module_name} ...')
+            module = sys.modules[module_name]
             cnt = 0
             loadedModList = list(sys.modules.keys())
             for mod in loadedModList:
-                if mod.startswith(f'modules.{module_name}.'):
-                    importlib.reload(sys.modules[mod])
-                    cnt += 1
+                if mod.startswith(f'{module_name}.'):
+                    cnt += ModulesManager.reload_py_module(mod)
             importlib.reload(module)
-            Logger.info(f'Succeeded reloaded modules.{module_name}!')
-            return cnt
+            Logger.info(f'Succeeded reloaded {module_name}')
+            return cnt + 1
         except:
             tb = traceback.format_exc()
             errmsg = f'Failed to reload {module_name}: \n{tb}'
             Logger.error(errmsg)
-            return -1
+            return -999

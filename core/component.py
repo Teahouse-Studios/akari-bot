@@ -1,4 +1,5 @@
 import re
+import inspect
 from typing import Union
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
@@ -113,7 +114,8 @@ def on_command(
                      required_superuser=required_superuser,
                      available_for=available_for,
                      exclude_from=exclude_from)
-    ModulesManager.add_module(module)
+    frame = inspect.currentframe()
+    ModulesManager.add_module(module,frame.f_back.f_globals["__name__"])
     return Bind.Command(bind_prefix)
 
 
@@ -156,7 +158,8 @@ def on_regex(
                           available_for=available_for,
                           exclude_from=exclude_from
                           )
-    ModulesManager.add_module(module)
+    frame = inspect.currentframe()
+    ModulesManager.add_module(module,frame.f_back.f_globals["__name__"])
     return Bind.Regex(bind_prefix)
 
 
@@ -195,7 +198,8 @@ def on_schedule(
                           required_superuser=required_superuser,
                           available_for=available_for,
                           exclude_from=exclude_from)
-        ModulesManager.add_module(module)
+        frame = inspect.currentframe()
+        ModulesManager.add_module(module,frame.f_back.f_globals["__name__"])
         return module
 
     return decorator
@@ -235,7 +239,8 @@ def on_startup(
                          available_for=available_for,
                          exclude_from=exclude_from
                          )
-        ModulesManager.add_module(module)
+        frame = inspect.currentframe()
+        ModulesManager.add_module(module,frame.f_back.f_globals["__name__"])
         return module
 
     return decorator

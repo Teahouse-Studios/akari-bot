@@ -12,6 +12,7 @@ engine = db.engine
 
 class WikiTargetSetInfo(Base):
     __tablename__ = table_prefix + 'TargetSetInfo'
+    __table_args__ = {'extend_existing': True}
     targetId = Column(String(512), primary_key=True)
     link = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     iws = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
@@ -21,21 +22,27 @@ class WikiTargetSetInfo(Base):
 
 class WikiInfo(Base):
     __tablename__ = table_prefix + 'WikiInfo'
+    __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
     siteInfo = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+    extend_existing = True
 
 
 class WikiAllowList(Base):
     __tablename__ = table_prefix + 'WikiAllowList'
+    __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
     operator = Column(String(512))
+    extend_existing=True
 
 
 class WikiBlockList(Base):
     __tablename__ = table_prefix + 'WikiBlockList'
+    __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
     operator = Column(String(512))
+    extend_existing=True
 
 
 Session.create()
