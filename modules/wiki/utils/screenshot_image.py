@@ -26,6 +26,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         if allow_special_page and doc_mode:
             page_link += '/doc'
             elements_.insert(0, '.mw-parser-output')
+            elements_.insert(0, '.documentation')
         if allow_special_page and not doc_mode:
             elements_.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
@@ -309,7 +310,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
         open_file.write('</html>')
         open_file.close()
         read_file = open(url, 'r', encoding='utf-8')
-        html = {'content': read_file.read(), 'width': w}
+        html = {'content': read_file.read(), 'width': w, 'mw': True}
         Logger.info('Start rendering...')
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):

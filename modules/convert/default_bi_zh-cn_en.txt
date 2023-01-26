@@ -132,10 +132,10 @@ count = [] = 个
 turn = 2 * π * radian = _ = revolution = cycle = circle = 转
 degree = π / 180 * radian = deg = arcdeg = arcdegree = 度 = 角度
 arcminute = degree / 60 = arcmin = arc_minute = angular_minute = 弧分 = 角分
-arcsecond = arcminute / 60 = arcsec = arc_second = angular_second = 角秒 = 角秒
+arcsecond = arcminute / 60 = arcsec = arc_second = angular_second = 弧秒 = 角秒
 milliarcsecond = 1e-3 * arcsecond = mas = 毫弧秒 = 毫角秒
 grade = π / 200 * radian = grad = gon = 百分度 = 梯度
-mil = π / 32000 * radian = 毫弧度 = 密位
+milliradian = π / 32000 * radian = mil = 毫弧度 = 密位
 
 # Solid angle
 steradian = radian ** 2 = sr = 球面度
@@ -154,13 +154,13 @@ ppm = 1e-6 = 分比
 
 # Length
 angstrom = 1e-10 * meter = Å = ångström = Å = 埃格斯特朗 = 埃
-micron = micrometer = µ = μ = 微米
+micron = micrometer = µm = μ = 微米
 fermi = femtometer = fm = 费米
 light_year = speed_of_light * julian_year = ly = lightyear = 光年
 astronomical_unit = 149597870700 * meter = au = 天文单位 # since Aug 2012
 parsec = 1 / tansec * astronomical_unit = pc = 秒差距
-nautical_mile = 1852 * meter = nmi = 海里
-bohr = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = 波尔
+nautical_mile = 1852 * meter = nmi = 海里 = 浬
+bohr = hbar / (alpha * m_e * c) = a_0 = a0 = bohr_radius = atomic_unit_of_length = a_u_length = 玻尔半径 = 原子单位长度
 x_unit_Cu = K_alpha_Cu_d_220 * d_220 / 1537.4 = Xu_Cu = 铜的X单位 = 铜的X射线波长
 x_unit_Mo = K_alpha_Mo_d_220 * d_220 / 707.831 = Xu_Mo = 钼的X单位 = 钼的X射线波长
 angstrom_star = K_alpha_W_d_220 * d_220 / 0.2090100 = Å_star = 埃星
@@ -168,7 +168,7 @@ planck_length = (hbar * gravitational_constant / c ** 3) ** 0.5 = 普朗克长�
 
 
 # Mass
-metric_ton = 1e3 * kilogram = t = tonne = 公吨
+metric_ton = 1e3 * kilogram = t = tonne = 吨 = 公吨
 unified_atomic_mass_unit = atomic_mass_constant = u = amu = 原子质量单位
 dalton = atomic_mass_constant = Da = 道尔顿
 grain = 64.79891 * milligram = gr = 格令
@@ -177,22 +177,22 @@ carat = 200 * milligram = ct = karat = 克拉
 planck_mass = (hbar * c / gravitational_constant) ** 0.5 = 普朗克质量
 
 # Time
-minute = 60 * second = min = 分钟
+minute = 60 * second = min = 分钟 = 分
 hour = 60 * minute = h = hr = 小时
-day = 24 * hour = d = 天
-week = 7 * day = 星期
+day = 24 * hour = d = 日 = 天
+week = 7 * day = 星期 = 周 = 礼拜
 fortnight = 2 * week = 两星期
-year = 365.25 * day = a = yr = julian_year = 年
+year = 365.25 * day = a = yr = julian_year = 年 = 儒略年
 month = year / 12 = 月
 
 # decade = 10 * year
 ## NOTE: decade [time] can conflict with decade [dimensionless]
 
 century = 100 * year = _ = centuries = 世纪
-millennium = 1e3 * year = _ = millennia = 千年
+millennium = 1e3 * year = _ = millennia = 千年纪 = 千纪 = 千年
 eon = 1e9 * year = 宙
 shake = 1e-8 * second = 抖
-svedberg = 1e-13 * second = 斯维德伯格
+svedberg = 1e-13 * second = 斯韦德贝里 = 斯维德伯格
 atomic_unit_of_time = hbar / E_h = a_u_time = 原子单位时间
 gregorian_year = 365.2425 * day = 公历年
 sidereal_year = 365.256363004 * day = 恒星年
@@ -202,12 +202,12 @@ leap_year = 366 * day = 闰年
 sidereal_day = day / 1.00273790935079524 = 恒星日
 sidereal_month = 27.32166155 * day = 恒星月
 tropical_month = 27.321582 * day = 回归月
-synodic_month = 29.530589 * day = _ = lunar_month = 同步月
+synodic_month = 29.530589 * day = _ = lunar_month = 同步月 = 朔望月
 planck_time = (hbar * gravitational_constant / c ** 5) ** 0.5 = 普朗克时间
 
 # Temperature
 degree_Celsius = kelvin; offset: 273.15 = °C = celsius = degC = degreeC = 摄氏度
-degree_Rankine = 5 / 9 * kelvin; offset: 0 = °R = rankine = degR = degreeR = 兰氏度
+degree_Rankine = 5 / 9 * kelvin; offset: 0 = °R = °Ra = rankine = degR = degreeR = 兰氏度
 degree_Fahrenheit = 5 / 9 * kelvin; offset: 233.15 + 200 / 9 = °F = fahrenheit = degF = degreeF = 华氏度
 réaumur = 4 / 5 * kelvin; offset: 273.15 = °Re = reaumur = degRe = degreeRe = degree_Réaumur = 列氏度
 atomic_unit_of_temperature = E_h / k = a_u_temp = 原子单位温度
@@ -215,21 +215,21 @@ planck_temperature = (hbar * c ** 5 / gravitational_constant / k ** 2) ** 0.5 = 
 
 # Area
 [area] = [length] ** 2
-are = 100 * meter ** 2
-b = 1e-28 * meter ** 2 = barn
-darcy = centipoise * centimeter ** 2 / (second * atmosphere) = 达西
-ha = 100 * are = hectare
-
-# Volume
-[volume] = [length] ** 3
 are = 100 * meter ** 2 = 公亩
-barn = 1e-28 * meter ** 2 = b = 贝纳
+barn = 1e-28 * meter ** 2 = b = 靶恩
 darcy = centipoise * centimeter ** 2 / (second * atmosphere) = 达西
 hectare = 100 * are = ha = 公顷
 
+# Volume
+[volume] = [length] ** 3
+liter = decimeter ** 3 = l = L = litre = 升
+cubic_centimeter = centimeter ** 3 = cc = 立方厘米
+lambda = microliter = λ
+stere = meter ** 3
+
 # Frequency
 [frequency] = 1 / [time]
-hertz = 1 / second = Hz = 赫兹
+hertz = 1 / second = Hz = 赫兹 = 赫
 revolutions_per_minute = revolution / minute = rpm = 转每分
 revolutions_per_second = revolution / second = rps = 转每秒
 counts_per_second = count / second = cps = 次每秒
@@ -242,7 +242,7 @@ reciprocal_centimeter = 1 / cm = cm_1 = kayser = 倒数厘米
 [velocity] = [length] / [time]
 [speed] = [velocity]
 knot = nautical_mile / hour = kt = knot_international = international_knot = 节
-mile_per_hour = mile / hour = mph = MPH = 英里每小时
+mile_per_hour = mile / hour = mph = MPH = 英里每小时 = 迈
 kilometer_per_hour = kilometer / hour = kph = KPH = 千米每小时
 kilometer_per_second = kilometer / second = kps = 千米每秒
 meter_per_second = meter / second = mps = 米每秒
@@ -258,11 +258,11 @@ galileo = centimeter / second ** 2 = Gal = 伽利略
 
 # Force
 [force] = [mass] * [acceleration]
-newton = kilogram * meter / second ** 2 = N = 牛顿
-dyne = gram * centimeter / second ** 2 = dyn = 丁
+newton = kilogram * meter / second ** 2 = N = 牛顿 = 牛
+dyne = gram * centimeter / second ** 2 = dyn = 达因
 force_kilogram = g_0 * kilogram = kgf = kilogram_force = pond = 千克力
 force_gram = g_0 * gram = gf = gram_force = 克力
-force_metric_ton = g_0 * metric_ton = tf = metric_ton_force = force_t = t_force = 公吨力
+force_metric_ton = g_0 * metric_ton = tf = metric_ton_force = force_t = t_force = 公吨力 = 吨力
 atomic_unit_of_force = E_h / a_0 = a_u_force = 原子单位力
 
 # Energy
@@ -282,7 +282,7 @@ thermochemical_british_thermal_unit = 1e3 * pound / kilogram * degR / kelvin * c
 quadrillion_Btu = 1e15 * Btu = quad = 兆英热单位
 therm = 1e5 * Btu = thm = EC_therm = 热量
 US_therm = 1.054804e8 * joule = 美国热量
-ton_TNT = 1e9 * calorie = tTNT = 吨TNT
+ton_TNT = 1e9 * calorie = tTNT = TNT当量
 tonne_of_oil_equivalent = 1e10 * international_calorie = toe = 吨油当量
 atmosphere_liter = atmosphere * liter = atm_l = 气体升
 
@@ -315,18 +315,18 @@ water_60F = 0.999001 * kilogram / liter = 水60华氏度
 pascal = newton / meter ** 2 = Pa = 帕斯卡
 barye = dyne / centimeter ** 2 = Ba = barie = barad = barrie = baryd = 微巴
 bar = 1e5 * pascal = 巴
-technical_atmosphere = kilogram * g_0 / centimeter ** 2 = at = 技术大气
-torr = atm / 760 = 托尔
-pound_force_per_square_inch = force_pound / inch ** 2 = psi = 每平方英寸磅力
-kip_per_square_inch = kip / inch ** 2 = ksi = 每平方英寸千磅力
-millimeter_Hg_0C = millimeter * Hg * g_0 = mmHg = mm_Hg = 毫米水银
-centimeter_Hg_0C = centimeter * Hg * g_0 = cmHg = cm_Hg = 厘米水银
-inch_Hg_32F = inch * Hg * g_0 = inHg = in_Hg = 英寸水银
-inch_Hg_60F = inch * Hg_60F * g_0 = 英寸水银60华氏度
-inch_H2O_39F = inch * water_39F * g_0 = 英寸水39华氏度
-inch_H2O_60F = inch * water_60F * g_0 = 英寸水60华氏度
-feet_H2O = foot * water * g_0 = ftH2O = 英尺水
-cm_H2O = centimeter * water * g_0 = cmH2O = 厘米水
+technical_atmosphere = kilogram * g_0 / centimeter ** 2 = at = 工程大气压
+torr = atm / 760 = 托
+pound_force_per_square_inch = force_pound / inch ** 2 = psi = 磅力每平方英寸
+kip_per_square_inch = kip / inch ** 2 = ksi = 千磅力每平方英寸
+millimeter_Hg_0C = millimeter * Hg * g_0 = mmHg = mm_Hg = 毫米汞柱
+centimeter_Hg_0C = centimeter * Hg * g_0 = cmHg = cm_Hg = 厘米汞柱
+inch_Hg_32F = inch * Hg * g_0 = inHg = in_Hg = 英寸汞柱
+inch_Hg_60F = inch * Hg_60F * g_0 = 60华氏度英寸汞柱
+inch_H2O_39F = inch * water_39F * g_0 = 39华氏度英寸水柱
+inch_H2O_60F = inch * water_60F * g_0 = 60华氏度英寸水柱
+feet_H2O = foot * water * g_0 = ftH2O = 英尺水柱
+centimeter_H2O = cm_H2O = centimeter * water * g_0 = cmH2O = 厘米水柱
 sound_pressure_level = 20e-6 * pascal = SPL = 声压级
 
 # Torque
@@ -355,7 +355,7 @@ molar = mole / liter = M = 体积摩尔
 
 # Catalytic activity
 [activity] = [substance] / [time]
-katal = mole / second = kat = 卡塔尔
+katal = mole / second = kat = 开特
 enzyme_unit = micromole / minute = U = enzymeunit = 酶单位
 
 # Entropy
@@ -367,11 +367,11 @@ clausius = calorie / kelvin = Cl = 克劳西斯
 entropy_unit = calorie / kelvin / mole = eu = 熵单位
 
 # Radiation
-becquerel = counts_per_second = Bq = 贝可勒尔
+becquerel = counts_per_second = Bq = 贝克勒尔 = 贝克
 curie = 3.7e10 * becquerel = Ci = 居里
 rutherford = 1e6 * becquerel = Rd = 卢瑟福
-gray = joule / kilogram = Gy = 格雷
-sievert = joule / kilogram = Sv = 西弗
+gray = joule / kilogram = Gy = 戈瑞
+sievert = joule / kilogram = Sv = 希沃特
 rads = 0.01 * gray = 拉德斯
 rem = 0.01 * sievert = 雷质
 roentgen = 2.58e-4 * coulomb / kilogram = _ = röntgen = 伦琴
@@ -400,7 +400,7 @@ lux = lumen / meter ** 2 = lx = 勒克斯
 atomic_unit_of_intensity = 0.5 * ε_0 * c * atomic_unit_of_electric_field ** 2 = a_u_intensity = 原子单位光强
 
 # Current
-biot = 10 * ampere = Bi = 比奥
+biot = 10 * ampere = Bi = 毕奥
 abampere = biot = abA = 绝对安培
 atomic_unit_of_current = e / atomic_unit_of_time = a_u_current = 原子单位电流
 mean_international_ampere = mean_international_volt / mean_international_ohm = A_it = 平均国际安培
@@ -418,7 +418,7 @@ ampere_hour = ampere * hour = Ah = 安培时
 
 # Electric potential
 [electric_potential] = [energy] / [charge]
-volt = joule / coulomb = V = 伏特
+volt = joule / coulomb = V = 伏特 = 伏
 abvolt = 1e-8 * volt = abV = 绝对伏特
 mean_international_volt  = 1.00034 * volt = V_it = 平均国际伏特 # approximate
 US_international_volt  = 1.00033 * volt = V_US = 美国国际伏特 # approximate
@@ -433,7 +433,7 @@ atomic_unit_of_electric_field = e * k_C / a_0 ** 2 = a_u_electric_field = 原子
 
 # Resistance
 [resistance] = [electric_potential] / [current]
-ohm = volt / ampere = Ω = 欧姆
+ohm = volt / ampere = Ω = 欧姆 = 欧
 abohm = 1e-9 * ohm = abΩ = 绝对欧姆
 mean_international_ohm  = 1.00049 * ohm = Ω_it = ohm_it = 平均国际欧姆 # approximate
 US_international_ohm  = 1.000495 * ohm = Ω_US = ohm_US = 美国国际欧姆 # approximate
@@ -444,7 +444,7 @@ conventional_ohm_90 = R_K / R_K90 * ohm = Ω_90 = ohm_90 = 传统欧姆90
 
 # Conductance
 [conductance] = [current] / [electric_potential]
-siemens = ampere / volt = S = mho = 西门子
+siemens = ampere / volt = S = mho = 西门子 = 西门
 absiemens = 1e9 * siemens = abS = abmho = 绝对西门子
 
 # Capacitance

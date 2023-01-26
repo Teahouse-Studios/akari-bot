@@ -1,5 +1,6 @@
 import asyncio
 import re
+from datetime import datetime
 from typing import Union
 
 import filetype
@@ -274,11 +275,13 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     for ii in i:
                         Logger.info(i[ii]['url'])
                         if i[ii]['url'] not in generate_screenshot_v2_blocklist:
+                            timer = datetime.now().timestamp()
                             get_infobox = await generate_screenshot_v2(ii, allow_special_page=i[ii]['in_allowlist'],
                                                                        doc_mode=i[ii]['has_doc'])
                             if get_infobox:
                                 infobox_msg_list.append(Image(get_infobox))
-                                infobox_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
+                                infobox_msg_list.append(Plain(f'生成用时：{int(datetime.now().timestamp() - timer)}s' +
+                                                              '*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
                                                               'https://s.wd-ljt.com/botreportbug'))
                         else:
                             get_infobox = await generate_screenshot_v1(i[ii]['url'], ii, headers,
@@ -295,13 +298,17 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     for ii in i:
                         if i[ii]['in_allowlist']:
                             if i[ii]['url'] not in generate_screenshot_v2_blocklist:
+                                timer = datetime.now().timestamp()
                                 get_section = await generate_screenshot_v2(ii, section=i[ii]['section'])
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
-                                    section_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
-                                                                  'https://s.wd-ljt.com/botreportbug'))
+                                    section_msg_list.append(
+                                        Plain(f'生成用时：{int(datetime.now().timestamp() - timer)}s' +
+                                              '*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
+                                              'https://s.wd-ljt.com/botreportbug'))
                             else:
-                                get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                                get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers,
+                                                                           section=i[ii]['section'])
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
                 if section_msg_list:
