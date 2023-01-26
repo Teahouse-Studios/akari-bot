@@ -24,7 +24,9 @@ async def rc_qq(wiki_url):
             "name": f"最近更改地址",
             "uin": qq_account,
             "content": [
-                {"type": "text", "data": {"text": pageurl.replace("$1", 'Special:RecentChanges')}}]
+                {"type": "text", "data": {"text": pageurl.replace("$1", 'Special:RecentChanges') +
+                                                  ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
+                                                   if wiki.wiki_info.in_allowlist else '')}}]
         }
     }]
     rclist = []
