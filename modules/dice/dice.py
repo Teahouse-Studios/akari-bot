@@ -9,6 +9,7 @@ MIN_MOD_NUMBER = -10000  # 骰子最小加权值
 MAX_OUTPUT_NUM = 50  # 输出的最多数据量
 MAX_OUTPUT_LEN = 200  # 输出的最大长度
 
+
 def GetDiceArgs(dice: str):
     dice.replace(' ', '')
     dice = dice.upper()  # 便于识别
@@ -28,16 +29,18 @@ def GetDiceArgs(dice: str):
             diceCount = temp[0]
     if not len(diceCount):
         diceCount = '1'
-    back = re.match(r'^(.*)([+-].*)$',temp[1])
+    back = re.match(r'^(.*)([+-].*)$', temp[1])
     if back:
         midstr = back.group(1)
-        mod = back.group(2).removeprefix('+')
+        mod = back.group(2)
+        if mod[0] == '+':
+            mod = mod[1:]
     else:
         midstr = temp[1]
     midstrs = midstr.partition('K')
     diceType = midstrs[0]
     if 'K' in midstrs[1]:
-        advantage = midstrs[2].replace('L','-')
+        advantage = midstrs[2].replace('L', '-')
     # 语法合法检定
     if not diceCount.isdigit():
         return '错误：骰子数量非法:' + diceCount
@@ -45,11 +48,17 @@ def GetDiceArgs(dice: str):
         return '错误：骰子面数非法:' + diceType
     if not rollTimes.isdigit():
         return '错误：投骰次数非法:' + rollTimes
-    if not mod.removeprefix('-').isdigit():
+    if mod[0] == '-':
+        mod = mod[1:]
+    if advantage[0] == '-':
+        advantage = advantage[1:]
+    if not mod.isdigit():
         return '错误：调整值非法:' + mod
-    if not advantage.removeprefix('-').isdigit():
+    if not advantage.isdigit():
         return '错误：优劣势非法:' + advantage
-    return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage), 'mod': int(mod), 'str': dice}
+    return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
+            'mod': int(mod), 'str': dice}
+
 
 def RollDice(args, dc):
     output = '你摇出来的结果是：\n'
@@ -89,7 +98,7 @@ def RollDice(args, dc):
                 result += diceResults[i]
                 if length <= MAX_OUTPUT_NUM:  # 显示数据含100
                     output += str(diceResults[i])
-                    if i < length-1:
+                    if i < length - 1:
                         output += '+'
             output += ' ] = '
         else:
@@ -108,13 +117,14 @@ def RollDice(args, dc):
             else:
                 output += '，判定失败！'
                 failNum += 1
-        if (args['cnt'] == 1 or (args['cnt'] == 2 and (args['adv'] != 0))) and (args['type'] == 20 or args['type'] == 100) and args['mod'] >= 0:
+        if (args['cnt'] == 1 or (args['cnt'] == 2 and (args['adv'] != 0))) and (
+            args['type'] == 20 or args['type'] == 100) and args['mod'] >= 0:
             temp = result - args['mod']
             if temp >= args['type']:
                 output += ' 大成功！'
             if temp == 1:
                 output += ' 大失败！'
-        if times != args['times']-1:
+        if times != args['times'] - 1:
             output += '\n'
     if len(output) > MAX_OUTPUT_LEN:
         output = '输出过长...'
@@ -122,23 +132,20 @@ def RollDice(args, dc):
         output += '\n▷ 判定成功数量：' + str(successNum) + '  判定失败数量：' + str(failNum)
     return output
 
+
 async def roll(dice: str, dc: int):
     diceArgs = GetDiceArgs(dice)  # 语法识别
     if type(diceArgs) is str:
         return diceArgs  # 报错输出
-    # 数值合法与防熊检定
-    if not dc.isdigit():
-        return '错误：DC非法:' + dc
-    dc = int(dc)
-    if (diceArgs['times'] <= 0 or diceArgs['times'] > MAX_ROLL_TIMES):
+    if diceArgs['times'] <= 0 or diceArgs['times'] > MAX_ROLL_TIMES:
         return f'错误：投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}'
-    if (diceArgs['cnt'] <= 0 or diceArgs['cnt'] > MAX_DICE_COUNT):
+    if diceArgs['cnt'] <= 0 or diceArgs['cnt'] > MAX_DICE_COUNT:
         return f'错误：骰子数量不得小于1或大于{MAX_DICE_COUNT}'
-    if (diceArgs['type'] <= 0):
+    if diceArgs['type'] <= 0:
         return '错误：骰子面数不得小于1'
-    if (abs(diceArgs['adv']) > diceArgs['cnt']):
+    if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '错误：优劣势骰数大于总骰子数'
-    if (diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER):
+    if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
         return f'错误：调整值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER} '
     # 开始随机生成
     return RollDice(diceArgs, dc)
