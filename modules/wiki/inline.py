@@ -97,6 +97,16 @@ async def _(msg: MessageSession):
                                     if msg.Feature.voice:
                                         await msg.sendMessage([Plain(f'此页面包括以下文件：{get_page.file}'), Voice(dl)],
                                                               quote=False)
+                        if msg.Feature.image:
+                            if get_page.status and wiki_.wiki_info.in_allowlist and \
+                                    wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
+                                if get_page.has_template_doc or get_page.title.split(':')[0] in ['User'] or \
+                                          'Template:Disambiguation' in get_page.templates:
+                                    get_infobox = await generate_screenshot_v2(qq,
+                                                                               allow_special_page=q[qq].in_allowlist,
+                                                                               content_mode=True)
+                                    if get_infobox:
+                                        await msg.sendMessage(Image(get_infobox), quote=False)
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:

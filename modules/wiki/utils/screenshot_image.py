@@ -18,16 +18,14 @@ elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.
             '.skin-infobox', '.arcaeabox', '.moe-infobox']
 
 
-async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, doc_mode=False) -> Union[str, bool]:
+async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False) -> Union[str, bool]:
     elements_ = elements.copy()
     if not web_render:
         return False
     if section is None:
-        if allow_special_page and doc_mode:
-            page_link += '/doc'
-            elements_.insert(0, '.mw-parser-output')
-            elements_.insert(0, '.documentation')
-        if allow_special_page and not doc_mode:
+        if allow_special_page and content_mode:
+            elements_.insert(0, '.mw-body-content')
+        if allow_special_page and not content_mode:
             elements_.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
         try:

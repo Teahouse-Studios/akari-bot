@@ -101,6 +101,7 @@ class PageInfo:
                  section: str = None,
                  interwiki_prefix: str = '',
                  status: bool = True,
+                 templates: List[str] = None,
                  before_page_property: str = 'page',
                  page_property: str = 'page',
                  has_template_doc: bool = False,
@@ -117,6 +118,7 @@ class PageInfo:
         self.args = args
         self.section = section
         self.interwiki_prefix = interwiki_prefix
+        self.templates = templates
         self.status = status
         self.before_page_property = before_page_property
         self.page_property = page_property
@@ -436,18 +438,18 @@ class WikiLib:
                 section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.section = section
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url',
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
         elif pageid is not None:
             page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url', 'inprop': 'url',
-                            'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
+                            'inprop': 'url', 'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
         else:
             raise ValueError('title and pageid cannot be both None')
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts and section is None:
-            query_string.update({'prop': 'info|imageinfo|langlinks|extracts|pageprops',
+            query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
@@ -556,6 +558,7 @@ class WikiLib:
 
                 else:
                     page_info.status = True
+                    templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
                     if 'special' in page_raw:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
@@ -615,7 +618,8 @@ class WikiLib:
                             split_title = title.split(':')
                             get_desc = True
                             if not _doc and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template' \
+                                and 'Template:Documentation' in templates:
                                 get_all_text = await self.get_wikitext(title)
                                 match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
                                 if match_doc:

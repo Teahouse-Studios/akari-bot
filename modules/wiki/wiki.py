@@ -200,7 +200,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         if r.link is not None and r.section is None:
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
-                                          'has_doc': r.has_template_doc}})
+                                          'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
+                                          'Template:Disambiguation' in r.templates}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section,
@@ -277,7 +278,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         if i[ii]['url'] not in generate_screenshot_v2_blocklist:
                             timer = datetime.now().timestamp()
                             get_infobox = await generate_screenshot_v2(ii, allow_special_page=i[ii]['in_allowlist'],
-                                                                       doc_mode=i[ii]['has_doc'])
+                                                                       content_mode=i[ii]['content_mode'])
                             if get_infobox:
                                 infobox_msg_list.append(Image(get_infobox))
                                 infobox_msg_list.append(Plain(f'生成用时：{int(datetime.now().timestamp() - timer)}s' +
