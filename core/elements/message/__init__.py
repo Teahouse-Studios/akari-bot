@@ -155,11 +155,12 @@ class MessageSession:
         :return: 下一条消息的MessageChain对象
         """
 
-    async def waitReply(self, msgchain, quote=True):
+    async def waitReply(self, msgchain, quote=True, all_=False):
         """
         一次性模板，用于等待触发对象回复消息。
         :param msgchain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
+        :param all_: 是否设置触发对象为对象内的所有人（默认为False）
         :return: 回复消息的MessageChain对象
         """
 
