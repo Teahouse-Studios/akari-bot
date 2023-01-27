@@ -84,7 +84,7 @@ class ModulesManager:
     @staticmethod
     def return_py_module(module):
         if module in ModulesManager.modulesOrigin:
-            return re.match(r'^modules(\.[a-zA-Z0-9]*)?', ModulesManager.modulesOrigin[module]).group()
+            return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', ModulesManager.modulesOrigin[module]).group()
         else:
             return None
     
