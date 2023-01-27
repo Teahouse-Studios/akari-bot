@@ -63,13 +63,13 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def waitReply(self, msgchain, quote=True) -> MessageSession:
+    async def waitReply(self, msgchain, quote=True, all_=False) -> MessageSession:
         ExecutionLockList.remove(self)
         msgchain = MessageChain(msgchain)
         msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
         send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, reply=send.messageId)
+        MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
         if result:
