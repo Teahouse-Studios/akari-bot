@@ -94,19 +94,6 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def waitAnyoneReply(self, msgchain, quote=True) -> MessageSession:
-        ExecutionLockList.remove(self)
-        msgchain = MessageChain(msgchain)
-        send = await self.sendMessage(msgchain, quote)
-        flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=True)
-        await flag.wait()
-        result = MessageTaskManager.get_result(self)
-        if result:
-            return result
-        else:
-            raise WaitCancelException
-
     async def sleep(self, s):
         ExecutionLockList.remove(self)
         await asyncio.sleep(s)
