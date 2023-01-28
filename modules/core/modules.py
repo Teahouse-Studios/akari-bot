@@ -12,8 +12,9 @@ from database import BotDBUtil
 module = on_command('module',
                     base=True,
                     alias={'enable': 'module enable',
-                           'disable': 'module disable'},
-                    developers=['OasisAkari'],
+                           'disable': 'module disable',
+                           'reload':'module reload'},
+                    developers=['OasisAkari','Light-Beacon'],
                     required_admin=True
                     )
 
@@ -22,6 +23,7 @@ module = on_command('module',
                 'enable all {开启所有模块}',
                 'disable <module>... {关闭一个/多个模块}',
                 'disable all {关闭所有模块。}',
+                'reload <module> ... {重载一个/多个模块。}',
                 'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -33,6 +35,7 @@ async def _(msg: MessageSession):
                 'enable all [-g] {开启所有模块}',
                 'disable [-g] <module>... {关闭一个/多个模块}',
                 'disable all [-g] {关闭所有模块。}',
+                'reload <module> [-f] {重载一个模块。}',
                 'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
@@ -147,6 +150,27 @@ async def config_modules(msg: MessageSession):
                         msglist.append(f'失败：“{x}”模块已经关闭')
                     else:
                         msglist.append(f'成功：关闭模块“{x}”')
+    elif msg.parsed_msg.get('reload', False):
+        if msg.checkSuperUser():
+            if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
+                msglist.append(module_reload(module_))
+            elif module_ not in modules_:
+                msglist.append(f'失败：“{module_}”模块尚未绑定')
+            else:
+                if isinstance(modules_[module_], Command) and modules_[module_].base:
+                    msglist.append(f'失败：“{module_}”为基础模块，无法重载。')
+                else:
+                    extra_reload_modules = ModulesManager.search_related_module(module_,False)
+                    if len(extra_reload_modules):
+                        confirm = await msg.waitConfirm('该操作将额外同时重载以下模块：\n' +
+                                                        '\n'.join(extra_reload_modules) +
+                                                        '\n是否继续?' )
+                        if not confirm:
+                            await msg.finish()
+                            return
+                    msglist.append(module_reload(module_,extra_reload_modules))
+        else:
+            msglist.append(f'失败：你没有重载模块的权限。')
     if msglist is not None:
         if not recommend_modules_help_doc_list:
             await msg.finish('\n'.join(msglist))
@@ -364,3 +388,12 @@ async def modules_help(msg: MessageSession):
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()
+
+def module_reload(module_,extra_modules):
+    reloadCnt = ModulesManager.reload_module(module_)
+    if reloadCnt > 1:
+        return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + f' ，以及该模块下的{reloadCnt - 1}个文件。'
+    elif reloadCnt == 1:
+        return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + ' ，未发现已加载的其余文件'
+    else:
+        return f'重载模块失败。'
