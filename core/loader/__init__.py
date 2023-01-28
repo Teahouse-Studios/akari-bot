@@ -176,7 +176,7 @@ class ModulesManager:
         重载该py模块
         """
         try:
-            Logger.info(f'Reloding {module_name} ...')
+            Logger.info(f'Reloading {module_name} ...')
             module = sys.modules[module_name]
             cnt = 0
             loadedModList = list(sys.modules.keys())
