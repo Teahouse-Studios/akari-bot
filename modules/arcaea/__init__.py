@@ -26,7 +26,8 @@ assets_path = os.path.abspath('./assets/arcaea')
             'b30 unofficial [<friendcode>] {使用非官方API}')
 async def _(msg: MessageSession):
     if not os.path.exists(assets_path):
-        await msg.finish('未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
+        await msg.finish(
+            '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
     official = msg.parsed_msg.get('official', False)
@@ -80,10 +81,11 @@ async def _(msg: MessageSession):
 
 @arc.handle('info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}',
             'info official [<friendcode>] {使用官方API}',
-            'info unofficial [<friendcode>] {使用非官方API}',)
+            'info unofficial [<friendcode>] {使用非官方API}', )
 async def _(msg: MessageSession):
     if not os.path.exists(assets_path):
-        await msg.sendMessage('未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
+        await msg.sendMessage(
+            '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
         return
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)

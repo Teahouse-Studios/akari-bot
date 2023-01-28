@@ -45,7 +45,8 @@ Ninendo's support knowledgebase at https://en-americas-support.nintendo.com/app/
 
 # 001: friends module, parental controls, online services in general?
 friends = Module('friends', {
-    102: ResultInfo('此错误代表你从网络服务意外掉线。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17043'),
+    102: ResultInfo('此错误代表你从网络服务意外掉线。',
+                    'https://en-americas-support.nintendo.com/app/answers/detail/a_id/17043'),
     721: ResultInfo('此错误代表监护人已设置严格限制网络功能。', 'https://www.nintendo.com.au/help/3ds-error-codes'),
     803: ResultInfo('This error code indicates that the online play server is currently down.',
                     'https://www.nintendo.co.jp/netinfo/en_US/index.html'),
@@ -92,11 +93,14 @@ nim = Module('nim', {
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/28399'),
     4305: ResultInfo('这个错误常见于你从eShop下载软件的时候连接超时。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4346'),
-    4320: ResultInfo('这个错误常见于尝试初始化系统或数据迁移。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/48382'),
+    4320: ResultInfo('这个错误常见于尝试初始化系统或数据迁移。',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/48382'),
     5602: ResultInfo('无法连接至eShop。这个错误通常代表系统区域设置不正确，请在系统设置中重新设置区域，然后再试一次。'),
-    5687: ResultInfo('这个错误常见于你无法连接至eShop。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26251/'),
+    5687: ResultInfo('这个错误常见于你无法连接至eShop。',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26251/'),
     # in SOAP range...
-    5704: ResultInfo('这个错误常见于你无法连接至eShop。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26252'),
+    5704: ResultInfo('这个错误常见于你无法连接至eShop。',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/26252'),
     5958: ResultInfo('未知的eShop错误，常见于改区后的机子。'),
     5964: ResultInfo('你的NNID已经被eShop封禁。如果你不服，建议去联系任天堂支持。'),
     7545: NIM_4069,
@@ -107,7 +111,8 @@ nim = Module('nim', {
 })
 # 006: online matchmaking and gameplay errors
 matchmaking = Module('matchmaking', {
-    112: ResultInfo('常见于连接宝可梦银行发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4203/'),
+    112: ResultInfo('常见于连接宝可梦银行发生错误。',
+                    'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4203/'),
     332: ResultInfo('可能发生于尝试使用关闭的端口进行通讯（？）'),
     (501, 502): ResultInfo('可能发生于网络对在线游戏阻断通讯。',
                            'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4204'),
@@ -129,8 +134,10 @@ eshop_mint = Module('eshop (mint/api?)', {
                      '参见支持页面：https://en-americas-support.nintendo.com/app/answers/detail/a_id/4432\n或任天堂网络状态：https://support.nintendo.com/networkstatus'),
     2670: ResultInfo('尝试连接时发生错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4383'),
     2720: ResultInfo('eShop SSL证书错误。'),
-    2913: ResultInfo('服务器可能离线，稍后再试。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
-    2916: ResultInfo('常见于从eShop下载软件时错误。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
+    2913: ResultInfo('服务器可能离线，稍后再试。',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/10425'),
+    2916: ResultInfo('常见于从eShop下载软件时错误。',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/6557'),
     2920: ResultInfo(
         '这个错误通常会在eShop下载错误时发生，或是应用使用了非法的ticket。使用FBI删除这个应用和它的ticket，然后从合法途径重新下载游戏；若是卡带导出的游戏，则建议删除后只使用卡带玩游戏。',
         'https://en-americas-support.nintendo.com/app/answers/detail/a_id/41692'),
@@ -170,7 +177,8 @@ eshop_site = Module('eshop (website?)', {
     3010: ResultInfo('由于用户不活跃导致的服务器响应超时。'),
     3021: ResultInfo('无法在eShop找到这个应用（错误的区域或者这个东西就根本不存在）'),
     3136: ResultInfo('eShop不可用，等会再试。'),
-    5998: ResultInfo('任天堂eShop正在维护中。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/24326/'),
+    5998: ResultInfo('任天堂eShop正在维护中。',
+                     'https://en-americas-support.nintendo.com/app/answers/detail/a_id/24326/'),
     6901: ResultInfo('此主机已被任天堂永久封禁（由于某种原因只显示日文）。', is_ban=True)
 })
 
@@ -178,7 +186,8 @@ eshop_site = Module('eshop (website?)', {
 data_transfer = Module('system transfer', {
     13: ResultInfo('尝试使用无效的语言设定时进行数据迁移。'),
     16: ResultInfo('两个主机拥有同样的movable.sed，初始化准备迁移数据到的主机然后再试一次。'),
-    62: ResultInfo('数据迁移时发生了错误，将它们靠近路由器然后再试。', 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/15664')
+    62: ResultInfo('数据迁移时发生了错误，将它们靠近路由器然后再试。',
+                   'https://en-americas-support.nintendo.com/app/answers/detail/a_id/15664')
 })
 # 012: a category related to the web browser or ssl module considered 1511
 browser1 = Module('browser (?)', {
@@ -194,9 +203,11 @@ browser2 = Module('browser (?)', {
 # 022: more account stuff?
 account2 = Module('account', {
     2452: ResultInfo('在你打开了UNITINFO补丁后访问eShop时出现，在Luma设置中关闭。'),
-    2501: ResultInfo('NNID已绑定到另外一台主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机）后将备份的NAND还原并尝试进入需要NNID的程序。'),
+    2501: ResultInfo(
+        'NNID已绑定到另外一台主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机）后将备份的NAND还原并尝试进入需要NNID的程序。'),
     2511: ResultInfo('需要系统更新（可能出现于Miiverse？）。'),
-    2591: ResultInfo('NNID已绑定到另外一台主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机）后将备份的NAND还原并尝试进入需要NNID的程序。'),
+    2591: ResultInfo(
+        'NNID已绑定到另外一台主机，可能是由于使用了数据迁移（与系统关联的NNID都已被移动至新主机）后将备份的NAND还原并尝试进入需要NNID的程序。'),
     2613: ResultInfo('绑定NNID时输入了错误的邮箱或密码，或是在没有绑定NNID的情况下从eShop下载软件时出现。',
                      'https://en-americas-support.nintendo.com/app/answers/detail/a_id/4314/kw/022-2613'),
     2631: ResultInfo('你输入的NNID已被注销，或是因为数据迁移不可用。数据迁移后NNID只会在迁入的主机可用。',
@@ -346,7 +357,8 @@ def nim_handler(ret, description):
         if description < 100:
             ret.add_field(ConsoleErrorField('HTTP状态码', message_str=f'{description + 100}'))
         elif 100 <= description < 500:
-            ret.add_field(ConsoleErrorField('HTTP状态码', message_str=f'{description + 100}或{description}由于NIM中的编程错误。'))
+            ret.add_field(
+                ConsoleErrorField('HTTP状态码', message_str=f'{description + 100}或{description}由于NIM中的编程错误。'))
         else:
             ret.add_field(ConsoleErrorField('HTTP状态码', message_str=f'{description}'))
 

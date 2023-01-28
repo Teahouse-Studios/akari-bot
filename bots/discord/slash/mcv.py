@@ -22,4 +22,3 @@ async def mcdv(ctx: discord.ApplicationContext):
 @client.slash_command(description="获取Minecraft教育版的最新版本信息")
 async def mcev(ctx: discord.ApplicationContext):
     await slash_parser(ctx, '')
-

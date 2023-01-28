@@ -82,7 +82,7 @@ class MessageSession(MS):
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
             or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
+            or self.target.senderInfo.query.isSuperUser:
             return True
         get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
                                                 user_id=self.session.sender)
@@ -207,6 +207,7 @@ class FetchTarget(FT):
                 await asyncio.sleep(0.5)
             except Exception:
                 Logger.error(traceback.format_exc())
+
         if user_list is not None:
             for x in user_list:
                 await post_(x)

@@ -12,7 +12,6 @@ from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
-
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
@@ -201,7 +200,7 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
-                                          'Template:Disambiguation' in r.templates}})
+                                                          'Template:Disambiguation' in r.templates}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section,

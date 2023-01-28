@@ -12,7 +12,6 @@ assets_path = os.path.abspath('./assets')
 cache_path = os.path.abspath('./cache')
 assets_arc = os.path.abspath(f'{assets_path}/arcaea')
 
-
 errcode = {-1: "非法的用户名或好友代码",
            -2: "非法的好友代码",
            -3: "未找到用户",
@@ -61,8 +60,9 @@ async def autofix_b30_song_background(songid, byd=False):
         except Exception:
             traceback.print_exc()
     file_name = f"{songid}{'_3' if has_byd_jacket else ''}.jpg"
-    file = await download_to_cache(botarcapi_url + f"assets/song?songid={songid}" + ('&difficulty=3' if has_byd_jacket else ''),
-                                   headers=headers)
+    file = await download_to_cache(
+        botarcapi_url + f"assets/song?songid={songid}" + ('&difficulty=3' if has_byd_jacket else ''),
+        headers=headers)
     if file:
         dst = assets_arc + '/jacket/'
         shutil.copyfile(file, dst + file_name)

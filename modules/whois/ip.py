@@ -1,9 +1,10 @@
-from typing import Any, Dict
-import json
-import socket
 import ipaddress
-from core.utils import get_url
+import json
 import os
+import socket
+from typing import Any, Dict
+
+from core.utils import get_url
 
 iso = json.load(open(os.path.dirname(os.path.abspath(
     __file__)) + '/iso.json', 'r', encoding='utf-8'))

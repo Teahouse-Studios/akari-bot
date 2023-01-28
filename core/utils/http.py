@@ -1,7 +1,6 @@
 import asyncio.exceptions
 import re
 import socket
-import traceback
 import urllib.parse
 from typing import Union
 
@@ -14,7 +13,6 @@ from config import Config
 from core.logger import Logger
 from .cache import random_cache_path
 from ..exceptions import NoReportException
-
 
 logging_resp = False
 
@@ -169,6 +167,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
                 return path
         else:
             return False
+
     return await download_()
 
 

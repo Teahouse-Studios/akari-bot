@@ -1,13 +1,11 @@
+import asyncio
 import os
+import subprocess
 import sys
 
-from core.exceptions import NoReportException
 from core.builtins.message import MessageSession
 from core.component import on_command
-
-import asyncio
-import subprocess
-
+from core.exceptions import NoReportException
 from core.logger import Logger
 
 c = on_command('calc', developers=[

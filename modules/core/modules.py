@@ -13,8 +13,8 @@ module = on_command('module',
                     base=True,
                     alias={'enable': 'module enable',
                            'disable': 'module disable',
-                           'reload':'module reload'},
-                    developers=['OasisAkari','Light-Beacon'],
+                           'reload': 'module reload'},
+                    developers=['OasisAkari', 'Light-Beacon'],
                     required_admin=True
                     )
 
@@ -68,7 +68,7 @@ async def config_modules(msg: MessageSession):
                 if function[0] == '_':
                     continue
                 if isinstance(modules_[function], Command) and (
-                        modules_[function].base or modules_[function].required_superuser):
+                    modules_[function].base or modules_[function].required_superuser):
                     continue
                 enable_list.append(function)
         else:
@@ -122,7 +122,7 @@ async def config_modules(msg: MessageSession):
                 if function[0] == '_':
                     continue
                 if isinstance(modules_[function], Command) and (
-                        modules_[function].base or modules_[function].required_superuser):
+                    modules_[function].base or modules_[function].required_superuser):
                     continue
                 disable_list.append(function)
         else:
@@ -160,15 +160,15 @@ async def config_modules(msg: MessageSession):
                 if isinstance(modules_[module_], Command) and modules_[module_].base:
                     msglist.append(f'失败：“{module_}”为基础模块，无法重载。')
                 else:
-                    extra_reload_modules = ModulesManager.search_related_module(module_,False)
+                    extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if len(extra_reload_modules):
                         confirm = await msg.waitConfirm('该操作将额外同时重载以下模块：\n' +
                                                         '\n'.join(extra_reload_modules) +
-                                                        '\n是否继续?' )
+                                                        '\n是否继续?')
                         if not confirm:
                             await msg.finish()
                             return
-                    msglist.append(module_reload(module_,extra_reload_modules))
+                    msglist.append(module_reload(module_, extra_reload_modules))
         else:
             msglist.append(f'失败：你没有重载模块的权限。')
     if msglist is not None:
@@ -389,7 +389,8 @@ async def modules_help(msg: MessageSession):
         await msg.sleep(60)
         await send.delete()
 
-def module_reload(module_,extra_modules):
+
+def module_reload(module_, extra_modules):
     reloadCnt = ModulesManager.reload_module(module_)
     if reloadCnt > 1:
         return f'成功：重载模块: {module_} ' + ' '.join(extra_modules) + f' ，以及该模块下的{reloadCnt - 1}个文件。'

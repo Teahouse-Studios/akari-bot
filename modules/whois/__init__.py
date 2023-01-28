@@ -1,7 +1,9 @@
 import ipaddress
+
 from core.builtins.message import MessageSession
 from core.component import on_command
 from .ip import check_ip, format_ip
+
 # from .domain import check_domain, format_domain
 
 w = on_command('whois', desc='查询 IP Whois 信息',

@@ -1,18 +1,21 @@
-from constant import consts
-from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 import ast
-import sys
-import operator as op
-import math
-import statistics
 import cmath
 import decimal
 import fractions
+import math
+import operator as op
 import os
+import statistics
+import sys
+
+from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
+
+from constant import consts
 
 if os.name == 'posix':
     os.nice(15)
     import resource
+
     resource.setrlimit(resource.RLIMIT_AS,
                        (16 * 1024 * 1024, 16 * 1024 * 1024))
     resource.setrlimit(resource.RLIMIT_DATA,
@@ -21,6 +24,7 @@ if os.name == 'posix':
                        (16 * 1024 * 1024, 16 * 1024 * 1024))
 elif os.name == 'nt':
     import win32process
+
     win32process.SetPriorityClass(win32process.GetCurrentProcess(
     ), 16384)
     win32process.SetProcessWorkingSetSize(

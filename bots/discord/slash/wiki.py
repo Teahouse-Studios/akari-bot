@@ -26,7 +26,8 @@ async def auto_search(ctx: discord.AutocompleteContext):
     if title != "":
         return [iw + x for x in (await wiki.search_page(title))]
     else:
-        return [iw + (await wiki.get_json(action='query', list='random', rnnamespace='0'))['query']['random'][0]['title']]
+        return [
+            iw + (await wiki.get_json(action='query', list='random', rnnamespace='0'))['query']['random'][0]['title']]
 
 
 async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
@@ -122,4 +123,3 @@ async def headers_reset(ctx: discord.ApplicationContext):
 @discord.option(name="_", choices=['enable', 'disable'])
 async def fandom(ctx: discord.ApplicationContext, _: str):
     await slash_parser(ctx, f'fandom {_}')
-

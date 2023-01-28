@@ -36,4 +36,5 @@ async def _(msg: MessageSession):
     async def bgtask(msg: MessageSession):
         for title in msg.matched_msg:
             await msg.sendMessage(await bugtracker_get(title, nolink=True))
+
     asyncio.create_task(bgtask(msg))

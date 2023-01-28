@@ -18,7 +18,8 @@ elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.
             '.skin-infobox', '.arcaeabox', '.moe-infobox']
 
 
-async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False) -> Union[str, bool]:
+async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False) -> Union[
+    str, bool]:
     elements_ = elements.copy()
     if not web_render:
         return False

@@ -1,8 +1,8 @@
 import importlib
 import os
 import re
-import traceback
 import sys
+import traceback
 from typing import Dict, Union
 
 from core.elements import Command, Schedule, RegexCommand, StartUp, PrivateAssets
@@ -47,10 +47,10 @@ def load_modules():
 
 class ModulesManager:
     modules: Dict[str, Union[Command, Schedule, RegexCommand, StartUp]] = {}
-    modulesOrigin: Dict[str,str] = {}
+    modulesOrigin: Dict[str, str] = {}
 
     @staticmethod
-    def add_module(module: Union[Command, Schedule, RegexCommand, StartUp],py_module_name: str):
+    def add_module(module: Union[Command, Schedule, RegexCommand, StartUp], py_module_name: str):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
             ModulesManager.modulesOrigin.update({module.bind_prefix: py_module_name})
@@ -68,7 +68,7 @@ class ModulesManager:
                 raise ValueError(f'Module "{module}" is not exist')
 
     @staticmethod
-    def search_related_module(module,includeSelf = True):
+    def search_related_module(module, includeSelf=True):
         if module in ModulesManager.modulesOrigin:
             modules = []
             py_module = ModulesManager.return_py_module(module)
@@ -80,14 +80,14 @@ class ModulesManager:
             return modules
         else:
             raise ValueError(f'Could not find "{module}" in modulesOrigin dict')
-    
+
     @staticmethod
     def return_py_module(module):
         if module in ModulesManager.modulesOrigin:
             return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', ModulesManager.modulesOrigin[module]).group()
         else:
             return None
-    
+
     @staticmethod
     def bind_to_module(bind_prefix: str, meta):
         if bind_prefix in ModulesManager.modules:
@@ -161,7 +161,7 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def reload_module(module_name:str):
+    def reload_module(module_name: str):
         """
         重载该小可模块（以及该模块所在文件的其它模块）
         """
@@ -169,9 +169,9 @@ class ModulesManager:
         unbind_modules = ModulesManager.search_related_module(module_name)
         ModulesManager.remove_modules(unbind_modules)
         return ModulesManager.reload_py_module(py_module)
-                    
+
     @staticmethod
-    def reload_py_module(module_name:str):
+    def reload_py_module(module_name: str):
         """
         重载该py模块
         """

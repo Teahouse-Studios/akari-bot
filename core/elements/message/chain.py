@@ -12,8 +12,8 @@ from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 
 class MessageChain:
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
-                                       Tuple[Union[Plain, Image, Voice, Embed, Url]],
-                                       Plain, Image, Voice, Embed, Url]):
+    Tuple[Union[Plain, Image, Voice, Embed, Url]],
+    Plain, Image, Voice, Embed, Url]):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)

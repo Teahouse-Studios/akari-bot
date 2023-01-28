@@ -148,8 +148,10 @@ nim = Module('nim', {
     13: ResultInfo('CFG的SecureInfoGetSerialNo返回了零字符长度的序列号或“000000000000000”'),
     18: ResultInfo('读取在系统存档里的NIM的.dat文件发生了错误，数据损坏或数据长度不正确。'),
     22: ResultInfo('任天堂服务器返回了无效的数据或无效的数据长度。（仅适用某些操作）'),
-    25: ResultInfo('IntegrityVerificationSeed正在等待服务器同步主机。如果未先通过IPC请求完成同步，则无法于在线服务进行处理。'),
-    26: ResultInfo('任天堂服务器存有不可用/不允许的IntegrityVerificationSeed。可能在完成系统迁移后，NIM向服务器请求导入IntegrityVerificationSeed时出现。'),
+    25: ResultInfo(
+        'IntegrityVerificationSeed正在等待服务器同步主机。如果未先通过IPC请求完成同步，则无法于在线服务进行处理。'),
+    26: ResultInfo(
+        '任天堂服务器存有不可用/不允许的IntegrityVerificationSeed。可能在完成系统迁移后，NIM向服务器请求导入IntegrityVerificationSeed时出现。'),
     27: ResultInfo('CFG模块在读取配置的0xA0002时返回了无效的地区代码。'),
     37: ResultInfo('服务处于备用模式。（eShop封禁？常规服务离线？这于一服务器回应账户信息时出现。此账户和NNID不相关。'),
     39: ResultInfo('HTTP状态码非200。（仅适用某些操作）'),

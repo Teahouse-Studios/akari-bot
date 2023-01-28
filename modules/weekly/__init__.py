@@ -21,7 +21,7 @@ async def get_weekly(with_img=False):
     img = re.findall(r'(?<=src=")(.*?)(?=/revision/latest/scale-to-(width|height)-down/\d{3}\?cb=\d{14}?")', html)
     page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
     msg_list = [Plain('发生错误：本周页面已过期，请联系中文 Minecraft Wiki 更新。' if page[
-                                                                     0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else '本周的每周页面：\n\n' + text)]
+                                                                                       0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else '本周的每周页面：\n\n' + text)]
     if img:
         msg_list.append(Plain(f'图片：' + str(Url(f'{img[0][0]}?format=original')) +
                               f'\n\n页面链接：' + str(Url(f'https://minecraft.fandom.com{page[0]}')) +

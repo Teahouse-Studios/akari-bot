@@ -30,7 +30,8 @@ class MessageSession(MS):
         wait = True
         quote = False
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False, allow_split_image=True) -> FinishedSession:
+    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False,
+                          allow_split_image=True) -> FinishedSession:
         msg = MessageSegment.text('')
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:

@@ -108,8 +108,9 @@ async def main(msg: MessageSession):
                 send_.append((f'{x.title()} ({y})：\n' if x != 'normal' else f'{y}：\n') +
                              f'下载链接：{infos[x][y]["url"]}\n'
                              f'文件名：{infos[x][y]["name"]}\n' +
-                             (f'此mod共有{str(infos[x][y]["depends"])}个依赖，请确认是否已经下载：\n{url_3}' if infos[x][y][
-                                                                                                   "depends"] > 0 else ''))
+                             (f'此mod共有{str(infos[x][y]["depends"])}个依赖，请确认是否已经下载：\n{url_3}' if
+                              infos[x][y][
+                                  "depends"] > 0 else ''))
         await msg.finish('\n'.join(send_))
 
     except ValueError:  # 404 ...

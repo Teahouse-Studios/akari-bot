@@ -32,7 +32,8 @@ async def inner_level_q(ds1, ds2=None):
     return result_set
 
 
-mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'], desc='有关maimai相关的工具，移植自mai-bot。')
+mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
+                 desc='有关maimai相关的工具，移植自mai-bot。')
 
 
 @mai.handle(['inner <rating> {根据定数查询对应歌曲}',
@@ -83,7 +84,8 @@ async def _(msg: MessageSession):
 
 
 mrgex2 = on_regex('maimai_random_music_regex2', desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                                                     'XXXmaimaiXXX什么 随机一首歌', developers=['mai-bot', 'OasisAkari'])
+                                                     'XXXmaimaiXXX什么 随机一首歌',
+                  developers=['mai-bot', 'OasisAkari'])
 
 
 @mrgex2.handle(r".*maimai.*什么", )
@@ -92,7 +94,8 @@ async def _(msg: MessageSession):
 
 
 msrgex = on_regex('maimai_search_music_regex', desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                                                    '查歌<乐曲标题的一部分> 查询符合条件的乐曲', developers=['mai-bot', 'OasisAkari'])
+                                                    '查歌<乐曲标题的一部分> 查询符合条件的乐曲',
+                  developers=['mai-bot', 'OasisAkari'])
 
 
 @msrgex.handle(r"查歌(.+)")
@@ -263,9 +266,9 @@ async def _(msg: MessageSession):
 async def _(msg: MessageSession):
     username = msg.parsed_msg['<username>']
     if username == "":
-        payload = {'qq': msg.session.sender, 'b50':  True}
+        payload = {'qq': msg.session.sender, 'b50': True}
     else:
-        payload = {'username': username, 'b50':  True}
+        payload = {'username': username, 'b50': True}
     img, success = await generate50(payload)
     if success == 400:
         await msg.finish("未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"

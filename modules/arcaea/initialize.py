@@ -8,7 +8,6 @@ from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
 
 from core.logger import Logger
 
-
 assets_path = os.path.abspath('./assets')
 cache_path = os.path.abspath('./cache')
 assets_apk = os.path.abspath(f'{assets_path}/arc.apk')

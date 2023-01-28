@@ -19,7 +19,8 @@ csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
               "4514330", "4514408", "4514534", "4514586", "4514603", "4515054", "4573995", "4574465", "4575369",
               "4575370",
-              "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276", "21865280"]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+              "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276",
+              "21865280"]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
@@ -144,12 +145,14 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
 
     if not captcha_mode:
         await msg.sendMessage([Image(newpath),
-                               Plain(f'请在 {set_timeout} 分钟内发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
+                               Plain(
+                                   f'请在 {set_timeout} 分钟内发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
-        result = await msg.waitNextMessage([Image(newpath), Plain('请发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
+        result = await msg.waitNextMessage(
+            [Image(newpath), Plain('请发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）')])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if result.asDisplay() == csr['name']:
                 await result.sendMessage('回答正确。')

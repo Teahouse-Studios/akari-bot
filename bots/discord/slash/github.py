@@ -16,5 +16,3 @@ async def get(ctx: discord.ApplicationContext, username_or_repo: str):
 @discord.option(name="keyword", description="搜索关键词")
 async def search(ctx: discord.ApplicationContext, keyword: str):
     await slash_parser(ctx, f'search {keyword}')
-
-
