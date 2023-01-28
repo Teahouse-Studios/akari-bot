@@ -35,7 +35,7 @@ async def _(msg: MessageSession):
                 'enable all [-g] {开启所有模块}',
                 'disable [-g] <module>... {关闭一个/多个模块}',
                 'disable all [-g] {关闭所有模块。}',
-                'reload <module> [-f] {重载一个/多个模块。}',
+                'reload <module> [-f] {重载一个模块。}',
                 'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
 async def _(msg: MessageSession):
@@ -166,6 +166,7 @@ async def config_modules(msg: MessageSession):
                                                         '\n'.join(extra_reload_modules) +
                                                         '\n是否继续?' )
                         if not confirm:
+                            await msg.finish()
                             return
                     msglist.append(module_reload(module_,extra_reload_modules))
         else:
