@@ -73,17 +73,25 @@ async def _(msg: MessageSession):
             for q in query_list:
                 img_send = False
                 for qq in q:
+                    wiki_ = WikiLib(qq)
                     articlepath = q[qq].articlepath.replace('$1', '(.*)')
+                    get_id = re.sub(r'.*curid=(\d+)', '\\1', qq)
                     get_title = re.sub(r'' + articlepath, '\\1', qq)
-                    if get_title != '':
+                    get_page = None
+                    if get_id.isdigit():
+                        get_page = await wiki_.parse_page_info(pageid=int(get_id))
+                        if not q[qq].in_allowlist:
+                            for result in await check(get_page.title):
+                                if not result['status']:
+                                    return
+                    elif get_title != '':
                         title = urllib.parse.unquote(get_title)
                         if not q[qq].in_allowlist:
                             for result in await check(title):
                                 if not result['status']:
                                     return
-
-                        wiki_ = WikiLib(qq)
                         get_page = await wiki_.parse_page_info(title)
+                    if get_page is not None:
                         if get_page.status and get_page.file is not None:
                             dl = await download_to_cache(get_page.file)
                             guess_type = filetype.guess(dl)
