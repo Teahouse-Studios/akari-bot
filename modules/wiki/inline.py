@@ -98,28 +98,22 @@ async def _(msg: MessageSession):
                                         await msg.sendMessage([Plain(f'此页面包括以下文件：{get_page.file}'), Voice(dl)],
                                                               quote=False)
                         if msg.Feature.image:
-                            if get_page.status and wiki_.wiki_info.in_allowlist and \
-                                wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
-                                if get_page.has_template_doc or get_page.title.split(':')[0] in ['User'] or \
-                                    'Template:Disambiguation' in get_page.templates:
+                            if get_page.status and wiki_.wiki_info.in_allowlist:
+                                if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
                                     get_infobox = await generate_screenshot_v2(qq,
                                                                                allow_special_page=q[qq].in_allowlist,
-                                                                               content_mode=True)
+                                                                               content_mode=
+                                                                               get_page.has_template_doc or get_page.title.split(':')[0] in ['User'] or \
+                                                                                'Template:Disambiguation' in get_page.templates)
+                                    if get_infobox:
+                                        await msg.sendMessage(Image(get_infobox), quote=False)
+                                else:
+                                    get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
                                     if get_infobox:
                                         await msg.sendMessage(Image(get_infobox), quote=False)
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:
-                    for qq in q:
-                        Logger.info(q[qq].realurl)
-                        if q[qq].realurl in generate_screenshot_v2_blocklist:
-                            get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers,
-                                                                       allow_special_page=q[qq].in_allowlist)
-                        else:
-                            get_infobox = await generate_screenshot_v2(qq, allow_special_page=q[qq].in_allowlist)
-                        if get_infobox:
-                            await msg.sendMessage(Image(get_infobox), quote=False)
-
                     for qq in q:
                         section_ = []
                         quote_code = False
