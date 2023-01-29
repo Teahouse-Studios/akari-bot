@@ -15,7 +15,7 @@ from core.utils import download_to_cache
 
 web_render = Config('web_render_local')
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
-            '.skin-infobox', '.arcaeabox', '.moe-infobox']
+            '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 
 
 async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False) -> Union[
