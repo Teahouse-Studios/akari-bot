@@ -56,3 +56,7 @@ max_line_length = 120
 in-place = true
 recursive = true
 aggressive = 3
+
+[[tool.poetry.source]]
+name = "tsinghua-mirror"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
