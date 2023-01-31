@@ -98,7 +98,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             return
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
-        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList:
+        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList\
+                or msg.target.senderId in msg.options.get('ban', []):
             return ExecutionLockList.remove(msg)
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')

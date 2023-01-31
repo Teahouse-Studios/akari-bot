@@ -82,11 +82,12 @@ admin = on_command('admin',
                    base=True,
                    required_admin=True,
                    developers=['OasisAkari'],
-                   desc='用于设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。'
+                   desc='一些群聊管理员可使用的命令。'
                    )
 
 
-@admin.handle(['add <UserID> {设置成员为机器人管理员}', 'del <UserID> {取消成员的机器人管理员}'])
+@admin.handle(['add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
+               'del <UserID> {取消成员的机器人管理员}'])
 async def config_gu(msg: MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
@@ -101,6 +102,28 @@ async def config_gu(msg: MessageSession):
         if user:
             if msg.data.remove_custom_admin(user):
                 await msg.finish("成功")
+
+
+@admin.handle('ban <UserID> {限制某人在本群使用机器人}', 'unban <UserID> {解除对某人在本群使用机器人的限制}')
+async def config_ban(msg: MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误，格式应为“{msg.target.senderFrom}|<用户ID>”')
+    if user == msg.target.senderId:
+        await msg.finish("你不可以对自己进行此操作！")
+    if 'ban' in msg.parsed_msg:
+        if user not in msg.options.get('ban', []):
+            msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
+            await msg.finish("成功")
+        else:
+            await msg.finish("此成员已经被设置禁止使用机器人了。")
+    if 'unban' in msg.parsed_msg:
+        if user in msg.options.get('ban', []):
+            msg.data.edit_option('ban', msg.options.get('ban', []).remove(user))
+            await msg.finish("成功")
+        else:
+            await msg.finish("此成员没有被设置禁止使用机器人。")
+
 
 
 locale = on_command('locale',
