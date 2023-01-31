@@ -87,7 +87,8 @@ admin = on_command('admin',
 
 
 @admin.handle(['add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
-               'del <UserID> {取消成员的机器人管理员}'])
+               'del <UserID> {取消成员的机器人管理员}',
+               'list {列出所有机器人管理员}'])
 async def config_gu(msg: MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
@@ -102,6 +103,11 @@ async def config_gu(msg: MessageSession):
         if user:
             if msg.data.remove_custom_admin(user):
                 await msg.finish("成功")
+    if 'list' in msg.parsed_msg:
+        if msg.custom_admins:
+            await msg.finish(f"当前机器人群内手动设置的管理员：\n" + '\n'.join(msg.custom_admins))
+        else:
+            await msg.finish("当前没有手动设置的机器人管理员。")
 
 
 @admin.handle('ban <UserID> {限制某人在本群使用机器人}', 'unban <UserID> {解除对某人在本群使用机器人的限制}')
@@ -124,7 +130,6 @@ async def config_ban(msg: MessageSession):
             await msg.finish("成功")
         else:
             await msg.finish("此成员没有被设置禁止使用机器人。")
-
 
 
 locale = on_command('locale',
