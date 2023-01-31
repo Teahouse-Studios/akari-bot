@@ -99,23 +99,22 @@ async def mcv_rss(bot: FetchTarget):
         traceback.print_exc()
 
 
-@on_schedule('mcbv_rss', developers=['OasisAkari'],
-             recommend_modules=['mcbv_jira_rss'],
-             trigger=IntervalTrigger(seconds=180),
-             desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
-async def mcbv_rss(bot: FetchTarget):
-    if IP.country == 'China':
-        return  # 中国大陆无法访问Google Play商店
-    try:
-        verlist = get_stored_list(bot, 'mcbv_rss')
-        version = google_play_scraper('com.mojang.minecraftpe')['version']
-        if version not in verlist:
-            Logger.info(f'huh, we find bedrock {version}.')
-            await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '正式版。')
-            verlist.append(version)
-            update_stored_list(bot, 'mcbv_rss', verlist)
-    except Exception:
-        traceback.print_exc()
+if IP.country != 'China':
+    @on_schedule('mcbv_rss', developers=['OasisAkari'],
+                 recommend_modules=['mcbv_jira_rss'],
+                 trigger=IntervalTrigger(seconds=180),
+                 desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
+    async def mcbv_rss(bot: FetchTarget):
+        try:
+            verlist = get_stored_list(bot, 'mcbv_rss')
+            version = google_play_scraper('com.mojang.minecraftpe')['version']
+            if version not in verlist:
+                Logger.info(f'huh, we find bedrock {version}.')
+                await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '正式版。')
+                verlist.append(version)
+                update_stored_list(bot, 'mcbv_rss', verlist)
+        except Exception:
+            traceback.print_exc()
 
 
 @on_schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'],
