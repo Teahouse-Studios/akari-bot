@@ -15,7 +15,7 @@ from core.scheduler import Scheduler
 from core.utils.http import get_url
 from core.utils.ip import IP
 
-bot_version = 'v4.0.8'
+bot_version = 'v4.0.9'
 
 
 def init() -> None:
