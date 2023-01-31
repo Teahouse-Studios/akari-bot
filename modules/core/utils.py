@@ -118,8 +118,9 @@ async def config_ban(msg: MessageSession):
         else:
             await msg.finish("此成员已经被设置禁止使用机器人了。")
     if 'unban' in msg.parsed_msg:
-        if user in msg.options.get('ban', []):
-            msg.data.edit_option('ban', msg.options.get('ban', []).remove(user))
+        if user in (banlist := msg.options.get('ban', [])):
+            banlist.remove(user)
+            msg.data.edit_option('ban', banlist)
             await msg.finish("成功")
         else:
             await msg.finish("此成员没有被设置禁止使用机器人。")
