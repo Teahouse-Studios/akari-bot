@@ -99,9 +99,11 @@ class MessageSession(MS):
             return True
         return False
 
-    def asDisplay(self, message=None):
+    def asDisplay(self):
+        m = self.session.message.message
+        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\\1', html.unescape(m))
         return ''.join(
-            re.split(r'\[CQ:.*?]', html.unescape(self.session.message.message if message is None else message))).strip()
+            re.split(r'\[CQ:.*?]', m)).strip()
 
     async def fake_forward_msg(self, nodelist):
         if self.target.targetFrom == 'QQ|Group':

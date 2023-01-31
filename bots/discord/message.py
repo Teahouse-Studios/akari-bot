@@ -119,7 +119,9 @@ class MessageSession(MS):
         return False
 
     def asDisplay(self):
-        return self.session.message.content
+        msg = self.session.message.content
+        msg = re.sub(r'<@(.*?)>', r'Discord|Client|\\1', msg)
+        return msg
 
     async def delete(self):
         try:
