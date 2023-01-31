@@ -1,6 +1,7 @@
 from .bot import *
 from .cache import *
 from .http import *
+from .ip import *
 from .i18n import *
 from .image import *
 from .image_table import *

@@ -13,8 +13,9 @@ from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.http import get_url
+from core.utils.ip import IP
 
-bot_version = 'v4.0.0'
+bot_version = 'v4.0.8'
 
 
 def init() -> None:
@@ -67,10 +68,11 @@ async def load_secret():
             Secret.add(value.upper())
     try:
         async def append_ip():
-            ip = await get_url('https://api.ip.sb/ip', timeout=10)
+            ip = await get_url('https://api.ip.sb/geoip', timeout=10, fmt='json')
             if ip:
-                Secret.add(ip.replace('\n', ''))
-
+                Secret.add(ip['ip'])
+                IP.country = ip['country']
+                IP.address = ip['ip']
         Logger.info('Fetching IP information...')
         await asyncio.create_task(append_ip())
         Logger.info('Successfully fetched IP information.')

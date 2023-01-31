@@ -10,7 +10,7 @@ from config import Config
 from core.component import on_schedule
 from core.elements import FetchTarget, IntervalTrigger
 from core.logger import Logger
-from core.utils import get_stored_list, update_stored_list, get_url
+from core.utils import get_stored_list, update_stored_list, get_url, IP
 
 
 async def get_article(version):
@@ -104,6 +104,8 @@ async def mcv_rss(bot: FetchTarget):
              trigger=IntervalTrigger(seconds=180),
              desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
 async def mcbv_rss(bot: FetchTarget):
+    if IP.country == 'China':
+        return  # 中国大陆无法访问Google Play商店
     try:
         verlist = get_stored_list(bot, 'mcbv_rss')
         version = google_play_scraper('com.mojang.minecraftpe')['version']

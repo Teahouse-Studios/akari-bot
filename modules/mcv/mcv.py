@@ -5,7 +5,7 @@ from google_play_scraper import app as google_play_scraper
 
 from core.elements import ErrorMessage
 from core.logger import Logger
-from core.utils import get_url
+from core.utils import get_url, IP
 
 
 async def mcv():
@@ -32,10 +32,12 @@ Mojira上所记录最新版本为：
 
 
 async def mcbv():
-    try:  # play store
-        play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
-    except Exception:
-        play_store_version = '获取失败'
+    play_store_version = None
+    if IP.country != 'China':
+        try:  # play store
+            play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
+        except Exception:
+            play_store_version = '获取失败'
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
     except (ConnectionError, OSError):  # Probably...
@@ -54,9 +56,9 @@ async def mcbv():
                     release.append(v["name"])
     fix = " | "
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
-    return f"""目前商店内最新正式版为：
+    return (f"""目前商店内最新正式版为：
 {play_store_version}，
-Mojira上所记录最新版本为：
+""" if IP.country != 'China' else '') + f"""Mojira上所记录最新版本为：
 {msg2}
 （以商店内最新版本为准，Mojira仅作版本号预览用）"""
 
