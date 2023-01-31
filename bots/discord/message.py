@@ -120,7 +120,7 @@ class MessageSession(MS):
 
     def asDisplay(self):
         msg = self.session.message.content
-        msg = re.sub(r'<@(.*?)>', r'Discord|Client|\\1', msg)
+        msg = re.sub(r'<@(.*?)>', r'Discord|Client|\1', msg)
         return msg
 
     async def delete(self):
