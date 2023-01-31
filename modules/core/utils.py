@@ -90,6 +90,11 @@ admin = on_command('admin',
                'del <UserID> {取消成员的机器人管理员}',
                'list {列出所有机器人管理员}'])
 async def config_gu(msg: MessageSession):
+    if 'list' in msg.parsed_msg:
+        if msg.custom_admins:
+            await msg.finish(f"当前机器人群内手动设置的管理员：\n" + '\n'.join(msg.custom_admins))
+        else:
+            await msg.finish("当前没有手动设置的机器人管理员。")
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
@@ -103,11 +108,6 @@ async def config_gu(msg: MessageSession):
         if user:
             if msg.data.remove_custom_admin(user):
                 await msg.finish("成功")
-    if 'list' in msg.parsed_msg:
-        if msg.custom_admins:
-            await msg.finish(f"当前机器人群内手动设置的管理员：\n" + '\n'.join(msg.custom_admins))
-        else:
-            await msg.finish("当前没有手动设置的机器人管理员。")
 
 
 @admin.handle('ban <UserID> {限制某人在本群使用机器人}', 'unban <UserID> {解除对某人在本群使用机器人的限制}')
