@@ -40,7 +40,7 @@ numpy = "^1.24.1"
 matplotlib = "^3.6.3"
 pint = "^0.20.1"
 simpleeval = "^0.9.12"
-pywin32 = "^305"
+pywin32 = {version = "^305", platform = "win32"}
 tenacity = "^8.1.0"
 
 
