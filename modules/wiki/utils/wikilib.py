@@ -405,7 +405,7 @@ class WikiLib:
         if title is not None:
             if title == '':
                 return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
-                                interwiki_prefix=_prefix)
+                                interwiki_prefix=_prefix, templates=[])
             if inline:
                 split_name = re.split(r'(#)', title)
             else:
