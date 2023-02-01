@@ -526,6 +526,7 @@ class WikiLib:
                                 invalid_namespace = False
 
                                 async def search_something(srwhat):
+                                    Logger.debug(traceback.format_exc())
                                     try:
                                         research = await self.research_page(page_info.title, namespace, srwhat=srwhat)
                                         if srwhat == 'text':
@@ -540,13 +541,12 @@ class WikiLib:
 
                                 searches = []
                                 searched_result = []
-                                if searches:
-                                    for srwhat in srwhats:
-                                        searches.append(search_something(srwhat))
-                                    gather_search = await asyncio.gather(*searches)
-                                    for search in gather_search:
-                                        if search[0] is not None and search[0] not in searched_result:
-                                            searched_result.append(search[0])
+                                for srwhat in srwhats:
+                                    searches.append(search_something(srwhat))
+                                gather_search = await asyncio.gather(*searches)
+                                for search in gather_search:
+                                    if search[0] is not None and search[0] not in searched_result:
+                                        searched_result.append(search[0])
 
                                 if preferred is None and searched_result:
                                     preferred = searched_result[0]
