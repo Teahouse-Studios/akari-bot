@@ -40,7 +40,7 @@ async def main(msg: MessageSession):
                     if matchserip.group(3) == '0':
                         is_local_ip = True
             if is_local_ip:
-                return await msg.sendMessage('你最好有事')
+                return await msg.sendMessage('发生错误：无法查询私有 IP 地址。')
         except:
             traceback.print_exc()
     sm = ['j', 'b']
