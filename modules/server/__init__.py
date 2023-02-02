@@ -26,6 +26,8 @@ async def main(msg: MessageSession):
     if matchserip:
         try:
             is_local_ip = False
+            if address == 'localhost':
+                is_local_ip = True
             if matchserip.group(1) == '192':
                 if matchserip.group(2) == '168':
                     is_local_ip = True
