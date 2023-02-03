@@ -72,7 +72,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         i = Image.open(img).convert('RGBA')
         txt_img = Image.new('RGBA', font.getsize(txt), (255, 255, 255, 0))
         idraw = ImageDraw.Draw(txt_img)
-        idraw.text((0, 0), txt, font=font, fill=(255, 255, 255, 35))
+        idraw.text((0, 0), txt, font=font, fill=(255, 255, 255, 50))
         i.alpha_composite(txt_img, (0, 0))
         return i
 
