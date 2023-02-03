@@ -47,7 +47,6 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
                                           )
 
         except ValueError:
-            traceback.print_exc()
             Logger.info('[Webrender] Generation Failed.')
             return False
     else:
