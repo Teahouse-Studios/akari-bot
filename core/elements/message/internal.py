@@ -66,8 +66,8 @@ class Image:
         self.path = path
         self.headers = headers
         if isinstance(path, PImage.Image):
-            save = f'{CachePath}{str(uuid.uuid4())}.png'
-            path.convert('RGBA').save(save)
+            save = f'{CachePath}{str(uuid.uuid4())}.jpg'
+            path.convert('RGB').save(save)
             self.path = save
         elif re.match('^https?://.*', path):
             self.need_get = True
