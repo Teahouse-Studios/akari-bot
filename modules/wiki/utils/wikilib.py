@@ -134,6 +134,7 @@ class WikiLib:
         self.headers = headers
 
     async def get_json_from_api(self, api, **kwargs) -> dict:
+        api = re.sub('https://zh.moegirl.org.cn/', 'https://mzh.moegirl.org.cn/', api)  # 萌娘百科强制使用移动版 API
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
             Logger.debug(api)
@@ -196,6 +197,7 @@ class WikiLib:
 
     async def check_wiki_available(self):
         try:
+            self.url = re.sub('https://zh.moegirl.org.cn/', 'https://mzh.moegirl.org.cn/', self.url)  # 萌娘百科强制使用移动版 API
             api_match = re.match(r'(https?://.*?/api.php$)', self.url)
             wiki_api_link = api_match.group(1)
         except Exception:
