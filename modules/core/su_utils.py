@@ -8,9 +8,10 @@ import numpy as np
 import ujson as json
 
 from config import Config
+from core.builtins import Bot
 from core.builtins.message import MessageSession
 from core.component import on_command
-from core.elements import PrivateAssets, Image, Plain, ExecutionLockList
+from core.elements import PrivateAssets, Image, Plain, ExecutionLockList, Temp
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
@@ -275,6 +276,21 @@ async def update_and_restart_bot(msg: MessageSession):
         write_version_cache(msg)
         await msg.sendMessage(pull_repo())
         restart()
+
+
+if Bot.FetchTarget.name == 'QQ':
+    resume = on_command('resume', developers=['OasisAkari'], required_superuser=True)
+
+    @resume.handle()
+    async def resume_sending_group_message(msg: MessageSession):
+        if targets := Temp.data['waiting_for_send_group_message']:
+            await msg.sendMessage(f'正在重发 {len(targets)} 条消息...')
+            for x in targets:
+                await x['fetch'].sendDirectMessage(x['message'])
+                Temp.data['waiting_for_send_group_message'].remove(x)
+            await msg.sendMessage('重发完成。')
+        else:
+            await msg.sendMessage('没有需要重发的消息。')
 
 
 echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)

@@ -14,14 +14,16 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
+from core.builtins import Bot
 from core.builtins.message import MessageSession as MS
 from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
+    FetchedSession as FS, FinishedSession as FinS, Temp
 from core.elements.message.chain import MessageChain
 from core.logger import Logger
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
+base_superuser = Config('base_superuser')
 
 
 class FinishedSession(FinS):
@@ -37,6 +39,8 @@ class FinishedSession(FinS):
 
 
 last_send_typing_time = {}
+Temp.data['is_group_message_blocked'] = False
+Temp.data['waiting_for_send_group_message'] = []
 
 
 class MessageSession(MS):
@@ -203,10 +207,19 @@ class FetchTarget(FT):
     async def post_message(module_name, message, user_list: List[FetchedSession] = None):
         async def post_(fetch_):
             try:
-                await fetch_.sendDirectMessage(message)
+                if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
+                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                else:
+                    await fetch_.sendDirectMessage(message)
                 if enable_analytics:
                     BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
                 await asyncio.sleep(0.5)
+            except aiocqhttp.ActionFailed as e:
+                if e.result['wording'] == 'send group message failed: blocked by server':
+                    Temp.data['is_group_message_blocked'] = True
+                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                    fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
+                    await fetch_base_superuser.sendDirectMessage('群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
             except Exception:
                 Logger.error(traceback.format_exc())
 
@@ -270,3 +283,7 @@ class FetchTarget(FT):
             if else_:
                 asyncio.create_task(post_not_in_whitelist(else_))
                 Logger.info(f"Post done. but there are still {len(else_)} processes running.")
+
+
+Bot.MessageSession = MessageSession
+Bot.FetchTarget = FetchTarget

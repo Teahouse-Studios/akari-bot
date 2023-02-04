@@ -4,6 +4,7 @@ from typing import List, Union
 
 from bots.aiogram.client import dp, bot
 from config import Config
+from core.builtins import Bot
 from core.builtins.message import MessageSession as MS
 from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, FetchedSession as FS, \
     FinishedSession as FinS
@@ -182,3 +183,7 @@ class FetchTarget(FT):
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
+
+
+Bot.MessageSession = MessageSession
+Bot.FetchTarget = FetchTarget

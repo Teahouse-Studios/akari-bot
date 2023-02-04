@@ -1,6 +1,10 @@
 from core.elements import MessageSession
 
 
+class Temp:
+    data = {}
+
+
 class ExecutionLockList:
     _list = set()
 
@@ -25,4 +29,4 @@ class ExecutionLockList:
         return ExecutionLockList._list
 
 
-__all__ = ["ExecutionLockList"]
+__all__ = ["Temp", "ExecutionLockList"]
