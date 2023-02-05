@@ -81,7 +81,7 @@ async def s(msg: Bot.MessageSession):
 
 
 @cc.handle('<csid> {根据 ChemSpider ID 出题}')
-async def chemical_code_by_id(msg: MessageSession):
+async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
     if id.isdigit():  # 如果 ID 为纯数字
         await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
@@ -89,7 +89,7 @@ async def chemical_code_by_id(msg: MessageSession):
         await msg.finish('请输入纯数字ID！')
 
 
-async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
+async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId][
         'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish('当前有一局游戏正在进行中。')
@@ -125,7 +125,7 @@ async def chemical_code(msg: MessageSession, id=None, captcha_mode=False):  # �
     if set_timeout < 2:
         set_timeout = 2
 
-    async def ans(msg: MessageSession, answer):  # 定义回答函数的功能
+    async def ans(msg: Bot.MessageSession, answer):  # 定义回答函数的功能
         wait = await msg.waitAnyone()  # 等待对象内的任意人回答
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if wait.asDisplay() != answer:  # 如果回答不正确
