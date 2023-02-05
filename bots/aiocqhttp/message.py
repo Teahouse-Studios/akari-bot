@@ -219,7 +219,8 @@ class FetchTarget(FT):
                     Temp.data['is_group_message_blocked'] = True
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
                     fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
-                    await fetch_base_superuser.sendDirectMessage('群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
+                    if fetch_base_superuser:
+                        await fetch_base_superuser.sendDirectMessage('群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
             except Exception:
                 Logger.error(traceback.format_exc())
 
