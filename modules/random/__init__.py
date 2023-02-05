@@ -1,6 +1,6 @@
 import secrets
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 
 r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'dice': 'random number 1 6',
@@ -10,7 +10,7 @@ r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'dice': 'rand
 
 
 @r.handle('number <min> <max> {生成区间内的随机整数}', )
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     _min = msg.parsed_msg['<min>']
     _max = msg.parsed_msg['<max>']
     random = secrets.randbelow(int(_max) - int(_min) + 1) + int(_min)
@@ -18,6 +18,6 @@ async def _(msg: MessageSession):
 
 
 @r.handle('choice ... {从集合中选择元素}', )
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     choices = msg.parsed_msg['...']
     await msg.finish(secrets.choice(choices))

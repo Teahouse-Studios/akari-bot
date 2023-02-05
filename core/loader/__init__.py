@@ -5,8 +5,9 @@ import sys
 import traceback
 from typing import Dict, Union
 
-from core.elements import Command, Schedule, RegexCommand, StartUp, PrivateAssets
+from core.builtins import PrivateAssets
 from core.logger import Logger
+from core.types import Command, Schedule, RegexCommand, StartUp
 
 load_dir_path = os.path.abspath('./modules/')
 

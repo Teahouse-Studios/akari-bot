@@ -1,6 +1,5 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Plain, Image
 from core.component import on_command
-from core.elements import Plain, Image
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
@@ -10,7 +9,7 @@ aud = on_command('wiki_audit', alias='wa',
 
 
 @aud.handle(['trust <apiLink>', 'block <apiLink>'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     req = msg.parsed_msg
     op = msg.session.sender
     api = req['<apiLink>']
@@ -34,7 +33,7 @@ async def _(msg: MessageSession):
 
 
 @aud.handle(['distrust <apiLink>', 'unblock <apiLink>'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     req = msg.parsed_msg
     api = req['<apiLink>']
     check = await WikiLib(api).check_wiki_available()
@@ -57,7 +56,7 @@ async def _(msg: MessageSession):
 
 
 @aud.handle('query <apiLink>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     req = msg.parsed_msg
     api = req['<apiLink>']
     check = await WikiLib(api).check_wiki_available()
@@ -83,7 +82,7 @@ async def _(msg: MessageSession):
 
 
 @aud.handle('list')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     allow_list = Audit.get_allow_list()
     block_list = Audit.get_block_list()
     legacy = True

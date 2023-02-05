@@ -1,12 +1,11 @@
 import traceback
 
-from core.builtins.message import MessageSession
-from core.elements import Url, ErrorMessage
-from core.utils import get_url
+from core.builtins import Url, ErrorMessage, Bot
+from core.utils.http import get_url
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
-async def user(msg: MessageSession):
+async def user(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':

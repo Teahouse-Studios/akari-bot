@@ -2,8 +2,7 @@ import asyncio
 import re
 from typing import Union
 
-from core.builtins.message import MessageSession
-from core.elements import Plain
+from core.builtins import Bot, Plain
 from core.logger import Logger
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
@@ -11,11 +10,11 @@ from .wiki import wiki, query_pages
 
 
 @wiki.handle('search <PageName> {搜索一个Wiki页面。}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await search_pages(msg, msg.parsed_msg['<PageName>'])
 
 
-async def search_pages(session: MessageSession, title: Union[str, list, tuple], use_prefix=True):
+async def search_pages(session: Bot.MessageSession, title: Union[str, list, tuple], use_prefix=True):
     target = WikiTargetInfo(session)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()

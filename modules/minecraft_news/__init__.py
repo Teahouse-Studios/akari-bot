@@ -6,10 +6,12 @@ from urllib.parse import quote
 import ujson as json
 
 from config import Config
+from core.builtins import Url, Bot
 from core.component import on_schedule
-from core.elements import FetchTarget, IntervalTrigger, Url
 from core.logger import Logger
-from core.utils import get_url, get_stored_list, update_stored_list
+from core.scheduler import IntervalTrigger
+from core.utils.http import get_url
+from core.utils.storedata import get_stored_list, update_stored_list
 
 
 class Article:
@@ -42,7 +44,7 @@ class Article:
              recommend_modules=['feedback_news'],
              trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
              desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
-async def start_check_news(bot: FetchTarget):
+async def start_check_news(bot: Bot.FetchTarget):
     baseurl = 'https://www.minecraft.net'
     url = quote(
         f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
@@ -78,7 +80,7 @@ async def start_check_news(bot: FetchTarget):
 @on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
              trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。',
              alias='feedbacknews')
-async def feedback_news(bot: FetchTarget):
+async def feedback_news(bot: Bot.FetchTarget):
     sections = [{'name': 'beta',
                  'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
                 {'name': 'article',

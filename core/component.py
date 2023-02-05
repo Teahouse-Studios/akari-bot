@@ -7,10 +7,10 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.elements import Command, RegexCommand, Schedule, StartUp
-from core.elements.module.component_meta import *
 from core.loader import ModulesManager
 from core.parser.args import parse_template
+from core.types import Command, RegexCommand, Schedule, StartUp
+from core.types.module.component_meta import *
 
 
 class Bind:

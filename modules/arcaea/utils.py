@@ -3,7 +3,7 @@ import shutil
 import traceback
 
 from config import Config
-from core.utils import get_url, download_to_cache
+from core.utils.http import get_url, download_to_cache
 from .initialize import blur_song_img
 
 botarcapi_url = Config("botarcapi_url")

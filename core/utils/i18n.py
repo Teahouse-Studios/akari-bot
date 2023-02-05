@@ -5,7 +5,7 @@ from typing import TypedDict
 
 import ujson as json
 
-from core.elements.message import MessageSession
+from core.builtins.message import MessageSession
 
 # Load all locale files into memory
 

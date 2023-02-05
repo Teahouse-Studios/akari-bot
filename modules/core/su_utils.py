@@ -9,14 +9,14 @@ import ujson as json
 
 from config import Config
 from core.builtins import Bot
+from core.builtins import PrivateAssets, Image, Plain, ExecutionLockList, Temp
 from core.builtins.message import MessageSession
+from core.builtins.tasks import MessageTaskManager
 from core.component import on_command
-from core.elements import PrivateAssets, Image, Plain, ExecutionLockList, Temp
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
-from core.utils.tasks import MessageTaskManager
 from database import BotDBUtil
 
 su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
@@ -281,6 +281,7 @@ async def update_and_restart_bot(msg: MessageSession):
 if Bot.FetchTarget.name == 'QQ':
     resume = on_command('resume', developers=['OasisAkari'], required_superuser=True)
 
+
     @resume.handle()
     async def resume_sending_group_message(msg: MessageSession):
         if targets := Temp.data['waiting_for_send_group_message']:
@@ -291,7 +292,6 @@ if Bot.FetchTarget.name == 'QQ':
             await msg.sendMessage('重发完成。')
         else:
             await msg.sendMessage('没有需要重发的消息。')
-
 
 echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
 

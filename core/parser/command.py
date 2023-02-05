@@ -4,8 +4,8 @@ import shlex
 import traceback
 from typing import Union, Dict
 
-from core.elements import Command, MessageSession
 from core.exceptions import InvalidCommandFormatError
+from core.types import Command, MessageSession
 from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..logger import Logger
 

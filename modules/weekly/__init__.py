@@ -2,10 +2,10 @@ import re
 
 import ujson as json
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
+from core.builtins import Plain, Image, Url
 from core.component import on_command
-from core.elements import Plain, Image, Url
-from core.utils import get_url
+from core.utils.http import get_url
 from .teahouse import get_rss as get_teahouse_rss
 
 
@@ -37,12 +37,12 @@ wky = on_command('weekly', developers=['Dianliang233'])
 
 
 @wky.handle('{获取中文 Minecraft Wiki 的每周页面}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     weekly = await get_weekly(True if msg.target.clientName == 'QQ' else False)
     await msg.finish(weekly)
 
 
 @wky.handle('teahouse {获取茶馆周报}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     await msg.finish(weekly)

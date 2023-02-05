@@ -7,11 +7,12 @@ from os.path import abspath
 
 import ujson as json
 
-from core.elements import PrivateAssets, StartUp, Schedule, Secret
+from core.builtins import PrivateAssets, Secret
 from core.exceptions import ConfigFileNotFound
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
+from core.types import StartUp, Schedule
 from core.utils.http import get_url
 from core.utils.ip import IP
 
@@ -73,6 +74,7 @@ async def load_secret():
                 Secret.add(ip['ip'])
                 IP.country = ip['country']
                 IP.address = ip['ip']
+
         Logger.info('Fetching IP information...')
         await asyncio.create_task(append_ip())
         Logger.info('Successfully fetched IP information.')

@@ -2,10 +2,10 @@ import os
 import traceback
 
 from config import Config
-from core.builtins.message import MessageSession
+from core.builtins import Bot
+from core.builtins import Plain, Image
 from core.component import on_command
-from core.elements import Plain, Image
-from core.utils import get_url
+from core.utils.http import get_url
 from .dbutils import ArcBindInfoManager
 from .getb30 import getb30
 from .getb30_official import getb30_official
@@ -24,7 +24,7 @@ assets_path = os.path.abspath('./assets/arcaea')
 @arc.handle('b30 [<friendcode>] {查询一个Arcaea用户的b30列表（自动选择使用API）}',
             'b30 official [<friendcode>] {使用官方API}',
             'b30 unofficial [<friendcode>] {使用非官方API}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
         await msg.finish(
             '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
@@ -82,7 +82,7 @@ async def _(msg: MessageSession):
 @arc.handle('info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}',
             'info official [<friendcode>] {使用官方API}',
             'info unofficial [<friendcode>] {使用非官方API}', )
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
         await msg.sendMessage(
             '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
@@ -136,7 +136,7 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('song <songname+prs/pst/byd> {查询一首Arcaea谱面的信息}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
     songname_split = songname_.split(' ')
     diff = -1
@@ -164,7 +164,7 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('bind <friendcode/username> {绑定一个Arcaea用户}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<friendcode/username>']
     getcode = await get_userinfo(code)
     if getcode:
@@ -181,14 +181,14 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('unbind {取消绑定用户}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     unbind = ArcBindInfoManager(msg).remove_bind_info()
     if unbind:
         await msg.finish('取消绑定成功。')
 
 
 @arc.handle('initialize', required_superuser=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
         await msg.finish('未找到arc.apk！')
@@ -199,7 +199,7 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('download {获取最新版本的游戏apk}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
@@ -209,7 +209,7 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('random {随机一首曲子}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
@@ -223,7 +223,7 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
     if msg.parsed_msg.get('free', False):
@@ -240,7 +240,7 @@ async def _(msg: MessageSession):
 
 
 @arc.handle('switch {切换查询时默认优先使用的API接口}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     value = msg.options.get('arc_api', True)
     set_value = msg.data.edit_option('arc_api', not value)
     await msg.finish(f'已切换为{"官方" if not value else "非官方"}API。')

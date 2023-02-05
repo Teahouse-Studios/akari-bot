@@ -9,10 +9,10 @@ import ujson as json
 
 import core.utils.html2text as html2text
 from config import Config
+from core.builtins import Url
 from core.dirty_check import check
-from core.elements import Url
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 

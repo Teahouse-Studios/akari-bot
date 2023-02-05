@@ -4,12 +4,11 @@ import urllib.parse
 
 import filetype
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Plain, Image, Voice
 from core.component import on_regex
 from core.dirty_check import check
-from core.elements import Plain, Image, Voice
 from core.logger import Logger
-from core.utils import download_to_cache
+from core.utils.http import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
@@ -21,7 +20,7 @@ wiki_inline = on_regex('wiki_inline',
 
 
 @wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#':
@@ -31,7 +30,7 @@ async def _(msg: MessageSession):
 
 
 @wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
@@ -41,7 +40,7 @@ async def _(msg: MessageSession):
 
 
 @wiki_inline.handle(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
         for y in x:
@@ -54,7 +53,7 @@ async def _(msg: MessageSession):
 @wiki_inline.handle(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
     mode='A', show_typing=False, logging=False)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
     async def bgtask():
@@ -111,8 +110,10 @@ async def _(msg: MessageSession):
                                     get_infobox = await generate_screenshot_v2(qq,
                                                                                allow_special_page=q[qq].in_allowlist,
                                                                                content_mode=
-                                                                               get_page.has_template_doc or get_page.title.split(':')[0] in ['User'] or \
-                                                                                'Template:Disambiguation' in get_page.templates)
+                                                                               get_page.has_template_doc or
+                                                                               get_page.title.split(':')[0] in [
+                                                                                   'User'] or \
+                                                                               'Template:Disambiguation' in get_page.templates)
                                     if get_infobox:
                                         await msg.sendMessage(Image(get_infobox), quote=False)
                                 else:

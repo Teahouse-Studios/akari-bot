@@ -7,10 +7,13 @@ from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
 from config import Config
+from core.builtins import Bot
 from core.component import on_schedule
-from core.elements import FetchTarget, IntervalTrigger
 from core.logger import Logger
-from core.utils import get_stored_list, update_stored_list, get_url, IP
+from core.scheduler import IntervalTrigger
+from core.utils.http import get_url
+from core.utils.ip import IP
+from core.utils.storedata import get_stored_list, update_stored_list
 
 
 async def get_article(version):
@@ -64,7 +67,7 @@ trigger_times = 60 if not Config('slower_schedule') else 180
              recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
              trigger=IntervalTrigger(seconds=trigger_times),
              desc='开启后当Minecraft启动器更新Java版Minecraft时将会自动推送消息。', alias='mcvrss')
-async def mcv_rss(bot: FetchTarget):
+async def mcv_rss(bot: Bot.FetchTarget):
     url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:
         verlist = get_stored_list(bot, 'mcv_rss')
@@ -103,7 +106,7 @@ async def mcv_rss(bot: FetchTarget):
              recommend_modules=['mcbv_jira_rss'],
              trigger=IntervalTrigger(seconds=180),
              desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
-async def mcbv_rss(bot: FetchTarget):
+async def mcbv_rss(bot: Bot.FetchTarget):
     if IP.country == 'China':
         return  # 中国大陆无法访问Google Play商店
     try:
@@ -122,7 +125,7 @@ async def mcbv_rss(bot: FetchTarget):
              recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
              trigger=IntervalTrigger(seconds=trigger_times),
              desc='开启后当Jira更新Java版时将会自动推送消息。', alias='mcvjirarss')
-async def mcv_jira_rss(bot: FetchTarget):
+async def mcv_jira_rss(bot: Bot.FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcv_jira_rss')
         file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200, attempt=1))
@@ -156,7 +159,7 @@ async def mcv_jira_rss(bot: FetchTarget):
              recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'],
              trigger=IntervalTrigger(seconds=trigger_times),
              desc='开启后当Jira更新基岩版时将会自动推送消息。', alias='mcbvjirarss')
-async def mcbv_jira_rss(bot: FetchTarget):
+async def mcbv_jira_rss(bot: Bot.FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcbv_jira_rss')
         file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200, attempt=1))
@@ -185,7 +188,7 @@ async def mcbv_jira_rss(bot: FetchTarget):
              recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'],
              trigger=IntervalTrigger(seconds=trigger_times),
              desc='开启后当Jira更新Dungeons版本时将会自动推送消息。', alias='mcdvjirarss')
-async def mcdv_jira_rss(bot: FetchTarget):
+async def mcdv_jira_rss(bot: Bot.FetchTarget):
     try:
         verlist = get_stored_list(bot, 'mcdv_jira_rss')
         file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200, attempt=1))

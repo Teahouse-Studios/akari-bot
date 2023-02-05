@@ -4,7 +4,7 @@ import os
 import socket
 from typing import Any, Dict
 
-from core.utils import get_url
+from core.utils.http import get_url
 
 iso = json.load(open(os.path.dirname(os.path.abspath(
     __file__)) + '/iso.json', 'r', encoding='utf-8'))

@@ -8,12 +8,12 @@ from urllib.parse import urljoin
 
 import aiohttp
 import ujson as json
+from PIL import ImageFont
 from bs4 import BeautifulSoup, Comment
 
 from config import Config
 from core.logger import Logger
-from core.utils import download_to_cache
-from PIL import Image, ImageDraw, ImageFont
+from core.utils.http import download_to_cache
 
 web_render = Config('web_render_local')
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',

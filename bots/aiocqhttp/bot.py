@@ -8,9 +8,10 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
-from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets, Url
+from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
-from core.utils import init, load_prompt, init_async
+from core.types import MsgInfo, Session
+from core.utils.bot import init, load_prompt, init_async
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))

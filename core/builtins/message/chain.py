@@ -5,12 +5,13 @@ from urllib.parse import urlparse
 
 import ujson as json
 
-from core.elements.others import Secret
+from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage
+from core.builtins.utils import Secret
 from core.logger import Logger
-from .internal import Plain, Image, Voice, Embed, Url, ErrorMessage
+from core.types.message import MessageChain as MC
 
 
-class MessageChain:
+class MessageChain(MC):
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
     Tuple[Union[Plain, Image, Voice, Embed, Url]],
     Plain, Image, Voice, Embed, Url]):

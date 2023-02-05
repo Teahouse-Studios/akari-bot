@@ -1,8 +1,7 @@
 import re
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Plain, Image as BImage
 from core.component import on_command, on_regex
-from core.elements import Plain, Image as BImage
 from core.logger import Logger
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
@@ -38,7 +37,7 @@ mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
 
 @mai.handle(['inner <rating> {根据定数查询对应歌曲}',
              'inner <rating_min> <rating_max> {根据定数查询对应歌曲}'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if '<rating>' in msg.parsed_msg:
         result_set = await inner_level_q(float(msg.parsed_msg['<rating>']))
     else:
@@ -57,7 +56,7 @@ mrgex1 = on_regex('maimai_random_music_regex1',
 
 
 @mrgex1.handle(r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)")
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         try:
@@ -89,7 +88,7 @@ mrgex2 = on_regex('maimai_random_music_regex2', desc='打开后将在发送的�
 
 
 @mrgex2.handle(r".*maimai.*什么", )
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
@@ -99,7 +98,7 @@ msrgex = on_regex('maimai_search_music_regex', desc='打开后将在发送的聊
 
 
 @msrgex.handle(r"查歌(.+)")
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0].strip()
     if name == "":
         return
@@ -121,7 +120,7 @@ mqrgex = on_regex('maimai_query_chart_regex',
 
 
 @msrgex.handle(r"([绿黄红紫白]?)id([0-9]+)")
-async def _(message: MessageSession):
+async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     level_labels = ['绿', '黄', '红', '紫', '白']
     if groups[0] != "":
@@ -172,7 +171,7 @@ wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练�
 
 
 @mai.handle('today {查看今天的舞萌运势}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.target.senderFrom == "Discord|Client":
         qq = int(msg.session.sender.id)
     else:
@@ -196,7 +195,7 @@ async def _(msg: MessageSession):
 
 @mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
              'scoreline help {查看分数线帮助}'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     r = "([绿黄红紫白])(id)?([0-9]+)"
     arg1 = msg.parsed_msg.get('<difficulty+sid>')
     args2 = msg.parsed_msg.get('<scoreline>')
@@ -245,7 +244,7 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
 
 
 @mai.handle('b40 <username> {查询B40信息（仅限大陆版maimai使用）}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg['<username>']
     if username == "":
         payload = {'qq': msg.session.sender}
@@ -263,7 +262,7 @@ async def _(msg: MessageSession):
 
 
 @mai.handle('b50 <username> {查询B50信息（仅限大陆版maimai使用）}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg['<username>']
     if username == "":
         payload = {'qq': msg.session.sender, 'b50': True}

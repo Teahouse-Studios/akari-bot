@@ -2,12 +2,12 @@ from typing import List, Union
 
 from PIL import Image
 
+from core.builtins import Plain, Image as BImage, confirm_command
 from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image as BImage, Session, MsgInfo, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
-from core.elements.message.chain import MessageChain
-from core.elements.others import confirm_command
+from core.builtins.message.chain import MessageChain
 from core.logger import Logger
+from core.types import Session, MsgInfo, FetchTarget as FT, \
+    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
 
 
 class FinishedSession(FinS):

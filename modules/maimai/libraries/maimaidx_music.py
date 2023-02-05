@@ -2,7 +2,7 @@ import random
 from copy import deepcopy
 from typing import Dict, List, Optional, Union, Tuple, Any
 
-from core.utils import get_url
+from core.utils.http import get_url
 
 
 def get_cover_len4_id(mid) -> str:

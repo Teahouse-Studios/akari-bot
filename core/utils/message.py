@@ -3,7 +3,7 @@ from typing import Union
 
 from discord import Embed as DiscordEmbed
 
-from core.elements.message.internal import Embed, EmbedField
+from core.builtins.message.internal import Embed, EmbedField
 
 
 def removeIneffectiveText(prefix: str, lst: list) -> list:

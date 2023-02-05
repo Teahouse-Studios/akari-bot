@@ -3,7 +3,7 @@ import traceback
 import ujson as json
 
 from core.logger import Logger
-from core.utils import post_url
+from core.utils.http import post_url
 
 
 async def nbnhhsh(term: str):

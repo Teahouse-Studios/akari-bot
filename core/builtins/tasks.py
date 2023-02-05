@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.elements import MessageSession
+from core.types import MessageSession
 
 
 class MessageTaskManager:

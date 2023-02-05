@@ -2,9 +2,9 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
+from core.builtins import Image as Img
 from core.component import on_command
-from core.elements import Image as Img
 from core.utils.cache import random_cache_path
 
 assets_path = os.path.abspath('./assets/arcaea')
@@ -14,7 +14,7 @@ p = on_command('ptt',
 
 
 @p.handle('<potential> {生成一张Arcaea Potential图片}')
-async def pttimg(msg: MessageSession):
+async def pttimg(msg: Bot.MessageSession):
     ptt = msg.parsed_msg['<potential>']
     # ptt
     if ptt == '--':

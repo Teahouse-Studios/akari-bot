@@ -4,9 +4,9 @@ import traceback
 from datetime import datetime
 
 from config import Config
-from core.elements import Plain, Image
+from core.builtins import Plain, Image
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 from modules.arcaea.utils import autofix_b30_song_background, errcode
 
 assets_path = os.path.abspath('./assets/arcaea')

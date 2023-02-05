@@ -8,9 +8,7 @@ from typing import List, Dict
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.builtins.message import MessageSession
-from core.elements import Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
-from core.elements.module.component_meta import CommandMeta
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
 from core.loader import ModulesManager
@@ -18,7 +16,9 @@ from core.logger import Logger
 from core.parser.args import Template, ArgumentPattern, templates_to_str
 from core.parser.command import CommandParser
 from core.tos import warn_target
-from core.utils import removeIneffectiveText, removeDuplicateSpace, MessageTaskManager
+from core.types import Command, RegexCommand
+from core.types.module.component_meta import CommandMeta
+from core.utils.message import removeIneffectiveText, removeDuplicateSpace
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
@@ -98,8 +98,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             return
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
-        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList\
-                or msg.target.senderId in msg.options.get('ban', []):
+        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
+            or msg.target.senderId in msg.options.get('ban', []):
             return ExecutionLockList.remove(msg)
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')

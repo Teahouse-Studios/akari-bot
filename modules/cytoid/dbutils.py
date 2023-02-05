@@ -2,7 +2,7 @@ from typing import Union
 
 from tenacity import retry, stop_after_attempt
 
-from core.elements import MessageSession
+from core.builtins import Bot
 from database import session, auto_rollback_error
 from .orm import CytoidBindInfo
 
@@ -10,7 +10,7 @@ from .orm import CytoidBindInfo
 class CytoidBindInfoManager:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def __init__(self, msg: MessageSession):
+    def __init__(self, msg: Bot.MessageSession):
         self.targetId = msg.target.senderId
         self.query = session.query(CytoidBindInfo).filter_by(targetId=self.targetId).first()
         if self.query is None:

@@ -1,4 +1,4 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 
 ali = on_command('alias', required_admin=True, base=True)
@@ -6,7 +6,7 @@ ali = on_command('alias', required_admin=True, base=True)
 
 @ali.handle('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}',
             'reset {重置自定义命令别名}')
-async def set_alias(msg: MessageSession):
+async def set_alias(msg: Bot.MessageSession):
     alias = msg.options.get('command_alias')
     arg1 = msg.parsed_msg.get('<alias>', False)
     arg2 = msg.parsed_msg.get('<command>', False)

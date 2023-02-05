@@ -1,8 +1,8 @@
 import asyncio
 from typing import List, Union
 
-from core.elements.message.chain import MessageChain
 from core.exceptions import FinishedException
+from .chain import MessageChain
 
 
 class MsgInfo:

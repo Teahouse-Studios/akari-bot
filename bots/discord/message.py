@@ -7,13 +7,12 @@ import discord
 
 from bots.discord.client import client
 from config import Config
-from core.builtins import Bot
-from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, MsgInfo, Session, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
-from core.elements.message.chain import MessageChain
-from core.elements.message.internal import Embed
+from core.builtins import Bot, Plain, Image, MessageSession as MS
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Embed
 from core.logger import Logger
+from core.types import MsgInfo, Session, FetchTarget as FT, \
+    FetchedSession as FS, FinishedSession as FinS
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')

@@ -1,4 +1,4 @@
-from core.elements import MessageSession
+from core.types import MessageSession
 
 
 class Temp:

@@ -1,13 +1,13 @@
 import asyncio
 import traceback
 
-from core.builtins.message import MessageSession
-from core.elements import Image, Plain, Url, ErrorMessage
-from core.utils import get_url, download_to_cache
+from core.builtins import Bot
+from core.builtins import Image, Plain, Url, ErrorMessage
+from core.utils.http import get_url, download_to_cache
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
-async def repo(msg: MessageSession):
+async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':

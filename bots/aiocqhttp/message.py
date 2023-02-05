@@ -15,11 +15,12 @@ from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
 from core.builtins import Bot
+from core.builtins import Plain, Image, Voice, Temp
 from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, MsgInfo, Session, Voice, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS, Temp
-from core.elements.message.chain import MessageChain
+from core.builtins.message.chain import MessageChain
 from core.logger import Logger
+from core.types import MsgInfo, Session, FetchTarget as FT, \
+    FetchedSession as FS, FinishedSession as FinS
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
@@ -220,7 +221,8 @@ class FetchTarget(FT):
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
                     fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
                     if fetch_base_superuser:
-                        await fetch_base_superuser.sendDirectMessage('群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
+                        await fetch_base_superuser.sendDirectMessage(
+                            '群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
             except Exception:
                 Logger.error(traceback.format_exc())
 

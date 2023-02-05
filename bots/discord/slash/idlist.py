@@ -4,7 +4,7 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
-from core.utils import get_url
+from core.utils.http import get_url
 
 api = 'https://ca.projectxero.top/idlist/search'
 

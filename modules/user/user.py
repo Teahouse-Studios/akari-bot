@@ -6,8 +6,8 @@ import urllib.parse
 
 from bs4 import BeautifulSoup as bs
 
-from core.elements import Plain, Image
-from core.utils import get_url, download_to_cache
+from core.builtins import Plain, Image
+from core.utils.http import get_url, download_to_cache
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 from .tpg import tpg

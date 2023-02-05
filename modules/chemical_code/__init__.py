@@ -9,11 +9,12 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
+from core.builtins import Image, Plain
 from core.component import on_command
-from core.elements import Image, Plain
 from core.logger import Logger
-from core.utils import get_url, download_to_cache, random_cache_path
+from core.utils.cache import random_cache_path
+from core.utils.http import get_url, download_to_cache
 
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
@@ -57,17 +58,17 @@ play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
 @cc.handle('{普通样式（时间限制，多人）}')  # 直接使用 cc 命令将触发此装饰器
-async def chemical_code_by_random(msg: MessageSession):
+async def chemical_code_by_random(msg: Bot.MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
 @cc.handle('captcha {验证码样式（不支持指定ID，只限一次，单人）}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
 @cc.handle('stop {停止当前的游戏。}')
-async def s(msg: MessageSession):
+async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态

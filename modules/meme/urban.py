@@ -3,9 +3,9 @@ import traceback
 import ujson as json
 
 from config import Config
-from core.elements import Url
+from core.builtins import Url
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 
 
 async def urban(term: str):

@@ -1,7 +1,7 @@
 import json
 
-from core.elements import Url, ErrorMessage
-from core.utils import get_url
+from core.builtins import Url, ErrorMessage
+from core.utils.http import get_url
 
 
 async def bugtracker_get(mojiraId: str, nolink=False):

@@ -8,7 +8,7 @@ import uuid
 
 from config import Config
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
 from .utils import autofix_b30_song_background

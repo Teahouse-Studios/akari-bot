@@ -6,9 +6,9 @@ from datetime import datetime
 import psutil
 from cpuinfo import get_cpu_info
 
+from core.builtins import PrivateAssets
 from core.builtins.message import MessageSession
 from core.component import on_command
-from core.elements import PrivateAssets
 from core.utils.i18n import get_available_locales, get_target_locale
 from database import BotDBUtil
 
@@ -86,9 +86,10 @@ admin = on_command('admin',
                    )
 
 
-@admin.handle(['add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
-               'del <UserID> {取消成员的机器人管理员}',
-               'list {列出所有机器人管理员}'])
+@admin.handle([
+                  'add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
+                  'del <UserID> {取消成员的机器人管理员}',
+                  'list {列出所有机器人管理员}'])
 async def config_gu(msg: MessageSession):
     if 'list' in msg.parsed_msg:
         if msg.custom_admins:

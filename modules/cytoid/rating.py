@@ -15,7 +15,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 
 from config import Config
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 
 
 async def get_rating(uid, query_type):

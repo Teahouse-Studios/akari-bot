@@ -1,11 +1,11 @@
 import traceback
 
-from core.builtins.message import MessageSession
+from core.builtins import Image, Plain, Bot
 from core.component import on_command
-from core.elements import Command, Image, Plain
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
+from core.types import Command
 from core.utils.image_table import ImageTable, image_table_render, web_render
 from database import BotDBUtil
 
@@ -25,7 +25,7 @@ module = on_command('module',
                 'disable all {关闭所有模块。}',
                 'reload <module> ... {重载一个/多个模块。}',
                 'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
@@ -38,13 +38,13 @@ async def _(msg: MessageSession):
                 'reload <module> [-f] {重载一个模块。}',
                 'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
                available_for=['QQ|Guild'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
 
-async def config_modules(msg: MessageSession):
+async def config_modules(msg: Bot.MessageSession):
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
@@ -198,7 +198,7 @@ hlp = on_command('help',
 
 
 @hlp.handle('<module> {查看一个模块的详细信息}')
-async def bot_help(msg: MessageSession):
+async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
@@ -244,7 +244,7 @@ async def bot_help(msg: MessageSession):
 
 
 @hlp.handle('{查看帮助列表}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
     target_enabled_list = msg.enabled_modules
@@ -324,7 +324,7 @@ async def _(msg: MessageSession):
         await send.delete()
 
 
-async def modules_help(msg: MessageSession):
+async def modules_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()

@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
@@ -38,7 +38,7 @@ c = on_command('calc', developers=[
                                              'hex()': '转换为十六进制：hex(268) -> 0x10c',
                                              '更多可用运算符和函数': 'https://bot.teahouse.team/-/340',
                                              })
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     expr = msg.asDisplay().split(' ', 1)[1]
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:

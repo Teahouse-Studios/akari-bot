@@ -3,9 +3,9 @@ from typing import Union
 import discord
 
 from bots.discord.slash_message import MessageSession
-from core.elements import MsgInfo, Session
 from core.logger import Logger
 from core.parser.message import parser
+from core.types import MsgInfo, Session
 
 
 def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteContext]):

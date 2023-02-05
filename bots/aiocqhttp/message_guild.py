@@ -6,10 +6,10 @@ from pathlib import Path
 from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
-from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, ExecutionLockList, FinishedSession as FinS
-from core.elements.message.chain import MessageChain
+from core.builtins import Plain, Image, ExecutionLockList, MessageSession as MS
+from core.builtins.message.chain import MessageChain
 from core.logger import Logger
+from core.types import FinishedSession as FinS
 
 
 class FinishedSession(FinS):

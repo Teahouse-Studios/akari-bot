@@ -1,6 +1,6 @@
 from typing import Optional
 
-from core.elements import Url
+from core.builtins import Url
 
 
 class Module:

@@ -2,7 +2,7 @@ import asyncio
 import re
 import traceback
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 from core.dirty_check import check
 from .server import server
@@ -12,7 +12,7 @@ s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 @s.handle('<ServerIP:Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
           options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
-async def main(msg: MessageSession):
+async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')
     if enabled_addon is None:
         enabled_addon = True
@@ -65,7 +65,7 @@ async def main(msg: MessageSession):
 
 
 @s.handle('revoke <enable|disable> {是否启用自动撤回功能（默认为是）。}')
-async def revoke(msg: MessageSession):
+async def revoke(msg: Bot.MessageSession):
     if msg.parsed_msg.get('<enable|disable>') == 'enable':
         msg.data.edit_option('server_revoke', True)
         await msg.finish('已启用自动撤回功能。')
@@ -74,7 +74,7 @@ async def revoke(msg: MessageSession):
         await msg.finish('已禁用自动撤回功能。')
 
 
-async def s(msg: MessageSession, address, raw, showplayer, mode, enabled_addon):
+async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
     sendmsg = await server(address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
