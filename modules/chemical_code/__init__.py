@@ -89,7 +89,8 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
         await msg.finish('请输入纯数字ID！')
 
 
-async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):  # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
+async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
+    # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId][
         'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish('当前有一局游戏正在进行中。')

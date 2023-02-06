@@ -6,7 +6,6 @@ from aiocqhttp import Event
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message import MessageSession, FetchTarget
-from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
@@ -81,7 +80,7 @@ async def _(event):
     if match_reply:
         replyId = int(match_reply.group(1))
     targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
-    msg = MessageSessionGuild(MsgInfo(targetId=targetId,
+    msg = MessageSession(MsgInfo(targetId=targetId,
                                       senderId=f'QQ|Tiny|{str(event.user_id)}',
                                       targetFrom='QQ|Guild',
                                       senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,

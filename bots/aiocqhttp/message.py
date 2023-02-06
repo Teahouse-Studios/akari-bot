@@ -70,7 +70,8 @@ class MessageSession(MS):
             elif isinstance(x, Image):
                 msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
             elif isinstance(x, Voice):
-                msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
+                if self.target.targetFrom != 'QQ|Guild':
+                    msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
         Logger.info(f'[Bot] -> [{self.target.targetId}]: {msg}')
         if self.target.targetFrom == 'QQ|Group':
@@ -80,6 +81,10 @@ class MessageSession(MS):
                 anti_autofilter_word_list = ['（ffk）', '（阻止风向控制）', '（房蜂控）']
                 msg = msg + MessageSegment.text(random.choice(anti_autofilter_word_list))
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+        elif self.target.targetFrom == 'QQ|Guild':
+            match_guild = re.match(r'(.*)\|(.*)', self.session.target)
+            send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
+                                         channel_id=int(match_guild.group(2)), message=msg)
         else:
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
         return FinishedSession(send['message_id'], [send])
@@ -87,21 +92,29 @@ class MessageSession(MS):
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
             or self.target.senderId in self.custom_admins \
-            or self.target.senderInfo.query.isSuperUser:
+                or self.target.senderInfo.query.isSuperUser:
             return True
-        get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
-                                                user_id=self.session.sender)
-        if get_member_info['role'] in ['owner', 'admin']:
-            return True
-        return False
+        return await self.checkNativePermission()
 
     async def checkNativePermission(self):
         if self.target.targetFrom == 'QQ':
             return True
-        get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
-                                                user_id=self.session.sender)
-        if get_member_info['role'] in ['owner', 'admin']:
-            return True
+        elif self.target.targetFrom == 'QQ|Group':
+            get_member_info = await bot.call_action('get_group_member_info', group_id=self.session.target,
+                                                    user_id=self.session.sender)
+            if get_member_info['role'] in ['owner', 'admin']:
+                return True
+        elif self.target.targetFrom == 'QQ|Guild':
+            match_guild = re.match(r'(.*)\|(.*)', self.session.target)
+            get_member_info = await bot.call_action('get_guild_member_profile', guild_id=match_guild.group(1),
+                                                    user_id=self.session.sender)
+            for m in get_member_info['roles']:
+                if m['role_id'] == "2":
+                    return True
+            get_guild_info = await bot.call_action('get_guild_meta_by_guest', guild_id=match_guild.group(1))
+            if get_guild_info['owner_id'] == self.session.sender:
+                return True
+            return False
         return False
 
     def asDisplay(self):
@@ -115,14 +128,25 @@ class MessageSession(MS):
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def delete(self):
-        try:
-            if isinstance(self.session.message, list):
-                for x in self.session.message:
-                    await bot.call_action('delete_msg', message_id=x['message_id'])
-            else:
-                await bot.call_action('delete_msg', message_id=self.session.message['message_id'])
-        except Exception:
-            Logger.error(traceback.format_exc())
+        if self.target.targetFrom in ['QQ', 'QQ|Group']:
+            try:
+                if isinstance(self.session.message, list):
+                    for x in self.session.message:
+                        await bot.call_action('delete_msg', message_id=x['message_id'])
+                else:
+                    await bot.call_action('delete_msg', message_id=self.session.message['message_id'])
+            except Exception:
+                Logger.error(traceback.format_exc())
+
+    async def get_text_channel_list(self):
+        match_guild = re.match(r'(.*)\|(.*)', self.session.target)
+        get_channels_info = await bot.call_action('get_guild_channel_list', guild_id=match_guild.group(1),
+                                                  no_cache=True)
+        lst = []
+        for m in get_channels_info:
+            if m['channel_type'] == 1:
+                lst.append(f'{m["owner_guild_id"]}|{m["channel_id"]}')
+        return lst
 
     async def call_api(self, action, **params):
         return await bot.call_action(action, **params)
