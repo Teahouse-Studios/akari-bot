@@ -12,7 +12,6 @@ import ujson as json
 from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
 from core.builtins import Bot
 from core.builtins import Plain, Image, Voice, Temp
@@ -179,10 +178,7 @@ class FetchedSession(FS):
                               messageId=0,
                               replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
-        if targetFrom == 'QQ|Guild':
-            self.parent = MessageSessionGuild(self.target, self.session)
-        else:
-            self.parent = MessageSession(self.target, self.session)
+        self.parent = MessageSession(self.target, self.session)
 
 
 class FetchTarget(FT):
