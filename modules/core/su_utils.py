@@ -284,6 +284,7 @@ if Bot.FetchTarget.name == 'QQ':
 
     @resume.handle()
     async def resume_sending_group_message(msg: MessageSession):
+        Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
             await msg.sendMessage(f'正在重发 {len(targets)} 条消息...')
             for x in targets:
