@@ -31,11 +31,12 @@ class FinishedSession(FinS):
         """
         用于删除这条消息。
         """
-        try:
-            for x in self.messageId:
-                await bot.call_action('delete_msg', message_id=x)
-        except Exception:
-            Logger.error(traceback.format_exc())
+        if self.session.target.targetFrom in ['QQ|Group', 'QQ']:
+            try:
+                for x in self.messageId:
+                    await bot.call_action('delete_msg', message_id=x)
+            except Exception:
+                Logger.error(traceback.format_exc())
 
 
 last_send_typing_time = {}
@@ -86,7 +87,7 @@ class MessageSession(MS):
                                          channel_id=int(match_guild.group(2)), message=msg)
         else:
             send = await bot.send_private_msg(user_id=self.session.target, message=msg)
-        return FinishedSession(send['message_id'], [send])
+        return FinishedSession(self, send['message_id'], [send])
 
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \

@@ -88,7 +88,7 @@ class MessageSession(MS):
         msgIds = []
         for x in send:
             msgIds.append(x.message_id)
-        return FinishedSession(msgIds, send)
+        return FinishedSession(self, msgIds, send)
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \

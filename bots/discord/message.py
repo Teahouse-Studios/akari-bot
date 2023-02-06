@@ -102,7 +102,7 @@ class MessageSession(MS):
         for x in send:
             msgIds.append(x.id)
 
-        return FinishedSession(msgIds, send)
+        return FinishedSession(self, msgIds, send)
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \

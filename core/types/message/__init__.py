@@ -56,7 +56,8 @@ class AutoSession(Session):
 
 
 class FinishedSession:
-    def __init__(self, messageId: Union[List[int], List[str], int, str], result):
+    def __init__(self, session, messageId: Union[List[int], List[str], int, str], result):
+        self.session = session
         if isinstance(messageId, (int, str)):
             messageId = [messageId]
         self.messageId = messageId
