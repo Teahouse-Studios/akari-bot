@@ -57,7 +57,7 @@ async def mcbv():
                     release.append(v["name"])
     fix = " | "
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
-    return (f"""目前商店内最新正式版为：
+    return (f"""目前Google Play商店内最新正式版为：
 {play_store_version}，
 """ if IP.country != 'China' else '') + f"""Mojira上所记录最新版本为：
 {msg2}
