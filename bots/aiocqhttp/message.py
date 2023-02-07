@@ -120,7 +120,8 @@ class MessageSession(MS):
     def asDisplay(self):
         m = self.session.message.message
         m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', html.unescape(m))
-        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1\]', html.unescape(m))
+        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+
         return ''.join(
             re.split(r'\[CQ:.*?]', m)).strip()
 
