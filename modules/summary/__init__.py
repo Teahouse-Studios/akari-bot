@@ -9,7 +9,8 @@ s = on_command('summary', developers=['Dianliang233'], desc='生成聊天记录�
 async def _(msg: Bot.MessageSession):
     f_msg = await msg.waitNextMessage('请发送要生成摘要的合并转发消息。')
     data = await f_msg.call_api('get_forward_msg', msg_id=re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.asDisplay()).group(1))
-    msgs = data['messages']
+    msgs = data['data']['messages']
+    text = ''
     for m in msgs:
-        text += f'{m["sender"]["nickname"]}（ID：{m["sender"]["user_id"]}，Unix时间：{m["time"]}）：{m["content"]}\n'
-    await msg.sendMessage(text)
+        text += f'\n{m["sender"]["nickname"]}（ID：{m["sender"]["user_id"]}，Unix时间：{m["time"]}）：{m["content"]}'
+    await msg.finish(text)
