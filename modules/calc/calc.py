@@ -12,6 +12,7 @@ from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, 
 
 from constant import consts
 
+sys.set_int_max_str_digits(0)
 if os.name == 'posix':
     os.nice(15)
     import resource
