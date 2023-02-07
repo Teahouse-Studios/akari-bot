@@ -12,4 +12,4 @@ async def _(msg: Bot.MessageSession):
     msgs = data['messages']
     for m in msgs:
         text += f'{m["sender"]["nickname"]}（ID：{m["sender"]["user_id"]}，Unix时间：{m["time"]}）：{m["content"]}\n'
-    await msg.send(text)
+    await msg.sendMessage(text)
