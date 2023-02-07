@@ -26,6 +26,6 @@ async def _(msg: Bot.MessageSession):
     res = await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps({'prompt': f'''把以下聊天记录概括为一段完整的纪要。当遇到!!!CHATENDS时，聊天记录结束，请在下方续写其摘要：
 
 {text}
-!!!CHATENDS'''}), headers={'Content-Type': 'application/json'}, timeout=inf)
+!!!CHATENDS'''}), headers={'Content-Type': 'application/json'}, timeout=9999999)
     await wait_msg.delete()
     await msg.finish(res.removesuffix('<|im_end|>'), disable_secret_check=True)
