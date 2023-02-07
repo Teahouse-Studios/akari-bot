@@ -15,17 +15,22 @@ from config import Config
 from core.logger import Logger
 from core.utils.http import download_to_cache
 
-web_render = Config('web_render_local')
+
+web_render = Config('web_render')
+web_render_local = Config('web_render_local')
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 assets_path = os.path.abspath('./assets/')
 font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
 
-async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False):
+async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True):
     elements_ = elements.copy()
-    if not web_render:
-        return False
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return False
+        use_local = False
     timer = datetime.now().timestamp()
     img = False
     if section is None:
@@ -35,7 +40,8 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
             elements_.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
         try:
-            img = await download_to_cache(web_render + 'element_screenshot', status_code=200,
+            img = await download_to_cache(web_render_local if use_local else web_render + 'element_screenshot',
+                                          status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",
                                           post_data=json.dumps({
@@ -45,14 +51,16 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
                                           timeout=30,
                                           request_private_ip=True
                                           )
-
+        except aiohttp.ClientConnectorError:
+            return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode, use_local=False)
         except ValueError:
             Logger.info('[Webrender] Generation Failed.')
             return False
     else:
         Logger.info('[Webrender] Generating section screenshot...')
         try:
-            img = await download_to_cache(web_render + 'section_screenshot', status_code=200,
+            img = await download_to_cache(web_render_local if use_local else web_render + 'section_screenshot',
+                                          status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",
                                           post_data=json.dumps({
@@ -62,6 +70,8 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
                                           timeout=30,
                                           request_private_ip=True
                                           )
+        except aiohttp.ClientConnectorError:
+            return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode, use_local=False)
         except ValueError:
             Logger.info('[Webrender] Generation Failed.')
             return False
@@ -70,8 +80,10 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
 
 
 async def generate_screenshot_v1(link, page_link, headers, section=None, allow_special_page=False) -> Union[str, bool]:
-    if not web_render:
-        return False
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return False
     try:
         Logger.info('Starting find infobox/section..')
         if link[-1] != '/':
@@ -321,12 +333,20 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
         picname = os.path.abspath(f'./cache/{pagename}.jpg')
         if os.path.exists(picname):
             os.remove(picname)
-        async with aiohttp.ClientSession() as session:
-            async with session.post(web_render, headers={
-                'Content-Type': 'application/json',
-            }, data=json.dumps(html)) as resp:
-                with open(picname, 'wb+') as jpg:
-                    jpg.write(await resp.read())
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(web_render_local, headers={
+                    'Content-Type': 'application/json',
+                }, data=json.dumps(html)) as resp:
+                    with open(picname, 'wb+') as jpg:
+                        jpg.write(await resp.read())
+        except aiohttp.ClientConnectorError:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(web_render, headers={
+                    'Content-Type': 'application/json',
+                }, data=json.dumps(html)) as resp:
+                    with open(picname, 'wb+') as jpg:
+                        jpg.write(await resp.read())
         return picname
     except Exception:
         traceback.print_exc()

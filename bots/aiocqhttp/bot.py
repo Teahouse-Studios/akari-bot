@@ -81,13 +81,13 @@ async def _(event):
         replyId = int(match_reply.group(1))
     targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
     msg = MessageSession(MsgInfo(targetId=targetId,
-                                      senderId=f'QQ|Tiny|{str(event.user_id)}',
-                                      targetFrom='QQ|Guild',
-                                      senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,
-                                      replyId=replyId),
-                              Session(message=event,
-                                      target=f'{str(event.guild_id)}|{str(event.channel_id)}',
-                                      sender=event.user_id))
+                                 senderId=f'QQ|Tiny|{str(event.user_id)}',
+                                 targetFrom='QQ|Guild',
+                                 senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,
+                                 replyId=replyId),
+                         Session(message=event,
+                                 target=f'{str(event.guild_id)}|{str(event.channel_id)}',
+                                 sender=event.user_id))
     await parser(msg, running_mention=True)
 
 

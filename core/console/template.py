@@ -43,7 +43,7 @@ class Template(MS):
                 img = Image.open(image_path)
                 img.show()
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {image_path}')
-        return FinishedSession([0], ['There should be a callable here... hmm...'])
+        return FinishedSession(self, [0], ['There should be a callable here... hmm...'])
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         send = None

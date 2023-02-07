@@ -114,7 +114,7 @@ async def mcbv_rss(bot: Bot.FetchTarget):
         version = google_play_scraper('com.mojang.minecraftpe')['version']
         if version not in verlist:
             Logger.info(f'huh, we find bedrock {version}.')
-            await bot.post_message('mcbv_rss', '基岩版商店已更新' + version + '正式版。')
+            await bot.post_message('mcbv_rss', 'Google Play商店已更新基岩版' + version + '正式版。')
             verlist.append(version)
             update_stored_list(bot, 'mcbv_rss', verlist)
     except Exception:

@@ -6,7 +6,7 @@ from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
 from core.types import Command
-from core.utils.image_table import ImageTable, image_table_render, web_render
+from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
 
 module = on_command('module',
@@ -250,7 +250,7 @@ async def _(msg: Bot.MessageSession):
     target_enabled_list = msg.enabled_modules
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
-    if web_render and msg.Feature.image:
+    if msg.Feature.image:
         try:
             tables = []
             essential = []
@@ -329,7 +329,7 @@ async def modules_help(msg: Bot.MessageSession):
         targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
-    if web_render and msg.Feature.image:
+    if msg.Feature.image:
         try:
             tables = []
             m = []
