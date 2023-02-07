@@ -66,18 +66,16 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             with open(fname, 'w') as fi:
                 fi.write(tblst + css)
 
-        picname = random_cache_path() + '.jpg'
-        if os.path.exists(picname):
-            os.remove(picname)
+        pic = False
 
         try:
-            pic = await download_to_cache(web_render_local if use_local else web_render, headers={
+            pic = await download_to_cache(web_render_local if use_local else web_render, method='POST', headers={
                     'Content-Type': 'application/json',
-                }, post_data=json.dumps(html), request_private_ip=True, filename=picname)
+                }, post_data=json.dumps(html), request_private_ip=True)
         except aiohttp.ClientConnectorError:
-            pic = await download_to_cache(web_render, headers={
+            pic = await download_to_cache(web_render, method='POST', headers={
                     'Content-Type': 'application/json',
-                }, post_data=json.dumps(html), filename=picname, request_private_ip=True)
+                }, post_data=json.dumps(html), request_private_ip=True)
         return pic
     except Exception:
         Logger.error(traceback.format_exc())

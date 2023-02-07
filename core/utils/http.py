@@ -141,11 +141,14 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
     :param logging_err_resp: 是否记录错误响应。
     :returns: 文件的相对路径，若获取失败则返回False。'''
 
+    if post_data is not None:
+        method = 'POST'
+
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def download_():
         if not Config('allow_request_private_ip') and not request_private_ip:
             private_ip_check(url)
-
+            
         data = None
 
         if method.upper() == 'GET':
