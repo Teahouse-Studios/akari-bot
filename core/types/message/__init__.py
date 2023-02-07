@@ -147,7 +147,7 @@ class MessageSession:
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
 
-    async def waitNextMessage(self, msgchain=None, quote=True, delete=False):
+    async def waitNextMessage(self, msgchain=None, quote=True, delete=False, append_instruction=True):
         """
         一次性模板，用于等待对象的下一条消息。
         :param msgchain: 需要发送的确认消息，可不填
@@ -156,7 +156,7 @@ class MessageSession:
         :return: 下一条消息的MessageChain对象
         """
 
-    async def waitReply(self, msgchain, quote=True, all_=False):
+    async def waitReply(self, msgchain, quote=True, all_=False, append_instruction=True):
         """
         一次性模板，用于等待触发对象回复消息。
         :param msgchain: 需要发送的确认消息，可不填

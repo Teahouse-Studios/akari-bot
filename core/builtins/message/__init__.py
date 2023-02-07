@@ -47,12 +47,13 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def waitNextMessage(self, msgchain=None, quote=True, delete=False) -> MessageSession:
+    async def waitNextMessage(self, msgchain=None, quote=True, delete=False, append_instruction=True) -> MessageSession:
         sent = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
-            msgchain.append(Plain('（发送符合条件的词语来确认）'))
+            if append_instruction:
+                msgchain.append(Plain('（发送符合条件的词语来确认）'))
             sent = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
@@ -65,10 +66,11 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def waitReply(self, msgchain, quote=True, all_=False) -> MessageSession:
+    async def waitReply(self, msgchain, quote=True, all_=False, append_instruction=True) -> MessageSession:
         ExecutionLockList.remove(self)
         msgchain = MessageChain(msgchain)
-        msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
+        if append_instruction:
+           msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
         send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)
