@@ -303,7 +303,7 @@ class FetchTarget(FT):
                         if fetch.session.target not in guild_list:
                             continue
 
-                    if fetch.target.targetFrom == 'QQ|Guild':
+                    if fetch.target.targetFrom in ['QQ', 'QQ|Guild']:
                         in_whitelist.append(post_(fetch))
                     else:
                         load_options: dict = json.loads(x.options)
@@ -320,7 +320,7 @@ class FetchTarget(FT):
             async def post_not_in_whitelist(lst):
                 for f in lst:
                     await f
-                    await asyncio.sleep(random.randint(30, 300))
+                    await asyncio.sleep(random.randint(15, 30))
 
             if else_:
                 asyncio.create_task(post_not_in_whitelist(else_))
