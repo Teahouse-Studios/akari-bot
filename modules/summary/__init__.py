@@ -33,10 +33,10 @@ async def _(msg: Bot.MessageSession):
     output = ''
     while nth < len(text):
         prompt = f'请总结<|chat_start|>与<|chat_end|>之间的聊天内容。要求简明扼要，以一段话的形式输出。{f"<|ctx_start|>与<|ctx_end|>之间记录了聊天内容的上下文，你可以作为参考，但请你务必在输出结果之前将其原样复制。<|ctx_start|>{output}<|ctx_end|>" if nth != 0 else ""}'
-        output += await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps(
+        output += (await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps(
             {'prompt': f'''{prompt}<|start|>
 {text}
-<|end|>'''}), headers={'Content-Type': 'application/json'}, timeout=9999999).removesuffix('<|im_end|>')
+<|end|>'''}), headers={'Content-Type': 'application/json'}, timeout=9999999)).removesuffix('<|im_end|>')
         nth += 1
     await wait_msg.delete()
     await msg.finish(output, disable_secret_check=True)
