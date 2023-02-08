@@ -45,8 +45,9 @@ async def _(event: Event):
         replyId = int(match_reply.group(1))
 
     prefix = None
-    if match_at := re.match(r'^\[CQ:at,qq=(.*?)].*', event.message):
+    if match_at := re.match(r'^\[CQ:at,qq=(.*?)](.*)', event.message):
         if match_at.group(1) == qq_account:
+            event.message = match_at.group(2)
             prefix = ['']
 
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
