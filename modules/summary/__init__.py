@@ -27,12 +27,12 @@ async def _(msg: Bot.MessageSession):
         else:
             text.append(new_text)
     char_count = sum([len(i) for i in text])
-    wait_msg = await msg.sendMessage(f'正在生成摘要。您的聊天记录共 {char_count} 个字符，大约需要 {round(len(text) / 33.5, 1)} 秒。请稍候……')
+    wait_msg = await msg.sendMessage(f'正在生成摘要。您的聊天记录共 {char_count} 个字符，大约需要 {round(char_count / 33.5, 1)} 秒。请稍候……')
 
     nth = 0
     output = ''
     while nth < len(text):
-        prompt = f'请总结<|chat_start|>与<|chat_end|>之间的聊天内容。要求简明扼要，以一段话的形式输出。{f"<|ctx_start|>与<|ctx_end|>之间记录了聊天内容的上下文，你可以作为参考，但请你务必在输出结果之前将其原样复制。<|ctx_start|>{output}<|ctx_end|>" if nth != 0 else ""}'
+        prompt = f'请总结<|chat_start|>与<|chat_end|>之间的聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。{f"<|ctx_start|>与<|ctx_end|>之间记录了聊天内容的上下文，你可以作为参考，但请你务必在输出结果之前将其原样复制。<|ctx_start|>{output}<|ctx_end|>" if nth != 0 else ""}'
         output += (await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps(
             {'prompt': f'''{prompt}<|start|>
 {text}
