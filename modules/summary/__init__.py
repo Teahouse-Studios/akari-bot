@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession):
         len_prompt = len(prompt)
         post_texts = ''
         for t in texts[nth:]:
-            if len(post_texts) + len_prompt < 1980:
+            if len(post_texts) + len_prompt < 1970:
                 post_texts += texts[nth]
                 nth += 1
             else:
