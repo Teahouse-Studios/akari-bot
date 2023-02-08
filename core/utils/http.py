@@ -7,6 +7,7 @@ from typing import Union
 import aiohttp
 import filetype as ft
 from aiofile import async_open
+from aiohttp import TCPConnector
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
@@ -15,6 +16,8 @@ from .cache import random_cache_path
 from ..exceptions import NoReportException
 
 logging_resp = False
+debug = Config('debug')
+proxy = ''
 
 
 def private_ip_check(url: str):
@@ -53,9 +56,11 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
         if not Config('allow_request_private_ip') and not request_private_ip:
             private_ip_check(url)
 
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=headers,
+                                         connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
             try:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers) as req:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
+                                       proxy=proxy) as req:
                     Logger.debug(f'[{req.status}] {url}')
                     if logging_resp:
                         Logger.debug(await req.read())
@@ -98,10 +103,12 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
         if not Config('allow_request_private_ip') and not request_private_ip:
             private_ip_check(url)
 
-        async with aiohttp.ClientSession(headers=headers) as session:
+        async with aiohttp.ClientSession(headers=headers,
+                                         connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
             try:
                 async with session.post(url, data=data, headers=headers,
-                                        timeout=aiohttp.ClientTimeout(total=timeout)) as req:
+                                        timeout=aiohttp.ClientTimeout(total=timeout),
+                                        proxy=proxy) as req:
                     Logger.debug(f'[{req.status}] {url}')
                     if logging_resp:
                         Logger.debug(await req.read())

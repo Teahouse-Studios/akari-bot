@@ -43,6 +43,6 @@ async def _(msg: Bot.MessageSession):
         output += remove_suffix(await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps(
             {'prompt': f'''{prompt}<|chat_start|>
 {post_texts}
-<|chat_end|>'''}), headers={'Content-Type': 'application/json'}, timeout=9999999), '<|im_end|>')
+<|chat_end|>'''}), headers={'Content-Type': 'application/json'}, status_code=200, timeout=9999999), '<|im_end|>')
     await wait_msg.delete()
     await msg.finish(output, disable_secret_check=True)
