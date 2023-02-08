@@ -148,7 +148,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
     async def download_():
         if not Config('allow_request_private_ip') and not request_private_ip:
             private_ip_check(url)
-            
+
         data = None
 
         if method.upper() == 'GET':
