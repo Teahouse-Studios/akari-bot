@@ -92,7 +92,7 @@ class MessageSession(MS):
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
             or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
+            or self.target.senderInfo.query.isSuperUser:
             return True
         return await self.checkNativePermission()
 
@@ -229,23 +229,39 @@ class FetchTarget(FT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None):
+        _tsk = []
+        blocked = False
+
         async def post_(fetch_):
+            nonlocal _tsk
+            nonlocal blocked
             try:
                 if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
                 else:
                     await fetch_.sendDirectMessage(message)
+                    if _tsk:
+                        _tsk = []
                 if enable_analytics:
                     BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
                 await asyncio.sleep(0.5)
             except aiocqhttp.ActionFailed as e:
                 if e.result['wording'] == 'send group message failed: blocked by server':
-                    Temp.data['is_group_message_blocked'] = True
-                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
-                    fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
-                    if fetch_base_superuser:
-                        await fetch_base_superuser.sendDirectMessage(
-                            '群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
+                    if len(_tsk) >= 3:
+                        blocked = True
+                    if not blocked:
+                        _tsk.append({'fetch': fetch_, 'message': message})
+                    else:
+                        Temp.data['is_group_message_blocked'] = True
+                        Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                        if _tsk:
+                            for t in _tsk:
+                                Temp.data['waiting_for_send_group_message'].append(t)
+                            _tsk = []
+                        fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
+                        if fetch_base_superuser:
+                            await fetch_base_superuser.sendDirectMessage(
+                                '群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
             except Exception:
                 Logger.error(traceback.format_exc())
 
