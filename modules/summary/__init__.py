@@ -15,10 +15,10 @@ def remove_suffix(string, suffix):
 @s.handle()
 async def _(msg: Bot.MessageSession):
     f_msg = await msg.waitNextMessage('接下来，请发送要生成摘要的合并转发消息。', append_instruction=False)
-    f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.asDisplay()).group(1)
-    if not f:
+    try:
+        f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.asDisplay()).group(1)
+    except AttributeError:
         await msg.finish('未检测到合并转发消息。')
-        return
     Logger.info(f)
     data = await f_msg.call_api('get_forward_msg', message_id=f)
     msgs = data['messages']
@@ -41,8 +41,8 @@ async def _(msg: Bot.MessageSession):
             else:
                 break
         output += remove_suffix(await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps(
-            {'prompt': f'''{prompt}<|start|>
+            {'prompt': f'''{prompt}<|chat_start|>
 {post_texts}
-<|end|>'''}), headers={'Content-Type': 'application/json'}, timeout=9999999), '<|im_end|>')
+<|chat_end|>'''}), headers={'Content-Type': 'application/json'}, timeout=9999999), '<|im_end|>')
     await wait_msg.delete()
     await msg.finish(output, disable_secret_check=True)
