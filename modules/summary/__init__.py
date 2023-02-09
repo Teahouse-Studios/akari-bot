@@ -5,7 +5,7 @@ from core.component import on_command
 from core.logger import Logger
 from core.utils.http import post_url
 
-s = on_command('summary', developers=['Dianliang233'], desc='使用 InstructGPT 生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
+s = on_command('summary', developers=['Dianliang233', 'OasisAkari'], desc='使用 InstructGPT 生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
 
 
 def remove_suffix(string, suffix):
