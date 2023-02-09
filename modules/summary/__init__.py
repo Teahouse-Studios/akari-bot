@@ -5,14 +5,14 @@ from core.component import on_command
 from core.logger import Logger
 from core.utils.http import post_url
 
-s = on_command('summary', developers=['Dianliang233'], desc='生成聊天记录摘要', available_for=['QQ', 'QQ|Group'])
+s = on_command('summary', developers=['Dianliang233', 'OasisAkari'], desc='使用 InstructGPT 生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
 
 
 def remove_suffix(string, suffix):
     return string[:-len(suffix)] if string.endswith(suffix) else string
 
 
-@s.handle()
+@s.handle('{开始发送聊天摘要}')
 async def _(msg: Bot.MessageSession):
     f_msg = await msg.waitNextMessage('接下来，请发送要生成摘要的合并转发消息。', append_instruction=False)
     try:

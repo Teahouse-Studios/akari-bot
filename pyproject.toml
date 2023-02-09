@@ -41,6 +41,7 @@ pint = "^0.20.1"
 simpleeval = "^0.9.12"
 pywin32 = { version = "^305", platform = "win32" }
 tenacity = "^8.1.0"
+openai = "^0.26.5"
 
 
 [tool.poetry.group.dev.dependencies]
