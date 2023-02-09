@@ -304,7 +304,6 @@ mcmod查询物品appliedenergistics2:quartz_ore
 查询hypixel
 ~server mc.hypixel.net
 
-
 查询mc服务器mc.hypixel.net原始消息
 ~server mc.hypixel.net -r
 
@@ -316,3 +315,157 @@ mcmod查询物品appliedenergistics2:quartz_ore
 
 查询茶馆周报
 ~weekly teahouse
+
+生成11.11 ptt图片
+~ptt 11.1
+
+生成潜力值11.11
+~ptt 11.11
+
+生成potential 11.11图
+~ppt 11.11
+
+查询arc b30结果
+~arcaea b30
+
+查询29983210的arc best30
+~arcaea b30 29983210
+
+用官方api查询29983210的arc 30最佳
+~arcaea b30 official 29983210
+
+用非官方api查询29983210的arcaea 30最佳
+~arcaea b30 unofficial 29983210
+
+查询arc最近游玩
+~arcaea info
+
+用非官方api查询22493的arcaea最近游玩
+~arcaea info unofficial 22493
+
+绑定arc用户22493
+~arcaea bind 22493
+
+解绑arc用户
+~arcaea unbind
+
+随机arc曲子
+~arcaea random
+
+arc免费包游玩排行
+~arcaea rank free
+
+arc付费包游玩排行
+~arcaea rank paid
+
+arc下载apk
+~arcaea download
+
+arcaea初始化
+~arcaea initialize
+
+arc切换api
+~arcaea switch
+
+查询cytoid用户wdljt
+~cytoid profile wdljt
+
+查询cytoid自己信息
+~cytoid profile
+
+查询cytoid b30
+~cytoid b30
+
+查询wdljt的cytoid b30
+~cytoid b30 wdljt
+
+查询cytoid r30
+~cytoid r30
+
+查询cytoid Recent30
+~cytoid r30
+
+查询wdljt的cytoid最近30首
+~cytoid r30 wdljt
+
+
+绑定cytoid用户wdljt
+~cytoid bind wdljt
+
+解绑cytoid用户
+~cytoid unbind
+
+舞萌运势
+~maimai today
+
+maimai运势
+~maimai today
+
+maimai定数12
+~maimai inner 12
+
+maimai定数12到24
+~maimai inner 12 24
+
+maimai查分DoroWolf
+~maimai b40 DoroWolf
+
+化学分子式游戏
+~chemical_code
+
+化学分子式
+~chemical_code
+
+化学分子式游戏，csid 1222
+~chemical_code 1222
+
+化学验证码
+~chemical_code captcha
+
+停止化学游戏
+~chemical_code stop
+
+查询任天堂错误码2002-0002
+~err 2002-0002
+
+查梗1144514
+~meme 1144514
+
+查词典message
+~dict message
+
+色子
+~random dice
+
+骰子
+~random dice
+
+随机选择1 2 3 4 5 6
+~random 1 2 3 4 5 6
+
+随机数1-30
+~random number 1 30
+
+扔硬币
+~random coin
+
+查询ip信息1.1.1.1
+~whois 1.1.1.1
+
+计算20**2
+~calc 20**2
+
+计算20*2/21精确到小数点后2位
+~calc round(20*2/21, 2)
+
+计算sin20
+~calc sin(20)
+
+计算20，1，1平均数
+~calc mean(20, 1, 1)
+
+转换1m到cm
+~convert 1m cm
+
+聊天记录摘要
+~summary
