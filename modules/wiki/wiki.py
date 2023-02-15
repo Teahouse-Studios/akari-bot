@@ -210,24 +210,27 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     wait_plain_slice = []
                     if display_title is not None and display_before_title is not None:
                         if isinstance(session, Bot.MessageSession) and session.Feature.wait:
-                            if len(r.possible_research_title) > 1:
-                                wait_plain_slice.append(
-                                    f'提示：[{display_before_title}]不存在，您是否想要找的是：')
-                                pi = 0
-                                for p in r.possible_research_title:
-                                    pi += 1
+                            if not session.options.get('wiki_redlink', False):
+                                if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
-                                        f'{pi}. {p}')
-                                wait_plain_slice.append(f'请直接发送指定序号获取对应内容，若回复“是”，'
-                                                        f'则默认选择'
-                                                        f'{str(r.possible_research_title.index(display_title) + 1)}'
-                                                        f'号内容，发送其他内容则代表取消获取。')
-                                wait_possible_list.append({display_before_title: {display_title:
-                                                                                      r.possible_research_title}})
+                                        f'提示：[{display_before_title}]不存在，您是否想要找的是：')
+                                    pi = 0
+                                    for p in r.possible_research_title:
+                                        pi += 1
+                                        wait_plain_slice.append(
+                                            f'{pi}. {p}')
+                                    wait_plain_slice.append(f'请直接发送指定序号获取对应内容，若回复“是”，'
+                                                            f'则默认选择'
+                                                            f'{str(r.possible_research_title.index(display_title) + 1)}'
+                                                            f'号内容，发送其他内容则代表取消获取。')
+                                    wait_possible_list.append({display_before_title: {display_title:
+                                                                                          r.possible_research_title}})
+                                else:
+                                    wait_plain_slice.append(
+                                        f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？\n'
+                                        f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
                             else:
-                                wait_plain_slice.append(
-                                    f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？\n'
-                                    f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
+                                plain_slice.append(r.edit_link + '（页面不存在）')
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')

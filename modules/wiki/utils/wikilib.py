@@ -95,6 +95,7 @@ class PageInfo:
                  id: int = -1,
                  before_title: str = None,
                  link: str = None,
+                 edit_link: str = None,
                  file: str = None,
                  desc: str = None,
                  args: str = None,
@@ -113,6 +114,7 @@ class PageInfo:
         self.title = title
         self.before_title = before_title
         self.link = link
+        self.edit_link = edit_link
         self.file = file
         self.desc = desc
         self.args = args
@@ -480,6 +482,8 @@ class WikiLib:
                 page_raw = pages[page_id]
                 if 'title' in page_raw:
                     page_info.title = page_raw['title']
+                if 'editurl' in page_raw:
+                    page_info.edit_link = page_raw['editurl']
                 if 'invalid' in page_raw:
                     rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
                                  page_raw['invalidreason'])
@@ -557,7 +561,6 @@ class WikiLib:
                                 page_info.title = preferred
                                 page_info.invalid_namespace = invalid_namespace
                                 page_info.possible_research_title = searched_result
-
                 else:
                     page_info.status = True
                     templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
@@ -657,6 +660,7 @@ class WikiLib:
                             page_info.title = query_langlinks.title
                             page_info.before_title = query_langlinks.title
                             page_info.link = query_langlinks.link
+                            page_info.edit_link = query_langlinks.edit_link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
         interwiki_: List[Dict[str, str]] = query.get('interwiki')

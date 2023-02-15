@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(f'成功重置请求时所使用的前缀。')
 
 
-@wiki.handle('fandom enable {禁用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}',
+@wiki.handle('fandom enable {启用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('enable', False):
@@ -161,3 +161,14 @@ async def _(msg: Bot.MessageSession):
     else:
         msg.data.edit_option('wiki_fandom_addon', False)
         await msg.finish('已禁用Fandom全局Interwiki查询。')
+
+
+@wiki.handle('redlink enable {启用不存在页面时返回编辑链接}', 'redlink disable {禁用不存在页面时返回编辑链接}',
+             required_admin=True)
+async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg.get('enable', False):
+        msg.data.edit_option('wiki_redlink', True)
+        await msg.finish('已启用不存在页面时返回编辑链接。')
+    else:
+        msg.data.edit_option('wiki_redlink', False)
+        await msg.finish('已禁用不存在页面时返回编辑链接。')
