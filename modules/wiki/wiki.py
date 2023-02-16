@@ -230,7 +230,10 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？\n'
                                         f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
                             else:
-                                plain_slice.append(r.edit_link + '（页面不存在）')
+                                if r.edit_link is not None:
+                                    plain_slice.append(r.edit_link + '（页面不存在）')
+                                else:
+                                    plain_slice.append(f'{display_before_title}页面不存在。')
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
