@@ -42,6 +42,7 @@ simpleeval = "^0.9.12"
 pywin32 = { version = "^305", platform = "win32" }
 tenacity = "^8.1.0"
 openai = "^0.26.5"
+cryptography = "^39.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
