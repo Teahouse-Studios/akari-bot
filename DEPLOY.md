@@ -21,6 +21,8 @@
 
 关于 Poetry 的更多安装或使用问题，您可以查看[官方文档（英文）](https://python-poetry.org/docs/#installation)。
 
+安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 python executable path 并及时清除，否则安装 poetry 后可能会出现 python 环境混乱导致无法正常加载依赖的情况。
+
 ### Linux、macOS、Windows（WSL）以及其他类 Unix 环境
 
 打开终端，并执行以下命令：
