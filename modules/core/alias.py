@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, Image
 from core.component import on_command
 from core.utils.image_table import image_table_render, ImageTable
 
@@ -46,7 +46,7 @@ async def set_alias(msg: Bot.MessageSession):
             table = ImageTable([[k, alias[k]] for k in alias], ['别名', '命令'])
             img = await image_table_render(table)
             if img:
-                await msg.sendMessage(f'自定义命令别名列表：\n{img}')
+                await msg.sendMessage(['自定义命令别名列表：', Image(img)])
             else:
                 await msg.sendMessage(f'自定义命令别名列表：\n' + '\n'.join([f'{k} -> {alias[k]}' for k in alias]))
 

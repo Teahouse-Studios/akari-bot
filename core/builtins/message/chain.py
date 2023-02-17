@@ -41,6 +41,9 @@ class MessageChain(MC):
                             self.value += match_kecode(e.text)
                     else:
                         self.value.append(e)
+                elif isinstance(e, str):
+                    if e != '':
+                        self.value += match_kecode(e)
                 else:
                     Logger.error(f'Unexpected message type: {elements}')
                     self.value.append(
