@@ -67,7 +67,7 @@ async def _(msg: Bot.MessageSession):
 
     contrast = (0, 0, 0) if luminance > 140 else (255, 255, 255)
 
-    img = Image.new('RGB', (600, 600), color=color)
+    img = Image.new('RGB', (500, 500), color=color)
     draw = ImageDraw.Draw(img)
 
     css_color_name_raw = get_color_name(color, css_hex_to_names)
@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession):
     elif material_color_name_raw[0] is not None:
         material_color_name = f'\n最相似的 Material Design 颜色名称: {material_color_name_raw[0]}'
 
-    draw.multiline_text((300, 300), f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
+    draw.multiline_text((250, 250), f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
     await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])
 
 
