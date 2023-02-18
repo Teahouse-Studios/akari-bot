@@ -15,7 +15,9 @@ font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 @c.handle('<color> {提供颜色信息。}')
 async def _(msg: Bot.MessageSession):
     color = msg.parsed_msg.get('<color>')
-    if re.match(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$', color):
+    if webcolors.CSS3_NAMES_TO_HEX.get(color) is not None:
+        color = webcolors.html5_parse_simple_color(webcolors.CSS3_NAMES_TO_HEX[color])
+    elif re.match(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$', color):
         # add hash if missing
         if color[0] != '#':
             color = '#' + color
