@@ -44,13 +44,17 @@ async def _(msg: Bot.MessageSession):
         color = webcolors.html5_parse_simple_color(color)
     elif re.match(r'^rgb\(\d{1,3}, ?\d{1,3}, ?\d{1,3}\)$', color):
         color = color[4:-1].split(',')
-        color = webcolors.HTML5SimpleColor(*(int(x) for x in color))
+        color = webcolors.HTML5SimpleColor(*(int(x.strip()) for x in color))
     elif re.match(r'^rgb\(\d{1,3}%, ?\d{1,3}%, ?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
-        color = webcolors.HTML5SimpleColor(*(int(x[:-1]) * 255 / 100 for x in color))
+        color = webcolors.HTML5SimpleColor(*(int(x.strip()[:-1]) * 255 / 100 for x in color))
     elif re.match(r'^hsl\(\d{1,3}, ?\d{1,3}%, ?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
-        color = colorsys.hls_to_rgb(int(color[0]) / 360, int(color[2][:-1]) / 100, int(color[1][:-1]) / 100)
+        color = colorsys.hls_to_rgb(int(color[0].strip()) / 360, int(color[1].strip()[:-1]) / 100, int(color[2].strip()[:-1]) / 100)
+        color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
+    elif re.match(r'^hsl\(\d{1,3}deg, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+        color = color[4:-1].split(',')
+        color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360, int(color[1].strip()[:-1]) / 100, int(color[2].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     else:
         await msg.finish('无法识别的颜色格式。')
