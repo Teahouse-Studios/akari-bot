@@ -1,6 +1,8 @@
 import re
+import os
 import colorsys
 
+import ujson as json
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import webcolors
@@ -12,11 +14,17 @@ c = on_command('color', alias=['colour'], developers=['Dianliang233',], desc='�
 
 font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 
+with open(os.path.dirname(os.path.abspath(__file__))+'/material_colors.json', 'r', encoding='utf-8') as f:
+    material_colors = material_colors_names_to_hex = json.load(f)
+    material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
+
 @c.handle('<color> {提供颜色信息。}')
 async def _(msg: Bot.MessageSession):
     color = msg.parsed_msg.get('<color>')
     if webcolors.CSS3_NAMES_TO_HEX.get(color) is not None:
         color = webcolors.html5_parse_simple_color(webcolors.CSS3_NAMES_TO_HEX[color])
+    if material_colors_names_to_hex.get(color) is not None:
+        color = webcolors.html5_parse_simple_color(material_colors_names_to_hex[color])
     elif re.match(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$', color):
         # add hash if missing
         if color[0] != '#':
@@ -48,29 +56,40 @@ async def _(msg: Bot.MessageSession):
     img = Image.new('RGB', (600, 600), color=color)
     draw = ImageDraw.Draw(img)
 
-    color_name_raw = get_color_name(color)
-    color_name = ''
-    color_name_short = ''
-    if color_name_raw[1]:
-        color_name = f'\nCSS 颜色名称: {color_name_raw[0]}'
-        color_name_short = f'{color_name_raw[0]}'
-    elif color_name_raw[0] is not None:
-        color_name = f'\n最相似的 CSS 颜色名称: {color_name_raw[0]}'
+    css_color_name_raw = get_color_name(color, webcolors.CSS3_HEX_TO_NAMES)
+    css_color_name = ''
+    css_color_name_short = ''
+    if css_color_name_raw[1]:
+        css_color_name = f'\nCSS 颜色名称: {css_color_name_raw[0]}'
+        css_color_name_short = f'{css_color_name_raw[0]}\n'
+    elif css_color_name_raw[0] is not None:
+        css_color_name = f'\n最相似的 CSS 颜色名称: {css_color_name_raw[0]}'
 
-    draw.multiline_text((300, 300), f'{color_name_short}\n{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
-    await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{color_name}', BotImage(img)])
+    material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
+    material_color_name = ''
+    material_color_name_short = ''
+    if material_color_name_raw[1]:
+        material_color_name = f'\nMaterial Design 颜色名称: {material_color_name_raw[0]}'
+        material_color_name_short = f'{material_color_name_raw[0]}\n'
+    elif material_color_name_raw[0] is not None:
+        material_color_name = f'\n最相似的 Material Design 颜色名称: {material_color_name_raw[0]}'
+
+    draw.multiline_text((300, 300), f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
+    await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])
+
 
 def get_luminance(color: webcolors.HTML5SimpleColor):
     return color.red * 0.2126 + color.green * 0.7152 + color.blue * 0.0722
 
-def get_color_name(color: webcolors.HTML5SimpleColor):
+
+def get_color_name(color: webcolors.HTML5SimpleColor, name_dict):
     # check exact match
     hex_name = webcolors.rgb_to_hex(color)
-    if hex_name in webcolors.CSS3_HEX_TO_NAMES:
-        return webcolors.CSS3_HEX_TO_NAMES[hex_name], True
+    if hex_name in name_dict:
+        return name_dict[hex_name], True
     color_name = None
     min_dist = 1000000
-    for name, value in webcolors.CSS3_HEX_TO_NAMES.items():
+    for name, value in name_dict.items():
         dist = np.linalg.norm(np.array(color) - np.array(webcolors.html5_parse_simple_color(name)))
         if dist < min_dist:
             min_dist = dist
