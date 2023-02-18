@@ -18,12 +18,16 @@ with open(os.path.dirname(os.path.abspath(__file__))+'/material_colors.json', 'r
     material_colors = material_colors_names_to_hex = json.load(f)
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 
-@c.handle('<color> {提供颜色信息。}')
+# https://github.com/ubernostrum/webcolors/issues/18
+css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
+css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
+
+@c.handle('[<color>] {提供颜色信息。支持十六进制、RGB、HSL 颜色代码或 CSS3 和 Material Design 1 中的名称。}')
 async def _(msg: Bot.MessageSession):
     color = msg.parsed_msg.get('<color>')
-    if webcolors.CSS3_NAMES_TO_HEX.get(color) is not None:
-        color = webcolors.html5_parse_simple_color(webcolors.CSS3_NAMES_TO_HEX[color])
-    if material_colors_names_to_hex.get(color) is not None:
+    if css_names_to_hex.get(color) is not None:
+        color = webcolors.html5_parse_simple_color(css_names_to_hex[color])
+    elif material_colors_names_to_hex.get(color) is not None:
         color = webcolors.html5_parse_simple_color(material_colors_names_to_hex[color])
     elif re.match(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$', color):
         # add hash if missing
@@ -56,7 +60,7 @@ async def _(msg: Bot.MessageSession):
     img = Image.new('RGB', (600, 600), color=color)
     draw = ImageDraw.Draw(img)
 
-    css_color_name_raw = get_color_name(color, webcolors.CSS3_HEX_TO_NAMES)
+    css_color_name_raw = get_color_name(color, css_hex_to_names)
     css_color_name = ''
     css_color_name_short = ''
     if css_color_name_raw[1]:
