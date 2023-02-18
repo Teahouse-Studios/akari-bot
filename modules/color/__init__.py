@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
     elif color_name_raw[0] is not None:
         color_name = f'最相似的 CSS 颜色名称: {color_name_raw[0]}\n'
 
-    draw.multiline_text((400, 400), f'{color_name_short}\n{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
+    draw.multiline_text((300, 300), f'{color_name_short}\n{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
     await msg.finish([f'{color_name}HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}', BotImage(img)])
 
 def get_luminance(color: webcolors.HTML5SimpleColor):
