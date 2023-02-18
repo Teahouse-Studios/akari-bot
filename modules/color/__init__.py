@@ -21,6 +21,8 @@ async def _(msg: Bot.MessageSession):
         # add hash if missing
         if color[0] != '#':
             color = '#' + color
+        if len(color) == 4:
+            color = '#' + color[1] * 2 + color[2] * 2 + color[3] * 2
         color = webcolors.html5_parse_simple_color(color)
     elif re.match(r'^rgb\(\d{1,3}, ?\d{1,3}, ?\d{1,3}\)$', color):
         color = color[4:-1].split(',')
