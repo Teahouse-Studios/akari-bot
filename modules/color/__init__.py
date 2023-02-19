@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession):
     color_hex = '#%02x%02x%02x' % color
     color_rgb = 'rgb(%d, %d, %d)' % color
     color_hsl = colorsys.rgb_to_hls(color[0] / 255, color[1] / 255, color[2] / 255)
-    color_hsl = 'hsl(%d, %d%%, %d%%)' % (color_hsl[0] * 360, color_hsl[2] * 100, color_hsl[1] * 100)
+    color_hsl = 'hsl(%d, %d%%, %d%%)' % (color_hsl[0] * 360, color_hsl[1] * 100, color_hsl[2] * 100)
     luminance = get_luminance(color)
 
     contrast = (0, 0, 0) if luminance > 140 else (255, 255, 255)
