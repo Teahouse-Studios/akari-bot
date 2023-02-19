@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
         color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360, int(color[2].strip()[:-1]) / 100, int(color[1].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     else:
-        await msg.finish('无法识别的颜色格式。')
+        await msg.finish('发生错误：无法识别的颜色格式。')
 
     color_hex = '#%02x%02x%02x' % color
     color_rgb = 'rgb(%d, %d, %d)' % color
