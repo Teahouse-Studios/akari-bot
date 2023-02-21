@@ -23,6 +23,7 @@ css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
 css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 @c.handle('<color> {提供颜色信息。支持十六进制、RGB、HSL 颜色代码或 CSS3 和 Material Design 1 中的颜色名称。留空则为随机颜色。}')
+@c.handle('{随机颜色。}')
 async def _(msg: Bot.MessageSession):
     try:
         color = msg.parsed_msg.get('<color>')
