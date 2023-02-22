@@ -2,8 +2,8 @@ from core.builtins.message import MessageSession
 from core.component import on_command
 from .dice import roll
 
-dice = on_command('dice', alias={'d20': 'dice d20', 'd100': 'dice d100',
-                  'd6': 'dice d6'}, developers=['Light-Beacon'], desc='随机骰子',)
+dice = on_command('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
+                  'd8': 'dice d8', 'd10': 'dice d10', 'd12': 'dice d2', 'd20': 'dice d20'}, developers=['Light-Beacon'], desc='随机骰子',)
 
 
 @dice.handle('<dices> [<dc>] {摇动指定骰子,可指定 dc 判断判定。}',)
