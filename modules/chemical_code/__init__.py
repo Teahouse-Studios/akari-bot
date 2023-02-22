@@ -29,7 +29,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     if id is not None:  # 如果传入了 ID，则使用 ID 查询
         answer_id = id
     else:
-        answer_id = random.randint(1, 115015500)  # 否则随机查询一个题目
+        answer_id = random.randint(1, 116000000)  # 否则随机查询一个题目
     answer_id = str(answer_id)
     Logger.info("ChemSpider ID: " + answer_id)
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
@@ -86,7 +86,7 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
     if id.isdigit():  # 如果 ID 为纯数字
         await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
-        await msg.finish('请输入纯数字ID！')
+        await msg.finish('发生错误：请输入纯数字 ID！')
 
 
 async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):

@@ -121,9 +121,9 @@ async def _(msg: Bot.MessageSession):
             return
     if v.startswith(('[', '{')):
         v = json.loads(v)
-    elif v == 'True':
+    elif v.upper() == 'TRUE':
         v = True
-    elif v == 'False':
+    elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
     await msg.finish(f'成功为对象设置了以下参数：{k} -> {str(v)}')
@@ -252,12 +252,17 @@ def pull_repo():
     return os.popen('git pull', 'r').read()[:-1]
 
 
+def update_dependencies():
+    return os.popen('poetry install').read()[:-1]
+
+
 @upd.handle()
 async def update_bot(msg: Bot.MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
         await msg.sendMessage(pull_repo())
+        await msg.sendMessage(update_dependencies())
 
 
 upds = on_command('update&restart', developers=['OasisAkari'], required_superuser=True)
@@ -272,6 +277,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
         await wait_for_restart(msg)
         write_version_cache(msg)
         await msg.sendMessage(pull_repo())
+        await msg.sendMessage(update_dependencies())
         restart()
 
 
@@ -290,7 +296,7 @@ if Bot.FetchTarget.name == 'QQ':
             await msg.sendMessage('重发完成。')
         else:
             await msg.sendMessage('没有需要重发的消息。')
-    
+
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
         del Temp.data['waiting_for_send_group_message'][0]

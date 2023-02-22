@@ -1246,6 +1246,9 @@ urllib3==1.26.14 ; python_version >= "3.8" and python_version < "4" \
 virtualenv==20.19.0 ; python_version >= "3.8" and python_version < "4.0" \
     --hash=sha256:37a640ba82ed40b226599c522d411e4be5edb339a0c0de030c0dc7b646d61590 \
     --hash=sha256:54eb59e7352b573aa04d53f80fc9736ed0ad5143af445a1e539aada6eb947dd1
+webcolors==1.12 ; python_version >= "3.8" and python_version < "4.0" \
+    --hash=sha256:16d043d3a08fd6a1b1b7e3e9e62640d09790dce80d2bdd4792a175b35fe794a9 \
+    --hash=sha256:d98743d81d498a2d3eaf165196e65481f0d2ea85281463d856b1e51b09f62dce
 werkzeug==2.2.3 ; python_version >= "3.8" and python_version < "4.0" \
     --hash=sha256:2e1ccc9417d4da358b9de6f174e3ac094391ea1d4fbef2d667865d819dfd0afe \
     --hash=sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612

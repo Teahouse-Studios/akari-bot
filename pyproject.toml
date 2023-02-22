@@ -44,6 +44,7 @@ tenacity = "^8.1.0"
 openai = "^0.26.5"
 cryptography = "^39.0.1"
 pre-commit = "^3.0.4"
+webcolors = "^1.12"
 
 
 [tool.poetry.group.dev.dependencies]

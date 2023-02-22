@@ -3,10 +3,8 @@ import secrets
 from core.builtins import Bot
 from core.component import on_command
 
-r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'dice': 'random number 1 6',
-                                'random dice': 'random number 1 6', 'coin': 'random choice 正面 反面',
-                                'random coin': 'random choice 正面 反面'}, developers=[
-    'Dianliang233'], desc='随机数生成器（密码学安全）', )
+r = on_command('random', alias={'rand': 'random', 'rng': 'random', 'coin': 'random choice 正面 反面',
+                                'random coin': 'random choice 正面 反面'}, developers=['Dianliang233'], desc='随机数生成器（密码学安全）', )
 
 
 @r.handle('number <min> <max> {生成区间内的随机整数}', )
