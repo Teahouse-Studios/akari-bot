@@ -43,25 +43,25 @@ def GetDiceArgs(dice: str):
         advantage = midstrs[2].replace('L', '-')
     # 语法合法检定
     if not diceCount.isdigit():
-        return '错误：骰子数量非法:' + diceCount
+        return '错误：无效的骰子数量：' + diceCount
     if not diceType.isdigit():
-        return '错误：骰子面数非法:' + diceType
+        return '错误：无效的骰子面数：' + diceType
     if not rollTimes.isdigit():
-        return '错误：投骰次数非法:' + rollTimes
+        return '错误：无效投骰次数：' + rollTimes
     if mod[0] == '-':
         mod = mod[1:]
     if advantage[0] == '-':
         advantage = advantage[1:]
     if not mod.isdigit():
-        return '错误：调整值非法:' + mod
+        return '错误：无效的修正值：' + mod
     if not advantage.isdigit():
-        return '错误：优劣势非法:' + advantage
+        return '错误：无效的优劣势：' + advantage
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
             'mod': int(mod), 'str': dice}
 
 
 def RollDice(args, dc):
-    output = '你摇出来的结果是：\n'
+    output = '你掷得的结果是：\n'
     successNum = 0
     failNum = 0
     for times in range(args['times']):
@@ -93,7 +93,7 @@ def RollDice(args, dc):
         if (length > 1):
             output += '[ '
             if length > MAX_OUTPUT_NUM:  # 显示数据含100
-                output += f'数量过大省略{length}个数据'
+                output += f'数量过大省略 {length} 个数据'
             for i in range(length):
                 result += diceResults[i]
                 if length <= MAX_OUTPUT_NUM:  # 显示数据含100
@@ -140,9 +140,9 @@ async def roll(dice: str, dc: int):
     if diceArgs['times'] <= 0 or diceArgs['times'] > MAX_ROLL_TIMES:
         return f'错误：投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}'
     if diceArgs['cnt'] <= 0 or diceArgs['cnt'] > MAX_DICE_COUNT:
-        return f'错误：骰子数量不得小于1或大于{MAX_DICE_COUNT}'
+        return f'错误：骰子数量不得小于 1 或大于 {MAX_DICE_COUNT}'
     if diceArgs['type'] <= 0:
-        return '错误：骰子面数不得小于1'
+        return '错误：骰子面数不得小于 1'
     if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
