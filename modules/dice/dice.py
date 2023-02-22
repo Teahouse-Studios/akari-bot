@@ -121,9 +121,9 @@ def RollDice(args, dc):
             args['type'] == 20 or args['type'] == 100) and args['mod'] >= 0:
             temp = result - args['mod']
             if temp >= args['type']:
-                output += '，大成功！'
+                output += ' 大成功！'
             if temp == 1:
-                output += '，大失败！'
+                output += ' 大失败！'
         if times != args['times'] - 1:
             output += '\n'
     if len(output) > MAX_OUTPUT_LEN:
