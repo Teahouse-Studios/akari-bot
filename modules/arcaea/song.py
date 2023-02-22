@@ -1,13 +1,11 @@
-import asyncio
 import os
 import traceback
 from datetime import datetime
 
 from config import Config
-from core.elements import Plain, Image
+from core.builtins import Plain
 from core.logger import Logger
-from core.utils import get_url
-
+from core.utils.http import get_url
 from .utils import errcode
 
 assets_path = os.path.abspath('./assets/arcaea')
@@ -34,9 +32,10 @@ async def get_song_info(sid, diff: int, usercode=None):
             return [Plain("该谱面难度不存在。")]
         song_name = difficulties[diff]['name_en']
         diff_display_name = 'PRS' if diff == 0 else 'PST' if diff == 1 else 'FTR' if diff == 2 else 'BYD' \
-                            if diff == 3 else '???'
-        side_display_name = '光芒' if difficulties[diff]['side'] == 0 else '纷争' if difficulties[diff]['side'] == 1 else\
-                            '消色' if difficulties[diff]['side'] == 2 else '???'
+            if diff == 3 else '???'
+        side_display_name = '光芒' if difficulties[diff]['side'] == 0 else '纷争' if difficulties[diff][
+                                                                                         'side'] == 1 else \
+            '消色' if difficulties[diff]['side'] == 2 else '???'
         msg.append(f'{song_name} ({diff_display_name}/{side_display_name})')
         display_rating_1 = difficulties[diff]['difficulty'] / 2
         display_rating_2 = difficulties[diff]['difficulty'] // 2
@@ -79,10 +78,11 @@ async def get_song_info(sid, diff: int, usercode=None):
             except Exception:
                 traceback.print_exc()
                 try:
-                    play_info = await get_url(f'{api_url}user/best?usercode={usercode}&songid={song_info["content"]["song_id"]}&'
-                                              f'difficulty={diff}',
-                                              headers=headers, status_code=200,
-                                              fmt='json')
+                    play_info = await get_url(
+                        f'{api_url}user/best?usercode={usercode}&songid={song_info["content"]["song_id"]}&'
+                        f'difficulty={diff}',
+                        headers=headers, status_code=200,
+                        fmt='json')
                     if play_info["status"] == 0:
                         msg.append('最佳成绩：' + str(play_info["content"]["record"]["score"]) +
                                    f'\n({str(play_info["content"]["record"]["rating"])}, '
@@ -98,11 +98,3 @@ async def get_song_info(sid, diff: int, usercode=None):
         return Plain(f'查询失败：{errcode[song_info["status"]]}')
     else:
         return Plain('查询失败。' + song_info)
-
-
-
-
-
-
-
-

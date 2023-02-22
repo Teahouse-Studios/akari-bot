@@ -8,9 +8,7 @@ from typing import List, Dict
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.builtins.message import MessageSession
-from core.elements import Command, command_prefix, ExecutionLockList, RegexCommand, ErrorMessage
-from core.elements.module.component_meta import CommandMeta
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
 from core.loader import ModulesManager
@@ -18,7 +16,9 @@ from core.logger import Logger
 from core.parser.args import Template, ArgumentPattern, templates_to_str
 from core.parser.command import CommandParser
 from core.tos import warn_target
-from core.utils import removeIneffectiveText, removeDuplicateSpace, MessageTaskManager
+from core.types import Command, RegexCommand
+from core.types.module.component_meta import CommandMeta
+from core.utils.message import removeIneffectiveText, removeDuplicateSpace
 from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
@@ -98,7 +98,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             return
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
-        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList:
+        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
+            or msg.target.senderId in msg.options.get('ban', []):
             return ExecutionLockList.remove(msg)
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')
@@ -213,7 +214,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 continue
                         elif module.required_admin:
                             if not await msg.checkPermission():
-                                await msg.sendMessage(f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
+                                await msg.sendMessage(
+                                    f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
                                 continue
 
                         if not module.match_list.set:
@@ -266,7 +268,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                         return
                                 except InvalidHelpDocTypeError:
                                     Logger.error(traceback.format_exc())
-                                    await msg.sendMessage(ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
+                                    await msg.sendMessage(
+                                        ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
                                     return
 
                             await execute_submodule(msg, command_first_word, command_split)
@@ -302,7 +305,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         Logger.error(traceback.format_exc())
                         ExecutionLockList.remove(msg)
                         await msg.sendMessage('执行命令时发生错误：\n' + str(e) + '\n此问题并非机器人程序错误（API请求出错等），'
-                                                                        '请勿将此消息报告给机器人开发者。')
+                                                                                 '请勿将此消息报告给机器人开发者。')
                         continue
 
                     except Exception as e:
@@ -437,7 +440,8 @@ async def typo_check(msg: MessageSession, display_prefix, modules, command_first
                 select_docs = docs[max(docs)]
             else:
                 select_docs = docs[len_command_split - 1]  # 选择匹配的命令组
-            match_close_command: list = difflib.get_close_matches(' '.join(command_split[1:]), templates_to_str(select_docs),
+            match_close_command: list = difflib.get_close_matches(' '.join(command_split[1:]),
+                                                                  templates_to_str(select_docs),
                                                                   1, 0.3)  # 进一步匹配命令
             if match_close_command:
                 match_split = match_close_command[0]

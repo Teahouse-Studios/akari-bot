@@ -1,4 +1,4 @@
-from core.elements import MessageSession
+from core.builtins import MessageSession
 from database import BotDBUtil
 
 
@@ -12,7 +12,8 @@ async def warn_target(msg: MessageSession, reason=None):
     if current_warns < 5:
         warn_template.append(f'这是对你的第{current_warns}次警告。如超过5次警告，我们将会把你的账户加入黑名单。')
     if current_warns <= 2:
-        warn_template.append(f'如果你有任何异议，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
+        warn_template.append(
+            f'如果你有任何异议，请至https://github.com/Teahouse-Studios/bot/issues/new/choose发起issue。')
     if current_warns == 5:
         warn_template.append(f'这是对你的最后一次警告。')
     if current_warns > 5:

@@ -1,6 +1,6 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot
+from core.builtins import Image
 from core.component import on_command
-from core.elements import Image
 from database import BotDBUtil
 from .dbutils import CytoidBindInfoManager
 from .profile import cytoid_profile
@@ -12,13 +12,13 @@ cytoid = on_command('cytoid',
 
 
 @cytoid.handle('profile [<UserID>] {查询一个用户的基本信息}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)
 
 
 @cytoid.handle('(b30|r30) [<UserID>] {查询一个用户的b30/r30记录}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if 'b30' in msg.parsed_msg:
         query = 'b30'
     elif 'r30' in msg.parsed_msg:
@@ -48,11 +48,12 @@ async def _(msg: MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            await msg.sendMessage(f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为150秒。（据官方人员所述，此API的调用十分昂贵，故手动做出这一限制，请谅解。）')
+            await msg.sendMessage(
+                f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为150秒。（据官方人员所述，此API的调用十分昂贵，故手动做出这一限制，请谅解。）')
 
 
 @cytoid.handle('bind <username> {绑定一个Cytoid用户}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<username>']
     getcode = await get_profile_name(code)
     if getcode:
@@ -68,7 +69,7 @@ async def _(msg: MessageSession):
 
 
 @cytoid.handle('unbind {取消绑定用户}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:
         await msg.finish('取消绑定成功。')

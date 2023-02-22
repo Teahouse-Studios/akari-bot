@@ -6,8 +6,8 @@ import urllib.parse
 
 from bs4 import BeautifulSoup as bs
 
-from core.elements import Plain, Image
-from core.utils import get_url, download_to_cache
+from core.builtins import Plain, Image
+from core.utils.http import get_url, download_to_cache
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 from .tpg import tpg
@@ -21,7 +21,8 @@ async def get_user_info(wikiurl, username, pic=False):
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
-            return await get_user_info(wiki.wiki_info.interwiki[match_interwiki.group(1)], match_interwiki.group(2), pic)
+            return await get_user_info(wiki.wiki_info.interwiki[match_interwiki.group(1)], match_interwiki.group(2),
+                                       pic)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
@@ -49,7 +50,8 @@ async def get_user_info(wikiurl, username, pic=False):
         for g in user_central_auth_data['query']['globaluserinfo']['groups']:
             data['global_users_groups'].append(groups[g] if g in groups else g)
     data['registration_time'] = base_user_info['registration']
-    data['registration_time'] = UTC8(data['registration_time'], 'full') if data['registration_time'] is not None else '未知'
+    data['registration_time'] = UTC8(data['registration_time'], 'full') if data[
+                                                                               'registration_time'] is not None else '未知'
     data['edited_count'] = str(base_user_info['editcount'])
     data['gender'] = base_user_info['gender']
     if data['gender'] == 'female':
@@ -60,9 +62,9 @@ async def get_user_info(wikiurl, username, pic=False):
         data['gender'] = '未知'
     # if one day LGBTers...
 
-
     try:
-        gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile: ' + username, wiki.wiki_info.articlepath), 200), 'html.parser')
+        gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile: ' + username, wiki.wiki_info.articlepath), 200),
+                        'html.parser')
         dd = gp_clawler.find('div', class_='section stats').find_all('dd')
         data['edited_wiki_count'] = dd[0].text
         data['created_page_count'] = dd[1].text
@@ -131,7 +133,7 @@ async def get_user_info(wikiurl, username, pic=False):
         msgs = []
         if user := data.get('username', False):
             msgs.append('用户：' + user + (' | 编辑数：' + data['edited_count']
-                                        if 'edited_count' in data and 'created_page_count' not in data else ''))
+                                          if 'edited_count' in data and 'created_page_count' not in data else ''))
         if users_groups := data.get('users_groups', False):
             msgs.append('用户组：' + '、'.join(users_groups))
         if gender_ := data.get('gender', False):
@@ -179,23 +181,13 @@ async def get_user_info(wikiurl, username, pic=False):
 
         if blocked_by := data.get('blocked_by', False):
             msgs.append(data['user'] + '正在被封禁中！')
-            msgs.append('被' + blocked_by + '封禁，' + ('时间从' + data['blocked_time'] if 'blocked_time' in data else '')
-                        + ('到' + data['blocked_expires'] if 'blocked_expires' in data else '')
-                        + ('，理由：' + data['blocked_reason'] if 'blocked_reason' in data else ''))
+            msgs.append(
+                '被' + blocked_by + '封禁，' + ('时间从' + data['blocked_time'] if 'blocked_time' in data else '')
+                + ('到' + data['blocked_expires'] if 'blocked_expires' in data else '')
+                + ('，理由：' + data['blocked_reason'] if 'blocked_reason' in data else ''))
 
         if url := data.get('url', False):
             msgs.append(url)
 
         if msgs:
             return [Plain('\n'.join(msgs))]
-
-
-
-
-
-
-
-
-
-
-

@@ -6,14 +6,79 @@
 
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
-3. 对应你需要运行的平台所需要的必要内容（环境、token等）。
+3. 对应你需要运行的平台所需要的必要内容（环境、token 等）。
 
 # 基础部分部署
 
-## 安装基础依赖
+## 下载源代码
 
-1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。
-2. 解压源代码，然后打开终端，输入 `pip install -r requirements.txt` 来安装依赖。
+1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然。你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+2. 解压源代码，然后打开终端，进入文件夹。
+
+## 安装依赖
+
+### 方案一 - 使用 Poetry
+
+小可使用 Poetry 来更先进地管理依赖。若您已经安装 Poetry，您可以放心地跳过此段。
+
+关于 Poetry 的更多安装或使用问题，您可以查看[官方文档（英文）](https://python-poetry.org/docs/#installation)。
+
+安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 python executable path 并及时清除，否则安装 poetry 后可能会出现 python 环境混乱导致无法正常加载依赖的情况。
+
+#### Linux、macOS、Windows（WSL）以及其他类 Unix 环境
+
+打开终端，并执行以下命令：
+
+Windows 用户请注意：下面的方法仅适用于 WSL 环境。如果您不知道我在说什么，请忽略此段，并按照下一段的指示进行安装。
+
+```sh
+$ curl -sSL "https://install.python-poetry.org" | python3 -
+```
+
+#### Windows（PowerShell）
+
+请打开 PowerShell，并执行以下命令：
+
+```powershell
+> (Invoke-WebRequest -Uri "https://install.python-poetry.org" -UseBasicParsing).Content | py -
+```
+
+注：若您使用了 MS Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+
+#### 添加到 PATH
+
+安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
+
+-   Unix：`$HOME/.local/bin`
+-   Windows：`%APPDATA%\Python\Scripts`
+
+请善用搜索引擎寻找更改 PATH 的方法。
+
+在添加到 PATH 之后，您通常需要重启终端，甚至整个电脑才能使其生效。
+
+您可以通过 `poetry --version` 确认安装有效。
+
+#### 安装依赖
+
+在确保 Poetry 安装成功后，我们需要安装必要的依赖。
+
+仅需运行：
+
+```sh
+$ poetry install
+```
+
+### 方案二 - 使用 pip 安装依赖
+
+如果您不想使用 Poetry，您也可以使用 pip 来安装依赖。
+
+#### 安装依赖
+
+在终端中运行：
+
+```sh
+$ pip install -r requirements.txt
+```
 
 ## 配置
 
@@ -63,6 +128,8 @@
 测试控制台包括一个基础的运行环境，你可以在测试控制台内使用命令进行基础的机器人交互。
 
 测试控制台仅支持回复文本消息和图片，其它消息元素将被忽略或转换为文本或图片来显示。
+
+你可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
 
 1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
 2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
@@ -215,7 +282,7 @@ assets
         │  adobe_simhei.otf
         │  aliases.csv
         │  msyh.ttc
-        │  
+        │
         └─mai
             │...
 ```

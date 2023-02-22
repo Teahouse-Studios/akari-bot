@@ -1,9 +1,9 @@
 # https://github.com/XeroAlpha/caidlist/blob/master/backend/API.md
 import urllib.parse
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
-from core.utils import get_url
+from core.utils.http import get_url
 
 api = 'https://ca.projectxero.top/idlist/search'
 
@@ -11,7 +11,7 @@ i = on_command('idlist')
 
 
 @i.handle('<query> {查询MCBEID表。}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
     query_options = {'q': query, 'limit': '6'}
     query_url = api + '?' + urllib.parse.urlencode(query_options)

@@ -4,12 +4,11 @@ import urllib.parse
 
 import filetype
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Plain, Image, Voice
 from core.component import on_regex
 from core.dirty_check import check
-from core.elements import Plain, Image, Voice
 from core.logger import Logger
-from core.utils import download_to_cache
+from core.utils.http import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
@@ -21,7 +20,7 @@ wiki_inline = on_regex('wiki_inline',
 
 
 @wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#':
@@ -31,7 +30,7 @@ async def _(msg: MessageSession):
 
 
 @wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
         if x != '' and x not in query_list and x[0] != '#' and x.find("{") == -1:
@@ -41,7 +40,7 @@ async def _(msg: MessageSession):
 
 
 @wiki_inline.handle(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
         for y in x:
@@ -54,7 +53,7 @@ async def _(msg: MessageSession):
 @wiki_inline.handle(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
     mode='A', show_typing=False, logging=False)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
     async def bgtask():
@@ -73,17 +72,25 @@ async def _(msg: MessageSession):
             for q in query_list:
                 img_send = False
                 for qq in q:
+                    wiki_ = WikiLib(qq)
                     articlepath = q[qq].articlepath.replace('$1', '(.*)')
+                    get_id = re.sub(r'.*curid=(\d+)', '\\1', qq)
                     get_title = re.sub(r'' + articlepath, '\\1', qq)
-                    if get_title != '':
+                    get_page = None
+                    if get_id.isdigit():
+                        get_page = await wiki_.parse_page_info(pageid=int(get_id))
+                        if not q[qq].in_allowlist:
+                            for result in await check(get_page.title):
+                                if not result['status']:
+                                    return
+                    elif get_title != '':
                         title = urllib.parse.unquote(get_title)
                         if not q[qq].in_allowlist:
                             for result in await check(title):
                                 if not result['status']:
                                     return
-
-                        wiki_ = WikiLib(qq)
                         get_page = await wiki_.parse_page_info(title)
+                    if get_page is not None:
                         if get_page.status and get_page.file is not None:
                             dl = await download_to_cache(get_page.file)
                             guess_type = filetype.guess(dl)
@@ -97,19 +104,25 @@ async def _(msg: MessageSession):
                                     if msg.Feature.voice:
                                         await msg.sendMessage([Plain(f'此页面包括以下文件：{get_page.file}'), Voice(dl)],
                                                               quote=False)
+                        if msg.Feature.image:
+                            if get_page.status and wiki_.wiki_info.in_allowlist:
+                                if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
+                                    get_infobox = await generate_screenshot_v2(qq,
+                                                                               allow_special_page=q[qq].in_allowlist,
+                                                                               content_mode=
+                                                                               get_page.has_template_doc or
+                                                                               get_page.title.split(':')[0] in [
+                                                                                   'User'] or \
+                                                                               'Template:Disambiguation' in get_page.templates)
+                                    if get_infobox:
+                                        await msg.sendMessage(Image(get_infobox), quote=False)
+                                else:
+                                    get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
+                                    if get_infobox:
+                                        await msg.sendMessage(Image(get_infobox), quote=False)
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:
-                    for qq in q:
-                        Logger.info(q[qq].realurl)
-                        if q[qq].realurl in generate_screenshot_v2_blocklist:
-                            get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers,
-                                                                       allow_special_page=q[qq].in_allowlist)
-                        else:
-                            get_infobox = await generate_screenshot_v2(qq, allow_special_page=q[qq].in_allowlist)
-                        if get_infobox:
-                            await msg.sendMessage(Image(get_infobox), quote=False)
-
                     for qq in q:
                         section_ = []
                         quote_code = False
@@ -122,7 +135,7 @@ async def _(msg: MessageSession):
                                 section_.append(qs)
                         if section_:
                             s = urllib.parse.unquote(''.join(section_)[1:])
-                            if q[qq].realurl:
+                            if q[qq].realurl and q[qq].in_allowlist:
                                 if q[qq].realurl in generate_screenshot_v2_blocklist:
                                     get_section = await generate_screenshot_v1(q[qq].realurl, qq, headers, section=s)
                                 else:

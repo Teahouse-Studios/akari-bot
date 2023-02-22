@@ -130,6 +130,7 @@ if __name__ == '__main__':
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):
         logger.info(f'Updating database from {current_ver} to {target_ver}...')
         from database.update import update_database
+
         update_database()
         logger.info('Database updated successfully!')
     try:

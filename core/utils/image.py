@@ -2,7 +2,7 @@ from typing import List
 
 from PIL import Image as PImage
 
-from core.elements import Image
+from core.builtins import Image
 
 
 async def image_split(i: Image) -> List[Image]:

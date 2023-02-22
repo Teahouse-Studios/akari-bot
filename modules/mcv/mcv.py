@@ -3,9 +3,10 @@ import re
 
 from google_play_scraper import app as google_play_scraper
 
-from core.elements import ErrorMessage
+from core.builtins import ErrorMessage
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url, post_url
+from core.utils.ip import IP
 
 
 async def mcv():
@@ -32,10 +33,23 @@ Mojira上所记录最新版本为：
 
 
 async def mcbv():
-    try:  # play store
-        play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
+    play_store_version = None
+    if IP.country != 'China':
+        try:  # play store
+            play_store_version = google_play_scraper('com.mojang.minecraftpe')['version']
+        except Exception:
+            pass
+    ms_store_version = None
+    try:
+        fetch_ = await post_url('https://store.rg-adguard.net/api/GetFiles',
+                                status_code=200,
+                                fmt='text',
+                                data={'type': 'url', 'url': 'https://www.microsoft.com/store/productId/9NBLGGH2JHXJ',
+                                      'ring': 'RP', 'lang': 'zh-CN'})
+        if fetch_:
+            ms_store_version = re.findall(r'.*Microsoft.MinecraftUWP_(.*?)_.*', fetch_, re.M | re.I)[0]
     except Exception:
-        play_store_version = '获取失败'
+        pass
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
     except (ConnectionError, OSError):  # Probably...
@@ -54,9 +68,14 @@ async def mcbv():
                     release.append(v["name"])
     fix = " | "
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
-    return f"""目前商店内最新正式版为：
-{play_store_version}，
-Mojira上所记录最新版本为：
+    return \
+(f"""目前Google Play商店内最新正式版为：
+{play_store_version if play_store_version is not None else '获取失败'}，
+""" if IP.country != 'China' else '') + \
+f"""目前Microsoft Store内最新正式版为：
+{ms_store_version if ms_store_version is not None else '获取失败'}，
+""" +\
+f"""Mojira上所记录最新版本为：
 {msg2}
 （以商店内最新版本为准，Mojira仅作版本号预览用）"""
 

@@ -8,21 +8,19 @@ import numpy as np
 import ujson as json
 
 from config import Config
-from core.builtins.message import MessageSession
+from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import on_command
-from core.elements import PrivateAssets, Image, Plain, ExecutionLockList
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
-from core.utils.tasks import MessageTaskManager
 from database import BotDBUtil
 
 su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
 
 @su.handle('add <user>')
-async def add_su(message: MessageSession):
+async def add_su(message: Bot.MessageSession):
     user = message.parsed_msg['<user>']
     if not user.startswith(f'{message.target.senderFrom}|'):
         await message.finish(f'ID格式错误，请对象使用{message.prefixes[0]}whoami命令查看用户ID。')
@@ -32,7 +30,7 @@ async def add_su(message: MessageSession):
 
 
 @su.handle('del <user>')
-async def del_su(message: MessageSession):
+async def del_su(message: Bot.MessageSession):
     user = message.parsed_msg['<user>']
     if not user.startswith(f'{message.target.senderFrom}|'):
         await message.finish(f'ID格式错误，请对象使用{message.prefixes[0]}whoami命令查看用户ID。')
@@ -45,7 +43,7 @@ ana = on_command('analytics', required_superuser=True)
 
 
 @ana.handle()
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
@@ -55,7 +53,7 @@ async def _(msg: MessageSession):
 
 
 @ana.handle('days [<name>]')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         module_ = None
@@ -94,7 +92,7 @@ set_ = on_command('set', required_superuser=True)
 
 
 @set_.handle('modules <targetId> <modules> ...')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = msg.parsed_msg['<targetId>']
     if not target.startswith(f'{msg.target.targetFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -110,7 +108,7 @@ async def _(msg: MessageSession):
 
 
 @set_.handle('option <targetId> <k> <v>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = msg.parsed_msg['<targetId>']
     k = msg.parsed_msg['<k>']
     v = msg.parsed_msg['<v>']
@@ -135,7 +133,7 @@ ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_sup
 
 
 @ae.handle('check <user>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -144,7 +142,7 @@ async def _(msg: MessageSession):
 
 
 @ae.handle('warn <user> [<count>]')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
@@ -154,7 +152,7 @@ async def _(msg: MessageSession):
 
 
 @ae.handle('revoke <user> [<count>]')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
@@ -164,7 +162,7 @@ async def _(msg: MessageSession):
 
 
 @ae.handle('clear <user>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -173,7 +171,7 @@ async def _(msg: MessageSession):
 
 
 @ae.handle('untempban <user>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -182,7 +180,7 @@ async def _(msg: MessageSession):
 
 
 @ae.handle('ban <user>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -191,7 +189,7 @@ async def _(msg: MessageSession):
 
 
 @ae.handle('unban <user>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误。')
@@ -206,7 +204,7 @@ def restart():
     sys.exit(233)
 
 
-def write_version_cache(msg: MessageSession):
+def write_version_cache(msg: Bot.MessageSession):
     update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
     write_version = open(update, 'w')
     write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
@@ -216,7 +214,7 @@ def write_version_cache(msg: MessageSession):
 restart_time = []
 
 
-async def wait_for_restart(msg: MessageSession):
+async def wait_for_restart(msg: Bot.MessageSession):
     get = ExecutionLockList.get()
     if datetime.now().timestamp() - restart_time[0] < 60:
         if len(get) != 0:
@@ -237,7 +235,7 @@ async def wait_for_restart(msg: MessageSession):
 
 
 @rst.handle()
-async def restart_bot(msg: MessageSession):
+async def restart_bot(msg: Bot.MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
@@ -254,19 +252,24 @@ def pull_repo():
     return os.popen('git pull', 'r').read()[:-1]
 
 
+def update_dependencies():
+    return os.popen('poetry install').read()[:-1]
+
+
 @upd.handle()
-async def update_bot(msg: MessageSession):
+async def update_bot(msg: Bot.MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
         await msg.sendMessage(pull_repo())
+        await msg.sendMessage(update_dependencies())
 
 
 upds = on_command('update&restart', developers=['OasisAkari'], required_superuser=True)
 
 
 @upds.handle()
-async def update_and_restart_bot(msg: MessageSession):
+async def update_and_restart_bot(msg: Bot.MessageSession):
     await msg.sendMessage('你确定吗？')
     confirm = await msg.waitConfirm()
     if confirm:
@@ -274,14 +277,44 @@ async def update_and_restart_bot(msg: MessageSession):
         await wait_for_restart(msg)
         write_version_cache(msg)
         await msg.sendMessage(pull_repo())
+        await msg.sendMessage(update_dependencies())
         restart()
 
+
+if Bot.FetchTarget.name == 'QQ':
+    resume = on_command('resume', developers=['OasisAkari'], required_superuser=True)
+
+
+    @resume.handle()
+    async def resume_sending_group_message(msg: Bot.MessageSession):
+        Temp.data['is_group_message_blocked'] = False
+        if targets := Temp.data['waiting_for_send_group_message']:
+            await msg.sendMessage(f'正在重发 {len(targets)} 条消息...')
+            for x in targets:
+                await x['fetch'].sendDirectMessage(x['message'])
+                Temp.data['waiting_for_send_group_message'].remove(x)
+            await msg.sendMessage('重发完成。')
+        else:
+            await msg.sendMessage('没有需要重发的消息。')
+
+    @resume.handle('continue')
+    async def resume_sending_group_message(msg: Bot.MessageSession):
+        del Temp.data['waiting_for_send_group_message'][0]
+        Temp.data['is_group_message_blocked'] = False
+        if targets := Temp.data['waiting_for_send_group_message']:
+            await msg.sendMessage(f'跳过一条消息，正在重发 {len(targets)} 条消息...')
+            for x in targets:
+                await x['fetch'].sendDirectMessage(x['message'])
+                Temp.data['waiting_for_send_group_message'].remove(x)
+            await msg.sendMessage('重发完成。')
+        else:
+            await msg.sendMessage('没有需要重发的消息。')
 
 echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
 
 
 @echo.handle('<display_msg>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'])
 
 
@@ -289,7 +322,7 @@ say = on_command('say', developers=['OasisAkari'], required_superuser=True)
 
 
 @say.handle('<display_msg>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
 
@@ -298,5 +331,5 @@ if Config('enable_eval'):
 
 
     @_eval.handle('<display_msg>')
-    async def _(msg: MessageSession):
+    async def _(msg: Bot.MessageSession):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))

@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from config import Config
+from core.builtins import Bot, Image
 from core.component import on_command
-from core.elements import MessageSession, Image
 from .daily_trials import fetch_daily_trials, json_render
 
 dun = on_command('dungeons_trials', alias=['dungeons', 'dungeon', 'dungeonstrials', 'dungeontrials', 'dungeon_trials'],
@@ -12,7 +12,7 @@ records = {'ts': 0}
 
 
 @dun.handle()
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await msg.sendMessage('请稍等...')
     if datetime.now().timestamp() - records['ts'] > 43200:
         records['data'] = await fetch_daily_trials(Config('xbox_gametag'), Config('xbox_token'))
@@ -30,7 +30,7 @@ async def _(msg: MessageSession):
 
 
 @dun.handle('reset {强制重置缓存。}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     records['ts'] = 0
     await msg.sendMessage('重置成功。')
 

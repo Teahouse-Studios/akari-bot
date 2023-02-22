@@ -6,9 +6,8 @@ from datetime import datetime
 import psutil
 from cpuinfo import get_cpu_info
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot, PrivateAssets
 from core.component import on_command
-from core.elements import PrivateAssets
 from core.utils.i18n import get_available_locales, get_target_locale
 from database import BotDBUtil
 
@@ -20,7 +19,7 @@ version = on_command('version',
 
 
 @version.handle()
-async def bot_version(msg: MessageSession):
+async def bot_version(msg: Bot.MessageSession):
     ver = os.path.abspath(PrivateAssets.path + '/version')
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     open_version = open(ver, 'r')
@@ -40,7 +39,7 @@ started_time = datetime.now()
 
 
 @ping.handle()
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     checkpermisson = msg.checkSuperUser()
     result = "Pong!"
     if checkpermisson:
@@ -82,12 +81,20 @@ admin = on_command('admin',
                    base=True,
                    required_admin=True,
                    developers=['OasisAkari'],
-                   desc='用于设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。'
+                   desc='一些群聊管理员可使用的命令。'
                    )
 
 
-@admin.handle(['add <UserID> {设置成员为机器人管理员}', 'del <UserID> {取消成员的机器人管理员}'])
-async def config_gu(msg: MessageSession):
+@admin.handle([
+                  'add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
+                  'del <UserID> {取消成员的机器人管理员}',
+                  'list {列出所有机器人管理员}'])
+async def config_gu(msg: Bot.MessageSession):
+    if 'list' in msg.parsed_msg:
+        if msg.custom_admins:
+            await msg.finish(f"当前机器人群内手动设置的管理员：\n" + '\n'.join(msg.custom_admins))
+        else:
+            await msg.finish("当前没有手动设置的机器人管理员。")
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
@@ -103,6 +110,28 @@ async def config_gu(msg: MessageSession):
                 await msg.finish("成功")
 
 
+@admin.handle('ban <UserID> {限制某人在本群使用机器人}', 'unban <UserID> {解除对某人在本群使用机器人的限制}')
+async def config_ban(msg: Bot.MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.senderFrom}|'):
+        await msg.finish(f'ID格式错误，格式应为“{msg.target.senderFrom}|<用户ID>”')
+    if user == msg.target.senderId:
+        await msg.finish("你不可以对自己进行此操作！")
+    if 'ban' in msg.parsed_msg:
+        if user not in msg.options.get('ban', []):
+            msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
+            await msg.finish("成功")
+        else:
+            await msg.finish("此成员已经被设置禁止使用机器人了。")
+    if 'unban' in msg.parsed_msg:
+        if user in (banlist := msg.options.get('ban', [])):
+            banlist.remove(user)
+            msg.data.edit_option('ban', banlist)
+            await msg.finish("成功")
+        else:
+            await msg.finish("此成员没有被设置禁止使用机器人。")
+
+
 locale = on_command('locale',
                     base=True,
                     required_admin=True,
@@ -112,7 +141,7 @@ locale = on_command('locale',
 
 
 @locale.handle(['<lang> {设置机器人运行语言}'])
-async def config_gu(msg: MessageSession):
+async def config_gu(msg: Bot.MessageSession):
     t = get_target_locale(msg)
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'en_us']:
@@ -127,7 +156,7 @@ whoami = on_command('whoami', developers=['Dianliang233'], base=True)
 
 
 @whoami.handle('{获取发送命令的账号在机器人内部的 ID}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     rights = ''
     if await msg.checkNativePermission():
         rights += '\n（你拥有本对话的管理员权限）'
@@ -143,7 +172,7 @@ tog = on_command('toggle', developers=['OasisAkari'], base=True, required_admin=
 
 
 @tog.handle('typing {切换是否展示输入提示}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.senderId)
     state = target.query.disable_typing
     if not state:
@@ -155,7 +184,7 @@ async def _(msg: MessageSession):
 
 
 @tog.handle('check {切换是否展示命令错字检查提示}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state is None:
         state = False
@@ -170,7 +199,7 @@ mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin
 
 
 @mute.handle()
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await msg.finish('成功禁言。' if msg.data.switch_mute() else '成功取消禁言。')
 
 
@@ -179,7 +208,7 @@ leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin
 
 
 @leave.handle()
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     confirm = await msg.waitConfirm('你确定吗？此操作不可逆。')
     if confirm:
         await msg.sendMessage('已执行。')

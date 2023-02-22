@@ -1,7 +1,6 @@
 import ujson as json
 
-from core.builtins.message import MessageSession
-from core.elements import Plain, Image, Url
+from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
@@ -9,7 +8,7 @@ from .wiki import wiki
 
 
 @wiki.handle('set <WikiUrl> {设置起始查询Wiki}', required_admin=True)
-async def set_start_wiki(msg: MessageSession):
+async def set_start_wiki(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     check = await WikiLib(msg.parsed_msg['<WikiUrl>'], headers=target.get_headers()).check_wiki_available()
     if check.available:
@@ -27,7 +26,7 @@ async def set_start_wiki(msg: MessageSession):
 
 
 @wiki.handle('iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     url = msg.parsed_msg['<WikiUrl>']
     target = WikiTargetInfo(msg)
@@ -46,7 +45,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     target = WikiTargetInfo(msg)
     result = target.config_interwikis(iw, let_it=False)
@@ -56,7 +55,7 @@ async def _(msg: MessageSession):
 
 @wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}',
               'iw (list|show) legacy {展示当前设置的Interwiki（旧版）}'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
     start_wiki = target.get_start_wiki()
@@ -88,7 +87,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('iw get <Interwiki> {获取设置的Interwiki对应的api地址}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
     if query != {}:
@@ -101,7 +100,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle(['headers show {展示当前设置的headers}', 'headers list {headers show 的别名}'])
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
     prompt = f'当前设置了以下标头：\n{json.dumps(headers)}\n如需自定义，请使用~wiki headers set <headers>。\n' \
@@ -111,7 +110,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('headers (add|set) <Headers> {添加自定义headers}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     add = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
@@ -120,7 +119,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     delete = target.config_headers(
         [msg.parsed_msg['<HeaderHey>']], let_it=False)
@@ -129,7 +128,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('headers reset {重置headers}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     reset = target.config_headers('{}', let_it=None)
     if reset:
@@ -137,7 +136,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('prefix set <prefix> {设置查询自动添加前缀}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     prefix = msg.parsed_msg['<prefix>']
     set_prefix = target.set_prefix(prefix)
@@ -146,19 +145,30 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('prefix reset {重置查询自动添加的前缀}', required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     set_prefix = target.del_prefix()
     if set_prefix:
         await msg.finish(f'成功重置请求时所使用的前缀。')
 
 
-@wiki.handle('fandom enable {禁用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}',
+@wiki.handle('fandom enable {启用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}',
              required_admin=True)
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('enable', False):
         msg.data.edit_option('wiki_fandom_addon', True)
         await msg.finish('已启用Fandom全局Interwiki查询。')
     else:
         msg.data.edit_option('wiki_fandom_addon', False)
         await msg.finish('已禁用Fandom全局Interwiki查询。')
+
+
+@wiki.handle('redlink enable {启用不存在页面时返回编辑链接}', 'redlink disable {禁用不存在页面时返回编辑链接}',
+             required_admin=True)
+async def _(msg: Bot.MessageSession):
+    if msg.parsed_msg.get('enable', False):
+        msg.data.edit_option('wiki_redlink', True)
+        await msg.finish('已启用不存在页面时返回编辑链接。')
+    else:
+        msg.data.edit_option('wiki_redlink', False)
+        await msg.finish('已禁用不存在页面时返回编辑链接。')

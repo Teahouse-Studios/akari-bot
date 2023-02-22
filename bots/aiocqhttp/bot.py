@@ -6,11 +6,11 @@ from aiocqhttp import Event
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message import MessageSession, FetchTarget
-from bots.aiocqhttp.message_guild import MessageSession as MessageSessionGuild
 from config import Config
-from core.elements import MsgInfo, Session, EnableDirtyWordCheck, PrivateAssets, Url
+from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
-from core.utils import init, load_prompt, init_async
+from core.types import MsgInfo, Session
+from core.utils.bot import init, load_prompt, init_async
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
@@ -45,8 +45,11 @@ async def _(event: Event):
         replyId = int(match_reply.group(1))
 
     prefix = None
-    if match_at := re.match(r'^\[CQ:at,qq=(.*?)].*', event.message):
+    if match_at := re.match(r'^\[CQ:at,qq=(.*?)](.*)', event.message):
         if match_at.group(1) == qq_account:
+            event.message = match_at.group(2)
+            if event.message == '':
+                event.message = 'help'
             prefix = ['']
 
     targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
@@ -80,14 +83,14 @@ async def _(event):
     if match_reply:
         replyId = int(match_reply.group(1))
     targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
-    msg = MessageSessionGuild(MsgInfo(targetId=targetId,
-                                      senderId=f'QQ|Tiny|{str(event.user_id)}',
-                                      targetFrom='QQ|Guild',
-                                      senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,
-                                      replyId=replyId),
-                              Session(message=event,
-                                      target=f'{str(event.guild_id)}|{str(event.channel_id)}',
-                                      sender=event.user_id))
+    msg = MessageSession(MsgInfo(targetId=targetId,
+                                 senderId=f'QQ|Tiny|{str(event.user_id)}',
+                                 targetFrom='QQ|Guild',
+                                 senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,
+                                 replyId=replyId),
+                         Session(message=event,
+                                 target=f'{str(event.guild_id)}|{str(event.channel_id)}',
+                                 sender=event.user_id))
     await parser(msg, running_mention=True)
 
 

@@ -1,4 +1,4 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 
 p = on_command('prefix', required_admin=True, base=True)
@@ -6,7 +6,7 @@ p = on_command('prefix', required_admin=True, base=True)
 
 @p.handle('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}',
           'reset {重置自定义机器人命令前缀}')
-async def set_prefix(msg: MessageSession):
+async def set_prefix(msg: Bot.MessageSession):
     prefixes = msg.options.get('command_prefix')
     arg1 = msg.parsed_msg.get('<prefix>', False)
     if prefixes is None:

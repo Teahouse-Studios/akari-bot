@@ -1,11 +1,13 @@
 import asyncio
 from typing import List
 
-from core.elements import ExecutionLockList, Plain, confirm_command
-from core.elements.message import *
-from core.elements.message.chain import MessageChain
+from core.builtins.message.chain import *
+from core.builtins.message.internal import *
+from core.builtins.tasks import MessageTaskManager
+from core.builtins.temp import ExecutionLockList
+from core.builtins.utils import confirm_command
 from core.exceptions import WaitCancelException
-from core.utils import MessageTaskManager
+from core.types.message import *
 from core.utils.i18n import get_target_locale
 from database import BotDBUtil
 
@@ -45,12 +47,13 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def waitNextMessage(self, msgchain=None, quote=True, delete=False) -> MessageSession:
+    async def waitNextMessage(self, msgchain=None, quote=True, delete=False, append_instruction=True) -> MessageSession:
         sent = None
         ExecutionLockList.remove(self)
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
-            msgchain.append(Plain('（发送符合条件的词语来确认）'))
+            if append_instruction:
+                msgchain.append(Plain('（发送符合条件的词语来确认）'))
             sent = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
@@ -63,13 +66,14 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def waitReply(self, msgchain, quote=True) -> MessageSession:
+    async def waitReply(self, msgchain, quote=True, all_=False, append_instruction=True) -> MessageSession:
         ExecutionLockList.remove(self)
         msgchain = MessageChain(msgchain)
-        msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
+        if append_instruction:
+           msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
         send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, reply=send.messageId)
+        MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
         if result:

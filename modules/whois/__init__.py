@@ -1,7 +1,9 @@
 import ipaddress
-from core.builtins.message import MessageSession
+
+from core.builtins import Bot
 from core.component import on_command
 from .ip import check_ip, format_ip
+
 # from .domain import check_domain, format_domain
 
 w = on_command('whois', desc='查询 IP Whois 信息',
@@ -9,7 +11,7 @@ w = on_command('whois', desc='查询 IP Whois 信息',
 
 
 @w.handle('<ip_or_domain>')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<ip_or_domain>']
     query_type = ip_or_domain(query)
     if query_type == 'ip':

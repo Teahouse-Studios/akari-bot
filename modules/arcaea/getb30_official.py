@@ -8,7 +8,7 @@ import uuid
 
 from config import Config
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 from .drawb30img import drawb30
 from .drawsongimg import dsimg
 from .utils import autofix_b30_song_background
@@ -97,7 +97,7 @@ async def getb30_official(usercode):
                     realptt -= 2
                 elif score >= 9800000:
                     realptt -= 1 + (score - 9800000) / 200000
-                elif score <= 9500000:
+                else:
                     realptt -= (score - 9500000) / 300000
                 realptt = round(realptt, 1) * 10
                 realptts[x['song_id'] + difficulty] = realptt

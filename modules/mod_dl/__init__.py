@@ -3,9 +3,9 @@ import urllib.parse
 
 from bs4 import BeautifulSoup
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
-from core.utils import get_url
+from core.utils.http import get_url
 
 mod_dl = on_command(
     bind_prefix='mod_dl',
@@ -26,7 +26,7 @@ source_url = 'https://files.xmdhs.com/curseforge/'
 
 
 @mod_dl.handle('<mod_name> [<version>] {通过模组名获取模组下载链接，CloudFlare CDN支持。}')
-async def main(msg: MessageSession):
+async def main(msg: Bot.MessageSession):
     mod_name = msg.parsed_msg['<mod_name>']
     ver = msg.parsed_msg.get('<version>', False)
     if ver:
@@ -108,8 +108,9 @@ async def main(msg: MessageSession):
                 send_.append((f'{x.title()} ({y})：\n' if x != 'normal' else f'{y}：\n') +
                              f'下载链接：{infos[x][y]["url"]}\n'
                              f'文件名：{infos[x][y]["name"]}\n' +
-                             (f'此mod共有{str(infos[x][y]["depends"])}个依赖，请确认是否已经下载：\n{url_3}' if infos[x][y][
-                                                                                                   "depends"] > 0 else ''))
+                             (f'此mod共有{str(infos[x][y]["depends"])}个依赖，请确认是否已经下载：\n{url_3}' if
+                              infos[x][y][
+                                  "depends"] > 0 else ''))
         await msg.finish('\n'.join(send_))
 
     except ValueError:  # 404 ...

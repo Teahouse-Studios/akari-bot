@@ -1,6 +1,5 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Url
 from core.component import on_command
-from core.elements import Url
 from core.logger import Logger
 from .mcbbs_news import news
 
@@ -12,7 +11,7 @@ mcbbs_news = on_command(
 
 
 @mcbbs_news.handle('{获得 MCBBS 幻翼快讯版最新新闻（未被版主高亮过的新闻将被忽略）}')
-async def main(msg: MessageSession):
+async def main(msg: Bot.MessageSession):
     res = await news()
     Logger.debug('res' + str(res))
     if res is None:

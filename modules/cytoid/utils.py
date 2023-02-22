@@ -1,6 +1,6 @@
 import ujson as json
 
-from core.utils import get_url
+from core.utils.http import get_url
 
 
 async def get_profile_name(userid):

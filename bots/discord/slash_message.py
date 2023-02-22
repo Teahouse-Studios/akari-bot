@@ -4,11 +4,11 @@ import discord
 
 from bots.discord.message import convert_embed
 from config import Config
-from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, FinishedSession as FinS
-from core.elements.message.chain import MessageChain
-from core.elements.message.internal import Embed
+from core.builtins import Plain, Image, MessageSession as MS
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Embed
 from core.logger import Logger
+from core.types import FinishedSession as FinS
 
 enable_analytics = Config('enable_analytics')
 
@@ -76,19 +76,19 @@ class MessageSession(MS):
         for x in send:
             msgIds.append(x.id)
 
-        return FinishedSession(msgIds, send)
+        return FinishedSession(self, msgIds, send)
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel) \
-                or self.target.senderInfo.query.isSuperUser \
-                or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
+            or isinstance(self.session.message.channel, discord.DMChannel) \
+            or self.target.senderInfo.query.isSuperUser \
+            or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel):
+            or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 

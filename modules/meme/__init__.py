@@ -1,4 +1,4 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 from core.dirty_check import check
 from modules.meme.jiki import jiki
@@ -15,7 +15,7 @@ meme = on_command(
 
 
 @meme.handle(help_doc='<term> {在萌娘百科、nbnhhsh、Urban Dictionary 中查询梗}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     res_jiki = await jiki(msg.parsed_msg['<term>'])
     res_moegirl = await moegirl(msg.parsed_msg['<term>'])
     res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'])

@@ -18,12 +18,12 @@ import traceback
 import aioconsole
 
 from bot import init_bot
-from core.elements import MsgInfo, AutoSession, PrivateAssets, EnableDirtyWordCheck, Plain
+from core.builtins import PrivateAssets, EnableDirtyWordCheck, Plain
+from core.types import MsgInfo, AutoSession
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
-from core.utils import init, init_async
+from core.utils.bot import init, init_async
 from core.logger import Logger
-
 
 query_dbver = session.query(DBVersion).first()
 if query_dbver is None:
@@ -38,7 +38,6 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
     update_database()
     print('Database updated successfully! Please restart the program.')
     sys.exit()
-
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))

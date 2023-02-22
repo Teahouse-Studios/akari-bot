@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command, on_regex
 from .bugtracker import bugtracker_get
 
@@ -9,7 +9,7 @@ bug = on_command('bug', alias='b', developers=['OasisAkari'])
 
 
 @bug.handle('<MojiraID> {查询Mojira上的漏洞编号内容}')
-async def bugtracker(msg: MessageSession):
+async def bugtracker(msg: Bot.MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:
         q = re.match(r'(.*-.*)', mojira_id)
@@ -24,7 +24,7 @@ rbug = on_regex('bug_regex',
 
 
 @rbug.handle(pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M')
-async def regex_bugtracker(msg: MessageSession):
+async def regex_bugtracker(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
     if len(matched_msg.group(1)) < 10 and len(matched_msg.group(2)) < 10:
         result = await bugtracker_get(matched_msg.group(1) + '-' + matched_msg.group(2))
@@ -32,8 +32,9 @@ async def regex_bugtracker(msg: MessageSession):
 
 
 @rbug.handle(re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)'), mode='A')
-async def _(msg: MessageSession):
-    async def bgtask(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
+    async def bgtask(msg: Bot.MessageSession):
         for title in msg.matched_msg:
             await msg.sendMessage(await bugtracker_get(title, nolink=True))
+
     asyncio.create_task(bgtask(msg))

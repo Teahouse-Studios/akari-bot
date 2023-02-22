@@ -1,13 +1,13 @@
 import asyncio
 import traceback
 
-from core.builtins.message import MessageSession
-from core.elements import Image, Plain, Url, ErrorMessage
-from core.utils import get_url, download_to_cache
+from core.builtins import Bot
+from core.builtins import Image, Plain, Url, ErrorMessage
+from core.utils.http import get_url, download_to_cache
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
-async def repo(msg: MessageSession):
+async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
@@ -63,7 +63,8 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             await msg.sendMessage([Plain(message)])
 
             async def download():
-                download_pic = await download_to_cache(f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
+                download_pic = await download_to_cache(
+                    f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
                 if download_pic:
                     await msg.finish([Image(download_pic)])
 

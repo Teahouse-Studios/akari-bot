@@ -10,9 +10,12 @@ from tabulate import tabulate
 
 from config import Config
 from core.logger import Logger
+from .http import download_to_cache, get_url, post_url
 from .cache import random_cache_path
 
-web_render = Config('web_render_local')
+
+web_render = Config('web_render')
+web_render_local = Config('web_render_local')
 
 
 class ImageTable:
@@ -21,9 +24,12 @@ class ImageTable:
         self.headers = headers
 
 
-async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=False):
-    if not web_render:
-        return False
+async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_source=True, use_local=True):
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return False
+        use_local = False
     try:
         tblst = []
         if isinstance(table, ImageTable):
@@ -54,24 +60,26 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
               padding: 15px;
               text-align: left;
             }</style>"""
-        html = {'content': tblst + css, 'width': w}
+        html = {'content': tblst + css, 'width': w, 'mw': False}
         if save_source:
             fname = random_cache_path() + '.html'
             with open(fname, 'w') as fi:
                 fi.write(tblst + css)
-        picname = random_cache_path() + '.jpg'
-        if os.path.exists(picname):
-            os.remove(picname)
-        async with aiohttp.ClientSession() as session:
-            async with session.post(web_render, headers={
-                'Content-Type': 'application/json',
-            }, data=json.dumps(html)) as resp:
-                with open(picname, 'wb+') as jpg:
-                    jpg.write(await resp.read())
-        return picname
+
+        pic = False
+
+        try:
+            pic = await download_to_cache(web_render_local if use_local else web_render, method='POST', headers={
+                    'Content-Type': 'application/json',
+                }, post_data=json.dumps(html), request_private_ip=True)
+        except aiohttp.ClientConnectorError:
+            pic = await download_to_cache(web_render, method='POST', headers={
+                    'Content-Type': 'application/json',
+                }, post_data=json.dumps(html), request_private_ip=True)
+        return pic
     except Exception:
         Logger.error(traceback.format_exc())
         return False
 
 
-__all__ = ['ImageTable', 'image_table_render', 'web_render']
+__all__ = ['ImageTable', 'image_table_render']

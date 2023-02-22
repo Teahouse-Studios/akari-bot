@@ -1,9 +1,10 @@
-from typing import Any
-import json
-import socket
 import ipaddress
-from core.utils import get_url
+import json
 import os
+import socket
+from typing import Any, Dict
+
+from core.utils.http import get_url
 
 iso = json.load(open(os.path.dirname(os.path.abspath(
     __file__)) + '/iso.json', 'r', encoding='utf-8'))
@@ -82,7 +83,7 @@ def parse_coordinate(axis: str, value: float):
         return f'{value}°{"E" if value > 0 else "W"}'
 
 
-async def format_ip(info: dict[str, Any]):
+async def format_ip(info: Dict[str, Any]):
     ip_property = {
         'global': '全局',
         'private': '私有',

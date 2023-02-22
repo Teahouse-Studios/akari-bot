@@ -10,9 +10,11 @@ from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
 from config import CachePath
+from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
+    Url as U, ErrorMessage as EMsg
 
 
-class Plain:
+class Plain(P):
     def __init__(self,
                  text, *texts):
         self.text = str(text)
@@ -26,7 +28,7 @@ class Plain:
         return f'Plain(text="{self.text}")'
 
 
-class Url:
+class Url(U):
     mm = False
     disable_mm = False
 
@@ -46,7 +48,7 @@ class Url:
         return f'Url(url="{self.url}")'
 
 
-class ErrorMessage:
+class ErrorMessage(EMsg):
     def __init__(self, error_message):
         self.error_message = '发生错误：' + error_message + '\n错误汇报地址： ' + \
                              str(Url(
@@ -59,7 +61,7 @@ class ErrorMessage:
         return self.error_message
 
 
-class Image:
+class Image(I):
     def __init__(self,
                  path, headers=None):
         self.need_get = False
@@ -96,7 +98,7 @@ class Image:
         return f'Image(path="{self.path}", headers={self.headers})'
 
 
-class Voice:
+class Voice(V):
     def __init__(self,
                  path=None):
         self.path = path
@@ -108,7 +110,7 @@ class Voice:
         return f'Voice(path={self.path})'
 
 
-class EmbedField:
+class EmbedField(EF):
     def __init__(self,
                  name: str = None,
                  value: str = None,
@@ -124,7 +126,7 @@ class EmbedField:
         return f'EmbedField(name="{self.name}", value="{self.value}", inline={self.inline})'
 
 
-class Embed:
+class Embed(E):
     def __init__(self,
                  title: str = None,
                  description: str = None,

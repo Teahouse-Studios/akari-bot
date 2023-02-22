@@ -1,5 +1,5 @@
+from core.builtins import Url
 from core.dirty_check import check
-from core.elements import Url
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 

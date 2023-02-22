@@ -4,14 +4,12 @@ from typing import Union
 
 import filetype
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
 from core.component import on_command
-from core.elements import Plain, Image, Voice, Url, confirm_command
 from core.exceptions import AbuseWarning
 from core.logger import Logger
-from core.utils import download_to_cache
+from core.utils.http import download_to_cache
 from modules.wiki.utils.dbutils import WikiTargetInfo
-
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
@@ -26,7 +24,7 @@ wiki = on_command('wiki',
 
 @wiki.handle('<PageName> [-l <lang>] {查询一个Wiki页面，若查询“随机页面”则随机一个页面。}',
              options_desc={'-l': '查找本页面的对应语言版本，若无结果则返回当前语言。'})
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     get_lang: dict = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
@@ -36,7 +34,7 @@ async def _(msg: MessageSession):
 
 
 @wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID查询一个Wiki页面。}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('-i', False):
         iw: str = msg.parsed_msg['-i'].get('<CustomIW>', '')
     else:
@@ -48,10 +46,10 @@ async def _(msg: MessageSession):
     await query_pages(msg, pageid=page_id, iw=iw)
 
 
-async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
+async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
-    if isinstance(session, MessageSession):
+    if isinstance(session, Bot.MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
         interwiki_list = target.get_interwikis()
@@ -67,10 +65,10 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         prefix = session.prefix
         enabled_fandom_addon = False
     else:
-        raise TypeError('session must be MessageSession or QueryInfo.')
+        raise TypeError('session must be Bot.MessageSession or QueryInfo.')
 
     if start_wiki is None:
-        if isinstance(session, MessageSession):
+        if isinstance(session, Bot.MessageSession):
             await session.sendMessage(
                 f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
                 f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
@@ -199,7 +197,8 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                         if r.link is not None and r.section is None:
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
-                                          'has_doc': r.has_template_doc}})
+                                          'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
+                                                          'Template:Disambiguation' in r.templates}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section,
@@ -210,25 +209,31 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     plain_slice = []
                     wait_plain_slice = []
                     if display_title is not None and display_before_title is not None:
-                        if isinstance(session, MessageSession) and session.Feature.wait:
-                            if len(r.possible_research_title) > 1:
-                                wait_plain_slice.append(
-                                    f'提示：[{display_before_title}]不存在，您是否想要找的是：')
-                                pi = 0
-                                for p in r.possible_research_title:
-                                    pi += 1
+                        if isinstance(session, Bot.MessageSession) and session.Feature.wait:
+                            if not session.options.get('wiki_redlink', False):
+                                if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(
-                                        f'{pi}. {p}')
-                                wait_plain_slice.append(f'请直接发送指定序号获取对应内容，若回复“是”，'
-                                                        f'则默认选择'
-                                                        f'{str(r.possible_research_title.index(display_title) + 1)}'
-                                                        f'号内容，发送其他内容则代表取消获取。')
-                                wait_possible_list.append({display_before_title: {display_title:
-                                                                                      r.possible_research_title}})
+                                        f'提示：[{display_before_title}]不存在，您是否想要找的是：')
+                                    pi = 0
+                                    for p in r.possible_research_title:
+                                        pi += 1
+                                        wait_plain_slice.append(
+                                            f'{pi}. {p}')
+                                    wait_plain_slice.append(f'请直接发送指定序号获取对应内容，若回复“是”，'
+                                                            f'则默认选择'
+                                                            f'{str(r.possible_research_title.index(display_title) + 1)}'
+                                                            f'号内容，发送其他内容则代表取消获取。')
+                                    wait_possible_list.append({display_before_title: {display_title:
+                                                                                          r.possible_research_title}})
+                                else:
+                                    wait_plain_slice.append(
+                                        f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？\n'
+                                        f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
                             else:
-                                wait_plain_slice.append(
-                                    f'提示：[{display_before_title}]不存在，您是否想要找的是[{display_title}]？\n'
-                                    f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
+                                if r.edit_link is not None:
+                                    plain_slice.append(r.edit_link + '（页面不存在）')
+                                else:
+                                    plain_slice.append(f'{display_before_title}页面不存在。')
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
@@ -255,11 +260,11 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
         except WhatAreUDoingError:
             raise AbuseWarning('使机器人重定向页面的次数过多。')
         except InvalidWikiError as e:
-            if isinstance(session, MessageSession):
+            if isinstance(session, Bot.MessageSession):
                 await session.sendMessage(f'发生错误：' + str(e))
             else:
                 msg_list.append(Plain(f'发生错误：' + str(e)))
-    if isinstance(session, MessageSession):
+    if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all([not render_infobox_list, not render_section_list,
                     not dl_list, not wait_list, not wait_possible_list]):
@@ -274,12 +279,11 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                     for ii in i:
                         Logger.info(i[ii]['url'])
                         if i[ii]['url'] not in generate_screenshot_v2_blocklist:
+
                             get_infobox = await generate_screenshot_v2(ii, allow_special_page=i[ii]['in_allowlist'],
-                                                                       doc_mode=i[ii]['has_doc'])
+                                                                       content_mode=i[ii]['content_mode'])
                             if get_infobox:
                                 infobox_msg_list.append(Image(get_infobox))
-                                infobox_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
-                                                              'https://s.wd-ljt.com/botreportbug'))
                         else:
                             get_infobox = await generate_screenshot_v1(i[ii]['url'], ii, headers,
                                                                        allow_special_page=i[ii]['in_allowlist'])
@@ -298,10 +302,9 @@ async def query_pages(session: Union[MessageSession, QueryInfo], title: Union[st
                                 get_section = await generate_screenshot_v2(ii, section=i[ii]['section'])
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
-                                    section_msg_list.append(Plain('*我们正在测试新的窗口截图方式，如您遇到机器人发送的图片发生错位等情况，请及时报告。报告地址：'
-                                                                  'https://s.wd-ljt.com/botreportbug'))
                             else:
-                                get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers, section=i[ii]['section'])
+                                get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers,
+                                                                           section=i[ii]['section'])
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
                 if section_msg_list:

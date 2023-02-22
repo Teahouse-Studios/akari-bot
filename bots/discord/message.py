@@ -7,12 +7,12 @@ import discord
 
 from bots.discord.client import client
 from config import Config
-from core.builtins.message import MessageSession as MS
-from core.elements import Plain, Image, MsgInfo, Session, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
-from core.elements.message.chain import MessageChain
-from core.elements.message.internal import Embed
+from core.builtins import Bot, Plain, Image, MessageSession as MS
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import Embed
 from core.logger import Logger
+from core.types import MsgInfo, Session, FetchTarget as FT, \
+    FetchedSession as FS, FinishedSession as FinS
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
@@ -102,24 +102,26 @@ class MessageSession(MS):
         for x in send:
             msgIds.append(x.id)
 
-        return FinishedSession(msgIds, send)
+        return FinishedSession(self, msgIds, send)
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
             or isinstance(self.session.message.channel, discord.DMChannel) \
             or self.target.senderInfo.query.isSuperUser \
-                or self.target.senderId in self.custom_admins:
+            or self.target.senderId in self.custom_admins:
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel):
+            or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 
     def asDisplay(self):
-        return self.session.message.content
+        msg = self.session.message.content
+        msg = re.sub(r'<@(.*?)>', r'Discord|Client|\1', msg)
+        return msg
 
     async def delete(self):
         try:
@@ -206,3 +208,7 @@ class FetchTarget(FT):
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:
                         Logger.error(traceback.format_exc())
+
+
+Bot.MessageSession = MessageSession
+Bot.FetchTarget = FetchTarget

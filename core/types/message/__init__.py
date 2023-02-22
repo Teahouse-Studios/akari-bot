@@ -1,8 +1,8 @@
 import asyncio
 from typing import List, Union
 
-from core.elements.message.chain import MessageChain
 from core.exceptions import FinishedException
+from .chain import MessageChain
 
 
 class MsgInfo:
@@ -56,7 +56,8 @@ class AutoSession(Session):
 
 
 class FinishedSession:
-    def __init__(self, messageId: Union[List[int], List[str], int, str], result):
+    def __init__(self, session, messageId: Union[List[int], List[str], int, str], result):
+        self.session = session
         if isinstance(messageId, (int, str)):
             messageId = [messageId]
         self.messageId = messageId
@@ -146,7 +147,7 @@ class MessageSession:
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
 
-    async def waitNextMessage(self, msgchain=None, quote=True, delete=False):
+    async def waitNextMessage(self, msgchain=None, quote=True, delete=False, append_instruction=True):
         """
         一次性模板，用于等待对象的下一条消息。
         :param msgchain: 需要发送的确认消息，可不填
@@ -155,11 +156,12 @@ class MessageSession:
         :return: 下一条消息的MessageChain对象
         """
 
-    async def waitReply(self, msgchain, quote=True):
+    async def waitReply(self, msgchain, quote=True, all_=False, append_instruction=True):
         """
         一次性模板，用于等待触发对象回复消息。
         :param msgchain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
+        :param all_: 是否设置触发对象为对象内的所有人（默认为False）
         :return: 回复消息的MessageChain对象
         """
 

@@ -1,12 +1,11 @@
 import traceback
 
-from core.builtins.message import MessageSession
-from core.elements import Url, ErrorMessage
-from core.utils import get_url
+from core.builtins import Bot, Url, ErrorMessage
+from core.utils.http import get_url
 from modules.github.utils import dirty_check, darkCheck
 
 
-async def search(msg: MessageSession):
+async def search(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200,
                                fmt='json')

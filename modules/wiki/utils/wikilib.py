@@ -9,10 +9,10 @@ import ujson as json
 
 import core.utils.html2text as html2text
 from config import Config
+from core.builtins import Url
 from core.dirty_check import check
-from core.elements import Url
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 
@@ -95,12 +95,14 @@ class PageInfo:
                  id: int = -1,
                  before_title: str = None,
                  link: str = None,
+                 edit_link: str = None,
                  file: str = None,
                  desc: str = None,
                  args: str = None,
                  section: str = None,
                  interwiki_prefix: str = '',
                  status: bool = True,
+                 templates: List[str] = None,
                  before_page_property: str = 'page',
                  page_property: str = 'page',
                  has_template_doc: bool = False,
@@ -112,11 +114,13 @@ class PageInfo:
         self.title = title
         self.before_title = before_title
         self.link = link
+        self.edit_link = edit_link
         self.file = file
         self.desc = desc
         self.args = args
         self.section = section
         self.interwiki_prefix = interwiki_prefix
+        self.templates = templates
         self.status = status
         self.before_page_property = before_page_property
         self.page_property = page_property
@@ -132,6 +136,7 @@ class WikiLib:
         self.headers = headers
 
     async def get_json_from_api(self, api, **kwargs) -> dict:
+        api = re.sub('https://zh.moegirl.org.cn/', 'https://mzh.moegirl.org.cn/', api)  # 萌娘百科强制使用移动版 API
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
             Logger.debug(api)
@@ -194,6 +199,7 @@ class WikiLib:
 
     async def check_wiki_available(self):
         try:
+            self.url = re.sub('https://zh.moegirl.org.cn/', 'https://mzh.moegirl.org.cn/', self.url)  # 萌娘百科强制使用移动版 API
             api_match = re.match(r'(https?://.*?/api.php$)', self.url)
             wiki_api_link = api_match.group(1)
         except Exception:
@@ -392,7 +398,7 @@ class WikiLib:
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
             return PageInfo(title=title if title is not None else pageid, id=pageid,
-                            link=link, desc='发生错误：' + str(e), info=self.wiki_info)
+                            link=link, desc='发生错误：' + str(e), info=self.wiki_info, templates=[])
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
@@ -403,7 +409,7 @@ class WikiLib:
         if title is not None:
             if title == '':
                 return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
-                                interwiki_prefix=_prefix)
+                                interwiki_prefix=_prefix, templates=[])
             if inline:
                 split_name = re.split(r'(#)', title)
             else:
@@ -436,18 +442,18 @@ class WikiLib:
                 section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.section = section
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url',
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
         elif pageid is not None:
             page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
-            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks', 'llprop': 'url', 'inprop': 'url',
-                            'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
+            query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
+                            'inprop': 'url', 'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
         else:
             raise ValueError('title and pageid cannot be both None')
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts and section is None:
-            query_string.update({'prop': 'info|imageinfo|langlinks|extracts|pageprops',
+            query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
@@ -476,6 +482,8 @@ class WikiLib:
                 page_raw = pages[page_id]
                 if 'title' in page_raw:
                     page_info.title = page_raw['title']
+                if 'editurl' in page_raw:
+                    page_info.edit_link = page_raw['editurl']
                 if 'invalid' in page_raw:
                     rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
                                  page_raw['invalidreason'])
@@ -524,6 +532,7 @@ class WikiLib:
                                 invalid_namespace = False
 
                                 async def search_something(srwhat):
+                                    Logger.debug(traceback.format_exc())
                                     try:
                                         research = await self.research_page(page_info.title, namespace, srwhat=srwhat)
                                         if srwhat == 'text':
@@ -538,13 +547,12 @@ class WikiLib:
 
                                 searches = []
                                 searched_result = []
-                                if searches:
-                                    for srwhat in srwhats:
-                                        searches.append(search_something(srwhat))
-                                    gather_search = await asyncio.gather(*searches)
-                                    for search in gather_search:
-                                        if search[0] is not None and search[0] not in searched_result:
-                                            searched_result.append(search[0])
+                                for srwhat in srwhats:
+                                    searches.append(search_something(srwhat))
+                                gather_search = await asyncio.gather(*searches)
+                                for search in gather_search:
+                                    if search[0] is not None and search[0] not in searched_result:
+                                        searched_result.append(search[0])
 
                                 if preferred is None and searched_result:
                                     preferred = searched_result[0]
@@ -553,9 +561,9 @@ class WikiLib:
                                 page_info.title = preferred
                                 page_info.invalid_namespace = invalid_namespace
                                 page_info.possible_research_title = searched_result
-
                 else:
                     page_info.status = True
+                    templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
                     if 'special' in page_raw:
                         full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
                                    + page_info.args
@@ -615,7 +623,8 @@ class WikiLib:
                             split_title = title.split(':')
                             get_desc = True
                             if not _doc and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template':
+                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template' \
+                                and 'Template:Documentation' in templates:
                                 get_all_text = await self.get_wikitext(title)
                                 match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
                                 if match_doc:
@@ -651,6 +660,7 @@ class WikiLib:
                             page_info.title = query_langlinks.title
                             page_info.before_title = query_langlinks.title
                             page_info.link = query_langlinks.link
+                            page_info.edit_link = query_langlinks.edit_link
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
         interwiki_: List[Dict[str, str]] = query.get('interwiki')

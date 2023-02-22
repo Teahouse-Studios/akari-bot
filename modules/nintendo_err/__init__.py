@@ -1,7 +1,7 @@
 # ported from kurisu(https://github.com/nh-server/Kurisu/tree/main/cogs/results)
 import discord
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import on_command
 from core.utils.message import convertDiscordEmbed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
@@ -82,7 +82,7 @@ e = on_command('err', developers=['OasisAkari', 'kurisu'])
 
 
 @e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')
-async def result(msg: MessageSession):
+async def result(msg: Bot.MessageSession):
     """
     Displays information on game console result codes, with a fancy embed.
     0x prefix is not required for hex input.

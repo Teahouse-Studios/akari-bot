@@ -1,14 +1,13 @@
 import datetime
 
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Embed, Image, EmbedField
 from core.component import on_command
-from core.elements import Embed, Image, EmbedField
 
 t = on_command('embed_test', required_superuser=True)
 
 
 @t.handle()
-async def _(session: MessageSession):
+async def _(session: Bot.MessageSession):
     await session.sendMessage(Embed(title='Embed Test', description='This is a test embed.',
                                     url='https://minecraft.fandom.com/zh/wiki/Minecraft_Wiki',
                                     color=0x00ff00, timestamp=datetime.datetime.now().timestamp(),

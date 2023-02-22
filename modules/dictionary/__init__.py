@@ -1,6 +1,5 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot, Image, Plain
 from core.component import on_command
-from core.elements import Image, Plain
 from .screenshot import get_pic
 
 dict_module = on_command('dictionary', alias=["dict"],
@@ -8,7 +7,7 @@ dict_module = on_command('dictionary', alias=["dict"],
 
 
 @dict_module.handle(help_doc='<term> {在科林斯词典中查询单词，暂仅支持英文}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     print(str(msg.parsed_msg['<term>']).replace(' ', '-').lower())
     pic_collins = await get_pic(
         'https://www.collinsdictionary.com/dictionary/english/' + str(msg.parsed_msg['<term>']).replace(' ',

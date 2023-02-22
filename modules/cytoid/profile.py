@@ -1,12 +1,12 @@
 import ujson as json
 
-from core.builtins.message import MessageSession
-from core.elements import Plain, Image
-from core.utils import get_url
+from core.builtins import Bot
+from core.builtins import Plain, Image
+from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
 
 
-async def cytoid_profile(msg: MessageSession):
+async def cytoid_profile(msg: Bot.MessageSession):
     pat = msg.parsed_msg.get('<UserID>', False)
     if pat:
         query_id = pat
@@ -46,6 +46,9 @@ async def cytoid_profile(msg: MessageSession):
     s = grade.get('S')
     if s is not None:
         grade_t.append(f'S: {s}')
+    aa = grade.get('AA')
+    if aa is not None:
+        grade_t.append(f'AA: {aa}')
     a = grade.get('A')
     if a is not None:
         grade_t.append(f'A: {a}')

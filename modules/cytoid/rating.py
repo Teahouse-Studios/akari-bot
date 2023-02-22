@@ -15,7 +15,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 
 from config import Config
 from core.logger import Logger
-from core.utils import get_url
+from core.utils.http import get_url
 
 
 async def get_rating(uid, query_type):
@@ -281,10 +281,10 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
         img = downlight.enhance(0.5).resize((resize_img_w,
                                              resize_img_h),
                                             ).crop((crop_start_x, crop_start_y,
-                                                                   384 + crop_start_x, 240 + crop_start_y))
+                                                    384 + crop_start_x, 240 + crop_start_y))
     elif img_h > 240:
         crop_start_y = int((img_h - 240) / 2)
-        img = downlight.enhance(0.5).resize((384, img_h))\
+        img = downlight.enhance(0.5).resize((384, img_h)) \
             .crop((0, crop_start_y, 384, 240 + crop_start_y))
     else:
         img = downlight.enhance(0.5).resize((384, img_h))

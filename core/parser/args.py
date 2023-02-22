@@ -266,7 +266,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                         if isinstance(template_arguments[-1], ArgumentPattern):
                             if template_arguments[-1].name.startswith('<'):  # if last arg is variable
                                 argv_keys = list(parsed_argv.keys())
-                                parsed_argv[argv_keys[argv_keys.index(template_arguments[-1].name)]]\
+                                parsed_argv[argv_keys[argv_keys.index(template_arguments[-1].name)]] \
                                     .value += ' ' + ' '.join(argv_copy)
                                 del argv_copy[0]
             matched_result.append(MatchedResult(parsed_argv, original_template, template.priority))

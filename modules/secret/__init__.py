@@ -1,6 +1,6 @@
+from core.builtins import Bot
 from core.component import on_startup
 from core.dirty_check import check
-from core.elements import FetchTarget
 from core.logger import Logger
 from core.scheduler import Scheduler
 from modules.wiki.utils.UTC8 import UTC8
@@ -10,7 +10,7 @@ wiki = WikiLib('https://minecraft.fandom.com/zh/api.php')
 
 
 @on_startup('__check_newbie__', required_superuser=True, developers=['OasisAkari'])
-async def newbie(bot: FetchTarget):
+async def newbie(bot: Bot.FetchTarget):
     if bot.name not in ['QQ', 'TEST']:
         return
     Logger.info('Start newbie monitoring...')
@@ -40,7 +40,7 @@ async def newbie(bot: FetchTarget):
 
 
 @on_startup('__check_abuse__', required_superuser=True, developers=['OasisAkari'])
-async def _(bot: FetchTarget):
+async def _(bot: Bot.FetchTarget):
     if bot.name not in ['QQ', 'TEST']:
         return
     Logger.info('Start abuse monitoring...')
