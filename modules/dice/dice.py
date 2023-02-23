@@ -144,7 +144,7 @@ async def roll(dice: str, dc: int):
     if diceArgs['type'] <= 0:
         return '发生错误：骰子面数不得小于 2'
     if diceArgs['type'] == 1:
-        return '1...1面的骰子?那还投个啥?'
+        return '1...1面的骰子？那还投个啥？'
     if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '发生错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
