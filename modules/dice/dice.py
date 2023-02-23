@@ -143,8 +143,8 @@ async def roll(dice: str, dc: int):
         return '发生错误：骰子面数不得小于 2'
     if diceArgs['type'] == 1:
         return '发生错误：1...1 面的骰子？'
-    if diceArgs['adv'] <= 0:
-        return '发生错误：优劣势骰数不得小于 1'
+    if diceArgs['adv'] < 0:
+        return '发生错误：优劣势骰数必须是正数'
     if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '发生错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
