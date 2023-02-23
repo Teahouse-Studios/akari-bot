@@ -434,12 +434,6 @@ maimai查分DoroWolf
 查词典message
 ~dict message
 
-色子
-~random dice
-
-骰子
-~random dice
-
 随机选择1 2 3 4 5 6
 ~random 1 2 3 4 5 6
 
@@ -469,3 +463,18 @@ maimai查分DoroWolf
 
 聊天记录摘要
 ~summary
+
+颜色
+~color
+
+随机颜色
+~color
+
+色子
+~dice d6
+
+骰子
+~dice d6
+
+掷6面骰子
+~dice d6
