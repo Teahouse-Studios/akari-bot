@@ -18,7 +18,7 @@ def GetDiceArgs(dice: str):
     advantage = '0'  # 保留的骰子量
     mod = '0'  # Modifier
     if 'D' not in dice:
-        return '发生错误：语法错误'
+        return '发生错误：骰子语法错误'
     temp = dice.split('D')
     if len(temp):
         if '*' in temp[0]:
@@ -43,15 +43,15 @@ def GetDiceArgs(dice: str):
         advantage = midstrs[2].replace('L', '-')
     # 语法合法检定
     if not diceCount.isdigit():
-        return '发生错误：无效的骰子数量：' + diceCount
+        return '无效的骰子数量：' + diceCount
     if not diceType.isdigit():
-        return '发生错误：无效的骰子面数：' + diceType
+        return '无效的骰子面数：' + diceType
     if not rollTimes.isdigit():
-        return '发生错误：无效的投骰次数：' + rollTimes
+        return '无效的投骰次数：' + rollTimes
     if not (mod.isdigit() or (mod[0] == '-' and mod[1:].isdigit())):
-        return '发生错误：无效的调节值：' + mod
+        return '无效的调节值：' + mod
     if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
-        return '发生错误：无效的优劣势：' + advantage
+        return '无效的优劣势：' + advantage
     
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
             'mod': int(mod), 'str': dice}
@@ -142,7 +142,7 @@ async def roll(dice: str, dc: int):
     if diceArgs['type'] <= 0:
         return '发生错误：骰子面数不得小于 2'
     if diceArgs['type'] == 1:
-        return '发生错误：1...1 面的骰子？'
+        return '发生错误：1 ... 1 面的骰子？'
     if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '发生错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
