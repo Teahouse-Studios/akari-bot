@@ -50,12 +50,11 @@ def GetDiceArgs(dice: str):
         return '错误：投骰次数非法:' + rollTimes
     if mod[0] == '-':
         mod = mod[1:]
-    if advantage[0] == '-':
-        advantage = advantage[1:]
+    if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
+        return '错误：优劣势非法:' + advantage
     if not mod.isdigit():
         return '错误：调整值非法:' + mod
-    if not advantage.isdigit():
-        return '错误：优劣势非法:' + advantage
+    
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
             'mod': int(mod), 'str': dice}
 
