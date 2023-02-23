@@ -7,6 +7,9 @@ import ujson as json
 
 from core.builtins.message import MessageSession
 
+from .text import remove_suffix
+
+
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
@@ -24,10 +27,6 @@ def flatten(d, parent_key='', sep='.'):
         else:
             items.append((new_key, v))
     return dict(items)
-
-
-def remove_suffix(string, suffix):
-    return string[:-len(suffix)] if string.endswith(suffix) else string
 
 
 def load_locale_file():
