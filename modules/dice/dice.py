@@ -53,7 +53,7 @@ def GetDiceArgs(dice: str):
     if advantage[0] == '-':
         advantage = advantage[1:]
     if not mod.isdigit():
-        return '发生错误：无效的修正值：' + mod
+        return '发生错误：无效的调节值：' + mod
     if not advantage.isdigit():
         return '发生错误：无效的优劣势：' + advantage
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
@@ -146,6 +146,6 @@ async def roll(dice: str, dc: int):
     if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '发生错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
-        return f'发生错误：修正值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER} '
+        return f'发生错误：调节值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER} '
     # 开始随机生成
     return RollDice(diceArgs, dc)
