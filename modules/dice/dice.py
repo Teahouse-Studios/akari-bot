@@ -48,12 +48,10 @@ def GetDiceArgs(dice: str):
         return '发生错误：无效的骰子面数：' + diceType
     if not rollTimes.isdigit():
         return '发生错误：无效投骰次数：' + rollTimes
-    if mod[0] == '-':
-        mod = mod[1:]
+    if not (mod.isdigit() or (mod[0] == '-' and mod[1:].isdigit())):
+        return '发生错误：无效的调节值：' + mod
     if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
         return '发生错误：无效的优劣势：' + advantage
-    if not mod.isdigit():
-        return '发生错误：无效的调节值：' + mod
     
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
             'mod': int(mod), 'str': dice}
