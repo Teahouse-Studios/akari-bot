@@ -50,12 +50,11 @@ def GetDiceArgs(dice: str):
         return '发生错误：无效投骰次数：' + rollTimes
     if mod[0] == '-':
         mod = mod[1:]
-    if advantage[0] == '-':
-        advantage = advantage[1:]
+    if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
+        return '发生错误：无效的优劣势：' + advantage
     if not mod.isdigit():
         return '发生错误：无效的调节值：' + mod
-    if not advantage.isdigit():
-        return '发生错误：无效的优劣势：' + advantage
+    
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
             'mod': int(mod), 'str': dice}
 
@@ -109,6 +108,7 @@ def RollDice(args, dc):
             if args['mod'] > 0:
                 output += '+'
             output += f"{args['mod']} = "
+            result += args['mod']
         output += str(result)
         if dc != 0:
             if result > dc:
@@ -142,7 +142,9 @@ async def roll(dice: str, dc: int):
     if diceArgs['cnt'] <= 0 or diceArgs['cnt'] > MAX_DICE_COUNT:
         return f'发生错误：骰子数量不得小于 1 或大于 {MAX_DICE_COUNT}'
     if diceArgs['type'] <= 0:
-        return '发生错误：骰子面数不得小于 1'
+        return '发生错误：骰子面数不得小于 2'
+    if diceArgs['type'] == 1:
+        return '1...1面的骰子？那还投个啥？'
     if abs(diceArgs['adv']) > diceArgs['cnt']:
         return '发生错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
