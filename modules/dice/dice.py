@@ -43,24 +43,24 @@ def GetDiceArgs(dice: str):
         advantage = midstrs[2].replace('L', '-')
     # 语法合法检定
     if not diceCount.isdigit():
-        return '错误：骰子数量非法:' + diceCount
+        return '发生错误：无效的骰子数量：' + diceCount
     if not diceType.isdigit():
-        return '错误：骰子面数非法:' + diceType
+        return '发生错误：无效的骰子面数：' + diceType
     if not rollTimes.isdigit():
-        return '错误：投骰次数非法:' + rollTimes
+        return '发生错误：无效投骰次数：' + rollTimes
     if mod[0] == '-':
         mod = mod[1:]
     if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
-        return '错误：优劣势非法:' + advantage
+        return '发生错误：无效的优劣势：' + advantage
     if not mod.isdigit():
-        return '错误：调整值非法:' + mod
+        return '发生错误：无效的调节值：' + mod
     
     return {'times': int(rollTimes), 'cnt': int(diceCount), 'type': int(diceType), 'adv': int(advantage),
             'mod': int(mod), 'str': dice}
 
 
 def RollDice(args, dc):
-    output = '你摇出来的结果是：\n'
+    output = '你掷得的结果是：\n'
     successNum = 0
     failNum = 0
     for times in range(args['times']):
@@ -84,7 +84,7 @@ def RollDice(args, dc):
                 if i < args['cnt'] - 1:
                     outputBuffer += ','
             if args['cnt'] >= MAX_OUTPUT_NUM:
-                outputBuffer = f"数量过大省略 {args['cnt']} 个数据"
+                outputBuffer = f"数量过大，已省略 {args['cnt']} 个数据"
             output += outputBuffer + ' ) = '
             diceResults = newResults
         # 公用加法
@@ -92,7 +92,7 @@ def RollDice(args, dc):
         if (length > 1):
             output += '[ '
             if length > MAX_OUTPUT_NUM:  # 显示数据含100
-                output += f'数量过大省略{length}个数据'
+                output += f'数量过大，已省略 {length} 个数据'
             for i in range(length):
                 result += diceResults[i]
                 if length <= MAX_OUTPUT_NUM:  # 显示数据含100
@@ -137,14 +137,14 @@ async def roll(dice: str, dc: int):
     if type(diceArgs) is str:
         return diceArgs  # 报错输出
     if diceArgs['times'] <= 0 or diceArgs['times'] > MAX_ROLL_TIMES:
-        return f'错误：投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}'
+        return f'发生错误：投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}'
     if diceArgs['cnt'] <= 0 or diceArgs['cnt'] > MAX_DICE_COUNT:
-        return f'错误：骰子数量不得小于1或大于{MAX_DICE_COUNT}'
+        return f'发生错误：骰子数量不得小于 1 或大于 {MAX_DICE_COUNT}'
     if diceArgs['type'] <= 0:
-        return '错误：骰子面数不得小于1'
+        return '发生错误：骰子面数不得小于 1'
     if abs(diceArgs['adv']) > diceArgs['cnt']:
-        return '错误：优劣势骰数大于总骰子数'
+        return '发生错误：优劣势骰数大于总骰子数'
     if diceArgs['mod'] > MAX_MOD_NUMBER or diceArgs['mod'] < MIN_MOD_NUMBER:
-        return f'错误：调整值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER} '
+        return f'发生错误：调节值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER} '
     # 开始随机生成
     return RollDice(diceArgs, dc)

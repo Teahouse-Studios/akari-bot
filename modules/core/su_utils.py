@@ -121,9 +121,9 @@ async def _(msg: Bot.MessageSession):
             return
     if v.startswith(('[', '{')):
         v = json.loads(v)
-    elif v == 'True':
+    elif v.upper() == 'TRUE':
         v = True
-    elif v == 'False':
+    elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
     await msg.finish(f'成功为对象设置了以下参数：{k} -> {str(v)}')
