@@ -67,7 +67,7 @@ def RollDice(args, dc):
         output += args['str'] + ' = '
         # 生成随机序列
         for i in range(args['cnt']):
-            diceResults.append(secrets.randbelow(int(args['type']) - 1) + 1)
+            diceResults.append(secrets.randbelow(int(args['type'])) + 1)
         if args['adv'] != 0:
             newResults = []
             indexs = np.array(diceResults).argsort()
