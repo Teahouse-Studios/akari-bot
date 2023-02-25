@@ -41,6 +41,8 @@ def GetDiceArgs(dice: str):
     diceType = midstrs[0]
     if 'K' in midstrs[1]:
         advantage = midstrs[2].replace('L', '-')
+        if not len(advantage.removeprefix('-')):
+            advantage += '1' #K/KL后没有值默认为1
     # 语法合法检定
     if not diceCount.isdigit():
         return '无效的骰子数量：' + diceCount
