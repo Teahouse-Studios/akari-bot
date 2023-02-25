@@ -33,6 +33,7 @@ async def _(event: Event):
 
 @bot.on_message('group', 'private')
 async def _(event: Event):
+    print(event)
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             return await bot.send(event, '请先添加好友后再进行命令交互。')
@@ -57,7 +58,7 @@ async def _(event: Event):
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|{str(event.user_id)}',
                                  targetFrom='QQ|Group' if event.detail_type == 'group' else 'QQ',
-                                 senderFrom='QQ', senderName='', clientName='QQ',
+                                 senderFrom='QQ', senderName=event.sender['nickname'], clientName='QQ',
                                  messageId=event.message_id,
                                  replyId=replyId),
                          Session(message=event,
@@ -86,7 +87,8 @@ async def _(event):
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|Tiny|{str(event.user_id)}',
                                  targetFrom='QQ|Guild',
-                                 senderFrom='QQ|Tiny', senderName='', clientName='QQ', messageId=event.message_id,
+                                 senderFrom='QQ|Tiny', senderName=event.sender['nickname'], clientName='QQ',
+                                 messageId=event.message_id,
                                  replyId=replyId),
                          Session(message=event,
                                  target=f'{str(event.guild_id)}|{str(event.channel_id)}',
