@@ -70,7 +70,7 @@ class Dice(DiceItemBase):
         diceCode = self.code.upper()  # 便于识别
         diceCount = '1'  # 骰子数量
         advantage = '0'  # 保留的骰子量
-        if re.search(r'[^0-9DKL\*]',diceCode):
+        if re.search(r'[^0-9DKL]',diceCode):
             raise DiceSyntaxError('骰子语句中存在无法识别的字符')
         if 'D' not in diceCode:
             raise DiceSyntaxError('骰子语句缺失字符 D')
@@ -141,7 +141,7 @@ class Dice(DiceItemBase):
         self.result = result
 
 async def GenerateMessage(dices: str,times: int, dc:int):
-    if re.search(r'[^0-9+-DKL\*]',dices):
+    if re.search(r'[^0-9+-DKL]',dices):
         return DiceSyntaxError('骰子语句中存在无法识别的字符').message
     if times > MAX_ROLL_TIMES or times < 1:
         return DiceValueError('投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}').message
