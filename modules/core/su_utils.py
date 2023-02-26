@@ -15,6 +15,9 @@ from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from database import BotDBUtil
+from core.component import on_schedule
+from core.logger import Logger
+from core.scheduler import CronTrigger
 
 su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -331,6 +334,6 @@ if Config('enable_eval'):
 brc = on_command('broadcast', required_superuser=True, base=True, developers='haoye_qwq')
 
 @brc.handle('<text> {向所有群广播消息}')
-async def broadcast(msg: Bot.MessageSession):
+async def broadcast(msg: Bot.MessageSession, bot: Bot.FetchTarget):
     get_str = msg.parsed_msg.get('<text>', False)
     await bot.post_message('broadcast', get_str)
