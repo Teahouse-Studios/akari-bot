@@ -45,7 +45,7 @@ async def main(msg: Bot.MessageSession):
         except:
             traceback.print_exc()
     if is_local_ip:
-        return await msg.sendMessage('发生错误：IP地址无效。')
+        return await msg.sendMessage('发生错误：无效的 IP 地址。')
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
