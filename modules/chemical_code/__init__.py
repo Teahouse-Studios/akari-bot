@@ -83,10 +83,10 @@ async def s(msg: Bot.MessageSession):
 @cc.handle('<csid> {根据 ChemSpider ID 出题}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
-    if id.isdigit():  # 如果 ID 为纯数字
+    if (id.isdigit() and int(id) > 0):  # 如果 ID 为纯数字
         await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
-        await msg.finish('发生错误：请输入纯数字 ID！')
+        await msg.finish('发生错误：请输入正确的 ID！')
 
 
 async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
