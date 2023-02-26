@@ -186,7 +186,7 @@ async def GenerateMessage(dices: str,times:int, dc:int):
         return '解析骰子多项式时存在以下错误：' + output
     successNum = 0
     failNum = 0
-    output = '你掷得的结果是：\n'
+    output = '你掷得的结果是：'
     #开始摇动并输出
     for i in range(times):
         outputLine = ''
@@ -208,7 +208,7 @@ async def GenerateMessage(dices: str,times:int, dc:int):
             else:
                 outputLine += '，判定失败！'
                 failNum += 1
-        output += f'{dices} = {outputLine}\n'
+        output += f'\n{dices} = {outputLine}'
     if dc != 0 and times > 1:
-        output += '▷ 判定成功数量：' + str(successNum) + '  判定失败数量：' + str(failNum)
+        output += '\n▷ 判定成功数量：' + str(successNum) + '  判定失败数量：' + str(failNum)
     return output
