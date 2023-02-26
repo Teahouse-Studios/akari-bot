@@ -40,6 +40,9 @@ class DiceItemBase(object):
 
     def GetDetail(self):
         return self.detail
+    
+    def Roll(self):
+        pass
 
 class DiceMod(DiceItemBase):
     """调节值项"""
@@ -54,9 +57,6 @@ class DiceMod(DiceItemBase):
     
     def GetDetail(self):
         return self.result
-
-    def Roll(self):
-        pass
 
 class Dice(DiceItemBase):
     """骰子项"""
