@@ -208,7 +208,7 @@ async def GenerateMessage(dices: str,times:int, dc:int):
             else:
                 outputLine += '，判定失败！'
                 failNum += 1
-        output += f'{dices} = {outputLine}\n'
+        output += f'{dices} = {outputLine}'
     if dc != 0 and times > 1:
         output += '▷ 判定成功数量：' + str(successNum) + '  判定失败数量：' + str(failNum)
     return output
