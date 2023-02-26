@@ -1,6 +1,5 @@
 from core.builtins.message import MessageSession
 from core.component import on_command, on_regex
-from core.logger import Logger
 from .dice import GenerateMessage
 
 dice = on_command('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
