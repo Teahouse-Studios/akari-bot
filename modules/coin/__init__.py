@@ -1,17 +1,27 @@
 import secrets
 from core.builtins.message import MessageSession
-from core.component import on_regex
+from core.component import on_command,on_regex
 
 MAX_COIN_NUM = 20
 FACE_UP_RATE = 4975  # n/10000
 FACE_DOWN_RATE = 4975
 COIN_DROP_PLACES = ["地上","桌子上","桌子底下","门口","窗户外","月球"]  # 硬币可能掉落的位置
 
-dicergex = on_regex('coin_regex',
+coin = on_command('coin', developers=['Light-Beacon'], desc='抛n枚硬币')
+
+@coin.handle('[<amount>] {投n枚硬币}',)
+async def _(msg: MessageSession):
+    amount = msg.parsed_msg.get('<amount>', '1')
+    if not amount.isdigit():
+        await msg.finish('发生错误：无效的硬币个数：' + amount)
+    else:
+        await msg.finish(await flipCoins(int(amount)))
+
+coinrgex = on_regex('coin_regex',
                   desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
                        '[丢/抛](n)[个/枚]硬币', developers=['Light-Beacon'])
 
-@dicergex.handle(r"[丢|抛]([0-9]*)?[个|枚]?硬币")
+@coinrgex.handle(r"[丢|抛]([0-9]*)?[个|枚]?硬币")
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
