@@ -33,7 +33,6 @@ async def _(event: Event):
 
 @bot.on_message('group', 'private')
 async def _(event: Event):
-    print(event)
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             return await bot.send(event, '请先添加好友后再进行命令交互。')
