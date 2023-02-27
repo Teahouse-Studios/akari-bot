@@ -9,7 +9,7 @@ COIN_DROP_PLACES = ["地上","桌子上","桌子底下","门口","窗户外","�
 
 coin = on_command('coin', developers=['Light-Beacon'], desc='抛n枚硬币')
 
-@coin.handle('[<amount>] {投n枚硬币}',)
+@coin.handle('[<amount>] {抛n枚硬币}',)
 async def _(msg: MessageSession):
     amount = msg.parsed_msg.get('<amount>', '1')
     if not amount.isdigit():
@@ -58,18 +58,18 @@ async def flipCoins(count:int):
             return head + "...它立起来了！"
     else:
         if not (stand or faceDown):
-            return head + "它们...\n...全是正面!"
+            return head + "它们...\n...全是正面！"
         if not (stand or faceUp):
-            return head + "它们...\n...全是反面!"
+            return head + "它们...\n...全是反面！"
         if not (faceUp or faceDown):
             return head + "它们...\n...全都立起来了？！"
         output = head + "其中...\n有"
         if faceUp:
-            output += f"{faceUp}枚是正面，"
+            output += f" {faceUp} 枚是正面，"
         if faceDown:
-            output += f"{faceDown}枚是反面"
+            output += f" {faceDown} 枚是反面"
         if stand:
-            output += f"...还有{stand}枚立起来了！"
+            output += f"...还有 {stand} 枚立起来了！"
         else:
             output += f"。"
         return output
