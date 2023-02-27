@@ -55,19 +55,21 @@ async def flipCoins(count:int):
         elif faceDown:
             return head + "...是反面！"
         else:
-            return head + "...它...它立起来了！"
+            return head + "...它立起来了！"
     else:
         if not (stand or faceDown):
             return head + "它们...\n...全是正面!"
         if not (stand or faceUp):
             return head + "它们...\n...全是反面!"
         if not (faceUp or faceDown):
-            return head + "它们......\n...全都立起来了！？！？天哪！"
+            return head + "它们...\n...全都立起来了？！"
         output = head + "其中......\n"
         if faceUp:
             output += f"{faceUp}枚是正面，"
         if faceDown:
             output += f"{faceDown}枚是反面"
         if stand:
-            output += f"...还有{stand}个立起来了！"
+            output += f"...还有{stand}枚立起来了！"
+        else:
+            output += f"。"
         return output
