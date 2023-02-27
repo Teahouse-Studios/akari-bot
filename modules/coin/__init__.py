@@ -32,9 +32,9 @@ async def flipCoins(count:int):
     if count > MAX_COIN_NUM:
         return f"发生错误：你最多只能抛 {MAX_COIN_NUM} 个硬币"
     if count <= 0:
-        return f"你抛了个空气，什么也没发生..."
+        return f"发生错误：你抛了个空气，什么也没发生..."
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0:
-        raise OverflowError("硬币概率错误")
+        raise OverflowError("发生错误：硬币概率错误")
     faceUp = 0
     faceDown = 0
     stand = 0
@@ -49,7 +49,7 @@ async def flipCoins(count:int):
     head = f"你抛了 {count} 枚硬币，"
     if count == 1:
         drop_place = COIN_DROP_PLACES[secrets.randbelow(len(COIN_DROP_PLACES))]
-        head += f"它掉到了{drop_place}......\n"
+        head += f"它掉到了{drop_place}...\n"
         if faceUp:
             return head + "...是正面！"
         elif faceDown:
@@ -63,7 +63,7 @@ async def flipCoins(count:int):
             return head + "它们...\n...全是反面!"
         if not (faceUp or faceDown):
             return head + "它们...\n...全都立起来了？！"
-        output = head + "其中......\n"
+        output = head + "其中...\n有"
         if faceUp:
             output += f"{faceUp}枚是正面，"
         if faceDown:
