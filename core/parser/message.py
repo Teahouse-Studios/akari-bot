@@ -398,7 +398,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             await warn_target(msg, str(e))
             temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                      'ts': datetime.now().timestamp()}
-            return
 
     except WaitCancelException:  # 出现于等待被取消的情况
         Logger.warn('Waiting task cancelled by user.')
