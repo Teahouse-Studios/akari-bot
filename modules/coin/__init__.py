@@ -10,7 +10,6 @@ COIN_DROP_PLACES = ["地上","桌子上","桌子底下","门口","窗户外","�
 coin = on_command('coin', developers=['Light-Beacon'], desc='抛n枚硬币')
 
 @coin.handle('[<amount>] {投n枚硬币}',)
-@coin.handle()
 async def _(msg: MessageSession):
     amount = msg.parsed_msg.get('<amount>', '1')
     if not amount.isdigit():
