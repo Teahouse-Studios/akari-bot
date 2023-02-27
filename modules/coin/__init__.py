@@ -21,6 +21,8 @@ async def _(message: MessageSession):
 async def flipCoins(count:int):
     if count > MAX_COIN_NUM:
         return f"发生错误：你最多只能抛 {MAX_COIN_NUM} 个硬币"
+    if count <= 0:
+        return f"你投了个空气，什么也没发生..."
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000:
         raise OverflowError("硬币概率总和超过最大概率")
     faceUp = 0
