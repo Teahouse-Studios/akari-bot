@@ -7,7 +7,7 @@ FACE_UP_RATE = 4975  # n/10000
 FACE_DOWN_RATE = 4975
 COIN_DROP_PLACES = ["地上","桌子上","桌子底下","门口","窗户外","月球"]  # 硬币可能掉落的位置
 
-coin = on_command('coin', developers=['Light-Beacon'], desc='抛n枚硬币')
+coin = on_command('coin', developers=['Light-Beacon'], desc='抛n枚硬币', recommend_modules=['coin_regex'])
 
 @coin.handle('[<amount>] {抛n枚硬币}',)
 async def _(msg: MessageSession):
