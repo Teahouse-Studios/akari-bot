@@ -21,7 +21,7 @@ dicergex = on_regex('dice_regex',
                   desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
                        '[扔投骰丢](N)个(n面)骰(子)', developers=['Light-Beacon'])
 
-@dicergex.handle(r"[扔|投|骰|丢]([0-9]*)?个([0-9]*面)?骰子?")
+@dicergex.handle(r"[扔|投|掷|丢]([0-9]*)?个([0-9]*面)?骰子?")
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     diceType = groups[1][:-1] if groups[1] else '6'
