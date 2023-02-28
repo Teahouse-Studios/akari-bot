@@ -10,11 +10,12 @@ dice = on_command('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
 async def _(msg: MessageSession):
     dice = msg.parsed_msg['<dices>']
     dc = msg.parsed_msg.get('<dc>', '0')
+    times = '1'
     if '#' in dice:
         times = dice.partition('#')[0]
         dice = dice.partition('#')[2]
-        if not times.isdigit():
-            await msg.finish('发生错误：无效的投骰次数：' + times)
+    if not times.isdigit():
+        await msg.finish('发生错误：无效的投骰次数：' + times)
     if not dc.isdigit():
         await msg.finish('发生错误：无效的 dc：' + dc)
     await msg.finish(await GenerateMessage(dice, int(times), int(dc)))
