@@ -75,19 +75,19 @@ async def _(msg: Bot.MessageSession):
     css_color_name = ''
     css_color_name_short = ''
     if css_color_name_raw[1]:
-        css_color_name = f'\n{lang.t('color.css.name')}{css_color_name_raw[0]}'
+        css_color_name = f'\n{lang.t("color.css.name")}{css_color_name_raw[0]}'
         css_color_name_short = f'{css_color_name_raw[0]}\n'
     elif css_color_name_raw[0] is not None:
-        css_color_name = f'\n{lang.t('color.css.name.approximate')}{css_color_name_raw[0]}'
+        css_color_name = f'\n{lang.t("color.css.name.approximate")}{css_color_name_raw[0]}'
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ''
     material_color_name_short = ''
     if material_color_name_raw[1]:
-        material_color_name = f'\n{lang.t('color.md.name'){material_color_name_raw[0]}'
+        material_color_name = f'\n{lang.t("color.md.name")}{material_color_name_raw[0]}'
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0] is not None:
-        material_color_name = f'\n{lang.t('color.md.name.approximate')}{material_color_name_raw[0]}'
+        material_color_name = f'\n{lang.t("color.md.name.approximate")}{material_color_name_raw[0]}'
 
     draw.multiline_text((250, 250), f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
     await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])
