@@ -75,7 +75,7 @@ async def s(msg: Bot.MessageSession):
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-            await msg.sendMessage(lang.t('chemical_code.stop.stopped', state["answer"]), quote=False)  # 发送存储于 play_state 中的答案
+            await msg.sendMessage(lang.t('chemical_code.stop.stopped', answer=play_state[msg.target.targetId]["answer"]), quote=False)  # 发送存储于 play_state 中的答案
         else:
             await msg.sendMessage(lang.t('chemical_code.stop.nothing'))
     else:
@@ -162,5 +162,5 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
             if result.asDisplay() == csr['name']:
                 await result.sendMessage(lang.t('chemical_code.correct'))
             else:
-                await result.sendMessage(lang.t('chemical_code.incorrect', csr['name']))
+                await result.sendMessage(lang.t('chemical_code.incorrect', answer=play_state[msg.target.targetId]["answer"]))
             play_state[msg.target.targetId]['active'] = False

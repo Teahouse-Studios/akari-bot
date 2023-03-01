@@ -1,6 +1,7 @@
 import secrets
 from core.builtins.message import MessageSession
 from core.component import on_command,on_regex
+from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = 100
 FACE_UP_RATE = 4975  # n/10000 
@@ -21,11 +22,17 @@ coinrgex = on_regex('coin_regex',
                   desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
                        '[丢/抛](n)[个/枚]硬币', developers=['Light-Beacon'])
 
-@coinrgex.handle(r"[丢|抛]([0-9]*)?[个|枚]?硬币")
+@coinrgex.handle(r"[丢|抛](.*)?[个|枚]?硬币")
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
-    count = int(count)
+    if count.isdigit():
+        count = int(count)
+    else:
+        try:
+            count = Zh2Int(count)
+        except ValueError as e:
+            await message.finish("发生错误：" + e.message)
     await message.finish(await flipCoins(count))
 
 async def flipCoins(count:int):
