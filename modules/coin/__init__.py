@@ -22,7 +22,7 @@ coinrgex = on_regex('coin_regex',
                   desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
                        '[丢/抛](n)[个/枚]硬币', developers=['Light-Beacon'])
 
-@coinrgex.handle(r"[丢|抛](.*)?[个|枚]?硬币")
+@coinrgex.handle(r"[丢|抛]([^个枚]*)?[个|枚]?硬币")
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
