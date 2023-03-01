@@ -1,18 +1,18 @@
 {
     "chemical_code.desc": "A game about chemical formulas.",
-    "chemical_code.normal.help": "Default mode (Time limits, multiplayer)",
-    "chemical_code.captcha.help": "Captcha mode(Only one chance, solo)",
+    "chemical_code.normal.help": "Default mode (Time limits, multiple)",
+    "chemical_code.captcha.help": "Captcha mode(Only once, single)",
     "chemical_code.stop.help": "Stop the current game.",
     "chemical_code.stop.stopped": "Stopped. The correct answer is $answer",
     "chemical_code.stop.nothing": "There is no game in progress.",
     "chemical_code.csid.help": "Start a game by ChemSpider ID",
-    "chemical_code.csid.invalid": "Failed: Invalid ID!",
-    "chemical_code.csid.invalid.num": "Failed: ID must be purely numeric!",
+    "chemical_code.csid.invalid": "An error occurred: Invalid ID!",
+    "chemical_code.csid.invalid.num": "An error occurred: ID must be purely numeric!",
     "chemical_code.running": "There is currently a game in progress.",
     "chemical_code.error": "An error occurred: Failed to start, maybe caused by request database timed out or the ID is invalid? Please restart the game.",
     "chemical_code.timeup": "Timeout. The correct answer is $answer",
-    "chemical_code.normal.text": "Please answer the chemical formula of this compound within $times minutes. (Alphabetical order except C, H. eg: CHBrClF)",
-    "chemical_code.captcha.text": "Please answer the chemical formula of this compound. (Alphabetical order except C, H. eg: CHBrClF)",
+    "chemical_code.normal.text": "Please answer the chemical formula of this compound within $times minutes. (Alphabetical order except C, H. e.g. CHBrClF)",
+    "chemical_code.captcha.text": "Please answer the chemical formula of this compound. (Alphabetical order except C, H. e.g. CHBrClF)",
     "chemical_code.correct": "Correct.",
-    "chemical_code.incorrect": "Sorry, incorrect. The correct answer is $answer"
+    "chemical_code.incorrect": "Incorrect. The correct answer is $answer"
 }
