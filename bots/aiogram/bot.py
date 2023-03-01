@@ -7,10 +7,9 @@ from bots.aiogram.message import MessageSession, FetchTarget
 from core.builtins import PrivateAssets, Url
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import init, load_prompt, init_async
+from core.utils.bot import load_prompt, init_async
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-init()
 Url.disable_mm = True
 
 
@@ -32,7 +31,7 @@ async def msg_handler(message: types.Message):
 
 
 async def on_startup(dispatcher):
-    await init_async(FetchTarget)
+    await init_async()
     await load_prompt(FetchTarget)
 
 

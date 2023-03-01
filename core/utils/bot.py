@@ -12,15 +12,14 @@ from core.exceptions import ConfigFileNotFound
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.types import StartUp, Schedule
+from core.types import Schedule
 from core.utils.http import get_url
 from core.utils.ip import IP
 
 bot_version = 'v4.0.10'
 
 
-def init() -> None:
-    """初始化机器人。仅用于bot.py与console.py。"""
+async def init_async() -> None:
     load_modules()
     version = os.path.abspath(PrivateAssets.path + '/version')
     write_version = open(version, 'w')
@@ -36,16 +35,11 @@ def init() -> None:
     except Exception as e:
         write_tag.write(bot_version)
     write_tag.close()
-
-
-async def init_async(ft) -> None:
     gather_list = []
     Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
-        if isinstance(Modules[x], StartUp):
-            gather_list.append(asyncio.ensure_future(Modules[x].function(ft)))
-        elif isinstance(Modules[x], Schedule):
-            Scheduler.add_job(func=Modules[x].function, trigger=Modules[x].trigger, args=[ft], misfire_grace_time=30,
+        if isinstance(Modules[x], Schedule):
+            Scheduler.add_job(func=Modules[x].execute, trigger=Modules[x].trigger, misfire_grace_time=30,
                               max_instance=1)
     await asyncio.gather(*gather_list)
     Scheduler.start()
@@ -102,4 +96,4 @@ async def load_prompt(bot) -> None:
             os.remove(loader_cache)
 
 
-__all__ = ['init', 'init_async', 'load_prompt']
+__all__ = ['init_async', 'load_prompt']

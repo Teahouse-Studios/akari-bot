@@ -40,11 +40,17 @@ class Article:
         return random_tags
 
 
-@on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
+bot = Bot.FetchTarget
+
+
+minecraft_news = on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
              recommend_modules=['feedback_news'],
              trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
              desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
-async def start_check_news(bot: Bot.FetchTarget):
+
+
+@minecraft_news.handle()
+async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
         f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
@@ -77,10 +83,13 @@ async def start_check_news(bot: Bot.FetchTarget):
             Logger.error(traceback.format_exc())
 
 
-@on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
+feedback_news = on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
              trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。',
              alias='feedbacknews')
-async def feedback_news(bot: Bot.FetchTarget):
+
+
+@feedback_news.handle()
+async def feedback_news():
     sections = [{'name': 'beta',
                  'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},
                 {'name': 'article',

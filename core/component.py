@@ -9,7 +9,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from core.loader import ModulesManager
 from core.parser.args import parse_template
-from core.types import Command, RegexCommand, Schedule, StartUp
+from core.types import Command, RegexCommand, Schedule
 from core.types.module.component_meta import *
 
 
@@ -187,60 +187,15 @@ def on_schedule(
     :return: 此类型的模块。
     """
 
-    def decorator(function):
-        module = Schedule(function=function,
-                          trigger=trigger,
-                          bind_prefix=bind_prefix,
-                          desc=desc,
-                          alias=alias,
-                          recommend_modules=recommend_modules,
-                          developers=developers,
-                          required_superuser=required_superuser,
-                          available_for=available_for,
-                          exclude_from=exclude_from)
-        frame = inspect.currentframe()
-        ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
-        return module
-
-    return decorator
-
-
-def on_startup(
-    bind_prefix: str,
-    desc: str = None,
-    alias: Union[str, list, tuple, dict] = None,
-    recommend_modules: Union[str, list, tuple] = None,
-    developers: Union[str, list, tuple] = None,
-    required_superuser: bool = False,
-    available_for: Union[str, list, tuple] = '*',
-    exclude_from: Union[str, list, tuple] = ''
-):
-    """
-
-    :param bind_prefix: 绑定的命令前缀。
-    :param alias: 此命令的别名。
-    :param desc: 此命令的简介。
-    :param recommend_modules: 推荐打开的其他模块。
-    :param developers: 模块作者。
-    :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
-    :param available_for: 此命令支持的平台列表。
-    :param exclude_from: 此命令排除的平台列表。
-    :return: 此类型的模块。
-    """
-
-    def decorator(function):
-        module = StartUp(function=function,
-                         bind_prefix=bind_prefix,
-                         desc=desc,
-                         alias=alias,
-                         recommend_modules=recommend_modules,
-                         developers=developers,
-                         required_superuser=required_superuser,
-                         available_for=available_for,
-                         exclude_from=exclude_from
-                         )
-        frame = inspect.currentframe()
-        ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
-        return module
-
-    return decorator
+    module = Schedule(trigger=trigger,
+                      bind_prefix=bind_prefix,
+                      desc=desc,
+                      alias=alias,
+                      recommend_modules=recommend_modules,
+                      developers=developers,
+                      required_superuser=required_superuser,
+                      available_for=available_for,
+                      exclude_from=exclude_from)
+    frame = inspect.currentframe()
+    ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
+    return Bind.Schedule(bind_prefix)

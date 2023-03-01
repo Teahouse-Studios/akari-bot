@@ -76,7 +76,6 @@ class RegexCommand:
 
 class Schedule:
     def __init__(self,
-                 function: Callable,
                  trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
                  bind_prefix: str,
                  desc: str = None,
@@ -86,7 +85,6 @@ class Schedule:
                  required_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
                  exclude_from: Union[str, list, tuple] = ''):
-        self.function: Callable = function
         self.trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger] = trigger
         self.bind_prefix: str = bind_prefix
         self.desc: str = desc
@@ -100,33 +98,12 @@ class Schedule:
         self.required_superuser: bool = required_superuser
         self.available_for: List[str] = convert2lst(available_for)
         self.exclude_from: List[str] = convert2lst(exclude_from)
+        self.match_list = ScheduleMatches()
+
+    async def execute(self):
+        for h in self.match_list.set:
+            await h.function()
 
 
-class StartUp:
-    def __init__(self,
-                 function: Callable,
-                 bind_prefix: str,
-                 desc: str = None,
-                 alias: Union[str, list, tuple, dict] = None,
-                 recommend_modules: Union[str, list, tuple] = None,
-                 developers: Union[str, list, tuple] = None,
-                 required_superuser: bool = False,
-                 available_for: Union[str, list, tuple] = '*',
-                 exclude_from: Union[str, list, tuple] = ''):
-        self.function: Callable = function
-        self.bind_prefix: str = bind_prefix
-        self.desc: str = desc
-        if isinstance(alias, str):
-            alias = {alias: bind_prefix}
-        elif isinstance(alias, (tuple, list)):
-            alias = {x: bind_prefix for x in alias}
-        self.alias: Dict[str, str] = alias
-        self.recommend_modules: List[str] = convert2lst(recommend_modules)
-        self.developers = convert2lst(developers)
-        self.required_superuser: bool = required_superuser
-        self.available_for: List[str] = convert2lst(available_for)
-        self.exclude_from: List[str] = convert2lst(exclude_from)
-
-
-__all__ = ["Command", "RegexCommand", "Schedule", "StartUp", "AndTrigger", "OrTrigger", "DateTrigger",
+__all__ = ["Command", "RegexCommand", "Schedule", "AndTrigger", "OrTrigger", "DateTrigger",
            "CronTrigger", "IntervalTrigger"]

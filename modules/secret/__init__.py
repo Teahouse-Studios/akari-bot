@@ -1,16 +1,20 @@
+from datetime import datetime, timedelta
+
 from core.builtins import Bot
-from core.component import on_startup
+from core.component import on_schedule
 from core.dirty_check import check
 from core.logger import Logger
-from core.scheduler import Scheduler
+from core.scheduler import Scheduler, DateTrigger
 from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 
 wiki = WikiLib('https://minecraft.fandom.com/zh/api.php')
+bot = Bot.FetchTarget
 
 
-@on_startup('__check_newbie__', required_superuser=True, developers=['OasisAkari'])
-async def newbie(bot: Bot.FetchTarget):
+@on_schedule('__check_newbie__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
+             required_superuser=True, developers=['OasisAkari'])
+async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return
     Logger.info('Start newbie monitoring...')
@@ -39,8 +43,9 @@ async def newbie(bot: Bot.FetchTarget):
                         qq.append(xz['title'])
 
 
-@on_startup('__check_abuse__', required_superuser=True, developers=['OasisAkari'])
-async def _(bot: Bot.FetchTarget):
+@on_schedule('__check_abuse__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
+             required_superuser=True, developers=['OasisAkari'])
+async def _():
     if bot.name not in ['QQ', 'TEST']:
         return
     Logger.info('Start abuse monitoring...')

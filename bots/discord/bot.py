@@ -12,10 +12,9 @@ from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import init, init_async, load_prompt
+from core.utils.bot import init_async, load_prompt
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-init()
 Url.disable_mm = True
 
 count = 0
@@ -26,7 +25,7 @@ async def on_ready():
     Logger.info('Logged on as ' + str(client.user))
     global count
     if count == 0:
-        await init_async(FetchTarget)
+        await init_async()
         await load_prompt(FetchTarget)
         count = 1
 

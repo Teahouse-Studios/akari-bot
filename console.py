@@ -22,7 +22,7 @@ from core.builtins import PrivateAssets, EnableDirtyWordCheck, Plain
 from core.types import MsgInfo, AutoSession
 from core.console.template import Template as MessageSession, FetchTarget
 from core.parser.message import parser
-from core.utils.bot import init, init_async
+from core.utils.bot import init_async
 from core.logger import Logger
 
 query_dbver = session.query(DBVersion).first()
@@ -41,11 +41,10 @@ if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_v
 
 EnableDirtyWordCheck.status = True
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-init()
 
 
 async def console_scheduler():
-    await init_async(FetchTarget)
+    await init_async()
 
 
 async def console_command():

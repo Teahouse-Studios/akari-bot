@@ -10,19 +10,18 @@ from config import Config
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.types import MsgInfo, Session
-from core.utils.bot import init, load_prompt, init_async
+from core.utils.bot import load_prompt, init_async
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
 Url.disable_mm = not Config('qq_enable_urlmanager')
-init()
 qq_account = Config("qq_account")
 
 
 @bot.on_startup
 async def startup():
-    await init_async(FetchTarget)
+    await init_async()
     bot.logger.setLevel(logging.WARNING)
 
 

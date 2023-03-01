@@ -7,7 +7,7 @@ from typing import Dict, Union
 
 from core.builtins import PrivateAssets
 from core.logger import Logger
-from core.types import Command, Schedule, RegexCommand, StartUp
+from core.types import Command, Schedule, RegexCommand
 
 load_dir_path = os.path.abspath('./modules/')
 
@@ -47,11 +47,11 @@ def load_modules():
 
 
 class ModulesManager:
-    modules: Dict[str, Union[Command, Schedule, RegexCommand, StartUp]] = {}
+    modules: Dict[str, Union[Command, Schedule, RegexCommand]] = {}
     modulesOrigin: Dict[str, str] = {}
 
     @staticmethod
-    def add_module(module: Union[Command, Schedule, RegexCommand, StartUp], py_module_name: str):
+    def add_module(module: Union[Command, Schedule, RegexCommand], py_module_name: str):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
             ModulesManager.modulesOrigin.update({module.bind_prefix: py_module_name})
@@ -96,11 +96,11 @@ class ModulesManager:
 
     @staticmethod
     def return_modules_list_as_dict(targetFrom: str = None) -> \
-        Dict[str, Union[Command, RegexCommand, Schedule, StartUp]]:
+        Dict[str, Union[Command, RegexCommand, Schedule]]:
         if targetFrom is not None:
             returns = {}
             for m in ModulesManager.modules:
-                if isinstance(ModulesManager.modules[m], (Command, RegexCommand, Schedule, StartUp)):
+                if isinstance(ModulesManager.modules[m], (Command, RegexCommand, Schedule)):
                     if targetFrom in ModulesManager.modules[m].exclude_from:
                         continue
                     available = ModulesManager.modules[m].available_for
@@ -143,16 +143,16 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule, StartUp],
+    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule],
                                       targetFrom: str = None) \
-        -> Dict[str, Union[Command, RegexCommand, Schedule, StartUp]]:
+        -> Dict[str, Union[Command, RegexCommand, Schedule]]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()
         for m in modules:
             module = modules[m]
             if isinstance(module, module_type):
                 if targetFrom is not None:
-                    if isinstance(module, (Command, RegexCommand, Schedule, StartUp)):
+                    if isinstance(module, (Command, RegexCommand, Schedule)):
                         if targetFrom in module.exclude_from:
                             continue
                         if targetFrom in module.available_for or '*' in module.available_for:
