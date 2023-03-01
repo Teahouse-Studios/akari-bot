@@ -127,7 +127,7 @@ def parse_template(argv: List[str]) -> List[Template]:
 
     for a in argv_:
         template = Template([])
-        patterns = filter(None, re.split(r'(\[.*?])|(<.*?>)|(\{.*?})| ', a))
+        patterns = filter(None, re.split(r'(\[.*?])|(<.*?>)|(\{.*})| ', a))
         for p in patterns:
             strip_pattern = p.strip()
             if strip_pattern == '':

@@ -1,3 +1,4 @@
+import re
 import traceback
 
 from core.builtins import Image, Plain, Bot
@@ -6,6 +7,7 @@ from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
 from core.types import Command
+from core.utils.i18n import get_target_locale
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
 
@@ -203,6 +205,7 @@ async def bot_help(msg: Bot.MessageSession):
         targetFrom=msg.target.targetFrom)
     developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
+    lang = get_target_locale(msg)
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
@@ -211,7 +214,11 @@ async def bot_help(msg: Bot.MessageSession):
         if help_name in module_list:
             module_ = module_list[help_name]
             if module_.desc is not None:
-                msgs.append(module_.desc)
+                desc = module_.desc
+                if locale_str := re.match(r'\{(.*)}', desc):
+                    if locale_str:
+                        desc = lang.t(locale_str.group(1))
+                msgs.append(desc)
             if isinstance(module_, Command):
                 help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
                                       command_prefixes=msg.prefixes)
@@ -224,7 +231,7 @@ async def bot_help(msg: Bot.MessageSession):
             for a in module_alias:
                 malias.append(f'{a} -> {module_alias[a]}')
             if malias:
-                doc += '\n命令别名：\n' + '\n'.join(malias)
+                doc += f'\n{lang.t("core.help.alias")}\n' + '\n'.join(malias)
             if help_name in developers:
                 dev_list = developers[help_name]
                 if isinstance(dev_list, (list, tuple)):

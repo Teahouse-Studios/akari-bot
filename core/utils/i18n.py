@@ -30,10 +30,22 @@ def flatten(d, parent_key='', sep='.'):
 
 
 def load_locale_file():
-    locales = os.listdir('./locales')
+    locales_path = os.path.abspath('./locales')
+    locales = os.listdir(locales_path)
     for l in locales:
-        with open(f'./locales/{l}', 'r', encoding='utf-8') as f:
+        with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
             locale_cache[remove_suffix(l, '.json')] = flatten(json.load(f))
+    modules_path = os.path.abspath('./modules')
+    for m in os.listdir(modules_path):
+        if os.path.isdir(f'{modules_path}/{m}'):
+            if os.path.exists(f'{modules_path}/{m}/locales'):
+                locales_m = os.listdir(f'{modules_path}/{m}/locales')
+                for lm in locales_m:
+                    with open(f'{modules_path}/{m}/locales/{lm}', 'r', encoding='utf-8') as f:
+                        if remove_suffix(lm, '.json') in locale_cache:
+                            locale_cache[remove_suffix(lm, '.json')].update(flatten(json.load(f)))
+                        else:
+                            locale_cache[remove_suffix(lm, '.json')] = flatten(json.load(f))
 
 
 load_locale_file()

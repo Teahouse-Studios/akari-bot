@@ -6,6 +6,7 @@ from typing import Union, Dict
 
 from core.exceptions import InvalidCommandFormatError
 from core.types import Command, MessageSession
+from core.utils.i18n import get_target_locale, Locale
 from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..logger import Logger
 
@@ -33,16 +34,20 @@ class CommandParser:
         self.args: Dict[Union[Template, ''], dict] = help_docs
 
     def return_formatted_help_doc(self) -> str:
+        lang = get_target_locale(self.msg) if self.msg is not None else Locale('zh_cn')
         if not self.args:
-            return '（此模块没有帮助信息）'
+            return lang.t('core.help.none')
         lst = []
         format_args = templates_to_str([args for args in self.args if args != ''], with_desc=True)
         for x in format_args:
+            if locale_str := re.findall(r'\{(.*)}', x):
+                for l in locale_str:
+                    x = x.replace(f'{{{l}}}', lang.t(l))
             x = f'{self.command_prefixes[0]}{self.bind_prefix} {x}'
             lst.append(x)
         args = '\n'.join(y for y in lst)
         if self.options_desc:
-            args += '\n参数：\n' + '\n'.join(self.options_desc)
+            args += f'\n{lang.t("core.help.options")}\n' + '\n'.join(self.options_desc)
         return args
 
     def parse(self, command):
