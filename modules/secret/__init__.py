@@ -11,9 +11,11 @@ from modules.wiki.utils.wikilib import WikiLib
 wiki = WikiLib('https://minecraft.fandom.com/zh/api.php')
 bot = Bot.FetchTarget
 
-
-@on_schedule('__check_newbie__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
+s = on_schedule('__check_newbie__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
              required_superuser=True, developers=['OasisAkari'])
+
+
+@s.handle()
 async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return
@@ -43,8 +45,10 @@ async def newbie():
                         qq.append(xz['title'])
 
 
-@on_schedule('__check_abuse__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
+a = on_schedule('__check_abuse__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
              required_superuser=True, developers=['OasisAkari'])
+
+@a.handle()
 async def _():
     if bot.name not in ['QQ', 'TEST']:
         return
