@@ -61,7 +61,7 @@ class Locale:
         """创建一个本地化对象"""
 
         if fallback_lng is None:
-            fallback_lng = ['zh_cn', 'en_us']
+            fallback_lng = ['zh_cn', 'zh_tw', 'en_us']
         self.locale = locale
         self.data: LocaleFile = locale_cache[locale]
         self.fallback_lng = fallback_lng
