@@ -15,7 +15,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish('' + str(random))
 
 
-@r.handle('choice ... {{color.choice.help}}', )
+@r.handle('choice ... {{random.choice.help}}', )
 async def _(msg: Bot.MessageSession):
     choices = msg.parsed_msg['...']
     await msg.finish(secrets.choice(choices))
