@@ -1,0 +1,18 @@
+{
+    "chemical_code.desc": "化學式回答小遊戲。",
+    "chemical_code.normal.help": "普通樣式（時間限制，多人）",
+    "chemical_code.captcha.help": "驗證碼樣式（不支援特定 ID，僅限一次，單人）",
+    "chemical_code.stop.help": "停止當前的遊戲。",
+    "chemical_code.stop.stopped": "已停止，正確答案是 $answer",
+    "chemical_code.stop.nothing": "目前沒有遊戲正在進行。",
+    "chemical_code.csid.help": "根據 ChemSpider ID 出題。",
+    "chemical_code.csid.invalid": "發生錯誤：請輸入正確的 ID！",
+    "chemical_code.csid.invalid.num": "發生錯誤：請輸入數字 ID！",
+    "chemical_code.running": "目前有一局遊戲正在進行。",
+    "chemical_code.error": "發生錯誤：獲取題目失敗，可能是因為請求超時或 ID 無效，請重新發起遊戲。",
+    "chemical_code.timeup": "已超時，正確答案是 $answer",
+    "chemical_code.normal.text": "請在 $times 分鐘內發送這個化合物的分子式。（除 C、H 外使用字母表順序，如：CHBrClF）",
+    "chemical_code.captcha.text": "請發送這個化合物的分子式。（除 C、H 外使用字母表順序，如：CHBrClF）",
+    "chemical_code.correct": "回答正確。",
+    "chemical_code.incorrect": "回答錯誤，正確答案是 $answer"
+}
