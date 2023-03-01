@@ -144,7 +144,7 @@ locale = on_command('locale',
 async def config_gu(msg: Bot.MessageSession):
     t = get_target_locale(msg)
     lang = msg.parsed_msg['<lang>']
-    if lang in ['zh_cn', 'en_us']:
+    if lang in ['zh_cn', 'zh_tw', 'en_us']:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             t = get_target_locale(msg)
             await msg.finish(t.t('success'))
