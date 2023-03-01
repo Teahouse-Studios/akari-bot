@@ -67,7 +67,7 @@ async def flipCoins(count:int):
         if faceUp:
             output += f" {faceUp} 枚是正面，"
         if faceDown:
-            output += f" {faceDown} 枚是反面"
+            output += f"{faceDown} 枚是反面"
         if stand:
             output += f"...还有 {stand} 枚立起来了！"
         else:
