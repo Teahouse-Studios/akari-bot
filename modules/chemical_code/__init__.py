@@ -162,5 +162,5 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
             if result.asDisplay() == csr['name']:
                 await result.sendMessage(lang.t('chemical_code.correct'))
             else:
-                await result.sendMessage(lang.t('chemical_code.incorrect', csr['name']))
+                await result.sendMessage(lang.t('chemical_code.incorrect', answer=play_state[msg.target.targetId]["answer"]))
             play_state[msg.target.targetId]['active'] = False
