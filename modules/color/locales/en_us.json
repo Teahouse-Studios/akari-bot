@@ -1,6 +1,6 @@
 {
     "color.desc": "Provide color information.",
-    "color.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design.",
+    "color.specify.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design.",
     "color.random.help": "Random color.",
     "color.error": "An error occurred: Unrecognized color format.",
     "color.css.name": "CSS color name: ",

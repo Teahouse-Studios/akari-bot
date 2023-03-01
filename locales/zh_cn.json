@@ -6,7 +6,5 @@
     "core.help.alias": "命令别名：",
     "idlist.help": "查询MCBEID表。",
     "idlist.collapse": "...仅显示前5条结果，查看更多：",
-    "idlist.none": "没有找到结果。",
-    "ptt.help": "生成一张Arcaea Potential图片",
-    "ptt.invalid": "发生错误：potential 必须为 ≥0.00 且 ≤99.99 的数字。"
+    "idlist.none": "没有找到结果。"
 }

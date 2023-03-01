@@ -23,7 +23,7 @@ with open(os.path.dirname(os.path.abspath(__file__))+'/material_colors.json', 'r
 css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
 css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
-@c.handle('<color> {{color.help}}')
+@c.handle('<color> {{color.specify.help}}')
 @c.handle('{{color.random.help}}')
 async def _(msg: Bot.MessageSession):
     lang = get_target_locale(msg)
