@@ -26,6 +26,7 @@ css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 @c.handle('<color> {{color.help}}')
 @c.handle('{{color.random.help}}')
 async def _(msg: Bot.MessageSession):
+    lang = get_target_locale(msg)
     try:
         color = msg.parsed_msg.get('<color>')
     except AttributeError:
