@@ -6,7 +6,6 @@ import ujson as json
 
 from core.builtins import ErrorMessage
 from core.logger import Logger
-from core.utils.i18n import get_target_locale
 
 
 async def server(address, raw=False, showplayer=False, mode='j'):
@@ -50,7 +49,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                     servers.append(str(description))
 
                             if 'players' in jejson:
-                                onlinesplayer = f"{lang.t('server.player')}{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
+                                onlinesplayer = f"{lang.t("server.player")}{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
                                 servers.append(onlinesplayer)
                                 if showplayer:
                                     playerlist = []
@@ -62,7 +61,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                         if jejson['players']['online'] == 0:
                                             servers.append(lang.t('server.player.current.none'))
                             if 'version' in jejson:
-                                versions = f'{lang.t("server.gamemode")}' + jejson['version']['name']
+                                versions = f"{lang.t("server.gamemode")}" + jejson['version']['name']
                                 servers.append(versions)
                             servers.append(serip + ':' + port1)
                         except Exception:
