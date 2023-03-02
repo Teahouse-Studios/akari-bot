@@ -77,9 +77,9 @@ async def s(msg: Bot.MessageSession):
             play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
             await msg.sendMessage(lang.t('chemical_code.stop.stopped', answer=play_state[msg.target.targetId]["answer"]), quote=False)  # 发送存储于 play_state 中的答案
         else:
-            await msg.sendMessage(lang.t('chemical_code.stop.nothing'))
+            await msg.sendMessage(lang.t('chemical_code.stop.none'))
     else:
-        await msg.sendMessage(lang.t('chemical_code.stop.nothing'))
+        await msg.sendMessage(lang.t('chemical_code.stop.none'))
 
 
 @cc.handle('<csid> {{chemical_code.csid.help}}')

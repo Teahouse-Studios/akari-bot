@@ -1,0 +1,17 @@
+{
+    "server.desc": "获取 Minecraft Java 版/基岩版服务器 motd。",
+    "server.desc.p": "显示玩家列表",
+    "server.desc.r": "显示原始信息",
+    "server.error": "查询调用 API 时发生错误。",
+    "server.gamemode": "游戏模式：",
+    "server.local_ip": "发生错误：无效的 IP 地址。",
+    "server.none": "发生错误：没有找到任何类型的Minecraft服务器。",
+    "server.player": "在线玩家：",
+    "server.player.current": "当前在线玩家：\n",
+    "server.player.current.none": "当前在线玩家：\n无",
+    "server.revoke": "90 秒后撤回消息",
+    "server.revoke.disable": "已禁用自动撤回功能。",
+    "server.revoke.enable": "已启用自动撤回功能。",
+    "server.revoke.help": "是否启用自动撤回功能（默认为是）。",
+    "server.version": "游戏版本："
+}

@@ -4,7 +4,7 @@
     "chemical_code.captcha.help": "Captcha mode (Only once, single)",
     "chemical_code.stop.help": "Stop the current game.",
     "chemical_code.stop.stopped": "Stopped. The correct answer is $answer",
-    "chemical_code.stop.nothing": "There is no game in progress.",
+    "chemical_code.stop.none": "There is no game in progress.",
     "chemical_code.csid.help": "Start a game by ChemSpider ID",
     "chemical_code.csid.invalid": "An error occurred: Invalid ID!",
     "chemical_code.csid.invalid.num": "An error occurred: ID must be purely numeric!",
