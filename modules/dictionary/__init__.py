@@ -7,7 +7,7 @@ dict_module = on_command('dictionary', alias=["dict"],
                          desc='{dictionary.desc}', developers=['Dianliang233'])
 
 
-@dict_module.handle(help_doc='<term> {{diactionary.help}}')
+@dict_module.handle(help_doc='<term> {{dictionary.help}}')
 async def _(msg: Bot.MessageSession):
     print(str(msg.parsed_msg['<term>']).replace(' ', '-').lower())
     pic_collins = await get_pic(
