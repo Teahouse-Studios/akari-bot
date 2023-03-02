@@ -20,9 +20,8 @@ async def bugtracker(msg: Bot.MessageSession):
             await msg.finish(result)
 
 
-lang = get_target_locale(msg)
 rbug = on_regex('bug_regex',
-                desc=f'{lang.t("bug_regex.help")}',
+                desc='{bug_regex.help}',
                 developers=['OasisAkari'])
 
 
