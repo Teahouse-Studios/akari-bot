@@ -1,7 +1,7 @@
 {
     "example": "你好世界！",
     "success": "成功。",
-    "core.help.none": "（此模組沒有幫助資訊）",
+    "core.help.none": "（此模組沒有說明資訊）",
     "core.help.options": "參數：",
     "core.help.alias": "指令別名："
 }
