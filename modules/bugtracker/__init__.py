@@ -3,13 +3,12 @@ import re
 
 from core.builtins import Bot
 from core.component import on_command, on_regex
-from core.utils.i18n import get_target_locale
 from .bugtracker import bugtracker_get
 
 bug = on_command('bug', alias='b', developers=['OasisAkari'])
 
 
-@bug.handle('<MojiraID> {{bug.desc}}')
+@bug.handle('<MojiraID> {查询 Mojira 上的漏洞编号内容。}')
 async def bugtracker(msg: Bot.MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:
@@ -20,7 +19,7 @@ async def bugtracker(msg: Bot.MessageSession):
 
 
 rbug = on_regex('bug_regex',
-                desc='{bug_regex.help}',
+                desc='开启后发送 !<mojiraid> 将会查询 Mojira 并发送该漏洞的梗概内容。',
                 developers=['OasisAkari'])
 
 
