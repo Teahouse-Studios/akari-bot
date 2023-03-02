@@ -62,7 +62,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                         if jejson['players']['online'] == 0:
                                             servers.append(lang.t('server.player.current.none'))
                             if 'version' in jejson:
-                                versions = f"{lang.t("server.gamemode")}" + jejson['version']['name']
+                                versions = f'{lang.t("server.gamemode")}' + jejson['version']['name']
                                 servers.append(versions)
                             servers.append(serip + ':' + port1)
                         except Exception:
