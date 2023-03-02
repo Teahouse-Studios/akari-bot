@@ -47,7 +47,7 @@ async def main(msg: Bot.MessageSession):
         except:
             traceback.print_exc()
     if is_local_ip:
-        return await msg.sendMessage(lang.t('server.local_ip')')
+        return await msg.sendMessage(lang.t('server.local_ip'))
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
