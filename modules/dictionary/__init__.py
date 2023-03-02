@@ -1,5 +1,6 @@
 from core.builtins import Bot, Image, Plain
 from core.component import on_command
+from core.utils.i18n import get_target_locale
 from .screenshot import get_pic
 
 dict_module = on_command('dictionary', alias=["dict"],

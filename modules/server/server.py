@@ -6,6 +6,7 @@ import ujson as json
 
 from core.builtins import ErrorMessage
 from core.logger import Logger
+from core.utils.i18n import get_target_locale
 
 
 async def server(address, raw=False, showplayer=False, mode='j'):
