@@ -11,7 +11,6 @@ bug = on_command('bug', alias='b', developers=['OasisAkari'])
 
 @bug.handle('<MojiraID> {{bug.desc}}')
 async def bugtracker(msg: Bot.MessageSession):
-    lang = get_target_locale(msg)
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:
         q = re.match(r'(.*-.*)', mojira_id)
