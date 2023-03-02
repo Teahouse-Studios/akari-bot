@@ -5,16 +5,14 @@ import traceback
 from core.builtins import Bot
 from core.component import on_command
 from core.dirty_check import check
-from core.utils.i18n import get_target_locale
 from .server import server
 
 s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.handle('<ServerIP:Port> [-r] [-p] {{server.desc}}',
-          options_desc={'-r': '{server.desc.r}', '-p': '{server.desc.p}'})
+@s.handle('<ServerIP:Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
+          options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: Bot.MessageSession):
-    lang = get_target_locale(msg)
     enabled_addon = msg.options.get('server_revoke')
     if enabled_addon is None:
         enabled_addon = True
@@ -47,7 +45,7 @@ async def main(msg: Bot.MessageSession):
         except:
             traceback.print_exc()
     if is_local_ip:
-        return await msg.sendMessage(lang.t('server.erver.local_ip')')
+        return await msg.sendMessage('发生错误：无效的 IP 地址。')
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
@@ -56,9 +54,9 @@ async def main(msg: Bot.MessageSession):
             enabled_addon)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        msg_ = f'{lang.t("server.none")}'
+        msg_ = '发生错误：没有找到任何类型的Minecraft服务器。'
         if msg.Feature.delete and enabled_addon:
-            msg_ += f'[{lang.t("server.revoke")}]'
+            msg_ += '[90秒后撤回消息]'
         send = await msg.sendMessage(msg_)
         if msg.Feature.delete and enabled_addon:
             await msg.sleep(90)
@@ -66,26 +64,24 @@ async def main(msg: Bot.MessageSession):
             await msg.finish()
 
 
-@s.handle('revoke <enable|disable> {{server.revoke.help}}')
+@s.handle('revoke <enable|disable> {是否启用自动撤回功能（默认为是）。}')
 async def revoke(msg: Bot.MessageSession):
-    lang = get_target_locale(msg)
     if msg.parsed_msg.get('<enable|disable>') == 'enable':
         msg.data.edit_option('server_revoke', True)
-        await msg.finish(lang.t('server.revoke.enable'))
+        await msg.finish('已启用自动撤回功能。')
     elif msg.parsed_msg.get('<enable|disable>') == 'disable':
         msg.data.edit_option('server_revoke', False)
-        await msg.finish(lang.t('server.revoke.disable'))
+        await msg.finish('已禁用自动撤回功能。')
 
 
 async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
-    lang = get_target_locale(msg)
     sendmsg = await server(address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
         for x in sendmsg:
             m = x['content']
             if msg.Feature.delete and enabled_addon:
-                m += f'\n[{lang.t("server.revoke")}]'
+                m += '\n[90秒后撤回消息]'
             send = await msg.sendMessage(m)
             if msg.Feature.delete and enabled_addon:
                 await msg.sleep(90)
