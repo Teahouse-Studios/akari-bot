@@ -13,11 +13,12 @@ async def set_url(send:Bot.MessageSession):
     url = send.parsed_msg['<url>']
     with open("./modules/httpcat/url.json", 'w') as write_f:
 	    json.dump({'url': url}, write_f)
+    await send.sendMessage(f"已设置API为{url}")
 
 @httpcat.handle('reset {重置自定义API}', required_admin=True)
 async def reset(send:Bot.MessageSession):
     init()
-    await send.sendMessage('已完成')
+    await send.sendMessage('已重置到http.cat')
 
 @httpcat.handle('<code> {获取http猫猫图片}')
 async def http_cat(send:Bot.MessageSession):
