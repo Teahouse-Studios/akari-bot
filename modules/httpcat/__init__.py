@@ -26,7 +26,7 @@ async def http_cat(send:Bot.MessageSession):
         data = read_f.read()
         json_dict = json.loads(data)
     api_url = json_dict.get('url')
-    await send.sendMessage(Image(f"{api_url}{status_code}"))
+    await send.sendMessage(Image(f"{api_url}{status_code}.jpg"))
 
 @httpcat.handle('help {获取帮助}')
 async def help_httpcat(send:Bot.MessageSession):
