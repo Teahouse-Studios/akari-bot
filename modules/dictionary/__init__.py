@@ -2,11 +2,13 @@ from core.builtins import Bot, Image, Plain
 from core.component import module
 from .screenshot import get_pic
 
+from core.utils.i18n import get_target_locale
+
+
 dict_module = module('dictionary', alias=["dict"],
                          desc='查询科林斯词典。', developers=['Dianliang233'])
 
-
-@dict_module.handle(help_doc='<term> {在科林斯词典中查询单词，暂仅支持英文}')
+@dict_module.handle(help_doc='<term> {{dictionary.help}}')
 async def _(msg: Bot.MessageSession):
     print(str(msg.parsed_msg['<term>']).replace(' ', '-').lower())
     pic_collins = await get_pic(

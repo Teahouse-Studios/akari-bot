@@ -15,6 +15,7 @@ cn = module('__check_newbie__', required_superuser=True, developers=['OasisAkari
 
 
 @cn.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
+
 async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return

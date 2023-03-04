@@ -3,12 +3,13 @@ import re
 
 from core.builtins import Bot
 from core.component import module
+from core.utils.i18n import get_target_locale
 from .bugtracker import bugtracker_get
 
 bug = module('bug', alias='b', developers=['OasisAkari'])
 
 
-@bug.command('<MojiraID> {查询Mojira上的漏洞编号内容}')
+@bug.handle('<MojiraID> {{bug.desc}}')
 async def bugtracker(msg: Bot.MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:

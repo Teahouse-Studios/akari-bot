@@ -54,6 +54,8 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         except aiohttp.ClientConnectorError:
             if use_local:
                 return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode, use_local=False)
+            else:
+                return False
         except ValueError:
             Logger.info('[Webrender] Generation Failed.')
             return False
@@ -74,6 +76,8 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
         except aiohttp.ClientConnectorError:
             if use_local:
                 return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode, use_local=False)
+            else:
+                return False
         except ValueError:
             Logger.info('[Webrender] Generation Failed.')
             return False

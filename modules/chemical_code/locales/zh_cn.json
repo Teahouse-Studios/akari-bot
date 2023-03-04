@@ -4,7 +4,7 @@
     "chemical_code.captcha.help": "验证码样式（不支持指定ID，仅限一次，单人）",
     "chemical_code.stop.help": "停止当前的游戏。",
     "chemical_code.stop.stopped": "已停止，正确答案是 $answer",
-    "chemical_code.stop.nothing": "当前没有游戏在进行中。",
+    "chemical_code.stop.none": "当前没有游戏在进行中。",
     "chemical_code.csid.help": "根据 ChemSpider ID 出题。",
     "chemical_code.csid.invalid": "发生错误：请输入正确的 ID！",
     "chemical_code.csid.invalid.num": "发生错误：请输入纯数字 ID！",

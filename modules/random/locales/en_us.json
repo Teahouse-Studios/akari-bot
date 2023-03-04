@@ -1,0 +1,5 @@
+{
+    "random.desc": "Random number generator (cryptographically secure)",
+    "random.number.help": "Generate a random integer within a given range.",
+    "random.choice.help": "Select an element from a given set."
+}

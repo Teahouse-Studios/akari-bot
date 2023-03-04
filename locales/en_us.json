@@ -1,6 +1,5 @@
 {
     "example": "Hello world!",
-    "fallback": "Fallback!!!",
     "success": "Success.",
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
