@@ -5,15 +5,17 @@ import traceback
 from core.builtins import Bot
 from core.component import on_command
 from core.dirty_check import check
+from core.utils.i18n import get_target_locale
 from .server import server
 
 s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.handle('<ServerIP:Port> [-r] [-p] {获取Minecraft Java/基岩版服务器motd。}',
+@s.handle('<ServerIP:Port> [-r] [-p] {{server.desc}}',
           options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')
+    lang = get_target_locale(msg)
     if enabled_addon is None:
         enabled_addon = True
     gather_list = []
@@ -45,7 +47,7 @@ async def main(msg: Bot.MessageSession):
         except:
             traceback.print_exc()
     if is_local_ip:
-        return await msg.sendMessage('发生错误：无效的 IP 地址。')
+        return await msg.sendMessage(f'{lang.t(""server.local_ip")})
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
@@ -64,7 +66,7 @@ async def main(msg: Bot.MessageSession):
             await msg.finish()
 
 
-@s.handle('revoke <enable|disable> {是否启用自动撤回功能（默认为是）。}')
+@s.handle('revoke <enable|disable> {{server.revoke.help}}')
 async def revoke(msg: Bot.MessageSession):
     if msg.parsed_msg.get('<enable|disable>') == 'enable':
         msg.data.edit_option('server_revoke', True)

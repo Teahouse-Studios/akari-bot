@@ -43,17 +43,17 @@ QQ 频道的测试版支持也请在上方链接申请。我们正在进行 QQ �
 
 ### 自搭建
 
-你可以 [参考这里](./DEPLOY.md) 来进行尝试搭建。
+你可以[参考这里](./DEPLOY.md) 来进行尝试搭建。
 
 若遇到问题，可以通过 [issue](https://github.com/Teahouse-Studios/bot/issues/new) 或其他方式咨询开发者。
 
 ### 多语言
 
-关于小可的多语言问题，可前往[Crowdin](https://crowdin.com/project/akari-bot)提出。
+关于小可的多语言问题，可前往 [Crowdin](https://crowdin.com/project/akari-bot) 提出。
 
 ### 贡献
 
-如您想为我们编写新的模块，可以看看 [这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)
+如您想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)。
 
 ## 许可
 
