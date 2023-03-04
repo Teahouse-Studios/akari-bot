@@ -71,7 +71,7 @@ class MessageSession(MS):
                           ) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
-            return await self.sendMessage('https://wdf.ink/6Oup')
+            return await self.sendMessage('发生错误：消息中含有不安全的内容，已被拦截。请向开发者反馈问题。')
         self.sent.append(msgchain)
         count = 0
         send = []
