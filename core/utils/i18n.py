@@ -90,17 +90,8 @@ class Locale:
                     return string  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         return key  # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
-
-def get_target_locale_setting(msg: MessageSession):
-    return msg.locale.locale
-
-
-def get_target_locale(msg: MessageSession):
-    return msg.locale
-
-
 def get_available_locales():
     return list(locale_cache.keys())
 
 
-__all__ = ['Locale', 'load_locale_file', 'get_target_locale', 'get_target_locale_setting', 'get_available_locales']
+__all__ = ['Locale', 'load_locale_file', 'get_available_locales']

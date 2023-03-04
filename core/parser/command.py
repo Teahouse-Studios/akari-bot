@@ -6,7 +6,7 @@ from typing import Union, Dict
 
 from core.exceptions import InvalidCommandFormatError
 from core.types import MessageSession, Module
-from core.utils.i18n import get_target_locale, Locale
+from core.utils.i18n import Locale
 from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..logger import Logger
 
@@ -21,7 +21,7 @@ class CommandParser:
         self.origin_template = args
         self.msg: Union[MessageSession, None] = msg
         self.options_desc = []
-        lang = get_target_locale(self.msg) if self.msg is not None else Locale('zh_cn')
+        self.lang = self.msg.locale if self.msg is not None else Locale('zh_cn')
         help_docs = {}
         for match in (args.command_list.set if self.msg is None else args.command_list.get(self.msg.target.targetFrom)):
             if match.help_doc:
@@ -34,12 +34,11 @@ class CommandParser:
                     desc = match.options_desc[m]
                     if locale_str := re.findall(r'\{(.*)}', desc):
                         for l in locale_str:
-                            desc = desc.replace(f'{{{l}}}', lang.t(l))
+                            desc = desc.replace(f'{{{l}}}', self.lang.t(l))
                     self.options_desc.append(f'{m} {desc}')
         self.args: Dict[Union[Template, ''], dict] = help_docs
 
     def return_formatted_help_doc(self) -> str:
-        lang = self.msg.locale if self.msg is not None else Locale('zh_cn')
         if not self.args:
             return ''
         lst = []
@@ -47,12 +46,12 @@ class CommandParser:
         for x in format_args:
             if locale_str := re.findall(r'\{(.*)}', x):
                 for l in locale_str:
-                    x = x.replace(f'{{{l}}}', lang.t(l))
+                    x = x.replace(f'{{{l}}}', self.lang.t(l))
             x = f'{self.command_prefixes[0]}{self.bind_prefix} {x}'
             lst.append(x)
         args = '\n'.join(y for y in lst)
         if self.options_desc:
-            args += f'\n{lang.t("core.help.options")}\n' + '\n'.join(self.options_desc)
+            args += f'\n{self.lang.t("core.help.options")}\n' + '\n'.join(self.options_desc)
         return args
 
     def parse(self, command):

@@ -3,7 +3,6 @@ import re
 
 from core.builtins import Bot
 from core.component import module
-from core.utils.i18n import get_target_locale
 from .bugtracker import bugtracker_get
 
 bug = module('bug', alias='b', developers=['OasisAkari'])

@@ -8,7 +8,7 @@ from core.builtins.temp import ExecutionLockList
 from core.builtins.utils import confirm_command
 from core.exceptions import WaitCancelException
 from core.types.message import *
-from core.utils.i18n import get_target_locale, Locale
+from core.utils.i18n import Locale
 from database import BotDBUtil
 
 
