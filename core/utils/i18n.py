@@ -92,11 +92,11 @@ class Locale:
 
 
 def get_target_locale_setting(msg: MessageSession):
-    return msg.locale
+    return msg.locale.locale
 
 
 def get_target_locale(msg: MessageSession):
-    return Locale(str(get_target_locale_setting(msg)))
+    return msg.locale
 
 
 def get_available_locales():
