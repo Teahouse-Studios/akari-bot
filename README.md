@@ -5,7 +5,7 @@
 
 </div>
 
-![GitHub issues](https://img.shields.io/github/issues/Teahouse-Studios/bot) ![GitHub pull requests](https://img.shields.io/github/issues-pr/Teahouse-Studios/bot) ![License](https://img.shields.io/github/license/Teahouse-Studios/bot) ![GitHub Repo stars](https://img.shields.io/github/stars/Teahouse-Studios/bot?style=social) ![GitHub tag](https://img.shields.io/github/v/tag/Teahouse-Studios/bot?include_prereleases)
+![GitHub issues](https://img.shields.io/github/issues/cloudw233/akari-haoye-bot) ![GitHub pull requests](https://img.shields.io/github/issues-pr/cloudw233/akari-haoye-bot) ![License](https://img.shields.io/github/license/cloudw233/akari-haoye-bot) ![GitHub Repo stars](https://img.shields.io/github/stars/cloudw233/akari-haoye-bot?style=social) ![GitHub tag](https://img.shields.io/github/v/tag/cloudw233/akari-haoye-bot?include_prereleases)
 
 ## 介绍
 
