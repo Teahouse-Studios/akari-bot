@@ -39,7 +39,7 @@ class CommandParser:
         self.args: Dict[Union[Template, ''], dict] = help_docs
 
     def return_formatted_help_doc(self) -> str:
-        lang = get_target_locale(self.msg) if self.msg is not None else Locale('zh_cn')
+        lang = self.msg.locale if self.msg is not None else Locale('zh_cn')
         if not self.args:
             return ''
         lst = []

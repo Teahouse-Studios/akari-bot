@@ -6,7 +6,6 @@ from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
-from core.utils.i18n import get_target_locale
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
 
@@ -46,7 +45,6 @@ async def _(msg: Bot.MessageSession):
 
 
 async def config_modules(msg: Bot.MessageSession):
-    lang = get_target_locale(msg)
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
@@ -113,7 +111,7 @@ async def config_modules(msg: Bot.MessageSession):
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
                     if hdoc == '':
-                        hdoc = lang.t('core.help.none')
+                        hdoc = msg.locale.t('core.help.none')
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
@@ -203,7 +201,6 @@ async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
     alias = ModulesManager.return_modules_alias_map()
-    lang = get_target_locale(msg)
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
@@ -215,7 +212,7 @@ async def bot_help(msg: Bot.MessageSession):
                 desc = module_.desc
                 if locale_str := re.match(r'\{(.*)}', desc):
                     if locale_str:
-                        desc = lang.t(locale_str.group(1))
+                        desc = msg.locale.t(locale_str.group(1))
                 msgs.append(desc)
             help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
                                   command_prefixes=msg.prefixes)
@@ -239,7 +236,7 @@ async def bot_help(msg: Bot.MessageSession):
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
             if malias:
-                doc += f'\n{lang.t("core.help.alias")}\n' + '\n'.join(malias)
+                doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
             if module_.developers is not None:
                     devs = '、'.join(module_.developers)
             else:

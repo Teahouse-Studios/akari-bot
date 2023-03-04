@@ -6,7 +6,6 @@ from core.builtins import Bot
 from core.builtins import Image as Img
 from core.component import module
 from core.utils.cache import random_cache_path
-from core.utils.i18n import get_target_locale
 
 assets_path = os.path.abspath('./assets/arcaea')
 
@@ -16,7 +15,6 @@ p = module('ptt',
 
 @p.handle('<potential> {{ptt.desc}}')
 async def pttimg(msg: Bot.MessageSession):
-    lang = get_target_locale(msg)
     ptt = msg.parsed_msg['<potential>']
     # ptt
     if ptt == '--':
@@ -25,7 +23,7 @@ async def pttimg(msg: Bot.MessageSession):
         try:
             ptt = float(ptt)
         except ValueError:
-            await msg.finish(lang.t('ptt.invalid'))
+            await msg.finish(msg.locale.t('ptt.invalid'))
     if ptt >= 13.00:
         pttimg = 7
     elif ptt >= 12.50:

@@ -5,7 +5,6 @@ import traceback
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check
-from core.utils.i18n import get_target_locale
 from .server import server
 
 s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
@@ -15,7 +14,6 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
           options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')
-    lang = get_target_locale(msg)
     if enabled_addon is None:
         enabled_addon = True
     gather_list = []
@@ -47,7 +45,7 @@ async def main(msg: Bot.MessageSession):
         except:
             traceback.print_exc()
     if is_local_ip:
-        return await msg.sendMessage(f'{lang.t("server.local_ip")}')
+        return await msg.sendMessage(f'{msg.locale.t("server.local_ip")}')
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(

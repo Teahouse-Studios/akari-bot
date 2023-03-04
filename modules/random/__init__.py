@@ -1,7 +1,6 @@
 import secrets
 
 from core.builtins import Bot
-from core.utils.i18n import get_target_locale
 from core.component import module
 
 

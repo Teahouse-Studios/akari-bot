@@ -8,7 +8,7 @@ from core.builtins.temp import ExecutionLockList
 from core.builtins.utils import confirm_command
 from core.exceptions import WaitCancelException
 from core.types.message import *
-from core.utils.i18n import get_target_locale
+from core.utils.i18n import get_target_locale, Locale
 from database import BotDBUtil
 
 
@@ -25,7 +25,7 @@ class MessageSession(MessageSession):
         self.options = self.data.options
         self.custom_admins = self.data.custom_admins
         self.enabled_modules = self.data.enabled_modules
-        self.locale = self.data.locale
+        self.locale = Locale(self.data.locale)
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
         send = None
@@ -104,9 +104,6 @@ class MessageSession(MessageSession):
 
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
-
-    def t(self, *args, **kwargs) -> str:
-        return get_target_locale(self).t(*args, **kwargs)
 
 
 __all__ = ["MessageSession"]

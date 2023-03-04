@@ -8,7 +8,7 @@ from cpuinfo import get_cpu_info
 
 from core.builtins import Bot, PrivateAssets
 from core.component import module
-from core.utils.i18n import get_available_locales, get_target_locale
+from core.utils.i18n import get_available_locales
 from database import BotDBUtil
 
 version = module('version',
@@ -142,12 +142,10 @@ locale = module('locale',
 
 @locale.handle(['<lang> {设置机器人运行语言}'])
 async def config_gu(msg: Bot.MessageSession):
-    t = get_target_locale(msg)
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'zh_tw', 'en_us']:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
-            t = get_target_locale(msg)
-            await msg.finish(t.t('success'))
+            await msg.finish(msg.locale.t('success'))
     else:
         await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
 

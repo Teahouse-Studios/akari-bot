@@ -179,11 +179,6 @@ class MessageSession:
         :param text_only: 是否只保留纯文本（默认为False）
         """
 
-    def t(self, *args, **kwargs) -> str:
-        """
-        获取本地化字符串。
-        """
-
     async def delete(self):
         """
         用于删除这条消息。
