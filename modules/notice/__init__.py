@@ -11,4 +11,4 @@ async def notice(msg: Bot.MessageSession):
     mssg = await server(get_str)
     sstr = f"[由{nickname}发送的游戏邀请]:\n一起来玩Minecraft多人游戏吧！\n{mssg}"
     await Bot.FetchTarget.post_message('notice', sstr)
-    await msg.sendMessage(sstr)
+    await msg.sendMessage('已完成发送,请等待响应')
