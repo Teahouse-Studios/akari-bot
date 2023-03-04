@@ -4,7 +4,7 @@ import ujson as json
 
 from core.builtins import Bot
 from core.builtins import Plain, Image, Url
-from core.component import on_command
+from core.component import module
 from core.utils.http import get_url
 from .teahouse import get_rss as get_teahouse_rss
 
@@ -33,7 +33,7 @@ async def get_weekly(with_img=False):
     return msg_list
 
 
-wky = on_command('weekly', developers=['Dianliang233'])
+wky = module('weekly', developers=['Dianliang233'])
 
 
 @wky.handle('{获取中文 Minecraft Wiki 的每周页面}')

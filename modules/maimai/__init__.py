@@ -1,13 +1,13 @@
 import re
 
 from core.builtins import Bot, Plain, Image as BImage
-from core.component import on_command, on_regex
+from core.component import module
 from core.logger import Logger
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
 from modules.maimai.libraries.maimai_best_50 import generate50
 from modules.maimai.libraries.maimaidx_music import *
-from modules.maimai.libraries.tool import hash
+from modules.maimai.libraries.tool import hash_
 
 total_list = TotalList()
 
@@ -31,7 +31,7 @@ async def inner_level_q(ds1, ds2=None):
     return result_set
 
 
-mai = on_command('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
+mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
                  desc='有关maimai相关的工具，移植自mai-bot。')
 
 
@@ -50,12 +50,8 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(s.strip())
 
 
-mrgex1 = on_regex('maimai_random_music_regex1',
-                  desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                       '随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲', developers=['mai-bot', 'OasisAkari'])
-
-
-@mrgex1.handle(r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)")
+@mai.handle(re.compile(r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)"),
+            desc="随个[dx/标准][绿黄红紫白]<难度> 随机一首指定条件的乐曲")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -82,22 +78,12 @@ async def _(msg: Bot.MessageSession):
             await msg.finish("随机命令错误，请检查语法")
 
 
-mrgex2 = on_regex('maimai_random_music_regex2', desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                                                     'XXXmaimaiXXX什么 随机一首歌',
-                  developers=['mai-bot', 'OasisAkari'])
-
-
-@mrgex2.handle(r".*maimai.*什么", )
+@mai.handle(re.compile(r".*maimai.*什么"), desc='XXXmaimaiXXX什么 随机一首歌')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
-msrgex = on_regex('maimai_search_music_regex', desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                                                    '查歌<乐曲标题的一部分> 查询符合条件的乐曲',
-                  developers=['mai-bot', 'OasisAkari'])
-
-
-@msrgex.handle(r"查歌(.+)")
+@mai.handle(re.compile(r"查歌(.+)"), desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0].strip()
     if name == "":
@@ -114,12 +100,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(f"结果过多（{len(res)} 条），请缩小查询范围。")
 
 
-mqrgex = on_regex('maimai_query_chart_regex',
-                  desc='打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n'
-                       '[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息', developers=['mai-bot', 'OasisAkari'])
-
-
-@msrgex.handle(r"([绿黄红紫白]?)id([0-9]+)")
+@mai.handle(re.compile(r"([绿黄红紫白]?)id([0-9]+)"), desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
 async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     level_labels = ['绿', '黄', '红', '紫', '白']
@@ -173,10 +154,10 @@ wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练�
 @mai.handle('today {查看今天的舞萌运势}')
 async def _(msg: Bot.MessageSession):
     if msg.target.senderFrom == "Discord|Client":
-        qq = int(msg.session.sender.id)
+        qq = msg.session.sender.id
     else:
-        qq = int(msg.session.sender)
-    h = hash(qq)
+        qq = msg.session.sender
+    h = hash_(qq)
     rp = h % 100
     wm_value = []
     for i in range(11):

@@ -12,7 +12,6 @@ from core.exceptions import ConfigFileNotFound
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
-from core.types import Schedule
 from core.utils.http import get_url
 from core.utils.ip import IP
 
@@ -38,9 +37,10 @@ async def init_async() -> None:
     gather_list = []
     Modules = ModulesManager.return_modules_list_as_dict()
     for x in Modules:
-        if isinstance(Modules[x], Schedule):
-            Scheduler.add_job(func=Modules[x].execute, trigger=Modules[x].trigger, misfire_grace_time=30,
-                              max_instance=1)
+        if schedules := Modules[x].schedule_list.set:
+            for schedule in schedules:
+                Scheduler.add_job(func=schedule.function, trigger=schedule.trigger, misfire_grace_time=30,
+                                  max_instance=1)
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)

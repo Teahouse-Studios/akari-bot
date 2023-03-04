@@ -2,13 +2,13 @@ import asyncio
 import re
 
 from core.builtins import Bot
-from core.component import on_command, on_regex
+from core.component import module
 from .bugtracker import bugtracker_get
 
-bug = on_command('bug', alias='b', developers=['OasisAkari'])
+bug = module('bug', alias='b', developers=['OasisAkari'])
 
 
-@bug.handle('<MojiraID> {查询Mojira上的漏洞编号内容}')
+@bug.command('<MojiraID> {查询Mojira上的漏洞编号内容}')
 async def bugtracker(msg: Bot.MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:
@@ -18,12 +18,7 @@ async def bugtracker(msg: Bot.MessageSession):
             await msg.finish(result)
 
 
-rbug = on_regex('bug_regex',
-                desc='开启后发送 !<mojiraid> 将会查询Mojira并发送该bug的梗概内容。',
-                developers=['OasisAkari'])
-
-
-@rbug.handle(pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M')
+@bug.regex(pattern=r'^\!(?:bug |)(.*)-(.*)', mode='M')
 async def regex_bugtracker(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
     if len(matched_msg.group(1)) < 10 and len(matched_msg.group(2)) < 10:
@@ -31,7 +26,7 @@ async def regex_bugtracker(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@rbug.handle(re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)'), mode='A')
+@bug.regex(re.compile(r'https://bugs\.mojang\.com/browse/(.*?-\d*)'), mode='A')
 async def _(msg: Bot.MessageSession):
     async def bgtask(msg: Bot.MessageSession):
         for title in msg.matched_msg:

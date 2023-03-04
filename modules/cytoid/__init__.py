@@ -1,13 +1,13 @@
 from core.builtins import Bot
 from core.builtins import Image
-from core.component import on_command
+from core.component import module
 from database import BotDBUtil
 from .dbutils import CytoidBindInfoManager
 from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name
 
-cytoid = on_command('cytoid',
+cytoid = module('cytoid',
                     developers=['OasisAkari'], alias='ctd')
 
 

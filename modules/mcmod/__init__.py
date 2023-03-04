@@ -1,8 +1,8 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from .mcmod import mcmod as m
 
-mcmod = on_command(
+mcmod = module(
     bind_prefix='mcmod',
     desc='从 MCMOD 获取 Minecraft Mod 信息',
     developers=['Dianliang233', 'HornCopper', 'DrLee_lihr'],

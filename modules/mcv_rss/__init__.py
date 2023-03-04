@@ -8,7 +8,7 @@ from google_play_scraper import app as google_play_scraper
 
 from config import Config
 from core.builtins import Bot
-from core.component import on_schedule
+from core.component import module
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
@@ -61,17 +61,15 @@ async def get_article(version):
 
 bot = Bot.FetchTarget
 
-
 trigger_times = 60 if not Config('slower_schedule') else 180
 
-mcv_rss = on_schedule('mcv_rss',
-                      developers=['OasisAkari', 'Dianliang233'],
-                      recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
-                      trigger=IntervalTrigger(seconds=trigger_times),
-                      desc='开启后当Minecraft启动器更新Java版Minecraft时将会自动推送消息。', alias='mcvrss')
+mcv_rss = module('mcv_rss',
+                 developers=['OasisAkari', 'Dianliang233'],
+                 recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
+                 desc='开启后当Minecraft启动器更新Java版Minecraft时将会自动推送消息。', alias='mcvrss')
 
 
-@mcv_rss.handle()
+@mcv_rss.handle(IntervalTrigger(seconds=trigger_times))
 async def mcv_rss():
     url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:
@@ -107,13 +105,12 @@ async def mcv_rss():
         traceback.print_exc()
 
 
-mcbv_rss = on_schedule('mcbv_rss', developers=['OasisAkari'],
-             recommend_modules=['mcbv_jira_rss'],
-             trigger=IntervalTrigger(seconds=180),
-             desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
+mcbv_rss = module('mcbv_rss', developers=['OasisAkari'],
+                  recommend_modules=['mcbv_jira_rss'],
+                  desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
 
 
-@mcbv_rss.handle()
+@mcbv_rss.handle(IntervalTrigger(seconds=180))
 async def mcbv_rss():
     if IP.country == 'China':
         return  # 中国大陆无法访问Google Play商店
@@ -129,12 +126,12 @@ async def mcbv_rss():
         traceback.print_exc()
 
 
-mcv_jira_rss = on_schedule('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'],
-             recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
-             trigger=IntervalTrigger(seconds=trigger_times),
-             desc='开启后当Jira更新Java版时将会自动推送消息。', alias='mcvjirarss')
+mcv_jira_rss = module('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'],
+                      recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
+                      desc='开启后当Jira更新Java版时将会自动推送消息。', alias='mcvjirarss')
 
-@mcv_jira_rss.handle()
+
+@mcv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
 async def mcv_jira_rss():
     try:
         verlist = get_stored_list(bot, 'mcv_jira_rss')
@@ -164,14 +161,13 @@ async def mcv_jira_rss():
         traceback.print_exc()
 
 
-mcbv_jira_rss = on_schedule('mcbv_jira_rss',
-             developers=['OasisAkari', 'Dianliang233'],
-             recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'],
-             trigger=IntervalTrigger(seconds=trigger_times),
-             desc='开启后当Jira更新基岩版时将会自动推送消息。', alias='mcbvjirarss')
+mcbv_jira_rss = module('mcbv_jira_rss',
+                       developers=['OasisAkari', 'Dianliang233'],
+                       recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'],
+                       desc='开启后当Jira更新基岩版时将会自动推送消息。', alias='mcbvjirarss')
 
 
-@mcbv_jira_rss.handle()
+@mcbv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
 async def mcbv_jira_rss():
     try:
         verlist = get_stored_list(bot, 'mcbv_jira_rss')
@@ -196,14 +192,13 @@ async def mcbv_jira_rss():
         traceback.print_exc()
 
 
-mcdv_jira_rss = on_schedule('mcdv_jira_rss',
-             developers=['OasisAkari', 'Dianliang233'],
-             recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'],
-             trigger=IntervalTrigger(seconds=trigger_times),
-             desc='开启后当Jira更新Dungeons版本时将会自动推送消息。', alias='mcdvjirarss')
+mcdv_jira_rss = module('mcdv_jira_rss',
+                       developers=['OasisAkari', 'Dianliang233'],
+                       recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'],
+                       desc='开启后当Jira更新Dungeons版本时将会自动推送消息。', alias='mcdvjirarss')
 
 
-@mcdv_jira_rss.handle()
+@mcdv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
 async def mcdv_jira_rss():
     try:
         verlist = get_stored_list(bot, 'mcdv_jira_rss')

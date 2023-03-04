@@ -2,44 +2,43 @@ import re
 import traceback
 
 from core.builtins import Image, Plain, Bot
-from core.component import on_command
+from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
-from core.types import Command
 from core.utils.i18n import get_target_locale
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
 
-module = on_command('module',
-                    base=True,
-                    alias={'enable': 'module enable',
-                           'disable': 'module disable',
-                           'reload': 'module reload'},
-                    developers=['OasisAkari', 'Light-Beacon'],
-                    required_admin=True
-                    )
+m = module('module',
+           base=True,
+           alias={'enable': 'module enable',
+                  'disable': 'module disable',
+                  'reload': 'module reload'},
+           developers=['OasisAkari', 'Light-Beacon'],
+           required_admin=True
+           )
 
 
-@module.handle(['enable <module>... {开启一个/多个模块}',
-                'enable all {开启所有模块}',
-                'disable <module>... {关闭一个/多个模块}',
-                'disable all {关闭所有模块。}',
-                'reload <module> ... {重载一个/多个模块。}',
-                'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
+@m.command(['enable <module>... {开启一个/多个模块}',
+            'enable all {开启所有模块}',
+            'disable <module>... {关闭一个/多个模块}',
+            'disable all {关闭所有模块。}',
+            'reload <module> ... {重载一个/多个模块。}',
+            'list {查看所有可用模块}'], exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
 
-@module.handle(['enable [-g] <module>... {开启一个/多个模块}',
-                'enable all [-g] {开启所有模块}',
-                'disable [-g] <module>... {关闭一个/多个模块}',
-                'disable all [-g] {关闭所有模块。}',
-                'reload <module> [-f] {重载一个模块。}',
-                'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
-               available_for=['QQ|Guild'])
+@m.command(['enable [-g] <module>... {开启一个/多个模块}',
+            'enable all [-g] {开启所有模块}',
+            'disable [-g] <module>... {关闭一个/多个模块}',
+            'disable all [-g] {关闭所有模块。}',
+            'reload <module> [-f] {重载一个模块。}',
+            'list {查看所有可用模块}'], options_desc={'-g': '对频道进行全局操作'},
+           available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         await modules_help(msg)
@@ -47,6 +46,7 @@ async def _(msg: Bot.MessageSession):
 
 
 async def config_modules(msg: Bot.MessageSession):
+    lang = get_target_locale(msg)
     alias = ModulesManager.return_modules_alias_map()
     modules_ = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
@@ -69,8 +69,7 @@ async def config_modules(msg: Bot.MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if isinstance(modules_[function], Command) and (
-                    modules_[function].base or modules_[function].required_superuser):
+                if modules_[function].base or modules_[function].required_superuser:
                     continue
                 enable_list.append(function)
         else:
@@ -80,8 +79,8 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
                         msglist.append(f'失败：你没有打开“{module_}”的权限。')
-                    elif isinstance(modules_[module_], Command) and modules_[module_].base:
-                        msglist.append(f'失败：“{module_}”为基础模块。')
+                    elif modules_[module_].base:
+                        msglist.append(f'失败：“{module_}”为基础模块，无法关闭。')
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
@@ -111,10 +110,11 @@ async def config_modules(msg: Bot.MessageSession):
                     if modules_[m].desc is not None:
                         recommend_modules_help_doc_list.append(
                             modules_[m].desc)
-                    if isinstance(modules_[m], Command):
-                        hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
-                                             command_prefixes=msg.prefixes).return_formatted_help_doc()
-                        recommend_modules_help_doc_list.append(hdoc)
+                    hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
+                                         command_prefixes=msg.prefixes).return_formatted_help_doc()
+                    if hdoc == '':
+                        hdoc = lang.t('core.help.none')
+                    recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
                     pass
     elif msg.parsed_msg.get('disable', False):
@@ -123,8 +123,7 @@ async def config_modules(msg: Bot.MessageSession):
             for function in modules_:
                 if function[0] == '_':
                     continue
-                if isinstance(modules_[function], Command) and (
-                    modules_[function].base or modules_[function].required_superuser):
+                if modules_[function].base or modules_[function].required_superuser:
                     continue
                 disable_list.append(function)
         else:
@@ -134,7 +133,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
                         msglist.append(f'失败：你没有关闭“{module_}”的权限。')
-                    elif isinstance(modules_[module_], Command) and modules_[module_].base:
+                    elif modules_[module_].base:
                         msglist.append(f'失败：“{module_}”为基础模块，无法关闭。')
                     else:
                         disable_list.append(module_)
@@ -159,7 +158,7 @@ async def config_modules(msg: Bot.MessageSession):
             elif module_ not in modules_:
                 msglist.append(f'失败：“{module_}”模块尚未绑定')
             else:
-                if isinstance(modules_[module_], Command) and modules_[module_].base:
+                if modules_[module_].base:
                     msglist.append(f'失败：“{module_}”为基础模块，无法重载。')
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
@@ -193,17 +192,16 @@ async def config_modules(msg: Bot.MessageSession):
         await msg.finish()
 
 
-hlp = on_command('help',
-                 base=True,
-                 developers=['OasisAkari', 'Dianliang233'],
-                 )
+hlp = module('help',
+             base=True,
+             developers=['OasisAkari', 'Dianliang233'],
+             )
 
 
-@hlp.handle('<module> {查看一个模块的详细信息}')
+@hlp.command('<module> {查看一个模块的详细信息}')
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
-    developers = ModulesManager.return_modules_developers_map()
     alias = ModulesManager.return_modules_alias_map()
     lang = get_target_locale(msg)
     if msg.parsed_msg is not None:
@@ -219,43 +217,45 @@ async def bot_help(msg: Bot.MessageSession):
                     if locale_str:
                         desc = lang.t(locale_str.group(1))
                 msgs.append(desc)
-            if isinstance(module_, Command):
-                help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
-                                      command_prefixes=msg.prefixes)
-                if help_.args is not None:
-                    msgs.append(help_.return_formatted_help_doc())
-        if msgs:
+            help_ = CommandParser(module_list[help_name], msg=msg, bind_prefix=module_list[help_name].bind_prefix,
+                                  command_prefixes=msg.prefixes)
+            if help_.args:
+                msgs.append(help_.return_formatted_help_doc())
+
             doc = '\n'.join(msgs)
-            module_alias = ModulesManager.return_module_alias(help_name)
+            if module_.regex_list.set:
+                doc += '\n此模块支持正则表达式，消息发送时将会匹配以下内容：'
+                for regex in module_.regex_list.set:
+                    pattern = None
+                    if isinstance(regex.pattern, str):
+                        pattern = regex.pattern
+                    elif isinstance(regex.pattern, re.Pattern):
+                        pattern = regex.pattern.pattern
+                    if pattern:
+                        doc += f'\n（{pattern} {regex.desc if regex.desc else "无描述"}）'
+            module_alias = module_.alias
             malias = []
-            for a in module_alias:
-                malias.append(f'{a} -> {module_alias[a]}')
+            if module_alias:
+                for a in module_alias:
+                    malias.append(f'{a} -> {module_alias[a]}')
             if malias:
                 doc += f'\n{lang.t("core.help.alias")}\n' + '\n'.join(malias)
-            if help_name in developers:
-                dev_list = developers[help_name]
-                if isinstance(dev_list, (list, tuple)):
-                    devs = '、'.join(
-                        developers[help_name]) if developers[help_name] is not None else ''
-                elif isinstance(dev_list, str):
-                    devs = dev_list
-                else:
-                    devs = '<数据类型错误，请联系开发者解决>'
+            if module_.developers is not None:
+                    devs = '、'.join(module_.developers)
             else:
                 devs = ''
-            devs_msg = '\n模块作者：' + devs if devs != '' else ''
+            devs_msg = '\n模块作者：' + devs
             wiki_msg = f'\n模块文档：https://bot.teahouse.team/wiki/' + help_name
-            await msg.finish(doc + devs_msg)
+            await msg.finish(doc + devs_msg + wiki_msg)
         else:
             await msg.finish('此模块可能不存在，请检查输入。')
 
 
-@hlp.handle('{查看帮助列表}')
+@hlp.command('{查看帮助列表}')
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
     target_enabled_list = msg.enabled_modules
-    developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if msg.Feature.image:
         try:
@@ -266,28 +266,34 @@ async def _(msg: Bot.MessageSession):
                 module_ = module_list[x]
                 appends = [module_.bind_prefix]
                 doc_ = []
-                if isinstance(module_, Command):
-                    help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
-                                          command_prefixes=msg.prefixes)
+                help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
+                                      command_prefixes=msg.prefixes)
 
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
-                    if help_.args is not None:
-                        doc_.append(help_.return_formatted_help_doc())
-                else:
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
+                if module_.desc is not None:
+                    doc_.append(module_.desc)
+                if help_.args:
+                    doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
+                if module_.regex_list.set:
+                    doc += '\n此模块支持正则表达式，消息发送时将会匹配以下内容：'
+                    for regex in module_.regex_list.set:
+                        pattern = None
+                        if isinstance(regex.pattern, str):
+                            pattern = regex.pattern
+                        elif isinstance(regex.pattern, re.Pattern):
+                            pattern = regex.pattern.pattern
+                        if pattern:
+                            doc += f'\n（{pattern} {regex.desc if regex.desc else "无描述"}）'
                 appends.append(doc)
-                module_alias = ModulesManager.return_module_alias(
-                    module_.bind_prefix)
+                module_alias = module_.alias
                 malias = []
-                for a in module_alias:
-                    malias.append(f'{a} -> {module_alias[a]}')
+                if module_alias:
+                    for a in module_alias:
+                        malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
-                appends.append('、'.join(developers[x]) if developers.get(
-                    x) is not None else '')
-                if isinstance(module_, Command) and module_.base:
+                if module_.developers:
+                    appends.append('、'.join(module_.developers))
+                if module_.base:
                     essential.append(appends)
                 if x in target_enabled_list:
                     m.append(appends)
@@ -313,7 +319,7 @@ async def _(msg: Bot.MessageSession):
         help_msg = ['基础命令：']
         essential = []
         for x in module_list:
-            if isinstance(module_list[x], Command) and module_list[x].base:
+            if module_list[x].base:
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
         help_msg.append('模块扩展命令：')
@@ -334,7 +340,6 @@ async def _(msg: Bot.MessageSession):
 async def modules_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
-    developers = ModulesManager.return_modules_developers_map()
     legacy_help = True
     if msg.Feature.image:
         try:
@@ -344,30 +349,36 @@ async def modules_help(msg: Bot.MessageSession):
                 module_ = module_list[x]
                 if x[0] == '_':
                     continue
-                if isinstance(module_, Command) and (module_.base or module_.required_superuser):
+                if module_.base or module_.required_superuser:
                     continue
                 appends = [module_.bind_prefix]
                 doc_ = []
-                if isinstance(module_, Command):
-                    help_ = CommandParser(
-                        module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
-                    if help_.args is not None:
-                        doc_.append(help_.return_formatted_help_doc())
-                else:
-                    if module_.desc is not None:
-                        doc_.append(module_.desc)
+                help_ = CommandParser(
+                    module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+                if module_.desc is not None:
+                    doc_.append(module_.desc)
+                if help_.args:
+                    doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
+                if module_.regex_list.set:
+                    doc += '\n此模块支持正则表达式，消息发送时将会匹配以下内容：'
+                    for regex in module_.regex_list.set:
+                        pattern = None
+                        if isinstance(regex.pattern, str):
+                            pattern = regex.pattern
+                        elif isinstance(regex.pattern, re.Pattern):
+                            pattern = regex.pattern.pattern
+                        if pattern:
+                            doc += f'\n（{pattern} {regex.desc if regex.desc else "无描述"}）'
                 appends.append(doc)
-                module_alias = ModulesManager.return_module_alias(
-                    module_.bind_prefix)
+                module_alias = module_.alias
                 malias = []
-                for a in module_alias:
-                    malias.append(f'{a} -> {module_alias[a]}')
+                if module_alias:
+                    for a in module_alias:
+                        malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
-                appends.append('、'.join(developers[x]) if developers.get(
-                    x) is not None else '')
+                if module_.developers:
+                    appends.append('、'.join(module_.developers))
                 m.append(appends)
             if m:
                 tables.append(ImageTable(m, ['扩展模块列表', '帮助信息', '命令别名', '作者']))
@@ -384,7 +395,7 @@ async def modules_help(msg: Bot.MessageSession):
         for x in module_list:
             if x[0] == '_':
                 continue
-            if isinstance(module_list[x], Command) and (module_list[x].base or module_list[x].required_superuser):
+            if module_list[x].base or module_list[x].required_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))

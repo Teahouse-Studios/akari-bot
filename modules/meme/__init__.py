@@ -1,12 +1,12 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.dirty_check import check
 from modules.meme.jiki import jiki
 from modules.meme.moegirl import moegirl
 from modules.meme.nbnhhsh import nbnhhsh
 from modules.meme.urban import urban
 
-meme = on_command(
+meme = module(
     bind_prefix='meme',
     # well, people still use it though it only lived for an hour or so
     alias=['nbnhhsh'],

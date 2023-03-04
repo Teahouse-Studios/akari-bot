@@ -7,7 +7,8 @@ from typing import Dict, Union
 
 from core.builtins import PrivateAssets
 from core.logger import Logger
-from core.types import Command, Schedule, RegexCommand
+from core.types import Module
+from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
 
 load_dir_path = os.path.abspath('./modules/')
 
@@ -47,11 +48,11 @@ def load_modules():
 
 
 class ModulesManager:
-    modules: Dict[str, Union[Command, Schedule, RegexCommand]] = {}
+    modules: Dict[str, Module] = {}
     modulesOrigin: Dict[str, str] = {}
 
     @staticmethod
-    def add_module(module: Union[Command, Schedule, RegexCommand], py_module_name: str):
+    def add_module(module: Module, py_module_name: str):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
             ModulesManager.modulesOrigin.update({module.bind_prefix: py_module_name})
@@ -90,17 +91,22 @@ class ModulesManager:
             return None
 
     @staticmethod
-    def bind_to_module(bind_prefix: str, meta):
+    def bind_to_module(bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta]):
         if bind_prefix in ModulesManager.modules:
-            ModulesManager.modules[bind_prefix].match_list.add(meta)
+            if isinstance(meta, CommandMeta):
+                ModulesManager.modules[bind_prefix].command_list.add(meta)
+            elif isinstance(meta, RegexMeta):
+                ModulesManager.modules[bind_prefix].regex_list.add(meta)
+            elif isinstance(meta, ScheduleMeta):
+                ModulesManager.modules[bind_prefix].schedule_list.add(meta)
 
     @staticmethod
     def return_modules_list_as_dict(targetFrom: str = None) -> \
-        Dict[str, Union[Command, RegexCommand, Schedule]]:
+        Dict[str, Module]:
         if targetFrom is not None:
             returns = {}
             for m in ModulesManager.modules:
-                if isinstance(ModulesManager.modules[m], (Command, RegexCommand, Schedule)):
+                if isinstance(ModulesManager.modules[m], Module):
                     if targetFrom in ModulesManager.modules[m].exclude_from:
                         continue
                     available = ModulesManager.modules[m].available_for
@@ -143,16 +149,16 @@ class ModulesManager:
         return d
 
     @staticmethod
-    def return_specified_type_modules(module_type: [Command, RegexCommand, Schedule],
+    def return_specified_type_modules(module_type: Module,
                                       targetFrom: str = None) \
-        -> Dict[str, Union[Command, RegexCommand, Schedule]]:
+        -> Dict[str, Module]:
         d = {}
         modules = ModulesManager.return_modules_list_as_dict()
         for m in modules:
             module = modules[m]
             if isinstance(module, module_type):
                 if targetFrom is not None:
-                    if isinstance(module, (Command, RegexCommand, Schedule)):
+                    if isinstance(module, Module):
                         if targetFrom in module.exclude_from:
                             continue
                         if targetFrom in module.available_for or '*' in module.available_for:

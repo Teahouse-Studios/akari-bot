@@ -1,9 +1,9 @@
 from core.builtins import Bot
 from core.builtins import Plain, Image, Url
-from core.component import on_command
+from core.component import module
 from .mojang_api import *
 
-mcplayer = on_command(
+mcplayer = module(
     bind_prefix='mcplayer',
     desc='从 Mojang API 获取 Minecraft Java 版玩家信息',
     developers=['Dianliang233'],

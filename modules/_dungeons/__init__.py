@@ -2,10 +2,10 @@ from datetime import datetime
 
 from config import Config
 from core.builtins import Bot, Image
-from core.component import on_command
+from core.component import module
 from .daily_trials import fetch_daily_trials, json_render
 
-dun = on_command('dungeons_trials', alias=['dungeons', 'dungeon', 'dungeonstrials', 'dungeontrials', 'dungeon_trials'],
+dun = module('dungeons_trials', alias=['dungeons', 'dungeon', 'dungeonstrials', 'dungeontrials', 'dungeon_trials'],
                  desc='获取Minecraft Dungeons每日挑战信息。缓存12小时重置一次。')
 
 records = {'ts': 0}

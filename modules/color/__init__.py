@@ -8,10 +8,10 @@ import numpy as np
 import webcolors
 
 from core.builtins import Bot, Image as BotImage
-from core.component import on_command
+from core.component import module
 from core.utils.i18n import get_target_locale
 
-c = on_command('color', alias=['colour'], developers=['Dianliang233',], desc='{color.desc}')
+c = module('color', alias=['colour'], developers=['Dianliang233',], desc='{color.desc}')
 
 font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 
@@ -23,8 +23,8 @@ with open(os.path.dirname(os.path.abspath(__file__))+'/material_colors.json', 'r
 css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
 css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
-@c.handle('<color> {{color.help}}')
-@c.handle('{{color.random.help}}')
+@c.command('<color> {{color.help}}')
+@c.command('{{color.random.help}}')
 async def _(msg: Bot.MessageSession):
     lang = get_target_locale(msg)
     try:

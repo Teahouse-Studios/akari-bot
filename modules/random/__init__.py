@@ -1,9 +1,9 @@
 import secrets
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 
-r = on_command('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='随机数生成器（密码学安全）', )
+r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='随机数生成器（密码学安全）', )
 
 
 @r.handle('number <min> <max> {生成区间内的随机整数}', )

@@ -1,8 +1,8 @@
 from core.builtins import Bot, Image, Plain
-from core.component import on_command
+from core.component import module
 from .screenshot import get_pic
 
-dict_module = on_command('dictionary', alias=["dict"],
+dict_module = module('dictionary', alias=["dict"],
                          desc='查询科林斯词典。', developers=['Dianliang233'])
 
 

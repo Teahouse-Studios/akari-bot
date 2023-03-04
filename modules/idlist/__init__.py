@@ -2,12 +2,12 @@
 import urllib.parse
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.utils.http import get_url
 
 api = 'https://ca.projectxero.top/idlist/search'
 
-i = on_command('idlist')
+i = module('idlist')
 
 
 @i.handle('<query> {查询MCBEID表。}')

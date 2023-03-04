@@ -4,12 +4,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins import Bot
 from core.builtins import Image as Img
-from core.component import on_command
+from core.component import module
 from core.utils.cache import random_cache_path
 
 assets_path = os.path.abspath('./assets/arcaea')
 
-p = on_command('ptt',
+p = module('ptt',
                developers=['OasisAkari'])
 
 

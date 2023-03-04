@@ -1,9 +1,9 @@
 from core.builtins import Bot, Url
-from core.component import on_command
+from core.component import module
 from core.logger import Logger
 from .mcbbs_news import news
 
-mcbbs_news = on_command(
+mcbbs_news = module(
     bind_prefix='mcbbs_news',
     alias=['mn', 'mcbbsnews'],
     developers=['Dianliang233']
