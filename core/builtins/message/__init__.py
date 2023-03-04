@@ -41,7 +41,7 @@ class MessageSession(MessageSession):
         if result:
             if msgchain is not None and delete:
                 await send.delete()
-            if result.asDisplay() in confirm_command:
+            if result.asDisplay(text_only=True) in confirm_command:
                 return True
             return False
         else:

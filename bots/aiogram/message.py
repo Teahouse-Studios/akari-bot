@@ -107,7 +107,7 @@ class MessageSession(MS):
             return True
         return False
 
-    def asDisplay(self):
+    def asDisplay(self, text_only=False):
         return self.session.message.text
 
     async def delete(self):

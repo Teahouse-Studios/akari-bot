@@ -51,7 +51,7 @@ async def main(msg: Bot.MessageSession):
                 i += 1
                 reply_text.append(f'{i}. {info}')
             reply = await msg.waitReply('搜索结果如下：\n' + '\n'.join(reply_text) + '\n请回复编号来选择mod。')
-            replied = reply.asDisplay()
+            replied = reply.asDisplay(text_only=True)
             if replied.isdigit():
                 replied = int(replied)
                 if replied > len(infos):
@@ -78,7 +78,7 @@ async def main(msg: Bot.MessageSession):
             for info2 in infos_2:
                 reply_text.append(f'{info2}')
             reply2 = await msg.waitReply('此mod拥有如下版本：\n' + '\n'.join(reply_text) + '\n请回复版本号来选择版本。')
-            replied2 = reply2.asDisplay()
+            replied2 = reply2.asDisplay(text_only=True)
             if replied2 in infos_2:
                 mod_url_2 = infos_2[replied2]
                 ver = replied2

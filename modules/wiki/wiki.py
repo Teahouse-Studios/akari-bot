@@ -328,9 +328,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 confirm = await session.waitNextMessage(wait_msg_list, delete=True)
                 auto_index = False
                 index = 0
-                if confirm.asDisplay() in confirm_command:
+                if confirm.asDisplay(text_only=True) in confirm_command:
                     auto_index = True
-                elif confirm.asDisplay().isdigit():
+                elif confirm.asDisplay(text_only=True).isdigit():
                     index = int(confirm.asDisplay()) - 1
                 else:
                     return

@@ -133,7 +133,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     async def ans(msg: Bot.MessageSession, answer):  # 定义回答函数的功能
         wait = await msg.waitAnyone()  # 等待对象内的任意人回答
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if wait.asDisplay() != answer:  # 如果回答不正确
+            if wait.asDisplay(text_only=True) != answer:  # 如果回答不正确
                 Logger.info(f'{wait.asDisplay()} != {answer}')  # 输出日志
                 return await ans(wait, answer)  # 进行下一轮检查
             else:
@@ -159,7 +159,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
         result = await msg.waitNextMessage(
             [Image(newpath), Plain(lang.t('chemical_code.captcha.text', times=set_timeout))])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if result.asDisplay() == csr['name']:
+            if result.asDisplay(text_only=True) == csr['name']:
                 await result.sendMessage(lang.t('chemical_code.correct'))
             else:
                 await result.sendMessage(lang.t('chemical_code.incorrect', answer=play_state[msg.target.targetId]["answer"]))
