@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession):
     res_moegirl = await moegirl(msg.parsed_msg['<term>'])
     res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'])
     res_urban = await urban(msg.parsed_msg['<term>'])
-    chk = await check(res_jiki, res_moegirl, res_nbnhhsh, res_urban)
+    chk = await check(res_moegirl, res_nbnhhsh, res_urban)
     res = ''
     for i in chk:
         if not i['status']:
