@@ -232,7 +232,7 @@ async def bot_help(msg: Bot.MessageSession):
                     elif isinstance(regex.pattern, re.Pattern):
                         pattern = regex.pattern.pattern
                     if pattern:
-                        doc += f'\n（{pattern} {regex.desc if regex.desc else "无描述"}）'
+                        doc += f'\n{pattern} （{regex.desc if regex.desc else "无描述"}）'
             module_alias = module_.alias
             malias = []
             if module_alias:
@@ -283,7 +283,7 @@ async def _(msg: Bot.MessageSession):
                         elif isinstance(regex.pattern, re.Pattern):
                             pattern = regex.pattern.pattern
                         if pattern:
-                            doc += f'\n（{pattern} {regex.desc if regex.desc else "无描述"}）'
+                            doc += f'\n{pattern} （{regex.desc if regex.desc else "无描述"}）'
                 appends.append(doc)
                 module_alias = module_.alias
                 malias = []
@@ -369,7 +369,7 @@ async def modules_help(msg: Bot.MessageSession):
                         elif isinstance(regex.pattern, re.Pattern):
                             pattern = regex.pattern.pattern
                         if pattern:
-                            doc += f'\n（{pattern} {regex.desc if regex.desc else "无描述"}）'
+                            doc += f'\n{pattern} （{regex.desc if regex.desc else "无描述"}）'
                 appends.append(doc)
                 module_alias = module_.alias
                 malias = []
