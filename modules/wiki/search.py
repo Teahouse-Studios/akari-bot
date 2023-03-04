@@ -96,5 +96,5 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
         msg_list.append('回复编号以查询对应的页面。')
     reply = await session.waitReply(Plain('\n'.join(msg_list)))
     if reply.asDisplay(text_only=True).isdigit():
-        reply_number = int(reply.asDisplay()) - 1
+        reply_number = int(reply.asDisplay(text_only=True)) - 1
         await query_pages(reply, wait_msg_list[reply_number])
