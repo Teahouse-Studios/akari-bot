@@ -5,14 +5,14 @@ import traceback
 from typing import Union, Dict
 
 from core.exceptions import InvalidCommandFormatError
-from core.types import Command, MessageSession
+from core.types import MessageSession, Module
 from core.utils.i18n import get_target_locale, Locale
 from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..logger import Logger
 
 
 class CommandParser:
-    def __init__(self, args: Command, command_prefixes: list,
+    def __init__(self, args: Module, command_prefixes: list,
                  bind_prefix=None,
                  msg: MessageSession = None):
         args = copy.deepcopy(args)
@@ -21,8 +21,9 @@ class CommandParser:
         self.origin_template = args
         self.msg: Union[MessageSession, None] = msg
         self.options_desc = []
+        lang = get_target_locale(self.msg) if self.msg is not None else Locale('zh_cn')
         help_docs = {}
-        for match in (args.match_list.set if self.msg is None else args.match_list.get(self.msg.target.targetFrom)):
+        for match in (args.command_list.set if self.msg is None else args.command_list.get(self.msg.target.targetFrom)):
             if match.help_doc:
                 for m in match.help_doc:
                     help_docs[m] = {'priority': match.priority, 'meta': match}
@@ -30,13 +31,17 @@ class CommandParser:
                 help_docs[''] = {'priority': match.priority, 'meta': match}
             if match.options_desc is not None:
                 for m in match.options_desc:
-                    self.options_desc.append(f'{m}  {match.options_desc[m]}')
+                    desc = match.options_desc[m]
+                    if locale_str := re.findall(r'\{(.*)}', desc):
+                        for l in locale_str:
+                            desc = desc.replace(f'{{{l}}}', lang.t(l))
+                    self.options_desc.append(f'{m} {desc}')
         self.args: Dict[Union[Template, ''], dict] = help_docs
 
     def return_formatted_help_doc(self) -> str:
         lang = get_target_locale(self.msg) if self.msg is not None else Locale('zh_cn')
         if not self.args:
-            return lang.t('core.help.none')
+            return ''
         lst = []
         format_args = templates_to_str([args for args in self.args if args != ''], with_desc=True)
         for x in format_args:
@@ -60,7 +65,7 @@ class CommandParser:
             split_command = command.split(' ')
         Logger.debug(split_command)
         try:
-            if not isinstance(self.origin_template, Command):
+            if not self.origin_template.command_list.set:
                 if len(split_command) == 1:
                     return None, None
             else:

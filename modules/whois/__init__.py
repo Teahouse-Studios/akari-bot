@@ -1,12 +1,12 @@
 import ipaddress
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from .ip import check_ip, format_ip
 
 # from .domain import check_domain, format_domain
 
-w = on_command('whois', desc='查询 IP Whois 信息',
+w = module('whois', desc='查询 IP Whois 信息',
                developers=['Dianliang233'])
 
 

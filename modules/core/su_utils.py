@@ -9,14 +9,14 @@ import ujson as json
 
 from config import Config
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
-from core.component import on_command
+from core.component import module
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from database import BotDBUtil
 
-su = on_command('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
+su = module('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
 
 @su.handle('add <user>')
@@ -39,7 +39,7 @@ async def del_su(message: Bot.MessageSession):
             await message.finish('操作成功：已将' + user + '移出超级用户。')
 
 
-ana = on_command('analytics', required_superuser=True)
+ana = module('analytics', required_superuser=True)
 
 
 @ana.handle()
@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession):
                 Image(path)])
 
 
-set_ = on_command('set', required_superuser=True)
+set_ = module('set', required_superuser=True)
 
 
 @set_.handle('modules <targetId> <modules> ...')
@@ -129,7 +129,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(f'成功为对象设置了以下参数：{k} -> {str(v)}')
 
 
-ae = on_command('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
+ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
 
 
 @ae.handle('check <user>')
@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(f'成功解除 {user} 的封禁。')
 
 
-rst = on_command('restart', developers=['OasisAkari'], required_superuser=True)
+rst = module('restart', developers=['OasisAkari'], required_superuser=True)
 
 
 def restart():
@@ -245,7 +245,7 @@ async def restart_bot(msg: Bot.MessageSession):
         restart()
 
 
-upd = on_command('update', developers=['OasisAkari'], required_superuser=True)
+upd = module('update', developers=['OasisAkari'], required_superuser=True)
 
 
 def pull_repo():
@@ -265,7 +265,7 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.sendMessage(update_dependencies())
 
 
-upds = on_command('update&restart', developers=['OasisAkari'], required_superuser=True)
+upds = module('update&restart', developers=['OasisAkari'], required_superuser=True)
 
 
 @upds.handle()
@@ -282,7 +282,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
 
 
 if Bot.FetchTarget.name == 'QQ':
-    resume = on_command('resume', developers=['OasisAkari'], required_superuser=True)
+    resume = module('resume', developers=['OasisAkari'], required_superuser=True)
 
 
     @resume.handle()
@@ -310,7 +310,7 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.sendMessage('没有需要重发的消息。')
 
-echo = on_command('echo', developers=['OasisAkari'], required_superuser=True)
+echo = module('echo', developers=['OasisAkari'], required_superuser=True)
 
 
 @echo.handle('<display_msg>')
@@ -318,7 +318,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'])
 
 
-say = on_command('say', developers=['OasisAkari'], required_superuser=True)
+say = module('say', developers=['OasisAkari'], required_superuser=True)
 
 
 @say.handle('<display_msg>')
@@ -327,7 +327,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('enable_eval'):
-    _eval = on_command('eval', developers=['Dianliang233'], required_superuser=True)
+    _eval = module('eval', developers=['Dianliang233'], required_superuser=True)
 
 
     @_eval.handle('<display_msg>')

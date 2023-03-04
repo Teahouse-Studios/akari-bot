@@ -1,7 +1,7 @@
 import traceback
 
 from core.builtins.message import MessageSession
-from core.component import on_command
+from core.component import module
 from modules.wiki.utils.dbutils import WikiTargetInfo, Audit
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 from .ab import ab
@@ -10,7 +10,7 @@ from .newbie import newbie
 from .rc import rc
 from .rc_qq import rc_qq
 
-rc_ = on_command('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])
+rc_ = module('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])
 
 
 @rc_.handle()
@@ -33,7 +33,7 @@ async def rc_loader(msg: MessageSession):
         await msg.finish(res)
 
 
-a = on_command('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
+a = module('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
 
 
 @a.handle()
@@ -56,7 +56,7 @@ async def ab_loader(msg: MessageSession):
         await msg.finish(res)
 
 
-n = on_command('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
+n = module('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
 
 
 @n.handle()

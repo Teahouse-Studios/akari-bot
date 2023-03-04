@@ -2,7 +2,7 @@
 import discord
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.utils.message import convertDiscordEmbed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
@@ -78,7 +78,7 @@ Only Nintendo Switch XXXX-YYYY formatted error codes are supported.'
         return memes.get(err.casefold())
 
 
-e = on_command('err', developers=['OasisAkari', 'kurisu'])
+e = module('err', developers=['OasisAkari', 'kurisu'])
 
 
 @e.handle('<errcode> {解析任天堂系列主机的报错码并给出原因。}')

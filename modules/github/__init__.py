@@ -1,8 +1,8 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from modules.github import repo, user, search
 
-github = on_command('github', alias=['gh'], developers=['Dianliang233'])
+github = module('github', alias=['gh'], developers=['Dianliang233'])
 
 
 @github.handle('<name> {尝试自动识别并区分 repo/user}')

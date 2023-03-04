@@ -1,9 +1,9 @@
 import datetime
 
 from core.builtins import Bot, Embed, Image, EmbedField
-from core.component import on_command
+from core.component import module
 
-t = on_command('embed_test', required_superuser=True)
+t = module('embed_test', required_superuser=True)
 
 
 @t.handle()

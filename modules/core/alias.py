@@ -1,11 +1,11 @@
 from core.builtins import Bot, Image
-from core.component import on_command
+from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 
-ali = on_command('alias', required_admin=True, base=True)
+ali = module('alias', required_admin=True, base=True)
 
 
-@ali.handle('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}',
+@ali.command('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}',
             'reset {重置自定义命令别名}',
             'list {列出自定义命令别名列表}')
 async def set_alias(msg: Bot.MessageSession):

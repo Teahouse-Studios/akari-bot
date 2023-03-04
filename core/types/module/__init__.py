@@ -16,7 +16,7 @@ def convert2lst(elements: Union[str, list, tuple]) -> list:
     return elements
 
 
-class Command:
+class Module:
     def __init__(self,
                  bind_prefix: str,
                  alias: Union[str, list, tuple, dict] = None,
@@ -42,68 +42,10 @@ class Command:
         self.required_superuser: bool = required_superuser
         self.available_for: List[str] = convert2lst(available_for)
         self.exclude_from: List[str] = convert2lst(exclude_from)
-        self.match_list = CommandMatches()
+        self.command_list = CommandMatches()
+        self.regex_list = RegexMatches()
+        self.schedule_list = ScheduleMatches()
 
 
-class RegexCommand:
-    def __init__(self,
-                 bind_prefix: str,
-                 alias: Union[str, list, tuple, dict] = None,
-                 desc: str = None,
-                 recommend_modules: Union[str, list, tuple] = None,
-                 developers: Union[str, list, tuple] = None,
-                 required_admin: bool = False,
-                 base: bool = False,
-                 required_superuser: bool = False,
-                 available_for: Union[str, list, tuple] = '*',
-                 exclude_from: Union[str, list, tuple] = ''):
-        self.bind_prefix: str = bind_prefix
-        if isinstance(alias, str):
-            alias = {alias: bind_prefix}
-        elif isinstance(alias, (tuple, list)):
-            alias = {x: bind_prefix for x in alias}
-        self.alias: Dict[str, str] = alias
-        self.desc: str = desc
-        self.recommend_modules: List[str] = convert2lst(recommend_modules)
-        self.developers: List[str] = convert2lst(developers)
-        self.required_admin: bool = required_admin
-        self.base: bool = base
-        self.required_superuser: bool = required_superuser
-        self.available_for: List[str] = convert2lst(available_for)
-        self.exclude_from: List[str] = convert2lst(exclude_from)
-        self.match_list = RegexMatches()
-
-
-class Schedule:
-    def __init__(self,
-                 trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger],
-                 bind_prefix: str,
-                 desc: str = None,
-                 alias: Union[str, list, tuple, dict] = None,
-                 recommend_modules: Union[str, list, tuple] = None,
-                 developers: Union[str, list, tuple] = None,
-                 required_superuser: bool = False,
-                 available_for: Union[str, list, tuple] = '*',
-                 exclude_from: Union[str, list, tuple] = ''):
-        self.trigger: [AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger] = trigger
-        self.bind_prefix: str = bind_prefix
-        self.desc: str = desc
-        if isinstance(alias, str):
-            alias = {alias: bind_prefix}
-        elif isinstance(alias, (tuple, list)):
-            alias = {x: bind_prefix for x in alias}
-        self.alias: Dict[str, str] = alias
-        self.recommend_modules: List[str] = convert2lst(recommend_modules)
-        self.developers: List[str] = convert2lst(developers)
-        self.required_superuser: bool = required_superuser
-        self.available_for: List[str] = convert2lst(available_for)
-        self.exclude_from: List[str] = convert2lst(exclude_from)
-        self.match_list = ScheduleMatches()
-
-    async def execute(self):
-        for h in self.match_list.set:
-            await h.function()
-
-
-__all__ = ["Command", "RegexCommand", "Schedule", "AndTrigger", "OrTrigger", "DateTrigger",
+__all__ = ["Module", "AndTrigger", "OrTrigger", "DateTrigger",
            "CronTrigger", "IntervalTrigger"]

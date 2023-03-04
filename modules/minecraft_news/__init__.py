@@ -7,7 +7,7 @@ import ujson as json
 
 from config import Config
 from core.builtins import Url, Bot
-from core.component import on_schedule
+from core.component import module
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url
@@ -42,14 +42,12 @@ class Article:
 
 bot = Bot.FetchTarget
 
-
-minecraft_news = on_schedule('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
-             recommend_modules=['feedback_news'],
-             trigger=IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180),
-             desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
+minecraft_news = module('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
+                        recommend_modules=['feedback_news'],
+                        desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
 
 
-@minecraft_news.handle()
+@minecraft_news.handle(IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180))
 async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
@@ -83,12 +81,12 @@ async def start_check_news():
             Logger.error(traceback.format_exc())
 
 
-feedback_news = on_schedule('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
-             trigger=IntervalTrigger(seconds=300), desc='开启后将会推送来自Minecraft Feedback的更新记录。',
-             alias='feedbacknews')
+feedback_news = module('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
+                       desc='开启后将会推送来自Minecraft Feedback的更新记录。',
+                       alias='feedbacknews')
 
 
-@feedback_news.handle()
+@feedback_news.handle(IntervalTrigger(seconds=300))
 async def feedback_news():
     sections = [{'name': 'beta',
                  'url': 'https://minecraftfeedback.zendesk.com/api/v2/help_center/en-us/sections/360001185332/articles?per_page=5'},

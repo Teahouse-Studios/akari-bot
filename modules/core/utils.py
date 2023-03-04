@@ -7,11 +7,11 @@ import psutil
 from cpuinfo import get_cpu_info
 
 from core.builtins import Bot, PrivateAssets
-from core.component import on_command
+from core.component import module
 from core.utils.i18n import get_available_locales, get_target_locale
 from database import BotDBUtil
 
-version = on_command('version',
+version = module('version',
                      base=True,
                      desc='查看机器人的版本号',
                      developers=['OasisAkari', 'Dianliang233']
@@ -29,7 +29,7 @@ async def bot_version(msg: Bot.MessageSession):
     await msg.finish(msgs, msgs)
 
 
-ping = on_command('ping',
+ping = module('ping',
                   base=True,
                   desc='获取机器人状态',
                   developers=['OasisAkari']
@@ -77,7 +77,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-admin = on_command('admin',
+admin = module('admin',
                    base=True,
                    required_admin=True,
                    developers=['OasisAkari'],
@@ -132,7 +132,7 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish("此成员没有被设置禁止使用机器人。")
 
 
-locale = on_command('locale',
+locale = module('locale',
                     base=True,
                     required_admin=True,
                     developers=['Dianliang233'],
@@ -152,7 +152,7 @@ async def config_gu(msg: Bot.MessageSession):
         await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
 
 
-whoami = on_command('whoami', developers=['Dianliang233'], base=True)
+whoami = module('whoami', developers=['Dianliang233'], base=True)
 
 
 @whoami.handle('{获取发送命令的账号在机器人内部的 ID}')
@@ -168,7 +168,7 @@ async def _(msg: Bot.MessageSession):
                      disable_secret_check=True)
 
 
-tog = on_command('toggle', developers=['OasisAkari'], base=True, required_admin=True)
+tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
 
 
 @tog.handle('typing {切换是否展示输入提示}')
@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(f'成功{"打开" if state else "关闭"}错字检查提示。')
 
 
-mute = on_command('mute', developers=['Dianliang233'], base=True, required_admin=True,
+mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
                   desc='使机器人停止发言。')
 
 
@@ -203,7 +203,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish('成功禁言。' if msg.data.switch_mute() else '成功取消禁言。')
 
 
-leave = on_command('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
+leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
                    desc='使机器人离开群聊。')
 
 

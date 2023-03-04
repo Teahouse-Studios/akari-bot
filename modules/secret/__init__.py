@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from core.builtins import Bot
-from core.component import on_schedule
+from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
 from core.scheduler import Scheduler, DateTrigger
@@ -11,11 +11,11 @@ from modules.wiki.utils.wikilib import WikiLib
 wiki = WikiLib('https://minecraft.fandom.com/zh/api.php')
 bot = Bot.FetchTarget
 
-s = on_schedule('__check_newbie__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
-             required_superuser=True, developers=['OasisAkari'])
+cn = module('__check_newbie__', required_superuser=True, developers=['OasisAkari'])
 
 
-@s.handle()
+@cn.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
+
 async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return
@@ -45,10 +45,10 @@ async def newbie():
                         qq.append(xz['title'])
 
 
-a = on_schedule('__check_abuse__', trigger=DateTrigger(datetime.now() + timedelta(seconds=10)),
-             required_superuser=True, developers=['OasisAkari'])
+ca = module('__check_abuse__', required_superuser=True, developers=['OasisAkari'])
 
-@a.handle()
+
+@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
 async def _():
     if bot.name not in ['QQ', 'TEST']:
         return

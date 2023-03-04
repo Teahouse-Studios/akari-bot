@@ -11,7 +11,7 @@ from tenacity import retry, stop_after_attempt
 
 from core.builtins import Bot
 from core.builtins import Image, Plain
-from core.component import on_command
+from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
@@ -51,24 +51,24 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
                      (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
 
 
-cc = on_command('chemical_code', alias={'cc': 'chemical_code',
+cc = module('chemical_code', alias={'cc': 'chemical_code',
                                         'chemicalcode': 'chemical_code',
                                         'captcha': 'chemical_code captcha'},
                 desc='{chemical_code.desc}', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
-@cc.handle('{{chemical_code.normal.help}}')  # 直接使用 cc 命令将触发此装饰器
+@cc.command('{{chemical_code.normal.help}}')  # 直接使用 cc 命令将触发此装饰器
 async def chemical_code_by_random(msg: Bot.MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
-@cc.handle('captcha {{chemical_code.captcha.help}}')
+@cc.command('captcha {{chemical_code.captcha.help}}')
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@cc.handle('stop {{chemical_code.stop.help}}')
+@cc.command('stop {{chemical_code.stop.help}}')
 async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
     lang = get_target_locale(msg)
@@ -82,7 +82,7 @@ async def s(msg: Bot.MessageSession):
         await msg.sendMessage(lang.t('chemical_code.stop.none'))
 
 
-@cc.handle('<csid> {{chemical_code.csid.help}}')
+@cc.command('<csid> {{chemical_code.csid.help}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     lang = get_target_locale(msg)
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID

@@ -1,10 +1,10 @@
 import os
 import openai
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from config import Config
 
-n = on_command('natural', alias=['nl2c'], developers=['Dianliang233'], desc='使用 InstructGPT 把自然语言转换成小可命令。', required_superuser=True)
+n = module('natural', alias=['nl2c'], developers=['Dianliang233'], desc='使用 InstructGPT 把自然语言转换成小可命令。', required_superuser=True)
 
 # Load your API key from an environment variable or secret management service
 openai.api_key = Config('openai_api_key')

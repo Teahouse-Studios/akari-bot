@@ -3,12 +3,12 @@ import re
 import traceback
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.dirty_check import check
 from core.utils.i18n import get_target_locale
 from .server import server
 
-s = on_command('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
+s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
 @s.handle('<ServerIP:Port> [-r] [-p] {{server.desc}}',

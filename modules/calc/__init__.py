@@ -4,15 +4,15 @@ import subprocess
 import sys
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
 
-c = on_command('calc', developers=[
+c = module('calc', developers=[
     'Dianliang233'], desc='安全地计算 Python ast 表达式。')
 
 
-@c.handle('<math_expression>', options_desc={'+': '和/正数：1 + 2 -> 3',
+@c.command('<math_expression>', options_desc={'+': '和/正数：1 + 2 -> 3',
                                              '-': '差/负数：3 - 1 -> 2',
                                              '/': '商：6 / 3 -> 2',
                                              '*': '积：2 * 3 -> 6',

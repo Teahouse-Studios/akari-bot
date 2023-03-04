@@ -4,10 +4,10 @@ import urllib.parse
 from bs4 import BeautifulSoup
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.utils.http import get_url
 
-mod_dl = on_command(
+mod_dl = module(
     bind_prefix='mod_dl',
     desc='下载CurseForge上的Mod。',
     developers=['HornCopper', 'OasisAkari'],

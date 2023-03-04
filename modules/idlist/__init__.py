@@ -2,13 +2,13 @@
 import urllib.parse
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from core.utils.http import get_url
 from core.utils.i18n import get_target_locale
 
 api = 'https://ca.projectxero.top/idlist/search'
 
-i = on_command('idlist')
+i = module('idlist')
 
 
 @i.handle('<query> {{idlist.desc}}')

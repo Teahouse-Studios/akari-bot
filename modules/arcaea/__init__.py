@@ -4,7 +4,7 @@ import traceback
 from config import Config
 from core.builtins import Bot
 from core.builtins import Plain, Image
-from core.component import on_command
+from core.component import module
 from core.utils.http import get_url
 from .dbutils import ArcBindInfoManager
 from .getb30 import getb30
@@ -15,15 +15,15 @@ from .initialize import arcb30init
 from .song import get_song_info
 from .utils import get_userinfo
 
-arc = on_command('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关内容。',
-                 alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
+arc = module('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关内容。',
+             alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-@arc.handle('b30 [<friendcode>] {查询一个Arcaea用户的b30列表（自动选择使用API）}',
-            'b30 official [<friendcode>] {使用官方API}',
-            'b30 unofficial [<friendcode>] {使用非官方API}')
+@arc.command('b30 [<friendcode>] {查询一个Arcaea用户的b30列表（自动选择使用API）}',
+             'b30 official [<friendcode>] {使用官方API}',
+             'b30 unofficial [<friendcode>] {使用非官方API}')
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
         await msg.finish(
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
 
 
-@arc.handle('info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}',
+@arc.command('info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}',
             'info official [<friendcode>] {使用官方API}',
             'info unofficial [<friendcode>] {使用非官方API}', )
 async def _(msg: Bot.MessageSession):
@@ -135,7 +135,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
 
 
-@arc.handle('song <songname+prs/pst/byd> {查询一首Arcaea谱面的信息}')
+@arc.command('song <songname+prs/pst/byd> {查询一首Arcaea谱面的信息}')
 async def _(msg: Bot.MessageSession):
     songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
     songname_split = songname_.split(' ')
@@ -163,7 +163,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(Plain(await get_song_info(songname, diff, usercode)))
 
 
-@arc.handle('bind <friendcode/username> {绑定一个Arcaea用户}')
+@arc.command('bind <friendcode/username> {绑定一个Arcaea用户}')
 async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<friendcode/username>']
     getcode = await get_userinfo(code)
@@ -180,14 +180,14 @@ async def _(msg: Bot.MessageSession):
             await msg.finish('绑定失败，请尝试使用好友码绑定。')
 
 
-@arc.handle('unbind {取消绑定用户}')
+@arc.command('unbind {取消绑定用户}')
 async def _(msg: Bot.MessageSession):
     unbind = ArcBindInfoManager(msg).remove_bind_info()
     if unbind:
         await msg.finish('取消绑定成功。')
 
 
-@arc.handle('initialize', required_superuser=True)
+@arc.command('initialize', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
@@ -198,7 +198,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('成功初始化！')
 
 
-@arc.handle('download {获取最新版本的游戏apk}')
+@arc.command('download {获取最新版本的游戏apk}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
@@ -208,7 +208,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}')])
 
 
-@arc.handle('random {随机一首曲子}')
+@arc.command('random {随机一首曲子}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
@@ -222,7 +222,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@arc.handle('rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}')
+@arc.command('rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(['未配置webrender，无法使用此命令。'])
@@ -239,7 +239,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('\n'.join(r))
 
 
-@arc.handle('switch {切换查询时默认优先使用的API接口}')
+@arc.command('switch {切换查询时默认优先使用的API接口}')
 async def _(msg: Bot.MessageSession):
     value = msg.options.get('arc_api', True)
     set_value = msg.data.edit_option('arc_api', not value)

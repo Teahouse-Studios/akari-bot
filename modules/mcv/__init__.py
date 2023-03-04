@@ -1,8 +1,8 @@
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from .mcv import mcv, mcbv, mcdv, mcev
 
-m = on_command(
+m = module(
     bind_prefix='mcv',
     alias='m',
     developers=['OasisAkari', 'Dianliang233'],
@@ -14,7 +14,7 @@ async def mcv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcv())
 
 
-mb = on_command(
+mb = module(
     bind_prefix='mcbv',
     developers=['OasisAkari', 'Dianliang233'])
 
@@ -24,7 +24,7 @@ async def mcbv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcbv())
 
 
-md = on_command(
+md = module(
     bind_prefix='mcdv',
     developers=['OasisAkari', 'Dianliang233'])
 
@@ -34,7 +34,7 @@ async def mcdv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcdv())
 
 
-me = on_command(
+me = module(
     bind_prefix='mcev',
     developers=['OasisAkari', 'Dianliang233'])
 

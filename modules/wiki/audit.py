@@ -1,10 +1,10 @@
 from core.builtins import Bot, Plain, Image
-from core.component import on_command
+from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
-aud = on_command('wiki_audit', alias='wa',
+aud = module('wiki_audit', alias='wa',
                  developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
 

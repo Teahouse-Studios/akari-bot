@@ -1,8 +1,8 @@
 from core.builtins import Plain, Image
 from core.builtins.message import MessageSession
-from core.component import on_command
+from core.component import module
 
-test = on_command('test')
+test = module('test')
 
 
 @test.handle()

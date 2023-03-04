@@ -5,7 +5,7 @@ from typing import Union
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
-from core.component import on_command
+from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.http import download_to_cache
@@ -15,7 +15,7 @@ from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, In
 
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 
-wiki = on_command('wiki',
+wiki = module('wiki',
                   alias={'wiki_start_site': 'wiki set',
                          'interwiki': 'wiki iw'},
                   recommend_modules='wiki_inline',

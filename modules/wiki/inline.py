@@ -5,7 +5,7 @@ import urllib.parse
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice
-from core.component import on_regex
+from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import download_to_cache
@@ -14,9 +14,9 @@ from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import query_pages, generate_screenshot_v2_blocklist
 
-wiki_inline = on_regex('wiki_inline',
-                       desc='开启后将自动解析消息中带有的[[]]或{{}}字符串并自动查询Wiki，如[[海晶石]]',
-                       alias='wiki_regex', developers=['OasisAkari'])
+wiki_inline = module('wiki_inline',
+                     desc='开启后将自动解析消息中带有的[[]]或{{}}字符串并自动查询Wiki，如[[海晶石]]',
+                     alias='wiki_regex', developers=['OasisAkari'])
 
 
 @wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A')

@@ -1,11 +1,11 @@
 import re
 
 from core.builtins import Bot
-from core.component import on_command
+from core.component import module
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from .user import get_user_info
 
-usr = on_command('user', alias=['u'],
+usr = module('user', alias=['u'],
                  developers=['OasisAkari'])
 
 

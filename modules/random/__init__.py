@@ -1,10 +1,11 @@
 import secrets
 
 from core.builtins import Bot
-from core.component import on_command
 from core.utils.i18n import get_target_locale
+from core.component import module
 
-r = on_command('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.desc}', )
+
+r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.desc}', )
 
 
 @r.handle('number <min> <max> {{random.number.help}}', )
