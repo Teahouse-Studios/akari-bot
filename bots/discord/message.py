@@ -118,7 +118,7 @@ class MessageSession(MS):
             return True
         return False
 
-    def asDisplay(self):
+    def asDisplay(self, text_only=False):
         msg = self.session.message.content
         msg = re.sub(r'<@(.*?)>', r'Discord|Client|\1', msg)
         return msg

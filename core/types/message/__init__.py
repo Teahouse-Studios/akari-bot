@@ -173,9 +173,10 @@ class MessageSession:
         :return: 任意人的MessageChain对象
         """
 
-    def asDisplay(self) -> str:
+    def asDisplay(self, text_only=False) -> str:
         """
         用于将消息转换为一般文本格式。
+        :param text_only: 是否只保留纯文本（默认为False）
         """
 
     def t(self, *args, **kwargs) -> str:
