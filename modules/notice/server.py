@@ -62,7 +62,7 @@ async def server(address, raw=False, showplayer=True, mode='j'):
                             if 'version' in jejson:
                                 versions = "游戏版本：" + jejson['version']['name']
                                 servers.append(versions)
-                            servers.append(serip + ':' + port1)
+                            servers.append('服务器IP：' + serip + ':' + port1)
                         except Exception:
                             traceback.print_exc()
                             servers.append(str(ErrorMessage("JE查询调用API时发生错误。")))
