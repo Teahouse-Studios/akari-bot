@@ -5,8 +5,6 @@ from typing import TypedDict
 
 import ujson as json
 
-from core.builtins.message import MessageSession
-
 from .text import remove_suffix
 
 
