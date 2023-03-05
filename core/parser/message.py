@@ -92,7 +92,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
         if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
-                or msg.target.senderId in msg.options.get('ban', []):
+            or msg.target.senderId in msg.options.get('ban', []):
             return
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')
@@ -133,7 +133,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)
             else:
-                return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                return await msg.sendMessage(msg.locale.t("parser.command.running.prompt"))
 
             no_alias = False
             for moduleName in modules:
@@ -157,7 +157,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 mute = True
             if command_first_word == 'sudo':
                 if not msg.checkSuperUser():
-                    return await msg.sendMessage('你不是本机器人的超级管理员，无法使用sudo命令。')
+                    return await msg.sendMessage(msg.locale.t("parser.sudo.permission.denied"))
                 sudo = True
                 del command_split[0]
                 command_first_word = command_split[0].lower()
@@ -176,27 +176,30 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     module: Module = modules[command_first_word]
                     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
                         if module.desc is not None:
-                            desc = f'介绍：\n{module.desc}'
+                            desc = msg.locale.t("parser.module.desc", desc=module.desc)
                             if command_first_word not in msg.enabled_modules:
-                                desc += f'\n{command_first_word}模块未启用，请发送{msg.prefixes[0]}enable {command_first_word}启用本模块。'
+                                desc += '\n' + msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
+                                                            prefix=msg.prefixes[0])
                             await msg.sendMessage(desc)
                         else:
-                            await msg.sendMessage(ErrorMessage(f'{command_first_word}未绑定任何命令，请联系开发者处理。'))
+                            await msg.sendMessage(ErrorMessage(msg.locale.t("error.module.unbound",
+                                                                            module=command_first_word)))
                         return
 
                     if module.required_superuser:
                         if not msg.checkSuperUser():
-                            await msg.sendMessage('你没有使用该命令的权限。')
+                            await msg.sendMessage(msg.locale.t("parser.superuser.permission.denied"))
                             return
                     elif not module.base:
                         if command_first_word not in msg.enabled_modules and not sudo and require_enable_modules:  # 若未开启
                             await msg.sendMessage(
-                                f'{command_first_word}模块未启用，请发送{msg.prefixes[0]}enable {command_first_word}启用本模块。')
+                                msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
+                                             prefix=msg.prefixes[0]))
                             return
                     elif module.required_admin:
                         if not await msg.checkPermission():
-                            await msg.sendMessage(
-                                f'{command_first_word}命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
+                            await msg.sendMessage(msg.locale.t("parser.admin.module.permission.denied",
+                                                               module=command_first_word))
                             return
 
                     none_doc = True  # 检查模块绑定的命令是否有文档
@@ -216,12 +219,12 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                                     if submodule.required_superuser:
                                         if not msg.checkSuperUser():
-                                            await msg.sendMessage('你没有使用该命令的权限。')
+                                            await msg.sendMessage(msg.locale.t("parser.superuser.permission.denied"))
                                             return
                                     elif submodule.required_admin:
                                         if not await msg.checkPermission():
                                             await msg.sendMessage(
-                                                f'此命令仅能被该群组的管理员所使用，请联系管理员执行此命令。')
+                                                msg.locale.t("parser.admin.submodule.permission.denied"))
                                             return
 
                                     if msg.target.targetFrom in submodule.exclude_from or \
@@ -236,7 +239,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                         await parsed_msg[0].function(msg)
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
-                                    await msg.sendMessage(f'语法错误。\n使用~help {command_first_word}查看帮助。')
+                                    await msg.sendMessage(msg.locale.t("parser.command.format.invalid",
+                                                                       module=command_first_word))
                                     """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,
@@ -251,7 +255,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             except InvalidHelpDocTypeError:
                                 Logger.error(traceback.format_exc())
                                 await msg.sendMessage(
-                                    ErrorMessage(f'{command_first_word}模块的帮助信息有误，请联系开发者处理。'))
+                                    ErrorMessage(msg.locale.t("error.module.helpdoc.invalid",
+                                                              module=command_first_word)))
                                 return
 
                         await execute_submodule(msg, command_first_word, command_split)
@@ -281,17 +286,20 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
-                    await msg.sendMessage('执行命令时发生错误：\n' + str(e) + '\n此问题并非机器人程序错误（API请求出错等），'
-                                                                             '请勿将此消息报告给机器人开发者。')
+                    err_msg = str(e)
+                    if locale_str := re.findall(r'\{(.*)}', err_msg):
+                        for l in locale_str:
+                            err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l))
+                    await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
 
                 except Exception as e:
                     Logger.error(traceback.format_exc())
-                    await msg.sendMessage(ErrorMessage('执行命令时发生错误，请报告机器人开发者：\n' + str(e)))
+                    await msg.sendMessage(ErrorMessage(msg.locale.t('error.prompt.report', err_msg=str(e))))
             return msg
         if running_mention:
             if display.find('小可') != -1:
                 if ExecutionLockList.check(msg):
-                    return await msg.sendMessage('您先前的命令正在执行中。')
+                    return await msg.sendMessage(msg.locale.t('parser.command.running.prompt2'))
 
         for m in modules:  # 遍历模块
             try:
@@ -307,7 +315,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                     if msg.target.targetFrom in regex_module.exclude_from or \
                         ('*' not in regex_module.available_for and
-                            msg.target.targetFrom not in regex_module.available_for):
+                         msg.target.targetFrom not in regex_module.available_for):
                         continue
 
                     for rfunc in regex_module.regex_list.set:  # 遍历正则模块的表达式
@@ -326,7 +334,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                             if matched and not (msg.target.targetFrom in regex_module.exclude_from or
                                                 ('*' not in regex_module.available_for and
-                            msg.target.targetFrom not in regex_module.available_for)):  # 如果匹配成功
+                                                 msg.target.targetFrom not in regex_module.available_for)):  # 如果匹配成功
                                 if rfunc.logging:
                                     Logger.info(
                                         f'{identify_str} -> [Bot]: {display}')
@@ -341,7 +349,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 if not ExecutionLockList.check(msg):
                                     ExecutionLockList.add(msg)
                                 else:
-                                    return await msg.sendMessage('您有命令正在执行，请稍后再试。')
+                                    return await msg.sendMessage(msg.locale.t("parser.command.running.prompt"))
                                 if rfunc.show_typing and not senderInfo.query.disable_typing:
                                     async with msg.Typing(msg):
                                         await rfunc.function(msg)  # 将msg传入下游模块

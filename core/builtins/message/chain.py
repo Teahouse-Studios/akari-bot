@@ -22,7 +22,7 @@ class MessageChain(MC):
             if elements != '':
                 elements = Plain(elements)
             else:
-                elements = Plain(ErrorMessage('机器人尝试发送空文本消息，请联系机器人开发者解决问题。'))
+                elements = Plain(ErrorMessage('{error.message.chain.plain.empty}'))
         if isinstance(elements, (Plain, Image, Voice, Embed, Url)):
             if isinstance(elements, Plain):
                 if elements.text != '':
@@ -47,15 +47,15 @@ class MessageChain(MC):
                 else:
                     Logger.error(f'Unexpected message type: {elements}')
                     self.value.append(
-                        Plain(ErrorMessage('机器人尝试发送非法消息链，请联系机器人开发者解决问题。')))
+                        Plain(ErrorMessage('{error.message.chain.invalid}')))
         elif isinstance(elements, MessageChain):
             self.value = elements.value
         else:
             Logger.error(f'Unexpected message type: {elements}')
             self.value.append(
-                Plain(ErrorMessage('机器人尝试发送非法消息链，请联系机器人开发者解决问题。')))
+                Plain(ErrorMessage('{error.message.chain.invalid}')))
         if not self.value:
-            self.value.append(Plain(ErrorMessage('机器人尝试发送空消息链，请联系机器人开发者解决问题。')))
+            self.value.append(Plain(ErrorMessage('{error.message.chain.empty}')))
 
     @property
     def is_safe(self):
@@ -99,11 +99,13 @@ class MessageChain(MC):
                             return False
         return True
 
-    def asSendable(self, embed=True):
+    def asSendable(self, locale="zh_cn", embed=True):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
                 value += x.to_msgchain()
+            elif isinstance(x, ErrorMessage):
+                value.append(ErrorMessage(x.error_message, locale=locale))
             else:
                 value.append(x)
         return value

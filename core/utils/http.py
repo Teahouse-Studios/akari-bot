@@ -78,7 +78,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                         text = await req.text()
                         return text
             except asyncio.exceptions.TimeoutError:
-                raise NoReportException(f'请求API超时。')
+                raise NoReportException('{error.request.api.timeout}')
 
     return await get_()
 

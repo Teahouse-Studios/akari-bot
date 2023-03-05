@@ -32,7 +32,7 @@ class MessageSession(MessageSession):
         ExecutionLockList.remove(self)
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
-            msgchain.append(Plain('（发送“是”或符合确认条件的词语来确认）'))
+            msgchain.append(Plain(self.locale.t("message.wait.confirm.prompt.type1")))
             send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
@@ -53,7 +53,7 @@ class MessageSession(MessageSession):
         if msgchain is not None:
             msgchain = MessageChain(msgchain)
             if append_instruction:
-                msgchain.append(Plain('（发送符合条件的词语来确认）'))
+                msgchain.append(Plain(self.locale.t("message.wait.confirm.prompt.type2")))
             sent = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
@@ -70,7 +70,7 @@ class MessageSession(MessageSession):
         ExecutionLockList.remove(self)
         msgchain = MessageChain(msgchain)
         if append_instruction:
-           msgchain.append(Plain('（请使用指定的词语回复本条消息）'))
+           msgchain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)

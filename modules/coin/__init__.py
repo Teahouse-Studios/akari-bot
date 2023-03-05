@@ -6,9 +6,10 @@ from .zhNum2Int import Zh2Int
 MAX_COIN_NUM = 100
 FACE_UP_RATE = 4975  # n/10000 
 FACE_DOWN_RATE = 4975
-COIN_DROP_PLACES = ["地上","桌子上","桌子底下","门口","窗户外","月球"]  # 硬币可能掉落的位置
+COIN_DROP_PLACES = ["地上", "桌子上", "桌子底下", "门口", "窗户外", "月球"]  # 硬币可能掉落的位置
 
 coin = module('coin', developers=['Light-Beacon'], desc='抛n枚硬币')
+
 
 @coin.command('[<amount>] {抛n枚硬币}')
 async def _(msg: MessageSession):
@@ -17,6 +18,7 @@ async def _(msg: MessageSession):
         await msg.finish('发生错误：无效的硬币个数：' + amount)
     else:
         await msg.finish(await flipCoins(int(amount)))
+
 
 @coin.regex(r"[丢|抛](.*)?[个|枚]?硬币", desc='[丢/抛](n)[个/枚]硬币')
 async def _(message: MessageSession):
@@ -31,7 +33,8 @@ async def _(message: MessageSession):
             await message.finish("发生错误：" + e.message)
     await message.finish(await flipCoins(count))
 
-async def flipCoins(count:int):
+
+async def flipCoins(count: int):
     if count > MAX_COIN_NUM:
         return f"发生错误：你最多只能抛 {MAX_COIN_NUM} 个硬币"
     if count <= 0:

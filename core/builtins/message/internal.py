@@ -13,6 +13,8 @@ from config import CachePath
 from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
     Url as U, ErrorMessage as EMsg
 
+from core.utils.i18n import Locale
+
 
 class Plain(P):
     def __init__(self,
@@ -49,10 +51,16 @@ class Url(U):
 
 
 class ErrorMessage(EMsg):
-    def __init__(self, error_message):
-        self.error_message = '发生错误：' + error_message + '\n错误汇报地址： ' + \
-                             str(Url(
-                                 'https://s.wd-ljt.com/botreportbug'))
+    def __init__(self, error_message, locale=None):
+        self.error_message = error_message
+        if locale:
+            locale = Locale(locale)
+            if locale_str := re.findall(r'\{(.*)}', error_message):
+                for l in locale_str:
+                    error_message = error_message.replace(f'{{{l}}}', locale.t(l))
+            self.error_message = locale.t('error.prompt', error_msg=error_message) + \
+                                 str(Url(
+                                     'https://s.wd-ljt.com/botreportbug'))
 
     def __str__(self):
         return self.error_message

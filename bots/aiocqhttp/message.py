@@ -13,7 +13,7 @@ from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
 from config import Config
-from core.builtins import Bot
+from core.builtins import Bot, ErrorMessage
 from core.builtins import Plain, Image, Voice, Temp
 from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
@@ -61,10 +61,10 @@ class MessageSession(MS):
             msg = MessageSegment.reply(self.session.message.message_id)
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
-            return await self.sendMessage('发生错误：消息中含有不安全的内容，已被拦截。请向开发者反馈问题。')
+            return await self.sendMessage(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(msgchain)
         count = 0
-        for x in msgchain.asSendable(embed=False):
+        for x in msgchain.asSendable(locale=self.locale.locale, embed=False):
             if isinstance(x, Plain):
                 msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):

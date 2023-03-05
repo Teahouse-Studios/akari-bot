@@ -4,7 +4,7 @@ from typing import List, Union
 
 from bots.aiogram.client import dp, bot
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, FetchedSession as FS, \
@@ -41,7 +41,7 @@ class MessageSession(MS):
                           allow_split_image=True) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
-            return await self.sendMessage('发生错误：消息中含有不安全的内容，已被拦截。请向开发者反馈问题。')
+            return await self.sendMessage(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(msgchain)
         count = 0
         send = []
