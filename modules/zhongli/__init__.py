@@ -17,7 +17,3 @@ async def zlc(send:Bot.MessageSession):
     elif '-permission' in cmd:await send.sendMessage('因对接方式问题，暂不支持该命令')
     else:
         await Bot.FetchTarget.post_message('zhongli-probe', cmd)
-        sender = 'QQ|2376834381'
-        fetch = Bot.FetchTarget.fetch_target(sender)
-        if fetch: #如获取到
-	        await send.sendMessage(fetch)

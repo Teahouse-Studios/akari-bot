@@ -29,3 +29,4 @@ assets/mcbeversion.txt
 !modules/chemical_code/answer.db
 !test_commands.txt
 modules/natural/dataset.jsonl
+go-cqhttp
