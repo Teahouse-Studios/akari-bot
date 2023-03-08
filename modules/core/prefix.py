@@ -4,8 +4,9 @@ from core.component import module
 p = module('prefix', required_admin=True, base=True)
 
 
-@p.command('add <prefix> {设置自定义机器人命令前缀}', 'remove <prefix> {移除自定义机器人命令前缀}',
-          'reset {重置自定义机器人命令前缀}')
+@p.command('add <prefix> {{core.prefix.help.add}}',
+           'remove <prefix> {{core.prefix.help.remove}}',
+           'reset {{{core.prefix.help.reset}}}')
 async def set_prefix(msg: Bot.MessageSession):
     prefixes = msg.options.get('command_prefix')
     arg1 = msg.parsed_msg.get('<prefix>', False)
@@ -16,17 +17,17 @@ async def set_prefix(msg: Bot.MessageSession):
             if arg1 not in prefixes:
                 prefixes.append(arg1)
                 msg.data.edit_option('command_prefix', prefixes)
-                await msg.sendMessage(f'已添加自定义命令前缀：{arg1}\n帮助文档将默认使用该前缀进行展示。')
+                await msg.sendMessage(msg.locale.t("core.prefix.message.add.success", prefix=arg1))
             else:
-                await msg.sendMessage(f'此命令前缀已存在于自定义前缀列表。')
+                await msg.sendMessage(msg.locale.t("core.prefix.message.add.already"))
     elif 'remove' in msg.parsed_msg:
         if arg1:
             if arg1 in prefixes:
                 prefixes.remove(arg1)
                 msg.data.edit_option('command_prefix', prefixes)
-                await msg.sendMessage(f'已移除自定义命令前缀：{arg1}')
+                await msg.sendMessage(msg.locale.t("core.prefix.message.remove.success") + arg1)
             else:
-                await msg.sendMessage(f'此命令前缀不存在于自定义前缀列表。')
+                await msg.sendMessage(msg.locale.t("core.prefix.message.remove.not_found"))
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_prefix', [])
-        await msg.sendMessage('已重置自定义命令前缀列表。')
+        await msg.sendMessage(msg.locale.t("core.prefix.message.reset"))

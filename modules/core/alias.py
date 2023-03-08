@@ -5,9 +5,9 @@ from core.utils.image_table import image_table_render, ImageTable
 ali = module('alias', required_admin=True, base=True)
 
 
-@ali.command('add <alias> <command> {添加自定义命令别名}', 'remove <alias> {移除自定义命令别名}',
-            'reset {重置自定义命令别名}',
-            'list {列出自定义命令别名列表}')
+@ali.command('add <alias> <command> {{core.alias.help.add}}', 'remove <alias> {{core.alias.help.remove}}',
+             'reset {{core.alias.help.reset}}',
+             'list {{core.alias.help.list}}')
 async def set_alias(msg: Bot.MessageSession):
     alias = msg.options.get('command_alias')
     arg1 = msg.parsed_msg.get('<alias>', False)
@@ -22,31 +22,33 @@ async def set_alias(msg: Bot.MessageSession):
                     has_prefix = True
                     break
             if not has_prefix:
-                await msg.sendMessage(f'添加的别名对应的命令必须以命令前缀开头，请检查。')
+                await msg.sendMessage(msg.locale.t("core.alias.message.add.invalid_prefix"))
                 return
             alias[arg1] = arg2
             msg.data.edit_option('command_alias', alias)
-            await msg.sendMessage(f'已添加自定义命令别名：{arg1} -> {arg2}')
+            await msg.sendMessage(msg.locale.t("core.alias.message.add.success", arg1=arg1, arg2=arg2))
         else:
-            await msg.sendMessage(f'[{arg1}]别名已存在于自定义别名列表。')
+            await msg.sendMessage(msg.locale.t("core.alias.message.add.already_in", arg1=arg1))
     elif 'remove' in msg.parsed_msg:
         if arg1 in alias:
             del alias[arg1]
             msg.data.edit_option('command_alias', alias)
-            await msg.sendMessage(f'已移除自定义命令别名：{arg1}')
+            await msg.sendMessage(msg.locale.t("core.alias.message.remove.success", arg1=arg1))
         else:
-            await msg.sendMessage(f'[{arg1}]别名不存在于自定义别名列表。')
+            await msg.sendMessage(msg.locale.t("core.alias.message.remove.not_found", arg1=arg1))
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_alias', {})
-        await msg.sendMessage('已重置自定义命令别名列表。')
+        await msg.sendMessage(msg.locale.t("core.alias.message.reset.success"))
     elif 'list' in msg.parsed_msg:
         if len(alias) == 0:
-            await msg.sendMessage('自定义命令别名列表为空。')
+            await msg.sendMessage(msg.locale.t("core.alias.message.list.none"))
         else:
-            table = ImageTable([[k, alias[k]] for k in alias], ['别名', '命令'])
+            table = ImageTable([[k, alias[k]] for k in alias],
+                               [msg.locale.t("core.alias.message.list.table.header.alias"),
+                                msg.locale.t("core.alias.message.list.table.header.command")])
             img = await image_table_render(table)
             if img:
-                await msg.sendMessage(['自定义命令别名列表：', Image(img)])
+                await msg.sendMessage([msg.locale.t("core.alias.message.list.lists"), Image(img)])
             else:
-                await msg.sendMessage(f'自定义命令别名列表：\n' + '\n'.join([f'{k} -> {alias[k]}' for k in alias]))
-
+                await msg.sendMessage(f'{msg.locale.t("core.alias.message.list.lists")}\n'
+                                      + '\n'.join([f'{k} -> {alias[k]}' for k in alias]))

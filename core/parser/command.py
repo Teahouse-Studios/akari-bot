@@ -51,7 +51,14 @@ class CommandParser:
             lst.append(x)
         args = '\n'.join(y for y in lst)
         if self.options_desc:
-            args += f'\n{self.lang.t("core.help.options")}\n' + '\n'.join(self.options_desc)
+            options_desc = self.options_desc.copy()
+            options_desc_localed = []
+            for x in options_desc:
+                if locale_str := re.findall(r'\{(.*)}', x):
+                    for l in locale_str:
+                        x = x.replace(f'{{{l}}}', self.lang.t(l))
+                options_desc_localed.append(x)
+            args += f'\n{self.lang.t("core.help.options")}\n' + '\n'.join(options_desc_localed)
         return args
 
     def parse(self, command):

@@ -23,20 +23,20 @@ su = module('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233']
 async def add_su(message: Bot.MessageSession):
     user = message.parsed_msg['<user>']
     if not user.startswith(f'{message.target.senderFrom}|'):
-        await message.finish(f'ID格式错误，请对象使用{message.prefixes[0]}whoami命令查看用户ID。')
+        await message.finish(message.locale.t("core.superuser.message.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.finish('操作成功：已将' + user + '设置为超级用户。')
+            await message.finish(message.locale.t("core.superuser.message.add.success", user=user))
 
 
 @su.handle('del <user>')
 async def del_su(message: Bot.MessageSession):
     user = message.parsed_msg['<user>']
     if not user.startswith(f'{message.target.senderFrom}|'):
-        await message.finish(f'ID格式错误，请对象使用{message.prefixes[0]}whoami命令查看用户ID。')
+        await message.finish(message.locale.t("core.superuser.message.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.finish('操作成功：已将' + user + '移出超级用户。')
+            await message.finish(message.locale.t("core.superuser.message.remove.success", user=user))
 
 
 ana = module('analytics', required_superuser=True)
@@ -47,9 +47,10 @@ async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
-        await msg.finish(f'机器人已执行命令次数（自{str(first_record.timestamp)}开始统计）：{get_counts}')
+        await msg.finish(msg.locale.t("core.analytics.message.counts"), first_record=first_record.timestamp,
+                         counts=get_counts)
     else:
-        await msg.finish('机器人未开启命令统计功能。')
+        await msg.finish(msg.locale.t("core.analytics.message.disabled"))
 
 
 @ana.handle('days [<name>]')
@@ -84,7 +85,8 @@ async def _(msg: Bot.MessageSession):
         plt.close()
         await msg.finish(
             [Plain(
-                f'最近30天的{module_ if module_ is not None else ""}命令调用次数统计（自{str(first_record.timestamp)}开始统计）：'),
+                msg.locale.t("core.analytics.message.days", module=module_ if module_ is not None else "",
+                             first_record=first_record.timestamp)),
                 Image(path)])
 
 
@@ -95,16 +97,16 @@ set_ = module('set', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     target = msg.parsed_msg['<targetId>']
     if not target.startswith(f'{msg.target.targetFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.waitConfirm('该群未初始化，确认进行操作吗？')
+        wait_confirm = await msg.waitConfirm(msg.locale.t("core.set.message.confirm.init"))
         if not wait_confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)]
     target_data.enable(modules)
-    await msg.finish(f'成功为对象配置了以下模块：{", ".join(modules)}')
+    await msg.finish(msg.locale.t("core.set.message.module.success") + ", ".join(modules))
 
 
 @set_.handle('option <targetId> <k> <v>')
@@ -113,10 +115,10 @@ async def _(msg: Bot.MessageSession):
     k = msg.parsed_msg['<k>']
     v = msg.parsed_msg['<v>']
     if not target.startswith(f'{msg.target.targetFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.waitConfirm('该群未初始化，确认进行操作吗？')
+        wait_confirm = await msg.waitConfirm(msg.locale.t("core.set.message.confirm.init"))
         if not wait_confirm:
             return
     if v.startswith(('[', '{')):
@@ -126,7 +128,7 @@ async def _(msg: Bot.MessageSession):
     elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
-    await msg.finish(f'成功为对象设置了以下参数：{k} -> {str(v)}')
+    await msg.finish(msg.locale.t("core.set.message.option.success", k=k, v=v))
 
 
 ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
@@ -136,9 +138,9 @@ ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superus
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     warns = BotDBUtil.SenderInfo(user).query.warns
-    await msg.finish(f'{user} 已被警告 {warns} 次。')
+    await msg.finish(msg.locale.t("core.abuse.message.check.warns", user=user, warns=warns))
 
 
 @ae.handle('warn <user> [<count>]')
@@ -146,9 +148,9 @@ async def _(msg: Bot.MessageSession):
     count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     warn_count = await warn_user(user, count)
-    await msg.finish(f'成功警告 {user} {count} 次。此用户已被警告 {warn_count} 次。')
+    await msg.finish(msg.locale.t("core.abuse.message.warn.success", user=user, counts=count, warn_counts=warn_count))
 
 
 @ae.handle('revoke <user> [<count>]')
@@ -156,45 +158,45 @@ async def _(msg: Bot.MessageSession):
     count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     warn_count = await warn_user(user, count)
-    await msg.finish(f'成功移除警告 {user} 的 {abs(count)} 次警告。此用户已被警告 {warn_count} 次。')
+    await msg.finish(msg.locale.t("core.abuse.message.revoke.success", user=user, counts=count, warn_counts=warn_count))
 
 
 @ae.handle('clear <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     await pardon_user(user)
-    await msg.finish(f'成功清除 {user} 的警告。')
+    await msg.finish(msg.locale.t("core.abuse.message.clear.success", user=user))
 
 
 @ae.handle('untempban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     await remove_temp_ban(user)
-    await msg.finish(f'成功解除 {user} 的临时限制。')
+    await msg.finish(msg.locale.t("core.abuse.message.untempban.success", user=user))
 
 
 @ae.handle('ban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
-        await msg.finish(f'成功封禁 {user}。')
+        await msg.finish(msg.locale.t("core.abuse.message.ban.success", user=user))
 
 
 @ae.handle('unban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(f'ID格式错误。')
+        await msg.finish(msg.locale.t("core.set.message.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
-        await msg.finish(f'成功解除 {user} 的封禁。')
+        await msg.finish(msg.locale.t("core.abuse.message.unban.success", user=user))
 
 
 rst = module('restart', developers=['OasisAkari'], required_superuser=True)
@@ -218,25 +220,24 @@ async def wait_for_restart(msg: Bot.MessageSession):
     get = ExecutionLockList.get()
     if datetime.now().timestamp() - restart_time[0] < 60:
         if len(get) != 0:
-            await msg.sendMessage(f'有 {len(get)} 个命令正在执行中，将于执行完毕后重启。')
+            await msg.sendMessage(msg.locale.t("core.restart.message.wait", count=len(get)))
             await asyncio.sleep(10)
             return await wait_for_restart(msg)
         else:
-            await msg.sendMessage('重启中...')
+            await msg.sendMessage(msg.locale.t("core.restart.message.restarting"))
             get_wait_list = MessageTaskManager.get()
             for x in get_wait_list:
                 for y in get_wait_list[x]:
                     if get_wait_list[x][y]['active']:
-                        await get_wait_list[x][y]['original_session'].sendMessage('由于机器人正在重启，您此次执行命令的后续操作已被强制取消。'
-                                                                                  '请稍后重新执行命令，对此带来的不便，我们深感抱歉。')
+                        await get_wait_list[x][y]['original_session'].sendMessage(get_wait_list[x][y]['original_session'].locale.t("core.restart.message.prompt"))
 
     else:
-        await msg.sendMessage('等待已超时，强制重启中...')
+        await msg.sendMessage(msg.locale.t("core.restart.message.timeout"))
 
 
 @rst.handle()
 async def restart_bot(msg: Bot.MessageSession):
-    await msg.sendMessage('你确定吗？')
+    await msg.sendMessage(msg.locale.t("core.confirm"))
     confirm = await msg.waitConfirm()
     if confirm:
         restart_time.append(datetime.now().timestamp())
@@ -258,7 +259,7 @@ def update_dependencies():
 
 @upd.handle()
 async def update_bot(msg: Bot.MessageSession):
-    await msg.sendMessage('你确定吗？')
+    await msg.sendMessage(msg.locale.t("core.confirm"))
     confirm = await msg.waitConfirm()
     if confirm:
         await msg.sendMessage(pull_repo())
@@ -270,7 +271,7 @@ upds = module('update&restart', developers=['OasisAkari'], required_superuser=Tr
 
 @upds.handle()
 async def update_and_restart_bot(msg: Bot.MessageSession):
-    await msg.sendMessage('你确定吗？')
+    await msg.sendMessage(msg.locale.t("core.confirm"))
     confirm = await msg.waitConfirm()
     if confirm:
         restart_time.append(datetime.now().timestamp())
@@ -289,26 +290,26 @@ if Bot.FetchTarget.name == 'QQ':
     async def resume_sending_group_message(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(f'正在重发 {len(targets)} 条消息...')
+            await msg.sendMessage(msg.locale.t("core.resume.message.processing", count=len(targets)))
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
-            await msg.sendMessage('重发完成。')
+            await msg.sendMessage(msg.locale.t("core.resume.message.done"))
         else:
-            await msg.sendMessage('没有需要重发的消息。')
+            await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
 
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(f'跳过一条消息，正在重发 {len(targets)} 条消息...')
+            await msg.sendMessage(msg.locale.t("core.resume.message.skip", count=len(targets)))
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
-            await msg.sendMessage('重发完成。')
+            await msg.sendMessage(msg.locale.t("core.resume.message.done"))
         else:
-            await msg.sendMessage('没有需要重发的消息。')
+            await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
 

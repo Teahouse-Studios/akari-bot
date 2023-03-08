@@ -12,10 +12,10 @@ from core.utils.i18n import get_available_locales
 from database import BotDBUtil
 
 version = module('version',
-                     base=True,
-                     desc='查看机器人的版本号',
-                     developers=['OasisAkari', 'Dianliang233']
-                     )
+                 base=True,
+                 desc='查看机器人的版本号',
+                 developers=['OasisAkari', 'Dianliang233']
+                 )
 
 
 @version.handle()
@@ -30,10 +30,10 @@ async def bot_version(msg: Bot.MessageSession):
 
 
 ping = module('ping',
-                  base=True,
-                  desc='获取机器人状态',
-                  developers=['OasisAkari']
-                  )
+              base=True,
+              desc='获取机器人状态',
+              developers=['OasisAkari']
+              )
 
 started_time = datetime.now()
 
@@ -62,33 +62,30 @@ async def _(msg: Bot.MessageSession):
         except Exception:
             FriendList = '无法获取'
         """
-        BFH = r'%'
-        result += (f"\n系统运行时间：{Boot_Start}"
+        result += (f"\n系统启动时间：{Boot_Start}"
                    + f"\n机器人已运行：{timediff}"
                    + f"\nPython版本：{platform.python_version()}"
                    + f"\n处理器型号：{get_cpu_info()['brand_raw']}"
-                   + f"\n当前处理器使用率：{Cpu_usage}{BFH}"
-                   + f"\n物理内存：{RAM}M 使用率：{RAM_percent}{BFH}"
-                   + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}{BFH}"
+                   + f"\n当前处理器使用率：{Cpu_usage}%"
+                   + f"\n物理内存：{RAM}M 使用率：{RAM_percent}%"
+                   + f"\nSwap内存：{Swap}M 使用率：{Swap_percent}%"
                    + f"\n磁盘容量：{Disk}G/{DiskTotal}G"
-                   # + f"\n已加入QQ群聊：{GroupList}"
-                   # + f" | 已添加QQ好友：{FriendList}" """
                    )
     await msg.finish(result)
 
 
 admin = module('admin',
-                   base=True,
-                   required_admin=True,
-                   developers=['OasisAkari'],
-                   desc='一些群聊管理员可使用的命令。'
-                   )
+               base=True,
+               required_admin=True,
+               developers=['OasisAkari'],
+               desc='一些群聊管理员可使用的命令。'
+               )
 
 
 @admin.handle([
-                  'add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
-                  'del <UserID> {取消成员的机器人管理员}',
-                  'list {列出所有机器人管理员}'])
+    'add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
+    'del <UserID> {取消成员的机器人管理员}',
+    'list {列出所有机器人管理员}'])
 async def config_gu(msg: Bot.MessageSession):
     if 'list' in msg.parsed_msg:
         if msg.custom_admins:
@@ -133,11 +130,11 @@ async def config_ban(msg: Bot.MessageSession):
 
 
 locale = module('locale',
-                    base=True,
-                    required_admin=True,
-                    developers=['Dianliang233'],
-                    desc='用于设置机器人运行语言。'
-                    )
+                base=True,
+                required_admin=True,
+                developers=['Dianliang233'],
+                desc='用于设置机器人运行语言。'
+                )
 
 
 @locale.handle(['<lang> {设置机器人运行语言}'])
@@ -193,7 +190,7 @@ async def _(msg: Bot.MessageSession):
 
 
 mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
-                  desc='使机器人停止发言。')
+              desc='使机器人停止发言。')
 
 
 @mute.handle()
@@ -202,7 +199,7 @@ async def _(msg: Bot.MessageSession):
 
 
 leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
-                   desc='使机器人离开群聊。')
+               desc='使机器人离开群聊。')
 
 
 @leave.handle()
