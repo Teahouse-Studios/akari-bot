@@ -94,7 +94,7 @@
     "core.resume.message.processing": "正在重发 ${targets} 条消息...",
     "core.resume.message.done": "重发完成。",
     "core.resume.message.nothing": "没有需要重发的消息。",
-    "core.resume.message.skip": "跳过一条消息，正在重发 ${targets)} 条消息...",
+    "core.resume.message.skip": "跳过一条消息，正在重发 ${targets} 条消息...",
     "core.version.help": "查看机器人的版本号",
     "core.version.message": "当前机器人版本号：${version_tag}（${commit}）",
     "core.ping.help": "获取机器人状态",
