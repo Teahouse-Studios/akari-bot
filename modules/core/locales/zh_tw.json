@@ -45,7 +45,7 @@
     "core.module.message.help.regex.no_information": "無描述",
     "core.module.message.help.author.type1": "模組作者：",
     "core.module.message.help.author.type2": "模組作者",
-    "core.module.message.help.helpdoc.address": "模組文件：https://bot.teahouse.team/wiki/",
+    "core.module.message.help.helpdoc.address": "模組說明文件：https://bot.teahouse.team/wiki/",
     "core.module.message.help.table.header.base": "基礎模組列表",
     "core.module.message.help.table.header.help": "說明資訊",
     "core.module.message.help.table.header.alias": "指令別名",
