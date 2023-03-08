@@ -14,7 +14,7 @@
     "tos.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.reason": "原因：",
     "tos.warning.count": "這是第 ${current_warns} 次警告。如超過 5 次警告，我們將會把你的帳戶加入黑名單。",
-    "tos.warning.appeal": "如果你有任何意義，請至 https://github.com/Teahouse-Studios/bot/issues/new/choose 發起 Issue。",
+    "tos.warning.appeal": "如果你有任何異義，請至 https://github.com/Teahouse-Studios/bot/issues/new/choose 發起 Issue。",
     "tos.warning.last": "這是最後警告。",
     "parser.command.running.prompt": "目前有指令正在執行，請稍後再試。",
     "parser.command.running.prompt2": "先前的指令正在執行中。",
