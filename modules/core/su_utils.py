@@ -47,8 +47,8 @@ async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
-        await msg.finish(msg.locale.t("core.analytics.message.counts"), first_record=first_record.timestamp,
-                         counts=get_counts)
+        await msg.finish(msg.locale.t("core.analytics.message.counts", first_record=first_record.timestamp,
+                         counts=get_counts))
     else:
         await msg.finish(msg.locale.t("core.analytics.message.disabled"))
 

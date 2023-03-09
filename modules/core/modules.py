@@ -100,7 +100,7 @@ async def config_modules(msg: Bot.MessageSession):
                     if x in enabled_modules_list:
                         msglist.append(msg.locale.t("core.module.message.enable.already", module=x))
                     else:
-                        msglist.append(msg.locale.t("core.module.message.enable.success", module=module))
+                        msglist.append(msg.locale.t("core.module.message.enable.success", module=x))
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
