@@ -10,6 +10,9 @@
 #3947a3
 ~color #3947a3
 
+颜色3947a3
+~color #3947a3
+
 rgb(57,71,163)
 ~color rgb(57,71,163)
 
@@ -60,3 +63,6 @@ mcbbs新闻
 
 获取arcaea apk
 ~arcaea download
+
+查询存档计划的命令会是什么？
+~wiki lakeus:
