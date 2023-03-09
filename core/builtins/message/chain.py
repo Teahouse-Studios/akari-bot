@@ -19,10 +19,7 @@ class MessageChain(MC):
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
         if isinstance(elements, str):
-            if elements != '':
-                elements = Plain(elements)
-            else:
-                elements = Plain(ErrorMessage('{error.message.chain.plain.empty}'))
+            elements = Plain(elements)
         if isinstance(elements, (Plain, Image, Voice, Embed, Url)):
             if isinstance(elements, Plain):
                 if elements.text != '':
@@ -46,16 +43,10 @@ class MessageChain(MC):
                         self.value += match_kecode(e)
                 else:
                     Logger.error(f'Unexpected message type: {elements}')
-                    self.value.append(
-                        Plain(ErrorMessage('{error.message.chain.invalid}')))
         elif isinstance(elements, MessageChain):
             self.value = elements.value
         else:
             Logger.error(f'Unexpected message type: {elements}')
-            self.value.append(
-                Plain(ErrorMessage('{error.message.chain.invalid}')))
-        if not self.value:
-            self.value.append(Plain(ErrorMessage('{error.message.chain.empty}')))
 
     @property
     def is_safe(self):
@@ -106,8 +97,15 @@ class MessageChain(MC):
                 value += x.to_msgchain()
             elif isinstance(x, ErrorMessage):
                 value.append(ErrorMessage(x.error_message, locale=locale))
+            elif isinstance(x, Plain):
+                if x.text != '':
+                    value.append(x)
+                else:
+                    Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale))
             else:
                 value.append(x)
+        if not value:
+            value.append(Plain(ErrorMessage('{error.message.chain.empty}', locale=locale)))
         return value
 
     def append(self, element):
