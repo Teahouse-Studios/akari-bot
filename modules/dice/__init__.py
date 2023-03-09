@@ -6,7 +6,8 @@ dice = module('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
                   'd8': 'dice d8', 'd10': 'dice d10', 'd12': 'dice d12', 'd20': 'dice d20', 'd100': 'dice d100'}, developers=['Light-Beacon'], desc='随机骰子', recommend_modules=['dice_regex'])
 
 
-@dice.handle('<dices> [<dc>] {投掷指定骰子,可指定投骰次数与 dc 判断判定。\n
+@dice.handle('''
+<dices> [<dc>] {投掷指定骰子,可指定投骰次数与 dc 判断判定。\n
 * dn：表示n面骰\n
 * mdn：表示m个n面骰，输出其所有点数之和（m若省略即为1）\n
 * mdnkx：表示m个n面骰，输出其最大的x个骰子点数之和\n
@@ -14,7 +15,8 @@ dice = module('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
 * 式子可以兼容多项，如“10d4-2d20”会输出10个4面骰所有点数之和减去2个20面骰点数之和\n
 * 一项可以是一个整数（也就是调节值），如“d20+5”会输出1个20面骰的点数加上5的结果\n
 * 在多项式最前面加 N# 会将这个式子的操作重复N次（投掷N次），之后输出N次的结果\n
-* 填入可选参数dc，将在每一次投掷输出结果时进行判定，结果大于dc判定为成功，否则判定失败}',)
+* 填入可选参数dc，将在每一次投掷输出结果时进行判定，结果大于dc判定为成功，否则判定失败}
+''',)
 async def _(msg: MessageSession):
     dice = msg.parsed_msg['<dices>']
     dc = msg.parsed_msg.get('<dc>', '0')
