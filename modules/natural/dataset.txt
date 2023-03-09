@@ -43,12 +43,6 @@ hsl(240,50%,40%)
 看看方块维基
 ~wiki wikipedia:方块
 
-看看维基的方块
-~wiki wikipedia:方块
-
-看看方块维基
-~wiki wikipedia:方块
-
 give me 草方块wiki
 ~wiki 草方块
 
