@@ -198,7 +198,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish('成功禁言。' if msg.data.switch_mute() else '成功取消禁言。')
 
 
-leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group',
+leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias={'dismiss': 'leave'},
                desc='使机器人离开群聊。')
 
 
