@@ -1,4 +1,5 @@
 import secrets
+import uuid
 
 from core.builtins import Bot
 from core.component import module
@@ -19,3 +20,8 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     choices = msg.parsed_msg['...']
     await msg.finish(secrets.choice(choices))
+
+
+@r.handle('uuid {{random.uuid.help}}', )
+async def _(msg: Bot.MessageSession):
+    await msg.finish(uuid.uuid4())
