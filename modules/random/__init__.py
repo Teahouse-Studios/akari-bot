@@ -24,4 +24,4 @@ async def _(msg: Bot.MessageSession):
 
 @r.handle('uuid {{random.uuid.help}}', )
 async def _(msg: Bot.MessageSession):
-    await msg.finish(uuid.uuid4())
+    await msg.finish(str(uuid.uuid4()))
