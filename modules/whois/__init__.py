@@ -1,7 +1,6 @@
-from core.builtins import Bot
+from core.builtins import Bot,Image
 from core.component import on_command
 import requests
-# from .domain import check_domain, format_domain
 
 w = on_command('whois', desc='查询 IP Whois 信息',
                developers=['haoye_qwq'])
@@ -14,7 +13,8 @@ async def _(msg: Bot.MessageSession):
     response = requests.get(url)
     if(response.status_code == 200):
         content = response.text
-        await msg.sendMessage(content)
+        send = 'https://api.setbug.com/tools/text2image/?text=' + content
+        await msg.sendMessage(Image(send))
     else:
         await msg.sendMessage('请求失败')
     
