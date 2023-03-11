@@ -20,7 +20,7 @@ async def _(msg: MessageSession):
         await msg.finish(await flipCoins(int(amount)))
 
 
-@coin.regex(r"[丢|抛](.*)?[个|枚]?硬币", desc='[丢/抛](n)[个/枚]硬币')
+@coin.regex(r"[丢|抛](.*)?[个|枚]?硬币", desc='[丢/抛](n)[个/枚]?硬币')
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
@@ -29,8 +29,8 @@ async def _(message: MessageSession):
     else:
         try:
             count = Zh2Int(count)
-        except ValueError as e:
-            await message.finish("发生错误：" + e.message)
+        except ValueError as ex:
+            await message.finish("发生错误：" + str(ex))
     await message.finish(await flipCoins(count))
 
 
