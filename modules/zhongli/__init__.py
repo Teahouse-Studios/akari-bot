@@ -32,7 +32,7 @@ async def zlbind(send:Bot.MessageSession):
     scmd = zlcm(cmd, sender)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
 
-@zl.handle('check-in {获取服务器信息}')
+@zl.handle('check-in {签到}')
 async def zlchk(send:Bot.MessageSession):
     cmd = '不能签，怎么想都不能签吧！'
     await send.sendMessage(cmd)
