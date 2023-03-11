@@ -4,7 +4,7 @@ import re
 
 zl = on_command('zhongli', alias={'zl' : 'zhongli', 'zinfo' : 'zhongli info', 
                                   'stats' : 'zhongli stats', 'bind' : 'zhongli bind', 'check-in' : 'zhongli check-in'
-                                  },desc='对接钟离（ 万 物 互 联 ）',developers=['haoye_qwq', 'xiaozhu_zhizui'])
+                                  },desc='对接钟离（ 万 物 互 联 ）',developers=['haoye_qwq', 'xiaozhu_zhizui'],available_for=['QQ|Group','QQ','TEST|Console'])
 
 def zlcm(cmd, sender):
     qq_sender_id = re.match(r'^\d*',sender)

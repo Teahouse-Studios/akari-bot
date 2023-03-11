@@ -1,30 +1,20 @@
-import ipaddress
-
 from core.builtins import Bot
 from core.component import on_command
-from .ip import check_ip, format_ip
-
+import requests
 # from .domain import check_domain, format_domain
 
 w = on_command('whois', desc='查询 IP Whois 信息',
-               developers=['Dianliang233'])
+               developers=['haoye_qwq'])
 
 
-@w.handle('<ip_or_domain>')
+@w.handle('<domain>')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<ip_or_domain>']
-    query_type = ip_or_domain(query)
-    if query_type == 'ip':
-        res = await check_ip(query)
-        await msg.finish(await format_ip(res))
-    # elif query_type == 'domain':
-    #     res = await check_domain(query)
-    #     await msg.finish(await format_domain(res))
-
-
-def ip_or_domain(string: str):
-    try:
-        ipaddress.ip_address(string)
-        return 'ip'
-    except ValueError:
-        return 'domain'
+    url = 'https://v.api.aa1.cn/api/whois/index.php?domain=' + query
+    response = requests.get(url)
+    if(response.status_code == 200):
+        content = response.text
+        await msg.sendMessage(content)
+    else:
+        await msg.sendMessage('请求失败')
+    
