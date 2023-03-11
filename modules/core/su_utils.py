@@ -254,7 +254,10 @@ def pull_repo():
 
 
 def update_dependencies():
-    return os.popen('poetry install').read()[:-1]
+    poetry_install = os.popen('poetry install').read()[:-1]
+    if poetry_install != '':
+        return poetry_install
+    return os.popen('pip install -r requirements.txt').read()[:-1]
 
 
 @upd.handle()
