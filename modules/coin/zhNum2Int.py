@@ -17,12 +17,13 @@ ZH_NUM_CHAR_DICT2 = {
     '千': (1000,False),'仟':(1000,False),
     '百': (100,False),'佰': (100,False),
     '十': (10,False),'拾':(10,False),
-    '个': (1,False)
+    '个': (1,True)
 }
 
 def Zh2Int(chars):
     result = 0
     buffer = 0
+    buffer2 = 0
     prev_is_num = False
     if chars == '个':
         return 1
@@ -34,16 +35,17 @@ def Zh2Int(chars):
             buffer += ZH_NUM_CHAR_DICT[c]
             prev_is_num = True
         elif c in ZH_NUM_CHAR_DICT2.keys():
-            if buffer == 0:
-                    buffer = 1
             if ZH_NUM_CHAR_DICT2[c][1]:
-                result += buffer
-                result *= ZH_NUM_CHAR_DICT2[c][0]
+                buffer2 += buffer
+                result += buffer2 * ZH_NUM_CHAR_DICT2[c][0] 
+                buffer2 = 0
             else:
-                result += buffer * ZH_NUM_CHAR_DICT2[c][0]
+                if buffer == 0:
+                    buffer = 1
+                buffer2 += buffer * ZH_NUM_CHAR_DICT2[c][0]
             buffer = 0
             prev_is_num = False
         else:
             raise ValueError(f"存在无法识别的字符:{c}")
-    result += buffer
+    result += buffer2 + buffer
     return result
