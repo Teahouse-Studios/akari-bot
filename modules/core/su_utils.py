@@ -258,8 +258,8 @@ def update_dependencies():
     if poetry_install != '':
         return poetry_install
     pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
-    if len(pip_install) > 1000:
-        return '...' + pip_install[-1000:]
+    if len(pip_install) > 500:
+        return '...' + pip_install[-500:]
     return
 
 
