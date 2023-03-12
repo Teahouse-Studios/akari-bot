@@ -4,8 +4,7 @@ from .dice import GenerateMessage
 
 dice = module('dice', alias={'d4': 'dice d4', 'd6': 'dice d6',
                              'd8': 'dice d8', 'd10': 'dice d10', 'd12': 'dice d12', 'd20': 'dice d20',
-                             'd100': 'dice d100'}, developers=['Light-Beacon'], desc='随机骰子',
-              recommend_modules=['dice_regex'])
+                             'd100': 'dice d100'}, developers=['Light-Beacon'], desc='随机骰子',)
 
 
 @dice.command('<dices> [<dc>] {投掷指定骰子,可指定投骰次数与 dc 判断判定。}',
