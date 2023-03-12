@@ -7,7 +7,7 @@ zl = on_command('zhongli', alias={'zl' : 'zhongli', 'zinfo' : 'zhongli info',
                                   },desc='对接钟离（ 万 物 互 联 ）',developers=['haoye_qwq', 'xiaozhu_zhizui'],available_for=['QQ|Group','QQ','TEST|Console'])
 
 def zlcm(cmd, sender):
-    qq_sender_id = re.match(pattern=r"^\d*",string=sender,flags=0)
+    qq_sender_id = re.match(pattern=r"^\d*",string=str(sender),flags=0)
     ret = f"-execute as {qq_sender_id} permission normal_user run {cmd}"
     return(ret)
 
