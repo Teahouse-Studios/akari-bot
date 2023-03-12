@@ -13,14 +13,14 @@ def zlcm(cmd, sender):
 
 @zl.handle('info {获取服务器信息}')
 async def zlinfo(send:Bot.MessageSession):
-    cmd = '-info'
+    cmd = 'info'
     sender = send.target.senderId
     scmd = zlcm(cmd, sender)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
 
 @zl.handle('stats {获取战寄}')
 async def zlstats(send:Bot.MessageSession):
-    cmd = '-stats'
+    cmd = 'stats'
     sender = send.target.senderId
     scmd = zlcm(cmd, sender)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
@@ -28,7 +28,7 @@ async def zlstats(send:Bot.MessageSession):
 @zl.handle('bind <MinecraftUserName> {绑定}')
 async def zlbind(send:Bot.MessageSession):
     name = send.parsed_msg['<MinecraftUserName>']
-    cmd = '-bind ' + name
+    cmd = 'bind ' + name
     sender = send.target.senderId
     scmd = zlcm(cmd, sender)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
