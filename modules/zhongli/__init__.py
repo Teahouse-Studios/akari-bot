@@ -8,7 +8,8 @@ zl = on_command('zhongli', alias={'zl' : 'zhongli', 'zinfo' : 'zhongli info',
 
 def zlcm(cmd, sender):
     qq_sender_id = re.match(r'^\d*',sender)
-    return(Bot.MessageSession.asDisplay(f"-execute as {qq_sender_id} permission normal_user run {cmd}"))
+    ret = f"-execute as {qq_sender_id} permission normal_user run {cmd}"
+    return(ret)
 
 @zl.handle('info {获取服务器信息}')
 async def zlinfo(send:Bot.MessageSession):
