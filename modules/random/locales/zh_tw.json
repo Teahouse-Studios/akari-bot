@@ -1,6 +1,6 @@
 {
     "random.desc": "隨機數生成器（密碼學安全）",
-    "random.number.help": "生成區間內的隨機整數。",
+    "random.number.help": "產生區間內的隨機整數。",
     "random.choice.help": "從集合中選擇元素。",
-    "random.uuid.help": "生成隨機 UUID（v4）。"
+    "random.uuid.help": "產生隨機 UUID（v4）。"
 }
