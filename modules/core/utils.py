@@ -13,7 +13,7 @@ from database import BotDBUtil
 
 version = module('version',
                  base=True,
-                 desc='查看机器人的版本号',
+                 desc='{core.version.help}',
                  developers=['OasisAkari', 'Dianliang233']
                  )
 
@@ -31,7 +31,7 @@ async def bot_version(msg: Bot.MessageSession):
 
 ping = module('ping',
               base=True,
-              desc='获取机器人状态',
+              desc='{core.ping.help}',
               developers=['OasisAkari']
               )
 
@@ -78,71 +78,71 @@ admin = module('admin',
                base=True,
                required_admin=True,
                developers=['OasisAkari'],
-               desc='一些群聊管理员可使用的命令。'
+               desc='{core.admin.help}'
                )
 
 
 @admin.handle([
-    'add <UserID> {设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。}',
-    'del <UserID> {取消成员的机器人管理员}',
-    'list {列出所有机器人管理员}'])
+    'add <UserID> {{core.admin.help.add}}',
+    'del <UserID> {{core.admin.help.del}}',
+    'list {{core.admin.help.list}}'])
 async def config_gu(msg: Bot.MessageSession):
     if 'list' in msg.parsed_msg:
         if msg.custom_admins:
             await msg.finish(f"当前机器人群内手动设置的管理员：\n" + '\n'.join(msg.custom_admins))
         else:
-            await msg.finish("当前没有手动设置的机器人管理员。")
+            await msg.finish(msg.locale.t("{core.admin.list.none}"))
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，请对象使用{msg.prefixes[0]}whoami命令查看用户ID。')
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
-                await msg.finish("成功")
+                await msg.finish(msg.locale.t('{success}'))
         else:
-            await msg.finish("此成员已经是机器人管理员。")
+            await msg.finish(msg.locale.t("{core.admin.already}"))
     if 'del' in msg.parsed_msg:
         if user:
             if msg.data.remove_custom_admin(user):
-                await msg.finish("成功")
+                await msg.finish(msg.locale.t('{success}'))
 
 
-@admin.handle('ban <UserID> {限制某人在本群使用机器人}', 'unban <UserID> {解除对某人在本群使用机器人的限制}')
+@admin.handle('ban <UserID> {{core.ban.help.ban}}', 'unban <UserID> {{core.ban.help.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
         await msg.finish(f'ID格式错误，格式应为“{msg.target.senderFrom}|<用户ID>”')
     if user == msg.target.senderId:
-        await msg.finish("你不可以对自己进行此操作！")
+        await msg.finish(msg.locale.t("{core.ban.self}"))
     if 'ban' in msg.parsed_msg:
         if user not in msg.options.get('ban', []):
             msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
-            await msg.finish("成功")
+            await msg.finish(msg.locale.t('{success}'))
         else:
-            await msg.finish("此成员已经被设置禁止使用机器人了。")
+            await msg.finish(msg.locale.t("{core.ban.already}"))
     if 'unban' in msg.parsed_msg:
         if user in (banlist := msg.options.get('ban', [])):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
-            await msg.finish("成功")
+            await msg.finish(msg.locale.t('{success}'))
         else:
-            await msg.finish("此成员没有被设置禁止使用机器人。")
+            await msg.finish(msg.locale.t("{core.ban.not_yet}"))
 
 
 locale = module('locale',
                 base=True,
                 required_admin=True,
                 developers=['Dianliang233'],
-                desc='用于设置机器人运行语言。'
+                desc='{core.locale.help}。'
                 )
 
 
-@locale.handle(['<lang> {设置机器人运行语言}'])
+@locale.handle(['<lang> {{core.locale.help.locale}}'])
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'zh_tw', 'en_us']:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
-            await msg.finish(msg.locale.t('success'))
+            await msg.finish(msg.locale.t('{success}'))
     else:
         await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
 
@@ -150,7 +150,7 @@ async def config_gu(msg: Bot.MessageSession):
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
 
-@whoami.handle('{获取发送命令的账号在机器人内部的 ID}')
+@whoami.handle('{{core.whoami.help}}')
 async def _(msg: Bot.MessageSession):
     rights = ''
     if await msg.checkNativePermission():
@@ -166,19 +166,19 @@ async def _(msg: Bot.MessageSession):
 tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
 
 
-@tog.handle('typing {切换是否展示输入提示}')
+@tog.handle('typing {{core.toggle.help.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.senderId)
     state = target.query.disable_typing
     if not state:
         target.edit('disable_typing', True)
-        await msg.finish('成功关闭输入提示。')
+        await msg.finish(msg.locale.t('{core.toggle.typing.disable}'))
     else:
         target.edit('disable_typing', False)
-        await msg.finish('成功打开输入提示。')
+        await msg.finish(msg.locale.t('{core.toggle.typing.enable}'))
 
 
-@tog.handle('check {切换是否展示命令错字检查提示}')
+@tog.handle('check {{core.toggle.help.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state is None:
@@ -190,7 +190,7 @@ async def _(msg: Bot.MessageSession):
 
 
 mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
-              desc='使机器人停止发言。')
+              desc='{core.mute.help}')
 
 
 @mute.handle()
@@ -199,12 +199,12 @@ async def _(msg: Bot.MessageSession):
 
 
 leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias={'dismiss': 'leave'},
-               desc='使机器人离开群聊。')
+               desc='{core.leave.help}')
 
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.waitConfirm('你确定吗？此操作不可逆。')
+    confirm = await msg.waitConfirm('{core.leave.confirm}')
     if confirm:
-        await msg.sendMessage('已执行。')
+        await msg.sendMessage('{core.leave.success}')
         await msg.call_api('set_group_leave', group_id=msg.session.target)
