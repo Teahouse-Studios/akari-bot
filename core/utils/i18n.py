@@ -86,7 +86,7 @@ class Locale:
                 string = locale_cache[lng].get(key, None)
                 if string is not None:
                     return string  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
-        return f'{{{key}}}' + self.get_string_with_fallback("i18n.prompt.fallback.failed")
+        return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed")
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
 def get_available_locales():
