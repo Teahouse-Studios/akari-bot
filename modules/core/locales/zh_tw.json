@@ -130,6 +130,6 @@
     "core.mute.disable": "成功取消靜音。",
     "core.mute.enable": "成功靜音。",
     "core.leave.help": "使機器人離開群組。",
-    "core.leave.check": "你確定嗎？此行為不可逆。",
+    "core.leave.confirm": "你確定嗎？此行為不可逆。",
     "core.leave.success": "已執行，再見。"
 }
