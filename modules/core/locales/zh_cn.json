@@ -130,6 +130,6 @@
     "core.mute.disable": "成功取消禁言。",
     "core.mute.enable": "成功禁言。",
     "core.leave.help": "使机器人离开群聊。",
-    "core.leave.check": "你确定吗？此操作不可逆。",
+    "core.leave.confirm": "你确定吗？此操作不可逆。",
     "core.leave.success": "已执行，再见。"
 }
