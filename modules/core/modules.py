@@ -166,7 +166,7 @@ async def config_modules(msg: Bot.MessageSession):
                     return f'{msg.locale.t("core.module.message.reload.success")}{module} ' + ' '.join(extra_modules) + \
                         msg.locale.t("core.module.message.reload.no_more")
                 else:
-                    return f'重载模块失败。'
+                    return f'{msg.locale.t("core.module.message.reload.failed")}'
             if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                 msglist.append(module_reload(module_))
             elif module_ not in modules_:
