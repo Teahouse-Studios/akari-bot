@@ -296,7 +296,7 @@ if Bot.FetchTarget.name == 'QQ':
     async def resume_sending_group_message(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(msg.locale.t("core.resume.message.processing", count=len(targets)))
+            await msg.sendMessage(msg.locale.t("core.resume.message.processing", counts=len(targets)))
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
@@ -309,7 +309,7 @@ if Bot.FetchTarget.name == 'QQ':
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(msg.locale.t("core.resume.message.skip", count=len(targets)))
+            await msg.sendMessage(msg.locale.t("core.resume.message.skip", counts=len(targets)))
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)

@@ -191,7 +191,7 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             await msg.sendMessage('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
-        confirm = await msg.waitConfirm(msg.locale.t("core.module.message.enable.recommend",
+        confirm = await msg.waitConfirm(msg.locale.t("core.module.message.recommends",
                                                      msgs=
                                                      '\n'.join(recommend_modules_list) + '\n\n' +
                                                      '\n'.join(recommend_modules_help_doc_list)))
