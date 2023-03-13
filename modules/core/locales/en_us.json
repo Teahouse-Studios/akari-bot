@@ -130,6 +130,6 @@
     "core.mute.disable": "Successfully unmuted.",
     "core.mute.enable": "Successfully muted.",
     "core.leave.help": "Lets the robot leave the group.",
-    "core.leave.check": "Are you sure? This action is irreversible.",
+    "core.leave.confirm": "Are you sure? This action is irreversible.",
     "core.leave.success": "Goodbye."
 }
