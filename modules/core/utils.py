@@ -133,7 +133,7 @@ locale = module('locale',
                 base=True,
                 required_admin=True,
                 developers=['Dianliang233'],
-                desc='{core.locale.help}。'
+                desc='{core.locale.help}'
                 )
 
 
