@@ -104,7 +104,7 @@ async def config_modules(msg: Bot.MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    recommend_modules_help_doc_list.append(msg.locale.t("core.module.message.module.help", module=module
+                    recommend_modules_help_doc_list.append(msg.locale.t("core.module.message.module.help", module=m
                                                                         ))
 
                     if modules_[m].desc is not None:
