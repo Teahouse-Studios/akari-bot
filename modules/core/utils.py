@@ -56,11 +56,11 @@ async def _(msg: Bot.MessageSession):
         try:
             GroupList = len(await app.groupList())
         except Exception:
-            GroupList = '无法获取'
+            GroupList = msg.locale.t('core.ping.failed')
         try:
             FriendList = len(await app.friendList())
         except Exception:
-            FriendList = '无法获取'
+            FriendList = msg.locale.t('core.ping.failed')
         """
         result += (f"\n系统启动时间：{Boot_Start}"
                    + f"\n机器人已运行：{timediff}"
@@ -154,11 +154,11 @@ whoami = module('whoami', developers=['Dianliang233'], base=True)
 async def _(msg: Bot.MessageSession):
     rights = ''
     if await msg.checkNativePermission():
-        rights += '\n（你拥有本对话的管理员权限）'
+        rights += '\n' + msg.locale.t("core.whoami.admin")
     elif await msg.checkPermission():
-        rights += '\n（你拥有本对话的机器人管理员权限）'
+        rights += '\n' + msg.locale.t("core.whoami.botadmin")
     if msg.checkSuperUser():
-        rights += '\n（你拥有本机器人的超级用户权限）'
+        rights += '\n' + msg.locale.t("core.whoami.superuser")
     await msg.finish(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
                      disable_secret_check=True)
 
