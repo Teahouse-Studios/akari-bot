@@ -172,10 +172,10 @@ async def _(msg: Bot.MessageSession):
     state = target.query.disable_typing
     if not state:
         target.edit('disable_typing', True)
-        await msg.finish(msg.locale.t('{core.toggle.typing.disable}'))
+        await msg.finish(msg.locale.t('core.toggle.typing.disable'))
     else:
         target.edit('disable_typing', False)
-        await msg.finish(msg.locale.t('{core.toggle.typing.enable}'))
+        await msg.finish(msg.locale.t('core.toggle.typing.enable'))
 
 
 @tog.handle('check {{core.toggle.help.check}}')
@@ -204,7 +204,7 @@ leave = module('leave', developers=['OasisAkari'], base=True, required_admin=Tru
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.waitConfirm(msg.locale.t("core.leave.confirm"))
+    confirm = await msg.waitConfirm(msg.locale.t('core.leave.confirm'))
     if confirm:
         await msg.sendMessage(msg.locale.t('{core.leave.success}'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
