@@ -104,7 +104,7 @@
     "core.admin.help.add": "设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。",
     "core.admin.help.del": "取消成员的机器人管理员。",
     "core.admin.help.list": "列出所有机器人管理员。",
-    "core.admin.list.lists": "当前机器人群内手动设置的管理员：\n",
+    "core.admin.list.lists": "当前在群内手动设置的机器人管理员：\n",
     "core.admin.list.none": "当前没有手动设置的机器人管理员。",
     "core.admin.already": "此成员已经是机器人管理员。",
     "core.ban.help.ban": "限制某人在本群使用机器人。",
