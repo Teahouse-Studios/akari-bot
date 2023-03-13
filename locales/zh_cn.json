@@ -1,4 +1,5 @@
 {
+    "i18n.prompt.fallback.failed": "（如果你看到了这条奇怪的字符串，说明我们又搞错了什么东西！\n请将问题反馈至\nhttps://s.wd-ljt.com/botreportbug\n以便我们快速解决此问题。）",
     "error.prompt": "发生错误：${error_msg}\n错误汇报地址：",
     "error.prompt.report": "执行命令时发生错误，请报告机器人开发者：\n${err_msg}",
     "error.prompt.noreport": "执行命令时发生错误：\n${err_msg}\n此问题并非机器人程序错误（API 请求出错等），请勿将此消息报告给机器人开发者。",
