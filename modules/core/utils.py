@@ -98,13 +98,13 @@ async def config_gu(msg: Bot.MessageSession):
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
-                await msg.finish(msg.locale.t('{success}'))
+                await msg.finish(msg.locale.t('success'))
         else:
             await msg.finish(msg.locale.t("{core.admin.already}"))
     if 'del' in msg.parsed_msg:
         if user:
             if msg.data.remove_custom_admin(user):
-                await msg.finish(msg.locale.t('{success}'))
+                await msg.finish(msg.locale.t('success'))
 
 
 @admin.handle('ban <UserID> {{core.ban.help.ban}}', 'unban <UserID> {{core.ban.help.unban}}')
@@ -117,14 +117,14 @@ async def config_ban(msg: Bot.MessageSession):
     if 'ban' in msg.parsed_msg:
         if user not in msg.options.get('ban', []):
             msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
-            await msg.finish(msg.locale.t('{success}'))
+            await msg.finish(msg.locale.t('success'))
         else:
             await msg.finish(msg.locale.t("{core.ban.already}"))
     if 'unban' in msg.parsed_msg:
         if user in (banlist := msg.options.get('ban', [])):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
-            await msg.finish(msg.locale.t('{success}'))
+            await msg.finish(msg.locale.t('success'))
         else:
             await msg.finish(msg.locale.t("{core.ban.not_yet}"))
 
@@ -142,7 +142,7 @@ async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'zh_tw', 'en_us']:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
-            await msg.finish(msg.locale.t('{success}'))
+            await msg.finish(msg.locale.t('success'))
     else:
         await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
 
