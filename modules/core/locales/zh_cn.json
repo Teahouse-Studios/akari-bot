@@ -95,9 +95,9 @@
     "core.resume.message.done": "重发完成。",
     "core.resume.message.nothing": "没有需要重发的消息。",
     "core.resume.message.skip": "跳过一条消息，正在重发 ${counts} 条消息...",
-    "core.version.help": "查看机器人的版本号",
+    "core.version.help": "查看机器人的版本号。",
     "core.version.message": "当前机器人版本号：${version_tag}（${commit}）",
-    "core.ping.help": "获取机器人状态",
+    "core.ping.help": "获取机器人状态。",
     "core.ping.message.detail": "系统启动时间：${system_boot_time}\n机器人已运行：${bot_running_time}\nPython版本：${python_version}\n处理器型号：${cpu_brand}\n当前处理器使用率：${cpu_usage}%\n物理内存：${ram}M 使用率：${ram_percent}%\nSwap内存：${swap}M 使用率：${swap_percent}%\n磁盘容量：${disk_space}G/${disk_space_total}G",
     "core.ping.failed": "无法获取。",
     "core.admin.help": "一些群聊管理员可使用的命令。",
@@ -116,9 +116,9 @@
     "core.locale.help.locale": "设置机器人运行语言。",
     "core.locale.invalid": "语言格式错误，支持的语言有：${lang}。",
     "core.whoami.help": "获取发送命令的账号在机器人内部的 ID。",
-    "core.whoami.admin": "\n（你拥有本对话的管理员权限）",
-    "core.whoami.botadmin": "\n（你拥有本对话的机器人管理员权限）",
-    "core.whoami.superuser": "\n（你拥有本机器人的超级用户权限）",
+    "core.whoami.admin": "（你拥有本对话的管理员权限）",
+    "core.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
+    "core.whoami.superuser": "（你拥有本机器人的超级用户权限）",
     "core.whoami.message": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.toggle.help.typing": "切换是否展示输入提示。",
     "core.toggle.typing.disable": "成功关闭输入提示。",
@@ -130,6 +130,6 @@
     "core.mute.disable": "成功取消禁言。",
     "core.mute.enable": "成功禁言。",
     "core.leave.help": "使机器人离开群聊。",
-    "core.leave.confirm": "你确定吗？此操作不可逆。",
-    "core.leave.success": "已执行，再见。"
+    "core.leave.success": "已执行，再见。",
+    "core.leave.confirm": "你确定吗？此操作不可逆。"
 }
