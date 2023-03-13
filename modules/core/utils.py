@@ -204,7 +204,7 @@ leave = module('leave', developers=['OasisAkari'], base=True, required_admin=Tru
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.waitConfirm('{core.leave.confirm}')
+    confirm = await msg.waitConfirm(msg.locale.t('{core.leave.confirm}'))
     if confirm:
-        await msg.sendMessage('{core.leave.success}')
+        await msg.sendMessage(msg.locale.t('{core.leave.success}'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
