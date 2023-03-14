@@ -1,6 +1,6 @@
 {
     "coin.begin": "你抛了$count 枚硬币，",
-    "coin.desc": "抛n枚硬币",
+    "coin.help": "抛n枚硬币",
     "coin.error": "发生错误：",
     "coin.error.amount": "发生错误：无效的硬币个数：",
     "coin.error.max": "发生错误：你最多只能抛 $max 个硬币",
@@ -22,7 +22,7 @@
     "coin.mix.tail": "$tail 枚是反面",
     "coin.mix.stand": "...还有 $stand 枚立起来了！",
     "coin.mix.end": "。",
-    "coin_regex.desc": "打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n",
+    "coin_regex.help": "打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n",
     "coin.stand": "...它立起来了！",
     "coin.stand.all": "它们...\n...全都立起来了？！"
 }

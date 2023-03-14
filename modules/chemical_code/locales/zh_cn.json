@@ -1,5 +1,5 @@
 {
-    "chemical_code.desc": "化学式回答小游戏。",
+    "chemical_code.help": "化学式回答小游戏。",
     "chemical_code.normal.help": "普通样式（时间限制，多人）",
     "chemical_code.captcha.help": "验证码样式（不支持指定ID，仅限一次，单人）",
     "chemical_code.stop.help": "停止当前的游戏。",

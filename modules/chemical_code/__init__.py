@@ -53,7 +53,7 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
 cc = module('chemical_code', alias={'cc': 'chemical_code',
                                         'chemicalcode': 'chemical_code',
                                         'captcha': 'chemical_code captcha'},
-                desc='{chemical_code.desc}', developers=['OasisAkari'])
+                desc='{chemical_code.help}', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 

@@ -1,5 +1,5 @@
 {
-    "color.desc": "Provide color information.",
+    "color.help": "Provide color information.",
     "color.random.help": "Random color.",
     "color.error": "An error occurred: Unrecognized color format.",
     "color.css.name": "CSS color name: ",

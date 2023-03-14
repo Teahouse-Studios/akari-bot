@@ -1,5 +1,5 @@
 {
-    "color.desc": "提供色彩資訊。",
+    "color.help": "提供色彩資訊。",
     "color.random.help": "隨機色彩。",
     "color.error": "發生錯誤：無法識別的色彩格式。",
     "color.css.name": "CSS 色彩名稱：",

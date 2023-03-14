@@ -10,7 +10,7 @@ from .server import server
 s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.handle('<ServerIP:Port> [-r] [-p] {{server.desc}}',
+@s.handle('<ServerIP:Port> [-r] [-p] {{server.help}}',
           options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
 async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')

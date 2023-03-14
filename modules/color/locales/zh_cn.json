@@ -1,5 +1,5 @@
 {
-    "color.desc": "提供颜色信息。",
+    "color.help": "提供颜色信息。",
     "color.specify.help": "提供颜色信息。支持十六进制、RGB、HSL 颜色代码或 CSS 和 Material Design 中的颜色名称。",
     "color.random.help": "随机颜色。",
     "color.error": "发生错误：无法识别的颜色格式。",

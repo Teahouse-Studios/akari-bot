@@ -1,7 +1,7 @@
 {
-    "server.desc": "获取 Minecraft Java 版/基岩版服务器 motd。",
-    "server.desc.p": "显示玩家列表",
-    "server.desc.r": "显示原始信息",
+    "server.help": "获取 Minecraft Java 版/基岩版服务器 motd。",
+    "server.help.p": "显示玩家列表",
+    "server.help.r": "显示原始信息",
     "server.error": "查询调用 API 时发生错误。",
     "server.gamemode": "游戏模式：",
     "server.local_ip": "发生错误：无效的 IP 地址。",

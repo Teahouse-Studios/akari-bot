@@ -5,7 +5,7 @@ from core.builtins import Bot
 from core.component import module
 
 
-r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.desc}', )
+r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.help}', )
 
 
 @r.handle('number <min> <max> {{random.number.help}}', )
