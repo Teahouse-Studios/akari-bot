@@ -1,4 +1,5 @@
 {
+    "i18n.prompt.fallback.failed": "（如果你看到了這條奇怪的字串，說明我們又搞錯了什麼！\n請將問題回報至\nhttps://s.wd-ljt.com/botreportbug\n以便我們快速解決此問題。）",
     "error.prompt": "發生錯誤：${error_msg}\n錯誤回報網址：",
     "error.prompt.report": "執行指令時發生錯誤，請回報機器人開發人員：\n${err_msg}",
     "error.prompt.noreport": "執行指令時發生錯誤：\n${err_msg}\n此問題並非機器人程式錯誤（API 請求錯誤等），請勿將此訊息回報給機器人開發人員。",
