@@ -136,7 +136,7 @@ async def config_gu(msg: Bot.MessageSession):
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             await msg.finish(msg.locale.t('success'))
     else:
-        await msg.finish(f"语言格式错误，支持的语言有：{'、'.join(get_available_locales())}。")
+        await msg.finish((msg.locale.t("core.locale.invalid",lang='、'.join(get_available_locales())))
 
 
 whoami = module('whoami', developers=['Dianliang233'], base=True)
@@ -151,7 +151,7 @@ async def _(msg: Bot.MessageSession):
         rights += '\n' + msg.locale.t("core.whoami.botadmin")
     if msg.checkSuperUser():
         rights += '\n' + msg.locale.t("core.whoami.superuser")
-    await msg.finish(f'你的 ID 是：{msg.target.senderId}\n本对话的 ID 是：{msg.target.targetId}' + rights,
+    await msg.finish(msg.locale.t('core.whoami.message', senderid=msg.target.senderId, targetid=msg.target.targetId) + rights,
                      disable_secret_check=True)
 
 
@@ -178,7 +178,7 @@ async def _(msg: Bot.MessageSession):
     else:
         state = not state
     msg.data.edit_option('typo_check', state)
-    await msg.finish(f'成功{"打开" if state else "关闭"}错字检查提示。')
+    await msg.finish(msg.locale.t('core.toggle.check.enable') if state else msg.locale.t('core.toggle.check.disable'))
 
 
 mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
@@ -187,7 +187,7 @@ mute = module('mute', developers=['Dianliang233'], base=True, required_admin=Tru
 
 @mute.handle()
 async def _(msg: Bot.MessageSession):
-    await msg.finish('成功禁言。' if msg.data.switch_mute() else '成功取消禁言。')
+    await msg.finish(msg.locale.t('core.mute.enable') if msg.data.switch_mute() else msg.locale.t('core.mute.disable'))
 
 
 leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias={'dismiss': 'leave'},
