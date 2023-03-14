@@ -111,6 +111,7 @@
     "core.ban.help.unban": "解除對某人在此群組使用機器人的限制。",
     "core.ban.message.self": "你不可以對自己進行此操作！",
     "core.ban.message.already": "此成員已被禁止使用機器人。",
+    "core.ban.message.invalid": "ID 格式錯誤，格式應為「${target}|<使用者 ID>」。",
     "core.ban.message.not_yet": "此成員沒有被禁止使用機器人。",
     "core.locale.help": "用於設定機器人使用的語言。",
     "core.locale.help.locale": "設定機器人使用的語言。",

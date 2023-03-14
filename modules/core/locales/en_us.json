@@ -111,6 +111,7 @@
     "core.ban.help.unban": "Unlimit someone to use robots in the group.",
     "core.ban.message.self": "You cannot do this for yourself!",
     "core.ban.message.already": "This member is already banned from using the robot.",
+    "core.ban.message.invalid": "Invalid ID format. The format should be \"${target}|<User ID>\".",
     "core.ban.message.not_yet": "This member is not banned from using the robot.",
     "core.locale.help": "Use to set robot language.",
     "core.locale.help.locale": "Set the language for robots.",
