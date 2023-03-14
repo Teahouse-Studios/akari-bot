@@ -1,4 +1,5 @@
 {
+    "i18n.prompt.fallback.failed": "(If you can see this strange string, it means something is wrong again! \nPlease send the problem back to\nhttps://s.wd-ljt.com/botreportbug\nso we can quickly solve it.)",
     "error.prompt": "An error occurred: ${error_msg}\nReport this issue: ",
     "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}",
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. an API request went wrong) and thus should not be reported to developers.",
