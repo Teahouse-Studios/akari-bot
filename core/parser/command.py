@@ -34,7 +34,7 @@ class CommandParser:
                     desc = match.options_desc[m]
                     if locale_str := re.findall(r'\{(.*)}', desc):
                         for l in locale_str:
-                            desc = desc.replace(f'{{{l}}}', self.lang.t(l))
+                            desc = desc.replace(f'{{{l}}}', self.lang.t(l, fallback_failed_prompt=False))
                     self.options_desc.append(f'{m} {desc}')
         self.args: Dict[Union[Template, ''], dict] = help_docs
 
@@ -46,7 +46,7 @@ class CommandParser:
         for x in format_args:
             if locale_str := re.findall(r'\{(.*)}', x):
                 for l in locale_str:
-                    x = x.replace(f'{{{l}}}', self.lang.t(l))
+                    x = x.replace(f'{{{l}}}', self.lang.t(l, fallback_failed_prompt=False))
             x = f'{self.command_prefixes[0]}{self.bind_prefix} {x}'
             lst.append(x)
         args = '\n'.join(y for y in lst)
@@ -56,7 +56,7 @@ class CommandParser:
             for x in options_desc:
                 if locale_str := re.findall(r'\{(.*)}', x):
                     for l in locale_str:
-                        x = x.replace(f'{{{l}}}', self.lang.t(l))
+                        x = x.replace(f'{{{l}}}', self.lang.t(l, fallback_failed_prompt=False))
                 options_desc_localed.append(x)
             args += f'\n{self.lang.t("core.help.options")}\n' + '\n'.join(options_desc_localed)
         return args

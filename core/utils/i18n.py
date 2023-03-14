@@ -70,12 +70,12 @@ class Locale:
     def __contains__(self, key: str):
         return key in self.data
 
-    def t(self, key: str, *args, **kwargs) -> str:
+    def t(self, key: str, fallback_failed_prompt=True, *args, **kwargs) -> str:
         '''获取本地化字符串'''
-        localized = self.get_string_with_fallback(key)
+        localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(*args, **kwargs)
 
-    def get_string_with_fallback(self, key: str) -> str:
+    def get_string_with_fallback(self, key: str, fallback_failed_prompt) -> str:
         value = self.data.get(key, None)
         if value is not None:
             return value  # 1. 如果本地化字符串存在，直接返回
@@ -86,7 +86,10 @@ class Locale:
                 string = locale_cache[lng].get(key, None)
                 if string is not None:
                     return string  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
-        return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed")
+        if fallback_failed_prompt:
+            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed")
+        else:
+            return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
 def get_available_locales():

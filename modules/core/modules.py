@@ -111,7 +111,7 @@ async def config_modules(msg: Bot.MessageSession):
                         d_ = modules_[m].desc
                         if locale_str := re.findall(r'\{(.*)}', d_):
                             for l in locale_str:
-                                d_ = d_.replace(f'{{{l}}}', msg.locale.t(l))
+                                d_ = d_.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                         recommend_modules_help_doc_list.append(d_)
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
@@ -167,6 +167,7 @@ async def config_modules(msg: Bot.MessageSession):
                         msg.locale.t("core.module.message.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.module.message.reload.failed")}'
+
             if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                 msglist.append(module_reload(module_))
             elif module_ not in modules_:
@@ -248,7 +249,7 @@ async def bot_help(msg: Bot.MessageSession):
                         if desc:
                             if locale_str := re.findall(r'\{(.*)}', desc):
                                 for l in locale_str:
-                                    desc = desc.replace(f'{{{l}}}', msg.locale.t(l))
+                                    desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                             doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
                                                                   msg=desc)
                         else:
@@ -293,7 +294,7 @@ async def _(msg: Bot.MessageSession):
                     d_ = module_.desc
                     if locale_str := re.findall(r'\{(.*)}', d_):
                         for l in locale_str:
-                            d_ = d_.replace(f'{{{l}}}', msg.locale.t(l))
+                            d_ = d_.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                     doc_.append(d_)
                 if help_.args:
                     doc_.append(help_.return_formatted_help_doc())
@@ -311,7 +312,7 @@ async def _(msg: Bot.MessageSession):
                             if desc:
                                 if locale_str := re.findall(r'\{(.*)}', x):
                                     for l in locale_str:
-                                        x = x.replace(f'{{{l}}}', msg.locale.t(l))
+                                        x = x.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                                 doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
                                                                       msg=desc)
                             else:
@@ -345,7 +346,8 @@ async def _(msg: Bot.MessageSession):
                 if render:
                     legacy_help = False
                     await msg.finish([Image(render),
-                                      Plain(msg.locale.t("core.module.message.help.more_information", prefix=msg.prefixes[0]))])
+                                      Plain(msg.locale.t("core.module.message.help.more_information",
+                                                         prefix=msg.prefixes[0]))])
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -405,7 +407,7 @@ async def modules_help(msg: Bot.MessageSession):
                             if desc:
                                 if locale_str := re.findall(r'\{(.*)}', x):
                                     for l in locale_str:
-                                        x = x.replace(f'{{{l}}}', msg.locale.t(l))
+                                        x = x.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                                 doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
                                                                       msg=desc)
                             else:

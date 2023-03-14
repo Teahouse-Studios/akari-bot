@@ -289,7 +289,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     err_msg = str(e)
                     if locale_str := re.findall(r'\{(.*)}', err_msg):
                         for l in locale_str:
-                            err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l))
+                            err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                     await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
 
                 except Exception as e:
