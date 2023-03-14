@@ -272,7 +272,7 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.sendMessage(update_dependencies())
 
 
-upds = module('update&restart', developers=['OasisAkari'], required_superuser=True)
+upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias={'u&r': 'update&restart')
 
 
 @upds.handle()
