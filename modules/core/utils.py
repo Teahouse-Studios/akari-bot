@@ -136,7 +136,7 @@ async def config_gu(msg: Bot.MessageSession):
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             await msg.finish(msg.locale.t('success'))
     else:
-        await msg.finish((msg.locale.t("core.locale.invalid",lang='、'.join(get_available_locales())))
+        await msg.finish(msg.locale.t("core.locale.invalid",lang='、'.join(get_available_locales())))
 
 
 whoami = module('whoami', developers=['Dianliang233'], base=True)
