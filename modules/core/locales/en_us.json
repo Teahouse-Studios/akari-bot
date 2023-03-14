@@ -39,7 +39,7 @@
     "core.module.message.reload.base": "Failed: \"${module}\" is a base module, thus cannot be reloaded.",
     "core.module.message.reload.confirm": "This action will reload the following modules at the same time: \n${modules}\nContinue?",
     "core.module.message.reload.permission.denied": "Failed: You don't have permission to reload modules.",
-    "core.module.message.recommends": "It is recommended to enable the following module(s) at the same time：\n${msgs}\nProceed?",
+    "core.module.message.recommends": "It is recommended to enable the following module(s) at the same time: \n${msgs}\nProceed?",
     "core.module.message.help.support_regex": "This module supports regular expressions, the message will match with the following: ",
     "core.module.message.help.regex.detail": "(${msg})",
     "core.module.message.help.regex.no_information": "No description",
