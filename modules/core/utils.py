@@ -62,7 +62,7 @@ async def _(msg: Bot.MessageSession):
         except Exception:
             FriendList = msg.locale.t('core.ping.failed')
         """
-        result += msg.locale.t("core.ping.message.detail", system_boot_time=Boot_Start, bot_running_time=timediff, python_version=platform.python_version(), cpu_brand=get_cpu_info()['brand_raw'], cpu_usage=Cpu_usage, ram=RAM, ram_percent=RAM_percent, swap=Swap, swap_percent=Swap_percent, disk_space=disk_space, disk_space_total=DiskTotal)
+        result += msg.locale.t("core.ping.message.detail", system_boot_time=Boot_Start, bot_running_time=timediff, python_version=platform.python_version(), cpu_brand=get_cpu_info()['brand_raw'], cpu_usage=Cpu_usage, ram=RAM, ram_percent=RAM_percent, swap=Swap, swap_percent=Swap_percent, disk_space=Disk, disk_space_total=DiskTotal)
     await msg.finish(result)
 
 
