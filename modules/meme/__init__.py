@@ -17,7 +17,7 @@ meme = module(
 @meme.handle(help_doc='<term> {{meme.help.meme}}')
 async def _(msg: Bot.MessageSession):
 #   res_jiki = await jiki(msg.parsed_msg['<term>'])
-#   R.I.P jikipedia
+#   R.I.P. jikipedia
     res_moegirl = await moegirl(msg.parsed_msg['<term>'])
     res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'])
     res_urban = await urban(msg.parsed_msg['<term>'])

@@ -8,7 +8,7 @@ from .bugtracker import bugtracker_get
 bug = module('bug', alias='b', developers=['OasisAkari'])
 
 
-@bug.handle('<MojiraID> {{bug.desc}}')
+@bug.handle('<MojiraID> {{bugtracker.bug.help}}')
 async def bugtracker(msg: Bot.MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:

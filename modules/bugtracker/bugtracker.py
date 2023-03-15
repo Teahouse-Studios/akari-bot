@@ -60,7 +60,7 @@ async def bugtracker_get(mojiraId: str, nolink=False):
                         if fields['fixVersions']:
                             data["fixversion"] = fields['fixVersions'][0]['name']
     else:
-        return ErrorMessage('发生错误：获取 Json 失败。')
+        return ErrorMessage(msg.locale.t('bugtracker.message.error'))
     msglist = []
     if errmsg != '':
         msglist.append(errmsg)
