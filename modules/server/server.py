@@ -55,7 +55,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                     if 'sample' in jejson['players']:
                                         for x in jejson['players']['sample']:
                                             playerlist.append(x['name'])
-                                        servers.appendmsg.locale.t('server.message.player.current') + '\n' + '\n'.join(playerlist))
+                                        servers.append(msg.locale.t('server.message.player.current') + '\n' + '\n'.join(playerlist))
                                     else:
                                         if jejson['players']['online'] == 0:
                                             servers.append(msg.locale.t('server.message.player.current.none'))
