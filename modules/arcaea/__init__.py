@@ -105,7 +105,7 @@ async def _(msg: Bot.MessageSession):
              'info unofficial [<friendcode>] {{arcaea.message.unofficial}}', )
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
-        await msg.sendMessage(msg.locale.t("arcaea.assets.not_found"))
+        await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found"))
         return
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
