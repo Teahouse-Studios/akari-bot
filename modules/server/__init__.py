@@ -11,7 +11,7 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
 @s.handle('<ServerIP:Port> [-r] [-p] {{server.help}}',
-          options_desc={'-r': '显示原始信息', '-p': '显示玩家列表'})
+          options_desc={'-r': '{server.help.r}', '-p': '{server.help.p}'})
 async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')
     if enabled_addon is None:
@@ -45,7 +45,7 @@ async def main(msg: Bot.MessageSession):
         except:
             traceback.print_exc()
     if is_local_ip:
-        return await msg.sendMessage(f'{msg.locale.t("server.local_ip")}')
+        return await msg.sendMessage(msg.locale.t('server.local_ip'))
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
@@ -54,7 +54,7 @@ async def main(msg: Bot.MessageSession):
             enabled_addon)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        msg_ = '发生错误：没有找到任何类型的Minecraft服务器。'
+        msg_ = msg.locale.t('server.message.none')
         if msg.Feature.delete and enabled_addon:
             msg_ += '[90秒后撤回消息]'
         send = await msg.sendMessage(msg_)
@@ -68,10 +68,10 @@ async def main(msg: Bot.MessageSession):
 async def revoke(msg: Bot.MessageSession):
     if msg.parsed_msg.get('<enable|disable>') == 'enable':
         msg.data.edit_option('server_revoke', True)
-        await msg.finish('已启用自动撤回功能。')
+        await msg.finish(msg.locale.t('server.revoke.message.enable'))
     elif msg.parsed_msg.get('<enable|disable>') == 'disable':
         msg.data.edit_option('server_revoke', False)
-        await msg.finish('已禁用自动撤回功能。')
+        await msg.finish(msg.locale.t('server.revoke.message.disable'))
 
 
 async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):

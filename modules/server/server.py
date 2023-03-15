@@ -55,17 +55,17 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                     if 'sample' in jejson['players']:
                                         for x in jejson['players']['sample']:
                                             playerlist.append(x['name'])
-                                        servers.append('当前在线玩家：\n' + '\n'.join(playerlist))
+                                        servers.appendmsg.locale.t('server.message.player.current') + '\n' + '\n'.join(playerlist))
                                     else:
                                         if jejson['players']['online'] == 0:
-                                            servers.append('当前在线玩家：\n无')
+                                            servers.append(msg.locale.t('server.message.player.current.none'))
                             if 'version' in jejson:
-                                versions = "游戏版本：" + jejson['version']['name']
+                                versions = msg.locale.t('server.message.version') + jejson['version']['name']
                                 servers.append(versions)
                             servers.append(serip + ':' + port1)
                         except Exception:
                             traceback.print_exc()
-                            servers.append(str(ErrorMessage("JE查询调用API时发生错误。")))
+                            servers.append(str(ErrorMessage(msg.locale.t('server.message.error'))))
         except Exception:
             traceback.print_exc()
         if raw:
@@ -92,9 +92,9 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                         game_mode = unpack_data[8]
                         bemsg = '[BE]\n' + \
                                 motd_1 + ' - ' + motd_2 + \
-                                '\n在线玩家：' + player_count + '/' + max_players + \
-                                '\n游戏版本：' + edition + version_name + \
-                                '\n游戏模式：' + game_mode
+                                '\n' + msg.locale.t('server.message.player') + player_count + '/' + max_players + \
+                                '\n' + msg.locale.t('server.message.version') + edition + version_name + \
+                                '\n' + msg.locale.t('server.message.gamemode') + game_mode
                         servers.append(bemsg)
                         servers.append(serip + ':' + port2)
 
