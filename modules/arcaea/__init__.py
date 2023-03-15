@@ -30,7 +30,7 @@ class WithErrCode(Exception):
              'b30 unofficial [<friendcode>] {{arcaea.message.unofficial}}')
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
-        await msg.finish(msg.locale.t("arcaea.assets.not_found"))
+        await msg.finish(msg.locale.t("arcaea.message.assets.not_found"))
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
     official = msg.parsed_msg.get('official', False)
@@ -211,11 +211,11 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
-        await msg.finish(msg.locale.t("arcaea.initialize.not_found"))
+        await msg.finish(msg.locale.t("arcaea.initialize.message.not_found"))
         return
     result = await arcb30init()
     if result:
-        await msg.finish(msg.locale.t("arcaea.initialize.success"))
+        await msg.finish(msg.locale.t("arcaea.initialize.message.success"))
 
 
 @arc.command('download {{arcaea.download.help}}')
