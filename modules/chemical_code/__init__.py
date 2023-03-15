@@ -57,50 +57,50 @@ cc = module('chemical_code', alias={'cc': 'chemical_code',
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
-@cc.command('{{chemical_code.normal.help}}')  # 直接使用 cc 命令将触发此装饰器
+@cc.command('{{chemical_code.help.normal}}')  # 直接使用 cc 命令将触发此装饰器
 async def chemical_code_by_random(msg: Bot.MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
-@cc.command('captcha {{chemical_code.captcha.help}}')
+@cc.command('captcha {{chemical_code.help.captcha}}')
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@cc.command('stop {{chemical_code.stop.help}}')
+@cc.command('stop {{chemical_code.help.stop}}')
 async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-            await msg.sendMessage(msg.locale.t('chemical_code.stop.stopped', answer=play_state[msg.target.targetId]["answer"]), quote=False)  # 发送存储于 play_state 中的答案
+            await msg.sendMessage(msg.locale.t('chemical_code.message.stop', answer=play_state[msg.target.targetId]["answer"]), quote=False)  # 发送存储于 play_state 中的答案
         else:
-            await msg.sendMessage(msg.locale.t('chemical_code.stop.none'))
+            await msg.sendMessage(msg.locale.t('chemical_code.message.stop.none'))
     else:
-        await msg.sendMessage(msg.locale.t('chemical_code.stop.none'))
+        await msg.sendMessage(msg.locale.t('chemical_code.message.stop.none'))
 
 
-@cc.command('<csid> {{chemical_code.csid.help}}')
+@cc.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
     if (id.isdigit() and int(id) > 0):  # 如果 ID 为纯数字
         await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
-        await msg.finish(msg.locale.t('chemical_code.csid.invalid'))
+        await msg.finish(msg.locale.t('chemical_code.message.csid.invalid'))
 
 
 async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId][
         'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
-        await msg.finish(msg.locale.t('chemical_code.running'))
+        await msg.finish(msg.locale.t('chemical_code.message.running'))
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
     try:
         csr = await search_csr(id)  # 尝试获取 ChemSpider ID 对应的化学式列表
     except Exception as e:  # 意外情况
         traceback.print_exc()  # 打印错误信息
         play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
-        return await msg.finish(msg.locale.t('chemical_code.error'))
+        return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
     play_state[msg.target.targetId]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
     Logger.info(f'Answer: {csr["name"]}')  # 在日志中输出正确答案
@@ -133,13 +133,13 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                 Logger.info(f'{wait.asDisplay()} != {answer}')  # 输出日志
                 return await ans(wait, answer)  # 进行下一轮检查
             else:
-                await wait.sendMessage(msg.locale.t('chemical_code.correct'))
+                await wait.sendMessage(msg.locale.t('chemical_code.message.correct'))
                 play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
 
     async def timer(start):  # 计时器函数
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if datetime.now().timestamp() - start > 60 * set_timeout:  # 如果超过2分钟
-                await msg.sendMessage(msg.locale.t('chemical_code.timeup', answer=play_state[msg.target.targetId]["answer"]))
+                await msg.sendMessage(msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.targetId]["answer"]))
                 play_state[msg.target.targetId]['active'] = False
             else:  # 如果未超时
                 await asyncio.sleep(1)  # 等待1秒
@@ -147,16 +147,16 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
 
     if not captcha_mode:
         await msg.sendMessage([Image(newpath),
-                               Plain(msg.locale.t('chemical_code.normal.text', times=set_timeout))])
+                               Plain(msg.locale.t('chemical_code.message.normal', times=set_timeout))])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
         result = await msg.waitNextMessage(
-            [Image(newpath), Plain(msg.locale.t('chemical_code.captcha.text', times=set_timeout))])
+            [Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha', times=set_timeout))])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if result.asDisplay(text_only=True) == csr['name']:
-                await result.sendMessage(msg.locale.t('chemical_code.correct'))
+                await result.sendMessage(msg.locale.t('chemical_code.message.correct'))
             else:
-                await result.sendMessage(msg.locale.t('chemical_code.incorrect', answer=play_state[msg.target.targetId]["answer"]))
+                await result.sendMessage(msg.locale.t('chemical_code.message.incorrect', answer=play_state[msg.target.targetId]["answer"]))
             play_state[msg.target.targetId]['active'] = False
