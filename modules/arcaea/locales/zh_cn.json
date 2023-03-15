@@ -34,7 +34,7 @@
     "arcaea.message.no_webrender": "未配置 webrender，无法使用此命令。",
     "arcaea.help": "查询 Arcaea 相关内容。",
     "arcaea.b30.help": "查询 Arcaea 用户的 b30 列表。（自动选择使用 API）",
-    "arcaea.b30.message.success": "获取结果\nB30: {b30} | R10: {r10}\nB30倒 5 列表：\n{last5list}",
+    "arcaea.b30.message.success": "获取结果\nB30: ${b30} | R10: ${r10}\nB30倒 5 列表：\n${last5list}",
     "arcaea.info.help": "查询 Arcaea 用户的最近游玩记录。（自动选择使用API）",
     "arcaea.song.help": "查询一首 Arcaea 谱面的信息。",
     "arcaea.song.message.invalid.difficulty": "请输入正确的谱面难度！",
