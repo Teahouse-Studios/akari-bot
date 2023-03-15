@@ -138,4 +138,4 @@ async def getb30_official(usercode):
     for x in filelist:
         os.remove(f'{newdir}/{x}')
     os.removedirs(newdir)
-    return {'status': True, 'b30': b30_avg, 'r10': r10_avg, 'last5list': last5list, 'filename': filename}
+    return {'status': True, 'b30': b30_avg, 'r10': r10_avg, 'last5list': last5list, 'file': filename}

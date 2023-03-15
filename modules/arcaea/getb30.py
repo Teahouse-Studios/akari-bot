@@ -99,6 +99,6 @@ async def getb30(usercode, official=False):
                 for x in filelist:
                     os.remove(f'{newdir}/{x}')
                 os.removedirs(newdir)
-                return {'status': True, 'b30': b30, 'r10': r10, 'last5list': last5list, 'filename': filename}
+                return {'status': True, 'b30': b30, 'r10': r10, 'last5list': last5list, 'file': filename}
             else:
                 return {'status': False, 'errcode': loadjson['status']}
