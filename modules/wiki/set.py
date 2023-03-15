@@ -61,10 +61,9 @@ async def _(msg: Bot.MessageSession):
     start_wiki = target.get_start_wiki()
     base_interwiki_link = None
     if start_wiki is not None:
-        base_interwiki_link = await WikiLib(start_wiki, target.get_headers()).parse_page_info('Special:Interwiki')
-        if base_interwiki_link.status:
-            base_interwiki_link = base_interwiki_link.link
-    base_interwiki_link_msg = f'\n此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
+        base_interwiki_link_ = await WikiLib(start_wiki, target.get_headers()).parse_page_info('Special:Interwiki')
+        if base_interwiki_link_.status:
+            base_interwiki_link = base_interwiki_link_.link
     if query != {}:
         if 'legacy' not in msg.parsed_msg and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
@@ -74,7 +73,7 @@ async def _(msg: Bot.MessageSession):
         if img:
             mt = f'使用{msg.prefixes[0]}wiki iw get <Interwiki> 可以获取interwiki对应的链接。'
             if base_interwiki_link is not None:
-                mt += base_interwiki_link_msg
+                mt += f'\n此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
             await msg.finish([Image(img), Plain(mt)])
         else:
             result = '当前设置了以下Interwiki：\n' + \
