@@ -15,7 +15,7 @@ from .initialize import arcb30init
 from .song import get_song_info
 from .utils import get_userinfo
 
-arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.desc}',
+arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help}',
              alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')

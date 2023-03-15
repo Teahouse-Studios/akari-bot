@@ -23,8 +23,8 @@ css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
 css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 
-@c.handle('<color> {{color.specify.help}}')
-@c.handle('{{color.random.help}}')
+@c.handle('<color> {{color.help.specify}}')
+@c.handle('{{color.help.random}}')
 async def _(msg: Bot.MessageSession):
     try:
         color = msg.parsed_msg.get('<color>')
@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession):
         color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360, int(color[2].strip()[:-1]) / 100, int(color[1].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     else:
-        await msg.finish(msg.locale.t('color.error'))
+        await msg.finish(msg.locale.t('color.message.invalid'))
 
     color_hex = '#%02x%02x%02x' % color
     color_rgb = 'rgb(%d, %d, %d)' % color
@@ -75,19 +75,19 @@ async def _(msg: Bot.MessageSession):
     css_color_name = ''
     css_color_name_short = ''
     if css_color_name_raw[1]:
-        css_color_name = f'\n{msg.locale.t("color.css.name")}{css_color_name_raw[0]}'
+        css_color_name = f'\n{msg.locale.t("color.message.css")}{css_color_name_raw[0]}'
         css_color_name_short = f'{css_color_name_raw[0]}\n'
     elif css_color_name_raw[0] is not None:
-        css_color_name = f'\n{msg.locale.t("color.css.name.approximate")}{css_color_name_raw[0]}'
+        css_color_name = f'\n{msg.locale.t("color.message.css.approximate")}{css_color_name_raw[0]}'
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ''
     material_color_name_short = ''
     if material_color_name_raw[1]:
-        material_color_name = f'\n{msg.locale.t("color.md.name")}{material_color_name_raw[0]}'
+        material_color_name = f'\n{msg.locale.t("color.message.md")}{material_color_name_raw[0]}'
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0] is not None:
-        material_color_name = f'\n{msg.locale.t("color.md.name.approximate")}{material_color_name_raw[0]}'
+        material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{material_color_name_raw[0]}'
 
     draw.multiline_text((250, 250), f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
     await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])

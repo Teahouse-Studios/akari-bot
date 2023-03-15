@@ -8,7 +8,7 @@ from core.component import module
 r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.help}', )
 
 
-@r.handle('number <min> <max> {{random.number.help}}', )
+@r.handle('number <min> <max> {{random.help.number}}', )
 async def _(msg: Bot.MessageSession):
     _min = msg.parsed_msg['<min>']
     _max = msg.parsed_msg['<max>']
@@ -16,12 +16,12 @@ async def _(msg: Bot.MessageSession):
     await msg.finish('' + str(random))
 
 
-@r.handle('choice ... {{random.choice.help}}', )
+@r.handle('choice ... {{random.help.choice}}', )
 async def _(msg: Bot.MessageSession):
     choices = msg.parsed_msg['...']
     await msg.finish(secrets.choice(choices))
 
 
-@r.handle('uuid {{random.uuid.help}}', )
+@r.handle('uuid {{random.help.uuid}}', )
 async def _(msg: Bot.MessageSession):
     await msg.finish(str(uuid.uuid4()))
