@@ -85,17 +85,17 @@ def parse_coordinate(axis: str, value: float):
 
 async def format_ip(msg, info: Dict[str, Any]):
     ip_property = {
-        'global': '{whois.message.ip_property.global}',
-        'private': '{whois.message.ip_property.private}',
-        'reserved': '{whois.message.ip_property.reserved}',
-        'multicast': '{whois.message.ip_property.multicast}',
-        'link_local': '{whois.message.ip_property.link_local}',
-        'loopback': '{whois.message.ip_property.loopback}',
-        'unspecified': '{whois.message.ip_property.unspecified}',
-        'ipv4_mapped': '{whois.message.ip_property.ipv4_mapped}',
-        'sixtofour': '{whois.message.ip_property.sixtofour}',
-        'teredo': '{whois.message.ip_property.teredo}',
-        'site_local': '{whois.message.ip_property.site_local}'
+        'global': msg.locale.t('whois.message.ip_property.global'),
+        'private': msg.locale.t('whois.message.ip_property.private'),
+        'reserved': msg.locale.t('whois.message.ip_property.reserved'),
+        'multicast': msg.locale.t('whois.message.ip_property.multicast'),
+        'link_local': msg.locale.t('whois.message.ip_property.link_local'),
+        'loopback': msg.locale.t('whois.message.ip_property.loopback'),
+        'unspecified': msg.locale.t('whois.message.ip_property.unspecified'),
+        'ipv4_mapped': msg.locale.t('whois.message.ip_property.ipv4_mapped'),
+        'sixtofour': msg.locale.t('whois.message.ip_property.sixtofour'),
+        'teredo': msg.locale.t('whois.message.ip_property.teredo'),
+        'site_local': msg.locale.t('whois.message.ip_property.site_local')
     }
 
     return f'''\
