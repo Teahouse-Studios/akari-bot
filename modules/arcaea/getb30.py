@@ -22,7 +22,8 @@ async def getb30(usercode, official=False):
         url = Config("botarcapi_url")
         async with session.get(url + f"user/best30?usercode={usercode}&withsonginfo=True", headers=headers) as resp:
             if resp.status != 200:
-                return {'text': f'获取失败：{str(resp.status)}[Ke:Image,path=https://http.cat/{str(resp.status)}.jpg]'}
+                return {'status': False,
+                        'text': f'{str(resp.status)}[Ke:Image,path=https://http.cat/{str(resp.status)}.jpg]'}
             a = await resp.text()
             loadjson = json.loads(a)
             if loadjson["status"] == 0:
@@ -98,8 +99,6 @@ async def getb30(usercode, official=False):
                 for x in filelist:
                     os.remove(f'{newdir}/{x}')
                 os.removedirs(newdir)
-                return {'text': f'获取结果\nB30: {b30} | R10: {r10}\nB30倒5列表：\n{last5list}', 'file': filename}
+                return {'status': True, 'b30': b30, 'r10': r10, 'last5list': last5list, 'filename': filename}
             else:
-                if loadjson['status'] in errcode:
-                    return {'text': f'查询失败：{errcode[loadjson["status"]]}'}
-                return {'text': '查询失败。' + a}
+                return {'status': False, 'errcode': loadjson['status']}

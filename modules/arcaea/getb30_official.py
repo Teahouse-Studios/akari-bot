@@ -27,7 +27,7 @@ async def getb30_official(usercode):
         getb30_json = await get_url(f'{apiurl}user/{usercode}/best', headers=headers, status_code=200, fmt='json')
     except Exception:
         traceback.print_exc()
-        return {'text': f'获取失败。'}
+        return {'status': False}
     getuserinfo = getuserinfo_json['data']
     username = getuserinfo['display_name']
     potential = getuserinfo['potential']
@@ -138,4 +138,4 @@ async def getb30_official(usercode):
     for x in filelist:
         os.remove(f'{newdir}/{x}')
     os.removedirs(newdir)
-    return {'text': f'获取结果\nB30: {b30_avg} | R10: {r10_avg}\nB30倒5列表：\n{last5list}', 'file': filename}
+    return {'status': True, 'b30': b30_avg, 'r10': r10_avg, 'last5list': last5list, 'filename': filename}

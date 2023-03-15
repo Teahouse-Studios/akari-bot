@@ -15,19 +15,22 @@ from .initialize import arcb30init
 from .song import get_song_info
 from .utils import get_userinfo
 
-arc = module('arcaea', developers=['OasisAkari'], desc='查询Arcaea相关内容。',
+arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.desc}',
              alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-@arc.command('b30 [<friendcode>] {查询一个Arcaea用户的b30列表（自动选择使用API）}',
-             'b30 official [<friendcode>] {使用官方API}',
-             'b30 unofficial [<friendcode>] {使用非官方API}')
+class WithErrCode(Exception):
+    pass
+
+
+@arc.command('b30 [<friendcode>] {{arcaea.b30.help}}',
+             'b30 official [<friendcode>] {{arcaea.message.official}}',
+             'b30 unofficial [<friendcode>] {{arcaea.message.unofficial}}')
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
-        await msg.finish(
-            '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
+        await msg.finish(msg.locale.t("arcaea.assets.not_found"))
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
     official = msg.parsed_msg.get('official', False)
@@ -43,9 +46,9 @@ async def _(msg: Bot.MessageSession):
             if len(friendcode) == 9:
                 query_code = friendcode
             else:
-                await msg.finish('好友码必须是9位数字！')
+                await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
         else:
-            await msg.finish('请输入正确的好友码！')
+            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.format"))
     else:
         get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
         if get_friendcode_from_db is not None:
@@ -54,38 +57,55 @@ async def _(msg: Bot.MessageSession):
         if not unofficial:
             try:
                 resp = await getb30_official(query_code)
-                msgchain = [Plain(resp['text'])]
-                if 'file' in resp and msg.Feature.image:
-                    msgchain.append(Image(path=resp['file']))
-                await msg.sendMessage(msgchain, allow_split_image=False)
+                if resp["status"]:
+                    msgchain = [Plain(msg.locale.t("arcaea.b30.message.success", b30=resp["b30"], r10=resp["r10"],
+                                                   last5list=resp["last5list"]))]
+                    if 'file' in resp and msg.Feature.image:
+                        msgchain.append(Image(path=resp['file']))
+                    await msg.sendMessage(msgchain, allow_split_image=False)
+                else:
+                    raise
             except Exception:
                 traceback.print_exc()
                 if not official and prefer_uses is None:
-                    await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
+                    await msg.sendMessage(msg.locale.t("arcaea.message.official.fetch.failed.fallback"))
                     unofficial = True
                 else:
-                    await msg.finish('使用官方API获取失败。')
+                    await msg.finish(msg.locale.t("arcaea.message.official.fetch.failed"))
         if unofficial:
             try:
                 resp = await getb30(query_code)
-                msgchain = [Plain(resp['text'])]
-                if 'file' in resp and msg.Feature.image:
-                    msgchain.append(Image(path=resp['file']))
-                await msg.finish(msgchain)
+                if resp['status']:
+                    msgchain = [Plain(msg.locale.t("arcaea.b30.message.success", b30=resp["b30"], r10=resp["r10"],
+                                                   last5list=resp["last5list"]))]
+                    if 'file' in resp and msg.Feature.image:
+                        msgchain.append(Image(path=resp['file']))
+                    await msg.finish(msgchain)
+                else:
+                    if 'errcode' in resp:
+                        raise WithErrCode(resp['errcode'])
+                    else:
+                        raise
+            except WithErrCode as e:
+                err_key = "arcaea.errcode." + str(e.args[0])
+                err_msg = msg.locale.t(err_key)
+                if err_key != err_msg:
+                    await msg.finish(msg.locale.t("arcaea.message.failed.fetch") + err_msg)
+                else:
+                    await msg.finish(msg.locale.t("arcaea.message.unofficial.fetch.failed"))
             except Exception:
                 traceback.print_exc()
-                await msg.finish('使用非官方API获取失败。')
+                await msg.finish(msg.locale.t("arcaea.message.unofficial.fetch.failed"))
     else:
-        await msg.finish('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
+        await msg.finish(msg.locale.t("arcaea.message.user.unbound"))
 
 
-@arc.command('info [<friendcode>] {查询一个Arcaea用户的最近游玩记录}',
-            'info official [<friendcode>] {使用官方API}',
-            'info unofficial [<friendcode>] {使用非官方API}', )
+@arc.command('info [<friendcode>] {{arcaea.info.help}}',
+             'info official [<friendcode>] {{arcaea.message.official}}',
+             'info unofficial [<friendcode>] {{arcaea.message.unofficial}}', )
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
-        await msg.sendMessage(
-            '未找到资源文件！请放置一枚arcaea的apk到机器人的assets目录并重命名为arc.apk后，使用~arcaea initialize初始化资源。')
+        await msg.sendMessage(msg.locale.t("arcaea.assets.not_found"))
         return
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
@@ -102,9 +122,9 @@ async def _(msg: Bot.MessageSession):
             if len(friendcode) == 9:
                 query_code = friendcode
             else:
-                await msg.finish('好友码必须是9位数字！')
+                await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
         else:
-            await msg.finish('请输入正确的好友码！')
+            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.format"))
     else:
         get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
         if get_friendcode_from_db is not None:
@@ -117,12 +137,12 @@ async def _(msg: Bot.MessageSession):
                     await msg.finish(resp['msg'])
                 else:
                     if not official and prefer_uses is None:
-                        await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
+                        await msg.sendMessage(msg.locale.t("arcaea.message.official.fetch.failed.fallback"))
                         unofficial = True
             except Exception:
                 traceback.print_exc()
                 if not official and prefer_uses is None:
-                    await msg.sendMessage('使用官方API获取失败，尝试使用非官方接口。')
+                    await msg.sendMessage(msg.locale.t("arcaea.message.official.fetch.failed.fallback"))
                     unofficial = True
         if unofficial:
             try:
@@ -130,12 +150,12 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(resp)
             except Exception:
                 traceback.print_exc()
-                await msg.finish('使用非官方API获取失败。')
+                await msg.finish(msg.locale.t("arcaea.message.unofficial.fetch.failed"))
     else:
-        await msg.finish('未绑定用户，请使用~arcaea bind <friendcode>绑定一个用户。')
+        await msg.finish(msg.locale.t("arcaea.message.user.unbound"))
 
 
-@arc.command('song <songname+prs/pst/byd> {查询一首Arcaea谱面的信息}')
+@arc.command('song <songname+prs/pst/byd> {{arcaea.song.help}}')
 async def _(msg: Bot.MessageSession):
     songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
     songname_split = songname_.split(' ')
@@ -154,7 +174,7 @@ async def _(msg: Bot.MessageSession):
             songname_split.remove(s)
             break
     if diff == -1:
-        await msg.finish('请输入正确的谱面难度！')
+        await msg.finish(msg.locale.t("arcaea.song.message.invalid.difficulty"))
     songname = ' '.join(songname_split)
     usercode = None
     get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
@@ -163,55 +183,56 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(Plain(await get_song_info(songname, diff, usercode)))
 
 
-@arc.command('bind <friendcode/username> {绑定一个Arcaea用户}')
+@arc.command('bind <friendcode/username> {{arcaea.bind.help}}')
 async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<friendcode/username>']
     getcode = await get_userinfo(code)
     if getcode:
         bind = ArcBindInfoManager(msg).set_bind_info(username=getcode[0], friendcode=getcode[1])
         if bind:
-            await msg.finish(f'绑定成功：{getcode[0]}({getcode[1]})')
+            await msg.finish(msg.locale.t("arcaea.message.bind.success", username=getcode[0], friendcode=getcode[1]))
     else:
         if code.isdigit():
             bind = ArcBindInfoManager(msg).set_bind_info(username='', friendcode=code)
             if bind:
-                await msg.finish('绑定成功，但是无法获取用户信息。请自行检查命令是否可用。')
+                await msg.finish(msg.locale.t("arcaea.bind.message.success.but.failed.fetch.username"))
         else:
-            await msg.finish('绑定失败，请尝试使用好友码绑定。')
+            await msg.finish(msg.locale.t("arcaea.bind.message.failed"))
 
 
-@arc.command('unbind {取消绑定用户}')
+@arc.command('unbind {{arcaea.unbind.help}}')
 async def _(msg: Bot.MessageSession):
     unbind = ArcBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish('取消绑定成功。')
+        await msg.finish(msg.locale.t("arcaea.unbind.message.success"))
 
 
 @arc.command('initialize', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
-        await msg.finish('未找到arc.apk！')
+        await msg.finish(msg.locale.t("arcaea.initialize.not_found"))
         return
     result = await arcb30init()
     if result:
-        await msg.finish('成功初始化！')
+        await msg.finish(msg.locale.t("arcaea.initialize.success"))
 
 
-@arc.command('download {获取最新版本的游戏apk}')
+@arc.command('download {{arcaea.download.help}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish(['未配置webrender，无法使用此命令。'])
+        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
                          fmt='json')
     if resp:
-        await msg.finish([Plain(f'目前的最新版本为{resp["value"]["version"]}。\n下载地址：{resp["value"]["url"]}')])
+        await msg.finish([Plain(msg.locale.t("arcaea.download.message.success", version=resp["value"]["version"],
+                                             url=resp['value']['url']))])
 
 
-@arc.command('random {随机一首曲子}')
+@arc.command('random {{arcaea.random.help}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish(['未配置webrender，无法使用此命令。'])
+        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
     if resp:
         value = resp["value"][0]
@@ -222,10 +243,10 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@arc.command('rank free {查看当前免费包游玩排行}', 'rank paid {查看当前付费包游玩排行}')
+@arc.command('rank free {{arcaea.rank.help.free}}', 'rank paid {{arcaea.rank.help.paid}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish(['未配置webrender，无法使用此命令。'])
+        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     if msg.parsed_msg.get('free', False):
         resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
     else:
@@ -239,8 +260,9 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('\n'.join(r))
 
 
-@arc.command('switch {切换查询时默认优先使用的API接口}')
+@arc.command('switch {{arcaea.switch.help}}')
 async def _(msg: Bot.MessageSession):
     value = msg.options.get('arc_api', True)
     set_value = msg.data.edit_option('arc_api', not value)
-    await msg.finish(f'已切换为{"官方" if not value else "非官方"}API。')
+    await msg.finish(msg.locale.t("arcaea.switch.message.success.official"
+                                  if not value else "arcaea.switch.message.success.unofficial"))
