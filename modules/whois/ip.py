@@ -85,26 +85,26 @@ def parse_coordinate(axis: str, value: float):
 
 async def format_ip(info: Dict[str, Any]):
     ip_property = {
-        'global': '全局',
-        'private': '私有',
-        'reserved': '保留',
-        'multicast': '多播',
-        'link_local': '链路本地',
-        'loopback': '回环',
-        'unspecified': '未指定',
-        'ipv4_mapped': 'IPv4 映射',
-        'sixtofour': '6to4 ',
-        'teredo': 'Teredo ',
-        'site_local': '站点本地'
+        'global': '{whois.message.ip_property.global}',
+        'private': '{whois.message.ip_property.private}',
+        'reserved': '{whois.message.ip_property.reserved}',
+        'multicast': '{whois.message.ip_property.multicast}',
+        'link_local': '{whois.message.ip_property.link_local}',
+        'loopback': '{whois.message.ip_property.loopback}',
+        'unspecified': '{whois.message.ip_property.unspecified}',
+        'ipv4_mapped': '{whois.message.ip_property.ipv4_mapped}',
+        'sixtofour': '{whois.message.ip_property.sixtofour}',
+        'teredo': '{whois.message.ip_property.teredo}',
+        'site_local': '{whois.message.ip_property.site_local}'
     }
 
     return f'''\
 {info['ip']}
-类型：IPv{info['version']} {ip_property[info['ip_property']]}地址{f"""
-实际 IP：{info['real_ip']}""" if info['real_ip'] is not None else ''}{f"""
-位置：{iso[info['country_code']]}""" if info['country_code'] is not None else ''}{info['region'] if info['region'] is not None else ''}{info['city'] if info['city'] is not None else ''}{f"（{parse_coordinate('longitude', info['longitude'])}, {parse_coordinate('latitude', info['latitude'])}）" if info['longitude'] is not None and info['latitude'] is not None else ''}{f"""
-邮编：{info['postal_code']}""" if info['postal_code'] is not None else ''}{f"""
-组织：{info['organization']}""" if info['organization'] is not None else ''}{f"""
-ASN：{info['asn']}""" if info['asn'] is not None else ''}{f"（{info['asn_organization']}）" if info['asn_organization'] is not None else ''}{f"""
-时区：UTC{(info['offset'] / 3600):+g}""" if info['offset'] is not None else ''}{f"""
-反向解析：{info['reverse']}""" if info['reverse'] is not None and info['reverse'] != info['ip'] else ''}'''
+{msg.locale.t('whois.message.type')}IPv{info['version']} {ip_property[info['ip_property']]}{msg.locale.t('whois.message.ip_property')}{f"""
+{msg.locale.t('whois.message.real_ip')}{info['real_ip']}""" if info['real_ip'] is not None else ''}{f"""
+{msg.locale.t('whois.message.location')}{iso[info['country_code']]}""" if info['country_code'] is not None else ''}{info['region'] if info['region'] is not None else ''}{info['city'] if info['city'] is not None else ''}{f"（{parse_coordinate('longitude', info['longitude'])}, {parse_coordinate('latitude', info['latitude'])}）" if info['longitude'] is not None and info['latitude'] is not None else ''}{f"""
+{msg.locale.t('whois.message.postal_code')}{info['postal_code']}""" if info['postal_code'] is not None else ''}{f"""
+{msg.locale.t('whois.message.organization')}{info['organization']}""" if info['organization'] is not None else ''}{f"""
+{msg.locale.t('whois.message.asn')}{info['asn']}""" if info['asn'] is not None else ''}{f"（{info['asn_organization']}）" if info['asn_organization'] is not None else ''}{f"""
+{msg.locale.t('whois.message.utc')}UTC{(info['offset'] / 3600):+g}""" if info['offset'] is not None else ''}{f"""
+{msg.locale.t('whois.message.reverse')}{info['reverse']}""" if info['reverse'] is not None and info['reverse'] != info['ip'] else ''}'''
