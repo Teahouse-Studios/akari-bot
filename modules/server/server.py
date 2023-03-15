@@ -48,7 +48,7 @@ async def server(address, raw=False, showplayer=False, mode='j'):
                                     servers.append(str(description))
 
                             if 'players' in jejson:
-                                onlinesplayer = f"在线玩家：{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
+                                onlinesplayer = f"{msg.locale.t('server.message.player')}{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
                                 servers.append(onlinesplayer)
                                 if showplayer:
                                     playerlist = []
