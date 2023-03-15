@@ -83,7 +83,7 @@ def parse_coordinate(axis: str, value: float):
         return f'{value}°{"E" if value > 0 else "W"}'
 
 
-async def format_ip(info: Dict[str, Any]):
+async def format_ip(msg, info: Dict[str, Any]):
     ip_property = {
         'global': '{whois.message.ip_property.global}',
         'private': '{whois.message.ip_property.private}',

@@ -16,7 +16,7 @@ async def _(msg: Bot.MessageSession):
     query_type = ip_or_domain(query)
     if query_type == 'ip':
         res = await check_ip(query)
-        await msg.finish(await format_ip(res))
+        await msg.finish(await format_ip(msg, res))
     # elif query_type == 'domain':
     #     res = await check_domain(query)
     #     await msg.finish(await format_domain(res))
