@@ -10,7 +10,7 @@ api = 'https://ca.projectxero.top/idlist/search'
 i = module('idlist')
 
 
-@i.handle('<query> {{idlist.desc}}')
+@i.handle('<query> {{idlist.help}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
     query_options = {'q': query, 'limit': '6'}
