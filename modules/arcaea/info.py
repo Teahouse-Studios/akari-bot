@@ -67,6 +67,6 @@ async def get_info(usercode):
                                                             byd=False if recent["difficulty"] != 3 else True))
         return result
     elif get_['status'] in errcode:
-        return Plain(f'{msg.locale.t('arcaea.message.failed.errcode')}{errcode[get_["status"]]}')
+        return Plain(f'{msg.locale.t("arcaea.message.failed.errcode")}{errcode[get_["status"]]}')
     else:
         return Plain(msg.locale.t('arcaea.message.failed') + get_)
