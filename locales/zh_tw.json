@@ -7,7 +7,7 @@
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.plain.empty": "機器人嘗試傳送空白文字訊息，請聯絡機器人開發人員解決問題。",
     "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。請向機器人開發人員回報問題。",
-    "error.module.unbound": "模組 ${module} 未繫結任何指令且無簡介，請聯絡開發人員處理。",
+    "error.module.unbound": "模組 ${module} 未綁定任何指令且無簡介，請聯絡開發人員處理。",
     "error.module.helpdoc.invalid": "${module} 模組的說明資訊有誤，請聯絡開發人員處理。",
     "error.loader.load.failed": "載入模組中發生了以下錯誤，對應模組未載入：${err_msg}",
     "error.loader.load.success": "所有模組已正常載入。",
