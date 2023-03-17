@@ -32,10 +32,10 @@ async def get_info_official(usercode):
         getuserinfo_json = await get_url(f'{apiurl}user/{usercode}', headers=headers, status_code=200, fmt='json')
     except ValueError as e:
         Logger.info(f'[{usercode}] {e}')
-        return {'success': False, 'msg': msg.finish(msg.locale.t('arcaea.message.failed')}
+        return {'success': False, 'msg': msg.finish(msg.locale.t('arcaea.message.failed'))}
     except Exception:
         traceback.print_exc()
-        return {'success': False, 'msg': msg.finish(msg.locale.t('arcaea.message.failed')}
+        return {'success': False, 'msg': msg.finish(msg.locale.t('arcaea.message.failed'))}
     getuserinfo = getuserinfo_json['data']
     username = getuserinfo['display_name']
     potential = getuserinfo['potential']
