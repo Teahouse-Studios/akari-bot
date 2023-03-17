@@ -21,15 +21,15 @@ async def get_info(usercode):
                              headers=headers,
                              fmt='json')
     except ValueError as e:
-        return [Plain('查询失败：' + str(e))]
+        return [Plain(msg.locale.t('arcaea.message.failed.errcode') + str(e))]
     except Exception:
         traceback.print_exc()
-        return [Plain('查询失败。')]
+        return [Plain(msg.locale.t('arcaea.message.failed'))]
     Logger.debug(get_)
     if get_["status"] == 0:
         recent = get_['content']["recent_score"]
         if len(recent) < 0:
-            return [Plain('此用户无游玩记录。')]
+            return [Plain(msg.locale.t('arcaea.info.message.result.none'))]
         recent = recent[0]
         difficulty = '???'
         if recent['difficulty'] == 0:
@@ -59,14 +59,7 @@ async def get_info(usercode):
         else:
             usrptt = usrptt / 100
         time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
-        result = [Plain(f'{username} (Ptt: {usrptt})的最近游玩记录：\n'
-                        f'{trackname} ({difficulty})\n'
-                        f'Score: {score}\n'
-                        f'Pure: {pure} ({shiny_pure})\n'
-                        f'Far: {far}\n'
-                        f'Lost: {lost}\n'
-                        f'Potential: {realptt} -> {ptt}\n'
-                        f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)')]
+        result = [Plain(msg.locale.t('arcaea.info.message.result', username=username, potential=potential, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         else:
@@ -74,6 +67,6 @@ async def get_info(usercode):
                                                             byd=False if recent["difficulty"] != 3 else True))
         return result
     elif get_['status'] in errcode:
-        return Plain(f'查询失败：{errcode[get_["status"]]}')
+        return Plain(f'{msg.locale.t('arcaea.message.failed.errcode')}{errcode[get_["status"]]}')
     else:
-        return Plain('查询失败。' + get_)
+        return Plain(msg.locale.t('arcaea.message.failed') + get_)

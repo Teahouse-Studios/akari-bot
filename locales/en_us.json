@@ -27,6 +27,8 @@
     "parser.module.disabled.prompt": "${module} module is not enabled, please send ${prefix}enabling ${module} to enable the module.",
     "example": "Hello world!",
     "success": "Success.",
+    "yes": "Yes",
+    "no": "No",
     "message.wait.confirm.prompt.type1": "(send \"Yes\" or other matching words to confirm)",
     "message.wait.confirm.prompt.type2": "(send matching words to confirm)",
     "message.reply.prompt": "(Please reply to this message using the specified words)",

@@ -32,10 +32,10 @@ async def get_info_official(usercode):
         getuserinfo_json = await get_url(f'{apiurl}user/{usercode}', headers=headers, status_code=200, fmt='json')
     except ValueError as e:
         Logger.info(f'[{usercode}] {e}')
-        return {'success': False, 'msg': '查询失败。'}
+        return {'success': False, 'msg': msg.finish(msg.locale.t('arcaea.message.failed')}
     except Exception:
         traceback.print_exc()
-        return {'success': False, 'msg': '查询失败。'}
+        return {'success': False, 'msg': msg.finish(msg.locale.t('arcaea.message.failed')}
     getuserinfo = getuserinfo_json['data']
     username = getuserinfo['display_name']
     potential = getuserinfo['potential']
@@ -45,7 +45,7 @@ async def get_info_official(usercode):
         potential = '--'
     recent = getuserinfo["last_played_song"]
     if recent is None:
-        return [Plain('此用户无游玩记录。')]
+        return [Plain(msg.finish(msg.locale.t('arcaea.info.message.result.none'))]
     difficulty = '???'
     if recent['difficulty'] == 0:
         difficulty = 'PST'
@@ -76,12 +76,5 @@ async def get_info_official(usercode):
     far = recent['far_count']
     lost = recent['lost_count']
     time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
-    result = {'success': True, 'msg': f'{username} (Ptt: {potential})的最近游玩记录：\n'
-                                      f'{trackname} ({difficulty})\n'
-                                      f'Score: {score}\n'
-                                      f'Pure: {pure} ({shiny_pure})\n'
-                                      f'Far: {far}\n'
-                                      f'Lost: {lost}\n'
-                                      f'Potential: {realptt} -> {ptt}\n'
-                                      f'Time: {time_played.strftime("%Y-%m-%d %H:%M:%S")}(UTC+8)'}
+    result = {'success': True, 'msg': msg.locale.t('arcaea.info.message.result', username=username, potential=potential, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S"))}
     return result

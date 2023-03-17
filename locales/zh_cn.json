@@ -27,6 +27,8 @@
     "parser.module.disabled.prompt": "${module} 模块未启用，请发送 ${prefix}enable ${module} 启用本模块。",
     "example": "你好世界！",
     "success": "成功。",
+    "yes": "是",
+    "no": "否",
     "message.wait.confirm.prompt.type1": "（发送“是”或符合确认条件的词语来确认）",
     "message.wait.confirm.prompt.type2": "（发送符合条件的词语来确认）",
     "message.reply.prompt": "（请使用指定的词语回复本条消息）",

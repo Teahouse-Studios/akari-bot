@@ -56,7 +56,7 @@ async def main(msg: Bot.MessageSession):
     if g == ['', '']:
         msg_ = msg.locale.t('server.message.none')
         if msg.Feature.delete and enabled_addon:
-            msg_ += '[' + msg.locale.t('server.revoke.message') + ']'
+            msg_ += '\n[' + msg.locale.t('server.revoke.message') + ']'
         send = await msg.sendMessage(msg_)
         if msg.Feature.delete and enabled_addon:
             await msg.sleep(90)
