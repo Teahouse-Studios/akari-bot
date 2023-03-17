@@ -95,6 +95,6 @@ async def get_song_info(sid, diff: int, usercode=None):
 
         return '\n'.join(msg)
     elif song_info['status'] in errcode:
-        return Plain(f{msg.locale.t("arcaea.message.failed.errcode")}{errcode[song_info["status"]]}')
+        return Plain(f'{msg.locale.t("arcaea.message.failed.errcode")}{errcode[song_info["status"]]}')
     else:
         return Plain(msg.locale.t('arcaea.message.failed') + song_info)
