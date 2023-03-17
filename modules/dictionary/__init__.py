@@ -4,9 +4,9 @@ from .screenshot import get_pic
 
 
 dict_module = module('dictionary', alias=["dict"],
-                         desc='查询科林斯词典。', developers=['Dianliang233'])
+                         desc='{dictionary.help}', developers=['Dianliang233'])
 
-@dict_module.handle(help_doc='<term> {{dictionary.help}}')
+@dict_module.handle(help_doc='<term> {{dictionary.help.term}}')
 async def _(msg: Bot.MessageSession):
     print(str(msg.parsed_msg['<term>']).replace(' ', '-').lower())
     pic_collins = await get_pic(

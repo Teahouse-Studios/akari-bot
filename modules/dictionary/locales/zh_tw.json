@@ -1,4 +1,4 @@
 {
-    "dictionary.desc": "查詢柯林斯詞典。",
-    "dictionary.help": "在柯林斯詞典中查詢單詞，暫僅支援英文。"
+    "dictionary.help": "查詢柯林斯詞典。",
+    "dictionary.help.term": "在柯林斯詞典中查詢單詞，暫僅支援英文。"
 }

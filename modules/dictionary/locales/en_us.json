@@ -1,4 +1,4 @@
 {
-    "dictionary.desc": "Query Collins Dictionary.",
-    "dictionary.help": "Query terms in Collins Dictionary, supported only in English."
+    "dictionary.help": "Query Collins Dictionary.",
+    "dictionary.help.term": "Query terms in Collins Dictionary."
 }
