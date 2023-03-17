@@ -5,12 +5,12 @@ from .mojang_api import *
 
 mcplayer = module(
     bind_prefix='mcplayer',
-    desc='从 Mojang API 获取 Minecraft Java 版玩家信息',
+    desc='{mcplayer.help}',
     developers=['Dianliang233'],
 )
 
 
-@mcplayer.handle('<username_or_uuid> {通过玩家名或玩家 UUID 获取玩家信息。}')
+@mcplayer.handle('<username_or_uuid> {{mcplayer.help.player}}')
 async def main(msg: Bot.MessageSession):
     arg = msg.parsed_msg['<username_or_uuid>']
     try:
@@ -32,5 +32,5 @@ async def main(msg: Bot.MessageSession):
         if cape:
             chain.append(Image(cape))
     except ValueError:
-        chain = [Plain(f'未找到 {arg} 的信息。')]
+        chain = [Plain(msg.locale.t('mcplayer.message.not_found', player=arg))]
     await msg.finish(chain)
