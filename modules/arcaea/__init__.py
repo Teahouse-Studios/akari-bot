@@ -162,9 +162,9 @@ async def _(msg: Bot.MessageSession):
     diff = -1
     for s in songname_split:
         s = s.lower()
-        if s == 'prs':
+        if s == 'pst':
             diff = 0
-        elif s == 'pst':
+        elif s == 'prs':
             diff = 1
         elif s == 'ftr':
             diff = 2
