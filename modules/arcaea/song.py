@@ -31,11 +31,11 @@ async def get_song_info(msgsession, sid, diff: int, usercode=None):
         if len(difficulties) < diff:
             return [Plain(msgsession.locale.t('arcaea.song.message.invalid.difficulty'))]
         song_name = difficulties[diff]['name_en']
-        diff_display_name = 'PRS' if diff == 0 else 'PST' if diff == 1 else 'FTR' if diff == 2 else 'BYD' \
+        diff_display_name = 'PST' if diff == 0 else 'PRS' if diff == 1 else 'FTR' if diff == 2 else 'BYD' \
             if diff == 3 else '???'
-        side_display_name = '光芒' if difficulties[diff]['side'] == 0 else '纷争' if difficulties[diff][
+        side_display_name = msgsession.locale.t('arcaea.song.message.side.light') if difficulties[diff]['side'] == 0 else msgsession.locale.t('arcaea.song.message.side.conflict') if difficulties[diff][
                                                                                          'side'] == 1 else \
-            '消色' if difficulties[diff]['side'] == 2 else '???'
+            msgsession.locale.t('arcaea.song.message.side.colorless') if difficulties[diff]['side'] == 2 else '???'
         msg.append(f'{song_name} ({diff_display_name}/{side_display_name})')
         display_rating_1 = difficulties[diff]['difficulty'] / 2
         display_rating_2 = difficulties[diff]['difficulty'] // 2
@@ -50,8 +50,8 @@ async def get_song_info(msgsession, sid, diff: int, usercode=None):
         msg.append(msgsession.locale.t('arcaea.song.message.set_friendly') + difficulties[diff]['set_friendly'])
         msg.append(msgsession.locale.t('arcaea.song.message.time') + str(difficulties[diff]['time']) + msgsession.locale.t('arcaea.song.message.time.second'))
         msg.append(msgsession.locale.t('arcaea.song.message.date') + datetime.fromtimestamp(difficulties[diff]["date"]).strftime("%Y-%m-%d"))
-        msg.append(msgsession.locale.t('arcaea.song.message.world_unlock') + ('是' if difficulties[diff]['world_unlock'] else '否'))
-        msg.append(msgsession.locale.t('arcaea.song.message.remote_download') + ('是' if difficulties[diff]['remote_download'] else '否'))
+        msg.append(msgsession.locale.t('arcaea.song.message.world_unlock') + (msgsession.locale.t('yes') if difficulties[diff]['world_unlock'] else msgsession.locale.t('no')))
+        msg.append(msgsession.locale.t('arcaea.song.message.remote_download') + (msgsession.locale.t('yes') if difficulties[diff]['remote_download'] else msgsession.locale.t('no')))
         if usercode:
             try:
                 getuserinfo_json = await get_url(f'{api_url_official}user/{usercode}/score?'
