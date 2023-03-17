@@ -14,7 +14,7 @@ api_url_official = Config('arcapi_official_url')
 headers_official = {'Authorization': Config('arcapi_official_token')}
 
 
-async def get_song_info(sid, diff: int, usercode=None):
+async def get_song_info(msg, sid, diff: int, usercode=None):
     headers = {"User-Agent": Config('botarcapi_agent')}
     try:
         song_info = await get_url(f'{api_url}song/info?songname={sid}', headers=headers, status_code=200,
@@ -95,6 +95,6 @@ async def get_song_info(sid, diff: int, usercode=None):
 
         return '\n'.join(msg)
     elif song_info['status'] in errcode:
-        return Plain(f'{msg.locale.t("arcaea.message.failed.errcode")}{errcode[song_info["status"]]}')
+        return f'{msg.locale.t("arcaea.message.failed.errcode")}{errcode[song_info["status"]]}'
     else:
-        return Plain(msg.locale.t('arcaea.message.failed') + song_info)
+        return msg.locale.t('arcaea.message.failed') + song_info

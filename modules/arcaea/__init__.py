@@ -132,7 +132,7 @@ async def _(msg: Bot.MessageSession):
     if query_code is not None:
         if not unofficial:
             try:
-                resp = await get_info_official(query_code)
+                resp = await get_info_official(msg, query_code)
                 if resp['success']:
                     await msg.finish(resp['msg'])
                 else:
@@ -146,7 +146,7 @@ async def _(msg: Bot.MessageSession):
                     unofficial = True
         if unofficial:
             try:
-                resp = await get_info(query_code)
+                resp = await get_info(msg, query_code)
                 await msg.finish(resp)
             except Exception:
                 traceback.print_exc()
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession):
     get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
     if get_friendcode_from_db is not None:
         usercode = get_friendcode_from_db
-    await msg.finish(Plain(await get_song_info(songname, diff, usercode)))
+    await msg.finish(Plain(await get_song_info(msg, songname, diff, usercode)))
 
 
 @arc.command('bind <friendcode/username> {{arcaea.bind.help}}')

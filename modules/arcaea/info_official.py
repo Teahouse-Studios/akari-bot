@@ -27,7 +27,7 @@ async def get_songinfo(songid):
         return False
 
 
-async def get_info_official(usercode):
+async def get_info_official(msg, usercode):
     try:
         getuserinfo_json = await get_url(f'{apiurl}user/{usercode}', headers=headers, status_code=200, fmt='json')
     except ValueError as e:

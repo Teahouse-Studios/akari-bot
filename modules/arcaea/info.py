@@ -13,7 +13,7 @@ assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
 
 
-async def get_info(usercode):
+async def get_info(msg, usercode):
     headers = {"User-Agent": Config('botarcapi_agent')}
     try:
         get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True",
@@ -59,7 +59,7 @@ async def get_info(usercode):
         else:
             usrptt = usrptt / 100
         time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
-        result = [Plain(msg.locale.t('arcaea.info.message.result', username=username, potential=potential, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
+        result = [Plain(msg.locale.t('arcaea.info.message.result', username=username, potential=usrptt, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         else:
