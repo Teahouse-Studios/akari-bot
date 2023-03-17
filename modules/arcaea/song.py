@@ -33,9 +33,9 @@ async def get_song_info(sid, diff: int, usercode=None):
         song_name = difficulties[diff]['name_en']
         diff_display_name = 'PRS' if diff == 0 else 'PST' if diff == 1 else 'FTR' if diff == 2 else 'BYD' \
             if diff == 3 else '???'
-        side_display_name = msg.locale.t('arcaea.song.message.side.light') if difficulties[diff]['side'] == 0 else msg.locale.t('arcaea.song.message.side.conflict') if difficulties[diff][
+        side_display_name = '光芒' if difficulties[diff]['side'] == 0 else '纷争' if difficulties[diff][
                                                                                          'side'] == 1 else \
-            msg.locale.t('arcaea.song.message.side.colorless') if difficulties[diff]['side'] == 2 else '???'
+            '消色' if difficulties[diff]['side'] == 2 else '???'
         msg.append(f'{song_name} ({diff_display_name}/{side_display_name})')
         display_rating_1 = difficulties[diff]['difficulty'] / 2
         display_rating_2 = difficulties[diff]['difficulty'] // 2
@@ -50,8 +50,8 @@ async def get_song_info(sid, diff: int, usercode=None):
         msg.append(msg.locale.t('arcaea.song.message.set_friendly') + difficulties[diff]['set_friendly'])
         msg.append(msg.locale.t('arcaea.song.message.time') + str(difficulties[diff]['time']) + msg.locale.t('arcaea.song.message.time.second'))
         msg.append(msg.locale.t('arcaea.song.message.date') + datetime.fromtimestamp(difficulties[diff]["date"]).strftime("%Y-%m-%d"))
-        msg.append(msg.locale.t('arcaea.song.message.world_unlock') + (msg.locale.t('yes') if difficulties[diff]['world_unlock'] else msg.locale.t('no')))
-        msg.append(msg.locale.t('arcaea.song.message.remote_download') + (msg.locale.t('yes') if difficulties[diff]['remote_download'] else msg.locale.t('no')))
+        msg.append(msg.locale.t('arcaea.song.message.world_unlock') + ('是' if difficulties[diff]['world_unlock'] else '否'))
+        msg.append(msg.locale.t('arcaea.song.message.remote_download') + ('是' if difficulties[diff]['remote_download'] else '否'))
         if usercode:
             try:
                 getuserinfo_json = await get_url(f'{api_url_official}user/{usercode}/score?'
