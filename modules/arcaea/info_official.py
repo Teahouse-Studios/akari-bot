@@ -45,7 +45,7 @@ async def get_info_official(usercode):
         potential = '--'
     recent = getuserinfo["last_played_song"]
     if recent is None:
-        return [Plain(msg.finish(msg.locale.t('arcaea.info.message.result.none'))]
+        return [Plain(msg.finish(msg.locale.t('arcaea.info.message.result.none')))]
     difficulty = '???'
     if recent['difficulty'] == 0:
         difficulty = 'PST'
