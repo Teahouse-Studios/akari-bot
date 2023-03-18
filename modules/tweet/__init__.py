@@ -26,7 +26,6 @@ async def _(msg: Bot.MessageSession):
             await msg.finish('https://wdf.ink/6OUp')
         else:
             css = '''
-            <style>
                 main {
                     justify-content: start !important;
                 }
@@ -57,7 +56,6 @@ async def _(msg: Bot.MessageSession):
                 span[class^="tweet-header_separator"] {
                     display: none;
                 }
-            </style>
             '''
             pic = await download_to_cache(web_render_local + 'element_screenshot', method='POST', headers={
                     'Content-Type': 'application/json',
