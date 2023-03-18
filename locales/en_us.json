@@ -24,7 +24,7 @@
     "parser.superuser.permission.denied": "You do not have permission to use this command.",
     "parser.admin.module.permission.denied": "Commands under the ${module} module can only be used by the admins of the group. Please contact the admins to execute the command.",
     "parser.admin.submodule.permission.denied": "This command can only be used by the admins of the group. Please contact the admins to execute the command.",
-    "parser.module.disabled.prompt": "${module} module is not enabled, please send ${prefix}enabling ${module} to enable the module.",
+    "parser.module.disabled.prompt": "${module} module is not enabled, please send ${prefix}enable ${module} to enable the module.",
     "example": "Hello world!",
     "success": "Success.",
     "yes": "Yes",
