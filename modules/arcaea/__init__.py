@@ -161,14 +161,14 @@ async def _(msg: Bot.MessageSession):
     songname_split = songname_.split(' ')
     diff = -1
     for s in songname_split:
-        s = s.lower()
-        if s == 'pst':
+        s_ = s.lower()
+        if s_ == 'pst':
             diff = 0
-        elif s == 'prs':
+        elif s_ == 'prs':
             diff = 1
-        elif s == 'ftr':
+        elif s_ == 'ftr':
             diff = 2
-        elif s == 'byd':
+        elif s_ == 'byd':
             diff = 3
         if diff != -1:
             songname_split.remove(s)
