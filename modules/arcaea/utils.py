@@ -12,29 +12,6 @@ assets_path = os.path.abspath('./assets')
 cache_path = os.path.abspath('./cache')
 assets_arc = os.path.abspath(f'{assets_path}/arcaea')
 
-errcode = {-1: msg.locale.t('arcaea.errcode.-1'),
-           -2: msg.locale.t('arcaea.errcode.-2'),
-           -3: msg.locale.t('arcaea.errcode.-3'),
-           -4: msg.locale.t('arcaea.errcode.-4'),
-           -5: msg.locale.t('arcaea.errcode.-5'),
-           -6: msg.locale.t('arcaea.errcode.-6'),
-           -7: msg.locale.t('arcaea.errcode.-7'),
-           -8: msg.locale.t('arcaea.errcode.-8'),
-           -9: msg.locale.t('arcaea.errcode.-9'),
-           -10: msg.locale.t('arcaea.errcode.-10'),
-           -11: msg.locale.t('arcaea.errcode.-11'),
-           -12: msg.locale.t('arcaea.errcode.-12'),
-           -13: msg.locale.t('arcaea.errcode.-13'),
-           -14: msg.locale.t('arcaea.errcode.-14'),
-           -15: msg.locale.t('arcaea.errcode.-15'),
-           -16: msg.locale.t('arcaea.errcode.-16'),
-           -17: msg.locale.t('arcaea.errcode.-17'),
-           -18: msg.locale.t('arcaea.errcode.-18'),
-           -19: msg.locale.t('arcaea.errcode.-19'),
-           -20: msg.locale.t('arcaea.errcode.-20'),
-           -23: msg.locale.t('arcaea.errcode.-23'),
-           -233: msg.locale.t('arcaea.errcode.-233'), }
-
 
 async def get_userinfo(user):
     try:

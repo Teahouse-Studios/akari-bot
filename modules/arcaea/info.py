@@ -7,7 +7,7 @@ from config import Config
 from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.http import get_url
-from modules.arcaea.utils import autofix_b30_song_background, errcode
+from modules.arcaea.utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
@@ -66,7 +66,9 @@ async def get_info(msg, usercode):
             asyncio.create_task(autofix_b30_song_background(recent["song_id"],
                                                             byd=False if recent["difficulty"] != 3 else True))
         return result
-    elif get_['status'] in errcode:
-        return Plain(f'{msg.locale.t("arcaea.message.failed.errcode")}{errcode[get_["status"]]}')
+    
     else:
+        errcode_string = f"arcaea.errcode.{get_['status']}"
+        if locale := msg.locale.t(errcode_string) != errcode_string:
+            return Plain(f'{msg.locale.t("arcaea.message.failed.errcode")}{locale}')
         return Plain(msg.locale.t('arcaea.message.failed') + get_)

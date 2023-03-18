@@ -6,7 +6,6 @@ from config import Config
 from core.builtins import Plain
 from core.logger import Logger
 from core.utils.http import get_url
-from .utils import errcode
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
@@ -94,7 +93,8 @@ async def get_song_info(msgsession, sid, diff: int, usercode=None):
                     traceback.print_exc()
 
         return '\n'.join(msg)
-    elif song_info['status'] in errcode:
-        return f'{msgsession.locale.t("arcaea.message.failed.errcode")}{errcode[song_info["status"]]}'
     else:
+        errcode_string = f"arcaea.errcode.{song_info['status']}"
+        if locale := msgsession.locale.t(errcode_string) != errcode_string:
+            return f'{msgsession.locale.t("arcaea.message.failed.errcode")}{locale}'
         return msgsession.locale.t('arcaea.message.failed') + song_info
