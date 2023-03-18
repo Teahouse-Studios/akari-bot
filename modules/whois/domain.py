@@ -3,9 +3,6 @@ import os
 
 import whois
 
-iso = json.load(open(os.path.dirname(os.path.abspath(
-    __file__)) + './iso.json', 'r', encoding='utf-8'))
-
 
 async def check_domain(domain: str):
     return whois.whois(domain)
