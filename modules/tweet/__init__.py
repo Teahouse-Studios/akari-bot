@@ -9,10 +9,10 @@ from core.component import module
 from core.builtins.message import Image
 
 web_render_local = Config('web_render_local')
-t = module('tweet', developers=['Dianliang233'], desc='{tweet.desc}', )
+t = module('tweet', developers=['Dianliang233'], desc='{tweet.help}', )
 
 
-@t.handle('<tweet> {{tweet.help}}', )
+@t.handle('<tweet> {{tweet.help.tweet}}', )
 async def _(msg: Bot.MessageSession):
     tweet_id = msg.parsed_msg['<tweet>'].split('/')[-1]
     failed_request = await get_url('https://static-tweet.vercel.app/1', status_code=404)
@@ -20,7 +20,7 @@ async def _(msg: Bot.MessageSession):
     res = await get_url(f'https://static-tweet.vercel.app/_next/data/{build_id}/{tweet_id}.json')
     res_json = json.loads(res)
     if 'notFound' in res_json:
-        await msg.finish('{tweet.not_found}')
+        await msg.finish('{tweet.message.not_found}')
     else:
         if await check_bool(res_json['pageProps']['tweet']['text'], res_json['pageProps']['tweet']['user']['name'], res_json['pageProps']['tweet']['user']['screen_name']):
             await msg.finish('https://wdf.ink/6OUp')
