@@ -8,7 +8,7 @@ from config import Config
 
 openai.api_key = Config('openai_api_key')
 
-s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='使用 InstructGPT 生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
+s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='使用 ChatGPT（gpt-3.5-turbo）生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
 
 
 @s.handle('{开始发送聊天摘要}')
