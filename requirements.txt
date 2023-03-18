@@ -895,8 +895,9 @@ numpy==1.24.2 ; python_version >= "3.8" and python_version < "4.0" \
     --hash=sha256:eef70b4fc1e872ebddc38cddacc87c19a3709c0e3e5d20bf3954c147b1dd941d \
     --hash=sha256:f64bb98ac59b3ea3bf74b02f13836eb2e24e48e0ab0145bbda646295769bd780 \
     --hash=sha256:f9006288bcf4895917d02583cf3411f98631275bc67cce355a7f39f8c14338fa
-openai==0.26.5 ; python_version >= "3.8" and python_version < "4.0" \
-    --hash=sha256:2882a59c67ae33c2716a04389a6e6680d061f073424953732f917fde219addfd
+openai==0.27.2 ; python_version >= "3.8" and python_version < "4.0" \
+    --hash=sha256:5869fdfa34b0ec66c39afa22f4a0fb83a135dff81f6505f52834c6ab3113f762 \
+    --hash=sha256:6df674cf257e9e0504f1fd191c333d3f6a2442b13218d0eccf06230eb24d320e
 packaging==23.0 ; python_version >= "3.8" and python_version < "4.0" \
     --hash=sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2 \
     --hash=sha256:b6ad297f8907de0fa2fe1ccbd26fdaf387f5f47c7275fedf8cce89f99446cf97

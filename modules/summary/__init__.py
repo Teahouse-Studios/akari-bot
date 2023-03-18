@@ -1,10 +1,12 @@
 import re
-import ujson as json
+import openai
+
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
-from core.utils.http import post_url
-from core.utils.text import remove_suffix
+from config import Config
+
+openai.api_key = Config('openai_api_key')
 
 s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='使用 InstructGPT 生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
 
@@ -25,10 +27,12 @@ async def _(msg: Bot.MessageSession):
     wait_msg = await msg.sendMessage(f'正在生成摘要。您的聊天记录共 {char_count} 个字符，大约需要 {round(char_count / 33.5, 1)} 秒。请稍候……')
 
     nth = 0
-    output = ''
+    prev = ''
     while nth < len(texts):
-        prompt = f'请总结<|chat_start|>与<|chat_end|>之间的聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。' \
-                 f'{f"<|ctx_start|>与<|ctx_end|>之间记录了聊天内容的上下文，你可以作为参考，但请你务必在输出结果之前将其原样复制。<|ctx_start|>{output}<|ctx_end|>" if nth != 0 else ""}'
+        prompt = f'请总结下列聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。' \
+                 f'''{f"""同时<ctx_start>与<|ctx_end|>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录来输出。
+
+<|ctx_start|>{prev}<|ctx_end|>""" if nth != 0 else ""}'''
         len_prompt = len(prompt)
         post_texts = ''
         for t in texts[nth:]:
@@ -37,9 +41,15 @@ async def _(msg: Bot.MessageSession):
                 nth += 1
             else:
                 break
-        output += remove_suffix(await post_url('https://chat-simplifier.imzbb.cc/api/generate', data=json.dumps(
-            {'prompt': f'''{prompt}<|chat_start|>
-{post_texts}
-<|chat_end|>'''}), headers={'Content-Type': 'application/json'}, status_code=200, timeout=9999999), '<|im_end|>')
+    completion = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                    {'role': 'system', "content": "你是一个助手"},
+                    {'role': 'user', "content": f'''{prompt}
+
+{post_texts}'''},
+                ]
+        )
+    output = completion
     await wait_msg.delete()
     await msg.finish(output, disable_secret_check=True)
