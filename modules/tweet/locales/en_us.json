@@ -1,0 +1,5 @@
+{
+    "tweet.desc": "Get tweet image.",
+    "tweet.help": "Get tweet image from tweet ID/link (P.S. We didn't pay the $200 Elon tax)",
+    "tweet.not_found": "Tweet not found."
+}

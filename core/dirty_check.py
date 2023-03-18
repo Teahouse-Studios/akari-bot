@@ -48,7 +48,7 @@ def parse_data(result: dict):
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(3))
 async def check(*text) -> list:
     '''检查字符串是否合规
-    
+
     :param text: 字符串（List/Union）。
     :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'，结构为[{'审核后的字符串': 处理结果（True/False，默认为True）}]
     '''
@@ -147,3 +147,11 @@ async def check(*text) -> list:
         for y in query_list[x]:
             results.append(query_list[x][y])
     return results
+
+
+async def check_bool(*text):
+    chk = await check(*text)
+    for x in chk:
+        if not x['status']:
+            return True
+    return False

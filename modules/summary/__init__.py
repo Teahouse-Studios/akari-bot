@@ -3,6 +3,7 @@ import openai
 
 from core.builtins import Bot
 from core.component import module
+from core.dirty_check import check_bool
 from core.logger import Logger
 from config import Config
 
@@ -52,4 +53,6 @@ async def _(msg: Bot.MessageSession):
         )
     output = completion['choices'][0]['message']['content']
     await wait_msg.delete()
+    if await check_bool(output):
+        await msg.finish('https://wdf.ink/6OUp')
     await msg.finish(output, disable_secret_check=True)
