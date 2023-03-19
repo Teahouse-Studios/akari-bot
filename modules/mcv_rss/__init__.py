@@ -112,7 +112,7 @@ mcbv_rss = module('mcbv_rss', developers=['OasisAkari'],
 
 @mcbv_rss.handle(IntervalTrigger(seconds=180))
 async def mcbv_rss():
-    if IP.country == 'China':
+    if IP.country == 'China' or IP.country is None:
         return  # 中国大陆无法访问Google Play商店
     try:
         verlist = get_stored_list(bot, 'mcbv_rss')
