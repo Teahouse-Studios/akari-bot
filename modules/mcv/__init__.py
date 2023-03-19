@@ -11,7 +11,7 @@ m = module(
 
 @m.handle('{{mcv.mcv.help}}')
 async def mcv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcv())
+    await msg.finish(await mcv(msg))
 
 
 mb = module(
@@ -21,7 +21,7 @@ mb = module(
 
 @mb.handle('{{mcv.mcbv.help}}')
 async def mcbv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcbv())
+    await msg.finish(await mcbv(msg))
 
 
 md = module(
@@ -31,7 +31,7 @@ md = module(
 
 @md.handle('{{mcv.mcdv.help}}')
 async def mcdv_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcdv())
+    await msg.finish(await mcdv(msg))
 
 
 me = module(
@@ -41,4 +41,4 @@ me = module(
 
 @me.handle('{{mcv.mcev.help}}')
 async def mcev_loader(msg: Bot.MessageSession):
-    await msg.finish(await mcev())
+    await msg.finish(await mcev(msg))
