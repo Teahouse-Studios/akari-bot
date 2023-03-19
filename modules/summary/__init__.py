@@ -9,7 +9,7 @@ from config import Config
 
 openai.api_key = Config('openai_api_key')
 
-s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='{summary.help}, available_for=['QQ', 'QQ|Group'])
+s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='{summary.help}', available_for=['QQ', 'QQ|Group'])
 
 
 @s.handle('{{summary.help.summary}}')
