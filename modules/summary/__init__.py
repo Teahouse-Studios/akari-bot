@@ -9,23 +9,23 @@ from config import Config
 
 openai.api_key = Config('openai_api_key')
 
-s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='使用 ChatGPT（gpt-3.5-turbo）生成合并转发信息的聊天记录摘要。', available_for=['QQ', 'QQ|Group'])
+s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='{summary.help}, available_for=['QQ', 'QQ|Group'])
 
 
-@s.handle('{开始发送聊天摘要}')
+@s.handle('{{summary.help.summary}}')
 async def _(msg: Bot.MessageSession):
-    f_msg = await msg.waitNextMessage('接下来，请发送要生成摘要的合并转发消息。', append_instruction=False)
+    f_msg = await msg.waitNextMessage(msg.locale.t('summary.message'), append_instruction=False)
     try:
         f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.asDisplay()).group(1)
     except AttributeError:
-        await msg.finish('未检测到合并转发消息。')
+        await msg.finish(msg.locale.t('summary.message.notfound'))
     Logger.info(f)
     data = await f_msg.call_api('get_forward_msg', message_id=f)
     msgs = data['messages']
     texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
 
     char_count = sum([len(i) for i in texts])
-    wait_msg = await msg.sendMessage(f'正在生成摘要。您的聊天记录共 {char_count} 个字符，大约需要 {round(char_count / 33.5, 1)} 秒。请稍候……')
+    wait_msg = await msg.sendMessage(msg.locale.t('summary.message.waiting', count=char_count, time=round(char_count / 33.5, 1)))
 
     nth = 0
     prev = ''
