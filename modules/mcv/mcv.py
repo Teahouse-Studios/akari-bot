@@ -12,9 +12,9 @@ from core.utils.ip import IP
 async def mcv():
     try:
         data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
-        message1 = f"最新版：{data['latest']['release']}，最新快照：{data['latest']['snapshot']}"
+        message1 = msg.locale.t("mcv.mcv.message.message1", release=data['latest']['release'], snapshot=data['latest']['snapshot'])
     except (ConnectionError, OSError):  # Probably...
-        message1 = "获取manifest.json失败。"
+        message1 = msg.locale.t("mcv.mcv.message.message1.failed")
     try:
         mojira = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200))
         release = []
@@ -24,12 +24,8 @@ async def mcv():
                 release.append(v['name'])
         message2 = prefix.join(release)
     except Exception:
-        message2 = "获取Mojira信息失败。"
-    return f"""目前启动器内最新版本为：
-{message1}，
-Mojira上所记录最新版本为：
-{message2}
-（以启动器内最新版本为准，Mojira仅作版本号预览用）"""
+        message2 = msg.locale.t("mcv.mcv.message.message2.failed")
+    return msg.locale.t("mcv.mcv.message", message1=message1, message2=message2)
 
 
 async def mcbv():
@@ -53,7 +49,7 @@ async def mcbv():
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200))
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage('土豆熟了')
+        return ErrorMessage(msg.locale.t('mcv.error.server'))
     beta = []
     preview = []
     release = []
@@ -69,27 +65,25 @@ async def mcbv():
     fix = " | "
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
     return \
-(f"""目前Google Play商店内最新正式版为：
-{play_store_version if play_store_version is not None else '获取失败'}，
+(f"""{msg.locale.t("mcv.mcbv.message.play_store")}
+{play_store_version if play_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}，
 """ if IP.country != 'China' else '') + \
-f"""目前Microsoft Store内最新正式版为：
-{ms_store_version if ms_store_version is not None else '获取失败'}，
+f"""{msg.locale.t("mcv.mcbv.message.ms_store")}
+{ms_store_version if ms_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}，
 """ +\
-f"""Mojira上所记录最新版本为：
-{msg2}
-（以商店内最新版本为准，Mojira仅作版本号预览用）"""
+msg.locale.t("mcv.mcbv.message", msg2=msg2)
 
 
 async def mcdv():
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage('土豆熟了')
+        return ErrorMessage(msg.locale.t('mcv.error.server'))
     release = []
     for v in data:
         if not v['archived']:
             release.append(v["name"])
-    return f'最新版：{" | ".join(release)} \n（数据来源于MoJira，可能会比官方发布要早一段时间。信息仅供参考。）'
+    return msg.locale.t('mcv.mcdv.message', mcdversion=" | ".join(release))
 
 
 async def mcev():
@@ -99,5 +93,5 @@ async def mcev():
         version = re.search(r'(?<=\[)(.*?)(?=])', data)[0]
         Logger.debug(version)
     except (ConnectionError, OSError):  # Probably...
-        return ErrorMessage('土豆熟了')
-    return f'最新版：{version}'
+        return ErrorMessage(msg.locale.t('mcv.error.server'))
+    return f'{msg.locale.t('mcv.mcev.message')}{version}'

@@ -9,7 +9,7 @@ m = module(
     recommend_modules=['mcbv', 'mcdv'])
 
 
-@m.handle('{查询当前Minecraft Java版启动器内最新版本。}')
+@m.handle('{{mcv.mcv.help}}')
 async def mcv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcv())
 
@@ -19,7 +19,7 @@ mb = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@mb.handle('{查询当前Minecraft 基岩版Jira内记录的最新版本。}')
+@mb.handle('{{mcv.mcbv.help}}')
 async def mcbv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcbv())
 
@@ -29,7 +29,7 @@ md = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@md.handle('{查询当前Minecraft Dungeons Jira内记录的最新版本。}')
+@md.handle('{{mcv.mcdv.help}}')
 async def mcdv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcdv())
 
@@ -39,6 +39,6 @@ me = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@me.handle('{查询当前Minecraft教育版Windows版记录的最新版本。}')
+@me.handle('{{mcv.mcev.help}}')
 async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mcev())
