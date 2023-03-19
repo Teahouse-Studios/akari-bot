@@ -20,6 +20,6 @@ async def main(msg: Bot.MessageSession):
         lst = []
         for i in res:
             lst += [f'{i["count"]}. [{i["category"]}] {i["title"]} - {i["author"]} @ {i["time"]}\n{i["url"]}']
-        message = '\n'.join(lst) + msg.locale.t('mcbbs_news.message.more') + \
+        message = '\n'.join(lst) + '\n' + msg.locale.t('mcbbs_news.message.more') + \
                   Url('https://www.mcbbs.net/forum-news-1.html').url
     await msg.finish(message)
