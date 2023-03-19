@@ -44,7 +44,7 @@ bot = Bot.FetchTarget
 
 minecraft_news = module('minecraft_news', developers=['_LittleC_', 'OasisAkari', 'Dianliang233'],
                         recommend_modules=['feedback_news'],
-                        desc='开启后将会自动推送来自Minecraft官网的新闻。', alias='minecraftnews')
+                        desc='{minecraft_news.help.minecraft_news}', alias='minecraftnews')
 
 
 @minecraft_news.handle(IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180))
@@ -68,7 +68,7 @@ async def start_check_news():
                 title = default_tile['title']
                 desc = default_tile['sub_header']
                 link = baseurl + o_article['article_url']
-                articletext = f'Minecraft官网发布了新的文章：\n{title}\n  {desc}\n{str(Url(link))}'
+                articletext = f'{msg.locale.t("minecraft_news.message.minecraft_news")}\n{title}\n  {desc}\n{str(Url(link))}'
                 if title not in alist:
                     publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
                     now = datetime.now()
@@ -82,7 +82,7 @@ async def start_check_news():
 
 
 feedback_news = module('feedback_news', developers=['Dianliang233'], recommend_modules=['minecraft_news'],
-                       desc='开启后将会推送来自Minecraft Feedback的更新记录。',
+                       desc='{minecraft_news.help.feedback_news}',
                        alias='feedbacknews')
 
 
@@ -106,7 +106,7 @@ async def feedback_news():
                     link = article['html_url']
                     Logger.info(f'huh, we find {name}.')
                     await bot.post_message('feedback_news',
-                                           f'Minecraft Feedback 发布了新的文章：\n{name}\n{str(Url(link))}')
+                                           f'{msg.locale.t("minecraft_news.message.feedback_news")}\n{name}\n{str(Url(link))}')
                     alist.append(name)
                     update_stored_list(bot, 'mcfeedbacknews', alist)
         except Exception:

@@ -30,4 +30,4 @@ async def mcmod(keyword: str, detail: bool = False):
         desc = res.find('div', class_='body').text
         return f'{name}\n{str(Url(url))}\n{desc}'
     else:
-        return '未找到结果。'
+        return msg.locale.t('mcmod.message.not_found')
