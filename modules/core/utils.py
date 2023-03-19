@@ -8,7 +8,7 @@ from cpuinfo import get_cpu_info
 
 from core.builtins import Bot, PrivateAssets
 from core.component import module
-from core.utils.i18n import get_available_locales
+from core.utils.i18n import get_available_locales, Locale
 from database import BotDBUtil
 
 version = module('version',
@@ -134,9 +134,9 @@ async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'zh_tw', 'en_us']:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
-            await msg.finish(msg.locale.t('success'))
+            await msg.finish(Locale(lang).t('success'))
     else:
-        await msg.finish(msg.locale.t("core.locale.message.invalid",lang='、'.join(get_available_locales())))
+        await msg.finish(msg.locale.t("core.locale.message.invalid", lang='、'.join(get_available_locales())))
 
 
 whoami = module('whoami', developers=['Dianliang233'], base=True)
