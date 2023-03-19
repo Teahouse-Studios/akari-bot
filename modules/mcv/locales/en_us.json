@@ -1,6 +1,6 @@
 {
-    "mcv.error.server": "服务器错误。",
-    "mcv.mcv.help": "查询当前 Minecraft：Java 版在启动器内最新版本。",
+    "mcv.error.server": "Server error.",
+    "mcv.mcv.help": "Get the latest version of Minecraft: Java Edition in the launcher.",
     "mcv.mcbv.help": "查询当前 Minecraft 基岩版在 Jira 内记录的最新版本。",
     "mcv.mcdv.help": "查询当前 Minecraft Dungeons 在 Jira 内记录的最新版本。",
     "mcv.mcev.help": "查询当前 Minecraft：教育版在 Windows 版记录的最新版本。",
