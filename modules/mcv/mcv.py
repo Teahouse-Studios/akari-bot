@@ -94,4 +94,4 @@ async def mcev():
         Logger.debug(version)
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage(msg.locale.t('mcv.error.server'))
-    return f'{msg.locale.t('mcv.mcev.message')}{version}'
+    return f'{msg.locale.t("mcv.mcev.message")}{version}'
