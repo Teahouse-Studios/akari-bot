@@ -9,7 +9,7 @@ from core.utils.http import get_url, post_url
 from core.utils.ip import IP
 
 
-async def mcv():
+async def mcv(msg):
     try:
         data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
         message1 = msg.locale.t("mcv.mcv.message.message1", release=data['latest']['release'], snapshot=data['latest']['snapshot'])
@@ -28,7 +28,7 @@ async def mcv():
     return msg.locale.t("mcv.mcv.message", message1=message1, message2=message2)
 
 
-async def mcbv():
+async def mcbv(msg):
     play_store_version = None
     if IP.country != 'China':
         try:  # play store
@@ -74,7 +74,7 @@ f"""{msg.locale.t("mcv.mcbv.message.ms_store")}
 msg.locale.t("mcv.mcbv.message", msg2=msg2)
 
 
-async def mcdv():
+async def mcdv(msg):
     try:
         data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200))
     except (ConnectionError, OSError):  # Probably...
@@ -86,7 +86,7 @@ async def mcdv():
     return msg.locale.t('mcv.mcdv.message', mcdversion=" | ".join(release))
 
 
-async def mcev():
+async def mcev(msg):
     try:
         data = await get_url('https://meedownloads.blob.core.windows.net/win32/x86/updates/Updates.txt', 200)
         Logger.debug(data)
