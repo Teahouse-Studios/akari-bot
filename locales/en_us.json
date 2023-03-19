@@ -13,7 +13,7 @@
     "error.loader.load.success": "All modules are loaded successfully.",
     "error.request.api.timeout": "API request timeout.",
     "tos.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
-    "tos.reason": "Reason:",
+    "tos.reason": "Reason: ",
     "tos.warning.count": "You have received ${current_warns} warnings. Your account will be blocked if you receive more than 5 warnings.",
     "tos.warning.appeal": "If you have any objections, please go to https://github.com/Teahouse-Studios/bot/issues/new/choose and create an issue.",
     "tos.warning.last": "This is your last warning.",

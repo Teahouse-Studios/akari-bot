@@ -43,7 +43,7 @@
     "core.module.message.help.support_regex": "This module supports regular expressions, the message will match with the following: ",
     "core.module.message.help.regex.detail": "(${msg})",
     "core.module.message.help.regex.no_information": "No description",
-    "core.module.message.help.author.type1": "Module author:",
+    "core.module.message.help.author.type1": "Module author: ",
     "core.module.message.help.author.type2": "Module Author",
     "core.module.message.help.helpdoc.address": "Web document: https://bot.teahouse.team/wiki/",
     "core.module.message.help.table.header.base": "Base Module List",
