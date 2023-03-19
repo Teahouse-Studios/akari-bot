@@ -4,7 +4,7 @@
     "mcv.mcbv.help": "查询当前 Minecraft 基岩版在 Jira 内记录的最新版本。",
     "mcv.mcdv.help": "查询当前 Minecraft Dungeons 在 Jira 内记录的最新版本。",
     "mcv.mcev.help": "查询当前 Minecraft：教育版在 Windows 版记录的最新版本。",
-    "mcv.mcv.message": "目前启动器内最新版本为：\n${message1}\nMojira 上所记录最新版本为：\n{message2}\n（以启动器内最新版本为准，Mojira 仅作版本号预览用）",
+    "mcv.mcv.message": "目前启动器内最新版本为：\n${message1}\nMojira 上所记录最新版本为：\n${message2}\n（以启动器内最新版本为准，Mojira 仅作版本号预览用）",
     "mcv.mcv.message.message1": "最新版：${release}，最新快照：${snapshot}，",
     "mcv.mcv.message.message1.failed": "获取 manifest.json 失败。",
     "mcv.mcv.message.message2.failed": "获取 Mojira 信息失败。",
