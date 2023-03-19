@@ -18,7 +18,7 @@ async def _(msg: Bot.MessageSession):
     try:
         f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.asDisplay()).group(1)
     except AttributeError:
-        await msg.finish(msg.locale.t('summary.message.notfound'))
+        await msg.finish(msg.locale.t('summary.message.not_found'))
     Logger.info(f)
     data = await f_msg.call_api('get_forward_msg', message_id=f)
     msgs = data['messages']
