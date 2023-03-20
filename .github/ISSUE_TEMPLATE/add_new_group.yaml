@@ -3,7 +3,7 @@ description: 让机器人加入一个新群/频道
 title: "[NEW]: 加入新群"
 labels: ["new"]
 assignees:
-  - Teahouse-Studios/akaribot-admin
+  - cloudw233
 body:
   - type: markdown
     attributes:
