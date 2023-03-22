@@ -51,7 +51,7 @@ async def _(session: MessageSession):
     #  >>> [[Hello]] [[World]]
     #  <<< Hello
     #  <<< World
-    await session.finish(session.matched_msg[0])
+    await session.sendMessage(session.matched_msg[0])
     await session.finish(session.matched_msg[1])
 
 
