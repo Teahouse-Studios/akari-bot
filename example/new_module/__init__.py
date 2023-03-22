@@ -57,5 +57,27 @@ async def _(session: MessageSession):
 
 @test.schedule(IntervalTrigger(seconds=30))
 async def _():
-    # Send a message to target every 30 seconds
+    # Send a message to target which is enabled test module every 30 seconds
     await Bot.FetchTarget.post_message('test', 'Hello World!')
+
+
+@test.handle('test')  # all in one handler, including command, regex and schedule
+async def _(session: MessageSession):
+    #  >>> ~test test
+    #  <<< Hello World!
+    await session.finish('Hello World!')
+
+
+@test.handle(re.compile(r'<(.*)>'), mode='A')  # re.findall
+async def _(session: MessageSession):
+    #  >>> <Hello World!>
+    #  <<< Hello World!
+    await session.finish(session.matched_msg[0])
+
+
+@test.handle(IntervalTrigger(seconds=60))
+async def _():
+    # Send a message to target which is enabled test module every 60 seconds
+    await Bot.FetchTarget.post_message('test', 'test')
+
+
