@@ -275,8 +275,7 @@ async def bot_help(msg: Bot.MessageSession):
                     render = await image_table_render(tables)
                     if render:
                         await msg.finish([Image(render),
-                                          Plain(msg.locale.t("core.module.message.help.more_information",
-                                                             prefix=msg.prefixes[0]))])
+                                          Plain(wiki_msg)])
                 except Exception:
                     traceback.print_exc()
             if malias:
