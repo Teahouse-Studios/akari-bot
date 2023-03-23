@@ -8,7 +8,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def news():
+async def news(msg):
     api = 'https://www.mcbbs.net/forum-news-1.html'
     webrender = Config('web_render')
     if webrender:

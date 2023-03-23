@@ -12,11 +12,11 @@ mcmod = module(
 
 @mcmod.handle('<mod_name> {{mcmod.help.mod_name}}')
 async def main(msg: Bot.MessageSession):
-    message = await m(msg.parsed_msg['<mod_name>'])
+    message = await m(msg, msg.parsed_msg['<mod_name>'])
     await msg.finish(message)
 
 
 @mcmod.handle('details <content> {{mcmod.help.details}}')
 async def main(msg: Bot.MessageSession):
-    message = await m(msg.parsed_msg['<content>'], detail=True)
+    message = await m(msg, msg.parsed_msg['<content>'], detail=True)
     await msg.finish(message)

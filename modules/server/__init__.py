@@ -75,7 +75,7 @@ async def revoke(msg: Bot.MessageSession):
 
 
 async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
-    sendmsg = await server(address, raw, showplayer, mode)
+    sendmsg = await server(msg, address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
         for x in sendmsg:

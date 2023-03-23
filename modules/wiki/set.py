@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
             result = '当前设置了以下Interwiki：\n' + \
                      '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
-                result += base_interwiki_link_msg
+                result += f'\n此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
             await msg.finish(result)
     else:
         await msg.finish('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')

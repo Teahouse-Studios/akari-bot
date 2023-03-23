@@ -12,7 +12,7 @@ mcbbs_news = module(
 
 @mcbbs_news.handle('{{mcbbs_news.help}}')
 async def main(msg: Bot.MessageSession):
-    res = await news()
+    res = await news(msg)
     Logger.debug('res' + str(res))
     if res is None:
         message = msg.locale.t('mcbbs_news.message.not_found')
