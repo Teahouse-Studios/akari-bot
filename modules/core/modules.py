@@ -259,14 +259,28 @@ async def bot_help(msg: Bot.MessageSession):
             if module_alias:
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
-            if malias:
-                doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
             if module_.developers is not None:
                 devs = '、'.join(module_.developers)
             else:
                 devs = ''
             devs_msg = '\n' + msg.locale.t("core.module.message.help.author.type1") + devs
             wiki_msg = f'\n' + msg.locale.t("core.module.message.help.helpdoc.address") + help_name
+            if len(doc) > 500 and msg.Feature.image:
+                try:
+                    tables = []
+                    tables.append(ImageTable([doc, devs, '\n'.join(malias)],
+                                             [msg.locale.t("core.module.message.help.table.header.help"),
+                                              msg.locale.t("core.module.message.help.table.header.alias"),
+                                              msg.locale.t("core.module.message.help.author.type2")]))
+                    render = await image_table_render(tables)
+                    if render:
+                        await msg.finish([Image(render),
+                                          Plain(msg.locale.t("core.module.message.help.more_information",
+                                                             prefix=msg.prefixes[0]))])
+                except Exception:
+                    traceback.print_exc()
+            if malias:
+                doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
             await msg.finish(doc + devs_msg + wiki_msg)
         else:
             await msg.finish(msg.locale.t("core.module.message.help.not_found"))
