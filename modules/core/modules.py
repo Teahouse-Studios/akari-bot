@@ -267,11 +267,10 @@ async def bot_help(msg: Bot.MessageSession):
             wiki_msg = f'\n' + msg.locale.t("core.module.message.help.helpdoc.address") + help_name
             if len(doc) > 500 and msg.Feature.image:
                 try:
-                    tables = []
-                    tables.append(ImageTable([doc, devs, '\n'.join(malias)],
-                                             [msg.locale.t("core.module.message.help.table.header.help"),
-                                              msg.locale.t("core.module.message.help.table.header.alias"),
-                                              msg.locale.t("core.module.message.help.author.type2")]))
+                    tables = [ImageTable([[doc, devs, '\n'.join(malias)]],
+                                         [msg.locale.t("core.module.message.help.table.header.help"),
+                                          msg.locale.t("core.module.message.help.table.header.alias"),
+                                          msg.locale.t("core.module.message.help.author.type2")])]
                     render = await image_table_render(tables)
                     if render:
                         await msg.finish([Image(render),
