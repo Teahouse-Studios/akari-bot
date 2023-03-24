@@ -3,7 +3,7 @@ description: 发现机器人的功能出现问题
 title: "[BUG]: "
 labels: ["bug"]
 assignees:
-  - OasisAkari
+  - cloudw233
 body:
   - type: markdown
     attributes:
