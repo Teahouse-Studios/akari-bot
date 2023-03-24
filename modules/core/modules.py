@@ -3,6 +3,7 @@ import traceback
 from core.builtins import Image, Plain, Bot
 from core.component import on_command
 from core.exceptions import InvalidHelpDocTypeError
+from core.extra.pir import pir
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
 from core.types import Command
@@ -238,7 +239,7 @@ async def bot_help(msg: Bot.MessageSession):
                 devs = ''
             devs_msg = '\n模块作者：' + devs if devs != '' else ''
             wiki_msg = f'\n模块文档：https://bot.teahouse.team/wiki/' + help_name
-            await msg.finish(doc + devs_msg)
+            await msg.finish(Image(pir(doc + devs_msg)))
         else:
             await msg.finish('此模块可能不存在，请检查输入。')
 
@@ -319,7 +320,7 @@ async def _(msg: Bot.MessageSession):
             f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
             help_msg.append('[本消息将在一分钟后撤回]')
-        send = await msg.sendMessage('\n'.join(help_msg))
+        send = await msg.sendMessage(Image(pir('\n'.join(help_msg))))
         await msg.sleep(60)
         await send.delete()
 
@@ -385,7 +386,7 @@ async def modules_help(msg: Bot.MessageSession):
             '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
         if msg.Feature.delete:
             help_msg.append('[本消息将在一分钟后撤回]')
-        send = await msg.sendMessage('\n'.join(help_msg))
+        send = await msg.sendMessage(Image(pir('\n'.join(help_msg))))
         await msg.sleep(60)
         await send.delete()
 
