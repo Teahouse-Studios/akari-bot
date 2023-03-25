@@ -55,7 +55,6 @@
     "core.module.message.help.legacy.base": "基礎指令：",
     "core.module.message.help.legacy.external": "模組擴充指令：",
     "core.module.message.help.legacy.more_information": "使用 ${prefix}help <對應模組名> 檢視詳細資訊。\n使用 ${prefix}module list 檢視所有的可用模組。\n你也可以透過查閱文件取得說明：\nhttps://bot.teahouse.team/wiki/",
-    "core.module.message.help.legacy.recall": "[此訊息將在一分鐘後撤回]",
     "core.module.message.help.legacy.availables": "目前可用的模組有：",
     "core.module.message.reload.success": "成功：重新載入模組：",
     "core.module.message.reload.with": "，以及此模組下的 ${reloadCnt} 個文件。",
@@ -132,5 +131,6 @@
     "core.mute.message.enable": "成功靜音。",
     "core.leave.help": "使機器人離開群組。",
     "core.leave.message": "已執行，再見。",
-    "core.leave.confirm": "你確定嗎？此行為不可逆。"
+    "core.leave.confirm": "你確定嗎？此行為不可逆。",
+    "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]"
 }
