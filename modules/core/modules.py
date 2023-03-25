@@ -377,7 +377,7 @@ async def _(msg: Bot.MessageSession):
         help_msg.append(' | '.join(module_))
         help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0]))
         if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.module.message.help.legacy.recall"))
+            help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()
@@ -458,7 +458,7 @@ async def modules_help(msg: Bot.MessageSession):
         help_msg.append(' | '.join(module_))
         help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0]))
         if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.module.message.help.legacy.recall"))
+            help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()

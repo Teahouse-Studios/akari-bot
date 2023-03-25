@@ -55,7 +55,7 @@
     "core.module.message.help.legacy.base": "基础命令：",
     "core.module.message.help.legacy.external": "模块扩展命令：",
     "core.module.message.help.legacy.more_information": "使用 ${prefix}help <对应模块名> 查看详细信息。\n使用 ${prefix}module list 查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/",
-    "core.module.message.help.legacy.recall": "[本消息将在一分钟后撤回]",
+    "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
     "core.module.message.help.legacy.availables": "当前可用的模块有：",
     "core.module.message.reload.success": "成功：重载模块：",
     "core.module.message.reload.with": "，以及该模块下的 ${reloadCnt} 个文件。",
