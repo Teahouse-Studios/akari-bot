@@ -3,16 +3,21 @@ import json
 from core.builtins import Url, ErrorMessage
 from core.utils.http import get_url
 
-async def bugtracker_get(mojiraId: str, nolink=False):
+
+spx_cache = {}
+
+
+async def bugtracker_get(msg, mojiraId: str, nolink=False):
     data = {}
     id_ = mojiraId.upper()
     json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
     get_json = await get_url(json_url, 200)
-    get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
-    if get_spx:
-        spx = json.loads(get_spx)
-        if id_ in spx:
-            data["translation"] = spx[id_]
+    if mojiraId not in spx_cache:
+        get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
+        if get_spx:
+            spx_cache.update(json.loads(get_spx))
+    if id_ in spx_cache:
+        data["translation"] = spx_cache[id_]
     if get_json:
         load_json = json.loads(get_json)
         errmsg = ''
@@ -27,7 +32,7 @@ async def bugtracker_get(mojiraId: str, nolink=False):
                 if 'summary' in fields:
                     data["title"] = data["title"] + \
                                     fields['summary'] + (
-                                        f' ({data["translation"]})' if data.get("translation", False) else '')
+                                        f' (spx: {data["translation"]})' if data.get("translation", False) else '')
                 if 'issuetype' in fields:
                     data["type"] = fields['issuetype']['name']
                 if 'status' in fields:

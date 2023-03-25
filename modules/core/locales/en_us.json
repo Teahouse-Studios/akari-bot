@@ -55,6 +55,7 @@
     "core.module.message.help.legacy.base": "Base Command: ",
     "core.module.message.help.legacy.external": "Extension Command: ",
     "core.module.message.help.legacy.more_information": "Use \"${prefix}help <module name>\" to see details.\nUse \"${prefix}module list\" to view all available modules.\nYou can also access web documents: \nhttps://bot.teahouse.team/wiki/",
+    "core.module.message.help.legacy.revoke": "[This message will be recalled after 1 minute]",
     "core.module.message.help.legacy.availables": "Currently available module(s):",
     "core.module.message.reload.success": "Success: Reload module: ",
     "core.module.message.reload.with": ", and ${reloadCnt} files in this module.",
@@ -131,6 +132,5 @@
     "core.mute.message.enable": "Successfully muted.",
     "core.leave.help": "Let the robot leave the group.",
     "core.leave.message": "Goodbye.",
-    "core.leave.confirm": "Are you sure? This action is irreversible.",
-    "core.module.message.help.legacy.revoke": "[This message will be revoked after 1 minute]"
+    "core.leave.confirm": "Are you sure? This action is irreversible."
 }

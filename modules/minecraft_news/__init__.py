@@ -68,7 +68,7 @@ async def start_check_news():
                 title = default_tile['title']
                 desc = default_tile['sub_header']
                 link = baseurl + o_article['article_url']
-                articletext = f'{msg.locale.t("minecraft_news.message.minecraft_news")}\n{title}\n  {desc}\n{str(Url(link))}'
+                articletext = f'Minecraft 官网发布了新的文章：\n{title}\n  {desc}\n{str(Url(link))}'
                 if title not in alist:
                     publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
                     now = datetime.now()
@@ -106,7 +106,7 @@ async def feedback_news():
                     link = article['html_url']
                     Logger.info(f'huh, we find {name}.')
                     await bot.post_message('feedback_news',
-                                           f'{msg.locale.t("minecraft_news.message.feedback_news")}\n{name}\n{str(Url(link))}')
+                                           f'Minecraft Feedback 发布了新的文章：\n{name}\n{str(Url(link))}')
                     alist.append(name)
                     update_stored_list(bot, 'mcfeedbacknews', alist)
         except Exception:

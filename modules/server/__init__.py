@@ -56,7 +56,7 @@ async def main(msg: Bot.MessageSession):
     if g == ['', '']:
         msg_ = msg.locale.t('server.message.none')
         if msg.Feature.delete and enabled_addon:
-            msg_ += '\n[' + msg.locale.t('server.revoke.message') + ']'
+            msg_ += '\n' + msg.locale.t('server.revoke.message')
         send = await msg.sendMessage(msg_)
         if msg.Feature.delete and enabled_addon:
             await msg.sleep(90)
@@ -75,13 +75,13 @@ async def revoke(msg: Bot.MessageSession):
 
 
 async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
-    sendmsg = await server(address, raw, showplayer, mode)
+    sendmsg = await server(msg, address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
         for x in sendmsg:
             m = x['content']
             if msg.Feature.delete and enabled_addon:
-                m += '\n[' + msg.locale.t('server.revoke.message') + ']'
+                m += '\n' + msg.locale.t('server.revoke.message')
             send = await msg.sendMessage(m)
             if msg.Feature.delete and enabled_addon:
                 await msg.sleep(90)
