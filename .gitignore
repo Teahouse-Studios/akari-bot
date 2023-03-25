@@ -30,3 +30,4 @@ assets/mcbeversion.txt
 !test_commands.txt
 modules/natural/dataset.jsonl
 go-cqhttp
+assets/cached-img.png
