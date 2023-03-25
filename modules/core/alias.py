@@ -1,7 +1,7 @@
 from core.builtins import Bot, Image
 from core.component import on_command
 from core.utils.image_table import image_table_render, ImageTable
-from core.extra.pir import pir
+from core.extra import pir
 
 ali = on_command('alias', required_admin=True, base=True)
 

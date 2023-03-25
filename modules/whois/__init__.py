@@ -1,6 +1,6 @@
 from core.builtins import Bot, Image
 from core.component import on_command
-from core.extra.pir import pir
+from core.extra import pir
 import requests
 
 w = on_command('whois', desc='查询 IP Whois 信息',
@@ -13,6 +13,6 @@ async def _(msg: Bot.MessageSession):
     url = 'https://v.api.aa1.cn/api/whois/index.php?domain=' + query
     response = requests.get(url)
     if response.status_code == 200:
-        await msg.sendMessage(Image(pir(str(response))))
+        await msg.sendMessage(Image(pir(response)))
     else:
         await msg.sendMessage('请求失败')

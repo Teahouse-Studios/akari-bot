@@ -3,7 +3,7 @@ import traceback
 from core.builtins import Image, Plain, Bot
 from core.component import on_command
 from core.exceptions import InvalidHelpDocTypeError
-from core.extra.pir import pir
+from core.extra import pir
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
 from core.types import Command
