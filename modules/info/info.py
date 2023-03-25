@@ -17,5 +17,6 @@ async def inf_helps(msg: Bot.MessageSession):
         else:
             send = await msg.sendMessage(Image(pir(
                 f'[90秒后撤回消息]自定义命令别名列表：\n' + '\n'.join([f'{k} -> {inf[k]}' for k in inf]))))
-            time.sleep(90)
-            send.delete()
+            await msg.sleep(90)
+            await send.delete()
+            await msg.finish()
