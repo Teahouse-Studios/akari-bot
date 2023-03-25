@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 def pir(text):
-    LINE_CHAR_COUNT = 20 * 2
+    LINE_CHAR_COUNT = 24 * 2
     TABLE_WIDTH = 4
 
     def line_break(line):
