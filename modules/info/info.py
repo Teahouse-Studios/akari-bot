@@ -1,7 +1,6 @@
 from core.builtins import Bot, Image
 from core.component import on_command
 from core.extra import pir
-import time
 
 inf = on_command('info')
 
