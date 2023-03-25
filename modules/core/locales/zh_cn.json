@@ -55,7 +55,6 @@
     "core.module.message.help.legacy.base": "基础命令：",
     "core.module.message.help.legacy.external": "模块扩展命令：",
     "core.module.message.help.legacy.more_information": "使用 ${prefix}help <对应模块名> 查看详细信息。\n使用 ${prefix}module list 查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/",
-    "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
     "core.module.message.help.legacy.availables": "当前可用的模块有：",
     "core.module.message.reload.success": "成功：重载模块：",
     "core.module.message.reload.with": "，以及该模块下的 ${reloadCnt} 个文件。",
@@ -101,7 +100,7 @@
     "core.ping.message.detail": "系统启动时间：${system_boot_time}\n机器人已运行：${bot_running_time}\nPython 版本：${python_version}\n处理器型号：${cpu_brand}\n当前处理器使用率：${cpu_usage}%\n物理内存：${ram}M 使用率：${ram_percent}%\nSwap 内存：${swap}M 使用率：${swap_percent}%\n磁盘容量：${disk_space}G/${disk_space_total}G",
     "core.ping.message.failed": "无法获取。",
     "core.admin.help": "一些群聊管理员可使用的命令。",
-    "core.admin.help.add": "设置成员为机器人管理员，实现不设置成员为群聊管理员的情况下管理机器人的功能。已是群聊管理员无需设置此项目。",
+    "core.admin.help.add": "设置成员为机器人管理员。机器人管理员可以管理机器人，即使他们不是群聊管理员。已是群聊管理员无需设置此项目。",
     "core.admin.help.del": "取消成员的机器人管理员。",
     "core.admin.help.list": "列出所有机器人管理员。",
     "core.admin.message.list": "当前在群内手动设置的机器人管理员：\n",
@@ -132,5 +131,6 @@
     "core.mute.message.enable": "成功禁言。",
     "core.leave.help": "使机器人离开群聊。",
     "core.leave.message": "已执行，再见。",
-    "core.leave.confirm": "你确定吗？此操作不可逆。"
+    "core.leave.confirm": "你确定吗？此操作不可逆。",
+    "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]"
 }
