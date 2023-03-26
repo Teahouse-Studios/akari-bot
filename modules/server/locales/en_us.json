@@ -10,7 +10,7 @@
     "server.message.player": "Online player: ",
     "server.message.player.current": "Current online player: \n",
     "server.message.player.current.none": "Current online player: \nNone",
-    "server.revoke.message": "Revoke message after 90 seconds",
+    "server.revoke.message": "[This message will be revoked after 90 seconds]",
     "server.revoke.message.disable": "Automatic revoke has been disabled.",
     "server.revoke.message.enable": "Automatic revoke has been enabled.",
     "server.message.version": "Game version: "
