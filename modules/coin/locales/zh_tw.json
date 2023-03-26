@@ -1,12 +1,12 @@
 {
-    "coin.begin": "你抛了${count} 枚硬币，",
+    "coin.begin": "你拋了 ${count} 枚硬幣，",
     "coin.help": "拋任意枚硬幣。",
     "coin.error": "發生錯誤：",
     "coin.error.amount": "發生錯誤：無效的硬幣數量：",
-    "coin.error.max": "发生错误：你最多只能抛 ${max} 个硬币",
+    "coin.error.max": "發生錯誤：你最多只能拋 ${max} 枚硬幣。",
     "coin.error.nocoin": "發生錯誤：你拋了 0 枚硬幣，什麼也沒有發生...",
     "coin.error.rate": "發生錯誤：硬幣概率錯誤。",
-    "coin.drop_place": "它掉到了${drop_place}...",
+    "coin.drop_place": "它落到了${drop_place}…",
     "coin.drop_place.door": "門口",
     "coin.drop_place.floor": "地上",
     "coin.drop_place.moon": "月球",
@@ -17,12 +17,12 @@
     "coin.head.all": "它们…\n…全是正面！",
     "coin.tail": "…是反面！",
     "coin.tail.all": "它们…\n…全是反面！",
-    "coin.mix": "其中...\n有",
+    "coin.mix": "其中…\n有",
     "coin.mix.head": " ${head} 枚是正面，",
     "coin.mix.tail": "${tail} 枚是反面",
-    "coin.mix.stand": "…还有 ${stand} 枚立起来了！",
+    "coin.mix.stand": "…還有 ${stand} 枚立起來了！",
     "coin.mix.end": "。",
     "coin_regex.help": "啟用後將在發送的聊天內容尋找到以下相符的訊息時執行對應指令：\n",
     "coin.stand": "…它立起来了！",
-    "coin.stand.all": "它们…\n…全都立起来了？！"
+    "coin.stand.all": "它們…\n…全都立起来了？！"
 }
