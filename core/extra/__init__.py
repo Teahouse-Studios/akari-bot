@@ -1,2 +1,1 @@
-from .pir import *
-from .reverseImage import *
+from .ImageProcess import *

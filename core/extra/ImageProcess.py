@@ -1,7 +1,11 @@
 from PIL import Image, ImageDraw, ImageFont
 
 
-def pir(text):
+def pir(text, size = 30):
+    """
+    将文字渲染为图片，替代oa-webrender的部分功能
+    用法：输入一个String，会返回一个Pillow生成的图片
+    """
     LINE_CHAR_COUNT = 24 * 2
     TABLE_WIDTH = 4
 
@@ -33,10 +37,7 @@ def pir(text):
         if ret.endswith('\n'):
             return ret
         return ret + '\n'
-
-    output_str = text
-    output_str = line_break(output_str)
-    split_lines = output_str.split('\n')
+    split_lines = line_break(str(text)).split('\n')
     split_lines = [var for var in split_lines if var]
     arr = ['，', '、', '。', ',', '!', "?", "？", "！", "-"]
     print(split_lines)
@@ -50,11 +51,14 @@ def pir(text):
             split_lines[item] = split_lines[item][1:]
             split_lines[item - 1] = split_lines[item - 1] + symbol
     split_lines = "\n".join(split_lines)
-    d_font = ImageFont.truetype('./assets/NotoSansXJB.ttf', 40)
+    d_font = ImageFont.truetype('./assets/NotoSansXJB.ttf', int(size))
     image = Image.open('./assets/blank-img.png')
     draw_table = ImageDraw.Draw(im=image)
     draw_table.text(xy=(1, 1), text=split_lines, fill=(0, 0, 0), font=d_font, spacing=4)
-    image.save('./assets/cached-img.png', 'PNG')
-    image.close()
-    return './assets/cached-img.png'
+    return image
 
+
+def reverse_img(img_path):
+    img = Image.open(img_path)
+    img_reversed = img.transpose(Image.ROTATE_180)
+    return img_reversed
