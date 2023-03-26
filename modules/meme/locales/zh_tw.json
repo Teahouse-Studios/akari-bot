@@ -7,7 +7,7 @@
     "meme.urban": "[Urban Dictionary]",
     "meme.error": "查詢出錯。",
     "meme.none": "沒有找到相關結果。",
-    "meme.result": "（$result 个结果）：",
-    "meme.nbnhhsh.result": "（$result 个结果，已收录）：",
-    "meme.nbnhhsh.result.ai": "（$result 个结果，AI 猜测）："
+    "meme.result": "（${result} 個結果）：",
+    "meme.nbnhhsh.result": "（${result} 個結果，已收錄）：",
+    "meme.nbnhhsh.result.ai": "（${result} 個結果，AI 猜測）："
 }
