@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 
 
-def pir(text, size = 30):
+def pir(text, size=30):
     """
     将文字渲染为图片，替代oa-webrender的部分功能
     用法：输入一个String，会返回一个Pillow生成的图片
@@ -37,6 +37,7 @@ def pir(text, size = 30):
         if ret.endswith('\n'):
             return ret
         return ret + '\n'
+
     split_lines = line_break(str(text)).split('\n')
     split_lines = [var for var in split_lines if var]
     arr = ['，', '、', '。', ',', '!', "?", "？", "！", "-"]
@@ -59,6 +60,9 @@ def pir(text, size = 30):
 
 
 def reverse_img(img_path):
+    """
+    180°翻转图片
+    """
     img = Image.open(img_path)
     img_reversed = img.transpose(Image.ROTATE_180)
     return img_reversed
