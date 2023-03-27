@@ -10,7 +10,7 @@
     "server.message.player": "在線玩家：",
     "server.message.player.current": "目前在線玩家：\n",
     "server.message.player.current.none": "目前在線玩家：\n無",
-    "server.revoke.message": "90 秒後撤回訊息",
+    "server.revoke.message": "[本訊息將在 90 秒後撤回]",
     "server.revoke.message.disable": "已停用自動撤回功能。",
     "server.revoke.message.enable": "已啟用自動撤回功能。",
     "server.message.version": "遊戲版本："
