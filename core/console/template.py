@@ -2,7 +2,7 @@ from typing import List, Union
 
 from PIL import Image
 
-from core.builtins import Plain, Image as BImage, confirm_command
+from core.builtins import Plain, Image as BImage, confirm_command, Bot
 from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
@@ -141,6 +141,14 @@ class FetchTarget(FT):
         return FetchedSession('TEST|Console', targetId)
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
         fetch = await FetchTarget.fetch_target('0')
-        await fetch.sendMessage(message)
+        if i18n:
+            await fetch.sendMessage(fetch.parent.locale.t(message, **kwargs))
+        else:
+            await fetch.sendMessage(message)
+
+
+Bot.MessageSession = Template
+Bot.FetchTarget = FetchTarget
+

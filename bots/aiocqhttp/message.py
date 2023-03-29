@@ -231,18 +231,21 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
 
-        async def post_(fetch_):
+        async def post_(fetch_: FetchedSession):
             nonlocal _tsk
             nonlocal blocked
             try:
                 if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
                 else:
-                    await fetch_.sendDirectMessage(message)
+                    if i18n:
+                        await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
+                    else:
+                        await fetch_.sendDirectMessage(message)
                     if _tsk:
                         _tsk = []
                 if enable_analytics:
@@ -327,7 +330,8 @@ class FetchTarget(FT):
 
             if else_:
                 asyncio.create_task(post_not_in_whitelist(else_))
-                Logger.info(f"Post done. but there are still {len(else_)} processes running.")
+                Logger.info(f"The task of posting messages to whitelisted groups is complete. "
+                            f"Posting message to {len(else_)} groups not in whitelist.")
 
 
 Bot.MessageSession = MessageSession

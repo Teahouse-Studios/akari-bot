@@ -162,11 +162,14 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
         if user_list is not None:
             for x in user_list:
                 try:
-                    await x.sendDirectMessage(message)
+                    if i18n:
+                        await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
+                    else:
+                        await x.sendDirectMessage(message)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
@@ -177,7 +180,10 @@ class FetchTarget(FT):
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
-                        await fetch.sendDirectMessage(message)
+                        if i18n:
+                            await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
+                        else:
+                            await fetch.sendDirectMessage(message)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:

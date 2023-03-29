@@ -282,9 +282,13 @@ class FetchTarget:
         """
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None):
+    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
         """
         尝试向开启此模块的对象发送一条消息。
+        :param module_name: 模块名
+        :param message: 消息文本
+        :param user_list: 用户列表
+        :param i18n: 是否使用i18n，若为True则message为i18n的key
         """
 
 
