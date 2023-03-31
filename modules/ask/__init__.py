@@ -75,12 +75,16 @@ mrkl_verbose = initialize_agent(tools, llm, agent="chat-zero-shot-react-descript
 a = module('ask', developers=['Dianliang233'], desc='{ask.help}', required_superuser=True)
 
 
-@a.handle('<question> [-v] {{ask.help.ask}}', options_desc={'-v': '{server.help.v}'})
+@a.command('<question> [-v] {{ask.help.ask}}')
+@a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$', desc='{{ask.help.ask}}')
 async def _(msg: Bot.MessageSession):
-    question = msg.parsed_msg['<question>']
+    if hasattr(msg, 'parsed_msg'):
+        question = msg.parsed_msg['<question>']
+    else:
+        question = msg.matched_msg[0]
     if await check_bool(question):
         raise NoReportException('https://wdf.ink/6OUp')
-    if msg.parsed_msg['-v']:
+    if hasattr(msg, 'parsed_msg') and msg.parsed_msg['-v']:
         res = mrkl_verbose.run(question)
     else:
         res = mrkl.run(question)
