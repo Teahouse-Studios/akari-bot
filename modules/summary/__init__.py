@@ -30,10 +30,8 @@ async def _(msg: Bot.MessageSession):
     nth = 0
     prev = ''
     while nth < len(texts):
-        prompt = f'请总结下列聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。除了聊天记录的摘要以外，不要输出其他任何内容。' \
-                 f'''{f"""同时<ctx_start>与<|ctx_end|>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录来输出。
-
-<|ctx_start|>{prev}<|ctx_end|>""" if nth != 0 else ""}'''
+        prompt = msg.locale.t("summary.prompt") \
+                 f'''{{msg.locale.t("summary.prompt.hint"), prev=prev} if nth != 0 else ""}'''
         len_prompt = len(prompt)
         post_texts = ''
         for t in texts[nth:]:
@@ -45,7 +43,7 @@ async def _(msg: Bot.MessageSession):
     completion = openai.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[
-                    {'role': 'system', "content": "你是一个助手"},
+                    {'role': 'system', "content": "You are an helpful assistant."},
                     {'role': 'user', "content": f'''{prompt}
 
 {post_texts}'''},
