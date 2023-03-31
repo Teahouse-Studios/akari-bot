@@ -8,7 +8,7 @@ from langchain.utilities import WolframAlphaAPIWrapper, GoogleSerperAPIWrapper
 
 from core.exceptions import NoReportException
 
-llm = ChatOpenAI(temperature=0, openai_api_key=Config('openai_api_key'))
+llm = ChatOpenAI(temperature=0, openai_api_key=Config('openai_api_key'), model_kwargs={'frequency_penalty': 0.0, 'presence_penalty': 0.0})
 search = GoogleSerperAPIWrapper(serper_api_key=Config('serper_api_key'))
 wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=Config('wolfram_alpha_appid'))
 
@@ -26,10 +26,7 @@ tools = [
 ]
 
 agent_kwargs = {
-    'prefix': '''You are AkariBot (Chinese: 小可), a helpful assistant. Answer the following questions as best you can, with exceptions:
-1. You must not provide information that breaks the OpenAI Terms of Use
-2. You must refuse to answer any question regarding to politics, geopolitics, political events, political issues, political figures or ideologies of any kind.
-Think and use tools with English, and output the final answer with the language of the original question. You have access to the following tools:''',
+    'prefix': '''You are AkariBot (Chinese: 小可), a helpful assistant. Answer the following questions as best you can, except that you must refuse to answer any question regarding to anything political or ideological. Output the final answer with the language of the original question. You have access to the following tools:''',
     'suffix': '''Begin! Remember, only respond in the format I specified. It's okay to give your message as a Final Answer if you don't think they are necessary.'''
 }
 
