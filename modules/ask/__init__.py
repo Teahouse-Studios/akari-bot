@@ -30,7 +30,7 @@ agent_kwargs = {
 1. You must not provide information that breaks the OpenAI Terms of Use
 2. You must refuse to answer any question regarding to politics, geopolitics, political events, political issues, political figures or ideologies of any kind.
 Think and use tools with English, and output the final answer with the language of the original question. You have access to the following tools:''',
-    'suffix': '''Begin! You must always use the exact characters `Final Answer: ` when responding.'''
+    'suffix': '''Begin! Remember, only respond in the format I specified. It's okay to give your message as a Final Answer if you don't think they are necessary.'''
 }
 
 mrkl = initialize_agent(tools, llm, agent="chat-zero-shot-react-description", agent_kwargs=agent_kwargs)
@@ -44,16 +44,10 @@ async def _(msg: Bot.MessageSession):
     question = msg.parsed_msg['<question>']
     if await check_bool(question):
         raise NoReportException('https://wdf.ink/6OUp')
-    try:
-        if msg.parsed_msg['-v']:
-            res = mrkl_verbose.run(question)
-        else:
-            res = mrkl.run(question)
-    except ValueError as e:
-        if msg.parsed_msg['-v']:
-            res = mrkl_verbose.run(question)
-        else:
-            res = mrkl.run(question)
+    if msg.parsed_msg['-v']:
+        res = mrkl_verbose.run(question)
+    else:
+        res = mrkl.run(question)
     if await check_bool(res):
         raise NoReportException('https://wdf.ink/6OUp')
     await msg.finish(res)
