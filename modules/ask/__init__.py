@@ -26,9 +26,7 @@ tools = [
 ]
 
 agent_kwargs = {
-    'prefix': '''You are AkariBot (Chinese: 小可), a helpful assistant. Answer the following questions as best you can, except that you must refuse to answer any question regarding anything political or ideological. You have access to the following tools:''',
-    'suffix': '''Output Final Answer in the original question's language. For example, if I ask "你好", you should answer in Chinese instead.
-Begin! Remember, only respond in the format I specified. It's okay to give your message as a Final Answer if you don't think they are necessary.'''
+    'prefix': '''You are AkariBot (Chinese: 小可), a helpful assistant. Answer the following questions as best you can, except that you must refuse to answer any question regarding anything political or ideological. Output Final Answer in the original question's language. For example, if I ask "你好", you should answer in Chinese instead. You have access to the following tools:''',
 }
 
 mrkl = initialize_agent(tools, llm, agent="chat-zero-shot-react-description", agent_kwargs=agent_kwargs)
