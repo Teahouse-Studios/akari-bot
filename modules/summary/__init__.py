@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
     prev = ''
     while nth < len(texts):
         prompt = msg.locale.t("summary.prompt") \
-                 f'''f"""{msg.locale.t("summary.prompt.hint", prev=prev)""" if nth != 0 else ""}'''
+                 f'''f"""{msg.locale.t("summary.prompt.hint", prev=prev)}""" if nth != 0 else ""}'''
         len_prompt = len(prompt)
         post_texts = ''
         for t in texts[nth:]:
