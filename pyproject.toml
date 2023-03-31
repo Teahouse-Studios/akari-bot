@@ -13,7 +13,7 @@ license = "AGPL-3.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.1"
 Pillow = "^9.4.0"
 aiohttp = "^3.8.3"
 beautifulsoup4 = "^4.11.1"
@@ -45,6 +45,8 @@ openai = "^0.27.2"
 cryptography = "^39.0.1"
 pre-commit = "^3.0.4"
 webcolors = "^1.12"
+langchain = "^0.0.127"
+wolframalpha = "^5.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
