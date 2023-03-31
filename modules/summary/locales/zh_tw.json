@@ -3,5 +3,8 @@
     "summary.help.summary": "開始發送聊天摘要。",
     "summary.message": "接下來，請發送要生成摘要的合併轉發訊息。",
     "summary.message.not_found": "未檢測到合併轉發訊息。",
-    "summary.message.waiting": "正在生成摘要。您的聊天記錄共 ${count} 個字符，大約需要 ${time} 秒。請稍候……"
+    "summary.message.waiting": "正在生成摘要。您的聊天記錄共 ${count} 個字符，大約需要 ${time} 秒。請稍候……",
+    "summary.prompt.system": "你是一个助手。",
+    "summary.prompt.user": "请总结下列聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。除了聊天记录的摘要以外，不要输出其他任何内容。",
+    "summary.prompt.user.input": "同时<ctx_start>与<ctx_end>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录输出。\n<ctx_start>${prev}<ctx_end>"
 }
