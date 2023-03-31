@@ -31,7 +31,9 @@ async def _(msg: Bot.MessageSession):
     prev = ''
     while nth < len(texts):
         prompt = msg.locale.t("summary.prompt") \
-                 f'''f"""{msg.locale.t("summary.prompt.hint", prev=prev)}""" if nth != 0 else ""}'''
+                 f'''{f"""同时<ctx_start>与<|ctx_end|>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录，必须以这段聊天记录的原语言输出。
+
+<|ctx_start|>{prev}<|ctx_end|>""" if nth != 0 else ""}'''
         len_prompt = len(prompt)
         post_texts = ''
         for t in texts[nth:]:
