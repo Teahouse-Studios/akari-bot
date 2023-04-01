@@ -16,12 +16,12 @@ tools = [
     Tool(
         name = 'Search',
         func=search.run,
-        description='A wrapper around Google Search. useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible. Input should be a search query.'
+        description='A wrapper around Google Search. Useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible. Input should be a search query in any language.'
     ),
     Tool(
         name = 'Wolfram Alpha',
         func=wolfram.run,
-        description='A wrapper around Wolfram Alpha. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Input should be a search query.'
+        description='A wrapper around Wolfram Alpha. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Input should be a search query in English.'
     ),
 ]
 
@@ -48,7 +48,29 @@ Observation: the result of the action
 ... (this Thought/Action/Observation can repeat N times)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question""",
-    'suffix': '''After you have generated your Thought, you should ALWAYS take another Action or output the Final Answer immediately afterwards, even if you don't have a definitive answer or you decline to answer the question. A complete chain should look like this:
+    'suffix': '''After you have generated your Thought, you should ALWAYS take another Action or output the Final Answer immediately afterwards, even if you don't have a definitive answer or you decline to answer the question. For example, if you get the following chain:
+
+Question: What is the population of Canada?
+Thought: I should use Wolfram Alpha to find the population of Canada. Since Wolfram Alpha requires English input, I need to translate the question from Chinese to English.
+Action:
+```
+{{{{
+  "action": "Wolfram Alpha",
+  "action_input": "population of Canada"
+}}}}
+```
+
+Observation: Assumption: Canada | population
+Answer: 37.7 million people (world rank: 39th) (2020 estimate)
+Thought:
+
+You should output Thought and Final Answer together, like this:
+
+I have already found the answer to this question.
+Final Answer: The population of Canada is approximately 37.7 million people.
+
+
+A complete chain should look like this:
 
 Question: What's the population of Canada?
 Thought: I should use Wolfram Alpha to find the population of Canada.
@@ -64,8 +86,24 @@ Answer: 37.7 million people (world rank: 39th) (2020 estimate)
 Thought: I now know the final answer
 Final Answer: The population of Canada is approximately 37.7 million people.
 
-Think and output Final Answer in the original question's language. For example, if I ask "你好", you should think and answer in Chinese. Actions aren't required to be always taken.
-If you decline to answer the question because it is political, you should output the following Final Answer in the according language: I don't know the answer, but I've got this link for you: https://wdf.ink/6OUp
+Use the original question's language. For example, if I ask "你好", you should output your Thought, action_input, and Final Answer in Chinese. For example:
+
+Question: 加拿大的人口是多少？
+Thought: 我应该使用 Wolfram Alpha 来查询加拿大的人口。由于 Wolfram Alpha 需要英文输入，所以我需要把中文翻译成英文。
+Action:
+```
+{{{{
+  "action": "Wolfram Alpha",
+  "action_input": "population of Canada"
+}}}}
+```
+Observation: Assumption: Canada | population
+Answer: 37.7 million people (world rank: 39th) (2020 estimate)
+Thought: 我现在知道最终答案了
+Final Answer: 加拿大的人口大约有 3770 万人。
+
+Actions aren't required to be always taken.
+If you decline to answer the question because it is political, you should output the following Final Answer in the message's original language: I don't know the answer, but I've got this link for you: https://wdf.ink/6OUp
 Begin! Remember, only respond in the format I specified.'''
 }
 
