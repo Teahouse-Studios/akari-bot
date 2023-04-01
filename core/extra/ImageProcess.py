@@ -1,12 +1,12 @@
 from PIL import Image, ImageDraw, ImageFont
 
 
-def pir(text, size=30):
+def pir(text, size=30, line=28):
     """
     将文字渲染为图片，替代oa-webrender的部分功能
     用法：输入一个String，会返回一个Pillow生成的图片
     """
-    LINE_CHAR_COUNT = 24 * 2
+    LINE_CHAR_COUNT = line * 2
     TABLE_WIDTH = 4
 
     def line_break(line):
