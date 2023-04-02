@@ -16,7 +16,10 @@ async def set_start_wiki(msg: Bot.MessageSession):
             result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
             if result:
                 await msg.finish(
-                    f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else ''))
+                    f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else '') +
+                    ('注意：此Wiki当前没有加入本机器人的白名单列表中，查询此Wiki时将会对返回内容进行一些限制。\n'
+                     '如需取消限制，请在此处申请白名单：\n'
+                     'https://s.wd-ljt.com/botwhitelist' if not check.value.in_allowlist else ''))
         else:
             await msg.finish(f'错误：{check.value.name}处于黑名单中。')
     else:
@@ -35,7 +38,10 @@ async def _(msg: Bot.MessageSession):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = target.config_interwikis(iw, check.value.api, let_it=True)
             if result:
-                await msg.finish(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}')
+                await msg.finish(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}' +
+                                 ('注意：此Wiki当前没有加入本机器人的白名单列表中，查询此Wiki时将会对返回内容进行一些限制。\n'
+                                  '如需取消限制，请在此处申请白名单：\n'
+                                  'https://s.wd-ljt.com/botwhitelist' if not check.value.in_allowlist else ''))
         else:
             await msg.finish(f'错误：{check.value.name}处于黑名单中。')
     else:
