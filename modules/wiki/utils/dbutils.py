@@ -166,13 +166,15 @@ class Audit:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def remove_from_AllowList(self) -> bool:
+    def remove_from_AllowList(self) -> Union[bool, None]:
         if not self.inAllowList:
             return False
-        session.delete(session.query(WikiAllowList).filter_by(apiLink=self.api_link).first())
-        session.commit()
-        session.expire_all()
-        return True
+        if (query := session.query(WikiAllowList).filter_by(apiLink=self.api_link).first()) is not None:
+            session.delete(query)
+            session.commit()
+            session.expire_all()
+            return True
+        return None
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error

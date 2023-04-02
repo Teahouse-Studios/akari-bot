@@ -41,6 +41,8 @@ async def _(msg: Bot.MessageSession):
         api = check.value.api
         if req.get('distrust', False):
             res = Audit(api).remove_from_AllowList()
+            if res is None:
+                await msg.finish(f'失败，此wiki不存在于白名单中，此wiki的白名单可能来自其它同一域名的Wiki：' + api)
             list_name = '白'
         else:
             res = Audit(api).remove_from_BlockList()
