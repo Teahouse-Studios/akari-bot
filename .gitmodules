@@ -1,3 +1,0 @@
-[submodule "third_party/balance_chemical_equations"]
-	path = third_party/balance_chemical_equations
-	url = https://github.com/adamDhalla/balance-chemical-equations.git
