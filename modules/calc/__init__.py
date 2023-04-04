@@ -8,9 +8,10 @@ from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
 from .function import *
+from .ChemicalEquation import *
 
 c = on_command('calc', developers=[
-    'Dianliang233'], desc='安全地计算 Python ast 表达式。')
+    'Dianliang233', 'haoye_qwq'], alias={'calc chemical_equation': 'calc ce'}, desc='安全地计算 Python ast 表达式。')
 
 
 @c.handle('<math_expression>', options_desc={'+': '和/正数：1 + 2 -> 3',
@@ -82,9 +83,15 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(e)
 
 
-@c.handle('function <type> <x> {函数计算}',
-          options_desc={'type': ['11f:一元一次函数', '12f:一元二次函数', 'ef:指数函数', 'sf:正弦函数', 'cf:余弦函数']})
-async def _(send: Bot.MessageSession):
-    type = send.parsed_msg['<type>']
-    data = {'x': f"{send.parsed_msg['<x>']}", 'y': None}
-    await send.sendMessage(Image(function_rend(str(type), data)))
+# @c.handle('function <type> <x> {函数计算}',
+#           options_desc={'type': ['11f:一元一次函数', '12f:一元二次函数', 'ef:指数函数', 'sf:正弦函数', 'cf:余弦函数']})
+# async def _(send: Bot.MessageSession):
+#     type = send.parsed_msg['<type>']
+#     data = {'x': f"{send.parsed_msg['<x>']}", 'y': None}
+#     await send.sendMessage(Image(function_rend(str(type), data)))
+# 没写好.jpg
+
+@c.handle('chemical_equation <chemical_equation> {化学方程式配平}')
+async def ce(send: Bot.MessageSession):
+    ce_ = send.parsed_msg['<chemical_equation>']
+    await send.sendMessage(Str2Equ(ce_))
