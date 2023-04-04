@@ -11,7 +11,7 @@ async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish('此仓库不存在，请检查输入。')
+            await msg.finish(msg.locale.t("github.repo.message.not_found"))
         elif 'message' in result and result['message']:
             await msg.finish(result['message'])
         rlicense = 'Unknown'
@@ -71,7 +71,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             asyncio.create_task(download())
 
     except ValueError:
-        await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
+        await msg.finish(msg.locale.t("github.message.error"))
     except Exception as e:
         await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()

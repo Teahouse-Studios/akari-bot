@@ -9,7 +9,7 @@ async def user(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish('查无此人，请检查输入。')
+            await msg.finish(msg.locale.t("github.user.message.not_found"))
         elif 'message' in result and result['message']:
             await msg.finish(result['message'])
         optional = []
@@ -46,7 +46,7 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
 
         await msg.finish(message)
     except ValueError:
-        await msg.finish('发生错误：找不到仓库，请检查拼写是否正确。')
+        await msg.finish(msg.locale.t("github.message.error"))
     except Exception as error:
         await msg.sendMessage(ErrorMessage(str(error)))
         traceback.print_exc()

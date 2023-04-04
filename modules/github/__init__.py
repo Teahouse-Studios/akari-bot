@@ -5,7 +5,7 @@ from modules.github import repo, user, search
 github = module('github', alias=['gh'], developers=['Dianliang233'])
 
 
-@github.handle('<name> {尝试自动识别并区分 repo/user}')
+@github.handle('<name> {{github.help}}')
 async def _(msg: Bot.MessageSession):
     if '/' in msg.parsed_msg['<name>']:
         await repo.repo(msg)
@@ -13,16 +13,16 @@ async def _(msg: Bot.MessageSession):
         await user.user(msg)
 
 
-@github.handle('repo <name> {获取 GitHub 仓库信息}')
+@github.handle('repo <name> {{github.repo.help}}')
 async def _(msg: Bot.MessageSession):
     await repo.repo(msg)
 
 
-@github.handle('[user|org] <name> {获取 GitHub 用户或组织信息}')
+@github.handle('[user|org] <name> {{github.user.help}}')
 async def _(msg: Bot.MessageSession):
     await user.user(msg)
 
 
-@github.handle('search <query> {搜索 GitHub 上的仓库}')
+@github.handle('search <query> {{github.search.help}}')
 async def _(msg: Bot.MessageSession):
     await search.search(msg)
