@@ -1,0 +1,9 @@
+{
+    "summary.help": "使用 ChatGPT（gpt-3.5-turbo）生成合併轉發訊息的聊天記錄摘要。",
+    "summary.help.summary": "開始發送聊天摘要。",
+    "summary.message": "接下來，請發送要生成摘要的合併轉發訊息。",
+    "summary.message.not_found": "未檢測到合併轉發訊息。",
+    "summary.message.waiting": "正在生成摘要。您的聊天記錄共 ${count} 個字符，大約需要 ${time} 秒。請稍候……",
+    "summary.prompt.user": "請總結下列聊天內容。 要求語言簡練，但必須含有所有要點，以一段話的形式輸出。 除了聊天記錄的摘要以外，不要輸出其他任何內容。",
+    "summary.prompt.user.input": "同時<ctx_start>與<ctx_end>之間記錄了聊天內容的上下文，請你同時結合這段上下文和聊天記錄輸出。\n <ctx_start>${prev}<ctx_end>"
+}
