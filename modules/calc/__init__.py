@@ -7,7 +7,7 @@ from core.builtins import Bot, Image
 from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
-from .function import *
+# from .function import *
 from .ChemicalEquation import *
 
 c = on_command('calc', developers=[
