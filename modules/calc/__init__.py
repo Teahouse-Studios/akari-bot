@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession):
                 if res[0:6] == 'Result':
                     await msg.finish(f'{(expr)} = {res[7:]}')
                 else:
-                    await msg.finish(msg.locale.t("calc.message.invalid", exp={res[7:]}))
+                    await msg.finish(msg.locale.t("calc.message.invalid", expr=res[7:]))
             else:
                 Logger.error(f'calc.py exited with code {p.returncode}')
                 try:
