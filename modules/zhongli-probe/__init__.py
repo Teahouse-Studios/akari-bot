@@ -11,5 +11,5 @@ zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq
 async def zl_probe(send: Bot.MessageSession):
     msg = eval(send.matched_msg)
     send_m = '[钟离]\n' + msg['text']
-    f = Bot.FetchTarget.fetch_target(f"QQ|Group|{msg['return_to']}")
+    f = await Bot.FetchTarget.fetch_target(f"QQ|Group|{msg['return_to']}")
     await f.sendDirectMessage(send_m)
