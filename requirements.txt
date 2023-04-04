@@ -1336,3 +1336,29 @@ yarl==1.8.2 ; python_version >= "3.8" and python_version < "4.0" \
 zipp==3.13.0 ; python_version >= "3.8" and python_version < "3.10" \
     --hash=sha256:23f70e964bc11a34cef175bc90ba2914e1e4545ea1e3e2f67c079671883f9cb6 \
     --hash=sha256:e8b2a36ea17df80ffe9e2c4fda3f693c3dad6df1697d3cd3af232db680950b0b
+
+aiogram
+aiocqhttp
+ujson
+Pillow
+APScheduler
+aiohttp
+filetype
+aiofile
+tenacity
+tabulate
+loguru
+matplotlib
+numpy
+psutil
+simpleeval
+py-cpuinfo
+beautifulsoup4
+SQLAlchemy
+webcolors
+requests
+gql
+feedparser
+Pint
+aioconsole
+sympy

@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-from core.builtins import Bot, Image
+from core.builtins import Bot
 from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
