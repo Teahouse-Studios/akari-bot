@@ -8,17 +8,18 @@ zl = on_command('zhongli', alias={'zl': 'zhongli', 'zinfo': 'zhongli info',
                 available_for=['QQ|Group', 'QQ', 'TEST|Console'])
 
 
-def zlcm(cmd, sender):
+def zlcm(cmd, sender, return_to):
     qq_sender_id = sender[3:]
-    ret = f"-execute as {qq_sender_id} permission normal_user run {cmd}"
-    return (ret)
+    ret = f"-execute as {qq_sender_id} return_to {return_to} run {cmd}"
+    return ret
 
 
 @zl.handle('info {获取服务器信息}')
 async def zlinfo(send: Bot.MessageSession):
     cmd = 'info'
     sender = send.target.senderId
-    scmd = zlcm(cmd, sender)
+    return_to = send.target.targetId
+    scmd = zlcm(cmd, sender, return_to)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
 
 
@@ -26,7 +27,8 @@ async def zlinfo(send: Bot.MessageSession):
 async def zlstats(send: Bot.MessageSession):
     cmd = 'stats'
     sender = send.target.senderId
-    scmd = zlcm(cmd, sender)
+    return_to = send.target.targetId
+    scmd = zlcm(cmd, sender, return_to)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
 
 
@@ -35,7 +37,8 @@ async def zlbind(send: Bot.MessageSession):
     name = send.parsed_msg['<MinecraftUserName>']
     cmd = 'bind ' + name
     sender = send.target.senderId
-    scmd = zlcm(cmd, sender)
+    return_to = send.target.targetId
+    scmd = zlcm(cmd, sender, return_to)
     await Bot.FetchTarget.post_message('zhongli-probe', scmd)
 
 
@@ -45,7 +48,9 @@ async def zlchk(send: Bot.MessageSession):
     await send.sendMessage(cmd)
 
 
-@zl.handle('send <msg> {直接发送消息}', required_admin=True)
+@zl.handle('send <msg> {以Admin发送命令}', require_superuser=True)
 async def send(msg: Bot.MessageSession):
+    sender = send.target.senderId
     cmd = msg.parsed_msg['<msg>']
-    await Bot.FetchTarget.post_message('zhongli-probe', cmd)
+    return_to = send.target.targetId
+    await Bot.FetchTarget.post_message('zhongli-probe', f"-execute as {sender} return_to {return_to} run {cmd}")
