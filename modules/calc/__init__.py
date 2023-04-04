@@ -8,7 +8,7 @@ from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
 # from .function import *
-from third_party.chemical_equation.balanceEquation import solveEquation
+from third_party.balance_chemical_equations.balanceEquation import solveEquation
 
 c = on_command('calc', developers=[
     'Dianliang233', 'haoye_qwq'], alias={'calc chemical_equation': 'calc ce'}, desc='安全地计算 Python ast 表达式。')
