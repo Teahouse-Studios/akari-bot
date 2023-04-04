@@ -31,8 +31,6 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
             Logger.warn('[Webrender] Webrender is not configured.')
             return False
         use_local = False
-    timer = datetime.now().timestamp()
-    img = False
     if section is None:
         if allow_special_page and content_mode:
             elements_.insert(0, '.mw-body-content')

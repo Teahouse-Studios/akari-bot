@@ -126,7 +126,8 @@ async def _(msg: Bot.MessageSession):
                     for qq in q:
                         section_ = []
                         quote_code = False
-                        for qs in qq:
+                        page_name = urllib.parse.unquote(qq)
+                        for qs in page_name:
                             if qs == '#':
                                 quote_code = True
                             if qs == '?':
