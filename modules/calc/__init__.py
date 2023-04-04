@@ -8,7 +8,7 @@ from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
 # from .function import *
-from third_party.balance_chemical_equations.balanceEquation import solveEquation
+from third_party.ChemicalEquationBalancer.equationBalencer import *
 
 c = on_command('calc', developers=[
     'Dianliang233', 'haoye_qwq'], alias={'calc chemical_equation': 'calc ce'}, desc='安全地计算 Python ast 表达式。')
@@ -94,4 +94,4 @@ async def _(msg: Bot.MessageSession):
 @c.handle('chemical_equation <chemical_equation> {化学方程式配平}')
 async def ce(send: Bot.MessageSession):
     ce_ = send.parsed_msg['<chemical_equation>']
-    await send.sendMessage(solveEquation(ce_))
+    await send.sendMessage(Equation(ce_))
