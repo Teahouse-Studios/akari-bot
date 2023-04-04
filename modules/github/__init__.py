@@ -18,7 +18,7 @@ async def _(msg: Bot.MessageSession):
     await repo.repo(msg)
 
 
-@github.handle(['user <name> {获取 GitHub 用户或组织信息}', 'org <name> {~github user 的别名}'])
+@github.handle('[user|org] <name> {获取 GitHub 用户或组织信息}')
 async def _(msg: Bot.MessageSession):
     await user.user(msg)
 
