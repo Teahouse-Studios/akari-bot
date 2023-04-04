@@ -1,3 +1,0 @@
-[submodule "third_party/ChemicalEquationBalancer"]
-	path = third_party/ChemicalEquationBalancer
-	url = https://github.com/BreakingBran/ChemicalEquationBalancer.git
