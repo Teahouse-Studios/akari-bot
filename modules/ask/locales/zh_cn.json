@@ -1,9 +1,4 @@
 {
-    "summary.help": "使用 ChatGPT（gpt-3.5-turbo）生成合并转发信息的聊天记录摘要。",
-    "summary.help.summary": "开始发送聊天摘要。",
-    "summary.message": "接下来，请发送要生成摘要的合并转发消息。",
-    "summary.message.not_found": "未检测到合并转发消息。",
-    "summary.message.waiting": "正在生成摘要。您的聊天记录共 ${count} 个字符，大约需要 ${time} 秒。请稍候……",
-    "summary.prompt.user": "请总结下列聊天内容。要求语言简练，但必须含有所有要点，以一段话的形式输出。除了聊天记录的摘要以外，不要输出其他任何内容。",
-    "summary.prompt.user.input": "同时<ctx_start>与<ctx_end>之间记录了聊天内容的上下文，请你同时结合这段上下文和聊天记录输出。\n<ctx_start>${prev}<ctx_end>"
+    "ask.help": "有事为什么不问问小可呢？",
+    "ask.help.ask": "搜索网络、使用 Wolfram|Alpha，通过 ChatGPT 回答你的问题。"
 }
