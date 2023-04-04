@@ -10,7 +10,8 @@ zl = on_command('zhongli', alias={'zl': 'zhongli', 'zinfo': 'zhongli info',
 
 def zlcm(cmd, sender, return_to):
     qq_sender_id = sender[3:]
-    ret = f"-execute as {qq_sender_id} return_to {return_to} run {cmd}"
+    return_to_id = return_to[9:]
+    ret = f"-execute as {qq_sender_id} return_to {return_to_id} run {cmd}"
     return ret
 
 
