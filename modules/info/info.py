@@ -6,7 +6,7 @@ import redis
 
 inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
                  desc='Minecraft服务器信息模块')
-redis_ = str(Config('redis').split(':'))
+redis_ = Config('redis').split(':')
 db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 
 
