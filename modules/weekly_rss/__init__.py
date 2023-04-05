@@ -6,7 +6,7 @@ from modules.weekly import get_weekly
 from modules.weekly.teahouse import get_rss as get_teahouse_rss
 
 weekly_rss = module('weekly_rss',
-                    desc='开启后将订阅中文 Minecraft Wiki 的每周页面（每周一 8：30 更新）。',
+                    desc='{weekly_rss.help.desc}',
                     developers=['Dianliang233'], alias='weeklyrss')
 
 
@@ -21,7 +21,7 @@ async def weekly_rss():
 
 teahouse_weekly_rss = module('teahouse_weekly_rss',
 
-                             desc='开启后将订阅茶馆周报的每周页面（每周一 8：30 更新）。',
+                             desc='{teahouse_weekly_rss.help.desc}',
                              developers=['OasisAkari'], alias=['teahouseweeklyrss', 'teahouserss'])
 
 

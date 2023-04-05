@@ -1,8 +1,8 @@
 {
     "mcv.error.server": "伺服器錯誤。",
     "mcv.mcv.help": "查詢目前 Minecraft：Java 版在啟動器內最新版本。",
-    "mcv.mcbv.help": "查詢目前 Minecraft 基岩版在 Jira 內記錄的最新版本。",
-    "mcv.mcdv.help": "查詢目前 Minecraft Dungeons 在 Jira 內記錄的最新版本。",
+    "mcv.mcbv.help": "查詢目前 Minecraft 基岩版在 Mojira 內記錄的最新版本。",
+    "mcv.mcdv.help": "查詢目前 Minecraft Dungeons 在 Mojira 內記錄的最新版本。",
     "mcv.mcev.help": "查詢目前 Minecraft：教育版在 Windows 版記錄的最新版本。",
     "mcv.mcv.message": "目前啟動器內最新版本為：\n${message1}\nMojira 上所記錄最新版本為：\n${message2}\n（以啟動器內最新版本為準，Mojira 僅作版本號預覽用）",
     "mcv.mcv.message.message1": "最新版：${release}，最新快照：${snapshot}，",

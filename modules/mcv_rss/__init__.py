@@ -66,7 +66,7 @@ trigger_times = 60 if not Config('slower_schedule') else 180
 mcv_rss = module('mcv_rss',
                  developers=['OasisAkari', 'Dianliang233'],
                  recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
-                 desc='开启后当Minecraft启动器更新Java版Minecraft时将会自动推送消息。', alias='mcvrss')
+                 desc='{mcv_rss.mcv_rss.help.desc}', alias='mcvrss')
 
 
 @mcv_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -79,26 +79,26 @@ async def mcv_rss():
         snapshot = file['latest']['snapshot']
         if release not in verlist:
             Logger.info(f'huh, we find {release}.')
-            await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['release'] + '正式版。')
+            await bot.post_message('mcv_rss', 'mcv_rss.mcv_rss.message.release', i18n=True, version=file['latest']['release'])
             verlist.append(release)
             update_stored_list(bot, 'mcv_rss', verlist)
             article = await get_article(release)
             if article[0] != '':
                 get_stored_news_title = get_stored_list(bot, 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await bot.post_message('minecraft_news', f'Minecraft官网发布了{release}的更新日志：\n' + article[0])
+                    await bot.post_message('minecraft_news', 'minecraft_news.message.update_log', i18n=True, version=release, article=article[0])
                     get_stored_news_title.append(article[1])
                     update_stored_list(bot, 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
-            await bot.post_message('mcv_rss', '启动器已更新' + file['latest']['snapshot'] + '快照。')
+            await bot.post_message('mcv_rss', 'mcv_rss.mcv_rss.message.snapshot', i18n=True, version=file['latest']['snapshot'])
             verlist.append(snapshot)
             update_stored_list(bot, 'mcv_rss', verlist)
             article = await get_article(snapshot)
             if article[0] != '':
                 get_stored_news_title = get_stored_list(bot, 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await bot.post_message('minecraft_news', f'Minecraft官网发布了{snapshot}的更新日志：\n' + article[0])
+                    await bot.post_message('minecraft_news', 'minecraft_news.message.update_log', i18n=True, version=snapshot, article=article[0])
                     get_stored_news_title.append(article[1])
                     update_stored_list(bot, 'mcnews', get_stored_news_title)
     except Exception:
@@ -107,7 +107,7 @@ async def mcv_rss():
 
 mcbv_rss = module('mcbv_rss', developers=['OasisAkari'],
                   recommend_modules=['mcbv_jira_rss'],
-                  desc='开启后当Minecraft基岩版商店更新时将会自动推送消息。', alias='mcbvrss')
+                  desc='{mcv_rss.mcbv_rss.help.desc}', alias='mcbvrss')
 
 
 @mcbv_rss.handle(IntervalTrigger(seconds=180))
@@ -119,7 +119,7 @@ async def mcbv_rss():
         version = google_play_scraper('com.mojang.minecraftpe')['version']
         if version not in verlist:
             Logger.info(f'huh, we find bedrock {version}.')
-            await bot.post_message('mcbv_rss', 'Google Play商店已更新基岩版' + version + '正式版。')
+            await bot.post_message('mcbv_rss', 'mcv_rss.mcbv_rss.message', i18n=True, version=version)
             verlist.append(version)
             update_stored_list(bot, 'mcbv_rss', verlist)
     except Exception:
@@ -128,7 +128,7 @@ async def mcbv_rss():
 
 mcv_jira_rss = module('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'],
                       recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
-                      desc='开启后当Jira更新Java版时将会自动推送消息。', alias='mcvjirarss')
+                      desc='{mcv_rss.mcv_jira_rss.help.desc}', alias='mcvjirarss')
 
 
 @mcv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -147,13 +147,9 @@ async def mcv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
                 if release.lower().find('future version') != -1:
-                    await bot.post_message('mcv_jira_rss',
-                                           f'Jira版本库已新增Java版 {release}。'
-                                           f'\n（Future Version仅代表与此相关的版本正在规划中，不代表启动器已更新此版本）')
+                    await bot.post_message('mcv_jira_rss', 'mcv_rss.mcv_jira_rss.message.future', i18n=True, version=release)
                 else:
-                    await bot.post_message('mcv_jira_rss',
-                                           f'Jira已更新Java版 {release}。'
-                                           f'\n（Jira上的信息仅作版本号预览用，不代表启动器已更新此版本）')
+                    await bot.post_message('mcv_jira_rss', 'mcv_rss.mcv_jira_rss.message', i18n=True, version=release)
                 verlist.append(release)
                 update_stored_list(bot, 'mcv_jira_rss', verlist)
 
@@ -164,7 +160,7 @@ async def mcv_jira_rss():
 mcbv_jira_rss = module('mcbv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'],
-                       desc='开启后当Jira更新基岩版时将会自动推送消息。', alias='mcbvjirarss')
+                       desc='{mcv_rss.mcbv_jira_rss.help.desc}', alias='mcbvjirarss')
 
 
 @mcbv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -183,9 +179,7 @@ async def mcbv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
 
-                await bot.post_message('mcbv_jira_rss',
-                                       f'Jira已更新基岩版 {release}。'
-                                       f'\n（Jira上的信息仅作版本号预览用，不代表商城已更新此版本）')
+                await bot.post_message('mcbv_jira_rss', 'mcv_rss.mcbv_jira_rss.message', i18n=True, version=release)
                 verlist.append(release)
                 update_stored_list(bot, 'mcbv_jira_rss', verlist)
     except Exception:
@@ -195,7 +189,7 @@ async def mcbv_jira_rss():
 mcdv_jira_rss = module('mcdv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'],
-                       desc='开启后当Jira更新Dungeons版本时将会自动推送消息。', alias='mcdvjirarss')
+                       desc='{mcv_rss.mcdv_jira_rss.help.desc}', alias='mcdvjirarss')
 
 
 @mcdv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -214,9 +208,7 @@ async def mcdv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
 
-                await bot.post_message('mcdv_jira_rss',
-                                       f'Jira已更新Minecraft Dungeons {release}。'
-                                       f'\n（Jira上的信息仅作版本号预览用，不代表启动器/商城已更新此版本）')
+                await bot.post_message('mcdv_jira_rss', 'mcv_rss.mcdv_jira_rss.message', i18n=True, version=release)
                 verlist.append(release)
                 update_stored_list(bot, 'mcdv_jira_rss', verlist)
     except Exception:
