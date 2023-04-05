@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession):
             if i == name:
                 break
             else:
-                db.set(f"{group_id}_list", eval(str(db.get(f"{group_id}_list"))).append(name))
+                db.set(f"{group_id}_list", list(str(db.get(f"{group_id}_list"))).append(name))
                 break
     else:
         db.set(f"{group_id}_list", [f"{name}"])
