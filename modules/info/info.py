@@ -30,9 +30,9 @@ db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     name = msg.parsed_msg['<name>'][0]
-    db.set(f"{group_id}_{name}", str(msg.parsed_msg['<ServerUrl>'][0]))
+    db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'])
     if db.exists(f"{group_id}_list"):
-        db.set(f"{group_id}_list", str(literal_eval(db.get(f"{group_id}_list")).append(name)), xx=True)
+        db.set(f"{group_id}_list", db.get(f"{group_id}_list").append(name))
     else:
         db.set(f"{group_id}_list", f"[{name}]")
     await msg.sendMessage('添加成功')
