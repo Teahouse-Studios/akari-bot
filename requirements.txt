@@ -1362,3 +1362,5 @@ feedparser
 Pint
 aioconsole
 sympy
+
+redis
