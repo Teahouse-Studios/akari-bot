@@ -61,7 +61,8 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg.get('<name>')[0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        send = await msg.sendMessage(await server(str(db.get(f"{group_id}_{name}"))) + '\n[90秒后撤回]')
+        serv = await server(str(db.get(f"{group_id}_{name}")))
+        send = await msg.sendMessage(serv + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
     else:
