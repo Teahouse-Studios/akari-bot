@@ -7,7 +7,7 @@ import redis
 inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
                  desc='Minecraft服务器信息模块')
 redis_ = Config('redis').split(':')
-db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
+db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True)
 
 
 @inf.handle('set <name> <ServerUrl> {添加服务器}', required_admin=True)
@@ -57,7 +57,7 @@ async def ____(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
         info = await server(str(db.get(f"{group_id}_{name}")))
-        send = await msg.sendMessage(str(info) + '\n[90秒后撤回]')
+        send = await msg.sendMessage(info + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
     else:
