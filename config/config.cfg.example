@@ -3,6 +3,7 @@ debug = False
 cache_path = ./cache/
 db_path = mysql+pymysql://
 db_cache = False
+redis_path = 
 qq_msg_logging_to_db = True
 qq_host = 127.0.0.1:11451
 qq_account = 2052142661
