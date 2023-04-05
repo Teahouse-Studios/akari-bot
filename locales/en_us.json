@@ -1,7 +1,7 @@
 {
-    "i18n.prompt.fallback.failed": "(If you see this strange string, it means something is wrong again! \nPlease send the problem to\nhttps://s.wd-ljt.com/botreportbug\nso we can quickly solve it.)",
+    "i18n.prompt.fallback.failed": "(If you can see this strange string, it means something is wrong again! \nPlease send the problem back to\n${url}\nso we can quickly solve it.)",
     "error.prompt": "An error occurred: ${error_msg}\nReport this issue: ",
-    "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}",
+    "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}\nReport this issue: ",
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "error.message.chain.invalid": "The bot attempted to send an invalid message chain. Please get in touch with the developers to solve this issue.",
     "error.message.chain.empty": "The bot attempted to send an empty message chain. Please get in touch with the developers to solve this issue.",
@@ -15,7 +15,7 @@
     "tos.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.reason": "Reason: ",
     "tos.warning.count": "You have received ${current_warns} warnings. Your account will be blacklisted if you receive more than 5 warnings.",
-    "tos.warning.appeal": "If you have any objections, please go to https://github.com/Teahouse-Studios/bot/issues/new/choose and create an issue.",
+    "tos.warning.appeal": "If you have any objections, please go to ${issue_url} and create an issue.",
     "tos.warning.last": "This is your last warning.",
     "parser.command.running.prompt": "There are currently commands running. Please try again later.",
     "parser.command.running.prompt2": "The previous command is being executed.",
