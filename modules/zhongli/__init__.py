@@ -45,7 +45,7 @@ async def zlbind(send: Bot.MessageSession):
 async def zlchk(send: Bot.MessageSession):
     if send.target.targetId == 'QQ|Group|607471033':
         cmd = 'check-in'
-        await Bot.FetchTarget.post_message(zlcm(cmd, send.target.senderId, 'QQ|Group|607471033'))
+        await Bot.FetchTarget.post_message('zhongli-probe', zlcm(cmd, send.target.senderId, 'QQ|Group|607471033'))
     else:
         cmd = '不能签，怎么想都不能签吧！'
         await send.sendMessage(cmd)
