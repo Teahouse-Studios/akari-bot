@@ -16,7 +16,7 @@ async def _(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
     db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'])
     if db.exists(f"{group_id}_list"):
-        if name in eval(db.get(f"{group_id}_list")):
+        if name not in eval(db.get(f"{group_id}_list")):
             db.set(f"{group_id}_list", str(eval(db.get(f"{group_id}_list")).append(name)))
     else:
         db.set(f"{group_id}_list", f"[\"{name}\"]")
