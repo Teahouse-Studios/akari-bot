@@ -49,7 +49,7 @@ async def zlchk(send: Bot.MessageSession):
     await send.sendMessage(cmd)
 
 
-@zl.handle('send <msg> {以Admin发送命令}', require_superuser=True)
+@zl.handle('send <msg> {以Admin发送命令}', required_superuser=True)
 async def send(msg: Bot.MessageSession):
     sender = send.target.senderId
     cmd = msg.parsed_msg['<msg>']
