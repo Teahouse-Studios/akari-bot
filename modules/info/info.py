@@ -29,8 +29,8 @@ db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 @inf.handle('set <name> <ServerUrl> {添加服务器}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
-    name = msg.parsed_msg.get('<name>')[0]
-    db.set(f"{group_id}_{name}", str(msg.parsed_msg.get('<ServerUrl>')[0]))
+    name = msg.parsed_msg['<name>'][0]
+    db.set(f"{group_id}_{name}", str(msg.parsed_msg['<ServerUrl>'][0]))
     if db.exists(f"{group_id}_list"):
         db.set(f"{group_id}_list", str(literal_eval(db.get(f"{group_id}_list")).append(name)), xx=True)
     else:
@@ -50,19 +50,19 @@ async def __(msg: Bot.MessageSession):
 
 @inf.handle('url <ServerUrl> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
-    info = server(msg.parsed_msg.get('<ServerUrl>')[0])
-    send = await msg.sendMessage(info + '\n[90秒后撤回]')
+    info = await server(msg.parsed_msg['<ServerUrl>'][0])
+    send = await msg.sendMessage(str(info) + '\n[90秒后撤回]')
     await msg.sleep(90)
     await send.delete()
 
 
 @inf.handle('<name> {查询已绑定的服务器信息}')
 async def ____(msg: Bot.MessageSession):
-    name = msg.parsed_msg.get('<name>')[0]
+    name = msg.parsed_msg['<name>'][0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        serv = server(str(db.get(f"{group_id}_{name}")))
-        send = await msg.sendMessage(serv + '\n[90秒后撤回]')
+        info = await server(str(db.get(f"{group_id}_{name}")))
+        send = await msg.sendMessage(str(info) + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
     else:
