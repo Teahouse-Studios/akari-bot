@@ -51,7 +51,7 @@ async def __(msg: Bot.MessageSession):
 @inf.handle('url <ServerUrl> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
     info = await server(msg.parsed_msg.get('<ServerUrl>')[0])
-    send = await msg.sendMessage(info + '[90秒后撤回]')
+    send = await msg.sendMessage(info + '\n[90秒后撤回]')
     await msg.sleep(90)
     await send.delete()
 
@@ -61,7 +61,7 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg.get('<name>')[0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        send = await msg.sendMessage(await server(db.get(f"{group_id}_{name}")) + '\n[90秒后撤回]')
+        send = await msg.sendMessage(await server(str(db.get(f"{group_id}_{name}"))) + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
     else:
