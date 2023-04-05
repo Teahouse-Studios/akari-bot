@@ -33,7 +33,7 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_list"):
-        list_ = eval(db.get(f"{group_id}_list"))
+        list_ = list(eval(db.get(f"{group_id}_list")))
         await msg.sendMessage('服务器列表:\n' + ', \n'.join(list_))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
