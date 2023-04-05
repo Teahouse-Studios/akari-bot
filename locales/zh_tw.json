@@ -1,7 +1,7 @@
 {
-    "i18n.prompt.fallback.failed": "（如果你看到了這條奇怪的字串，說明我們又搞錯了什麼！\n請將問題回報至\nhttps://s.wd-ljt.com/botreportbug\n以便我們快速解決此問題。）",
+    "i18n.prompt.fallback.failed": "（如果你看到了這條奇怪的字串，說明我們又搞錯了什麼！\n請將問題回報至\n${url}\n以便我們快速解決此問題。）",
     "error.prompt": "發生錯誤：${error_msg}\n錯誤回報網址：",
-    "error.prompt.report": "執行指令時發生錯誤，請回報機器人開發人員：\n${err_msg}",
+    "error.prompt.report": "執行指令時發生錯誤，請回報機器人開發人員：\n${err_msg}\n錯誤回報網址：",
     "error.prompt.noreport": "執行指令時發生錯誤：\n${err_msg}\n此問題並非機器人程式錯誤（API 請求錯誤等），請勿將此訊息回報給機器人開發人員。",
     "error.message.chain.invalid": "機器人嘗試傳送無效訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
@@ -15,7 +15,7 @@
     "tos.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.reason": "原因：",
     "tos.warning.count": "這是第 ${current_warns} 次警告。如超過 5 次警告，我們將會把你的帳戶加入黑名單。",
-    "tos.warning.appeal": "如果你有任何異義，請至 https://github.com/Teahouse-Studios/bot/issues/new/choose 發起 Issue。",
+    "tos.warning.appeal": "如果你有任何異義，請至 ${issue_url} 發起問題。",
     "tos.warning.last": "這是最後警告。",
     "parser.command.running.prompt": "目前有指令正在執行，請稍後再試。",
     "parser.command.running.prompt2": "先前的指令正在執行中。",
