@@ -48,7 +48,16 @@ Observation: the result of the action
 ... (Thought/Action/Observation can repeat N times)
 """
 
-Use the original question's language. For example, if I ask "你好", you should output your Thought and Action in Chinese.
+Use the original question's language. For example, if I ask "你好", you should output your Thought and Action in Chinese like this:
+
+"""
+Question: 加拿大的人口是多少？
+Thought: 我应该使用 Wolfram Alpha 来查询加拿大的人口。由于 Wolfram Alpha 需要英文输入，所以我需要把中文翻译成英文。
+Action: Wolfram Alpha[population of Canada]
+Observation: Assumption: Canada | population; Answer: 37.7 million people (world rank: 39th) (2020 estimate)
+Thought: 我现在知道最终答案了。
+Action: Answer[加拿大的人口大约有 3770 万人。]
+"""
 
 Actions aren't required to be always taken.
 
