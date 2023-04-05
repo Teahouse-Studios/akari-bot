@@ -2,6 +2,7 @@ from core.builtins import Bot
 from core.component import on_command
 from config import Config
 from .server import server
+from ast import literal_eval
 import redis
 
 inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
@@ -30,8 +31,8 @@ async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     name = msg.parsed_msg.get('<name>')[0]
     db.set(f"{group_id}_{name}", msg.parsed_msg.get('<ServerUrl>')[0])
-    db.setnx(f"{group_id}_list", [name])
-    db.set(f"{group_id}_list", db.get(f"{group_id}_list").append(name), xx=True)
+    db.setnx(f"{group_id}_list", f"[{name}]")
+    db.set(f"{group_id}_list", str(literal_eval(db.get(f"{group_id}_list")).append(name)), xx=True)
     await msg.sendMessage('添加成功')
 
 
