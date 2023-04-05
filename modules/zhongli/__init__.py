@@ -1,6 +1,5 @@
 from core.builtins import Bot
 from core.component import on_command
-import re
 
 zl = on_command('zhongli', alias={'zl': 'zhongli', 'zinfo': 'zhongli info',
                                   'stats': 'zhongli stats', 'bind': 'zhongli bind', 'check-in': 'zhongli check-in'
