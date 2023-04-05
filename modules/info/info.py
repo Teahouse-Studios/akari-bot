@@ -20,7 +20,7 @@ async def _(msg: Bot.MessageSession):
             if i == name:
                 break
             else:
-                db.set(f"{group_id}_list", eval(str(db.get(f"{group_id}_list"))).append(name))
+                db.set(f"{group_id}_list", eval(db.get(f"{group_id}_list")).append(name))
                 break
     else:
         db.set(f"{group_id}_list", f"[\"{name}\"]")
@@ -56,7 +56,7 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>'][0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        info = await server(str(db.get(f"{group_id}_{name}")))
+        info = await server(db.get(f"{group_id}_{name}"))
         send = await msg.sendMessage(info + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
