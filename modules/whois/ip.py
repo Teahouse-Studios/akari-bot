@@ -97,11 +97,12 @@ async def format_ip(msg, info: Dict[str, Any]):
 
     return f'''\
 {info['ip']}
-{msg.locale.t('whois.message.type')}IPv{info['version']} {ip_property[info['ip_property']]}{msg.locale.t('whois.message.ip_property')}{f"""
-{msg.locale.t('whois.message.real_ip')}{info['real_ip']}""" if info['real_ip'] is not None else ''}{f"""
-{msg.locale.t('whois.message.location')}{info['city'] if info['city'] is not None else ''}, {info['region'] if info['region'] is not None else ''}, {info['country']}""" if info['country'] is not None else ''}{f" ({parse_coordinate('longitude', info['longitude'])}, {parse_coordinate('latitude', info['latitude'])})" if info['longitude'] is not None and info['latitude'] is not None else ''}{f"""
-{msg.locale.t('whois.message.postal_code')}{info['postal_code']}""" if info['postal_code'] is not None else ''}{f"""
-{msg.locale.t('whois.message.organization')}{info['organization']}""" if info['organization'] is not None else ''}{f"""
-{msg.locale.t('whois.message.asn')}{info['asn']}""" if info['asn'] is not None else ''}{f"（{info['asn_organization']}）" if info['asn_organization'] is not None else ''}{f"""
-{msg.locale.t('whois.message.utc')}UTC{(info['offset'] / 3600):+g}""" if info['offset'] is not None else ''}{f"""
-{msg.locale.t('whois.message.reverse')}{info['reverse']}""" if info['reverse'] is not None and info['reverse'] != info['ip'] else ''}'''
+{msg.locale.t('whois.message.type')}IPv{info['version']} {ip_property[info['ip_property']]}{msg.locale.t('whois.message.ip_property')}
+{f"""{msg.locale.t('whois.message.real_ip')}{info['real_ip']}""" if info['real_ip'] is not None else ''}
+{f"""{msg.locale.t('whois.message.location')}{"{info['city'], }" if info['city'] is not None else ''}{"{info['region'], }" if info['region'] is not None else ''}{info['country']}""" if info['country'] is not None else ''}
+{f" ({parse_coordinate('longitude', info['longitude'])}, {parse_coordinate('latitude', info['latitude'])})" if info['longitude'] is not None and info['latitude'] is not None else ''}
+{f"""{msg.locale.t('whois.message.postal_code')}{info['postal_code']}""" if info['postal_code'] is not None else ''}
+{f"""{msg.locale.t('whois.message.organization')}{info['organization']}""" if info['organization'] is not None else ''}
+{f"""{msg.locale.t('whois.message.asn')}{info['asn']}""" if info['asn'] is not None else ''}{f"（{info['asn_organization']}）" if info['asn_organization'] is not None else ''}
+{f"""{msg.locale.t('whois.message.utc')}UTC{(info['offset'] / 3600):+g}""" if info['offset'] is not None else ''}
+{f"""{msg.locale.t('whois.message.reverse')}{info['reverse']}""" if info['reverse'] is not None and info['reverse'] != info['ip'] else ''}'''
