@@ -44,8 +44,12 @@ async def zlbind(send: Bot.MessageSession):
 
 @zl.handle('check-in {签到}')
 async def zlchk(send: Bot.MessageSession):
-    cmd = '不能签，怎么想都不能签吧！'
-    await send.sendMessage(cmd)
+    if send.target.targetId == 'QQ|Group|607471033':
+        cmd = 'check-in'
+        await Bot.FetchTarget.post_message(zlcm(cmd, send.target.senderId, 'QQ|Group|607471033'))
+    else:
+        cmd = '不能签，怎么想都不能签吧！'
+        await send.sendMessage(cmd)
 
 
 @zl.handle('send <msg> {以Admin发送命令}', required_superuser=True)
