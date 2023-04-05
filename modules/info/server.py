@@ -8,7 +8,7 @@ from core.builtins import ErrorMessage
 from core.logger import Logger
 
 
-async def server(address, raw=False, showplayer=True, mode='j'):
+def server(address, raw=False, showplayer=True, mode='j'):
     matchObj = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
     servers = []
     n = '\n'

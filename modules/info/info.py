@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_list"):
-        list_ = literal_eval(db.get(f"{group_id}_list"))
+        list_ = eval(db.get(f"{group_id}_list"))
         await msg.sendMessage('服务器列表:\n' + ', \n'.join(list_))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
@@ -50,7 +50,7 @@ async def __(msg: Bot.MessageSession):
 
 @inf.handle('url <ServerUrl> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
-    info = await server(msg.parsed_msg.get('<ServerUrl>')[0])
+    info = server(msg.parsed_msg.get('<ServerUrl>')[0])
     send = await msg.sendMessage(info + '\n[90秒后撤回]')
     await msg.sleep(90)
     await send.delete()
@@ -61,7 +61,7 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg.get('<name>')[0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        serv = await server(str(db.get(f"{group_id}_{name}")))
+        serv = server(str(db.get(f"{group_id}_{name}")))
         send = await msg.sendMessage(serv + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
