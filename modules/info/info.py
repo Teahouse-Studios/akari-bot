@@ -32,14 +32,14 @@ async def _(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>'][0]
     db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'])
     if db.exists(f"{group_id}_list"):
-        for i in eval(db.get(f"{group_id}_list")):
+        for i in db.get(f"{group_id}_list"):
             if i == name:
                 break
             else:
                 db.set(f"{group_id}_list", db.get(f"{group_id}_list").append(name))
                 break
     else:
-        db.set(f"{group_id}_list", f"[{name}]")
+        db.set(f"{group_id}_list", [f"{name}"])
     await msg.sendMessage('添加成功')
 
 
@@ -53,7 +53,7 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_list"):
-        list_ = eval(db.get(f"{group_id}_list"))
+        list_ = db.get(f"{group_id}_list")
         await msg.sendMessage('服务器列表:\n' + ', \n'.join(list_))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
