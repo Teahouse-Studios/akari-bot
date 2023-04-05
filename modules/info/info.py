@@ -4,7 +4,8 @@ from config import Config
 from .server import server
 import redis
 
-inf = on_command('info', developers='haoye_qwq')
+inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
+                 desc='Minecraft服务器信息模块')
 redis_ = str(Config('redis').split(':'))
 db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 
@@ -48,8 +49,8 @@ async def __(msg: Bot.MessageSession):
 async def ___(msg: Bot.MessageSession):
     info = await server(msg.parsed_msg.get('<ServerUrl>'))
     send = await msg.sendMessage(info + '[90秒后撤回]')
-    send.sleep(90)
-    send.delete()
+    await send.sleep(90)
+    await send.delete()
 
 
 @inf.handle('<name> {查询已绑定的服务器信息}')
@@ -58,9 +59,9 @@ async def ____(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
         send = await msg.sendMessage(db.get(f"{group_id}_{name}") + '[90秒后撤回]')
-        send.sleep(90)
-        send.delete()
+        await send.sleep(90)
+        await send.delete()
     else:
         send = await msg.sendMessage('服务器不存在，请检查输入\n[90秒后撤回]')
-        send.sleep(90)
-        send.delete()
+        await send.sleep(90)
+        await send.delete()
