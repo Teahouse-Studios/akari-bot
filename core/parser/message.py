@@ -5,7 +5,7 @@ from datetime import datetime
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
 from core.loader import ModulesManager
@@ -294,7 +294,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                 except Exception as e:
                     Logger.error(traceback.format_exc())
-                    await msg.sendMessage(ErrorMessage(msg.locale.t('error.prompt.report', err_msg=str(e))))
+                    await msg.sendMessage(msg.locale.t('error.prompt.report', err_msg=str(e)) +
+                                          Url(Config('bug_report_url')))
             return msg
         if running_mention:
             if display.find('小可') != -1:

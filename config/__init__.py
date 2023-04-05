@@ -8,16 +8,19 @@ config_path = abspath('./config/' + config_filename)
 
 
 class CFG:
+    def __init__(self):
+        self.cp = ConfigParser()
+        self.cp.read(config_path)
+
     def config(self, q):
-        cp = ConfigParser()
-        cp.read(config_path)
-        try:
-            section = cp.sections()
-            if len(section) == 0:
-                raise ConfigFileNotFound(config_path) from None
-            section = section[0]
-            value = cp.get(section, q)
-        except Exception:
+        section = self.cp.sections()
+
+        if len(section) == 0:
+            raise ConfigFileNotFound(config_path) from None
+        value = self.cp.get('secret', q, fallback=False)
+        if not value:
+            value = self.cp.get('cfg', q, fallback=False)
+        if not value:
             return False
         if value.upper() == 'TRUE':
             return True
@@ -27,5 +30,5 @@ class CFG:
 
 
 Config = CFG().config
-CachePath = Config('cache_path')
-DBPath = Config('db_path')
+CachePath = abspath(Config('cache_path'))
+DBPath = abspath(Config('db_path'))

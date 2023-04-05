@@ -1,7 +1,7 @@
 {
-    "i18n.prompt.fallback.failed": "（如果你看到了这条奇怪的字符串，说明我们又搞错了什么东西！\n请将问题反馈至\nhttps://s.wd-ljt.com/botreportbug\n以便我们快速解决此问题。）",
+    "i18n.prompt.fallback.failed": "（如果你看到了这条奇怪的字符串，说明我们又搞错了什么东西！\n请将问题反馈至\n${url}\n以便我们快速解决此问题。）",
     "error.prompt": "发生错误：${error_msg}\n错误汇报地址：",
-    "error.prompt.report": "执行命令时发生错误，请报告机器人开发者：\n${err_msg}",
+    "error.prompt.report": "执行命令时发生错误，请报告机器人开发者：\n${err_msg}\n错误汇报地址：",
     "error.prompt.noreport": "执行命令时发生错误：\n${err_msg}\n此问题并非机器人程序错误（API 请求出错等），请勿将此消息报告给机器人开发者。",
     "error.message.chain.invalid": "机器人尝试发送非法消息链，请联系机器人开发者解决问题。",
     "error.message.chain.empty": "机器人尝试发送空消息链，请联系机器人开发者解决问题。",
@@ -15,7 +15,7 @@
     "tos.warning": "警告：\n根据服务条款，你已违反我们的行为准则。",
     "tos.reason": "具体原因：",
     "tos.warning.count": "这是对你的第 ${current_warns} 次警告。如超过 5 次警告，我们将会把你的账户加入黑名单。",
-    "tos.warning.appeal": "如果你有任何异议，请至 https://github.com/Teahouse-Studios/bot/issues/new/choose 发起 Issue。",
+    "tos.warning.appeal": "如果你有任何异议，请至 ${issue_url} 发起 Issue。",
     "tos.warning.last": "这是对你的最后一次警告。",
     "parser.command.running.prompt": "当前有命令正在执行，请稍后再试。",
     "parser.command.running.prompt2": "先前的命令正在执行中。",

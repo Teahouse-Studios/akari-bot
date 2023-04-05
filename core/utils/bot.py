@@ -55,26 +55,26 @@ async def load_secret():
     section = cp.sections()
     if len(section) == 0:
         raise ConfigFileNotFound(config_path) from None
-    section = section[0]
-    options = cp.options(section)
+    options = cp.options('secret')
     for option in options:
-        value = cp.get(section, option)
+        value = cp.get('secret', option)
         if value.upper() not in ['', 'TRUE', 'FALSE']:
             Secret.add(value.upper())
-    try:
-        async def append_ip():
+
+    async def append_ip():
+        try:
+            Logger.info('Fetching IP information...')
             ip = await get_url('https://api.ip.sb/geoip', timeout=10, fmt='json')
             if ip:
                 Secret.add(ip['ip'])
                 IP.country = ip['country']
                 IP.address = ip['ip']
+            Logger.info('Successfully fetched IP information.')
+        except Exception:
+            Logger.info('Failed to get IP information.')
+            Logger.error(traceback.format_exc())
 
-        Logger.info('Fetching IP information...')
-        await asyncio.create_task(append_ip())
-        Logger.info('Successfully fetched IP information.')
-    except Exception:
-        Logger.info('Failed to get IP information.')
-        Logger.error(traceback.format_exc())
+    asyncio.create_task(append_ip())
 
 
 async def load_prompt(bot) -> None:
