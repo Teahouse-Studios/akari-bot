@@ -1,5 +1,5 @@
 {
-    "tweet.help": "获取推文摘要。",
-    "tweet.help.tweet": "通过推文 ID 或链接获取推文摘要图片。（P.S. 我们没有付 $200 月费）",
-    "tweet.message.not_found": "找不到推文。"
+    "tweet.message.not_found": "找不到推文。",
+    "tweet.help.desc": "获取推文摘要。",
+    "tweet.help": "通过推文 ID 或链接获取推文摘要图片。（P.S. 我们没有付 $200 月费）"
 }
