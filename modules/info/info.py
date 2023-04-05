@@ -32,7 +32,12 @@ async def _(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>'][0]
     db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'])
     if db.exists(f"{group_id}_list"):
-        db.set(f"{group_id}_list", db.get(f"{group_id}_list").append(name))
+        for i in eval(db.get(f"{group_id}_list")):
+            if i == name:
+                break
+            else:
+                db.set(f"{group_id}_list", db.get(f"{group_id}_list").append(name))
+                break
     else:
         db.set(f"{group_id}_list", f"[{name}]")
     await msg.sendMessage('添加成功')
@@ -67,7 +72,7 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>'][0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        info = await server(list(str(db.get(f"{group_id}_{name}"))))
+        info = await server(db.get(f"{group_id}_{name}"))
         send = await msg.sendMessage(str(info) + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
