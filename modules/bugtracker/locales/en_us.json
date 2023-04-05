@@ -1,5 +1,4 @@
 {
-    "bugtracker.bug.help": "Query the corresponding ticket on Mojira.",
-    "bugtracker.bug_regex.help": "Turn on and send !<mojira id> will search Mojira and send an overview of this bug.",
-    "bugtracker.message.error": "An error occurred: Failed to fetch Json."
+    "bugtracker.message.error": "An error occurred: Failed to fetch Json.",
+    "bugtracker.help": "Query the corresponding ticket on Mojira."
 }
