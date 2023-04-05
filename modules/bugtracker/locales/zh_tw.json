@@ -1,5 +1,4 @@
 {
-    "bugtracker.bug.help": "查詢 Mojira 上的 Bug 編號內容。",
-    "bugtracker.bug_regex.help": "啟用後發送 !<mojira id> 將會查詢 Mojira 並傳送此 Bug 的梗概內容。",
-    "bugtracker.message.error": "發生錯誤：取得 Json 失敗。"
+    "bugtracker.message.error": "發生錯誤：取得 Json 失敗。",
+    "bugtracker.help": "查詢 Mojira 上的 Bug 編號內容。"
 }
