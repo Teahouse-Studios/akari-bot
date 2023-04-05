@@ -14,8 +14,10 @@ weekly_rss = module('weekly_rss',
 async def weekly_rss():
     Logger.info('Checking MCWZH weekly...')
 
-    weekly = await get_weekly(True if Bot.FetchTarget.name == 'QQ' else False)
-    await Bot.FetchTarget.post_message('weekly_rss', weekly)
+    weekly_cn = await get_weekly(True if Bot.FetchTarget.name == 'QQ' else False)
+    weekly_tw = await get_weekly(True if Bot.FetchTarget.name == 'QQ' else False, zh_tw=True)
+    post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
+    await Bot.FetchTarget.post_message('weekly_rss', post_msg, i18n=True)
     Logger.info('Weekly checked.')
 
 

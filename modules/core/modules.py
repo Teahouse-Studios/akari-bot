@@ -101,6 +101,11 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(msg.locale.t("core.module.message.enable.already", module=x))
                     else:
                         msglist.append(msg.locale.t("core.module.message.enable.success", module=x))
+                        support_lang = modules_[x].support_languages
+                        if support_lang is not None:
+                            if msg.locale.locale not in support_lang:
+                                msglist.append(msg.locale.t("core.module.message.enable.unsupported_language",
+                                                            module=x))
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:

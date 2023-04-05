@@ -243,7 +243,14 @@ class FetchTarget(FT):
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
                 else:
                     if i18n:
-                        await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
+                        if isinstance(message, dict):
+                            if (gm := message.get(fetch.parent.locale.locale)) is not None:
+                                await fetch_.sendDirectMessage(gm)
+                            else:
+                                await fetch_.sendDirectMessage(message.get('fallback'))
+                        else:
+                            await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
+
                     else:
                         await fetch_.sendDirectMessage(message)
                     if _tsk:
