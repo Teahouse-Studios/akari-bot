@@ -1,5 +1,5 @@
 {
-    "summary.help": "Generates a chat history summary of the combined forward message using ChatGPT (gpt-3.5-turbo).",
+    "summary.help": "Start sending chat summary.",
     "summary.help.summary": "Start sending chat summary.",
     "summary.message": "Next, please send a merge forward message to generate the summary.",
     "summary.message.not_found": "No merge forward messages detected.",
