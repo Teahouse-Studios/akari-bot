@@ -30,7 +30,7 @@ db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     name = msg.parsed_msg.get('<name>')[0]
-    db.set(f"{group_id}_{name}", msg.parsed_msg.get('<ServerUrl>')[0])
+    db.set(f"{group_id}_{name}", str(msg.parsed_msg.get('<ServerUrl>')[0]))
     if db.exists(f"{group_id}_list"):
         db.set(f"{group_id}_list", str(literal_eval(db.get(f"{group_id}_list")).append(name)), xx=True)
     else:
@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_list"):
-        list_ = db.get(f"{group_id}_list")
+        list_ = literal_eval(db.get(f"{group_id}_list"))
         await msg.sendMessage('服务器列表:\n' + ', \n'.join(list_))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
