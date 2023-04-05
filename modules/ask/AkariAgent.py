@@ -100,10 +100,10 @@ class AkariParser(AgentOutputParser):
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         regex = r"Action: (.*?)\[(.*)\]"
         match = re.search(regex, llm_output, re.DOTALL)
-        action = match.group(1).strip()
-        action_input = match.group(2)
         if not match:
             raise ValueError(f"Could not parse LLM output: `{llm_output}`")
+        action = match.group(1).strip()
+        action_input = match.group(2)
         if action == "Answer":
             return AgentFinish(
                 return_values = {"output": action_input.strip()},
