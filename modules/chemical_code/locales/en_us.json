@@ -1,5 +1,4 @@
 {
-    "chemical_code.help.desc": "A game about chemical formulas.",
     "chemical_code.help.normal": "Default mode (Time limits, multiple)",
     "chemical_code.help.captcha": "Captcha mode (Only once, single)",
     "chemical_code.help.stop": "Stop the current game.",
@@ -14,5 +13,6 @@
     "chemical_code.message.normal": "Please answer the chemical formula of this compound within ${times} minutes. (Alphabetical order except C, H. e.g. CHBrClF)",
     "chemical_code.message.captcha": "Please answer the chemical formula of this compound. (Alphabetical order except C, H. e.g. CHBrClF)",
     "chemical_code.message.correct": "Correct.",
-    "chemical_code.message.incorrect": "Incorrect. The correct answer is ${answer}."
+    "chemical_code.message.incorrect": "Incorrect. The correct answer is ${answer}.",
+    "chemical_code.help.desc": "A game about chemical formulas."
 }
