@@ -1,6 +1,6 @@
 {
-    "mcmod.help.desc": "從 MC 百科取得 Minecraft 模組訊息。",
     "mcmod.help.details": "透過模組內容的名稱取得模組簡介及連結，可使用物品/方塊/實體的 ID 或準確名稱。",
     "mcmod.help.mod_name": "透過模組名稱獲取模組簡介及連結，可使用無歧義簡稱或準確名稱。",
-    "mcmod.message.not_found": "找不到結果。"
+    "mcmod.message.not_found": "找不到結果。",
+    "mcmod.help.desc": "從 MC 百科取得 Minecraft 模組訊息。"
 }
