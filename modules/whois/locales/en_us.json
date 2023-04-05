@@ -1,5 +1,4 @@
 {
-    "whois.help": "Query WHOIS information of IP.",
     "whois.message.real_ip": "Real IP:",
     "whois.message.type": "Type: ",
     "whois.message.postal_code": "Postcode: ",
@@ -19,5 +18,6 @@
     "whois.message.ip_property.sixtofour": "6to4",
     "whois.message.ip_property.teredo": "Teredo",
     "whois.message.ip_property.site_local": "Site Local",
-    "whois.message.ip_property": " Address"
+    "whois.message.ip_property": " Address",
+    "whois.help.desc": "Query WHOIS information of IP."
 }
