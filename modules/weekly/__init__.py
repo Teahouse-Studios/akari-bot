@@ -11,7 +11,7 @@ from .teahouse import get_rss as get_teahouse_rss
 
 
 async def get_weekly(with_img=False, zh_tw=False):
-    locale = Locale('zh-cn' if not zh_tw else 'zh-tw')
+    locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
     result = json.loads(await get_url(
         'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid&format=json' +
         ('&variant=zh-tw' if zh_tw else ''),
