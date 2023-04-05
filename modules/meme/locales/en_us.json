@@ -1,6 +1,4 @@
 {
-    "meme.help": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc.",
-    "meme.help.meme": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc.",
     "meme.jiki": "[Jikipedia]",
     "meme.moegirl": "[Moegirlpedia]",
     "meme.nbnhhsh": "[nbnhhsh]",
@@ -9,5 +7,7 @@
     "meme.none": "No results found.",
     "meme.result": "(${result} results): ",
     "meme.nbnhhsh.result": "(${result} results, recorded): ",
-    "meme.nbnhhsh.result.ai": "(${result} results, AI speculation): "
+    "meme.nbnhhsh.result.ai": "(${result} results, AI speculation): ",
+    "meme.help.desc": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc.",
+    "meme.help": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc."
 }
