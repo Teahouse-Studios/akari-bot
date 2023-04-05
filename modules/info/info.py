@@ -38,6 +38,12 @@ async def _(msg: Bot.MessageSession):
     await msg.sendMessage('添加成功')
 
 
+@inf.handle('reset {重置服务器列表}')
+async def _____(msg: Bot.MessageSession):
+    group_id = msg.target.targetId
+    db.delete(f"{group_id}_list")
+
+
 @inf.handle('list {查看服务器列表}')
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
