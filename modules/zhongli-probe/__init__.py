@@ -11,7 +11,7 @@ zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq
             show_typing=False
             )
 async def zl_probe(send: Bot.MessageSession):
-    msg = send.matched_msg[0]
+    msg = send.matched_msg[0].replace(' ', '')
     msg = eval(msg)
     send_m = '[钟离]\n' + msg['text']
     f = await Bot.FetchTarget.fetch_target(msg['return_to'])
