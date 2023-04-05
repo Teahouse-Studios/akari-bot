@@ -28,7 +28,6 @@
     "core.module.message.enable.qqchannel_global.success": "成功：为所有文字频道打开“${module}”模块。",
     "core.module.message.enable.already": "失败：“${module}”模块已经开启。",
     "core.module.message.enable.success": "成功：打开模块“${module}”。",
-    "core.module.message.enable.unsupported_language": "提示：${module}模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",
     "core.module.message.module.help": "模块${module}的帮助信息：",
     "core.module.message.disable.not_found": "失败：“${module}”模块不存在。",
     "core.module.message.disable.permission.denied": "失败：你没有关闭“${module}”的权限。",

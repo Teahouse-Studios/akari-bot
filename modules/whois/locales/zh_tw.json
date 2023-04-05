@@ -1,5 +1,4 @@
 {
-    "whois.help.desc": "查詢 IP 的 WHOIS 資訊",
     "whois.message.real_ip": "實際 IP：",
     "whois.message.type": "類型：",
     "whois.message.postal_code": "郵編：",
@@ -19,5 +18,6 @@
     "whois.message.ip_property.sixtofour": "6to4 ",
     "whois.message.ip_property.teredo": "Teredo ",
     "whois.message.ip_property.site_local": "站點本地",
-    "whois.message.ip_property": "位址"
+    "whois.message.ip_property": "位址",
+    "whois.help.desc": "查詢 IP 的 WHOIS 資訊"
 }

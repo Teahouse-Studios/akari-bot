@@ -34,7 +34,6 @@
     "arcaea.message.unofficial.fetch.failed": "Failed to query using the unofficial API.",
     "arcaea.message.user.unbound": "Unbound user. Please bind user by \"~arcaea bind <friendcode>\".",
     "arcaea.message.no_webrender": "No webrender configured, this command cannot be used.",
-    "arcaea.help.desc": "Queries about Arcaea.",
     "arcaea.b30.help": "Query the best 30 list of Arcaea user. (Automatically select to use API)",
     "arcaea.b30.message.success": "Result\nBest 30：${b30} | Recent 10：${r10}\nBest 30 last 5 list: \n${last5list}",
     "arcaea.info.help": "Query the play record of Arcaea user. (Automatically select to use API)",
@@ -74,5 +73,6 @@
     "arcaea.rank.help.paid": "View the current rank of the paid packs.",
     "arcaea.switch.help": "Switch the API interface that is used by default when querying.",
     "arcaea.switch.message.success.official": "Switch to official API.",
-    "arcaea.switch.message.success.unofficial": "Switch to unofficial API."
+    "arcaea.switch.message.success.unofficial": "Switch to unofficial API.",
+    "arcaea.help.desc": "Queries about Arcaea."
 }

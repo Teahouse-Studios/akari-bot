@@ -1,10 +1,10 @@
 {
-    "color.help.desc": "Provide color information.",
-    "color.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design.",
     "color.help.random": "Random color.",
     "color.message.invalid": "An error occurred: Unrecognized color format.",
     "color.message.css": "CSS color name: ",
     "color.message.css.approximate": "Approximate CSS color name: ",
     "color.message.md": "Material Design color name: ",
-    "color.message.md.approximate": "Approximate Material Design color name: "
+    "color.message.md.approximate": "Approximate Material Design color name: ",
+    "color.help.desc": "Provide color information.",
+    "color.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design."
 }

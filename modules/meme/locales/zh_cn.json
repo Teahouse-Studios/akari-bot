@@ -1,6 +1,4 @@
 {
-    "meme.help.desc": "全功能迷因查询。",
-    "meme.help": "在萌娘百科、nbnhhsh、Urban Dictionary 等中查询迷因。",
     "meme.jiki": "[小鸡百科]",
     "meme.moegirl": "[萌娘百科]",
     "meme.nbnhhsh": "[nbnhhsh]",
@@ -9,5 +7,7 @@
     "meme.none": "没有找到相关结果。",
     "meme.result": "（${result} 个结果）：",
     "meme.nbnhhsh.result": "（${result} 个结果，已收录）：",
-    "meme.nbnhhsh.result.ai": "（${result} 个结果，AI 猜测）："
+    "meme.nbnhhsh.result.ai": "（${result} 个结果，AI 猜测）：",
+    "meme.help.desc": "全功能迷因查询。",
+    "meme.help": "在萌娘百科、nbnhhsh、Urban Dictionary 等中查询迷因。"
 }

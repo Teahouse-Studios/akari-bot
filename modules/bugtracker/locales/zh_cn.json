@@ -1,4 +1,4 @@
 {
-    "bugtracker.help": "查询 Mojira 上的漏洞编号内容。",
-    "bugtracker.message.error": "发生错误：获取 Json 失败。"
+    "bugtracker.message.error": "发生错误：获取 Json 失败。",
+    "bugtracker.help": "查询 Mojira 上的漏洞编号内容。"
 }
