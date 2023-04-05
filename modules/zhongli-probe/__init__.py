@@ -6,7 +6,7 @@ import re
 zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_admin=True)
 
 
-@zlp.handle(pattern=r'{^[\s\S]*}',
+@zlp.handle(pattern=r'({.*?})',
             mode='A',
             show_typing=False
             )
