@@ -1,7 +1,7 @@
 {
-    "weekly.help": "获取中文 Minecraft Wiki 的每周页面。",
-    "weekly.message": "本周的每周页面：\n\n${text})",
-    "weekly.message.link": "\n图片：${img}\n\n页面链接：${article}\n每周页面：${link})",
-    "weekly.message.expired": "发生错误：本周页面已过期，请联系中文 Minecraft Wiki 更新。",
-    "weekly.teahouse.help": "获取茶馆周报。"
+    "weekly.help": "取得中文 Minecraft Wiki 的每週頁面。",
+    "weekly.message": "本週頁面：\n\n${text}",
+    "weekly.message.link": "\n圖片：${img}\n\n頁面連結：${article}\n每週頁面：${link}",
+    "weekly.message.expired": "發生錯誤：本週頁面已過期，請聯絡中文 Minecraft Wiki 更新。",
+    "weekly.teahouse.help": "取得茶館週報。"
 }
