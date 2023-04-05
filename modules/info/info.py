@@ -52,19 +52,19 @@ async def __(msg: Bot.MessageSession):
 async def ___(msg: Bot.MessageSession):
     info = await server(msg.parsed_msg.get('<ServerUrl>')[0])
     send = await msg.sendMessage(info + '[90秒后撤回]')
-    await send.sleep(90)
+    await msg.sleep(90)
     await send.delete()
 
 
 @inf.handle('<name> {查询已绑定的服务器信息}')
 async def ____(msg: Bot.MessageSession):
-    name = msg.parsed_msg.get('<name>')
+    name = msg.parsed_msg.get('<name>')[0]
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
         send = await msg.sendMessage(db.get(f"{group_id}_{name}") + '[90秒后撤回]')
-        await send.sleep(90)
+        await msg.sleep(90)
         await send.delete()
     else:
         send = await msg.sendMessage('服务器不存在，请检查输入\n[90秒后撤回]')
-        await send.sleep(90)
+        await msg.sleep(90)
         await send.delete()
