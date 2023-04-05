@@ -106,7 +106,7 @@ class AkariParser(AgentOutputParser):
         action_input = match.group(2)
         if action == "Answer":
             return AgentFinish(
-                return_values = {"output": action_input.strip()},
+                return_values = {"output": action_input.strip(" ").strip('"')},
                 log = llm_output,
             )
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
