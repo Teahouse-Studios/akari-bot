@@ -31,8 +31,10 @@ async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     name = msg.parsed_msg.get('<name>')[0]
     db.set(f"{group_id}_{name}", msg.parsed_msg.get('<ServerUrl>')[0])
-    db.setnx(f"{group_id}_list", f"[{name}]")
-    db.set(f"{group_id}_list", str(literal_eval(db.get(f"{group_id}_list")).append(name)), xx=True)
+    if db.exists(f"{group_id}_list"):
+        db.set(f"{group_id}_list", str(literal_eval(db.get(f"{group_id}_list")).append(name)), xx=True)
+    else:
+        db.set(f"{group_id}_list", f"[{name}]")
     await msg.sendMessage('添加成功')
 
 
