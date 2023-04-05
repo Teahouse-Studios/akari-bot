@@ -1,5 +1,4 @@
 {
-    "chemical_code.help.desc": "化学式回答小游戏。",
     "chemical_code.help.normal": "普通样式（时间限制，多人）",
     "chemical_code.help.captcha": "验证码样式（不支持指定ID，仅限一次，单人）",
     "chemical_code.help.stop": "停止当前的游戏。",
@@ -14,5 +13,6 @@
     "chemical_code.message.normal": "请在 ${times} 分钟内发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）",
     "chemical_code.message.captcha": "请发送这个化合物的分子式。（除 C、H 外使用字母表顺序，如：CHBrClF）",
     "chemical_code.message.correct": "回答正确。",
-    "chemical_code.message.incorrect": "回答错误，正确答案是 ${answer}。"
+    "chemical_code.message.incorrect": "回答错误，正确答案是 ${answer}。",
+    "chemical_code.help.desc": "化学式回答小游戏。"
 }
