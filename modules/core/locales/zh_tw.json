@@ -132,5 +132,6 @@
     "core.leave.help": "使機器人離開群組。",
     "core.leave.message": "已執行，再見。",
     "core.leave.confirm": "你確定嗎？此行為不可逆。",
-    "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]"
+    "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]",
+    "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援當前語言，此模組可能不會正確展示當前語言下的內容。"
 }
