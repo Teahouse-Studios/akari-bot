@@ -16,7 +16,7 @@ async def _(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
     db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'])
     if db.exists(f"{group_id}_list"):
-        for i in eval(str(db.get(f"{group_id}_list"))):
+        for i in eval(db.get(f"{group_id}_list")):
             if i == name:
                 break
             else:
@@ -37,7 +37,7 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_list"):
-        list_ = db.get(f"{group_id}_list")
+        list_ = eval(db.get(f"{group_id}_list"))
         await msg.sendMessage('服务器列表:\n' + ', \n'.join(list_))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
@@ -56,7 +56,7 @@ async def ____(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_{name}"):
-        info = await server(list(db.get(f"{group_id}_{name}")))
+        info = await server(db.get(f"{group_id}_{name}"))
         send = await msg.sendMessage(info + '\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
