@@ -31,4 +31,4 @@ class CFG:
 
 Config = CFG().config
 CachePath = abspath(Config('cache_path'))
-DBPath = abspath(Config('db_path'))
+DBPath = Config('db_path')
