@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
         if name not in eval(db.get(f"{group_id}_list")):
             db.set(f"{group_id}_list", str(eval(db.get(f"{group_id}_list")).append(name)))
     else:
-        db.set(f"{group_id}_list", f"[\"{name}\"]")
+        db.set(f"{group_id}_list", f"[\'{name}\']")
     await msg.sendMessage('添加成功')
 
 
@@ -33,8 +33,8 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if db.exists(f"{group_id}_list"):
-        list_ = list(eval(db.get(f"{group_id}_list")))
-        await msg.sendMessage('服务器列表:\n' + ', \n'.join(list_))
+        list_ = eval(db.get(f"{group_id}_list"))
+        await msg.sendMessage('服务器列表:\n' + ', \n'.join(list(list_)))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
 
