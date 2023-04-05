@@ -4,7 +4,7 @@ from .mcmod import mcmod as m
 
 mcmod = module(
     bind_prefix='mcmod',
-    desc='{mcmod.help}',
+    desc='{mcmod.help.desc}',
     developers=['Dianliang233', 'HornCopper', 'DrLee_lihr'],
     alias={'moddetails': 'mcmod details'}
 )

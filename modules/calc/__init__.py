@@ -9,7 +9,7 @@ from core.exceptions import NoReportException
 from core.logger import Logger
 
 c = module('calc', developers=[
-    'Dianliang233'], desc='{calc.help}')
+    'Dianliang233'], desc='{calc.help.desc}')
 
 
 @c.command('<math_expression>', options_desc={'+': '{calc.help.plus}',

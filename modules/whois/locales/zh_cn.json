@@ -1,5 +1,5 @@
 {
-    "whois.help": "查询 IP 的 WHOIS 信息。",
+    "whois.help.desc": "查询 IP 的 WHOIS 信息。",
     "whois.message.real_ip": "实际 IP：",
     "whois.message.type": "类型：",
     "whois.message.postal_code": "邮编：",

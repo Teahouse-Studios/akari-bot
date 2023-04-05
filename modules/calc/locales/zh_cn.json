@@ -1,5 +1,5 @@
 {
-    "calc.help": "安全地计算 Python ast 表达式。",
+    "calc.help.desc": "安全地计算 Python ast 表达式。",
     "calc.help.plus": "和/正数：1 + 2 -> 3",
     "calc.help.minus": "差/负数：3 - 1 -> 2",
     "calc.help.divide": "商：6 / 3 -> 2",

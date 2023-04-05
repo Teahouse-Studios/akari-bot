@@ -1,5 +1,5 @@
 {
-    "whois.help": "Query WHOIS information of IP.",
+    "whois.help.desc": "Query WHOIS information of IP.",
     "whois.message.real_ip": "Real IP:",
     "whois.message.type": "Type: ",
     "whois.message.postal_code": "Postcode: ",

@@ -10,7 +10,7 @@ import webcolors
 from core.builtins import Bot, Image as BotImage
 from core.component import module
 
-c = module('color', alias=['colour'], developers=['Dianliang233',], desc='{color.help}')
+c = module('color', alias=['colour'], developers=['Dianliang233',], desc='{color.help.desc}')
 
 font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 
@@ -23,7 +23,7 @@ css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
 css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 
-@c.handle('<color> {{color.help.specify}}')
+@c.handle('<color> {{color.help}}')
 @c.handle('{{color.help.random}}')
 async def _(msg: Bot.MessageSession):
     try:

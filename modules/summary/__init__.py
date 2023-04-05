@@ -9,10 +9,10 @@ from config import Config
 
 openai.api_key = Config('openai_api_key')
 
-s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='{summary.help}', available_for=['QQ', 'QQ|Group'])
+s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='{summary.help.desc}', available_for=['QQ', 'QQ|Group'])
 
 
-@s.handle('{{summary.help.summary}}')
+@s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
     f_msg = await msg.waitNextMessage(msg.locale.t('summary.message'), append_instruction=False)
     try:

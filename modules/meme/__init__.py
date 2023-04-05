@@ -10,11 +10,11 @@ meme = module(
     bind_prefix='meme',
     # well, people still use it though it only lived for an hour or so
     alias=['nbnhhsh'],
-    desc='{meme.help}',
+    desc='{meme.help.desc}',
     developers=['Dianliang233'])
 
 
-@meme.handle(help_doc='<term> {{meme.help.meme}}')
+@meme.handle(help_doc='<term> {{meme.help}}')
 async def _(msg: Bot.MessageSession):
 #   res_jiki = await jiki(msg.parsed_msg['<term>'])
 #   R.I.P. jikipedia

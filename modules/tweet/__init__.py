@@ -9,10 +9,10 @@ from core.component import module
 from core.builtins.message import Image
 
 web_render_local = Config('web_render_local')
-t = module('tweet', developers=['Dianliang233'], desc='{tweet.help}', )
+t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', )
 
 
-@t.handle('<tweet> {{tweet.help.tweet}}', )
+@t.handle('<tweet> {{tweet.help}}', )
 async def _(msg: Bot.MessageSession):
     tweet_id = msg.parsed_msg['<tweet>'].split('/')[-1]
     failed_request = await get_url('https://static-tweet.vercel.app/1', status_code=404)

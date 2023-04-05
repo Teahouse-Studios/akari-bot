@@ -1,4 +1,4 @@
 {
-    "dictionary.help": "查询科林斯词典。",
+    "dictionary.help.desc": "查询科林斯词典。",
     "dictionary.help.terms": "在科林斯词典中查询单词，暂仅支持英文。"
 }

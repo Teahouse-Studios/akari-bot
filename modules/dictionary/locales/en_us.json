@@ -1,4 +1,4 @@
 {
-    "dictionary.help": "Query Collins Dictionary.",
+    "dictionary.help.desc": "Query Collins Dictionary.",
     "dictionary.help.terms": "Query terms in Collins Dictionary."
 }

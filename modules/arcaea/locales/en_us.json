@@ -34,7 +34,7 @@
     "arcaea.message.unofficial.fetch.failed": "Failed to query using the unofficial API.",
     "arcaea.message.user.unbound": "Unbound user. Please bind user by \"~arcaea bind <friendcode>\".",
     "arcaea.message.no_webrender": "No webrender configured, this command cannot be used.",
-    "arcaea.help": "Queries about Arcaea.",
+    "arcaea.help.desc": "Queries about Arcaea.",
     "arcaea.b30.help": "Query the best 30 list of Arcaea user. (Automatically select to use API)",
     "arcaea.b30.message.success": "Result\nBest 30：${b30} | Recent 10：${r10}\nBest 30 last 5 list: \n${last5list}",
     "arcaea.info.help": "Query the play record of Arcaea user. (Automatically select to use API)",

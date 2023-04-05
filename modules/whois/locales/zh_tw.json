@@ -1,5 +1,5 @@
 {
-    "whois.help": "查詢 IP 的 WHOIS 資訊",
+    "whois.help.desc": "查詢 IP 的 WHOIS 資訊",
     "whois.message.real_ip": "實際 IP：",
     "whois.message.type": "類型：",
     "whois.message.postal_code": "郵編：",

@@ -1,5 +1,4 @@
 {
-    "bugtracker.bug.help": "查询 Mojira 上的漏洞编号内容。",
-    "bugtracker.bug_regex.help": "开启后发送 !<mojiraid> 将会查询 Mojira 并发送该漏洞的梗概内容。",
+    "bugtracker.help": "查询 Mojira 上的漏洞编号内容。",
     "bugtracker.message.error": "发生错误：获取 Json 失败。"
 }

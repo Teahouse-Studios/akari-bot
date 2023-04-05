@@ -1,5 +1,5 @@
 {
-    "chemical_code.help": "A game about chemical formulas.",
+    "chemical_code.help.desc": "A game about chemical formulas.",
     "chemical_code.help.normal": "Default mode (Time limits, multiple)",
     "chemical_code.help.captcha": "Captcha mode (Only once, single)",
     "chemical_code.help.stop": "Stop the current game.",

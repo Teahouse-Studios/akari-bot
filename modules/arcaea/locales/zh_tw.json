@@ -34,7 +34,7 @@
     "arcaea.message.unofficial.fetch.failed": "使用非官方 API 查詢失敗！",
     "arcaea.message.user.unbound": "未綁定使用者，請使用 ~arcaea bind <friendcode> 綁定一個使用者。",
     "arcaea.message.no_webrender": "未配置 webrender，無法使用此指令。",
-    "arcaea.help": "查詢 Arcaea 相關內容。",
+    "arcaea.help.desc": "查詢 Arcaea 相關內容。",
     "arcaea.b30.help": "查詢 Arcaea 使用者的 b30 列表。（自動選擇使用 API）",
     "arcaea.b30.message.success": "取得結果\nB30：${b30} | R10：${r10}\nB30 倒 5 列表：\n${last5list}",
     "arcaea.info.help": "查詢 Arcaea 使用者的最近遊玩紀錄。（自動選擇使用 API）",

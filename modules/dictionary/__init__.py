@@ -4,7 +4,7 @@ from .screenshot import get_pic
 
 
 dict_module = module('dictionary', alias=["dict"],
-                         desc='{dictionary.help}', developers=['Dianliang233'])
+                         desc='{dictionary.help.desc}', developers=['Dianliang233'])
 
 @dict_module.handle(help_doc='<term> {{dictionary.help.term}}')
 async def _(msg: Bot.MessageSession):

@@ -6,7 +6,7 @@ from .ip import check_ip, format_ip
 
 # from .domain import check_domain, format_domain
 
-w = module('whois', desc='{whois.help}',
+w = module('whois', desc='{whois.help.desc}',
                developers=['Dianliang233'])
 
 
