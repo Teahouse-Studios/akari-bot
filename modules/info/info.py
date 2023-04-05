@@ -2,7 +2,6 @@ from core.builtins import Bot
 from core.component import on_command
 from config import Config
 from .server import server
-from ast import literal_eval
 import redis
 
 inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
@@ -11,26 +10,11 @@ redis_ = Config('redis').split(':')
 db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 
 
-# @inf.handle()
-# async def inf_helps(msg: Bot.MessageSession):
-#     inf = msg.options.get('command_alias')
-#     if inf is None:
-#         inf = {}
-#     else:
-#         if len(inf) == 0:
-#             await msg.sendMessage('自定义命令别名列表为空。')
-#         else:
-#             send = await msg.sendMessage(Image(pir(
-#                 f'[90秒后撤回消息]自定义命令别名列表：\n' + '\n'.join([f'{k} -> {inf[k]}' for k in inf]))))
-#             await msg.sleep(90)
-#             await send.delete()
-#             await msg.finish()
-
 @inf.handle('set <name> <ServerUrl> {添加服务器}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     name = msg.parsed_msg['<name>'][0]
-    db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'])
+    db.set(f"{group_id}_{name}", msg.parsed_msg['<ServerUrl>'][0])
     if db.exists(f"{group_id}_list"):
         for i in eval(str(db.get(f"{group_id}_list"))):
             if i == name:
@@ -61,7 +45,7 @@ async def __(msg: Bot.MessageSession):
 
 @inf.handle('url <ServerUrl> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
-    info = await server(msg.parsed_msg['<ServerUrl>'])
+    info = await server(msg.parsed_msg['<ServerUrl>'][0])
     send = await msg.sendMessage(info + '\n[90秒后撤回]')
     await msg.sleep(90)
     await send.delete()
