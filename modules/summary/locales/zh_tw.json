@@ -1,5 +1,5 @@
 {
-    "summary.help": "使用 ChatGPT（gpt-3.5-turbo）生成合併轉發訊息的聊天記錄摘要。",
+    "summary.help": "開始發送聊天摘要。",
     "summary.help.summary": "開始發送聊天摘要。",
     "summary.message": "接下來，請發送要生成摘要的合併轉發訊息。",
     "summary.message.not_found": "未檢測到合併轉發訊息。",
