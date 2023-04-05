@@ -9,7 +9,7 @@ from core.utils.http import get_url
 from .teahouse import get_rss as get_teahouse_rss
 
 
-async def get_weekly(with_img=False):
+async def get_weekly(msg: int, with_img=False):
     result = json.loads(await get_url(
         'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid&format=json',
         200))
