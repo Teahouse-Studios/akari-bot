@@ -28,8 +28,8 @@ db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0)
 @inf.handle('set <name> <ServerUrl> {添加服务器}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
-    name = msg.parsed_msg.get('<name>')
-    db.set(f"{group_id}_{name}", msg.parsed_msg.get('<ServerUrl>'))
+    name = msg.parsed_msg.get('<name>')[0]
+    db.set(f"{group_id}_{name}", msg.parsed_msg.get('<ServerUrl>')[0])
     db.setnx(f"{group_id}_list", [name])
     db.set(f"{group_id}_list", db.get(f"{group_id}_list").append(name), xx=True)
     await msg.sendMessage('添加成功')
@@ -47,7 +47,7 @@ async def __(msg: Bot.MessageSession):
 
 @inf.handle('url <ServerUrl> {查询任意服务器信息}')
 async def ___(msg: Bot.MessageSession):
-    info = await server(msg.parsed_msg.get('<ServerUrl>'))
+    info = await server(msg.parsed_msg.get('<ServerUrl>')[0])
     send = await msg.sendMessage(info + '[90秒后撤回]')
     await send.sleep(90)
     await send.delete()
