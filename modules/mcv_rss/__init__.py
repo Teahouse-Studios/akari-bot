@@ -86,7 +86,7 @@ async def mcv_rss():
             if article[0] != '':
                 get_stored_news_title = get_stored_list(bot, 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await bot.post_message('minecraft_news', 'mcv_rss.mcv_rss.message.article', i18n=True, version=release, article=article[0])
+                    await bot.post_message('minecraft_news', 'minecraft_news.message.update_log', i18n=True, version=release, article=article[0])
                     get_stored_news_title.append(article[1])
                     update_stored_list(bot, 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
