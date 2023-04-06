@@ -47,7 +47,7 @@ async def _(event: Event):
     if match_at := re.match(r'^\[CQ:at,qq=(.*?)](.*)', event.message):
         if match_at.group(1) == qq_account:
             event.message = match_at.group(2)
-            if event.message == '':
+            if event.message in ['', ' ']:
                 event.message = 'help'
             prefix = ['']
 
