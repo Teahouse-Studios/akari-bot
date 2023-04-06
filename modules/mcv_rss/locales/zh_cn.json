@@ -1,15 +1,14 @@
 {
-    "mcv_rss.mcv_rss.help.desc": "开启后当 Minecraft 启动器更新 Minecraft：Java 版时将会自动推送消息。",
+    "mcv_rss.mcv_rss.help.desc": "开启后 Minecraft 启动器更新 Minecraft：Java 版时会自动推送消息。",
     "mcv_rss.mcv_rss.message.release": "启动器已更新 ${version} 正式版。",
     "mcv_rss.mcv_rss.message.snapshot": "启动器已更新 ${version} 快照。",
-    "mcv_rss.mcbv_rss.help.desc": "开启后当商店更新 Minecraft 基岩版时将会自动推送消息。",
+    "mcv_rss.mcbv_rss.help.desc": "开启后商店更新 Minecraft 基岩版时会自动推送消息。",
     "mcv_rss.mcbv_rss.message": "Google Play 商店已更新基岩版 ${version} 正式版。",
-    "mcv_rss.mcv_jira_rss.help.desc": "开启后当 Mojira 更新 Java 版时将会自动推送消息。",
+    "mcv_rss.mcv_jira_rss.help.desc": "开启后 Mojira 更新 Java 版时会自动推送消息。",
     "mcv_rss.mcv_jira_rss.message": "Mojira 已更新 Java 版 ${version}。\n（Mojira 上的信息仅作版本号预览用，不代表启动器已更新此版本）",
     "mcv_rss.mcv_jira_rss.message.future": "Mojira 已新增 Java 版 ${version}。\n（Future Version 仅代表与此相关的版本正在规划中，不代表启动器已更新此版本）",
-    "mcv_rss.mcbv_jira_rss.help.desc": "开启后当 Mojira 更新基岩版时将会自动推送消息。",
+    "mcv_rss.mcbv_jira_rss.help.desc": "开启后 Mojira 更新基岩版时会自动推送消息。",
     "mcv_rss.mcbv_jira_rss.message": "Mojira 已更新基岩版 ${version}。\n（Mojira 上的信息仅作版本号预览用，不代表商店已更新此版本）",
-    "mcv_rss.mcdv_jira_rss.help.desc": "开启后当 Mojira 更新 Minecraft Dungeon 时将会自动推送消息。",
-    "mcv_rss.mcdv_jira_rss.message": "Mojira 已更新 Minecraft Dungeons ${version}。\n（Mojira 上的信息仅作版本号预览用，不代表启动器/商店已更新此版本）",
-    "minecraft_news.message.minecraft_news": "Minecraft 官网发布了新的文章：\n${title}\n  ${desc}\n${link}"
+    "mcv_rss.mcdv_jira_rss.help.desc": "开启后 Mojira 更新 Minecraft Dungeons 时会自动推送消息。",
+    "mcv_rss.mcdv_jira_rss.message": "Mojira 已更新 Minecraft Dungeons ${version}。\n（Mojira 上的信息仅作版本号预览用，不代表启动器/商店已更新此版本）"
 }
