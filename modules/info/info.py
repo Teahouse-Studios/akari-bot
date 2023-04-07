@@ -36,13 +36,14 @@ async def _(msg: Bot.MessageSession):
         dicts = read(group_id)
         dicts[name] = serip
         dicts['list'] = list(set(dicts['list'].append(name)))
+        write(group_id, dicts)
     await msg.sendMessage('添加成功')
 
 
 @inf.handle('reset {重置服务器列表}')
 async def _____(msg: Bot.MessageSession):
     group_id = msg.target.targetId
-    db.delete(f"{group_id}_list")
+    db.delete(f"{group_id}_info")
 
 
 @inf.handle('list {查看服务器列表}')
