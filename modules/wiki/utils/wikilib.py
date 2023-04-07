@@ -524,6 +524,7 @@ class WikiLib:
                                 page_info.file = reparse.file
                                 page_info.status = reparse.status
                                 page_info.invalid_namespace = reparse.invalid_namespace
+                                page_info.possible_research_title = reparse.possible_research_title
                             else:
                                 namespace = '*'
                                 if len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces:
