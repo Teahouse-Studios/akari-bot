@@ -31,11 +31,10 @@ async def _(msg: Bot.MessageSession):
     name = msg.parsed_msg['<name>']
     serip = msg.parsed_msg['<ServerUrl>']
     if not exist(group_id):
-        write(group_id, {name: serip, 'list': [name]})
+        write(group_id, {name: serip})
     else:
         dicts = read(group_id)
         dicts[name] = serip
-        dicts['list'] = list(set(dicts['list'].append(name)))
         write(group_id, dicts)
     await msg.sendMessage('添加成功')
 
@@ -50,7 +49,7 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if exist(group_id):
-        list_ = read(group_id)['list']
+        list_ = read(group_id).keys()
         await msg.sendMessage('服务器列表:\n' + ',\n'.join(list_))
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
