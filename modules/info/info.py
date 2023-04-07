@@ -25,7 +25,22 @@ def exist(id_group: str):
     return db.exists(f"{id_group}_info")
 
 
-@inf.handle('set <name> <ServerUrl> {添加服务器}', required_admin=True)
+def reset(id_group: str):
+    if exist(id_group):
+        db.delete(f"{id_group}_info")
+
+
+def delete(id_group: str, name: str):
+    dicts = read(id_group)
+    if name in dicts:
+        del dicts[name]
+        write(id_group, dicts)
+        return True
+    else:
+        return False
+
+
+@inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     name = msg.parsed_msg['<name>']
@@ -39,13 +54,18 @@ async def _(msg: Bot.MessageSession):
     await msg.sendMessage('添加成功')
 
 
-@inf.handle('reset {重置服务器列表}')
+@inf.handle('reset {重置已绑定服务器列表}', required_admin=True)
 async def _____(msg: Bot.MessageSession):
     group_id = msg.target.targetId
-    db.delete(f"{group_id}_info")
+    confirm = await msg.waitConfirm('你确定要删除它们吗?很久才能找回来!(真的很久!)')
+    if confirm:
+        reset(group_id)
+        await msg.sendMessage('已重置')
+    else:
+        await msg.sendMessage('已取消')
 
 
-@inf.handle('list {查看服务器列表}')
+@inf.handle('list {查看已绑定服务器列表}')
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if exist(group_id):
@@ -76,3 +96,14 @@ async def ____(msg: Bot.MessageSession):
         send = await msg.sendMessage('服务器不存在，请检查输入\n[90秒后撤回]')
         await msg.sleep(90)
         await send.delete()
+
+
+@inf.handle('unbind <name> {取消绑定服务器}', required_admin=True)
+async def ______(msg: Bot.MessageSession):
+    name = msg.parsed_msg['<name>']
+    group_id = msg.target.targetId
+    unbind = delete(group_id, name)
+    if unbind:
+        await msg.sendMessage('已删除')
+    else:
+        await msg.sendMessage('服务器不存在，请检查输入')
