@@ -1,12 +1,19 @@
+import asyncio
+import re
+import ujson as json
+from typing import List, Union, Callable
+
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
 from langchain.prompts import BaseChatPromptTemplate
 from langchain import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import WolframAlphaAPIWrapper, GoogleSerperAPIWrapper
 from langchain.chat_models import ChatOpenAI
-from typing import List, Union
 from langchain.schema import AgentAction, AgentFinish, HumanMessage
-import re
+from langchain.callbacks.stdout import StdOutCallbackHandler
+from langchain.callbacks.base import CallbackManager
+
+from modules.whois.ip import check_ip
 from config import Config
 
 
@@ -14,17 +21,38 @@ llm = ChatOpenAI(temperature=0, openai_api_key=Config('openai_api_key'), model_k
 search = GoogleSerperAPIWrapper(serper_api_key=Config('serper_api_key'))
 wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=Config('wolfram_alpha_appid'))
 
+
+def to_json_func(func: Callable):
+    async def wrapper(*args, **kwargs):
+        return json.dumps(await func(*args, **kwargs))
+    return wrapper
+
+def to_async_func(func: Callable):
+    async def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+class AkariTool(Tool):
+    def __init__(self, name: str, func: Callable, description: str = None):
+        super().__init__(name, func, description)
+        self.coroutine = func
+
 tools = [
-    Tool(
+    AkariTool(
         name = 'Search',
-        func=search.run,
+        func=to_async_func(search.run),
         description='A wrapper around Google Search. Useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible. Input should be a search query in any language.'
     ),
-    Tool(
+    AkariTool(
         name = 'Wolfram Alpha',
-        func=wolfram.run,
-        description='A wrapper around Wolfram Alpha. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Input should be a search query in English.'
+        func=to_async_func(wolfram.run),
+        description='A wrapper around Wolfram Alpha. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Also useful for generating SHA or MD5 hashes. Input should be a search query in English.'
     ),
+    AkariTool(
+        name = 'IP WHOIS',
+        func=to_json_func(check_ip),
+        description='A WHOIS tool for IP addresses. Useful for when you need to answer questions about IP addresses. Input should be a valid IP address. Output is a JSON document.'
+    )
 ]
 
 # Set up the base Agent template
@@ -138,11 +166,13 @@ llm_chain = LLMChain(llm=llm, prompt=prompt)
 
 tool_names = [tool.name for tool in tools]
 
+manager = CallbackManager([StdOutCallbackHandler()])
+
 agent = LLMSingleActionAgent(
     llm_chain=llm_chain,
     output_parser=output_parser,
     stop=["\nObservation:"],
-    allowed_tools=tool_names
+    allowed_tools=tool_names,
 )
 
-agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)
+agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, callback_manager=manager)
