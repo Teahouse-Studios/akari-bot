@@ -6,11 +6,11 @@ from .AkariAgent import agent_executor
 
 from core.exceptions import NoReportException
 
-a = module('ask', developers=['Dianliang233'], desc='{ask.help}', required_superuser=True)
+a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}', required_superuser=True)
 
 
-@a.command('<question> {{ask.help.ask}}')
-@a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$', desc='{{ask.help.ask}}')
+@a.command('<question> {{ask.help}}')
+@a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$')
 async def _(msg: Bot.MessageSession):
     if hasattr(msg, 'parsed_msg'):
         question = msg.parsed_msg['<question>']
