@@ -13,6 +13,9 @@ from langchain.schema import AgentAction, AgentFinish, HumanMessage
 from langchain.callbacks.stdout import StdOutCallbackHandler
 from langchain.callbacks.base import CallbackManager
 
+from core.utils.i18n import Locale
+from core.types.message import MessageSession, MsgInfo, Session
+from modules.mcv import mcv, mcbv, mcdv, mcev
 from modules.whois.ip import check_ip
 from config import Config
 
@@ -32,10 +35,22 @@ def to_async_func(func: Callable):
         return func(*args, **kwargs)
     return wrapper
 
+def with_args(func: Callable, *args, **kwargs):
+    async def wrapper(*a, **k):
+        # if a is tuple with empty string
+        if len(a) == 1 and a[0] == '':
+            return await func(*args, **kwargs, **k)
+        return await func(*args, *a, **kwargs, **k)
+    return wrapper
+
 class AkariTool(Tool):
     def __init__(self, name: str, func: Callable, description: str = None):
         super().__init__(name, func, description)
         self.coroutine = func
+
+fake_msg = MessageSession(MsgInfo('Ask|0', 'Ask|0', 'AkariBot', 'Ask', 'Ask', 'Ask', 0),
+                          Session('~lol lol', 'Ask|0', 'Ask|0'))
+fake_msg.locale = Locale('en_us')
 
 tools = [
     AkariTool(
@@ -52,7 +67,27 @@ tools = [
         name = 'IP WHOIS',
         func=to_json_func(check_ip),
         description='A WHOIS tool for IP addresses. Useful for when you need to answer questions about IP addresses. Input should be a valid IP address. Output is a JSON document.'
-    )
+    ),
+    AkariTool(
+        name = 'Minecraft: Java Edition Version',
+        func=with_args(mcv, fake_msg),
+        description='A tool for checking current Minecraft: Java Edition versions. No input is required.'
+    ),
+    AkariTool(
+        name = 'Minecraft: Bedrock Edition Version',
+        func=with_args(mcbv, fake_msg),
+        description='A tool for checking current Minecraft: Bedrock Edition versions. No input is required.'
+    ),
+    AkariTool(
+        name = 'Minecraft Dungeons Version',
+        func=with_args(mcdv, fake_msg),
+        description='A tool for checking current Minecraft Dungeons versions. No input is required.'
+    ),
+    AkariTool(
+        name = 'Minecraft: Education Edition Version',
+        func=with_args(mcev, fake_msg),
+        description='A tool for checking current Minecraft: Education Edition versions. No input is required.'
+    ),
 ]
 
 # Set up the base Agent template
