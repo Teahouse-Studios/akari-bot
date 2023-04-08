@@ -97,12 +97,12 @@ async def _(msg: Bot.MessageSession):
                             if guess_type is not None:
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                                     if msg.Feature.image:
-                                        await msg.sendMessage([Plain(msg.locale.t('wiki.message.flies', file=get_page.file)), Image(dl)],
+                                        await msg.sendMessage([Plain(msg.locale.t('wiki.wiki_inline.message.flies', file=get_page.file)), Image(dl)],
                                                               quote=False)
                                         img_send = True
                                 elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                                     if msg.Feature.voice:
-                                        await msg.sendMessage([Plain(msg.locale.t('wiki.message.flies', file=get_page.file)), Voice(dl)],
+                                        await msg.sendMessage([Plain(msg.locale.t('wiki.wiki_inline.message.flies', file=get_page.file)), Voice(dl)],
                                                               quote=False)
                         if msg.Feature.image:
                             if get_page.status and wiki_.wiki_info.in_allowlist:

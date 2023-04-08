@@ -1,7 +1,6 @@
 {
     "coin.begin": "你抛了${count} 枚硬币，",
     "coin.help": "抛n枚硬币",
-    "coin.error": "发生错误：",
     "coin.error.amount": "发生错误：无效的硬币个数：",
     "coin.error.max": "发生错误：你最多只能抛 ${max} 个硬币",
     "coin.error.nocoin": "发生错误：你抛了个空气，什么也没发生...",

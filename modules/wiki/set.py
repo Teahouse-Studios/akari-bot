@@ -79,13 +79,13 @@ async def _(msg: Bot.MessageSession):
         if img:
             mt = msg.locale.t("wiki.iw.list.message", prefix=msg.prefixes[0])
             if base_interwiki_link is not None:
-                mt += '\n' + msg.locale.t("wiki.iw.list.message.redirect", url=str(Url(base_interwiki_link)))
+                mt += '\n' + msg.locale.t("wiki.iw.list.message.more_information", url=str(Url(base_interwiki_link)))
             await msg.finish([Image(img), Plain(mt)])
         else:
             result = msg.locale.t("wiki.iw.list.message.legacy") + '\n' + \
                      '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
-                result += '\n' + msg.locale.t("wiki.iw.list.message.redirect", url=str(Url(base_interwiki_link)))
+                result += '\n' + msg.locale.t("wiki.iw.list.message.more_information", url=str(Url(base_interwiki_link)))
             await msg.finish(result)
     else:
         await msg.finish(msg.locale.t("wiki.iw.message.none", prefix=msg.prefixes[0]))
