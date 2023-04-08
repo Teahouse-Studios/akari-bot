@@ -24,6 +24,12 @@ def with_args(func: Callable, *args, **kwargs):
         return await func(*args, *a, **kwargs, **k)
     return wrapper
 
+def parse_input(input: str):
+    vals = input.split(',')
+    parsed = []
+    for v in vals:
+        parsed.append(v.strip().strip('"'.strip("'")))
+    return parsed
 
 class AkariTool(Tool):
     def __init__(self, name: str, func: Callable, description: str = None):

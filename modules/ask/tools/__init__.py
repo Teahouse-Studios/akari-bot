@@ -4,6 +4,8 @@ from .ip_whois import ip_whois_tool
 from .mcv import mcv_tool
 from .server import server_tool
 from .meme import meme_tool
+from .random import random_choice_tool, random_number_tool, random_uuid_tool
+from .bugtracker import bugtracker_tool
 
 tools = [
     search_tool,
@@ -11,7 +13,11 @@ tools = [
     ip_whois_tool,
     mcv_tool,
     server_tool,
-    meme_tool
+    meme_tool,
+    random_choice_tool,
+    random_number_tool,
+    random_uuid_tool,
+    bugtracker_tool
 ]
 
 tool_names = [tool.name for tool in tools]

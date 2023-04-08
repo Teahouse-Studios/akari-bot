@@ -17,7 +17,7 @@ Use the following format:
 """
 Question: the input question you must answer
 Thought: think about what to do
-Action: the action to take, should be one of {tool_names}, Answer; followed by a pair of brackets with the input
+Action: the action to take, should be one of {tool_names}, Answer; followed by [] with the input in it. If the tool asks for multiple inputs, use comma to separate them. Do not use quotation marks (' or ").
 Observation: the result
 ... (Thought/Action/Observation can repeat N times)
 """
