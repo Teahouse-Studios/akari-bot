@@ -128,5 +128,5 @@ async def _______(msg: Bot.MessageSession):
         write(group_id, dict(itertools.chain(
             read(group_id).items(), json.loads(fetched).items()))
               )
-    elif (not exist(group_id)) and is_json(fetched):
+    elif not exist(group_id):
         write(group_id, json.loads(msg.parsed_msg['<json>']))
