@@ -145,7 +145,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd in {'随机页面', "隨機頁面", "Random"} or :
+                if rd in {'随机页面', '隨機頁面', 'Random'} or :
                     tasks.append(asyncio.create_task(
                         WikiLib(q, headers).random_page()))
                 else:
