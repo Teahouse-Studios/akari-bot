@@ -377,6 +377,11 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 for l in locale_str:
                                     err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                             await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
+
+                        except Exception as e:
+                            Logger.error(traceback.format_exc())
+                            await msg.sendMessage(msg.locale.t('error.prompt.report', err_msg=str(e)) +
+                                                  str(Url(Config('bug_report_url'))))
                         finally:
                             ExecutionLockList.remove(msg)
 
