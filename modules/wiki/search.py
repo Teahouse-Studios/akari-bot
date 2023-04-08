@@ -91,7 +91,7 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
             i += 1
             w = f'{i}. {w}'
             msg_list.append(w)
-        msg_list.append(msg.locale.t('wiki.search.message.reply'))
+        msg_list.append(msg.locale.t('wiki.search.message.prompt'))
     reply = await session.waitReply(Plain('\n'.join(msg_list)))
     if reply.asDisplay(text_only=True).isdigit():
         reply_number = int(reply.asDisplay(text_only=True)) - 1
