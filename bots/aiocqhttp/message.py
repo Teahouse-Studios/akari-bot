@@ -273,8 +273,7 @@ class FetchTarget(FT):
                             _tsk = []
                         fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
                         if fetch_base_superuser:
-                            await fetch_base_superuser.sendDirectMessage(
-                                '群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
+                            await fetch_base_superuser.sendDirectMessage(msg.locale.t("error.message.paused"))
             except Exception:
                 Logger.error(traceback.format_exc())
 

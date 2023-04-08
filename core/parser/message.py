@@ -40,7 +40,7 @@ async def msg_counter(msg: MessageSession, command: str):
     else:
         same['count'] += 1
         if same['count'] > 10:
-            raise AbuseWarning('一段时间内使用相同命令的次数过多')
+            raise AbuseWarning(msg.locale.t("tos.reason.cooldown"))
     all_ = counter_all.get(msg.target.senderId)
     if all_ is None or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（重复使用同一命令）
         counter_all[msg.target.senderId] = {'count': 1,
@@ -48,7 +48,7 @@ async def msg_counter(msg: MessageSession, command: str):
     else:
         all_['count'] += 1
         if all_['count'] > 20:
-            raise AbuseWarning('一段时间内使用命令的次数过多')
+            raise AbuseWarning(msg.locale.t("tos.reason.abuse"))
 
 
 async def temp_ban_check(msg: MessageSession):
@@ -58,15 +58,12 @@ async def temp_ban_check(msg: MessageSession):
         if ban_time < 300:
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
-                return await msg.finish('提示：\n'
-                                        '由于你的行为触发了警告，我们已对你进行临时限制。\n'
-                                        f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+                return await msg.finish(msg.locale.t("tos.tempbanned", ban_time=str(int(300 - ban_time))))
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
-                return await msg.finish('即使是触发了临时限制，继续使用命令还是可能会导致你被再次警告。\n'
-                                        f'距离解封时间还有{str(int(300 - ban_time))}秒。')
+                return await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=str(int(300 - ban_time))))
             else:
-                raise AbuseWarning('无视临时限制警告')
+                raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
 
 
 async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
@@ -271,7 +268,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except ActionFailed:
-                    await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
+                    await msg.sendMessage(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
                     time_used = datetime.now() - time_start
@@ -384,7 +381,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             ExecutionLockList.remove(msg)
 
             except ActionFailed:
-                await msg.sendMessage('消息发送失败，可能被风控，请稍后再试。')
+                await msg.sendMessage((msg.locale.t("error.message.limited")')
                 continue
         return msg
     except AbuseWarning as e:
