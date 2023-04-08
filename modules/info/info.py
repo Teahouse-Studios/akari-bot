@@ -122,7 +122,7 @@ async def ______(msg: Bot.MessageSession):
 @inf.handle('multi_bind <dict> {绑定多个服务器}', required_superuser=True)
 async def _______(msg: Bot.MessageSession):
     group_id = msg.target.targetId
-    fetched = literal_eval(msg.parsed_msg['<dict>'])
+    fetched = literal_eval(str(msg.parsed_msg['<dict>']).replace('\n', ''))
     if exist(group_id):
         write(group_id, dict(itertools.chain(
             read(group_id).items(), fetched.items()
