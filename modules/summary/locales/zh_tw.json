@@ -1,7 +1,7 @@
 {
-    "summary.message": "接下來，請發送要生成摘要的合併轉發訊息。",
+    "summary.message": "接下來，請傳送要生成摘要的合併轉發訊息。",
     "summary.message.not_found": "未檢測到合併轉發訊息。",
-    "summary.message.waiting": "正在生成摘要。您的聊天記錄共 ${count} 個字符，大約需要 ${time} 秒。請稍候……",
+    "summary.message.waiting": "正在生成摘要。您的聊天記錄共 ${count} 個字元，大約需要 ${time} 秒。請稍候……",
     "summary.help.desc": "開始發送聊天摘要。",
-    "summary.help": "開始發送聊天摘要。"
+    "summary.help": "開始傳送聊天摘要。"
 }
