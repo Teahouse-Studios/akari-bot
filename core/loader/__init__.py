@@ -16,6 +16,10 @@ load_dir_path = os.path.abspath('./modules/')
 
 def load_modules():
     err_prompt = []
+    locale_err = load_locale_file()
+    if locale_err:
+        locale_err.append('i18n:')
+        err_prompt.append('\n'.join(locale_err))
     fun_file = None
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:
@@ -45,10 +49,6 @@ def load_modules():
         openloadercache.write(err_prompt)
     else:
         openloadercache.write('')
-    locale_err = load_locale_file()
-    if locale_err:
-        locale_err.append('i18n:')
-        openloadercache.write('\n'.join(locale_err))
     openloadercache.close()
 
 
