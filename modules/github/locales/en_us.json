@@ -6,6 +6,7 @@
     "github.user.message.not_found": "The given user cannot be found; please check your input.",
     "github.search.help": "Searching repositories on GitHub.",
     "github.search.message": "Successfully to search for ${result} results:",
+    "github.search.message.more_information": "Truncated due to chat limits; ${more_result} more results may not be shown.",
     "github.search.message.not_found": "The given repository cannot be found; please check your input.",
     "github.message.error": "An error occurred: The given repository cannot be found; please check your spelling.",
     "github.search.message.more_information": "Truncated due to chat limits; ${more_result} more results may not be shown."

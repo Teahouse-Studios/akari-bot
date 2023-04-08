@@ -6,7 +6,8 @@ mcmod = module(
     bind_prefix='mcmod',
     desc='{mcmod.help.desc}',
     developers=['Dianliang233', 'HornCopper', 'DrLee_lihr'],
-    alias={'moddetails': 'mcmod details'}
+    alias={'moddetails': 'mcmod details'}, 
+    support_languages=['zh_cn']
 )
 
 

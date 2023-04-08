@@ -22,7 +22,7 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
     prefix = target.get_prefix()
     enabled_fandom_addon = session.options.get('wiki_fandom_addon')
     if start_wiki is None:
-        await session.sendMessage(msg.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
+        await session.sendMessage(session.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if isinstance(title, str):
         title = [title]
@@ -85,13 +85,13 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
             for r in result:
                 wait_msg_list.append(iw_prefix + r)
     if len(wait_msg_list) != 0:
-        msg_list.append(msg.locale.t('wiki.search.message'))
+        msg_list.append(session.locale.t('wiki.search.message'))
         i = 0
         for w in wait_msg_list:
             i += 1
             w = f'{i}. {w}'
             msg_list.append(w)
-        msg_list.append(msg.locale.t('wiki.search.message.reply'))
+        msg_list.append(session.locale.t('wiki.search.message.prompt'))
     reply = await session.waitReply(Plain('\n'.join(msg_list)))
     if reply.asDisplay(text_only=True).isdigit():
         reply_number = int(reply.asDisplay(text_only=True)) - 1

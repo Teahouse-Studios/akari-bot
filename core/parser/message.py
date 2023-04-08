@@ -281,6 +281,12 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
+                except AbuseWarning as e:
+                    if enable_tos:
+                        await warn_target(msg, str(e))
+                        temp_ban_counter[msg.target.senderId] = {'count': 1,
+                                                                 'ts': datetime.now().timestamp()}
+
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
                     err_msg = str(e)
@@ -377,6 +383,17 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 for l in locale_str:
                                     err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                             await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
+
+                        except AbuseWarning as e:
+                            if enable_tos:
+                                await warn_target(msg, str(e))
+                                temp_ban_counter[msg.target.senderId] = {'count': 1,
+                                                                         'ts': datetime.now().timestamp()}
+
+                        except Exception as e:
+                            Logger.error(traceback.format_exc())
+                            await msg.sendMessage(msg.locale.t('error.prompt.report', err_msg=str(e)) +
+                                                  str(Url(Config('bug_report_url'))))
                         finally:
                             ExecutionLockList.remove(msg)
 
@@ -384,11 +401,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                 await msg.sendMessage((msg.locale.t("error.message.limited")))
                 continue
         return msg
-    except AbuseWarning as e:
-        if enable_tos:
-            await warn_target(msg, str(e))
-            temp_ban_counter[msg.target.senderId] = {'count': 1,
-                                                     'ts': datetime.now().timestamp()}
 
     except WaitCancelException:  # 出现于等待被取消的情况
         Logger.warn('Waiting task cancelled by user.')
