@@ -42,12 +42,12 @@ def delete(id_group: str, name: str):
         return False
 
 
-def is_json(json_):
-    try:
-        json.loads(json_)
-    except ValueError:
-        return False
-    return True
+# def is_json(json_):
+#     try:
+#         json.loads(json_)
+#     except ValueError:
+#         return False
+#     return True
 
 
 @inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
@@ -123,10 +123,12 @@ async def ______(msg: Bot.MessageSession):
             required_superuser=True)
 async def _______(msg: Bot.MessageSession):
     group_id = msg.target.targetId
-    fetched = msg.parsed_msg['<json>']
-    if exist(group_id) and is_json(fetched):
+    fetched = json.loads(msg.parsed_msg['<json>'])
+    if exist(group_id):
         write(group_id, dict(itertools.chain(
-            read(group_id).items(), json.loads(fetched).items()))
+            read(group_id).items(), fetched.items()))
               )
+        await msg.sendMessage(f"已成功添加:\n{str(fetched.keys())}")
     elif not exist(group_id):
-        write(group_id, json.loads(msg.parsed_msg['<json>']))
+        write(group_id, json.loads(fetched))
+        await msg.sendMessage(f"已成功添加:\n{str(fetched.keys())}")
