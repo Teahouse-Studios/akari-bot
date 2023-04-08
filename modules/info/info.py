@@ -119,7 +119,7 @@ async def ______(msg: Bot.MessageSession):
         await msg.sendMessage('服务器不存在，请检查输入')
 
 
-@inf.handle('multi_bind <json> {绑定多个服务器}', options_desc={'输入格式(json)': '{"<name>": "<ServerUrl>"}'},
+@inf.handle('multi_bind <json> {绑定多个服务器}', options_desc={'multi_bind输入格式: json': '{"<name>": "<ServerUrl>"}'},
             required_superuser=True)
 async def _______(msg: Bot.MessageSession):
     group_id = msg.target.targetId
