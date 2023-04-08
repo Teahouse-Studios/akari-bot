@@ -22,8 +22,8 @@ wiki = module('wiki',
                   developers=['OasisAkari'])
 
 
-@wiki.handle('<PageName> [-l <lang>] {查询一个Wiki页面，若查询“随机页面”则随机一个页面。}',
-             options_desc={'-l': '查找本页面的对应语言版本，若无结果则返回当前语言。'})
+@wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
+             options_desc={'-l': '{wiki.help.l}'})
 async def _(msg: Bot.MessageSession):
     get_lang: dict = msg.parsed_msg.get('-l', False)
     if get_lang:
@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
 
 
-@wiki.handle('-p <PageID> [-i <CustomIW>]  {根据页面ID查询一个Wiki页面。}')
+@wiki.handle('id <PageID> [-i <CustomIW>]  {{wiki.id.help}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('-i', False):
         iw: str = msg.parsed_msg['-i'].get('<CustomIW>', '')
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         iw = ''
     page_id: str = msg.parsed_msg['<PageID>']
     if not page_id.isdigit():
-        await msg.finish('错误：页面ID必须是数字。')
+        await msg.finish(msg.locale.t('wiki.id.message.error'))
     Logger.debug(msg.parsed_msg)
     await query_pages(msg, pageid=page_id, iw=iw)
 
@@ -69,15 +69,13 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
     if start_wiki is None:
         if isinstance(session, Bot.MessageSession):
-            await session.sendMessage(
-                f'没有指定起始Wiki，已默认指定为中文Minecraft Wiki，发送{session.prefixes[0]}wiki set <域名>来设定自定义起始Wiki。'
-                f'\n例子：{session.prefixes[0]}wiki set https://minecraft.fandom.com/zh/wiki/')
+            await session.sendMessage(session.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if title is not None:
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
-            raise AbuseWarning('一次性查询的页面超出15个。')
+            raise AbuseWarning(session.locale.t('tos.reason.wiki_abuse'))
         query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
         for t in title:
             if prefix is not None and use_prefix:
@@ -147,7 +145,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd == '随机页面':
+                if rd in {'随机页面', '隨機頁面', 'Random'}:
                     tasks.append(asyncio.create_task(
                         WikiLib(q, headers).random_page()))
                 else:
@@ -179,11 +177,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     plain_slice = []
                     if display_before_title is not None and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
-                            plain_slice.append(
-                                f'（[{display_before_title}]不存在，已自动重定向至[{display_title}]）')
+                            plain_slice.append(session.locale.t('wiki.message.redirect.template_to_page', title=display_before_title, redirected_title=display_title))
                         else:
-                            plain_slice.append(
-                                f'（重定向[{display_before_title}] -> [{display_title}]）')
+                            plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title, redirected_title=display_title))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.link is not None:
@@ -247,24 +243,22 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
-                        plain_slice.append(
-                            f'此Wiki上没有名为{r.invalid_namespace}的命名空间，请检查拼写后再试。')
+                        plain_slice.append(session.locale.t('wiki.message.invalid_namespace'))
                     if r.before_page_property == 'template':
                         if r.before_title.split(':')[1].isupper():
-                            plain_slice.append(
-                                f'提示：机器人暂不支持魔术字。')
+                            plain_slice.append(session.locale.t('wiki.message.magic_word'))
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if wait_plain_slice:
                         wait_msg_list.append(
                             Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
-            raise AbuseWarning('使机器人重定向页面的次数过多。')
+            raise AbuseWarning(session.locale.t('tos.reason.too_many_redirects'))
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.sendMessage(f'发生错误：' + str(e))
+                await session.sendMessage(session.locale.t('error') + str(e))
             else:
-                msg_list.append(Plain(f'发生错误：' + str(e)))
+                msg_list.append(Plain(session.locale.t('error') + str(e)))
     if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all([not render_infobox_list, not render_section_list,
@@ -339,20 +333,20 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 wait_list_ = []
                 for w in wait_list:
                     for wd in w:
-                        preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
+                        preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=w[wd], redirected_title=wd))
                         wait_list_.append(wd)
                 if auto_index:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
-                            preset_message.append(f'（已指定[{wpk}]更正为[{keys[0]}]。）')
+                            preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=keys[0]))
                             wait_list_.append(keys[0])
                 else:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
                             if len(wp[wpk][keys[0]]) > index:
-                                preset_message.append(f'（已指定[{wpk}]更正为[{wp[wpk][keys[0]][index]}]。）')
+                                preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=wp[wpk][keys[0]][index]))
                                 wait_list_.append(wp[wpk][keys[0]][index])
 
                 if wait_list_:
