@@ -19,7 +19,7 @@
     "tos.warning.last": "这是对你的最后一次警告。",
     "parser.command.running.prompt": "当前有命令正在执行，请稍后再试。",
     "parser.command.running.prompt2": "先前的命令正在执行中。",
-    "parser.command.format.invalid": "语法错误。\n使用 ~help ${module} 查看帮助。",
+    "parser.command.format.invalid": "语法错误。\n使用 ${prefix}help ${module} 查看帮助。",
     "parser.sudo.permission.denied": "你不是本机器人的超级用户，无法使用 sudo 命令。",
     "parser.superuser.permission.denied": "你没有使用该命令的权限。",
     "parser.admin.module.permission.denied": "${module} 模块下的命令仅能被该群组的管理员所使用，请联系管理员执行此命令。",

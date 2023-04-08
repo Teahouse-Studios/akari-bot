@@ -240,7 +240,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
                                     await msg.sendMessage(msg.locale.t("parser.command.format.invalid",
-                                                                       module=command_first_word))
+                                                                       module=command_first_word, prefix=msg.prefixes[0]))
                                     """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,

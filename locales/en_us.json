@@ -19,7 +19,7 @@
     "tos.warning.last": "This is your last warning.",
     "parser.command.running.prompt": "There are currently commands running. Please try again later.",
     "parser.command.running.prompt2": "The previous command is being executed.",
-    "parser.command.format.invalid": "Syntax Error.\nUse \"~help ${module}\" for help.",
+    "parser.command.format.invalid": "Syntax Error.\nUse \"${prefix}help ${module}\" for help.",
     "parser.sudo.permission.denied": "You are not a superuser and cannot use the sudo command.",
     "parser.superuser.permission.denied": "You do not have permission to use this command.",
     "parser.admin.module.permission.denied": "Commands under the \"${module}\" module can only be used by the admins of the group. Please contact the admins to execute the command.",
