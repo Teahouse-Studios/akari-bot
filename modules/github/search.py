@@ -21,7 +21,7 @@ async def search(msg: Bot.MessageSession):
                 items_out.append(str(item['full_name'] + ': ' + str(Url(item['html_url']))))
             except TypeError:
                 continue
-        footnotes = msg.locale.t("github.search.message.more", more_result=result['total_count'] - 5) if item_count_expected == 5 else ''
+        footnotes = msg.locale.t("github.search.message.more_information", more_result=result['total_count'] - 5) if item_count_expected == 5 else ''
         message = msg.locale.t("github.search.message", result=result['total_count']) + '\n' + '\n'.join(
             items_out[0:item_count_expected]) + f'\n{footnotes}'
 

@@ -6,7 +6,7 @@
     "github.user.message.not_found": "查无此人，请检查输入。",
     "github.search.help": "搜索 GitHub 上的仓库。",
     "github.search.message": "搜索成功，共 ${result} 条结果：",
-    "github.search.message.more": "另有 ${more_result} 条结果未显示。",
+    "github.search.message.more_information": "另有 ${more_result} 条结果未显示。",
     "github.search.message.not_found": "找不到仓库，请检查输入。",
     "github.message.error": "发生错误：找不到仓库，请检查拼写是否正确。"
 }
