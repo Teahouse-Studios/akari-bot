@@ -1,12 +1,12 @@
 {
-    "github.help": "尝试自动识别并区分 repo/user。",
-    "github.repo.help": "获取 GitHub 仓库信息。",
-    "github.repo.message.not_found": "此仓库不存在，请检查输入。",
-    "github.user.help": "获取 GitHub 用户或组织信息。",
-    "github.user.message.not_found": "查无此人，请检查输入。",
-    "github.search.help": "搜索 GitHub 上的仓库。",
-    "github.search.message": "搜索成功，共 ${result} 条结果：",
-    "github.search.message.more": "另有 ${more_result} 条结果未显示。",
+    "github.help": "嘗試自動識別並區分 repo/user。",
+    "github.repo.help": "取得 Github 儲存庫資訊。",
+    "github.repo.message.not_found": "此儲存庫不存在，請檢查輸入。",
+    "github.user.help": "取得 Github 使用者或組織資訊。",
+    "github.user.message.not_found": "找不到使用者，請檢查輸入。",
+    "github.search.help": "搜尋 Github 上的儲存庫。",
+    "github.search.message": "搜尋成功，共 ${result} 條結果：",
     "github.search.message.not_found": "找不到仓库，请检查输入。",
-    "github.message.error": "发生错误：找不到仓库，请检查拼写是否正确。"
+    "github.message.error": "发生错误：找不到仓库，请检查拼写是否正确。",
+    "github.search.message.more_information": "另有 ${more_result} 條結果未顯示。"
 }
