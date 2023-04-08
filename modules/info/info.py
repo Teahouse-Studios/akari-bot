@@ -80,7 +80,7 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if exist(group_id):
-        list_ = re.sub(r'[{}]', '', str(read(group_id))).replace('\'', '').replace(', ', ', \n')
+        list_ = re.sub(r'[{}]', '', str(read(group_id))).replace('\'', '').replace(', ', ',\n').replace(': ', ' --> ')
         await msg.sendMessage('服务器列表:\n' + list_)
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
