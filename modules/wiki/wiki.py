@@ -333,20 +333,20 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 wait_list_ = []
                 for w in wait_list:
                     for wd in w:
-                        preset_message.append(f'（已指定[{w[wd]}]更正为[{wd}]。）')
+                        preset_message.append(msg.locale.t('wiki.message.redirect.autofix', title=w[wd], redirected_title=wd))
                         wait_list_.append(wd)
                 if auto_index:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
-                            preset_message.append(f'（已指定[{wpk}]更正为[{keys[0]}]。）')
+                            preset_message.append(msg.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=keys[0]))
                             wait_list_.append(keys[0])
                 else:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
                             if len(wp[wpk][keys[0]]) > index:
-                                preset_message.append(f'（已指定[{wpk}]更正为[{wp[wpk][keys[0]][index]}]。）')
+                                preset_message.append(msg.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=wp[wpk][keys[0]][index]))
                                 wait_list_.append(wp[wpk][keys[0]][index])
 
                 if wait_list_:

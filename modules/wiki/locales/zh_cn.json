@@ -58,6 +58,7 @@
     "wiki.id.help": "根据页面 ID 查询一个 Wiki 页面。",
     "wiki.id.message.error": "发生错误：页面 ID 必须是数字。",
     "wiki.message.redirect": "（重定向[${title}] -> [${redirected_title}]）",
+    "wiki.message.redirect.autofix": "（已指定[${title}]更正为[${redirected_title}]。）",
     "wiki.message.redirect.template_to_page": "（[${title}]不存在，已自动重定向至[${redirected_title}]）",
     "wiki.message.invalid_namespace": "此 Wiki 上没有名为${namespace}的命名空间，请检查拼写后重试。",
     "wiki.message.magic_word": "提示：机器人暂不支持魔术字。",
