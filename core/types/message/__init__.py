@@ -288,7 +288,7 @@ class FetchTarget:
         :param module_name: 模块名
         :param message: 消息文本
         :param user_list: 用户列表
-        :param i18n: 是否使用i18n，若为True则message为i18n的key
+        :param i18n: 是否使用i18n，若为True则message为i18n的key（或为指定语言的dict映射表（k=语言，v=文本））
         """
 
 

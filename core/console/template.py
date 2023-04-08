@@ -79,7 +79,7 @@ class Template(MS):
         self.session.message = c
         return self
 
-    def asDisplay(self):
+    def asDisplay(self, text_only=False):
         return self.session.message
 
     async def delete(self):

@@ -7,6 +7,8 @@ import ujson as json
 
 from .text import remove_suffix
 
+from config import Config
+
 
 # Load all locale files into memory
 
@@ -28,6 +30,7 @@ def flatten(d, parent_key='', sep='.'):
 
 
 def load_locale_file():
+    err_prompt = []
     locales_path = os.path.abspath('./locales')
     locales = os.listdir(locales_path)
     for l in locales:
@@ -39,14 +42,17 @@ def load_locale_file():
             if os.path.exists(f'{modules_path}/{m}/locales'):
                 locales_m = os.listdir(f'{modules_path}/{m}/locales')
                 for lm in locales_m:
-                    with open(f'{modules_path}/{m}/locales/{lm}', 'r', encoding='utf-8') as f:
-                        if remove_suffix(lm, '.json') in locale_cache:
-                            locale_cache[remove_suffix(lm, '.json')].update(flatten(json.load(f)))
-                        else:
-                            locale_cache[remove_suffix(lm, '.json')] = flatten(json.load(f))
+                    ml = f'{modules_path}/{m}/locales/{lm}'
+                    with open(ml, 'r', encoding='utf-8') as f:
+                        try:
+                            if remove_suffix(lm, '.json') in locale_cache:
+                                locale_cache[remove_suffix(lm, '.json')].update(flatten(json.load(f)))
+                            else:
+                                locale_cache[remove_suffix(lm, '.json')] = flatten(json.load(f))
+                        except Exception as e:
+                            err_prompt.append(f'Failed to load {ml}: {e}')
+    return err_prompt
 
-
-load_locale_file()
 
 
 class LocaleFile(TypedDict):
@@ -87,7 +93,7 @@ class Locale:
                 if string is not None:
                     return string  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed")
+            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'))
         else:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key

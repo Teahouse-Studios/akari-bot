@@ -9,7 +9,7 @@ import filetype
 from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
-from config import CachePath
+from config import CachePath, Config
 from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
     Url as U, ErrorMessage as EMsg
 
@@ -59,8 +59,7 @@ class ErrorMessage(EMsg):
                 for l in locale_str:
                     error_message = error_message.replace(f'{{{l}}}', locale.t(l))
             self.error_message = locale.t('error.prompt', error_msg=error_message) + \
-                                 str(Url(
-                                     'https://s.wd-ljt.com/botreportbug'))
+                                 str(Url(Config('bug_report_url')))
 
     def __str__(self):
         return self.error_message

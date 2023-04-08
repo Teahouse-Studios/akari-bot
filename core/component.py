@@ -106,7 +106,8 @@ def module(
     base: bool = False,
     required_superuser: bool = False,
     available_for: Union[str, list, tuple] = '*',
-    exclude_from: Union[str, list, tuple] = ''
+    exclude_from: Union[str, list, tuple] = '',
+    support_languages: Union[str, list, tuple] = None
 ):
     """
 
@@ -132,7 +133,8 @@ def module(
                     required_admin=required_admin,
                     required_superuser=required_superuser,
                     available_for=available_for,
-                    exclude_from=exclude_from)
+                    exclude_from=exclude_from,
+                    support_languages=support_languages)
     frame = inspect.currentframe()
     ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
     return Bind.Module(bind_prefix)

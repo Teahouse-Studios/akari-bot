@@ -243,7 +243,14 @@ class FetchTarget(FT):
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
                 else:
                     if i18n:
-                        await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
+                        if isinstance(message, dict):
+                            if (gm := message.get(fetch.parent.locale.locale)) is not None:
+                                await fetch_.sendDirectMessage(gm)
+                            else:
+                                await fetch_.sendDirectMessage(message.get('fallback'))
+                        else:
+                            await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
+
                     else:
                         await fetch_.sendDirectMessage(message)
                     if _tsk:
@@ -266,8 +273,8 @@ class FetchTarget(FT):
                             _tsk = []
                         fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
                         if fetch_base_superuser:
-                            await fetch_base_superuser.sendDirectMessage(
-                                '群消息发送被服务器拦截，已暂停群消息发送，使用~resume命令恢复推送。')
+                            await fetch_base_superuser.\
+                                sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused"))
             except Exception:
                 Logger.error(traceback.format_exc())
 

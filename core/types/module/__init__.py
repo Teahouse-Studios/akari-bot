@@ -27,7 +27,8 @@ class Module:
                  base: bool = False,
                  required_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
-                 exclude_from: Union[str, list, tuple] = ''):
+                 exclude_from: Union[str, list, tuple] = '',
+                 support_languages: Union[str, list, tuple] = None):
         self.bind_prefix: str = bind_prefix
         if isinstance(alias, str):
             alias = {alias: bind_prefix}
@@ -42,6 +43,7 @@ class Module:
         self.required_superuser: bool = required_superuser
         self.available_for: List[str] = convert2lst(available_for)
         self.exclude_from: List[str] = convert2lst(exclude_from)
+        self.support_languages: List[str] = convert2lst(support_languages)
         self.command_list = CommandMatches()
         self.regex_list = RegexMatches()
         self.schedule_list = ScheduleMatches()

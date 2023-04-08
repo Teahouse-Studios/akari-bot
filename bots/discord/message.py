@@ -193,7 +193,14 @@ class FetchTarget(FT):
             for x in user_list:
                 try:
                     if i18n:
-                        await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
+                        if isinstance(message, dict):
+                            if (gm := message.get(x.parent.locale.locale)) is not None:
+                                await x.sendDirectMessage(gm)
+                            else:
+                                await x.sendDirectMessage(message.get('fallback'))
+                        else:
+                            await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
+
                     else:
                         await x.sendDirectMessage(message)
                     if enable_analytics:
@@ -201,13 +208,20 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Discord")
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Telegram")
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
                         if i18n:
-                            await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
+                            if isinstance(message, dict):
+                                if (gm := message.get(fetch.parent.locale.locale)) is not None:
+                                    await fetch.sendDirectMessage(gm)
+                                else:
+                                    await fetch.sendDirectMessage(message.get('fallback'))
+                            else:
+                                await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
+
                         else:
                             await fetch.sendDirectMessage(message)
                         if enable_analytics:

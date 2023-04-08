@@ -1,3 +1,4 @@
+from config import Config
 from core.builtins import MessageSession
 from database import BotDBUtil
 
@@ -11,7 +12,7 @@ async def warn_target(msg: MessageSession, reason=None):
     if current_warns < 5:
         warn_template.append(msg.locale.t('tos.warning.count', current_warns=current_warns))
     if current_warns <= 2:
-        warn_template.append(msg.locale.t('tos.warning.appeal'))
+        warn_template.append(msg.locale.t('tos.warning.appeal', issue_url=Config('issue_url')))
     if current_warns == 5:
         warn_template.append(msg.locale.t('tos.warning.last'))
     if current_warns > 5:

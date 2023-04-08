@@ -1,6 +1,6 @@
 {
-    "random.help.desc": "Random number generator (cryptographically secure)",
     "random.help.number": "Generate a random integer within a given range.",
     "random.help.choice": "Select an element from a given set.",
-    "random.help.uuid": "Generate random UUID (v4)."
+    "random.help.uuid": "Generate random UUID (v4).",
+    "random.help.desc": "Random number generator (cryptographically secure)"
 }

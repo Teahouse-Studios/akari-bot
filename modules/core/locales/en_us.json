@@ -86,7 +86,7 @@
     "core.abuse.message.ban.success": "Successfully banned ${user}.",
     "core.abuse.message.unban.success": "Successfully unbanned ${user}.",
     "core.restart.message.wait": "There are ${count} command(s) being executed, the bot will reboot after the execution.",
-    "core.restart.message.restarting": "Restarting…",
+    "core.restart.message.restarting": "Restarting...",
     "core.restart.message.prompt": "As the robot is rebooting, you have been forced to cancel this execution command.\nPlease re-execute the command later.",
     "core.restart.message.timeout": "Wait timeout, force restarting...",
     "core.confirm": "Are you sure?",
@@ -132,5 +132,6 @@
     "core.leave.help": "Let the robot leave the group.",
     "core.leave.message": "Goodbye.",
     "core.leave.confirm": "Are you sure? This action is irreversible.",
-    "core.module.message.help.legacy.revoke": "[This message will be revoked after 1 minute]"
+    "core.module.message.help.legacy.revoke": "[This message will be revoked after 1 minute]",
+    "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly."
 }
