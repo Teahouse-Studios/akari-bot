@@ -18,17 +18,17 @@ async def _(msg: Bot.MessageSession):
         api = check.value.api
         if req.get('trust', False):
             res = Audit(api).add_to_AllowList(op)
-            list_name = '白'
+            list_name = msg.locale.t('wiki.wiki_audit.list_name.allowlist')
         else:
             res = Audit(api).add_to_BlockList(op)
-            list_name = '黑'
+            list_name = msg.locale.t('wiki.wiki_audit.list_name.blocklist')
         if not res:
-            await msg.finish(f'失败，此wiki已经存在于{list_name}名单中：' + api)
+            await msg.finish(msg.locale.t('wiki.wiki_audit.add.message.failed', list_name=list_name) + api)
         else:
-            await msg.finish(f'成功加入{list_name}名单：' + api)
+            await msg.finish(msg.locale.t('wiki.wiki_audit.add.message.success', list_name=list_name) + api)
     else:
-        result = '错误：无法添加此Wiki。' + \
-                 ('\n详细信息：' + check.message if check.message != '' else '')
+        result = msg.locale.t('wiki.message.error.add') + \
+                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -42,18 +42,18 @@ async def _(msg: Bot.MessageSession):
         if req.get('distrust', False):
             res = Audit(api).remove_from_AllowList()
             if res is None:
-                await msg.finish(f'失败，此wiki不存在于白名单中，此wiki的白名单可能来自其它同一域名的Wiki：' + api)
-            list_name = '白'
+                await msg.finish(msg.locale.t('wiki.wiki_audit.remove.message.failed.other') + api)
+            list_name = msg.locale.t('wiki.wiki_audit.list_name.allowlist')
         else:
             res = Audit(api).remove_from_BlockList()
-            list_name = '黑'
+            list_name = msg.locale.t('wiki.wiki_audit.list_name.blocklist')
         if not res:
-            await msg.finish(f'失败，此wiki不存在于{list_name}名单中：' + api)
+            await msg.finish(msg.locale.t('wiki.wiki_audit.remove.message.failed', list_name=list_name) + api)
         else:
-            await msg.finish(f'成功从{list_name}名单删除：' + api)
+            await msg.finish(msg.locale.t('wiki.wiki_audit.remove.message.success', list_name=list_name) + api)
     else:
-        result = '错误：无法查询此Wiki。' + \
-                 ('\n详细信息：' + check.message if check.message != '' else '')
+        result = msg.locale.t('wiki.message.error.query') + \
+                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -69,17 +69,17 @@ async def _(msg: Bot.MessageSession):
         block = audit.inBlockList
         msg_list = []
         if allow:
-            msg_list.append(api + '已存在于白名单。')
+            msg_list.append(api + msg.locale.t('wiki.wiki_audit.query.message.allowlist'))
         if block:
-            msg_list.append(api + '已存在于黑名单。')
+            msg_list.append(api + msg.locale.t('wiki.wiki_audit.query.message.blocklist'))
         if msg_list:
-            msg_list.append('优先级：白名单 > 黑名单')
+            msg_list.append(msg.locale.t('wiki.wiki_audit.query.message.conflict'))
             await msg.finish('\n'.join(msg_list))
         else:
-            await msg.finish(api + '不存在于任何名单。')
+            await msg.finish(api + msg.locale.t('wiki.wiki_audit.query.message.none'))
     else:
-        result = '错误：无法查询此Wiki。' + \
-                 ('\n详细信息：' + check.message if check.message != '' else '')
+        result = msg.locale.t('wiki.message.error.query') + \
+                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -93,29 +93,33 @@ async def _(msg: Bot.MessageSession):
         allow_columns = [[x[0], x[1]] for x in allow_list]
         if allow_columns:
             allow_table = ImageTable(data=allow_columns, headers=[
-                'APILink', 'Operator'])
+                msg.locale.t('wiki.wiki_audit.list.message.table.header.apilink'), 
+                msg.locale.t('wiki.wiki_audit.list.message.table.header.operator')
+                ])
             if allow_table:
                 allow_image = await image_table_render(allow_table)
                 if allow_image:
-                    send_msgs.append(Plain('现有白名单：'))
+                    send_msgs.append(Plain(msg.locale.t('wiki.wiki_audit.list.message.allowlist')))
                     send_msgs.append(Image(allow_image))
         block_columns = [[x[0], x[1]] for x in block_list]
         if block_columns:
             block_table = ImageTable(data=block_columns, headers=[
-                'APILink', 'Operator'])
+                msg.locale.t('wiki.wiki_audit.list.message.table.header.apilink'), 
+                msg.locale.t('wiki.wiki_audit.list.message.table.header.operator')
+                ])
             if block_table:
                 block_image = await image_table_render(block_table)
                 if block_image:
-                    send_msgs.append(Plain('现有黑名单：'))
+                    send_msgs.append(Plain(msg.locale.t('wiki.wiki_audit.list.message.blocklist')))
                     send_msgs.append(Image(block_image))
         if send_msgs:
             await msg.finish(send_msgs)
             legacy = False
     if legacy:
-        wikis = ['现有白名单：']
+        wikis = [msg.locale.t('wiki.wiki_audit.list.message.allowlist')]
         for al in allow_list:
             wikis.append(f'{al[0]}（by {al[1]}）')
-        wikis.append('现有黑名单：')
+        wikis.append(msg.locale.t('wiki.wiki_audit.list.message.blocklist'))
         for bl in block_list:
             wikis.append(f'{bl[0]}（by {bl[1]}）')
         await msg.finish('\n'.join(wikis))

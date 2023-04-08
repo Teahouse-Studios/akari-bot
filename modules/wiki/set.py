@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
 
 
-@wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}',
+@wiki.handle(['iw (list|show) {展示当前设置的Interwiki}',
               'iw (list|show) legacy {展示当前设置的Interwiki（旧版）}'])
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
@@ -106,7 +106,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
 
 
-@wiki.handle(['headers show {展示当前设置的headers}', 'headers list {headers show 的别名}'])
+@wiki.handle(['headers (list|show) {展示当前设置的headers}'])
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
