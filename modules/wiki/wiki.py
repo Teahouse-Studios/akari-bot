@@ -198,7 +198,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
-                                                          'Template:Disambiguation' in r.templates}})
+                                                          (r.templates is not None and
+                                                           'Template:Disambiguation' in r.templates)}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section,
