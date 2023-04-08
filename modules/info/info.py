@@ -5,7 +5,7 @@ from core.component import on_command
 from config import Config
 from .server import server
 import redis
-import ujson as json
+import json
 
 inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
                  desc='Minecraft服务器信息模块')
@@ -119,15 +119,14 @@ async def ______(msg: Bot.MessageSession):
         await msg.sendMessage('服务器不存在，请检查输入')
 
 
-@inf.handle('multi_bind <json> {绑定多个服务器}', options_desc={'multi_bind输入格式: json': '{"<name>": "<ServerUrl>"}'},
-            required_superuser=True)
+@inf.handle('multi_bind <json> {绑定多个服务器}', required_superuser=True)
 async def _______(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     fetched = json.loads(msg.parsed_msg['<json>'])
     if exist(group_id):
         write(group_id, dict(itertools.chain(
-            read(group_id).items(), fetched.items()))
-              )
+            read(group_id).items(), fetched.items()
+        )))
         await msg.sendMessage(f"已成功添加:\n{str(fetched.keys())}")
     elif not exist(group_id):
         write(group_id, json.loads(fetched))
