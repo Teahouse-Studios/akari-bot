@@ -6,6 +6,7 @@ from ast import literal_eval
 import redis
 import json
 import itertools
+import re
 
 inf = on_command('info', alias={'s': 'info url', 'server': 'info url'}, developers='haoye_qwq',
                  desc='Minecraft服务器信息模块')
@@ -79,8 +80,8 @@ async def _____(msg: Bot.MessageSession):
 async def __(msg: Bot.MessageSession):
     group_id = msg.target.targetId
     if exist(group_id):
-        list_ = read(group_id).keys()
-        await msg.sendMessage('服务器列表:\n' + ',\n'.join(list_))
+        list_ = re.sub(r'[{}]', '', str(read(group_id))).replace('\'', '').replace(', ', ', \n')
+        await msg.sendMessage('服务器列表:\n' + list_)
     else:
         await msg.sendMessage('列表中暂无服务器，请先绑定')
 
