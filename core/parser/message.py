@@ -381,7 +381,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             ExecutionLockList.remove(msg)
 
             except ActionFailed:
-                await msg.sendMessage((msg.locale.t("error.message.limited")')
+                await msg.sendMessage((msg.locale.t("error.message.limited")))
                 continue
         return msg
     except AbuseWarning as e:
