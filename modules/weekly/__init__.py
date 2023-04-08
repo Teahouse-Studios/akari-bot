@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     weekly = await get_weekly(True if msg.target.clientName in ['QQ', 'TEST'] else False,
                               zh_tw=True if msg.locale.locale == 'zh_tw' else False)
-    await msg.finish(Image(await msgchain2image(weekly)))
+    await msg.finish([Plain(msg.locale('weekly_rss.prompt'), Image(await msgchain2image(weekly)))])
 
 
 @wky.handle('teahouse {{weekly.teahouse.help}}')
