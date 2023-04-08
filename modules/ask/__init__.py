@@ -1,3 +1,4 @@
+from aiohttp import ClientSession
 from core.dirty_check import check_bool
 from core.builtins import Bot
 from core.component import module
@@ -17,7 +18,8 @@ async def _(msg: Bot.MessageSession):
         question = msg.matched_msg[0]
     if await check_bool(question):
         raise NoReportException('https://wdf.ink/6OUp')
-    res = agent_executor.run(question)
+    async with ClientSession() as session:
+        res = await agent_executor.arun(question)
     if await check_bool(res):
         raise NoReportException('https://wdf.ink/6OUp')
     await msg.finish(res)
