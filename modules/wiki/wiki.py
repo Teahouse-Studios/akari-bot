@@ -243,22 +243,22 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
-                        plain_slice.append(msg.locale.t('wiki.message.invalid_namespace'))
+                        plain_slice.append(session.locale.t('wiki.message.invalid_namespace'))
                     if r.before_page_property == 'template':
                         if r.before_title.split(':')[1].isupper():
-                            plain_slice.append(msg.locale.t('wiki.message.magic_word'))
+                            plain_slice.append(session.locale.t('wiki.message.magic_word'))
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if wait_plain_slice:
                         wait_msg_list.append(
                             Plain('\n'.join(wait_plain_slice)))
         except WhatAreUDoingError:
-            raise AbuseWarning(msg.locale.t('tos.reason.too_many_redirects'))
+            raise AbuseWarning(session.locale.t('tos.reason.too_many_redirects'))
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.sendMessage(msg.locale.t('error') + str(e))
+                await session.sendMessage(session.locale.t('error') + str(e))
             else:
-                msg_list.append(Plain(msg.locale.t('error') + str(e)))
+                msg_list.append(Plain(session.locale.t('error') + str(e)))
     if isinstance(session, Bot.MessageSession):
         if msg_list:
             if all([not render_infobox_list, not render_section_list,
