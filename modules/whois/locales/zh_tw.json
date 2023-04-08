@@ -3,7 +3,7 @@
     "whois.message.type": "類型：",
     "whois.message.postal_code": "郵編：",
     "whois.message.location": "位置：",
-    "whois.message.organization": "機構：",
+    "whois.message.organization": "組織：",
     "whois.message.asn": "ASN：",
     "whois.message.utc": "時區：",
     "whois.message.reverse": "反向解析：",
