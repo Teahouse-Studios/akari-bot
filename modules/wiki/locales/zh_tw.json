@@ -1,6 +1,6 @@
 {
-    "wiki.wiki_audit.list_name.blocklist": "黑名单",
-    "wiki.wiki_audit.list_name.allowlist": "白名单",
+    "wiki.wiki_audit.list_name.blocklist": "黑名單",
+    "wiki.wiki_audit.list_name.allowlist": "白名單",
     "wiki.wiki_audit.add.message.success": "成功加入${list_name}：",
     "wiki.wiki_audit.add.message.failed": "失败，此 Wiki 已存在于${list_name}中：",
     "wiki.wiki_audit.remove.message.success": "成功从${list_name}删除：",
