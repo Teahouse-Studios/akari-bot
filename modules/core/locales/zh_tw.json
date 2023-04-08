@@ -4,7 +4,7 @@
     "core.alias.help.reset": "重設自訂指令別名。",
     "core.alias.help.list": "列出自訂指令別名列表。",
     "core.alias.message.add.invalid_prefix": "新增的別名對應的指令必須以指令前綴開頭，請檢查。",
-    "core.alias.message.add.success": "已添加自訂指令別名：${arg1} -> ${arg2}",
+    "core.alias.message.add.success": "已新增自訂指令別名：${arg1} -> ${arg2}",
     "core.alias.message.add.already_in": "[${arg1}]別名已存在於自訂別名列表。",
     "core.alias.message.remove.success": "已移除自訂指令別名：${arg1}",
     "core.alias.message.remove.not_found": "[${arg1}]別名不存在於自訂別名列表。",
