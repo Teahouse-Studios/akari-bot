@@ -8,6 +8,7 @@ from typing import Dict, Union
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
+from core.utils.i18n import load_locale_file
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
 
 load_dir_path = os.path.abspath('./modules/')
@@ -44,6 +45,10 @@ def load_modules():
         openloadercache.write(err_prompt)
     else:
         openloadercache.write('')
+    locale_err = load_locale_file()
+    if locale_err:
+        locale_err.append('i18n:')
+        openloadercache.write('\n'.join(locale_err))
     openloadercache.close()
 
 
