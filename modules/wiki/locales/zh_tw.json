@@ -31,7 +31,7 @@
     "wiki.iw.list.help.legacy": "展示目前設定的 Interwiki。（舊版）",
     "wiki.iw.list.message": "使用 ${prefix}wiki iw get <Interwiki> 可以取得 Interwiki 對應的連結。",
     "wiki.iw.list.message.legacy": "目前設定了以下 Interwiki：",
-    "wiki.iw.list.message.more_information": "此處展示的是機器人設定的自訂 Interwiki，如需查看起始 Wiki 的 Interwiki，請見：${url}",
+    "wiki.iw.list.message.prompt": "此處展示的是機器人設定的自訂 Interwiki，如需查看起始 Wiki 的 Interwiki，請見：${url}",
     "wiki.iw.get.help": "取得設定的 Interwiki 對應的 API 地址。",
     "wiki.iw.get.message.not_found": "未找到 Interwiki：${iw}",
     "wiki.headers.list.help": "展示目前設定的請求標頭。",
