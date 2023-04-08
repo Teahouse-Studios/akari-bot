@@ -69,13 +69,13 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
     if start_wiki is None:
         if isinstance(session, Bot.MessageSession):
-            await session.sendMessage(msg.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
+            await session.sendMessage(session.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if title is not None:
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
-            raise AbuseWarning(msg.locale.t('tos.reason.wiki_abuse'))
+            raise AbuseWarning(session.locale.t('tos.reason.wiki_abuse'))
         query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
         for t in title:
             if prefix is not None and use_prefix:
@@ -177,9 +177,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     plain_slice = []
                     if display_before_title is not None and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
-                            plain_slice.append(msg.locale.t('wiki.message.redirect.template_to_page', title=display_before_title, redirected_title=display_title))
+                            plain_slice.append(session.locale.t('wiki.message.redirect.template_to_page', title=display_before_title, redirected_title=display_title))
                         else:
-                            plain_slice.append(msg.locale.t('wiki.message.redirect', title=display_before_title, redirected_title=display_title))
+                            plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title, redirected_title=display_title))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.link is not None:
@@ -318,7 +318,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             if session.Feature.voice:
                                 await session.sendMessage(Voice(dl), quote=False)
 
-        async def wait_confirm(msg: Bot.MessageSession):
+        async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
                 confirm = await session.waitNextMessage(wait_msg_list, delete=True)
                 auto_index = False
@@ -333,20 +333,20 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 wait_list_ = []
                 for w in wait_list:
                     for wd in w:
-                        preset_message.append(msg.locale.t('wiki.message.redirect.autofix', title=w[wd], redirected_title=wd))
+                        preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=w[wd], redirected_title=wd))
                         wait_list_.append(wd)
                 if auto_index:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
-                            preset_message.append(msg.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=keys[0]))
+                            preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=keys[0]))
                             wait_list_.append(keys[0])
                 else:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
                             if len(wp[wpk][keys[0]]) > index:
-                                preset_message.append(msg.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=wp[wpk][keys[0]][index]))
+                                preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=wp[wpk][keys[0]][index]))
                                 wait_list_.append(wp[wpk][keys[0]][index])
 
                 if wait_list_:
