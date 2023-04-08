@@ -228,22 +228,22 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         f'（请直接发送“是”字来确认，发送其他内容则代表取消获取。）')
                             else:
                                 if r.edit_link is not None:
-                                    plain_slice.append(r.edit_link + '（页面不存在）')
+                                    plain_slice.append(r.edit_link + session.locale.t('wiki.redlink.message.not_found'))
                                 else:
-                                    plain_slice.append(f'{display_before_title}页面不存在。')
+                                    plain_slice.append(session.locale.t('wiki.redlink.message.not_found.uneditable', title=display_before_title))
                         else:
                             wait_plain_slice.append(
                                 f'提示：[{display_before_title}]不存在，您可能要找的是：[{display_title}]。')
                         if len(r.possible_research_title) == 1:
                             wait_list.append({display_title: display_before_title})
                     elif r.before_title is not None:
-                        plain_slice.append(f'提示：找不到[{display_before_title}]。')
+                        plain_slice.append(session.locale.t('wiki.message.not_found', title=display_before_title))
                     elif r.id != -1:
-                        plain_slice.append(f'提示：找不到ID为{str(r.id)}的页面。')
+                        plain_slice.append(session.locale.t('wiki.id.message.not_found', id=str(r.id)))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
-                        plain_slice.append(session.locale.t('wiki.message.invalid_namespace'))
+                        plain_slice.append(session.locale.t('wiki.message.invalid_namespace', namespace=r.invalid_namespace))
                     if r.before_page_property == 'template':
                         if r.before_title.split(':')[1].isupper():
                             plain_slice.append(session.locale.t('wiki.message.magic_word'))
