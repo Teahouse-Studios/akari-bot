@@ -1,3 +1,5 @@
+import itertools
+
 from core.builtins import Bot
 from core.component import on_command
 from config import Config
@@ -38,6 +40,14 @@ def delete(id_group: str, name: str):
         return True
     else:
         return False
+
+
+def is_json(json_):
+    try:
+        json.loads(json_)
+    except ValueError:
+        return False
+    return True
 
 
 @inf.handle('bind <name> <ServerUrl> {绑定服务器}', required_admin=True)
@@ -107,3 +117,16 @@ async def ______(msg: Bot.MessageSession):
         await msg.sendMessage('已删除')
     else:
         await msg.sendMessage('服务器不存在，请检查输入')
+
+
+@inf.handle('multi_bind <json> {绑定多个服务器}', options_desc={'输入格式(json)': '{"<name>": "<ServerUrl>"}'},
+            required_superuser=True)
+async def _______(msg: Bot.MessageSession):
+    group_id = msg.target.targetId
+    fetched = msg.parsed_msg['<json>']
+    if exist(group_id) and is_json(fetched):
+        write(group_id, dict(itertools.chain(
+            read(group_id).items(), json.loads(fetched).items()))
+              )
+    elif (not exist(group_id)) and is_json(fetched):
+        write(group_id, json.loads(msg.parsed_msg['<json>']))
