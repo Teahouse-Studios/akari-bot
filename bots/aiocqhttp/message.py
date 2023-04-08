@@ -273,7 +273,8 @@ class FetchTarget(FT):
                             _tsk = []
                         fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
                         if fetch_base_superuser:
-                            await fetch_base_superuser.sendDirectMessage(msg.locale.t("error.message.paused"))
+                            await fetch_base_superuser.\
+                                sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused"))
             except Exception:
                 Logger.error(traceback.format_exc())
 
