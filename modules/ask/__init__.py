@@ -2,7 +2,7 @@ from aiohttp import ClientSession
 from core.dirty_check import check_bool
 from core.builtins import Bot
 from core.component import module
-from .AkariAgent import agent_executor
+from modules.ask.agent import agent_executor
 
 from core.exceptions import NoReportException
 
