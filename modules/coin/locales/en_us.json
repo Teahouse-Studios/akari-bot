@@ -3,7 +3,7 @@
     "coin.help": "Toss any number of coins.",
     "coin.error": "An error occurred: ",
     "coin.error.amount": "An error occurred: Invalid number of coins: ",
-    "coin.error.max": "An error occurred: You can only toss ${max} coins.",
+    "coin.error.max": "An error occurred: You can only toss at most ${max} coins at one time.",
     "coin.error.nocoin": "An error occurred: You toss no coin, and nothing happened...",
     "coin.error.rate": "An error occurred: Coin probability error.",
     "coin.drop_place": "It dropped to ${drop_place}...",
