@@ -205,7 +205,7 @@ servers:
 
 由于小可有着许多的功能，部分功能需要进一步的配置才能使用。
 
-部分字段可能并未预设于 `config.yml.example` 中，手动添加即可。
+部分字段可能并未预设于 `config.cfg.example` 中，手动添加即可。
 
 ### 屏蔽词
 
@@ -297,6 +297,8 @@ assets
 
 `base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami`
 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
+
+`redis =` - redis数据库链接，用于info模块数据存放，格式为`<ip|domain>:<port>`
 
 `slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
