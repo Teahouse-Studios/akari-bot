@@ -14,7 +14,7 @@ async def _(msg: Bot.MessageSession):
     await search_pages(msg, msg.parsed_msg['<PageName>'])
 
 
-async def search_pages(session: Bot.MessageSession, title: Union[str, list, tuple], use_prefix=True):
+async def search_pages(msg: Bot.MessageSession, session: Bot.MessageSession, title: Union[str, list, tuple], use_prefix=True):
     target = WikiTargetInfo(session)
     start_wiki = target.get_start_wiki()
     interwiki_list = target.get_interwikis()
