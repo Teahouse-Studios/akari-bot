@@ -13,6 +13,7 @@ from core.builtins import Url
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.i18n import Locale
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 
@@ -37,11 +38,12 @@ class WhatAreUDoingError(Exception):
 
 
 class QueryInfo:
-    def __init__(self, api, headers=None, prefix=None):
+    def __init__(self, api, headers=None, prefix=None, locale=None):
         self.api = api
         self.headers = headers if headers is not None else {
             'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
         self.prefix = prefix
+        self.locale = Locale(locale if locale is not None else 'zh_cn')
 
 
 class WikiInfo:
