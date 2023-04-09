@@ -174,7 +174,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
                         if module.desc is not None:
                             desc_ = module.desc
-                            if locale_str := re.findall(r'\{(.*)}', desc_): 
+                            if locale_str := re.findall(r'\{(.*)}', desc_):
                                 for l in locale_str:
                                     desc_ = desc_.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                             desc = msg.locale.t("parser.module.desc", desc=desc_)
