@@ -18,7 +18,7 @@ meme = module(
 async def _(msg: Bot.MessageSession):
 #   res_jiki = await jiki(msg.parsed_msg['<term>'])
 #   R.I.P. jikipedia
-    res_moegirl = await moegirl(msg)
+    res_moegirl = await moegirl(msg.parsed_msg['<term>'], msg.locale.locale)
     res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'])
     res_urban = await urban(msg.parsed_msg['<term>'])
     chk = await check(res_moegirl, res_nbnhhsh, res_urban)
