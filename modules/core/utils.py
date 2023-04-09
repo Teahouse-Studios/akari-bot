@@ -24,7 +24,7 @@ async def bot_version(msg: Bot.MessageSession):
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     open_version = open(ver, 'r')
     open_tag = open(tag, 'r')
-    msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）\n仓库为\'https://github.com/cloudw233/akari-haoye-bot\''
+    msgs = f'当前运行的代码版本号为：{open_tag.read()}（{open_version.read()}）\n（https://github.com/cloudw233/akari-haoye-bot）'
     open_version.close()
     await msg.finish(msgs, msgs)
 
