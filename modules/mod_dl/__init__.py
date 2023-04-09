@@ -8,7 +8,7 @@ from config import Config
 
 mod_dl = module(
     bind_prefix='mod_dl',
-    desc='下载 CurseForge 和 Mdorinth 上的 Mod。',
+    desc='下载 CurseForge 和 Modrinth 上的 Mod。',
     developers=['HornCopper', 'OasisAkari', 'z0z0r4'],
     recommend_modules=['mcmod'],
     alias='moddl')
@@ -152,7 +152,9 @@ async def main(msg: Bot.MessageSession):
                     reply_text = []
                     for version in version_index:
                         reply_text.append(version["gameVersion"])
-                    reply2 = await msg.waitReply('此mod拥有如下版本：\n' + '\n'.join(reply_text) + '\n请回复版本号来选择版本。')
+                    reply2 = await msg.waitReply('此mod拥有如下版本：\n' + 
+                                                 '\n'.join(reply_text) + 
+                                                 '\n请回复版本号来选择版本。')
                     ver = reply2.asDisplay(text_only=True)
                 elif ver not in version_index:
                     await msg.finish("未找到指定版本。")
@@ -160,6 +162,8 @@ async def main(msg: Bot.MessageSession):
                 if ver in version_index:
                     file_info = await get_curseforge_mod_file(mod_info[2], ver)
                     if file_info is not None:
-                        await msg.finish(f'{" ".join(file_info["gameVersions"])}\n下载链接：{file_info["downloadUrl"]}\n文件名：{file_info["fileName"]}')
+                        await msg.finish(f'{" ".join(file_info["gameVersions"])} \
+                                         \n下载链接：{file_info["downloadUrl"]} \
+                                         \n文件名：{file_info["fileName"]}')
                 else:
                     await msg.finish("未找到指定版本。")
