@@ -34,13 +34,14 @@ def private_ip_check(url: str):
             f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
 
-async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=None, timeout=20, attempt=3,
+async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20, attempt=3,
                   request_private_ip=False, logging_err_resp=True):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
     :param headers: 请求时使用的http头。
+    :param params: 请求时使用的参数。
     :param fmt: 指定返回的格式。
     :param timeout: 超时时间。
     :param attempt: 指定请求尝试次数。
@@ -60,7 +61,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, fmt=
                                          connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
-                                       proxy=proxy) as req:
+                                       proxy=proxy, params=params) as req:
                     Logger.debug(f'[{req.status}] {url}')
                     if logging_resp:
                         Logger.debug(await req.read())
