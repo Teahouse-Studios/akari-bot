@@ -405,7 +405,7 @@ async def modules_help(msg: Bot.MessageSession):
                 appends = [module_.bind_prefix]
                 doc_ = []
                 help_ = CommandParser(
-                    module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes)
+                    module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes, msg=msg)
                 if module_.desc is not None:
                     doc_.append(module_.desc)
                 if help_.args:

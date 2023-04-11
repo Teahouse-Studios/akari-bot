@@ -51,6 +51,7 @@ def load_locale_file():
                                 locale_cache[remove_suffix(lm, '.json')] = flatten(json.load(f))
                         except Exception as e:
                             err_prompt.append(f'Failed to load {ml}: {e}')
+
     return err_prompt
 
 
