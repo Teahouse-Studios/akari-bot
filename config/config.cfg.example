@@ -9,7 +9,7 @@ dc_token =
 tg_token =
 openai_api_key =
 nl2c_model =
-
+curseforge_api_key =
 
 [cfg]
 debug = False
