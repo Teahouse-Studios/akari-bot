@@ -14,6 +14,7 @@ from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import query_pages, generate_screenshot_v2_blocklist
 
+
 wiki_inline = module('wiki_inline',
                      desc='{wiki.wiki_inline.help.desc}',
                      alias='wiki_regex', developers=['OasisAkari'])

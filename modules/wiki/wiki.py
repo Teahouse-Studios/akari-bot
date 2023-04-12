@@ -177,9 +177,11 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     plain_slice = []
                     if display_before_title is not None and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
-                            plain_slice.append(session.locale.t('wiki.message.redirect.template_to_page', title=display_before_title, redirected_title=display_title))
+                            plain_slice.append(session.locale.t('wiki.message.redirect.template_to_page',
+                                                                title=display_before_title, redirected_title=display_title))
                         else:
-                            plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title, redirected_title=display_title))
+                            plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
+                                                                redirected_title=display_title))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.link is not None:

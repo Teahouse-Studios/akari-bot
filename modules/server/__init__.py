@@ -26,24 +26,21 @@ async def main(msg: Bot.MessageSession):
         is_local_ip = True
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
     if matchserip:
-        try:
-            if matchserip.group(1) == '192':
-                if matchserip.group(2) == '168':
-                    is_local_ip = True
-            if matchserip.group(1) == '172':
-                if 16 <= int(matchserip.group(2)) <= 31:
-                    is_local_ip = True
-            if matchserip.group(1) == '10':
-                if 0 <= int(matchserip.group(2)) <= 255:
-                    is_local_ip = True
-            if matchserip.group(1) == '127':
+        if matchserip.group(1) == '192':
+            if matchserip.group(2) == '168':
                 is_local_ip = True
-            if matchserip.group(1) == '0':
-                if matchserip.group(2) == '0':
-                    if matchserip.group(3) == '0':
-                        is_local_ip = True
-        except:
-            traceback.print_exc()
+        if matchserip.group(1) == '172':
+            if 16 <= int(matchserip.group(2)) <= 31:
+                is_local_ip = True
+        if matchserip.group(1) == '10':
+            if 0 <= int(matchserip.group(2)) <= 255:
+                is_local_ip = True
+        if matchserip.group(1) == '127':
+            is_local_ip = True
+        if matchserip.group(1) == '0':
+            if matchserip.group(2) == '0':
+                if matchserip.group(3) == '0':
+                    is_local_ip = True
     if is_local_ip:
         return await msg.sendMessage(msg.locale.t('server.message.local_ip'))
     sm = ['j', 'b']
