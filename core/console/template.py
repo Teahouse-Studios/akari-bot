@@ -7,7 +7,7 @@ from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import Session, MsgInfo, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS
+    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS, AutoSession
 
 
 class FinishedSession(FinS):
@@ -78,6 +78,21 @@ class Template(MS):
             await send.delete()
         self.session.message = c
         return self
+
+    async def waitReply(self, msgchain, quote=True, all_=False, append_instruction=True):
+        msgchain = MessageChain(msgchain)
+        if append_instruction:
+            msgchain.append(Plain(self.locale.t("message.reply.prompt")))
+        send = await self.sendMessage(msgchain, quote)
+        c = input('Reply: ')
+        return Template(target=MsgInfo(targetId='TEST|Console|0',
+                                       senderId='TEST|0',
+                                       senderName='',
+                                       targetFrom='TEST|Console',
+                                       senderFrom='TEST', clientName='TEST', messageId=0,
+                                       replyId=None),
+                        session=AutoSession(message=c, target='TEST|Console|0', sender='TEST|0',
+                                            auto_interactions=None))
 
     def asDisplay(self, text_only=False):
         return self.session.message
@@ -151,4 +166,3 @@ class FetchTarget(FT):
 
 Bot.MessageSession = Template
 Bot.FetchTarget = FetchTarget
-

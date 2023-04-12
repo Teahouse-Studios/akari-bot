@@ -1,5 +1,6 @@
 import re
 import asyncio
+import traceback
 
 from core.builtins import Bot
 from core.component import module
@@ -56,16 +57,17 @@ async def main(msg: Bot.MessageSession):
         url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
         if ver:
             url += f'&gameVersion={ver}'
-        
-        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-        if resp is not None:
-            if resp["pagination"]["resultCount"] == 0:
-                return None
-            results = []
-            for mod in resp["data"]:
-                results.append(("curseforge", mod["name"], mod["id"], None))
-            
-            return results
+        results = []
+        try:
+            resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+            if resp is not None:
+                if resp["pagination"]["resultCount"] == 0:
+                    return None
+                for mod in resp["data"]:
+                    results.append(("curseforge", mod["name"], mod["id"], None))
+        except Exception:
+            traceback.print_exc()
+        return results
     
     async def get_modrinth_project_version(project_id: str, ver: str):
         url = f'https://api.modrinth.com/v2/project/{project_id}/version?game_versions=["{ver}"]&featured=true'
@@ -89,9 +91,12 @@ async def main(msg: Bot.MessageSession):
             'x-api-key': x_api_key
         }
         url = f'https://api.curseforge.com/v1/mods/{modid}/files?gameVersion={ver}'
-        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-        if resp is not None:
-            return resp["data"][0]
+        try:
+            resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+            if resp is not None:
+                return resp["data"][0]
+        except Exception:
+            traceback.print_exc()
         
     # 搜索 Mod
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
