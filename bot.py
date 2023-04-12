@@ -124,7 +124,7 @@ if __name__ == '__main__':
     logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).first()
     if query_dbver is None:
-        session.add_all([DBVersion(value='2')])
+        session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
     if (current_ver := int(query_dbver.value)) < (target_ver := BotDBUtil.database_version):

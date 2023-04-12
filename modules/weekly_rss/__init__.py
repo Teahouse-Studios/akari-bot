@@ -39,5 +39,12 @@ async def weekly_rss():
     Logger.info('Checking teahouse weekly...')
 
     weekly = await get_teahouse_rss()
-    await Bot.FetchTarget.post_message('teahouse_weekly_rss', weekly)
+    if Bot.FetchTarget.name == 'QQ':
+        weekly_cn = [Plain(Locale('zh_cn').t('weekly_rss.teahouse.prompt'))] + weekly
+        weekly_tw = [Plain(Locale('zh_tw').t('weekly_rss.teahouse.prompt'))] + weekly
+        weekly_en = [Plain(Locale('en_us').t('weekly_rss.teahouse.prompt'))] + weekly
+        post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'en_us': weekly_en, 'fallback': weekly_cn}
+        await Bot.FetchTarget.post_message('teahouse_weekly_rss', post_msg, i18n=True)
+    else:
+        await Bot.FetchTarget.post_message('teahouse_weekly_rss', weekly)
     Logger.info('Teahouse Weekly checked.')
