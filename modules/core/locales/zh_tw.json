@@ -121,11 +121,11 @@
     "core.whoami.message.superuser": "（你擁有此機器人的超級使用者權限）",
     "core.whoami.message": "你的 ID 是：${senderid}\n此對話的 ID 是：${targetid}",
     "core.toggle.help.typing": "切換是否顯示輸入提醒。",
-    "core.toggle.message.typing.disable": "成功停用輸入提醒。",
-    "core.toggle.message.typing.enable": "成功啟用輸入提醒。",
+    "core.toggle.message.typing.disable": "已停用輸入提醒。",
+    "core.toggle.message.typing.enable": "已啟用輸入提醒。",
     "core.toggle.help.check": "切換是否顯示指令錯誤檢查提醒。",
-    "core.toggle.message.check.disable": "成功停用指令錯誤檢查提醒。",
-    "core.toggle.message.check.enable": "成功啟用指令錯誤檢查提醒。",
+    "core.toggle.message.check.disable": "已停用指令錯誤檢查提醒。",
+    "core.toggle.message.check.enable": "已啟用指令錯誤檢查提醒。",
     "core.mute.help": "使機器人停止發言。",
     "core.mute.message.disable": "成功取消靜音。",
     "core.mute.message.enable": "成功靜音。",
@@ -133,5 +133,7 @@
     "core.leave.message": "已執行，再見。",
     "core.leave.confirm": "你確定嗎？此行為不可逆。",
     "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]",
-    "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援當前語言，此模組可能不會正確展示當前語言下的內容。"
+    "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援當前語言，此模組可能不會正確展示當前語言下的內容。",
+    "core.petal.help": "获取当前群组的花瓣数。",
+    "core.petal.message": "当前群组的花瓣数为：${petal}"
 }
