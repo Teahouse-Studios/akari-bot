@@ -121,11 +121,11 @@
     "core.whoami.message.superuser": "(You have superuser permission)",
     "core.whoami.message": "Your ID is: ${senderid}\nThe ID of this conversation is: ${targetid}",
     "core.toggle.help.typing": "Toggle whether to display input prompts.",
-    "core.toggle.message.typing.disable": "Input prompt successfully disabled.",
-    "core.toggle.message.typing.enable": "Input prompt successfully enabled.",
+    "core.toggle.message.typing.disable": "Input prompt disabled.",
+    "core.toggle.message.typing.enable": "Input prompt enabled.",
     "core.toggle.help.check": "Toggles whether to display command check prompts.",
-    "core.toggle.message.check.disable": "Check prompt successfully disabled.",
-    "core.toggle.message.check.enable": "Check prompt successfully enabled.",
+    "core.toggle.message.check.disable": "Check prompt disabled.",
+    "core.toggle.message.check.enable": "Check prompt enabled.",
     "core.mute.help": "Make the robot stop sending message.",
     "core.mute.message.disable": "Successfully unmuted.",
     "core.mute.message.enable": "Successfully muted.",
@@ -133,5 +133,7 @@
     "core.leave.message": "Goodbye.",
     "core.leave.confirm": "Are you sure? This action is irreversible.",
     "core.module.message.help.legacy.revoke": "[This message will be revoked after 1 minute]",
-    "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly."
+    "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly.",
+    "core.petal.help": "Get the number of petals in the current group.",
+    "core.petal.message": "${petal} petals remains in the current group."
 }
