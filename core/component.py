@@ -117,7 +117,7 @@ def module(
     :param desc: 此命令的简介。
     :param recommend_modules: 推荐打开的其他模块。
     :param developers: 模块作者。
-    :param required_admin: 此命令是否需要群聊管理员权限。
+    :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
     :param available_for: 此命令支持的平台列表。
