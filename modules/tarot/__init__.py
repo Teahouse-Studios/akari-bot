@@ -22,6 +22,6 @@ async def _(send: Bot.MessageSession):
     elif selected_facing == "negative":
         plain_ = preprocessed_taro_data["name"] + '\n逆位\n' + preprocessed_taro_data["negative"]
         img_ = reverse_img(preprocessed_taro_data["imageName"])
-    send = await send.sendMessage([Plain(plain_+'\n[30秒后撤回]'), Image(img_)])
+    msg = await send.sendMessage([Plain(plain_+'\n[30秒后撤回]'), Image(img_)])
     await send.sleep(30)
-    await send.delete()
+    await msg.delete()
