@@ -35,6 +35,7 @@ async def _(msg: Bot.MessageSession):
     with get_openai_callback() as cb:
         res = await agent_executor.arun(question)
         tokens = cb.total_tokens
+    # TODO: REMEMBER TO UNCOMMENT THIS BEFORE LAUNCH!!!!
     # if not is_superuser:
     #     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     #     petal = price * USD_TO_CNY * CNY_TO_PETAL
