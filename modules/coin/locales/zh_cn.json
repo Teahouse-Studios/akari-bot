@@ -21,7 +21,7 @@
     "coin.mix.tail": "${tail} 枚是反面",
     "coin.mix.stand": "…还有 ${stand} 枚立起来了！",
     "coin.mix.end": "。",
-    "coin_regex.help": "启用后将在发送的聊天内容匹配以下信息时执行对应命令：\n",
+    "coin_regex.help": "打开后将在发送的聊天内容匹配以下信息时执行对应命令：\n",
     "coin.stand": "…它立起来了！",
     "coin.stand.all": "它们…\n…全都立起来了？！"
 }
