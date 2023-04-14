@@ -10,7 +10,7 @@ def update_database():
     session = Session.session
     version = session.query(DBVersion).first()
     value = int(version.value)
-    if value == 1:
+    if value < 2:
         TargetInfo.__table__.drop(engine)
         TargetInfo.__table__.create(engine)
         q = session.execute("SELECT * FROM enabledModules")
@@ -42,4 +42,9 @@ def update_database():
         session.execute("DROP TABLE IF EXISTS enabledModules, targetOptions, mutelist, targetadmin")
 
         version.value = '2'
+        session.commit()
+    if value < 3:
+        session.execute("ALTER TABLE TargetInfo ADD column petal INTEGER DEFAULT 0")
+
+        version.value = '3'
         session.commit()

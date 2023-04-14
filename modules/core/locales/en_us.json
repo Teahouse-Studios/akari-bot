@@ -133,5 +133,7 @@
     "core.leave.message": "Goodbye.",
     "core.leave.confirm": "Are you sure? This action is irreversible.",
     "core.module.message.help.legacy.revoke": "[This message will be revoked after 1 minute]",
-    "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly."
+    "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly.",
+    "core.petal.help": "Get the number of petals in the current group.",
+    "core.petal.message": "${petal} petals remains in the current group."
 }

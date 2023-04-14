@@ -27,7 +27,7 @@ from core.logger import Logger
 
 query_dbver = session.query(DBVersion).first()
 if query_dbver is None:
-    session.add_all([DBVersion(value='2')])
+    session.add_all([DBVersion(value='3')])
     session.commit()
     query_dbver = session.query(DBVersion).first()
 

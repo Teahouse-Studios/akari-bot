@@ -200,3 +200,20 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         await msg.sendMessage(msg.locale.t('core.leave.message'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
+
+
+
+petal = module('petal', developers=['Dianliang233'], base=True, alias={'petals': 'petal'},
+               desc='{core.petal.help}')
+
+
+@petal.handle()
+async def _(msg: Bot.MessageSession):
+    await msg.finish(msg.locale.t('core.petal.message', petal=msg.data.petal))
+
+
+@petal.handle('modify <petal>')
+async def _(msg: Bot.MessageSession):
+    petal = msg.parsed_msg['<petal>']
+    msg.data.modify_petal(int(petal))
+    await msg.finish(msg.locale.t('core.petal.message', petal=msg.data.petal))

@@ -26,6 +26,7 @@ class TargetInfo(Base):
     custom_admins = Column(LONGTEXT if is_mysql else Text, default='[]')
     muted = Column(Boolean, default=False)
     locale = Column(String(512), default='zh_cn')
+    petal = Column(Integer, default=0)
 
 
 class StoredData(Base):

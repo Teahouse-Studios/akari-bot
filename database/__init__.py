@@ -24,10 +24,10 @@ def auto_rollback_error(func):
 
 
 class BotDBUtil:
-    database_version = 2
+    database_version = 3
 
     class TargetInfo:
-        def __init__(self, msg: [MessageSession, FetchTarget, str]):
+        def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
             if isinstance(msg, (MessageSession, FetchTarget)):
                 self.targetId = str(msg.target.targetId)
             else:
@@ -197,6 +197,24 @@ class BotDBUtil:
             if id_prefix is not None:
                 filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
             return session.query(TargetInfo).filter(*filter_).all()
+
+        @property
+        def petal(self):
+            if self.query is None:
+                return 0
+            return self.query.petal
+
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def modify_petal(self, amount: int) -> bool:
+            if self.query is None:
+                self.query = self.init()
+            petal = self.petal
+            new_petal = petal + amount
+            self.query.petal = new_petal
+            session.commit()
+            return True
+
 
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
