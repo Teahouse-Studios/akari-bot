@@ -121,11 +121,11 @@
     "core.whoami.message.superuser": "（你拥有本机器人的超级用户权限）",
     "core.whoami.message": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.toggle.help.typing": "切换是否展示输入提示。",
-    "core.toggle.message.typing.disable": "成功关闭输入提示。",
-    "core.toggle.message.typing.enable": "成功打开输入提示。",
+    "core.toggle.message.typing.disable": "已禁用输入提示。",
+    "core.toggle.message.typing.enable": "已启用输入提示。",
     "core.toggle.help.check": "切换是否展示命令错字检查提示。",
-    "core.toggle.message.check.disable": "成功关闭错字检查提示。",
-    "core.toggle.message.check.enable": "成功打开错字检查提示。",
+    "core.toggle.message.check.disable": "已禁用错字检查提示。",
+    "core.toggle.message.check.enable": "已启用错字检查提示。",
     "core.mute.help": "使机器人停止发言。",
     "core.mute.message.disable": "成功取消禁言。",
     "core.mute.message.enable": "成功禁言。",
@@ -133,5 +133,7 @@
     "core.leave.message": "已执行，再见。",
     "core.leave.confirm": "你确定吗？此操作不可逆。",
     "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
-    "core.module.message.enable.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。"
+    "core.module.message.enable.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",
+    "core.petal.help": "获取当前群组的花瓣数。",
+    "core.petal.message": "当前群组的花瓣数为：${petal}"
 }
