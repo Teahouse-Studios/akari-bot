@@ -25,11 +25,22 @@ async def _(session: MessageSession):
 @test.command('reply')
 async def _(session: MessageSession):
     #  >>> ~test reply
-    #  <<< Send a word
-    #  >>> Hello World!
+    #  <<< Reply me!
+    #  >>> Hello World! >> [Reply me!]
     #  <<< Hello World!
     s = await session.waitReply('Send a word')
     await s.sendMessage(s.asDisplay())
+
+
+@test.command('confirm')
+async def _(session: MessageSession):
+    #  >>> ~test confirm
+    #  <<< Are you sure?
+    #  >>> Yes
+    #  <<< OK!
+    s = await session.waitConfirm('Are you sure?')
+    if s:
+        await s.sendMessage('OK!')
 
 
 @test.command('image')

@@ -8,6 +8,7 @@ from core.component import module
 from core.utils.http import get_url
 from core.utils.i18n import Locale
 from .teahouse import get_rss as get_teahouse_rss
+from core.utils.image import msgchain2image
 
 
 async def get_weekly(with_img=False, zh_tw=False):
@@ -42,12 +43,25 @@ wky = module('weekly', developers=['Dianliang233'], support_languages=['zh_cn', 
 
 @wky.handle('{{weekly.help}}')
 async def _(msg: Bot.MessageSession):
-    weekly = await get_weekly(True if msg.target.clientName == 'QQ' else False,
+    weekly = await get_weekly(True if msg.target.clientName in ['QQ', 'TEST'] else False,
                               zh_tw=True if msg.locale.locale == 'zh_tw' else False)
     await msg.finish(weekly)
+
+
+@wky.handle('image {{weekly.image.help}}')
+async def _(msg: Bot.MessageSession):
+    weekly = await get_weekly(True if msg.target.clientName in ['QQ', 'TEST'] else False,
+                              zh_tw=True if msg.locale.locale == 'zh_tw' else False)
+    await msg.finish(Image((await msgchain2image([Plain(msg.locale.t('weekly_rss.prompt'))] + weekly))))
 
 
 @wky.handle('teahouse {{weekly.teahouse.help}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     await msg.finish(weekly)
+
+
+@wky.handle('teahouse image {{weekly.teahouse.help}}')
+async def _(msg: Bot.MessageSession):
+    weekly = await get_teahouse_rss()
+    await msg.finish(Image(await msgchain2image([Plain(weekly)])))

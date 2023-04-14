@@ -30,7 +30,7 @@ class WithErrCode(Exception):
              'b30 unofficial [<friendcode>] {{arcaea.message.unofficial}}')
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
-        await msg.finish(msg.locale.t("arcaea.message.assets.not_found"))
+        await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
     official = msg.parsed_msg.get('official', False)
@@ -97,7 +97,7 @@ async def _(msg: Bot.MessageSession):
                 traceback.print_exc()
                 await msg.finish(msg.locale.t("arcaea.message.unofficial.fetch.failed"))
     else:
-        await msg.finish(msg.locale.t("arcaea.message.user.unbound"))
+        await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
 
 
 @arc.command('info [<friendcode>] {{arcaea.info.help}}',
@@ -105,7 +105,7 @@ async def _(msg: Bot.MessageSession):
              'info unofficial [<friendcode>] {{arcaea.message.unofficial}}', )
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
-        await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found"))
+        await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
         return
     query_code = None
     prefer_uses = msg.options.get('arc_api', None)
@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession):
                 traceback.print_exc()
                 await msg.finish(msg.locale.t("arcaea.message.unofficial.fetch.failed"))
     else:
-        await msg.finish(msg.locale.t("arcaea.message.user.unbound"))
+        await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
 
 
 @arc.command('song <songname+prs/pst/byd> {{arcaea.song.help}}')

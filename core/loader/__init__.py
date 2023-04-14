@@ -8,6 +8,7 @@ from typing import Dict, Union
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
+from core.utils.i18n import load_locale_file
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
 
 load_dir_path = os.path.abspath('./modules/')
@@ -15,6 +16,10 @@ load_dir_path = os.path.abspath('./modules/')
 
 def load_modules():
     err_prompt = []
+    locale_err = load_locale_file()
+    if locale_err:
+        locale_err.append('i18n:')
+        err_prompt.append('\n'.join(locale_err))
     fun_file = None
     dir_list = os.listdir(load_dir_path)
     for file_name in dir_list:

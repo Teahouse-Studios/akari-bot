@@ -9,7 +9,7 @@ from .wiki import wiki
 from config import Config
 
 
-@wiki.handle('set <WikiUrl> {设置起始查询Wiki}', required_admin=True)
+@wiki.handle('set <WikiUrl> {{wiki.set.help}}', required_admin=True)
 async def set_start_wiki(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     check = await WikiLib(msg.parsed_msg['<WikiUrl>'], headers=target.get_headers()).check_wiki_available()
@@ -18,19 +18,18 @@ async def set_start_wiki(msg: Bot.MessageSession):
             result = WikiTargetInfo(msg).add_start_wiki(check.value.api)
             if result:
                 await msg.finish(
-                    f'成功添加起始Wiki：{check.value.name}' + ('\n' + check.message if check.message != '' else '') +
-                    (('\n注意：此Wiki当前没有加入本机器人的白名单列表中，查询此Wiki时将会对返回内容进行一些限制。\n'
-                      '如需取消限制，请在此处申请白名单：\n' + Config("wiki_whitelist_url"))
+                    msg.locale.t("wiki.set.message.success", name=check.value.name) + ('\n' + check.message if check.message != '' else '') +
+                    (('\n' + msg.locale.t("wiki.message.untrust") + Config("wiki_whitelist_url"))
                      if not check.value.in_allowlist else ''))
         else:
-            await msg.finish(f'错误：{check.value.name}处于黑名单中。')
+            await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
-        result = '错误：无法添加此Wiki。' + \
-                 ('\n详细信息：' + check.message if check.message != '' else '')
+        result = msg.locale.t('wiki.message.error.add') + \
+                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
-@wiki.handle('iw (add|set) <Interwiki> <WikiUrl> {添加自定义Interwiki}', required_admin=True)
+@wiki.handle('iw (add|set) <Interwiki> <WikiUrl> {{wiki.iw.set.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     url = msg.parsed_msg['<WikiUrl>']
@@ -40,29 +39,28 @@ async def _(msg: Bot.MessageSession):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = target.config_interwikis(iw, check.value.api, let_it=True)
             if result:
-                await msg.finish(f'成功：添加自定义Interwiki\n{iw} -> {check.value.name}' +
-                                 (('\n注意：此Wiki当前没有加入本机器人的白名单列表中，查询此Wiki时将会对返回内容进行一些限制。\n'
-                                   '如需取消限制，请在此处申请白名单：\n' + Config("wiki_whitelist_url"))
+                await msg.finish(msg.locale.t("wiki.iw.set.message.success", iw=iw, name=check.value.name) +
+                                 (('\n' + msg.locale.t("wiki.message.untrust") + Config("wiki_whitelist_url"))
                                   if not check.value.in_allowlist else ''))
         else:
-            await msg.finish(f'错误：{check.value.name}处于黑名单中。')
+            await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
-        result = '错误：无法添加此Wiki。' + \
-                 ('\n详细信息：' + check.message if check.message != '' else '')
+        result = msg.locale.t('wiki.message.error.add') + \
+                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
-@wiki.handle('iw (del|delete|remove|rm) <Interwiki> {删除自定义Interwiki}', required_admin=True)
+@wiki.handle('iw (del|delete|remove|rm) <Interwiki> {{wiki.iw.remove.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     target = WikiTargetInfo(msg)
     result = target.config_interwikis(iw, let_it=False)
     if result:
-        await msg.finish(f'成功：删除自定义Interwiki“{msg.parsed_msg["<Interwiki>"]}”')
+        await msg.finish(msg.locale.t("wiki.iw.remove.message.success", iw=iw))
 
 
-@wiki.handle(['iw list {展示当前设置的Interwiki}', 'iw show {iw list的别名}',
-              'iw (list|show) legacy {展示当前设置的Interwiki（旧版）}'])
+@wiki.handle(['iw (list|show) {{wiki.iw.list.help}}',
+              'iw (list|show) legacy {{wiki.iw.list.help.legacy}}'])
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
@@ -79,21 +77,21 @@ async def _(msg: Bot.MessageSession):
         else:
             img = False
         if img:
-            mt = f'使用{msg.prefixes[0]}wiki iw get <Interwiki> 可以获取interwiki对应的链接。'
+            mt = msg.locale.t("wiki.iw.list.message", prefix=msg.prefixes[0])
             if base_interwiki_link is not None:
-                mt += f'\n此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
+                mt += '\n' + msg.locale.t("wiki.iw.list.message.prompt", url=str(Url(base_interwiki_link)))
             await msg.finish([Image(img), Plain(mt)])
         else:
-            result = '当前设置了以下Interwiki：\n' + \
+            result = msg.locale.t("wiki.iw.list.message.legacy") + '\n' + \
                      '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
-                result += f'\n此处展示的是为机器人设定的自定义Interwiki，如需查看起始wiki的Interwiki，请见：{str(Url(base_interwiki_link))}'
+                result += '\n' + msg.locale.t("wiki.iw.list.message.prompt", url=str(Url(base_interwiki_link)))
             await msg.finish(result)
     else:
-        await msg.finish('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
+        await msg.finish(msg.locale.t("wiki.iw.message.none", prefix=msg.prefixes[0]))
 
 
-@wiki.handle('iw get <Interwiki> {获取设置的Interwiki对应的api地址}')
+@wiki.handle('iw get <Interwiki> {{wiki.iw.get.help}}')
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
@@ -101,81 +99,79 @@ async def _(msg: Bot.MessageSession):
         if msg.parsed_msg['<Interwiki>'] in query:
             await msg.finish(Url(query[msg.parsed_msg['<Interwiki>']]))
         else:
-            await msg.finish(f'未找到Interwiki：{msg.parsed_msg["<Interwiki>"]}')
+            await msg.finish(msg.locale.t("wiki.iw.get.message.not_found", iw=iw))
     else:
-        await msg.finish('当前没有设置任何Interwiki，使用~wiki iw add <interwiki> <api_endpoint_link>添加一个。')
+        await msg.finish(msg.locale.t("wiki.iw.message.none", prefix=msg.prefixes[0]))
 
 
-@wiki.handle(['headers show {展示当前设置的headers}', 'headers list {headers show 的别名}'])
+@wiki.handle(['headers (list|show) {{wiki.headers.list.help}}'])
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
-    prompt = f'当前设置了以下标头：\n{json.dumps(headers)}\n如需自定义，请使用~wiki headers set <headers>。\n' \
-             f'格式：\n' \
-             f'~wiki headers set {{"accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6"}}'
+    prompt = msg.locale.t("wiki.headers.list.message")
     await msg.finish(prompt)
 
 
-@wiki.handle('headers (add|set) <Headers> {添加自定义headers}', required_admin=True)
+@wiki.handle('headers (add|set) <Headers> {{wiki.headers.set.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     add = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
     if add:
-        await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+        await msg.finish(msg.locale.t("wiki.headers.set.message.success", headers=json.dumps(target.get_headers())))
 
 
-@wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {删除一个headers}', required_admin=True)
+@wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {{wiki.headers.remove.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     delete = target.config_headers(
         [msg.parsed_msg['<HeaderHey>']], let_it=False)
     if delete:
-        await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+        await msg.finish(msg.locale.t("wiki.headers.set.message.success", headers=json.dumps(target.get_headers())))
 
 
-@wiki.handle('headers reset {重置headers}', required_admin=True)
+@wiki.handle('headers reset {{wiki.headers.reset.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     reset = target.config_headers('{}', let_it=None)
     if reset:
-        await msg.finish(f'成功更新请求时所使用的Headers：\n{json.dumps(target.get_headers())}')
+        await msg.finish(msg.locale.t("wiki.headers.reset.message.success"))
 
 
-@wiki.handle('prefix set <prefix> {设置查询自动添加前缀}', required_admin=True)
+@wiki.handle('prefix set <prefix> {{wiki.prefix.set.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     prefix = msg.parsed_msg['<prefix>']
     set_prefix = target.set_prefix(prefix)
     if set_prefix:
-        await msg.finish(f'成功更新请求时所使用的前缀：{prefix}')
+        await msg.finish(msg.locale.t("wiki.prefix.set.message.success", wiki_prefix=prefix))
 
 
-@wiki.handle('prefix reset {重置查询自动添加的前缀}', required_admin=True)
+@wiki.handle('prefix reset {{wiki.prefix.reset.help}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     set_prefix = target.del_prefix()
     if set_prefix:
-        await msg.finish(f'成功重置请求时所使用的前缀。')
+        await msg.finish(msg.locale.t("wiki.prefix.reset.message.success"))
 
 
-@wiki.handle('fandom enable {启用Fandom全局Interwiki查询}', 'fandom disable {禁用Fandom全局Interwiki查询}',
+@wiki.handle('fandom enable {{wiki.fandom.enable.help}}', 'fandom disable {{wiki.fandom.disable.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('enable', False):
         msg.data.edit_option('wiki_fandom_addon', True)
-        await msg.finish('已启用Fandom全局Interwiki查询。')
+        await msg.finish(msg.locale.t("wiki.fandom.enable.message"))
     else:
         msg.data.edit_option('wiki_fandom_addon', False)
-        await msg.finish('已禁用Fandom全局Interwiki查询。')
+        await msg.finish(msg.locale.t("wiki.fandom.disable.message"))
 
 
-@wiki.handle('redlink enable {启用不存在页面时返回编辑链接}', 'redlink disable {禁用不存在页面时返回编辑链接}',
+@wiki.handle('redlink enable {{wiki.redlink.enable.help}}', 'redlink disable {{wiki.redlink.disable.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('enable', False):
         msg.data.edit_option('wiki_redlink', True)
-        await msg.finish('已启用不存在页面时返回编辑链接。')
+        await msg.finish(msg.locale.t("wiki.redlink.enable.message"))
     else:
         msg.data.edit_option('wiki_redlink', False)
-        await msg.finish('已禁用不存在页面时返回编辑链接。')
+        await msg.finish(msg.locale.t("wiki.redlink.disable.message"))

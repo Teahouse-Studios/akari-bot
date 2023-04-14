@@ -40,10 +40,9 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
                                 elif 'extra' in description:
                                     extra = description['extra']
                                     text = []
-                                    qwq = ''
                                     for item in extra[:]:
                                         text.append(str(item['text']))
-                                    servers.append(qwq.join(text))
+                                    servers.append(''.join(text))
                                 else:
                                     servers.append(str(description))
 
@@ -83,12 +82,12 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
                         bemotd = await req.text()
                         bejson = json.loads(bemotd)
                         unpack_data = bejson['data'].split(';')
+                        edition = unpack_data[0]
                         motd_1 = unpack_data[1]
-                        motd_2 = unpack_data[7]
+                        version_name = unpack_data[3]
                         player_count = unpack_data[4]
                         max_players = unpack_data[5]
-                        edition = unpack_data[0]
-                        version_name = unpack_data[3]
+                        motd_2 = unpack_data[7]
                         game_mode = unpack_data[8]
                         bemsg = '[BE]\n' + \
                                 motd_1 + ' - ' + motd_2 + \
