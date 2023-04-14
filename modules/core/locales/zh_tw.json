@@ -133,7 +133,7 @@
     "core.leave.message": "已執行，再見。",
     "core.leave.confirm": "你確定嗎？此行為不可逆。",
     "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]",
-    "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援當前語言，此模組可能不會正確展示當前語言下的內容。",
-    "core.petal.help": "获取当前群组的花瓣数。",
+    "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援目前語言，此模組可能不會正確展示目前語言下的內容。",
+    "core.petal.help": "取得目前群組的花瓣數。",
     "core.petal.message": "当前群组的花瓣数为：${petal}"
 }
