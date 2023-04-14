@@ -21,14 +21,12 @@ def read():
     return data
 
 
-cave = on_command('cave', alias={'hitokoto': 'cave hitokoto',
-                                 'cow': 'cave cowsay'
-                                 },
-                  desc='回声洞', developers=['haoye_qwq'])
+def cowsay():
+    result = subprocess.getoutput('fortune | cowsay')
+    return result.replace('Process finished with exit code 0', '')
 
 
-@cave.handle('hitokoto {一言}')
-async def hitokoto(msg: Bot.MessageSession):
+def hitokoto():
     url = 'https://v1.hitokoto.cn/'
     response = requests.get(url)
     if response.status_code == 200:
@@ -37,15 +35,26 @@ async def hitokoto(msg: Bot.MessageSession):
         yee = json_dict.get('hitokoto')
         frm = json_dict.get('from')
         who = json_dict.get('from_who')
-        await msg.sendMessage(f"[{yee}]\n    ——{who}《{frm}》")
+        return f"[{yee}]\n    ——{who}《{frm}》"
     else:
-        await msg.sendMessage('请求失败')
+        return '请求失败'
+
+
+cave = on_command('cave', alias={'hitokoto': 'cave hitokoto',
+                                 'cow': 'cave cowsay'
+                                 },
+                  desc='回声洞', developers=['haoye_qwq'])
+
+
+@cave.handle('hitokoto {一言}')
+async def hitokoto(msg: Bot.MessageSession):
+    await msg.sendMessage(hitokoto())
 
 
 @cave.handle('cowsay {哲学牛牛}')
 async def cowsay(msg: Bot.MessageSession):
-    result = subprocess.getoutput('fortune | cowsay')
-    await msg.sendMessage(result.replace('Process finished with exit code 0', ''))
+    await msg.sendMessage(cowsay())
+
 
 # @cave.handle('echo_cave add <sth> {添加回声洞}',
 #              'echo_cave del <num> {删除回声洞}',
@@ -57,11 +66,10 @@ async def cowsay(msg: Bot.MessageSession):
 # cq = re.findall(r'^\[CQ:image,(\s\S)*\]', cq, re.I | re.M)
 
 
-@cave.handle('{回声洞}')
-async def ___():
+@cave.handle('{回声洞(WIP)}')
+async def ___(msg: Bot.MessageSession):
     mode = ['hitokoto', 'cowsay']
     if random.choice(mode) == 'hitokoto':
-        await hitokoto
+        await msg.sendMessage(hitokoto())
     else:
-        await cowsay
-
+        await msg.sendMessage(cowsay())
