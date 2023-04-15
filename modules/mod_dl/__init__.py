@@ -9,7 +9,7 @@ from config import Config
 
 mod_dl = module(
     bind_prefix='mod_dl',
-    desc='{moddl.help.desc}',
+    desc='{mod_dl.help.desc}',
     developers=['HornCopper', 'OasisAkari', 'z0z0r4'],
     recommend_modules=['mcmod'],
     alias='moddl')
@@ -27,7 +27,7 @@ def cn_chk(string: str):
             return True
     return False
 
-@mod_dl.handle('<mod_name> [<version>] {{moddl.help}}')
+@mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
 async def main(msg: Bot.MessageSession):
     mod_name = msg.parsed_msg['<mod_name>']
     ver = msg.parsed_msg.get('<version>', None)
@@ -125,58 +125,58 @@ async def main(msg: Bot.MessageSession):
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
     cache_result = []
     if result[0] is None and result[1] is None:
-        await msg.finish(msg.locale.t("moddl.message.search_failed"))
+        await msg.finish(msg.locale.t("mod_dl.message.not_found"))
     else:
         # 合并搜索结果
         reply_text, count = [], 0
 
         # 先显示 CurseForge 的结果
         if result[1] is None:
-            reply_text.append(msg.locale.t("moddl.message.curseforge.nothing"))
+            reply_text.append(msg.locale.t("mod_dl.message.curseforge.not_found"))
         else:
-            reply_text.append(msg.locale.t("moddl.message.curseforge.found"))
+            reply_text.append(msg.locale.t("mod_dl.message.curseforge.result"))
             for mod in result[1]:
                 count += 1
                 reply_text.append(f"{count}. {mod[1]}")
                 cache_result.append(mod)
 
         if result[0] is None:
-            reply_text.append(msg.locale.t("moddl.message.modrinth.nothing"))
-        reply_text.append(msg.locale.t("moddl.message.modrinth.found"))
+            reply_text.append(msg.locale.t("mod_dl.message.modrinth.not_found"))
+        reply_text.append(msg.locale.t("mod_dl.message.modrinth.result"))
         for mod in result[0]:
             count += 1
             reply_text.append(f"{count}. {mod[1]}")
             cache_result.append(mod)
 
-        reply = await msg.waitReply('\n'.join(reply_text) + '\n' + msg.locale.t("moddl.message.choose_mod"))
+        reply = await msg.waitReply('\n'.join(reply_text) + '\n' + msg.locale.t("mod_dl.message.prompt"))
         replied = reply.asDisplay(text_only=True)
 
         # 查找 Mod
         if replied.isdigit():
             replied = int(replied)
             if replied > len(cache_result):
-                return await msg.finish(msg.locale.locale("moddl.message.out_of_index"))
+                return await msg.finish(msg.locale.t("mod_dl.message.out_of_index"))
             else:
                 mod_info = cache_result[replied - 1]
         else:
-            return await msg.finish(msg.locale.locale("moddl.message.illegal_index"))
+            return await msg.finish(msg.locale.t("mod_dl.message.non_digital"))
         
         if mod_info[0] == "modrinth": # modrinth mod
             if ver is None:
-                reply2 = await msg.waitReply(f'{msg.locale.t("moddl.message.reply_version_1")}\n'
+                reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n'
                                               + "\n".join(mod_info[3]) 
-                                              + f'\n{msg.locale.t("moddl.message.reply_version_2")}')
+                                              + f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
                 replied2 = reply2.asDisplay(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
                     if version_info is not None:
-                        await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("moddl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("moddl.message.filename")}{version_info["files"][0]["filename"]}')
+                        await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
             elif ver not in mod_info[3]:
-                await msg.finish(msg.locale.t("moddl.message.no_such_version"))
+                await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
                 if version_info is not None:
-                    await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("moddl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("moddl.message.filename")}{version_info["files"][0]["filename"]}')
+                    await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
         else: # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
             for version in version_index:
@@ -184,18 +184,18 @@ async def main(msg: Bot.MessageSession):
                     ver_list.append(version["gameVersion"])
             if version_index is not None:
                 if ver is None:
-                    reply2 = await msg.waitReply(f'{msg.locale.t("moddl.message.ask_version_1")}\n' + 
+                    reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n' + 
                                                  '\n'.join(ver_list) + 
-                                                 f'\n{msg.locale.t("moddl.message.ask_version_2")}')
+                                                 f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
                     ver = reply2.asDisplay(text_only=True)
                 elif ver not in ver_list:
-                    await msg.finish(msg.locale.t("moddl.message.no_such_version"))
+                    await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
 
                 if ver in ver_list:
                     file_info = await get_curseforge_mod_file(mod_info[2], ver)
                     if file_info is not None:
                         await msg.finish(f'{" ".join(file_info["gameVersions"])} \
-                                         \n{msg.locale.t("moddl.message.download_url")}{file_info["downloadUrl"]} \
-                                         \n{msg.locale.t("moddl.message.filename")}{file_info["fileName"]}')
+                                         \n{msg.locale.t("mod_dl.message.download_url")}{file_info["downloadUrl"]} \
+                                         \n{msg.locale.t("mod_dl.message.filename")}{file_info["fileName"]}')
                 else:
-                    await msg.finish(msg.locale.t("moddl.message.no_such_version"))
+                    await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
