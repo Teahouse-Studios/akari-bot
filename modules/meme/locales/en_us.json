@@ -1,13 +1,13 @@
 {
-    "meme.jiki": "[Jikipedia]",
-    "meme.moegirl": "[Moegirlpedia]",
-    "meme.nbnhhsh": "[nbnhhsh]",
-    "meme.urban": "[Urban Dictionary]",
-    "meme.error": "Something went wrong while querying.",
-    "meme.none": "No results found.",
-    "meme.result": "(${result} results): ",
-    "meme.nbnhhsh.result": "(${result} results, recorded): ",
-    "meme.nbnhhsh.result.ai": "(${result} results, AI speculation): ",
+    "meme.help": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc.",
+    "meme.message.jiki": "[Jikipedia]",
+    "meme.message.moegirl": "[Moegirlpedia]",
+    "meme.message.nbnhhsh": "[nbnhhsh]",
+    "meme.message.urban": "[Urban Dictionary]",
+    "meme.message.error": "Something went wrong while querying.",
+    "meme.message.result": "(${result} results): ",
+    "meme.message.nbnhhsh.result": "(${result} results, recorded): ",
+    "meme.message.nbnhhsh.result.ai": "(${result} results, AI speculation): ",
     "meme.help.desc": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc.",
-    "meme.help": "Enquire for memes in Moegirlpedia, nbnhhsh, Urban Dictionary, etc."
+    "meme.message.not_found": "No results found."
 }
