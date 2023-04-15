@@ -6,7 +6,7 @@ from modules.wiki import query_pages
 from modules.wiki.utils.wikilib import QueryInfo
 
 
-async def moegirl(term: str, locale: str = 'zh_cn', msg):
+async def moegirl(msg: int, term: str, locale: str = 'zh_cn'):
     result = await query_pages(QueryInfo('https://zh.moegirl.org.cn/api.php', headers={'accept': '*/*',
                                                                                        'accept-encoding': 'gzip, deflate',
                                                                                        'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',

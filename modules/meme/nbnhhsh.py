@@ -6,7 +6,7 @@ from core.logger import Logger
 from core.utils.http import post_url
 
 
-async def nbnhhsh(term: str, msg):
+async def nbnhhsh(msg: int, term: str):
     '''查询nbnhhsh。
     :param term: 需要查询的term。
     :returns: 查询结果。'''

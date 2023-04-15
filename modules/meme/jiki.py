@@ -8,7 +8,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def jiki(term: str, msg):
+async def jiki(msg: int, term: str):
     '''查询小鸡百科。
 
     :param term: 需要查询的term。
