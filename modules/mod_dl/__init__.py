@@ -176,20 +176,20 @@ async def main(msg: Bot.MessageSession):
                 if version_info is not None:
                     await msg.finish(f'{" ".join(version_info["loaders"])}\n下载链接：{version_info["files"][0]["url"]}\n文件名：{version_info["files"][0]["filename"]}')
         else: # curseforge mod
-            version_index = await get_curseforge_mod_version_index(mod_info[2])
+            version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
+            for version in version_index:
+                if version["gameVersion"] not in ver_list:
+                    ver_list.append(version["gameVersion"])
             if version_index is not None:
                 if ver is None:
-                    reply_text = []
-                    for version in version_index:
-                        reply_text.append(version["gameVersion"])
                     reply2 = await msg.waitReply('此mod拥有如下版本：\n' + 
-                                                 '\n'.join(reply_text) + 
+                                                 '\n'.join(ver_list) + 
                                                  '\n请回复版本号来选择版本。')
                     ver = reply2.asDisplay(text_only=True)
-                elif ver not in version_index:
+                elif ver not in ver_list:
                     await msg.finish("未找到指定版本。")
 
-                if ver in version_index:
+                if ver in ver_list:
                     file_info = await get_curseforge_mod_file(mod_info[2], ver)
                     if file_info is not None:
                         await msg.finish(f'{" ".join(file_info["gameVersions"])} \
