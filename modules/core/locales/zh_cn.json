@@ -60,10 +60,8 @@
     "core.module.message.reload.with": "，以及该模块下的 ${reloadCnt} 个文件。",
     "core.module.message.reload.no_more": "，未发现已加载的其余文件",
     "core.module.message.reload.failed": "重载模块失败。",
-    "core.prefix.help.add": "设置自定义机器人命令前缀。",
     "core.prefix.help.remove": "移除自定义机器人命令前缀。",
     "core.prefix.help.reset": "重置自定义机器人命令前缀。",
-    "core.prefix.message.add.success": "已添加自定义命令前缀：${prefix}\n帮助文档将默认使用该前缀进行展示。",
     "core.prefix.message.add.already": "此命令前缀已存在于自定义前缀列表。",
     "core.prefix.message.remove.success": "已移除自定义命令前缀：",
     "core.prefix.message.remove.not_found": "此命令前缀不存在于自定义前缀列表。",
@@ -135,5 +133,7 @@
     "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
     "core.module.message.enable.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",
     "core.petal.help": "获取当前群组的花瓣数。",
-    "core.petal.message": "当前群组的花瓣数为：${petal}。"
+    "core.petal.message": "当前群组的花瓣数为：${petal}。",
+    "core.prefix.help.add": "设置自定义机器人命令前缀。",
+    "core.prefix.message.add.success": "已设置自定义命令前缀：${prefix}\n帮助文档将默认使用该前缀进行展示。"
 }
