@@ -19,7 +19,7 @@ async def nbnhhsh(msg, term: str):
         try:
             result = data[0]
         except IndexError:
-            return 'f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.not_found")}'
+            return f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.not_found")}'
         if 'trans' in result:
             trans = result['trans']
             count = trans.__len__()
