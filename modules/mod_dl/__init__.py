@@ -155,11 +155,11 @@ async def main(msg: Bot.MessageSession):
         if replied.isdigit():
             replied = int(replied)
             if replied > len(cache_result):
-                return await msg.finish(msg.locale.t("mod_dl.message.out_of_index"))
+                return await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
             else:
                 mod_info = cache_result[replied - 1]
         else:
-            return await msg.finish(msg.locale.t("mod_dl.message.non_digital"))
+            return await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
         
         if mod_info[0] == "modrinth": # modrinth mod
             if ver is None:
