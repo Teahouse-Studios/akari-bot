@@ -8,7 +8,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def urban(msg, term: str):
+async def urban(term: str, msg):
     '''查询urban dictionary。
 
     :param term: 需要查询的term。
