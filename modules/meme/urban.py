@@ -6,9 +6,10 @@ from config import Config
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.i18n import Locale
 
 
-async def urban(msg: int, term: str):
+async def urban(term: str, locale: Locale):
     '''查询urban dictionary。
 
     :param term: 需要查询的term。
@@ -26,17 +27,17 @@ async def urban(msg: int, term: str):
         Logger.debug(text)
         data = json.loads(text)['list']
         if data == []:
-            return f'{msg.locale.t("meme.message.urban")} {msg.locale.t("meme.message.not_found")}'
+            return f'{locale.t("meme.message.urban")} {locale.t("meme.message.not_found")}'
         else:
             count = data.__len__()
             word = data[0]['word']
             definition = limit_length(data[0]['definition'])
             example = limit_length(data[0]['example'])
             link = data[0]['permalink']
-            return f'{msg.locale.t("meme.message.urban")} {msg.locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
+            return f'{locale.t("meme.message.urban")} {locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
-        return f'{msg.locale.t("meme.message.urban")} {msg.locale.t("meme.message.error")}'
+        return f'{locale.t("meme.message.urban")} {locale.t("meme.message.error")}'
 
 
 def limit_length(text, limit=50):
