@@ -19,5 +19,5 @@
     "whois.message.ip_property.teredo": "Teredo ",
     "whois.message.ip_property.site_local": "站點本地",
     "whois.message.ip_property": "位址",
-    "whois.help.desc": "查詢 IP 的 WHOIS 資訊"
+    "whois.help.desc": "查詢 IP 的 WHOIS 資訊。"
 }
