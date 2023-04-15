@@ -11,8 +11,8 @@ meme = module(
     # well, people still use it though it only lived for an hour or so
     alias=['nbnhhsh'],
     desc='{meme.help.desc}',
-    developers=['Dianliang233']
-    support_languages=['zh_cn','en_us'])
+    developers=['Dianliang233'],
+    support_languages=['zh_cn', 'en_us'])
 
 
 @meme.handle(help_doc='<term> {{meme.help}}')
