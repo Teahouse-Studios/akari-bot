@@ -65,6 +65,11 @@
     "wiki.message.redirect.template_to_page": "（[${title}] 不存在，已自动重定向至 [${redirected_title}]）",
     "wiki.message.invalid_namespace": "此 Wiki 上没有名为 ${namespace} 的命名空间，请检查拼写后重试。",
     "wiki.message.not_found": "找不到 [${title}]。",
+    "wiki.message.not_found.autofix": "提示：[${title}]不存在，您可能要找的是：[${redirected_title}]。",
+    "wiki.message.not_found.autofix.confirm": "提示：[${title}]不存在，您是否想要找的是[${redirected_title}]？\n（请直接发送“是”字来确认，发送其他内容则代表取消获取。）",
+    "wiki.message.not_found.autofix.choice": "提示：[${title}]不存在，您是否想要找的是：",
+    "wiki.message.not_found.autofix.choice.prompt": "请直接发送指定序号获取对应内容，若回复“是”，则默认选择 ${number} 号内容，发送其他内容则代表取消获取。",
+    "wiki.message.flies": "此页面包括以下文件：\n",
     "wiki.message.magic_word": "机器人暂不支持魔术字。",
     "tos.reason.too_many_redirects": "使机器人重定向页面的次数过多。",
     "tos.reason.wiki_abuse": "一次性查询的页面超过 15 个。",
@@ -73,5 +78,10 @@
     "wiki.message.error.blocked": "发生错误：${name} 处于黑名单中。",
     "wiki.message.error.query": "发生错误：无法查询此 Wiki。",
     "wiki.message.error.set": "发生错误：无法设置此 Wiki。",
-    "wiki.message.error.info": "详细信息："
+    "wiki.message.error.info": "详细信息：",
+    "wiki.message.not_set": "未设置起始 Wiki。",
+    "wiki.message.rollback": "无法发送转发消息，已自动回滚至传统样式。",
+    "wiki.rc.help.desc": "获取默认 Wiki 的最近更改。",
+    "wiki.ab.help.desc": "获取默认 Wiki 的最近滥用日志。",
+    "wiki.newbie.help.desc": "获取默认 Wiki 的新用户。"
 }

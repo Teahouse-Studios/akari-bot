@@ -85,7 +85,7 @@
     "core.abuse.message.untempban.success": "成功移除 ${user} 的暫時限制。",
     "core.abuse.message.ban.success": "成功封鎖 ${user}。",
     "core.abuse.message.unban.success": "成功解除 ${user} 的封鎖。",
-    "core.restart.message.wait": "有 ${count} 個指令正在執行中，將在執行完成後重啟。",
+    "core.restart.message.wait": "有 ${count} 個指令正在執行中，將在執行完成後重新啟動。",
     "core.restart.message.restarting": "重新啟動中...",
     "core.restart.message.prompt": "由於機器人正在重新啟動，您此次執行指令的後續操作已被取消。\n請稍後重新執行指令，對此帶來的不便，我們深感抱歉。",
     "core.restart.message.timeout": "等待逾時，強制重新啟動中…",
