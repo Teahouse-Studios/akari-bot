@@ -43,5 +43,7 @@
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
     "core.help.alias": "Alias: ",
-    "parser.module.desc": "Description:\n${desc}"
+    "parser.module.desc": "Description:\n${desc}",
+    "check.redacted": "<REDACTED>",
+    "check.redacted.all": "<REDACTED ALL>"
 }
