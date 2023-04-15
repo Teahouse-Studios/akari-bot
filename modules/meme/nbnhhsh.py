@@ -6,7 +6,7 @@ from core.logger import Logger
 from core.utils.http import post_url
 
 
-async def nbnhhsh(term: str):
+async def nbnhhsh(msg, term: str):
     '''查询nbnhhsh。
     :param term: 需要查询的term。
     :returns: 查询结果。'''
@@ -19,17 +19,17 @@ async def nbnhhsh(term: str):
         try:
             result = data[0]
         except IndexError:
-            return '[nbnhhsh] 没有找到相关结果。'
+            return 'f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.not_found")}'
         if 'trans' in result:
             trans = result['trans']
             count = trans.__len__()
-            return f'[nbnhhsh]（{count}个结果，已收录）：{"、".join(trans)}'
+            return f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.nbnhhsh.result")}{"、".join(trans)}'
         elif 'inputting' in result and result['inputting'] != []:
             inputting = result['inputting']
             count = inputting.__len__()
-            return f'[nbnhhsh]（{count}个结果，AI 猜测）：{"、".join(inputting)}'
+            return f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.nbnhhsh.result.ai")}{"、".join(inputting)}'
         else:
-            return '[nbnhhsh] 没有找到相关结果。'
+            return f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.not_found")}'
     except Exception:
         traceback.print_exc()
-        return '[nbnhhsh] 查询出错。'
+        return f'{msg.locale.t("meme.message.nbnhhsh")} {msg.locale.t("meme.message.error")}'

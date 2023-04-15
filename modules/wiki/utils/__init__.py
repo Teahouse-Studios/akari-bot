@@ -10,14 +10,14 @@ from .newbie import newbie
 from .rc import rc
 from .rc_qq import rc_qq
 
-rc_ = module('rc', desc='获取默认wiki的最近更改', developers=['OasisAkari'])
+rc_ = module('rc', desc='wiki.rc.help.desc', developers=['OasisAkari'])
 
 
 @rc_.handle()
 async def rc_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
-        return await msg.finish('未设置起始wiki。')
+        return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
         try:
@@ -26,21 +26,21 @@ async def rc_loader(msg: MessageSession):
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.finish('无法发送转发消息，已自动回滚至传统样式。')
+            await msg.finish(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
         res = await rc(start_wiki)
         await msg.finish(res)
 
 
-a = module('ab', desc='获取默认wiki的最近滥用日志', developers=['OasisAkari'])
+a = module('ab', desc='wiki.ab.help.desc', developers=['OasisAkari'])
 
 
 @a.handle()
 async def ab_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
-        return await msg.finish('未设置起始wiki。')
+        return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
         try:
@@ -49,20 +49,20 @@ async def ab_loader(msg: MessageSession):
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.finish('无法发送转发消息，已自动回滚至传统样式。')
+            await msg.finish(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
         res = await ab(start_wiki)
         await msg.finish(res)
 
 
-n = module('newbie', desc='获取默认wiki的新用户', developers=['OasisAkari'])
+n = module('newbie', desc='wiki.newbie.help.desc', developers=['OasisAkari'])
 
 
 @n.handle()
 async def newbie_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
-        return await msg.finish('未设置起始wiki。')
+        return await msg.finish(msg.locale.t('wiki.message.not_set'))
     res = await newbie(start_wiki)
     await msg.finish(res)

@@ -8,7 +8,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def urban(term: str):
+async def urban(msg, term: str):
     '''查询urban dictionary。
 
     :param term: 需要查询的term。
@@ -26,17 +26,17 @@ async def urban(term: str):
         Logger.debug(text)
         data = json.loads(text)['list']
         if data == []:
-            return '[Urban Dictionary] 没有找到相关结果。'
+            return f'{msg.locale.t("meme.message.urban")} {msg.locale.t("meme.message.not_found")}'
         else:
             count = data.__len__()
             word = data[0]['word']
             definition = limit_length(data[0]['definition'])
             example = limit_length(data[0]['example'])
             link = data[0]['permalink']
-            return f'[Urban Dictionary]（{count}个结果）：\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
+            return f'{msg.locale.t("meme.message.urban")} {msg.locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
-        return '[Urban Dictionary] 查询出错。'
+        return f'{msg.locale.t("meme.message.urban")} {msg.locale.t("meme.message.error")}'
 
 
 def limit_length(text, limit=50):

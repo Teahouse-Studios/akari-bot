@@ -5,12 +5,12 @@ from .mojang_api import *
 
 mcplayer = module(
     bind_prefix='mcplayer',
-    desc='{mcplayer.help}',
+    desc='{mcplayer.help.desc}',
     developers=['Dianliang233'],
 )
 
 
-@mcplayer.handle('<username_or_uuid> {{mcplayer.help.player}}')
+@mcplayer.handle('<username_or_uuid> {{mcplayer.help}}')
 async def main(msg: Bot.MessageSession):
     arg = msg.parsed_msg['<username_or_uuid>']
     try:

@@ -8,7 +8,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def jiki(term: str):
+async def jiki(msg, term: str):
     '''查询小鸡百科。
 
     :param term: 需要查询的term。
@@ -32,7 +32,7 @@ async def jiki(term: str):
 
         results = bs.select('.lite-card').__len__()
         count = str(result) if results < 15 else '15+'
-        return f'[小鸡百科]（{count}个结果）：{title}\n{content}\n{str(Url(link))}'
+        return f'{msg.locale.t("meme.message.jiki")} {msg.locale.t("meme.message.result")}{title}\n{content}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
-        return '[小鸡百科] 查询出错。'
+        return f'{msg.locale.t("meme.message.jiki")} {msg.locale.t("meme.message.error")}'
