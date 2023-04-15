@@ -1,7 +1,7 @@
 {
     "mod_dl.help.desc": "下载 CurseForge 和 Modrinth 上的 Mod。",
-    "mod_dl.help": "通过 Mod 名称获取下载链接",
-    "mod_dl.message.not_found": "无结果。",
+    "mod_dl.help": "通过 Mod 名称获取下载链接。",
+    "mod_dl.message.not_found": "找不到结果。",
     "mod_dl.message.curseforge.not_found": "CurseForge 结果：无",
     "mod_dl.message.curseforge.result": "CurseForge 结果：",
     "mod_dl.message.modrinth.not_found": "Modrinth 结果：无",
@@ -13,7 +13,5 @@
     "mod_dl.message.version.prompt": "请回复版本号来选择版本。",
     "mod_dl.message.download_url": "下载链接：",
     "mod_dl.message.filename": "文件名：",
-    "mod_dl.message.version.not_found": "未找到指定版本。",
-    "mod_dl.message.ask_version_1": "此mod拥有如下版本：",
-    "mod_dl.message.ask_version_2": "请回复版本号来选择版本。"
+    "mod_dl.message.version.not_found": "未找到指定版本。"
 }
