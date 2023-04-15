@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession):
     res = ''
     for i in chk:
         if not i['status']:
-            i = '[???] <REDACTED>'
+            i = '[???]' + msg.locale.t('check.redacted')
             res += i + '\n'
         else:
             res += i['content'] + '\n'
