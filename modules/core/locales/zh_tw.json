@@ -60,8 +60,10 @@
     "core.module.message.reload.with": "，以及此模組下的 ${reloadCnt} 個文件。",
     "core.module.message.reload.no_more": "，未發現已載入的其餘文件。",
     "core.module.message.reload.failed": "重新載入模組失敗。",
+    "core.prefix.help.add": "設定自訂機器人指令前綴。",
     "core.prefix.help.remove": "移除自訂機器人指令前綴。",
     "core.prefix.help.reset": "重設自訂機器人指令前綴。",
+    "core.prefix.message.add.success": "已新增自訂指令前綴：${prefix}\n說明文件將預設使用此前綴進行展示。",
     "core.prefix.message.add.already": "此指令前綴已存在於自訂前綴列表。",
     "core.prefix.message.remove.success": "已移除自訂指令前綴：",
     "core.prefix.message.remove.not_found": "此指令前綴不存在於自訂前綴列表。",
@@ -133,7 +135,5 @@
     "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]",
     "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援目前語言，此模組可能不會正確展示目前語言下的內容。",
     "core.petal.help": "取得目前群組的花瓣數。",
-    "core.petal.message": "目前群組的花瓣數為：${petal}。",
-    "core.prefix.help.add": "設定自訂機器人指令前綴。",
-    "core.prefix.message.add.success": "已新增自訂指令前綴：${prefix}\n說明文件將預設使用此前綴進行展示。"
+    "core.petal.message": "目前群組的花瓣數為：${petal}。"
 }
