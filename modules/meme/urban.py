@@ -27,17 +27,17 @@ async def urban(term: str, locale: Locale):
         Logger.debug(text)
         data = json.loads(text)['list']
         if data == []:
-            return f'{locale.t("meme.message.urban")} {locale.t("meme.message.not_found")}'
+            return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.not_found")}'
         else:
             count = data.__len__()
             word = data[0]['word']
             definition = limit_length(data[0]['definition'])
             example = limit_length(data[0]['example'])
             link = data[0]['permalink']
-            return f'{locale.t("meme.message.urban")} {locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
+            return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
-        return f'{locale.t("meme.message.urban")} {locale.t("meme.message.error")}'
+        return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.error")}'
 
 
 def limit_length(text, limit=50):

@@ -1,8 +1,8 @@
 {
-    "meme.message.jiki": "[Jikipedia]",
-    "meme.message.moegirl": "[Moegirlpedia]",
-    "meme.message.nbnhhsh": "[nbnhhsh]",
-    "meme.message.urban": "[Urban Dictionary]",
+    "meme.message.jiki": "Jikipedia",
+    "meme.message.moegirl": "Moegirlpedia",
+    "meme.message.nbnhhsh": "nbnhhsh",
+    "meme.message.urban": "Urban Dictionary",
     "meme.message.error": "Something went wrong while querying.",
     "meme.message.not_found": "No results found.",
     "meme.message.result": "(${result} results): ",

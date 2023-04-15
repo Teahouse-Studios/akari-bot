@@ -33,4 +33,4 @@ async def moegirl(term: str, locale: Locale):
                                                                                                  }, locale=locale.locale), redirect)
                 msg += wait['msg_list'][0].text
 
-    return locale.t('meme.message.moegirl') + msg
+    return f'[{locale.t("meme.message.moegirl")}] {msg}'

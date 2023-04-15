@@ -1,8 +1,8 @@
 {
-    "meme.message.jiki": "[小鸡百科]",
-    "meme.message.moegirl": "[萌娘百科]",
-    "meme.message.nbnhhsh": "[nbnhhsh]",
-    "meme.message.urban": "[Urban Dictionary]",
+    "meme.message.jiki": "小鸡百科",
+    "meme.message.moegirl": "萌娘百科",
+    "meme.message.nbnhhsh": "nbnhhsh",
+    "meme.message.urban": "Urban Dictionary",
     "meme.message.error": "查询出错。",
     "meme.message.not__found": "没有找到相关结果。",
     "meme.message.result": "（${result} 个结果）：",
