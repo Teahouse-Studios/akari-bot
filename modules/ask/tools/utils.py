@@ -38,4 +38,5 @@ class AkariTool(Tool):
 
 fake_msg = MessageSession(MsgInfo('Ask|0', 'Ask|0', 'AkariBot', 'Ask', 'Ask', 'Ask', 0),
                           Session('~lol lol', 'Ask|0', 'Ask|0'))
-fake_msg.locale = Locale('en_us')
+locale_en = Locale('en_us')
+fake_msg.locale = locale_en

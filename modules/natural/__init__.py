@@ -4,13 +4,13 @@ from core.builtins import Bot
 from core.component import module
 from config import Config
 
-n = module('natural', alias=['nl2c'], developers=['Dianliang233'], desc='使用 InstructGPT 把自然语言转换成小可命令。')
+n = module('natural', alias=['nl2c'], developers=['Dianliang233'], desc='{natural.help}')
 
 # Load your API key from an environment variable or secret management service
 openai.api_key = Config('openai_api_key')
 model = Config('nl2c_model')
 
-@n.handle('<text> {使用 InstructGPT 把自然语言转换成小可命令。}')
+@n.handle('<text> {{natural.help}}')
 async def _(msg: Bot.MessageSession):
     i = msg.parsed_msg['<text>']
     response = openai.Completion.create(

@@ -6,9 +6,10 @@ from config import Config
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.i18n import Locale
 
 
-async def jiki(term: str):
+async def jiki(term: str, locale: Locale):
     '''查询小鸡百科。
 
     :param term: 需要查询的term。
@@ -32,7 +33,7 @@ async def jiki(term: str):
 
         results = bs.select('.lite-card').__len__()
         count = str(result) if results < 15 else '15+'
-        return f'[小鸡百科]（{count}个结果）：{title}\n{content}\n{str(Url(link))}'
+        return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.result", result=count)}{title}\n{content}\n{str(Url(link))}'
     except Exception:
         traceback.print_exc()
-        return '[小鸡百科] 查询出错。'
+        return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.error")}'

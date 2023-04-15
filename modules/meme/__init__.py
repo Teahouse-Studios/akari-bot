@@ -11,21 +11,22 @@ meme = module(
     # well, people still use it though it only lived for an hour or so
     alias=['nbnhhsh'],
     desc='{meme.help.desc}',
-    developers=['Dianliang233'])
+    developers=['Dianliang233'],
+    support_languages=['zh_cn', 'en_us'])
 
 
 @meme.handle(help_doc='<term> {{meme.help}}')
 async def _(msg: Bot.MessageSession):
 #   res_jiki = await jiki(msg.parsed_msg['<term>'])
 #   R.I.P. jikipedia
-    res_moegirl = await moegirl(msg.parsed_msg['<term>'], msg.locale.locale)
-    res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'])
-    res_urban = await urban(msg.parsed_msg['<term>'])
+    res_moegirl = await moegirl(msg.parsed_msg['<term>'], msg.locale)
+    res_nbnhhsh = await nbnhhsh(msg.parsed_msg['<term>'], msg.locale)
+    res_urban = await urban(msg.parsed_msg['<term>'], msg.locale)
     chk = await check(res_moegirl, res_nbnhhsh, res_urban)
     res = ''
     for i in chk:
         if not i['status']:
-            i = '[???] <REDACTED>'
+            i = '[???] ' + msg.locale.t('check.redacted')
             res += i + '\n'
         else:
             res += i['content'] + '\n'
