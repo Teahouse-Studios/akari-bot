@@ -15,6 +15,11 @@ mod_dl = module(
     alias='moddl')
 
 x_api_key = Config("curseforge_api_key")
+if x_api_key is None:
+    # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
+    MCIM_MODE = False
+else:
+    MCIM_MODE = True
 
 def cn_chk(string: str):
     for word in string:
@@ -50,19 +55,26 @@ async def main(msg: Bot.MessageSession):
             return results
     
     async def search_curseforge(name: str, ver: str):
-        headers = {
-            'Accept': 'application/json',
-            'x-api-key': x_api_key
-        }
-        url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+        if MCIM_MODE:
+            # https://mcim.z0z0r4.top/docs#/Curseforge/curseforge_search_curseforge_search_get
+            url = f'https://mcim.z0z0r4.top/curseforge/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+            headers = None
+        else:
+            headers = {
+                'Accept': 'application/json',
+                'x-api-key': x_api_key
+            }
+            url = f'https://api.curseforge.com/v1/mods/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
+
         if ver:
             url += f'&gameVersion={ver}'
         results = []
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
             if resp is not None:
-                if resp["pagination"]["resultCount"] == 0:
-                    return None
+                if not MCIM_MODE: # 没提供 pagination
+                    if resp["pagination"]["resultCount"] == 0:
+                        return None
                 for mod in resp["data"]:
                     results.append(("curseforge", mod["name"], mod["id"], None))
         except Exception:
@@ -76,21 +88,32 @@ async def main(msg: Bot.MessageSession):
             return resp
 
     async def get_curseforge_mod_version_index(modid: str):
-        headers = {
-            'Accept': 'application/json',
-            'x-api-key': x_api_key
-        }
-        url = f'https://api.curseforge.com/v1/mods/{modid}'
+        if MCIM_MODE:
+            # https://mcim.z0z0r4.top/docs#/Curseforge/get_mod_curseforge_mod__modid_slug__get
+            url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}'
+            headers = None
+        else:
+            headers = {
+                'Accept': 'application/json',
+                'x-api-key': x_api_key
+            }
+            url = f'https://api.curseforge.com/v1/mods/{modid}'
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
         if resp is not None:
             return resp["data"]['latestFilesIndexes']
         
     async def get_curseforge_mod_file(modid: str, ver: str):
-        headers = {
-            'Accept': 'application/json',
-            'x-api-key': x_api_key
-        }
-        url = f'https://api.curseforge.com/v1/mods/{modid}/files?gameVersion={ver}'
+        if MCIM_MODE:
+            url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}/files?gameVersion={ver}'
+            headers = None
+        else:
+            headers = {
+                'Accept': 'application/json',
+                'x-api-key': x_api_key
+            }
+            url = f'https://api.curseforge.com/v1/mods/{modid}/files?gameVersion={ver}'
+        
+            
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
             if resp is not None:
@@ -106,14 +129,8 @@ async def main(msg: Bot.MessageSession):
     else:
         # 合并搜索结果
         reply_text, count = [], 0
-        if result[0] is None:
-            reply_text.append("Modrinth 结果：无")
-        reply_text.append("Modrinth 结果：")
-        for mod in result[0]:
-            count += 1
-            reply_text.append(f"{count}. {mod[1]}")
-            cache_result.append(mod)
 
+        # 先显示 CurseForge 的结果
         if result[1] is None:
             reply_text.append("CurseForge 结果：无")
         else:
@@ -122,7 +139,15 @@ async def main(msg: Bot.MessageSession):
                 count += 1
                 reply_text.append(f"{count}. {mod[1]}")
                 cache_result.append(mod)
-    
+
+        if result[0] is None:
+            reply_text.append("Modrinth 结果：无")
+        reply_text.append("Modrinth 结果：")
+        for mod in result[0]:
+            count += 1
+            reply_text.append(f"{count}. {mod[1]}")
+            cache_result.append(mod)
+
         reply = await msg.waitReply('\n'.join(reply_text) + '\n请回复编号来选择mod。')
         replied = reply.asDisplay(text_only=True)
 
