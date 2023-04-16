@@ -34,7 +34,7 @@ async def _(message: MessageSession):
     await message.finish(await flipCoins(count))
 
 
-async def flipCoins(count: int):
+async def flipCoins(count: int, msg: MessageSession):
     if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.max", max=MAX_COIN_NUM)
     if count <= 0:
