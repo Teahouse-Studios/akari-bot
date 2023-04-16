@@ -4,7 +4,7 @@
     "meme.message.nbnhhsh": "nbnhhsh",
     "meme.message.urban": "Urban Dictionary",
     "meme.message.error": "Something went wrong while querying.",
-    "meme.message.not_found": "No results found.",
+    "meme.message.not__found": "No results found.",
     "meme.message.result": "(${result} results): ",
     "meme.message.nbnhhsh.result": "(${result} results, recorded): ",
     "meme.message.nbnhhsh.result.ai": "(${result} results, AI speculation): ",
