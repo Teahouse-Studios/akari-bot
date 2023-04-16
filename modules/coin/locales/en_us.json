@@ -1,7 +1,7 @@
 {
-    "coin.message": "You toss ${count} coin(s),",
-    "coin.help.desc": "Toss coin.",
     "coin.help": "Toss any number of coins.",
+    "coin.help.desc": "Toss coin.",
+    "coin.message": "You toss ${count} coin(s),",
     "coin.message.error.amount": "An error occurred: Invalid number of coins: ",
     "coin.message.error.max": "An error occurred: You can only toss at most ${max} coins at one time.",
     "coin.message.error.nocoin": "An error occurred: You toss no coin, and nothing happened...",
@@ -17,7 +17,7 @@
     "coin.message.head.all": "They...\n...are all heads!",
     "coin.message.tail": "...It is tails!",
     "coin.message.tail.all": "They...\n...are all tails!",
-    "coin.message.mix": "\n...\n",
+    "coin.message.mix": "\n...",
     "coin.message.mix.head": " ${head} is(are) heads, ",
     "coin.message.mix.tail": "${tail} is(are) tails",
     "coin.message.mix.stand": "... and ${stand} stand(s) up!",

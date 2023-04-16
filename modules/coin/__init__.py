@@ -17,7 +17,7 @@ async def _(msg: MessageSession):
     if not amount.isdigit():
         await msg.finish(msg.locale.t('coin.message.error.amount') + amount)
     else:
-        await msg.finish(await flipCoins(int(amount)))
+        await msg.finish(await flipCoins(int(amount), msg))
 
 
 @coin.regex(r"[丢|抛]([^个|枚]*)?[个|枚]?硬币", desc='[丢/抛](n)[个/枚]?硬币')
@@ -31,10 +31,10 @@ async def _(message: MessageSession):
             count = Zh2Int(count)
         except ValueError as ex:
             await message.finish(message.locale.t("error") + str(ex))
-    await message.finish(await flipCoins(count))
+    await message.finish(await flipCoins(count, message))
 
 
-async def flipCoins(count: int, msg: MessageSession):
+async def flipCoins(count: int, msg):
     if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.max", max=MAX_COIN_NUM)
     if count <= 0:
@@ -52,7 +52,7 @@ async def flipCoins(count: int, msg: MessageSession):
             faceDown += 1
         else:
             stand += 1
-    head = msg.locale.t("coin.message")
+    head = msg.locale.t("coin.message", count=count)
     if count == 1:
         drop_place = COIN_DROP_PLACES[secrets.randbelow(len(COIN_DROP_PLACES))]
         head += msg.locale.t("coin.message.drop_place", drop_place=drop_place) + '\n'

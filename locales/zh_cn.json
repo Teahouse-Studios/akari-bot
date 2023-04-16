@@ -37,6 +37,7 @@
     "success": "成功。",
     "yes": "是",
     "no": "否",
+    "none": "无",
     "message.wait.confirm.prompt.type1": "（发送“是”或符合确认条件的词语来确认）",
     "message.wait.confirm.prompt.type2": "（发送符合条件的词语来确认）",
     "message.reply.prompt": "（请使用指定的词语回复本条消息）",

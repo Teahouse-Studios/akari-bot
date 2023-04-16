@@ -129,14 +129,16 @@ class MessageSession:
                                        allow_split_image=allow_split_image)
         raise FinishedException(f)
 
-    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         """
         用于向消息发送者直接发送消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
         :return: 被发送的消息链
         """
-        await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False)
+        await self.sendMessage(msgchain, disable_secret_check=disable_secret_check, quote=False,
+                               allow_split_image=allow_split_image)
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True):
         """
@@ -256,14 +258,15 @@ class FetchedSession:
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
-    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         """
         用于向获取对象发送消息。
         :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
         :param disable_secret_check: 是否禁用消息检查（默认为False）
+        :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
         :return: 被发送的消息链
         """
-        return await self.parent.sendDirectMessage(msgchain, disable_secret_check)
+        return await self.parent.sendDirectMessage(msgchain, disable_secret_check, allow_split_image=allow_split_image)
 
 
 class FetchTarget:
