@@ -22,5 +22,6 @@
     "coin.message.mix.stand": "…還有 ${stand} 枚立起來了！",
     "coin.message.mix.end": "。",
     "coin.message.stand": "…它立起来了！",
-    "coin.message.stand.all": "它們…\n…全都立起来了？！"
+    "coin.message.stand.all": "它們…\n…全都立起来了？！",
+    "coin.help.desc": "拋硬幣。"
 }
