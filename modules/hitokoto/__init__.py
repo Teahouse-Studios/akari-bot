@@ -1,14 +1,21 @@
-from core.component import on_command
+from core.builtins import Bot
+from core.component import module
 from core.builtins.message import MessageSession
 from core.dirty_check import check
-from .get import get_hitokoto
+from core.utils.http import get_url
 
-hitokoto = on_command(bind_prefix='hitokoto', developers=['bugungu'])
+hitokoto = module(bind_prefix='hitokoto', developers=['bugungu'])
 
-@hitokoto.handle('{接入一言API}', required_admin = False, required_superuser = False, available_for = '*')
+@hitokoto.handle('{Get Hitokoto / 获取一言}', required_admin = False, required_superuser = False, available_for = '*')
 
-async def print_out(msg: MessageSession):
-    send = await msg.sendMessage(await get_hitokoto() + '\n[90秒后撤回]')
+async def print_out(msg: Bot.MessageSession):
+    url = 'https://v1.hitokoto.cn/?encode=json'
+    responce = responce = await get_url(url, 200, fmt = 'json')
+    if responce['from_who'] != None:
+        send_msg = msg.locale.t("hitokoto.name") + ' #' + str(responce['id']) + '\n\n' + responce['hitokoto'] + '\n\n' + msg.locale.t("hitokoto.come_from") + msg.locale.t('hitokoto.type2name.' + responce['type']) + ' - ' + responce['from'] + ' - ' + responce['from_who']
+    else:
+        send_msg = msg.locale.t("hitokoto.name") + ' #' + str(responce['id']) + '\n\n' + responce['hitokoto'] + '\n\n' + msg.locale.t("hitokoto.come_from") + msg.locale.t('hitokoto.type2name.' + responce['type']) + ' - ' + responce['from'] + ' - ' + msg.locale.t("hitokoto.unknown")
+    send = await msg.sendMessage(send_msg + '\n[该消息将在90秒后撤回]')
     await msg.sleep(90)
     await send.delete()
     await msg.finish()
