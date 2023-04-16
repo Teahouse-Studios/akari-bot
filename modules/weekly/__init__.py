@@ -9,12 +9,13 @@ from core.utils.http import get_url
 from core.utils.i18n import Locale
 from .teahouse import get_rss as get_teahouse_rss
 from core.utils.image import msgchain2image
+from modules.wiki.utils.wikilib import WikiLib
 
 
 async def get_weekly(with_img=False, zh_tw=False):
     locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
     result = json.loads(await get_url(
-        'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid&format=json' +
+        'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid|images&format=json' +
         ('&variant=zh-tw' if zh_tw else ''),
         200))
     html = result['parse']['text']['*']
@@ -22,18 +23,22 @@ async def get_weekly(with_img=False, zh_tw=False):
     text = re.sub(r'<(.*?)>', '', text, flags=re.DOTALL)  # 移除所有 HTML 标签
     text = re.sub(r'\n\n\n', '\n\n', text)  # 移除不必要的空行
     text = re.sub(r'\n*$', '', text)
-    img = re.findall(r'(?<=src=")(.*?)(?=/revision/latest/scale-to-(width|height)-down/\d{3}\?cb=\d{14}?")', html)
+    img = result['parse']['images']
     page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
     msg_list = [Plain(locale.t("weekly.message.expired") if page[
                                                                     0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else locale.t(
         "weekly.message", text=text))]
+    imglink = None
     if img:
-        msg_list.append(Plain(locale.t("weekly.message.link", img=str(Url(f'{img[0][0]}?format=original')),
-                                           article=str(Url(f'https://minecraft.fandom.com{page[0]}')),
-                                           link=str(
-                                               Url(f'https://minecraft.fandom.com/zh/wiki/?oldid={str(result["parse"]["revid"])}')))))
-        if with_img:
-            msg_list.append(Image(path=img[0][0]))
+        get_image = await (WikiLib('https://minecraft.fandom.com/zh/wiki/')).parse_page_info('File:' + img[0])
+        if get_image.status:
+            imglink = get_image.file
+    msg_list.append(Plain(locale.t("weekly.message.link", img=imglink if imglink is not None else locale.t("none"),
+                                       article=str(Url(f'https://minecraft.fandom.com{page[0]}')),
+                                       link=str(
+                                           Url(f'https://minecraft.fandom.com/zh/wiki/?oldid={str(result["parse"]["revid"])}')))))
+    if imglink is not None and with_img:
+        msg_list.append(Image(path=imglink))
 
     return msg_list
 
