@@ -45,7 +45,7 @@
     "core.module.message.help.regex.no_information": "No description",
     "core.module.message.help.author.type1": "Module author: ",
     "core.module.message.help.author.type2": "Module Author",
-    "core.module.message.help.helpdoc.address": "Web document: https://bot.teahouse.team/wiki/",
+    "core.module.message.help.helpdoc.address": "Module document: https://bot.teahouse.team/wiki/",
     "core.module.message.help.table.header.base": "Base Module List",
     "core.module.message.help.table.header.help": "Help",
     "core.module.message.help.table.header.alias": "Command Aliases",
@@ -132,7 +132,7 @@
     "core.leave.help": "Let the robot leave the group.",
     "core.leave.message": "Goodbye.",
     "core.leave.confirm": "Are you sure? This action is irreversible.",
-    "core.module.message.help.legacy.revoke": "[This message will be revoked after 1 minute]",
+    "core.module.message.help.legacy.revoke": "[This message will be recalled after 1 minute]",
     "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly.",
     "core.petal.help": "Get the number of petals in the current group.",
     "core.petal.message": "${petal} petals remains in the current group."
