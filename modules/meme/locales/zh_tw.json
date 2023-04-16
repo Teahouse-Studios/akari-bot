@@ -4,7 +4,7 @@
     "meme.message.nbnhhsh": "nbnhhsh",
     "meme.message.urban": "Urban Dictionary",
     "meme.message.error": "查詢出錯。",
-    "meme.message.not_found": "沒有找到相關結果。",
+    "meme.message.not__found": "没有找到相关结果。",
     "meme.message.result": "（${result} 個結果）：",
     "meme.message.nbnhhsh.result": "（${result} 個結果，已收錄）：",
     "meme.message.nbnhhsh.result.ai": "（${result} 個結果，AI 猜測）：",
