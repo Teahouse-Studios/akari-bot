@@ -15,7 +15,7 @@ async def print_out(msg: Bot.MessageSession):
         send_msg = msg.locale.t("hitokoto.name") + ' #' + str(responce['id']) + '\n\n' + responce['hitokoto'] + '\n\n' + msg.locale.t("hitokoto.come_from") + msg.locale.t('hitokoto.type2name.' + responce['type']) + ' - ' + responce['from'] + ' - ' + responce['from_who']
     else:
         send_msg = msg.locale.t("hitokoto.name") + ' #' + str(responce['id']) + '\n\n' + responce['hitokoto'] + '\n\n' + msg.locale.t("hitokoto.come_from") + msg.locale.t('hitokoto.type2name.' + responce['type']) + ' - ' + responce['from'] + ' - ' + msg.locale.t("hitokoto.unknown")
-    send = await msg.sendMessage(send_msg + '\n[该消息将在90秒后撤回]')
+    send = await msg.sendMessage(send_msg + msg.locale.t("hitokoto.message.delete"))
     await msg.sleep(90)
     await send.delete()
     await msg.finish()
