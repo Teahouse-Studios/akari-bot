@@ -30,7 +30,7 @@ async def _(message: MessageSession):
         try:
             count = Zh2Int(count)
         except ValueError as ex:
-            await message.finish(msg.locale.t("error") + str(ex))
+            await message.finish(message.locale.t("error") + str(ex))
     await message.finish(await flipCoins(count))
 
 
