@@ -6,7 +6,7 @@
     "github.user.message.not_found": "找不到使用者，請檢查輸入。",
     "github.search.help": "搜尋 Github 上的儲存庫。",
     "github.search.message": "搜尋成功，共 ${result} 條結果：",
-    "github.search.message.not_found": "找不到仓库，请检查输入。",
-    "github.message.error": "发生错误：找不到仓库，请检查拼写是否正确。",
+    "github.search.message.not_found": "找不到儲存庫，請檢查輸入。",
+    "github.message.error": "發生錯誤：找不到儲存庫，請檢查拼字是否正確。",
     "github.search.message.more_information": "另有 ${more_result} 條結果未顯示。"
 }
