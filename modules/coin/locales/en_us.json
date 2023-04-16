@@ -22,5 +22,6 @@
     "coin.message.mix.stand": "... and ${stand} stand(s) up!",
     "coin.message.mix.end": ".",
     "coin.message.stand": "...it is standing up!",
-    "coin.message.stand.all": "They...\n...ALL STAND UP?!"
+    "coin.message.stand.all": "They...\n...ALL STAND UP?!",
+    "coin.help.desc": "Toss coin."
 }
