@@ -34,7 +34,7 @@ async def news(msg):
                 time_class = datetime.date(
                     int(time[0]), int(time[1]), int(time[2]))
                 delta = datetime.date.today() - time_class
-                time = str(delta.days) + msg.locale.t('mcbbs_news.message.days_ago')
+                time = str(delta.days) + '天前'
 
             title = a.get_text()
             url = Url('https://www.mcbbs.net/' + a.get('href'))

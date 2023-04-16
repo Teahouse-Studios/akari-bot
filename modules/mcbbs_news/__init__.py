@@ -6,7 +6,8 @@ from .mcbbs_news import news
 mcbbs_news = module(
     bind_prefix='mcbbs_news',
     alias=['mn', 'mcbbsnews'],
-    developers=['Dianliang233']
+    developers=['Dianliang233'],
+    support_languages=['zh_cn']
 )
 
 

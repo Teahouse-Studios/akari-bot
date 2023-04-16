@@ -1,4 +1,4 @@
 {
-    "bugtracker.message.error": "An error occurred: Failed to fetch Json.",
+    "bugtracker.message.error": "An error occurred: Failed to fetch json.",
     "bugtracker.help": "Query the corresponding ticket on Mojira."
 }
