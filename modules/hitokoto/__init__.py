@@ -6,7 +6,7 @@ from core.utils.http import get_url
 
 hitokoto = module(bind_prefix='hitokoto', developers=['bugungu'])
 
-@hitokoto.handle('{Get Hitokoto / 获取一言}', required_admin = False, required_superuser = False, available_for = '*')
+@hitokoto.handle('{{hitokoto.help_doc}}', required_admin = False, required_superuser = False, available_for = '*')
 
 async def print_out(msg: Bot.MessageSession):
     url = 'https://v1.hitokoto.cn/?encode=json'
