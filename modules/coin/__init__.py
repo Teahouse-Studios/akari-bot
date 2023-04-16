@@ -31,10 +31,10 @@ async def _(message: MessageSession):
             count = Zh2Int(count)
         except ValueError as ex:
             await message.finish(message.locale.t("error") + str(ex))
-    await message.finish(await flipCoins(count))
+    await message.finish(await flipCoins(count, msg=message))
 
 
-async def flipCoins(count: int, message):
+async def flipCoins(count: int, msg):
     if count > MAX_COIN_NUM:
         return message.locale.t("coin.message.error.max", max=MAX_COIN_NUM)
     if count <= 0:
@@ -57,25 +57,25 @@ async def flipCoins(count: int, message):
         drop_place = COIN_DROP_PLACES[secrets.randbelow(len(COIN_DROP_PLACES))]
         head += message.locale.t("coin.message.drop_place", drop_place=drop_place) + '\n'
         if faceUp:
-            return head + message.locale.t("coin.message.head")
+            return head + msg.locale.t("coin.message.head")
         elif faceDown:
-            return head + message.locale.t("coin.message.tail")
+            return head + msg.locale.t("coin.message.tail")
         else:
-            return head + message.locale.t("coin.message.stand")
+            return head + msg.locale.t("coin.message.stand")
     else:
         if not (stand or faceDown):
-            return head + message.locale.t("coin.message.head.all")
+            return head + msg.locale.t("coin.message.head.all")
         if not (stand or faceUp):
-            return head + message.locale.t("coin.message.tail.all")
+            return head + msg.locale.t("coin.message.tail.all")
         if not (faceUp or faceDown):
-            return head + message.locale.t("coin.message.stand.all")
-        output = head + message.locale.t("coin.message.mix")
+            return head + msg.locale.t("coin.message.stand.all")
+        output = head + msg.locale.t("coin.message.mix")
         if faceUp:
-            output += message.locale.t("coin.message.mix.head", head=faceUp)
+            output += msg.locale.t("coin.message.mix.head", head=faceUp)
         if faceDown:
-            output += message.locale.t("coin.message.mix.tail", tail=faceDown)
+            output += msg.locale.t("coin.message.mix.tail", tail=faceDown)
         if stand:
-            output += message.locale.t("coin.message.mix.stand", stand=stand)
+            output += msg.locale.t("coin.message.mix.stand", stand=stand)
         else:
-            output += message.locale.t("coin.message.mix.end")
+            output += msg.locale.t("coin.message.mix.end")
         return output
