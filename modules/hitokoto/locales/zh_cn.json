@@ -1,0 +1,18 @@
+{
+    "hitokoto.name":"一言",
+    "hitokoto.type2name.a":"动画",
+    "hitokoto.type2name.b":"漫画",
+    "hitokoto.type2name.c":"游戏",
+    "hitokoto.type2name.d":"文学",
+    "hitokoto.type2name.e":"原创",
+    "hitokoto.type2name.f":"来自网络",
+    "hitokoto.type2name.g":"其他",
+    "hitokoto.type2name.h":"影视",
+    "hitokoto.type2name.i":"诗词",
+    "hitokoto.type2name.j":"网易云",
+    "hitokoto.type2name.k":"哲学",
+    "hitokoto.type2name.l":"抖机灵",
+    "hitokoto.come_from":"来源：",
+    "hitokoto.unknown":"未知",
+    "hitokoto.message.delete":"[该消息将在90秒后撤回]"
+}
