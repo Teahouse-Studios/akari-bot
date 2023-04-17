@@ -45,5 +45,6 @@
     "core.help.alias": "指令別名：",
     "parser.module.desc": "描述：\n${desc}",
     "check.redacted": "<已編輯>",
-    "check.redacted.all": "<全部已編輯>"
+    "check.redacted.all": "<全部已編輯>",
+    "\"none\"": "無"
 }
