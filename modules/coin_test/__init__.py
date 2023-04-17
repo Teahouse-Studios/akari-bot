@@ -1,7 +1,6 @@
 import secrets
 from core.builtins.message import MessageSession
 from core.component import module
-from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = 10000
 FACE_UP_RATE = 3333  # n/10000 
