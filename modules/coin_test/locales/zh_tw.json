@@ -1,7 +1,7 @@
 {
     "coin.help": "拋任意枚硬幣。",
     "coin.help.desc": "抛硬幣。",
-    "coin.message": "你拋了 ${count} 枚硬幣，",
+    "coin.message": "你拋了 ${count} 枚硬幣",
     "coin.message.error.amount": "發生錯誤：無效的硬幣數量：",
     "coin.message.error.max": "發生錯誤：你最多只能拋 ${max} 枚硬幣。",
     "coin.message.error.nocoin": "發生錯誤：你拋了 0 枚硬幣，什麼也沒有發生...",

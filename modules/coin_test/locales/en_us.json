@@ -1,7 +1,7 @@
 {
     "coin.help": "Toss any number of coins.",
     "coin.help.desc": "Toss coin.",
-    "coin.message": "You toss ${count} coin(s),",
+    "coin.message": "You toss ${count} coin(s)",
     "coin.message.error.amount": "An error occurred: Invalid number of coins: ",
     "coin.message.error.max": "An error occurred: You can only toss at most ${max} coins at one time.",
     "coin.message.error.nocoin": "An error occurred: You toss no coin, and nothing happened...",
