@@ -5,7 +5,11 @@ from core.builtins import Bot
 from core.component import module
 from core.exceptions import NoReportException
 
-exchange_rate = module('exchange_rate', required_superuser = True)
+exchange_rate = module('exchange_rate', 
+                       desc='汇率转换器。', 
+                       alias={'exchangerate': 'exchange_rate', 
+                              'excr': 'exchange_rate'},
+                       developers=['DoroWolf'], required_superuser = True)
 
 api_key = 'd31697e581d5c35b038c625c'
 
@@ -19,15 +23,17 @@ async def _(msg: Bot.MessageSession):
     if response.status_code == 200:
             data = response.json()
             supported_currencies = data['supported_codes']
-            if base_currency not in supported_currencies or target_currency not in supported_currencies:
-                unsupported_currencies = []
-                if base_currency not in supported_currencies:
-                    unsupported_currencies.append(base_currency)
-                if target_currency not in supported_currencies:
-                    unsupported_currencies.append(target_currency)
+            unsupported_currencies = []
+            if base_currency not in supported_currencies:
+                unsupported_currencies.append(base_currency)
+            if target_currency not in supported_currencies:
+                unsupported_currencies.append(target_currency)
+            if unsupported_currencies:
                 await msg.finish(f"发生错误：无效的货币单位：{' '.join(unsupported_currencies)}")
     else:
-            raise NoReportException(f"{response.text}")
+        data = response.json()
+        error_type = ''.join(data['error-type'])
+        raise NoReportException(f"{error_type}")
 
     amount = None
     while amount is None:
