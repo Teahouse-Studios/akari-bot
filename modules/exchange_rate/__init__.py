@@ -47,4 +47,5 @@ async def _(msg: Bot.MessageSession):
         current_time = datetime.datetime.now().strftime("%Y-%m-%d")
         await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
     else:
-        raise NoReportException(f"{response.text}")
+        error_type = ', '.join(response.json()['error-type'].keys())
+        raise NoReportException(f"{error_type}")
