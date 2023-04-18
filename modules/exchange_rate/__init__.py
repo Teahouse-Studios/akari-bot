@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
             if amount <= 0:
                 raise ValueError("发生错误：金额必须为正数。")
         except ValueError:
-            print("发生错误：无效的金额。")
+            await msg.finish("发生错误：无效的金额。")
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     response = requests.get(url)
