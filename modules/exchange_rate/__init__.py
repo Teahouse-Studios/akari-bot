@@ -3,6 +3,7 @@ import requests
 
 from core.builtins import Bot
 from core.component import module
+from core.exceptions import NoReportException
 
 exchange_rate = module('exchange_rate', required_superuser = True)
 
@@ -26,7 +27,7 @@ async def _(msg: Bot.MessageSession):
                     unsupported_currencies.append(target_currency)
                 await msg.finish(f"发生错误：无效的货币单位：{' '.join(unsupported_currencies)}")
     else:
-            await msg.finish(f'Error')
+            raise NoReportException(f"{response.text}")
 
     amount = None
     while amount is None:
@@ -46,4 +47,4 @@ async def _(msg: Bot.MessageSession):
         current_time = datetime.datetime.now().strftime("%Y-%m-%d")
         await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
     else:
-        await msg.finish(f'Error')
+        raise NoReportException(f"{response.text}")
