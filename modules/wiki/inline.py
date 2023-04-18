@@ -114,7 +114,8 @@ async def _(msg: Bot.MessageSession):
                                                                                get_page.has_template_doc or
                                                                                get_page.title.split(':')[0] in [
                                                                                    'User'] or \
-                                                                               'Template:Disambiguation' in get_page.templates)
+                                                                               ('Template:Disambiguation' in get_page.templates
+                                                                                or 'Template:Version disambiguation' in get_page.templates))
                                     if get_infobox:
                                         await msg.sendMessage(Image(get_infobox), quote=False)
                                 else:

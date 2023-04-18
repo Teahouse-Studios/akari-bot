@@ -300,6 +300,7 @@ if Bot.FetchTarget.name == 'QQ':
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
+                await asyncio.sleep(30)
             await msg.sendMessage(msg.locale.t("core.resume.message.done"))
         else:
             await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
@@ -313,9 +314,17 @@ if Bot.FetchTarget.name == 'QQ':
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
+                await asyncio.sleep(30)
             await msg.sendMessage(msg.locale.t("core.resume.message.done"))
         else:
             await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
+
+
+    @resume.handle('clean')
+    async def _(msg: Bot.MessageSession):
+        Temp.data['waiting_for_send_group_message'] = []
+        await msg.sendMessage(msg.locale.t("core.resume.message.clean")) 
+
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
 

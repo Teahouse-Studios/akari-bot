@@ -14,7 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from config import Config
 from core.builtins import Bot, ErrorMessage
-from core.builtins import Plain, Image, Voice, Temp
+from core.builtins import Plain, Image, Voice, Temp, command_prefix
 from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
@@ -274,7 +274,8 @@ class FetchTarget(FT):
                         fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
                         if fetch_base_superuser:
                             await fetch_base_superuser.\
-                                sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused"))
+                                sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused",
+                                                                                       prefix=command_prefix[0]))
             except Exception:
                 Logger.error(traceback.format_exc())
 
