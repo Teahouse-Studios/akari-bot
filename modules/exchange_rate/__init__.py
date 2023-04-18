@@ -26,13 +26,13 @@ async def _(msg: Bot.MessageSession):
 
     if response.status_code == 200:
         data = response.json()
-        exchange_rate = data['conversion_rates']
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if base_currency.upper() not in data["conversion_rates"]:
-            await msg.finish('发生错误：无效的货币单位：' + base_currency)
-        elif target_currency.upper() not in data["conversion_rates"]:
-            await msg.finish('发生错误：无效的货币单位：' + target_currency)
-        else:
-            await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
+        supported_currencies = data['supported_codes']
+        if base_currency not in supported_currencies:
+            await msg.finish("发生错误：无效的货币单位：" + base_currency)
+        elif target_currency not in supported_currencies:
+            await msg.finish("发生错误：无效的货币单位：" + target_currency)
+        exchange_rate = data['conversion_result']
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d")
+        await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
     else:
         await msg.finish(f'Error')
