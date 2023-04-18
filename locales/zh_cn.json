@@ -1,5 +1,4 @@
 {
-    "language": "简体中文",
     "i18n.prompt.fallback.failed": "（如果你看到了这条奇怪的字符串，说明我们又搞错了什么东西！\n请将问题反馈至\n${url}\n以便我们快速解决此问题。）",
     "error.prompt": "发生错误：${error_msg}\n错误汇报地址：",
     "error.prompt.report": "执行命令时发生错误，请报告机器人开发者：\n${err_msg}\n错误汇报地址：",
@@ -38,7 +37,6 @@
     "success": "成功。",
     "yes": "是",
     "no": "否",
-    "none": "无",
     "message.wait.confirm.prompt.type1": "（发送“是”或符合确认条件的词语来确认）",
     "message.wait.confirm.prompt.type2": "（发送符合条件的词语来确认）",
     "message.reply.prompt": "（请使用指定的词语回复本条消息）",
