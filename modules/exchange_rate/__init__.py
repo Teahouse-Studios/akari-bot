@@ -16,6 +16,7 @@ async def _(msg: Bot.MessageSession):
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
     response = requests.get(url)
     if response.status_code == 200:
+            data = response.json()
             supported_currencies = data['supported_codes']
             if base_currency not in supported_currencies:
                 await msg.finish("发生错误：无效的货币单位：" + base_currency)
