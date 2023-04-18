@@ -12,7 +12,7 @@ exchange_rate = module('exchange_rate',
                               'excr': 'exchange_rate'},
                        developers=['DoroWolf'])
 
-api_key = Config('exchange_api_key')
+api_key = Config('exchange_rate_api_key')
 
 @exchange_rate.command('<amount> <base> <target> {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
