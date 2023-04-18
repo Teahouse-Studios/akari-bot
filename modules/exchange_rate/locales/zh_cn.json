@@ -1,0 +1,8 @@
+{
+    "exchange_rate.help.desc": "汇率转换器。",
+    "exchange_rate.help": "根据当日汇率转换货币价格。",
+    "exchange_rate.message": "${amount} ${base} -> ${exchange_rate} ${target}\n（{time}）",
+    "exchange_rate.message.error.non_positive": "发生错误：金额必须为正数。",
+    "exchange_rate.message.error.non_digital": "发生错误：无效的金额，金额必须为纯数字。",
+    "exchange_rate.message.error.invalid": "发生错误：无效的货币单位："
+}
