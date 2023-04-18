@@ -13,7 +13,7 @@ exchange_rate = module('exchange_rate',
 
 api_key = 'd31697e581d5c35b038c625c'
 
-@exchange_rate.command('<amount> <base> <target>')
+@exchange_rate.command('<amount> <base> <target> {根据当日汇率转换货币价格。}')
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
@@ -30,9 +30,10 @@ async def _(msg: Bot.MessageSession):
                 unsupported_currencies.append(target_currency)
             if unsupported_currencies:
                 await msg.finish(f"发生错误：无效的货币单位：{' '.join(unsupported_currencies)}")
+                exit()
     else:
         data = response.json()
-        error_type = ''.join(data['error-type'])
+        error_type = data['error-type']
         raise NoReportException(f"{error_type}")
 
     amount = None
@@ -54,5 +55,5 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
     else:
         data = response.json()
-        error_type = ''.join(data['error-type'])
+        error_type = data['error-type']
         raise NoReportException(f"{error_type}")
