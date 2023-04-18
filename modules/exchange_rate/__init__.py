@@ -18,10 +18,13 @@ async def _(msg: Bot.MessageSession):
     if response.status_code == 200:
             data = response.json()
             supported_currencies = data['supported_codes']
-            if base_currency not in supported_currencies:
-                await msg.finish("发生错误：无效的货币单位：" + base_currency)
-            elif target_currency not in supported_currencies:
-                await msg.finish("发生错误：无效的货币单位：" + target_currency)
+            if base_currency not in supported_currencies or target_currency not in supported_currencies:
+                unsupported_currencies = []
+                if base_currency not in supported_currencies:
+                    unsupported_currencies.append(base_currency)
+                if target_currency not in supported_currencies:
+                    unsupported_currencies.append(target_currency)
+                await msg.finish(f"发生错误：无效的货币单位：{' '.join(unsupported_currencies)}")
     else:
             await msg.finish(f'Error')
 
