@@ -48,5 +48,5 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
     else:
         data = response.json()
-        error_type = ', '.join(data['error-type'])
+        error_type = join(data['error-type'])
         raise NoReportException(f"{error_type}")
