@@ -12,6 +12,18 @@ api_key = 'd31697e581d5c35b038c625c'
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
+
+    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
+    response = requests.get(url)
+    if response.status_code == 200:
+            supported_currencies = data['supported_codes']
+            if base_currency not in supported_currencies:
+                await msg.finish("发生错误：无效的货币单位：" + base_currency)
+            elif target_currency not in supported_currencies:
+                await msg.finish("发生错误：无效的货币单位：" + target_currency)
+    else:
+            await msg.finish(f'Error')
+
     amount = None
     while amount is None:
         try:
@@ -26,11 +38,6 @@ async def _(msg: Bot.MessageSession):
 
     if response.status_code == 200:
         data = response.json()
-        supported_currencies = data['supported_codes']
-        if base_currency not in supported_currencies:
-            await msg.finish("发生错误：无效的货币单位：" + base_currency)
-        elif target_currency not in supported_currencies:
-            await msg.finish("发生错误：无效的货币单位：" + target_currency)
         exchange_rate = data['conversion_result']
         current_time = datetime.datetime.now().strftime("%Y-%m-%d")
         await msg.finish(f'{amount} {base_currency} -> {exchange_rate} {target_currency}\n（{current_time}）')
