@@ -18,23 +18,23 @@ async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
 
-    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
-    response = requests.get(url)
-    if response.status_code == 200:
-            data = response.json()
-            supported_currencies = data['supported_codes']
-            unsupported_currencies = []
-            if base_currency not in supported_currencies:
-                unsupported_currencies.append(base_currency)
-            if target_currency not in supported_currencies:
-                unsupported_currencies.append(target_currency)
-            if unsupported_currencies:
-                await msg.finish(f"发生错误：无效的货币单位：{' '.join(unsupported_currencies)}")
-                exit()
-    else:
-        data = response.json()
-        error_type = data['error-type']
-        raise NoReportException(f"{error_type}")
+#    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
+#    response = requests.get(url)
+#    if response.status_code == 200:
+#            data = response.json()
+#            supported_currencies = data['supported_codes']
+#            unsupported_currencies = []
+#            if base_currency not in supported_currencies:
+#                unsupported_currencies.append(base_currency)
+#            if target_currency not in supported_currencies:
+#                unsupported_currencies.append(target_currency)
+#            if unsupported_currencies:
+#                await msg.finish(f"发生错误：无效的货币单位：{' '.join(unsupported_currencies)}")
+#                exit()
+#    else:
+#        data = response.json()
+#        error_type = data['error-type']
+#        raise NoReportException(f"{error_type}")
 
     amount = None
     while amount is None:
