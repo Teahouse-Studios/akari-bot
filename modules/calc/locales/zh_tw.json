@@ -24,7 +24,7 @@
     "calc.help.oct": "转换为八进制：oct(268) ->  0o414",
     "calc.help.hex": "转换为十六进制：hex(268) -> 0x10c",
     "calc.help.more": "更多可用运算符和函数",
-    "calc.message.invalid": "表达式无效：${expr}",
-    "calc.message.time_out": "计算超时。",
+    "calc.message.invalid": "表達式無效：${expr}",
+    "calc.message.time_out": "計算逾時。",
     "calc.help.desc": "安全地计算 Python ast 表达式。"
 }
