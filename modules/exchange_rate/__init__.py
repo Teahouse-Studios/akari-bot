@@ -10,14 +10,14 @@ api_key = 'd31697e581d5c35b038c625c'
 
 @exchange_rate.command('<amount> <base> <target>')
 async def _(msg: Bot.MessageSession):
-    base_currency = msg.parsed_msg['<base>']
-    target_currency = msg.parsed_msg['<target>']
+    base_currency = msg.parsed_msg['<base>'].upper()
+    target_currency = msg.parsed_msg['<target>'].upper()
     amount = None
     while amount is None:
         try:
             amount = float(msg.parsed_msg['<amount>'])
             if amount <= 0:
-                raise ValueError("发生错误：金额必须为正数。")
+                await msg.finish("发生错误：金额必须为正数。")
         except ValueError:
             await msg.finish("发生错误：无效的金额。")
 
