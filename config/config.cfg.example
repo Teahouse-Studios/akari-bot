@@ -10,7 +10,7 @@ tg_token =
 openai_api_key =
 nl2c_model =
 curseforge_api_key =
-exchange_rate_api_key =
+exchange_api_key =
 
 [cfg]
 debug = False
