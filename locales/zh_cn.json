@@ -46,5 +46,6 @@
     "parser.module.desc": "介绍：\n${desc}",
     "check.redacted": "<吃掉了>",
     "check.redacted.all": "<全部吃掉了>",
-    "\"none\"": "无"
+    "\"none\"": "无",
+    "\"language\"": "简体中文"
 }
