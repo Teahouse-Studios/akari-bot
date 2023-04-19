@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
     #        error_type = data['error-type']
     #        raise NoReportException(f"{error_type}")
 
-    amount = msg.parsed_msg['<amount>', None]
+    amount = msg.parsed_msg.get('<amount>', None)
     if amount is None:
         amount = 1
     else:
