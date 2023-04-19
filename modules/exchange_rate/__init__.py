@@ -21,7 +21,8 @@ async def _(msg: Bot.MessageSession):
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
     response = await get_url(url, fmt='read', status_code=200)
-    data = response.json()
+    response_str = response.decode('utf-8')
+    data = json.loads(response_str)
     supported_currencies = data['supported_codes']
     unsupported_currencies = []
     if base_currency not in supported_currencies:
@@ -40,7 +41,8 @@ async def _(msg: Bot.MessageSession):
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     response = await get_url(url, fmt='read', status_code=200)
-    data = response.json()
+    response_str = response.decode('utf-8')
+    data = json.loads(response_str)
     exchange_rate = data['conversion_result']
     current_time = datetime.datetime.now().strftime("%Y-%m-%d")
     await msg.finish(
