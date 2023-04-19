@@ -37,12 +37,10 @@ async def _(msg: Bot.MessageSession):
 #        error_type = data['error-type']
 #        raise NoReportException(f"{error_type}")
 
-    amount = msg.parsed_msg['<amount>']
-    if amount is None:
-        amount = 1
-    else:
+    amount = None
+    while amount is None:
         try:
-            amount = float(amount)
+            amount = float(msg.parsed_msg['<amount>'])
             if amount <= 0:
                 await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
         except ValueError:
