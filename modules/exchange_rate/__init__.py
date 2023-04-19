@@ -15,7 +15,7 @@ exchange_rate = module('exchange_rate',
 api_key = Config('exchange_rate_api_key')
 
 
-@exchange_rate.command('<base> <target> <amount> {{exchange_rate.help}}')
+@exchange_rate.command('<base> <target> [<amount>] {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
     #        error_type = data['error-type']
     #        raise NoReportException(f"{error_type}")
 
-    amount = msg.parsed_msg['<amount>']
+    amount = msg.parsed_msg['<amount>', None]
     if amount is None:
         amount = 1
     else:
