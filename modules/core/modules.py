@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
 
 
 async def config_modules(msg: Bot.MessageSession):
-    alias = ModulesManager.return_modules_alias_map()
+    alias = ModulesManager.modules_aliases
     modules_ = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
     enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
@@ -221,7 +221,7 @@ hlp = module('help',
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list_as_dict(
         targetFrom=msg.target.targetFrom)
-    alias = ModulesManager.return_modules_alias_map()
+    alias = ModulesManager.modules_aliases
     if msg.parsed_msg is not None:
         msgs = []
         help_name = msg.parsed_msg['<module>']
