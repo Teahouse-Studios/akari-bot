@@ -93,7 +93,7 @@ class ModulesManager:
                 modules.remove(module)
             return modules
         else:
-            raise ValueError(f'Could not find "{module}" in modulesOrigin dict')
+            raise ValueError(f'Could not find "{module}" in modules_origin dict')
 
     @staticmethod
     def return_py_module(module):
@@ -126,7 +126,7 @@ class ModulesManager:
                         returns.update({m: ModulesManager.modules[m]})
             return returns
         return ModulesManager.modules
-    
+
 
     @staticmethod
     def reload_module(module_name: str):
