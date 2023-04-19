@@ -80,7 +80,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         MessageTaskManager.check(msg)
-        modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
+        modules = ModulesManager.return_modules_list(msg.target.targetFrom)
 
         display = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
         if len(display) == 0:

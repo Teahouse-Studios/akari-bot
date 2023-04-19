@@ -113,7 +113,7 @@ class ModulesManager:
                 ModulesManager.modules[bind_prefix].schedule_list.add(meta)
 
     @staticmethod
-    def return_modules_list_as_dict(targetFrom: str = None) -> \
+    def return_modules_list(targetFrom: str = None) -> \
         Dict[str, Module]:
         if targetFrom is not None:
             returns = {}
