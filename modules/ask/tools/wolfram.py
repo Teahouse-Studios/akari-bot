@@ -1,6 +1,7 @@
-from .utils import to_async_func, AkariTool
-from config import Config
 from langchain.utilities import WolframAlphaAPIWrapper
+
+from config import Config
+from .utils import to_async_func, AkariTool
 
 wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=Config('wolfram_alpha_appid'))
 

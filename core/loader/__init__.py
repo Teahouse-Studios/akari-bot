@@ -8,8 +8,8 @@ from typing import Dict, Union
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
-from core.utils.i18n import load_locale_file
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
+from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
 

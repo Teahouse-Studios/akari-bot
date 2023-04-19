@@ -3,6 +3,7 @@ import uuid
 
 from .utils import AkariTool, parse_input
 
+
 async def random_number(input: str):
     parsed = parse_input(input)
     random = secrets.randbelow(int(parsed[0]) - int(parsed[1]) + 1) + int(parsed[1])

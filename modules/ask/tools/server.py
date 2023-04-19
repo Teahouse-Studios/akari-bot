@@ -1,6 +1,8 @@
 import asyncio
-from .utils import fake_msg, AkariTool
+
 from modules.server.server import server
+from .utils import fake_msg, AkariTool
+
 
 async def server_all(input: str):
     results = await asyncio.gather(

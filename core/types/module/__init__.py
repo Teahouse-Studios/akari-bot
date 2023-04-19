@@ -1,4 +1,4 @@
-from typing import Callable, Union, Dict, List
+from typing import Union, Dict, List
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger

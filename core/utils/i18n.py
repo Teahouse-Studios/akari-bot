@@ -5,10 +5,8 @@ from typing import TypedDict
 
 import ujson as json
 
-from .text import remove_suffix
-
 from config import Config
-
+from .text import remove_suffix
 
 # Load all locale files into memory
 

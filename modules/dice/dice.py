@@ -1,6 +1,7 @@
-import secrets
-import numpy as np
 import re
+import secrets
+
+import numpy as np
 
 MAX_DICE_COUNT = 100  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = 10  # 一次命令最多的摇动次数

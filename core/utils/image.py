@@ -1,23 +1,19 @@
-import traceback
 import base64
-from os.path import abspath
+import traceback
 from typing import List, Union
 
 import aiohttp
+import filetype as ft
+import ujson as json
+from PIL import Image as PImage
+from aiofile import async_open
 
 from config import Config
+from core.builtins import Plain, Image, Voice, Embed
 from core.logger import Logger
 from core.types.message.chain import MessageChain
-
-from PIL import Image as PImage
-import ujson as json
-import filetype as ft
-
-from core.builtins import Plain, Image, Voice, Embed
 from core.utils.cache import random_cache_path
 from core.utils.http import download_to_cache
-
-from aiofile import async_open
 
 web_render = Config('web_render')
 web_render_local = Config('web_render_local')

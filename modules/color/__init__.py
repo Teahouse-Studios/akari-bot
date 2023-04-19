@@ -1,11 +1,11 @@
-import re
-import os
 import colorsys
+import os
+import re
 
-import ujson as json
-from PIL import Image, ImageDraw, ImageFont
 import numpy as np
+import ujson as json
 import webcolors
+from PIL import Image, ImageDraw, ImageFont
 
 from core.builtins import Bot, Image as BotImage
 from core.component import module

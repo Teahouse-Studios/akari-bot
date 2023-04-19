@@ -1,9 +1,9 @@
+import re
+
 from core.builtins import Plain, Image, Bot
 from core.builtins.message import MessageSession
 from core.component import module
 from core.scheduler import IntervalTrigger
-
-import re
 
 test = module('test')
 

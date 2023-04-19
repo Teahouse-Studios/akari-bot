@@ -1,4 +1,5 @@
 import secrets
+
 from core.builtins.message import MessageSession
 from core.component import module
 from .zhNum2Int import Zh2Int

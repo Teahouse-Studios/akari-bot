@@ -1,6 +1,7 @@
-from .utils import to_async_func, AkariTool
-from config import Config
 from langchain.utilities import GoogleSerperAPIWrapper
+
+from config import Config
+from .utils import to_async_func, AkariTool
 
 search = GoogleSerperAPIWrapper(serper_api_key=Config('serper_api_key'))
 
