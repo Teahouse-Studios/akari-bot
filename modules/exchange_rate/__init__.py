@@ -15,7 +15,7 @@ exchange_rate = module('exchange_rate',
 api_key = Config('exchange_rate_api_key')
 
 
-@exchange_rate.command('<amount> <base> <target> {{exchange_rate.help}}')
+@exchange_rate.command('<base> <target> <amount> {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
