@@ -31,14 +31,15 @@ async def _(msg: Bot.MessageSession):
 #                unsupported_currencies.append(target_currency)
 #            if unsupported_currencies:
 #                await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
-#                exit()
 #    else:
 #        data = response.json()
 #        error_type = data['error-type']
 #        raise NoReportException(f"{error_type}")
 
-    amount = float(msg.parsed_msg['<amount>'])
+    amount = None
+    while amount is None:
         try:
+            amount = float(msg.parsed_msg['<amount>'])
             if amount <= 0:
                 await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
         except ValueError:
