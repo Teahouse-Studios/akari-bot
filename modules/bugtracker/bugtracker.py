@@ -3,7 +3,6 @@ import json
 from core.builtins import Url, ErrorMessage
 from core.utils.http import get_url
 
-
 spx_cache = {}
 
 

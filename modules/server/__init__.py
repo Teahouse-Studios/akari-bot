@@ -1,6 +1,5 @@
 import asyncio
 import re
-import traceback
 
 from core.builtins import Bot
 from core.component import module

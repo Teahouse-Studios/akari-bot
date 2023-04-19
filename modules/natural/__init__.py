@@ -1,8 +1,8 @@
-import os
 import openai
+
+from config import Config
 from core.builtins import Bot
 from core.component import module
-from config import Config
 
 n = module('natural', alias=['nl2c'], developers=['Dianliang233'], desc='{natural.help}')
 

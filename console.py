@@ -20,7 +20,7 @@ import aioconsole
 from bot import init_bot
 from core.builtins import PrivateAssets, EnableDirtyWordCheck, Plain
 from core.types import MsgInfo, AutoSession
-from core.console.template import Template as MessageSession, FetchTarget
+from core.console.template import Template as MessageSession
 from core.parser.message import parser
 from core.utils.bot import init_async
 from core.logger import Logger

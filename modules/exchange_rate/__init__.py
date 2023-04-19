@@ -1,10 +1,10 @@
 import datetime
-import requests
 
+from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import NoReportException
-from config import Config
+from core.utils.http import get_url
 
 exchange_rate = module('exchange_rate', 
                        desc='{exchange_rate.help.desc}', 
@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
-    response = requests.get(url)
+    response = await get_url(url, fmt='read')
 
     if response.status_code == 200:
         data = response.json()
