@@ -15,7 +15,7 @@ exchange_rate = module('exchange_rate',
 api_key = Config('exchange_rate_api_key')
 
 
-@exchange_rate.command('<amount> <base> <target> {{exchange_rate.help}}')
+@exchange_rate.command('<base> <target> <amount> {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
@@ -37,14 +37,17 @@ async def _(msg: Bot.MessageSession):
     #        error_type = data['error-type']
     #        raise NoReportException(f"{error_type}")
 
-    amount = None
-    while amount is None:
-        try:
-            amount = float(msg.parsed_msg['<amount>'])
-            if amount <= 0:
-                await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
-        except ValueError:
-            await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
+    amount = msg.parsed_msg['<amount>']
+    if amount is None:
+        amount = 1
+    else:
+        while True:
+            try:
+                amount = float(amount)
+                if amount <= 0:
+                    await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
+            except ValueError:
+                await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     response = await get_url(url, fmt='read')
