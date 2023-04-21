@@ -1,4 +1,4 @@
-﻿{
+{
     "core.alias.help.add": "Add custom command alias.",
     "core.alias.help.remove": "Remove custom command alias.",
     "core.alias.help.reset": "Reset custom command alias.",

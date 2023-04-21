@@ -1,4 +1,4 @@
-﻿{
+{
     "core.alias.help.add": "新增自訂指令別名。",
     "core.alias.help.remove": "移除自訂指令別名。",
     "core.alias.help.reset": "重設自訂指令別名。",
