@@ -1,5 +1,4 @@
 {
-    "color.help.random": "Random color.",
     "color.message.invalid": "An error occurred: Unrecognized color format.",
     "color.message.css": "CSS color name: ",
     "color.message.css.approximate": "Approximate CSS color name: ",
