@@ -4,6 +4,7 @@ import json
 from config import Config
 from core.builtins import Bot
 from core.component import module
+from core.exceptions import NoReportException
 from core.utils.http import get_url
 
 exchange_rate = module('exchange_rate',
@@ -44,6 +45,11 @@ async def _(msg: Bot.MessageSession):
     data = json.loads(response_str)
     exchange_rate = data['conversion_result']
     current_time = datetime.datetime.now().strftime("%Y-%m-%d")
-    await msg.finish(
-        msg.locale.t('exchange_rate.message', amount=amount, base=base_currency, exchange_rate=exchange_rate,
-                     target=target_currency, time=current_time))
+    if data["result"] == "success":
+       await msg.finish(
+            msg.locale.t('exchange_rate.message', amount=amount, base=base_currency, exchange_rate=exchange_rate,
+                         target=target_currency, time=current_time))
+    else:
+        error_type = data['error-type']
+        raise NoReportException(f"{error_type}")
+    
