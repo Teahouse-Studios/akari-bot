@@ -21,7 +21,7 @@
     "wiki.search.message.prompt": "回覆編號以查詢對應的頁面。",
     "wiki.set.help": "設定起始查詢 Wiki。",
     "wiki.set.message.success": "成功設定起始 Wiki：${name}",
-    "wiki.set.message.default": "沒有設定起始 Wiki，已預設為中文 Minecraft Wiki，傳送 ${prefix}wiki set <域名> 設定自訂起始 Wiki。\n示例：${prefix}wiki set https://minecraft.fandom.com/zh/wiki/",
+    "wiki.set.message.default": "沒有設定起始 Wiki，已預設為中文 Minecraft Wiki，使用「${prefix}wiki set <域名>」設定自訂起始 Wiki。\n示例：${prefix}wiki set https://minecraft.fandom.com/zh/wiki/",
     "wiki.iw.message.none": "目前沒有設定任何 Interwiki，可使用 ${prefix}wiki iw add <interwiki> <api_endpoint_link> 新增。",
     "wiki.iw.set.help": "新增自訂 Interwiki。",
     "wiki.iw.set.message.success": "成功：已新增自訂 Interwiki：\n${iw} -> ${name}",
