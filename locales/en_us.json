@@ -1,4 +1,4 @@
-{
+﻿{
     "i18n.prompt.fallback.failed": "(If you can see this, we've messed something up!\nPlease send the problem back to\n${url}\nso it can be fixed in time.)",
     "error.prompt": "An error occurred: ${error_msg}\nReport this issue: ",
     "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}\nReport this issue: ",

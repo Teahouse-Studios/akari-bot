@@ -1,4 +1,4 @@
-{
+﻿{
     "core.alias.help.add": "添加自定义命令别名。",
     "core.alias.help.remove": "移除自定义命令别名。",
     "core.alias.help.reset": "重置自定义命令别名。",
