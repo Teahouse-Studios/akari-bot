@@ -31,9 +31,12 @@ def load_locale_file():
     err_prompt = []
     locales_path = os.path.abspath('./locales')
     locales = os.listdir(locales_path)
-    for l in locales:
-        with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
-            locale_cache[remove_suffix(l, '.json')] = flatten(json.load(f))
+    try:
+        for l in locales:
+            with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
+                locale_cache[remove_suffix(l, '.json')] = flatten(json.load(f))
+    except Exception as e:
+        err_prompt.append(e)
     modules_path = os.path.abspath('./modules')
     for m in os.listdir(modules_path):
         if os.path.isdir(f'{modules_path}/{m}'):
