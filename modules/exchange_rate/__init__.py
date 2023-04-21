@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
     data = json.loads(response_str)
     exchange_rate = data['conversion_result']
     current_time = datetime.datetime.now().strftime("%Y-%m-%d")
-    if data["result"] == "success":
+    if data['result'] == "success":
        await msg.finish(
             msg.locale.t('exchange_rate.message', amount=amount, base=base_currency, exchange_rate=exchange_rate,
                          target=target_currency, time=current_time))
