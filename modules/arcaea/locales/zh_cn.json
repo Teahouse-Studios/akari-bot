@@ -21,7 +21,7 @@
     "arcaea.errcode.-20": "文件不存在",
     "arcaea.errcode.-23": "发生了内部错误",
     "arcaea.errcode.-233": "发生了未知错误",
-    "arcaea.message.assets.not_found": "未找到资源文件！请放置一份 Arcaea 的 apk 文件到机器人的 assets 目录并重命名为 arc.apk 后，使用“${prefix}arcaea initialize”初始化资源。",
+    "arcaea.message.assets.not_found": "找不到资源文件！请放置一份 Arcaea 的 apk 文件到机器人的 assets 目录并重命名为 arc.apk 后，使用“${prefix}arcaea initialize”初始化资源。",
     "arcaea.message.failed": "查询失败。",
     "arcaea.message.failed.errcode": "查询失败：",
     "arcaea.message.failed.fetch": "获取失败。",
