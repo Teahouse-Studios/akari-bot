@@ -20,15 +20,15 @@ async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
 
-    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
-    response = await get_url(url, fmt='read', status_code=200)
-    response_str = response.decode('utf-8')
-    data = json.loads(response_str)
-    supported_currencies = data['supported_codes']
-    if base_currency not in supported_currencies:
-        await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{base_currency}")
-    if target_currency not in supported_currencies:
-        await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{target_currency}")
+#    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
+#    response = await get_url(url, fmt='read', status_code=200)
+#    response_str = response.decode('utf-8')
+#    data = json.loads(response_str)
+#    supported_currencies = data['supported_codes']
+#    if base_currency not in supported_currencies:
+#        await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{base_currency}")
+#    if target_currency not in supported_currencies:
+#        await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{target_currency}")
 
     amount = msg.parsed_msg.get('<amount>', '1')
     try:
