@@ -155,7 +155,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('song <songname+prs/pst/byd> {{arcaea.song.help}}')
+@arc.command('song <songname> <prs|pst|ftr|byd> {{arcaea.song.help}}')
 async def _(msg: Bot.MessageSession):
     songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
     songname_split = songname_.split(' ')
@@ -183,7 +183,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(Plain(await get_song_info(msg, songname, diff, usercode)))
 
 
-@arc.command('bind <friendcode/username> {{arcaea.bind.help}}')
+@arc.command('bind <friendcode|username> {{arcaea.bind.help}}')
 async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<friendcode/username>']
     getcode = await get_userinfo(code)

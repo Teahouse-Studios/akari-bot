@@ -14,7 +14,7 @@ coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 @coin.command('[<amount>] {{coin.help}}')
 async def _(msg: MessageSession):
-    amount = msg.parsed_msg.get('<amount>', 1)
+    amount = msg.parsed_msg.get('<amount>', '1')
     if not amount.isdigit():
         await msg.finish(msg.locale.t('coin.message.error.amount') + amount)
     else:
