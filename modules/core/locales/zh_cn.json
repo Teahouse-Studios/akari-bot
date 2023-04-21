@@ -51,10 +51,10 @@
     "core.module.message.help.table.header.alias": "命令别名",
     "core.module.message.help.table.header.external": "扩展模块列表",
     "core.module.message.help.not_found": "此模块可能不存在，请检查输入。",
-    "core.module.message.help.more_information": "此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用 ${prefix}module list 命令。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/\n若您有经济实力，欢迎给孩子们在爱发电上打钱：\nhttps://afdian.net/@teahouse",
+    "core.module.message.help.more_information": "此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用“${prefix}module list”。\n您也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/\n若您有经济实力，欢迎给孩子们在爱发电上打钱：\nhttps://afdian.net/@teahouse",
     "core.module.message.help.legacy.base": "基础命令：",
     "core.module.message.help.legacy.external": "模块扩展命令：",
-    "core.module.message.help.legacy.more_information": "使用 ${prefix}help <对应模块名> 查看详细信息。\n使用 ${prefix}module list 查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/",
+    "core.module.message.help.legacy.more_information": "使用“${prefix}help <对应模块名>”查看详细信息。\n使用“${prefix}module list”查看所有的可用模块。\n您也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/",
     "core.module.message.help.legacy.availables": "当前可用的模块有：",
     "core.module.message.reload.success": "成功：重载模块：",
     "core.module.message.reload.with": "，以及该模块下的 ${reloadCnt} 个文件。",
@@ -68,7 +68,7 @@
     "core.prefix.message.remove.success": "已移除自定义命令前缀：",
     "core.prefix.message.remove.not_found": "此命令前缀不存在于自定义前缀列表。",
     "core.prefix.message.reset": "已重置自定义命令前缀列表。",
-    "core.superuser.message.invalid": "ID 格式错误，请对象使用 ${prefix}whoami 命令查看用户 ID。",
+    "core.superuser.message.invalid": "ID 格式错误，请对象使用“${prefix}whoami”查看用户 ID。",
     "core.superuser.message.add.success": "操作成功：已将 ${user} 设置为超级用户。",
     "core.superuser.message.remove.success": "操作成功：已将 ${user} 移出超级用户。",
     "core.analytics.message.counts": "机器人已执行命令次数（自 ${first_record} 开始统计）：${counts}",
@@ -136,6 +136,5 @@
     "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
     "core.module.message.enable.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",
     "core.petal.help": "获取当前群组的花瓣数。",
-    "core.petal.message": "当前群组的花瓣数为：${petal}。",
-    "core.resume.message.clean": "已清理全部消息。"
+    "core.petal.message": "当前群组的花瓣数为：${petal}。"
 }
