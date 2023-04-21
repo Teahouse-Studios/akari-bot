@@ -11,13 +11,13 @@ cytoid = module('cytoid',
                     developers=['OasisAkari'], alias='ctd')
 
 
-@cytoid.handle('profile [<UserID>] {查询一个用户的基本信息}')
+@cytoid.handle('profile [<UserID>] {{cytoid.profile.help}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)
 
 
-@cytoid.handle('(b30|r30) [<UserID>] {查询一个用户的b30/r30记录}')
+@cytoid.handle('(b30|r30) [<UserID>] {{cytoid.b30.help}}')
 async def _(msg: Bot.MessageSession):
     if 'b30' in msg.parsed_msg:
         query = 'b30'
@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            await msg.finish('未绑定用户，请使用~cytoid bind <username>绑定一个用户。')
+            await msg.finish(msg.locale.t('cytoid.message.user.unbound'))
     if query:
         if msg.target.targetFrom == 'TEST|Console':
             c = 0
@@ -48,11 +48,10 @@ async def _(msg: Bot.MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            await msg.sendMessage(
-                f'距离上次执行已过去{int(c)}秒，本命令的冷却时间为150秒。（据官方人员所述，此API的调用十分昂贵，故手动做出这一限制，请谅解。）')
+            await msg.sendMessage(msg.locale.t('cytoid.b30.message.cooldown', time=int(c)))
 
 
-@cytoid.handle('bind <username> {绑定一个Cytoid用户}')
+@cytoid.handle('bind <username> {{cytoid.bind.help}}')
 async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<username>']
     getcode = await get_profile_name(code)
@@ -63,15 +62,13 @@ async def _(msg: Bot.MessageSession):
                 m = f'{getcode[1]}({getcode[0]})'
             else:
                 m = getcode[0]
-            await msg.finish(f'绑定成功：' + m)
+            await msg.finish(msg.locale.t('cytoid.bind.message.success') + m)
     else:
-        await msg.finish('绑定失败，请检查输入。')
+        await msg.finish(msg.locale.t('cytoid.bind.message.failed'))
 
 
-@cytoid.handle('unbind {取消绑定用户}')
+@cytoid.handle('unbind {{cytoid.unbind.help}}')
 async def _(msg: Bot.MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish('取消绑定成功。')
-    else:
-        await msg.finish('未绑定用户。')
+        await msg.finish(msg.locale.t('cytoid.unbind.message.success'))
