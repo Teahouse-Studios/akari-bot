@@ -1,4 +1,4 @@
-﻿{
+{
     "core.alias.help.add": "新增自訂指令別名。",
     "core.alias.help.remove": "移除自訂指令別名。",
     "core.alias.help.reset": "重設自訂指令別名。",
@@ -51,10 +51,10 @@
     "core.module.message.help.table.header.alias": "指令別名",
     "core.module.message.help.table.header.external": "擴充模組列表",
     "core.module.message.help.not_found": "此模組可能不存在，請檢查輸入。",
-    "core.module.message.help.more_information": "此處展示的說明文件僅展示已啟用的模組，若需要檢視全部模組的說明文件，請使用「${prefix}module list」。\n您也可以透過查閱文件取得說明：\nhttps://bot.teahouse.team/wiki/\n若您有經濟實力，歡迎在愛發電提供贊助：\nhttps://afdian.net/@teahouse",
+    "core.module.message.help.more_information": "此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用“${prefix}module list”命令。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/\n若您有经济实力，欢迎给孩子们在爱发电上打钱：\nhttps://afdian.net/@teahouse",
     "core.module.message.help.legacy.base": "基礎指令：",
     "core.module.message.help.legacy.external": "模組擴充指令：",
-    "core.module.message.help.legacy.more_information": "使用「${prefix}help <對應模組名>」檢視詳細資訊。\n使用「${prefix}module list」檢視所有的可用模組。\n您也可以透過查閱文件取得說明：\nhttps://bot.teahouse.team/wiki/",
+    "core.module.message.help.legacy.more_information": "使用“${prefix}help <对应模块名>”查看详细信息。\n使用“${prefix}module list”查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/",
     "core.module.message.help.legacy.availables": "目前可用的模組有：",
     "core.module.message.reload.success": "成功：重新載入模組：",
     "core.module.message.reload.with": "，以及此模組下的 ${reloadCnt} 個文件。",
