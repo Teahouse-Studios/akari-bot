@@ -46,6 +46,6 @@
     "parser.module.desc": "描述：\n${desc}",
     "check.redacted": "<已編輯>",
     "check.redacted.all": "<全部已編輯>",
-    "none": "無",
-    "language": "繁體中文"
+    "\"none\"": "無",
+    "\"language\"": "繁體中文"
 }
