@@ -21,23 +21,29 @@ async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
 
-#    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
-#    response = await get_url(url, fmt='read')
-#    response_str = response.decode('utf-8')
-#    data = json.loads(response_str)
-#    supported_currencies = data['supported_codes']
-#    unsupported_currencies = []
-#    if data['result'] == "success":
-#       if base_currency not in supported_currencies:
-#            unsupported_currencies.append(base_currency)
-#       if target_currency not in supported_currencies:
-#           unsupported_currencies.append(target_currency)
-#       if unsupported_currencies:
-#           await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
-#    else:
-#        data = response.json()
-#        error_type = data['error-type']
-#        raise NoReportException(f"{error_type}")
+    url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
+    response = await get_url(url, fmt='read')
+    response_str = response.decode('utf-8')
+    data = json.loads(response_str)
+    supported_currencies = data['supported_codes']
+    unsupported_currencies = []
+    if data['result'] == "success":
+        for currencie_names in supported_currencies:
+            if base_currency in currencie_names:
+                break
+        else:
+            unsupported_currencies.append(base_currency)
+        for currencie_names in supported_currencies:
+            if target_currency in currencie_names:
+                 break
+        else:
+            unsupported_currencies.append(target_currency)
+        if unsupported_currencies:
+           await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
+    else:
+        data = response.json()
+        error_type = data['error-type']
+        raise NoReportException(f"{error_type}")
 
     amount = msg.parsed_msg.get('<amount>', '1')
     try:
