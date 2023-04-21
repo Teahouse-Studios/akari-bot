@@ -425,6 +425,9 @@ dataclasses-json==0.5.7 ; python_full_version >= "3.8.1" and python_version < "4
 distlib==0.3.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46 \
     --hash=sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e
+duckduckgo-search==2.8.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:c9312ad278d03d059ba7ced978dd1bc7806bb735aa239948322936d0570d8d7f \
+    --hash=sha256:ffd620febb8c471bdb4aed520b26e645cd05ae79acdd78db6c0c927cb7b0237c
 feedparser==6.0.10 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:27da485f4637ce7163cdeab13a80312b93b7d0c1b775bef4a47629a3110bca51 \
     --hash=sha256:79c257d526d13b944e965f6095700587f27388e50ea16fd245babe4dfae7024f

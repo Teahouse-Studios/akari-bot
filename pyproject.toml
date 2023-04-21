@@ -47,6 +47,7 @@ pre-commit = "^3.0.4"
 webcolors = "^1.12"
 langchain = "^0.0.146"
 wolframalpha = "^5.0.0"
+duckduckgo-search = "^2.8.6"
 
 
 [tool.poetry.group.dev.dependencies]

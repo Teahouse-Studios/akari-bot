@@ -1,13 +1,13 @@
-from langchain.utilities import GoogleSerperAPIWrapper
+from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
 from config import Config
 from .utils import to_async_func, AkariTool
 
-search = GoogleSerperAPIWrapper(serper_api_key=Config('serper_api_key'))
+search = DuckDuckGoSearchAPIWrapper()
 
 
 search_tool = AkariTool(
     name = 'Search',
     func=to_async_func(search.run),
-    description='A wrapper around Google Search. Useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible. You can perform up to 3 queries, so do not search with the same keyword. Input should be a search query in any language.'
+    description='A wrapper around DuckDuckGo Search. Useful for when you need to answer questions about current events. You should ask targeted questions and ask as few questions as possible. You can perform up to 3 queries, so do not search with the same keyword. Input should be a search query in any language.'
 )
