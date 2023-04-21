@@ -15,7 +15,7 @@ exchange_rate = module('exchange_rate',
 api_key = Config('exchange_rate_api_key')
 
 
-@exchange_rate.command('<base> <target> <amount> {{exchange_rate.help}}')
+@exchange_rate.command('<base> <target> [<amount>] {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
@@ -32,7 +32,7 @@ async def _(msg: Bot.MessageSession):
 #        unsupported_currencies.append(target_currency)
 #    if unsupported_currencies:
 #        await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{', '.join(unsupported_currencies)}")
-    amount = msg.parsed_msg['<amount>']
+    amount = msg.parsed_msg.get('<amount>', '1')
     try:
         amount = float(amount)
         if amount <= 0:

@@ -12,7 +12,7 @@ COIN_DROP_PLACES = ["地上", "桌子上", "桌子底下", "门口", "窗户外"
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 
-@coin.command('<amount> {{coin.help}}')
+@coin.command('[<amount>] {{coin.help}}')
 async def _(msg: MessageSession):
     amount = msg.parsed_msg.get('<amount>', '1')
     if not amount.isdigit():
