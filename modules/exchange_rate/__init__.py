@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
-    response = await get_url(url, fmt='read', status_code=200)
+    response = await get_url(url, fmt='read')
     response_str = response.decode('utf-8')
     data = json.loads(response_str)
     exchange_rate = data['conversion_result']
