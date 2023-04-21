@@ -1,4 +1,4 @@
-﻿{
+{
     "core.alias.help.add": "添加自定义命令别名。",
     "core.alias.help.remove": "移除自定义命令别名。",
     "core.alias.help.reset": "重置自定义命令别名。",
@@ -136,6 +136,5 @@
     "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
     "core.module.message.enable.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",
     "core.petal.help": "获取当前群组的花瓣数。",
-    "core.petal.message": "当前群组的花瓣数为：${petal}。",
-    "core.resume.message.clean": "已清理全部消息。"
+    "core.petal.message": "当前群组的花瓣数为：${petal}。"
 }
