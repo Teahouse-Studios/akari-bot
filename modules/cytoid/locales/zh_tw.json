@@ -8,6 +8,6 @@
     "cytoid.unbind.help": "解绑用户。",
     "cytoid.unbind.message.success": "解绑成功。",
     "cttoid.message.error.user.not_found": "发生错误：此用户不存在。",
-    "cytoid.message.user.unbound": "未绑定用户，请使用“${prefix}cytoid bind <username>”绑定一个用户。",
+    "cytoid.message.user.unbound": "未綁定使用者，請使用「${prefix}cytoid bind <username>」綁定一個使用者。",
     "cttoid.message.user.not_found": "用户不存在。"
 }
