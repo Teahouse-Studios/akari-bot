@@ -1,4 +1,4 @@
-{
+﻿{
     "core.alias.help.add": "新增自訂指令別名。",
     "core.alias.help.remove": "移除自訂指令別名。",
     "core.alias.help.reset": "重設自訂指令別名。",
@@ -94,6 +94,7 @@
     "core.resume.message.done": "重傳完成。",
     "core.resume.message.nothing": "沒有需要重傳的訊息。",
     "core.resume.message.skip": "跳過一條訊息，正在重傳 ${counts} 條訊息...",
+    "core.resume.message.clean": "已清理全部訊息。",
     "core.version.help": "檢視機器人的版本號。",
     "core.version.message": "目前機器人版本號：${version_tag}（${commit}）",
     "core.ping.help": "取得機器人狀態。",
@@ -135,6 +136,5 @@
     "core.module.message.help.legacy.revoke": "[此訊息將在一分鐘後撤回]",
     "core.module.message.enable.unsupported_language": "提示：「${module}」模組不支援目前語言，此模組可能不會正確展示目前語言下的內容。",
     "core.petal.help": "取得目前群組的花瓣數。",
-    "core.petal.message": "目前群組的花瓣數為：${petal}。",
-    "core.resume.message.clean": "已清理全部訊息。"
+    "core.petal.message": "目前群組的花瓣數為：${petal}。"
 }
