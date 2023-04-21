@@ -46,6 +46,6 @@
     "parser.module.desc": "Description:\n${desc}",
     "check.redacted": "<REDACTED>",
     "check.redacted.all": "<REDACTED ALL>",
-    "none": "None",
-    "language": "English"
+    "\"none\"": "None",
+    "\"language\"": "English"
 }
