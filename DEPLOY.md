@@ -217,6 +217,16 @@ servers:
 
 `Check_accessKeySecret =` - 填写获取的 `accessKeySecret`
 
+### QQ频道消息处理（beta）
+
+通过上文的[aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能
+
+根据go-cqhttp的文档，iPad/Android Pad/Android Phone协议支持处理QQ频道消息，可以在其生成的`device.json`中寻找`"protocol":6,`字段，将本处的数值修改为1（Android Phone）或5（iPad）或6（Android Pad）任意一个均可调用本功能
+
+> 注意：QQ频道消息的处理仍然处于测试阶段，由于go-cqhttp对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次gocqhttp）。
+
+> 关于go-cqhttp选用以上方式登录时出现的的Code45或其他登录问题，请根据go-cqhttp官方[issue](https://github.com/Mrs4s/go-cqhttp)对照解决，或选用除以上协议外的其他协议
+
 ### Webrender
 
 此为小可的外置服务。主要用于处理 html 渲染图片及部分功能的访问代理。
