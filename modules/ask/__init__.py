@@ -1,11 +1,12 @@
-from core.dirty_check import check_bool
-from core.builtins import Bot
-from core.component import module
-from modules.ask.agent import agent_executor
-from langchain.callbacks import get_openai_callback
 from decimal import Decimal
 
+from langchain.callbacks import get_openai_callback
+
+from core.builtins import Bot
+from core.component import module
+from core.dirty_check import check_bool
 from core.exceptions import NoReportException
+from modules.ask.agent import agent_executor
 
 ONE_K = Decimal('1000')
 # https://openai.com/pricing

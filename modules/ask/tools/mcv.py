@@ -1,6 +1,8 @@
 import asyncio
-from .utils import fake_msg, AkariTool
+
 from modules.mcv import mcv, mcbv, mcdv, mcev
+from .utils import fake_msg, AkariTool
+
 
 async def mcv_all(input: str):
     results = await asyncio.gather(

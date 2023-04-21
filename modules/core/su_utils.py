@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession):
         if not wait_confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)]
+               if m in ModulesManager.return_modules_list(msg.target.targetFrom)]
     target_data.enable(modules)
     await msg.finish(msg.locale.t("core.set.message.module.success") + ", ".join(modules))
 

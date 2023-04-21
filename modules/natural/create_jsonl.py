@@ -1,5 +1,6 @@
-import ujson as json
 import os
+
+import ujson as json
 
 with open(os.path.dirname(os.path.abspath(__file__)) + '/dataset.txt', 'r', encoding='utf-8') as f:
     txt = f.read()

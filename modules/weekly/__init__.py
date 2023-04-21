@@ -7,10 +7,10 @@ from core.builtins import Plain, Image, Url
 from core.component import module
 from core.utils.http import get_url
 from core.utils.i18n import Locale
-from .teahouse import get_rss as get_teahouse_rss
 from core.utils.image import msgchain2image
-from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.screenshot_image import generate_screenshot_v2
+from modules.wiki.utils.wikilib import WikiLib
+from .teahouse import get_rss as get_teahouse_rss
 
 
 async def get_weekly(with_img=False, zh_tw=False):

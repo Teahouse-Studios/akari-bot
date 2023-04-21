@@ -80,8 +80,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
         MessageTaskManager.check(msg)
-        modules = ModulesManager.return_modules_list_as_dict(msg.target.targetFrom)
-        modulesAliases = ModulesManager.return_modules_alias_map()
+        modules = ModulesManager.return_modules_list(msg.target.targetFrom)
 
         display = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
         if len(display) == 0:
@@ -138,12 +137,12 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     no_alias = True
             if not no_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                 alias_list = []
-                for alias in modulesAliases:
-                    if command.startswith(alias) and not command.startswith(modulesAliases[alias]):
+                for alias in ModulesManager.modules_aliases:
+                    if command.startswith(alias) and not command.startswith(ModulesManager.modules_aliases[alias]):
                         alias_list.append(alias)
                 if alias_list:
                     max_ = max(alias_list, key=len)
-                    command = command.replace(max_, modulesAliases[max_], 1)
+                    command = command.replace(max_, ModulesManager.modules_aliases[max_], 1)
             command_split: list = command.split(' ')  # 切割消息
             msg.trigger_msg = command  # 触发该命令的消息，去除消息前缀
             command_first_word = command_split[0].lower()

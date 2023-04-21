@@ -12,7 +12,6 @@ from tenacity import retry, stop_after_attempt
 from config import CachePath, Config
 from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
     Url as U, ErrorMessage as EMsg
-
 from core.utils.i18n import Locale
 
 

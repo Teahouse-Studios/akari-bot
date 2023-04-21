@@ -1,12 +1,11 @@
 import ujson as json
 
+from config import Config
 from core.builtins import Bot, Plain, Image, Url
 from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki
-
-from config import Config
 
 
 @wiki.handle('set <WikiUrl> {{wiki.set.help}}', required_admin=True)

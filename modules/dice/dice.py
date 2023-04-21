@@ -1,6 +1,7 @@
-import secrets
-import numpy as np
 import re
+import secrets
+
+import numpy as np
 
 MAX_DICE_COUNT = 100  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = 10  # 一次命令最多的摇动次数
@@ -162,7 +163,7 @@ class Dice(DiceItemBase):
 
 
 async def GenerateMessage(dices: str, times: int, dc: int):
-    if re.search(r'[^0-9+-DKL]', dices.upper()):
+    if re.search(r'[^0-9+\-DKL]', dices.upper()):
         return DiceSyntaxError('骰子语句中存在无法识别的字符').message
     if times > MAX_ROLL_TIMES or times < 1:
         return DiceValueError(f'投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}', times).message

@@ -1,11 +1,12 @@
 import re
+
 import openai
 
+from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check_bool
 from core.logger import Logger
-from config import Config
 
 openai.api_key = Config('openai_api_key')
 

@@ -2,8 +2,8 @@ from core.builtins import Bot, Image, Plain, command_prefix
 from core.component import module
 from core.logger import Logger
 from core.scheduler import CronTrigger
-from core.utils.image import msgchain2image
 from core.utils.i18n import Locale
+from core.utils.image import msgchain2image
 from modules.weekly import get_weekly
 from modules.weekly.teahouse import get_rss as get_teahouse_rss
 

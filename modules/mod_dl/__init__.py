@@ -1,11 +1,11 @@
-import re
 import asyncio
+import re
 import traceback
 
+from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.utils.http import get_url
-from config import Config
 
 mod_dl = module(
     bind_prefix='mod_dl',

@@ -10,7 +10,6 @@ from .temp import *
 from .utils import *
 
 
-
 class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget

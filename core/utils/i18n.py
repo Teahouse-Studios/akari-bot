@@ -5,10 +5,8 @@ from typing import TypedDict
 
 import ujson as json
 
-from .text import remove_suffix
-
 from config import Config
-
+from .text import remove_suffix
 
 # Load all locale files into memory
 
@@ -33,9 +31,12 @@ def load_locale_file():
     err_prompt = []
     locales_path = os.path.abspath('./locales')
     locales = os.listdir(locales_path)
-    for l in locales:
-        with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
-            locale_cache[remove_suffix(l, '.json')] = flatten(json.load(f))
+    try:
+        for l in locales:
+            with open(f'{locales_path}/{l}', 'r', encoding='utf-8') as f:
+                locale_cache[remove_suffix(l, '.json')] = flatten(json.load(f))
+    except Exception as e:
+        err_prompt.append(str(e))
     modules_path = os.path.abspath('./modules')
     for m in os.listdir(modules_path):
         if os.path.isdir(f'{modules_path}/{m}'):
@@ -94,7 +95,8 @@ class Locale:
                 if string is not None:
                     return string  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'))
+            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
+                                         fallback_failed_prompt=False)
         else:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key

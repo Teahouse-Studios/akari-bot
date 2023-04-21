@@ -8,8 +8,8 @@ from typing import Dict, Union
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
-from core.utils.i18n import load_locale_file
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
+from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
 
@@ -51,16 +51,23 @@ def load_modules():
         openloadercache.write('')
     openloadercache.close()
 
+    modules = ModulesManager.modules
+    for m in modules:
+        module = modules[m]
+        if module.alias:
+            ModulesManager.modules_aliases.update(module.alias)
+
 
 class ModulesManager:
     modules: Dict[str, Module] = {}
-    modulesOrigin: Dict[str, str] = {}
+    modules_aliases: Dict[str, str] = {}
+    modules_origin: Dict[str, str] = {}
 
     @staticmethod
     def add_module(module: Module, py_module_name: str):
         if module.bind_prefix not in ModulesManager.modules:
             ModulesManager.modules.update({module.bind_prefix: module})
-            ModulesManager.modulesOrigin.update({module.bind_prefix: py_module_name})
+            ModulesManager.modules_origin.update({module.bind_prefix: py_module_name})
         else:
             raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
 
@@ -70,28 +77,28 @@ class ModulesManager:
             if module in ModulesManager.modules:
                 Logger.info(f'Removing...{module}')
                 ModulesManager.modules.pop(module)
-                ModulesManager.modulesOrigin.pop(module)
+                ModulesManager.modules_origin.pop(module)
             else:
                 raise ValueError(f'Module "{module}" is not exist')
 
     @staticmethod
     def search_related_module(module, includeSelf=True):
-        if module in ModulesManager.modulesOrigin:
+        if module in ModulesManager.modules_origin:
             modules = []
             py_module = ModulesManager.return_py_module(module)
-            for m in ModulesManager.modulesOrigin:
-                if ModulesManager.modulesOrigin[m].startswith(py_module):
+            for m in ModulesManager.modules_origin:
+                if ModulesManager.modules_origin[m].startswith(py_module):
                     modules.append(m)
             if not includeSelf:
                 modules.remove(module)
             return modules
         else:
-            raise ValueError(f'Could not find "{module}" in modulesOrigin dict')
+            raise ValueError(f'Could not find "{module}" in modules_origin dict')
 
     @staticmethod
     def return_py_module(module):
-        if module in ModulesManager.modulesOrigin:
-            return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', ModulesManager.modulesOrigin[module]).group()
+        if module in ModulesManager.modules_origin:
+            return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', ModulesManager.modules_origin[module]).group()
         else:
             return None
 
@@ -106,7 +113,7 @@ class ModulesManager:
                 ModulesManager.modules[bind_prefix].schedule_list.add(meta)
 
     @staticmethod
-    def return_modules_list_as_dict(targetFrom: str = None) -> \
+    def return_modules_list(targetFrom: str = None) -> \
         Dict[str, Module]:
         if targetFrom is not None:
             returns = {}
@@ -120,57 +127,6 @@ class ModulesManager:
             return returns
         return ModulesManager.modules
 
-    @staticmethod
-    def return_modules_alias_map() -> Dict[str, str]:
-        """
-        返回每个别名映射到的模块
-        """
-        modules = ModulesManager.return_modules_list_as_dict()
-        alias_map = {}
-        for m in modules:
-            module = modules[m]
-            if module.alias is not None:
-                alias_map.update(module.alias)
-        return alias_map
-
-    @staticmethod
-    def return_module_alias(module_name) -> Dict[str, str]:
-        """
-        返回此模块的别名列表
-        """
-        module = ModulesManager.return_modules_list_as_dict()[module_name]
-        if module.alias is None:
-            return {}
-        return module.alias
-
-    @staticmethod
-    def return_modules_developers_map() -> Dict[str, list]:
-        d = {}
-        modules = ModulesManager.return_modules_list_as_dict()
-        for m in modules:
-            module = modules[m]
-            if module.developers is not None:
-                d.update({m: module.developers})
-        return d
-
-    @staticmethod
-    def return_specified_type_modules(module_type: Module,
-                                      targetFrom: str = None) \
-        -> Dict[str, Module]:
-        d = {}
-        modules = ModulesManager.return_modules_list_as_dict()
-        for m in modules:
-            module = modules[m]
-            if isinstance(module, module_type):
-                if targetFrom is not None:
-                    if isinstance(module, Module):
-                        if targetFrom in module.exclude_from:
-                            continue
-                        if targetFrom in module.available_for or '*' in module.available_for:
-                            d.update({m: module})
-                else:
-                    d.update({module.bind_prefix: module})
-        return d
 
     @staticmethod
     def reload_module(module_name: str):

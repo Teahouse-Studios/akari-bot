@@ -1,6 +1,5 @@
 import ipaddress
 import json
-import os
 import socket
 from typing import Any, Dict
 

@@ -1,4 +1,3 @@
-import os
 import re
 import traceback
 from html import escape
@@ -10,9 +9,8 @@ from tabulate import tabulate
 
 from config import Config
 from core.logger import Logger
-from .http import download_to_cache, get_url, post_url
 from .cache import random_cache_path
-
+from .http import download_to_cache
 
 web_render = Config('web_render')
 web_render_local = Config('web_render_local')

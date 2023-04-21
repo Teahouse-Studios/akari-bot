@@ -1,5 +1,6 @@
-from .utils import fake_msg, AkariTool
 from modules.bugtracker.bugtracker import bugtracker_get
+from .utils import fake_msg, AkariTool
+
 
 async def bugtracker(input: str):
     return await bugtracker_get(fake_msg, input)

@@ -35,7 +35,7 @@ async def init_async() -> None:
         write_tag.write(bot_version)
     write_tag.close()
     gather_list = []
-    Modules = ModulesManager.return_modules_list_as_dict()
+    Modules = ModulesManager.return_modules_list()
     for x in Modules:
         if schedules := Modules[x].schedule_list.set:
             for schedule in schedules:

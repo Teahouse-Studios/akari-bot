@@ -1,5 +1,5 @@
-from .utils import to_json_func, AkariTool
 from modules.whois.ip import check_ip
+from .utils import to_json_func, AkariTool
 
 ip_whois_tool = AkariTool(
     name = 'IP WHOIS',

@@ -1,9 +1,10 @@
 import asyncio
-from .utils import locale_en, AkariTool
 
 from modules.meme.moegirl import moegirl
 from modules.meme.nbnhhsh import nbnhhsh
 from modules.meme.urban import urban
+from .utils import locale_en, AkariTool
+
 
 async def meme_all(input: str):
     results = await asyncio.gather(

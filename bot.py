@@ -88,7 +88,7 @@ def run_bot():
         try:
             line = q.get_nowait()
         except Empty:
-            pass
+            sleep(1)
         else:
             try:
                 logger.info(line.decode(encode)[:-1])

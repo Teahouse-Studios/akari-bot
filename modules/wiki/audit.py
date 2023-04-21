@@ -118,8 +118,8 @@ async def _(msg: Bot.MessageSession):
     if legacy:
         wikis = [msg.locale.t('wiki.wiki_audit.list.message.allowlist')]
         for al in allow_list:
-            wikis.append(f'{al[0]}（by {al[1]}）')
+            wikis.append(f'{al[0]} (by {al[1]})')
         wikis.append(msg.locale.t('wiki.wiki_audit.list.message.blocklist'))
         for bl in block_list:
-            wikis.append(f'{bl[0]}（by {bl[1]}）')
+            wikis.append(f'{bl[0]} (by {bl[1]})')
         await msg.finish('\n'.join(wikis))
