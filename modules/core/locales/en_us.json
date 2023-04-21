@@ -1,4 +1,4 @@
-{
+﻿{
     "core.alias.help.add": "Add custom command alias.",
     "core.alias.help.remove": "Remove custom command alias.",
     "core.alias.help.reset": "Reset custom command alias.",
@@ -94,6 +94,7 @@
     "core.resume.message.done": "Resume complete.",
     "core.resume.message.nothing": "No messages to be resumed.",
     "core.resume.message.skip": "Skip a message, resuming ${counts} messages...",
+    "core.resume.message.clean": "已清理全部消息。",
     "core.version.help": "View robot version.",
     "core.version.message": "Current robot version: ${version_tag} (${commit})",
     "core.ping.help": "Get robot status.",
@@ -135,6 +136,5 @@
     "core.module.message.help.legacy.revoke": "[This message will be recalled after 1 minute]",
     "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly.",
     "core.petal.help": "Get the number of petals in the current group.",
-    "core.petal.message": "${petal} petals remains in the current group.",
-    "core.resume.message.clean": "已清理全部消息。"
+    "core.petal.message": "${petal} petals remains in the current group."
 }
