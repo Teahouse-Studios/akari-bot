@@ -35,7 +35,6 @@
     "core.module.message.disable.qqchannel_global.success": "Success: Disabled module \"${module}\" for all text channels.",
     "core.module.message.disable.already": "Failed: Module \"${module}\" is already disabled.",
     "core.module.message.disable.success": "Success: Disabled module \"${module}\".",
-    "core.module.message.reload.unbound": "Failed: Module \"${module}\" does not bound.",
     "core.module.message.reload.base": "Failed: \"${module}\" is a base module, thus cannot be reloaded.",
     "core.module.message.reload.confirm": "This action will reload the following modules at the same time: \n${modules}\nContinue?",
     "core.module.message.reload.permission.denied": "Failed: You don't have permission to reload modules.",
@@ -136,5 +135,6 @@
     "core.module.message.help.legacy.revoke": "[This message will be recalled after 1 minute]",
     "core.module.message.enable.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly.",
     "core.petal.help": "Get the number of petals in the current group.",
-    "core.petal.message": "${petal} petals remains in the current group."
+    "core.petal.message": "${petal} petals remains in the current group.",
+    "core.module.message.reload.unbound": "Failed: Module \"${module}\" does not bound."
 }
