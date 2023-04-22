@@ -1,0 +1,12 @@
+{
+    "dice.help.desc": "随机骰子。",
+    "dice.help": "投掷指定骰子,可指定投骰次数与 dc 判断判定。",
+    "dice.help.dn": "表示 n 面骰。",
+    "dice.message.error.invalid.dn": "发生错误：无效的投骰次数：",
+    "dice.message.error.invalid.dc": "发生错误：无效的 dc：",
+    "dice.message.syntax_error": "语法错误：",
+    "dice.message.valve_error": "参数错误：",
+    "dice.message.valve_error.invalid": "参数错误: 输入为“${value}”，",
+    "dice.message.valve_error.M.invalid": "无效的调节值项",
+    "dice.message.valve_error.M.out_of_range": "调节值不得小于 ${min} 或大于 ${max}"
+}
