@@ -2,6 +2,7 @@ import re
 import secrets
 
 import numpy as np
+
 from core.builtins import Bot
 
 MAX_DICE_COUNT = 100  # 一次摇动最多的骰子数量
