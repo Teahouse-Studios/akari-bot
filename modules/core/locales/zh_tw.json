@@ -56,7 +56,7 @@
     "core.module.message.help.legacy.external": "模組擴充指令：",
     "core.module.message.help.legacy.more_information": "使用「${prefix}help <對應模組名>」檢視詳細資訊。\n使用「${prefix}module list」檢視所有的可用模組。\n您也可以透過查閱文件取得說明：\nhttps://bot.teahouse.team/wiki/",
     "core.module.message.help.legacy.availables": "目前可用的模組有：",
-    "core.module.message.reload.success": "成功：重新載入模組：",
+    "core.module.message.reload.success": "成功：重新載入模組：「${module}」",
     "core.module.message.reload.with": "，以及此模組下的 ${reloadCnt} 個文件。",
     "core.module.message.reload.no_more": "，未發現已載入的其餘文件。",
     "core.module.message.reload.failed": "重新載入模組失敗。",
