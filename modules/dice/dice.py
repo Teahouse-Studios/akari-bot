@@ -16,18 +16,18 @@ MAX_ITEM_COUNT = 10  # 骰子多项式最多的项数
 class DiceSyntaxError(Exception):
     """骰子语法错误"""
 
-    def __init__(msg, self, message):
-        self.message = f"{msg.locale.t('dice.message.error.syntax')}{message}"
+    def __init__(self, message):
+        self.message = f"语法错误: {message}"
 
 
 class DiceValueError(Exception):
     """骰子参数值错误"""
 
-    def __init__(msg, self, message, value=None):
+    def __init__(self, message, value=None):
         if value != None:
-            self.message = f"{msg.locale.t('dice.message.error.value.invalid', value=value)}{message} "
+            self.message = f"参数错误: 输入为{value}，{message} "
         else:
-            self.message = f"{msg.locale.t('dice.message.error.value')}{message} "
+            self.message = f"参数错误: {message} "
 
 
 class DiceItemBase(object):
@@ -55,14 +55,14 @@ class DiceItemBase(object):
 class DiceMod(DiceItemBase):
     """调节值项"""
 
-    def __init__(msg, self, diceCode: str, postive: bool):
+    def __init__(self, diceCode: str, postive: bool):
         super().__init__(diceCode, postive)
         if not diceCode.isdigit():
-            raise DiceValueError(msg.locale.t('dice.message.error.value.M.invalid'), '+' if self.postive else '-' + diceCode)
+            raise DiceValueError(f'无效的调节值项', '+' if self.postive else '-' + diceCode)
         else:
             self.result = int(diceCode)
             if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
-                raise DiceValueError(msg.locale.t('dice.message.error.value.M.out_of_range', min=MIN_MOD_NUMBER, max=MAX_MOD_NUMBER), self.result)
+                raise DiceValueError(f'调节值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER}', self.result)
 
     def GetDetail(self):
         return self.result
@@ -71,7 +71,7 @@ class DiceMod(DiceItemBase):
 class Dice(DiceItemBase):
     """骰子项"""
 
-    def __init__(msg, self, diceCode: str, postive: bool):
+    def __init__(self, diceCode: str, postive: bool):
         diceCode = diceCode.replace(' ', '')
         super().__init__(diceCode, postive)
         args = self.GetArgs()
@@ -79,22 +79,22 @@ class Dice(DiceItemBase):
         self.type = args[1]
         self.adv = args[2]
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
-            raise DiceValueError(msg.locale.t('dice.message.error.value.n.out_of_range', max=MAX_DICE_COUNT), self.count)
+            raise DiceValueError(f'骰子数量不得小于 1 或大于 {MAX_DICE_COUNT}', self.count)
         if self.type <= 0:
-            raise DiceValueError(msg.locale.t('dice.message.error.value.n.less2'), self.count)
+            raise DiceValueError(f'骰子面数不得小于 2', self.count)
         if self.type == 1:
-            raise DiceValueError(msg.locale.t('dice.message.error.value.n.d1'))
+            raise DiceValueError(f'1 ... 1 面的骰子？')
         if abs(self.adv) > self.count:
-            raise DiceValueError(msg.locale.t('dice.message.error.value.k.out_of_range'), self.adv)
+            raise DiceValueError(f'优劣势骰数大于总骰子数', self.adv)
 
-    def GetArgs(self, msg):
+    def GetArgs(self):
         diceCode = self.code.upper()  # 便于识别
         diceCount = '1'  # 骰子数量
         advantage = '0'  # 保留的骰子量
         if re.search(r'[^0-9DKL]', diceCode):
-            raise DiceSyntaxError(msg.locale.t('dice.message.error.syntax.invalid'))
+            raise DiceSyntaxError('骰子语句中存在无法识别的字符')
         if 'D' not in diceCode:
-            raise DiceSyntaxError(msg.locale.t('dice.message.error.syntax.missing_d'))
+            raise DiceSyntaxError('骰子语句缺失字符 D')
         temp = diceCode.split('D')
         if len(temp[0]):
             diceCount = temp[0]
@@ -108,14 +108,14 @@ class Dice(DiceItemBase):
                 advantage += '1'  # K/KL后没有值默认为1
         # 语法合法检定
         if not diceCount.isdigit():
-            raise DiceValueError(msg.locale.t('dice.message.error.value.m.invalid'), diceCount)
+            raise DiceValueError(f'无效的骰子数量', diceCount)
         if not diceType.isdigit():
-            raise DiceValueError(msg.locale.t('dice.message.error.value.n.invalid'), diceType)
+            raise DiceValueError(f'无效的骰子面数', diceType)
         if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
-            raise DiceValueError(msg.locale.t('dice.message.error.value.k.invalid'), advantage)
+            raise DiceValueError(f'无效的优劣势', advantage)
         return (int(diceCount), int(diceType), int(advantage))
 
-    def Roll(self, msg):
+    def Roll(self):
         output = ''
         result = 0
         diceResults = []
@@ -138,7 +138,7 @@ class Dice(DiceItemBase):
                 if i < self.count - 1:
                     outputBuffer += ','
             if self.count >= MAX_OUTPUT_NUM:
-                outputBuffer = msg.locale.t('dice.message.count.too_long', count=self.count)
+                outputBuffer = f"数量过大，已省略 {self.count} 个数据"
             output += outputBuffer + ' ) = '
             diceResults = newResults
         # 公用加法
@@ -146,7 +146,7 @@ class Dice(DiceItemBase):
         if (length > 1):
             output += '[ '
             if length > MAX_OUTPUT_NUM:  # 显示数据含100
-                output += msg.locale.t('dice.message.output.too_long', length=length)
+                output += f'数量过大，已省略 {length} 个数据'
             for i in range(length):
                 result += diceResults[i]
                 if length <= MAX_OUTPUT_NUM:  # 显示数据含100
@@ -157,16 +157,16 @@ class Dice(DiceItemBase):
         else:
             result = diceResults[0]
         if len(output) > MAX_OUTPUT_LEN:
-            output = msg.locale.t('dice.message.too_long')
+            output = '输出过长...'
         self.detail = output + f" {result} "
         self.result = result
 
 
-async def GenerateMessage(dices: str, times: int, dc: int, msg):
+async def GenerateMessage(dices: str, times: int, dc: int):
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
-        return DiceSyntaxError(msg.locale.t('dice.message.error.syntax.invalid')).message
+        return DiceSyntaxError('骰子语句中存在无法识别的字符').message
     if times > MAX_ROLL_TIMES or times < 1:
-        return DiceValueError(msg.locale.t('dice.message.error.value.N.out_of_range', max=MAX_ROLL_TIMES), times).message
+        return DiceValueError(f'投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}', times).message
     diceCodeList = re.compile(r'[+-]?[^+-]+').findall(dices)
     diceList = []
     haveErr = False
@@ -174,7 +174,7 @@ async def GenerateMessage(dices: str, times: int, dc: int, msg):
     diceCount = 0
     i = 0
     if len(diceCodeList) > MAX_ITEM_COUNT:
-        return DiceValueError(msg.locale.t('dice.message.error.value.too_long'), len(diceCodeList)).message
+        return DiceValueError('骰子多项式项数超过限制', len(diceCodeList)).message
     # 初始化骰子序列
     for item in diceCodeList:
         i += 1
@@ -192,13 +192,13 @@ async def GenerateMessage(dices: str, times: int, dc: int, msg):
             elif item.isdigit():
                 diceList.append(DiceMod(item, isAdd))
         except (DiceSyntaxError, DiceValueError) as ex:
-            output += f"\n{msg.locale.t('dice.message.error.prompt', i=i)}{ex.message}"
+            output += f'\n第{i}项发生{ex.message}'
             haveErr = True
     if haveErr:
-        return msg.locale.t('dice.message.error') + output
+        return '解析骰子多项式时存在以下错误：' + output
     successNum = 0
     failNum = 0
-    output = msg.locale.t('dice.message.output')
+    output = '你掷得的结果是：'
     # 开始摇动并输出
     for i in range(times):
         outputLine = ''
@@ -215,12 +215,12 @@ async def GenerateMessage(dices: str, times: int, dc: int, msg):
         outputLine += ' = ' + str(result)
         if dc != 0:
             if result > dc:
-                outputLine += msg.locale.t('dice.message.dc.failed')
+                outputLine += '，判定成功！'
                 successNum += 1
             else:
-                outputLine += msg.locale.t('dice.message.dc.success')
+                outputLine += '，判定失败！'
                 failNum += 1
         output += f'\n{dices} = {outputLine}'
     if dc != 0 and times > 1:
-        output += '\n' + msg.locale.t('dice.message.dc.check', success=str(successNum), failed=str(failNum))
+        output += '\n▷ 判定成功数量：' + str(successNum) + '  判定失败数量：' + str(failNum)
     return output
