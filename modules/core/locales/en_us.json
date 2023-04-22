@@ -35,7 +35,7 @@
     "core.module.message.disable.qqchannel_global.success": "Success: Disabled module \"${module}\" for all text channels.",
     "core.module.message.disable.already": "Failed: Module \"${module}\" is already disabled.",
     "core.module.message.disable.success": "Success: Disabled module \"${module}\".",
-    "core.module.message.reload.not_bound": "Failed: Module \"${module}\" does not bound.",
+    "core.module.message.reload.unbound": "Failed: Module \"${module}\" does not bound.",
     "core.module.message.reload.base": "Failed: \"${module}\" is a base module, thus cannot be reloaded.",
     "core.module.message.reload.confirm": "This action will reload the following modules at the same time: \n${modules}\nContinue?",
     "core.module.message.reload.permission.denied": "Failed: You don't have permission to reload modules.",
