@@ -1,12 +1,18 @@
 from decimal import Decimal
+import re
+from PIL import Image as PILImage
+import io
+import asyncio
 
 from langchain.callbacks import get_openai_callback
 
-from core.builtins import Bot
+from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool
 from core.exceptions import NoReportException
-from modules.ask.agent import agent_executor
+
+from .agent import agent_executor
+from .formatting import generate_latex, generate_code_snippet
 
 ONE_K = Decimal('1000')
 # https://openai.com/pricing
@@ -44,6 +50,41 @@ async def _(msg: Bot.MessageSession):
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     petal = price * USD_TO_CNY * CNY_TO_PETAL
     msg.data.modify_petal(-int(petal))
+
+    blocks = parse_markdown(res)
+
+    chain = []
+    for block in blocks:
+        if block['type'] == 'text':
+            chain.append(Plain(block['content']))
+        elif block['type'] == 'latex':
+            chain.append(Image(PILImage.open(io.BytesIO(await generate_latex(block['content'])))))
+        elif block['type'] == 'code':
+            chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
+
     if await check_bool(res):
         raise NoReportException('https://wdf.ink/6OUp')
-    await msg.finish(res)
+    await msg.finish(chain)
+
+def parse_markdown(md: str):
+    regex = r'(```[\s\S]*?\n```|\$\$[\s\S]*?\$\$|[^\n]+)(?:\n|$)'
+
+    blocks = []
+    for match in re.finditer(regex, md):
+        content = match.group(1)
+        print(content)
+        if content.startswith('```'):
+            block = 'code'
+            try:
+                language, code = re.match(r'```(.*)\n([\s\S]*?)\n```', content).groups()
+            except AttributeError:
+                raise ValueError('Code block is missing language or code')
+            content = {'language': language, 'code': code}
+        elif content.startswith('$$'):
+            block = 'latex'
+            content = content[2:-2].strip()
+        else:
+            block = 'text'
+        blocks.append({'type': block, 'content': content})
+
+    return blocks
