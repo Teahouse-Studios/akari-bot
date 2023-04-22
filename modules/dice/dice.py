@@ -25,7 +25,7 @@ class DiceValueError(Exception):
 
     def __init__(self, message, value=None):
         if value != None:
-            self.message = f"参数错误: 输入为{value}，{message} "
+            self.message = f"参数错误: 输入为“{value}”，{message} "
         else:
             self.message = f"参数错误: {message} "
 
@@ -62,7 +62,7 @@ class DiceMod(DiceItemBase):
         else:
             self.result = int(diceCode)
             if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
-                raise DiceValueError(f'调节值不得小于 {MIN_MOD_NUMBER} 或大于 {MIN_MOD_NUMBER}', self.result)
+                raise DiceValueError(f'调节值不得小于 {MIN_MOD_NUMBER} 或大于 {MAX_MOD_NUMBER}', self.result)
 
     def GetDetail(self):
         return self.result
