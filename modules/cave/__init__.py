@@ -48,12 +48,12 @@ cave = on_command('cave', alias={'hitokoto': 'cave hitokoto',
 
 @cave.handle('hitokoto {一言}')
 async def hitokoto(msg: Bot.MessageSession):
-    await msg.sendMessage(hitokoto())
+    await msg.sendMessage(hitokoto_())
 
 
 @cave.handle('cowsay {哲学牛牛}')
 async def cowsay(msg: Bot.MessageSession):
-    await msg.sendMessage(cowsay())
+    await msg.sendMessage(cowsay_())
 
 
 # @cave.handle('echo_cave add <sth> {添加回声洞}',
