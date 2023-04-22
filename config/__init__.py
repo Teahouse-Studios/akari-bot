@@ -12,7 +12,7 @@ class CFG:
         self.cp = ConfigParser()
         self.cp.read(config_path)
 
-    def config(self, q):
+    def config(self, q: str):
         section = self.cp.sections()
 
         if len(section) == 0:

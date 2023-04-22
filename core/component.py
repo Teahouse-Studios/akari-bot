@@ -98,16 +98,16 @@ class Bind:
 
 def module(
     bind_prefix: str,
-    alias: Union[str, list, tuple, dict] = None,
-    desc: str = None,
-    recommend_modules: Union[str, list, tuple] = None,
-    developers: Union[str, list, tuple] = None,
+    alias: Union[str, list[str], tuple[str], dict[str, str], None] = None,
+    desc: Union[str, None] = None,
+    recommend_modules: Union[str, list[str], tuple[str], None] = None,
+    developers: Union[str, list[str], tuple[str], None] = None,
     required_admin: bool = False,
     base: bool = False,
     required_superuser: bool = False,
-    available_for: Union[str, list, tuple] = '*',
-    exclude_from: Union[str, list, tuple] = '',
-    support_languages: Union[str, list, tuple] = None
+    available_for: Union[str, list[str], tuple[str], None] = '*',
+    exclude_from: Union[str, list[str], tuple[str], None] = '',
+    support_languages: Union[str, list[str], tuple[str], None] = None
 ):
     """
 

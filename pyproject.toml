@@ -48,6 +48,7 @@ webcolors = "^1.12"
 langchain = "^0.0.146"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^2.8.6"
+pyright = "^1.1.304"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -64,4 +65,14 @@ recursive = true
 aggressive = 3
 
 [tool.pyright]
-reportUndefinedVariable = 'error'
+include = [
+    "config/**/*",
+    "bots/**/*",
+    "core/**/*",
+    "database/**/*",
+    "example/**/*",
+    "modules/**/*",
+    "bot.py",
+    "console.py",
+]
+typeCheckingMode = "strict"

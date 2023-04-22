@@ -2243,6 +2243,25 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyright"
+version = "1.1.304"
+description = "Command line wrapper for pyright"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyright-1.1.304-py3-none-any.whl", hash = "sha256:70021bbae07fc28ed16e435f5efa65cd71e06a1888d9ca998798c283d4b3d010"},
+    {file = "pyright-1.1.304.tar.gz", hash = "sha256:87adec38081904c939e3657ab23d5fc40b7ccc22709be0af1859fc785ae4ea61"},
+]
+
+[package.dependencies]
+nodeenv = ">=1.6.0"
+
+[package.extras]
+all = ["twine (>=3.4.1)"]
+dev = ["twine (>=3.4.1)"]
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -3026,4 +3045,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "e7360c2236fb2652fd4905f4110cac97a3a2ccae90d4c52afd81a8dafb9d98aa"
+content-hash = "40514526e4d626b45183666ff0c791fb3bc385b6e631f1bed35abfa8b40408af"

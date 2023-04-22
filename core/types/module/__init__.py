@@ -1,4 +1,4 @@
-from typing import Union, Dict, List
+from typing import Union, Dict, List, TypeVar
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -7,8 +7,9 @@ from apscheduler.triggers.interval import IntervalTrigger
 
 from .component_matches import *
 
+T = TypeVar('T')
 
-def convert2lst(elements: Union[str, list, tuple]) -> list:
+def convert2lst(elements: str | list[str] | tuple[str] | None) -> list[str] | None:
     if isinstance(elements, str):
         return [elements]
     elif isinstance(elements, tuple):
@@ -19,16 +20,16 @@ def convert2lst(elements: Union[str, list, tuple]) -> list:
 class Module:
     def __init__(self,
                  bind_prefix: str,
-                 alias: Union[str, list, tuple, dict] = None,
-                 desc: str = None,
-                 recommend_modules: Union[str, list, tuple] = None,
-                 developers: Union[str, list, tuple] = None,
+                 alias: Union[str, list[str], tuple[str], None, dict[str, str]] = None,
+                 desc: Union[str, None] = None,
+                 recommend_modules: Union[str, list[str], tuple[str], None] = None,
+                 developers: Union[str, list[str], tuple[str], None] = None,
                  required_admin: bool = False,
                  base: bool = False,
                  required_superuser: bool = False,
-                 available_for: Union[str, list, tuple] = '*',
-                 exclude_from: Union[str, list, tuple] = '',
-                 support_languages: Union[str, list, tuple] = None):
+                 available_for: Union[str, list[str], tuple[str], None] = '*',
+                 exclude_from: Union[str, list[str], tuple[str], None] = '',
+                 support_languages: Union[str, list[str], tuple[str], None] = None):
         self.bind_prefix: str = bind_prefix
         if isinstance(alias, str):
             alias = {alias: bind_prefix}

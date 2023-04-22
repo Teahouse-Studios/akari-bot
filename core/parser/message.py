@@ -2,16 +2,13 @@ import re
 import traceback
 from datetime import datetime
 
-from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
-from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
-    WaitCancelException, NoReportException
+from core.exceptions import AbuseWarning, FinishedException, NoReportException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser
-from core.tos import warn_target
 from core.types import Module
 from core.utils.message import removeDuplicateSpace
 from database import BotDBUtil
