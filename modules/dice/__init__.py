@@ -33,7 +33,7 @@ async def _(msg: MessageSession):
         await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
     if not dc.isdigit():
         await msg.finish(msg.locale.t('dice.message.error.dc.invalid') + dc)
-    await msg.finish(await GenerateMessage(dice, int(times), int(dc)))
+    await msg.finish(await GenerateMessage(dice, int(times), int(dc), msg))
 
 
 @dice.regex(r"[扔|投|掷|丢]([0-9]*)?个([0-9]*面)?骰子?")
