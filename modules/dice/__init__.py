@@ -8,10 +8,10 @@ dice = module('dice', alias={'d4': 'dice d4',
                              'd10': 'dice d10', 
                              'd12': 'dice d12', 
                              'd20': 'dice d20',
-                             'd100': 'dice d100'}, developers=['Light-Beacon'], desc='随机骰子',)
+                             'd100': 'dice d100'}, developers=['Light-Beacon'], desc='{dice.help.desc}',)
 
 
-@dice.command('<dices> [<dc>] {投掷指定骰子,可指定投骰次数与 dc 判断判定。}',
+@dice.command('<dices> [<dc>] {{dice.help}}',
               options_desc={
                   'dn': '表示n面骰',
                   'mdn': '表示m个n面骰，输出其所有点数之和（m若省略即为1）',
@@ -30,9 +30,9 @@ async def _(msg: MessageSession):
         times = dice.partition('#')[0]
         dice = dice.partition('#')[2]
     if not times.isdigit():
-        await msg.finish('发生错误：无效的投骰次数：' + times)
+        await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
     if not dc.isdigit():
-        await msg.finish('发生错误：无效的 dc：' + dc)
+        await msg.finish(msg.locale.t('dice.message.error.dc.invalid') + dc)
     await msg.finish(await GenerateMessage(dice, int(times), int(dc)))
 
 
