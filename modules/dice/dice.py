@@ -3,8 +3,6 @@ import secrets
 
 import numpy as np
 
-from core.builtins import Bot
-
 MAX_DICE_COUNT = 100  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = 10  # 一次命令最多的摇动次数
 MAX_MOD_NUMBER = 10000  # 骰子最大加权值
@@ -18,14 +16,14 @@ MAX_ITEM_COUNT = 10  # 骰子多项式最多的项数
 class DiceSyntaxError(Exception):
     """骰子语法错误"""
 
-    def __init__(self, message, msg: Bot.MessageSession):
+    def __init__(msg, self, message):
         self.message = f"{msg.locale.t('dice.message.error.syntax')}{message}"
 
 
 class DiceValueError(Exception):
     """骰子参数值错误"""
 
-    def __init__(msg: Bot.MessageSession, self, message, value=None):
+    def __init__(msg, self, message, value=None):
         if value != None:
             self.message = f"{msg.locale.t('dice.message.error.value.invalid', value=value)}{message} "
         else:
@@ -57,7 +55,7 @@ class DiceItemBase(object):
 class DiceMod(DiceItemBase):
     """调节值项"""
 
-    def __init__(self, diceCode: str, postive: bool, msg: Bot.MessageSession):
+    def __init__(msg, self, diceCode: str, postive: bool):
         super().__init__(diceCode, postive)
         if not diceCode.isdigit():
             raise DiceValueError(msg.locale.t('dice.message.error.value.M.invalid'), '+' if self.postive else '-' + diceCode)
@@ -73,7 +71,7 @@ class DiceMod(DiceItemBase):
 class Dice(DiceItemBase):
     """骰子项"""
 
-    def __init__(self, diceCode: str, postive: bool, msg: Bot.MessageSession):
+    def __init__(msg, self, diceCode: str, postive: bool):
         diceCode = diceCode.replace(' ', '')
         super().__init__(diceCode, postive)
         args = self.GetArgs()
@@ -89,7 +87,7 @@ class Dice(DiceItemBase):
         if abs(self.adv) > self.count:
             raise DiceValueError(msg.locale.t('dice.message.error.value.k.out_of_range'), self.adv)
 
-    def GetArgs(self, msg: Bot.MessageSession):
+    def GetArgs(self, msg):
         diceCode = self.code.upper()  # 便于识别
         diceCount = '1'  # 骰子数量
         advantage = '0'  # 保留的骰子量
@@ -117,7 +115,7 @@ class Dice(DiceItemBase):
             raise DiceValueError(msg.locale.t('dice.message.error.value.k.invalid'), advantage)
         return (int(diceCount), int(diceType), int(advantage))
 
-    def Roll(self, msg: Bot.MessageSession):
+    def Roll(self, msg):
         output = ''
         result = 0
         diceResults = []
@@ -164,7 +162,7 @@ class Dice(DiceItemBase):
         self.result = result
 
 
-async def GenerateMessage(dices: str, times: int, dc: int, msg: Bot.MessageSession):
+async def GenerateMessage(dices: str, times: int, dc: int, msg):
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
         return DiceSyntaxError(msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
