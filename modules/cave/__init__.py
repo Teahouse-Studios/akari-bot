@@ -21,12 +21,12 @@ def read():
     return data
 
 
-def cowsay():
+def cowsay_():
     result = subprocess.getoutput('fortune | cowsay')
     return result.replace('Process finished with exit code 0', '')
 
 
-def hitokoto():
+def hitokoto_():
     url = 'https://v1.hitokoto.cn/'
     response = requests.get(url)
     if response.status_code == 200:
@@ -70,6 +70,6 @@ async def cowsay(msg: Bot.MessageSession):
 async def ___(msg: Bot.MessageSession):
     mode = ['hitokoto', 'cowsay']
     if random.choice(mode) == 'hitokoto':
-        await msg.sendMessage(hitokoto())
+        await msg.sendMessage(hitokoto_())
     else:
-        await msg.sendMessage(cowsay())
+        await msg.sendMessage(cowsay_())
