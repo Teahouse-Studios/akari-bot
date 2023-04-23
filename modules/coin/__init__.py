@@ -11,6 +11,9 @@ COIN_DROP_PLACES = ["地上", "桌子上", "桌子底下", "门口", "窗户外"
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
+@coin.command('{{coin.help}}')
+async def _(msg: MessageSession):
+    await msg.finish(await flipCoins(1, msg))
 
 @coin.command('[<amount>] {{coin.help}}')
 async def _(msg: MessageSession):
