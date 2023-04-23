@@ -15,6 +15,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
+from core.utils.text import remove_prefix
 
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
@@ -22,6 +23,38 @@ special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "45
               "4575370",
               "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276",
               "21865280"]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+
+element_lists = ['C', 'H', 'He', 'Li', 'Be', 'B', 'N', 'O', 'F', 'Ne', 'Na',
+                 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc',
+                 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga',
+                 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb',
+                 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb',
+                 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm',
+                 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu',
+                 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl',
+                 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
+                 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md',
+                 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg',
+                 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og']
+
+
+def parse_elements(formula: str) -> dict:
+    elements = {}
+    while True:
+        if formula == '':
+            break
+        for element in element_lists:
+            if formula.startswith(element):
+                formula = remove_prefix(formula, element)
+                if count := re.match('^([0-9]+).*$', formula):
+                    elements[element] = int(count.group(1))
+                    formula = remove_prefix(formula, count.group(1))
+                else:
+                    elements[element] = 1
+                break
+        else:
+            raise ValueError('Unknown element: ' + formula)
+    return elements
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
@@ -37,23 +70,25 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
     name = soup.find('span',
                      id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-    values_ = re.split(r'[A-Za-z]+', name)  # 去除化学式名称中的字母
-    value = 0  # 起始元素记数，忽略单个元素（有无意义不大）
-    for v in values_:  # 遍历剔除字母后的数字
-        if v.isdigit():
-            value += int(v)  # 加一起
+    elements = parse_elements(name)  # 解析化学式，转为dict，key为元素，value为数量
+    value = 0
+    for element in elements:
+        value += elements[element]
     wh = 500 * value // 100
     if wh < 500:
         wh = 500
-    return {'id': answer_id, 'name': name,
+    return {'id': answer_id,
+            'name': name,
             'image': f'https://www.chemspider.com/ImagesHandler.ashx?id={answer_id}' +
-                     (f"&w={wh}&h={wh}" if answer_id not in special_id else ""), 'length': value}
+                     (f"&w={wh}&h={wh}" if answer_id not in special_id else ""),
+            'length': value,
+            'elements': elements}
 
 
 cc = module('chemical_code', alias={'cc': 'chemical_code',
-                                        'chemicalcode': 'chemical_code',
-                                        'captcha': 'chemical_code captcha'},
-                desc='{chemical_code.help.desc}', developers=['OasisAkari'])
+                                    'chemicalcode': 'chemical_code',
+                                    'captcha': 'chemical_code captcha'},
+            desc='{chemical_code.help.desc}', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
@@ -73,7 +108,9 @@ async def s(msg: Bot.MessageSession):
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-            await msg.sendMessage(msg.locale.t('chemical_code.stop.message', answer=play_state[msg.target.targetId]["answer"]), quote=False)  # 发送存储于 play_state 中的答案
+            await msg.sendMessage(
+                msg.locale.t('chemical_code.stop.message', answer=play_state[msg.target.targetId]["answer"]),
+                quote=False)  # 发送存储于 play_state 中的答案
         else:
             await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
     else:
@@ -129,17 +166,53 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     async def ans(msg: Bot.MessageSession, answer):  # 定义回答函数的功能
         wait = await msg.waitAnyone()  # 等待对象内的任意人回答
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
-            if wait.asDisplay(text_only=True) != answer:  # 如果回答不正确
-                Logger.info(f'{wait.asDisplay()} != {answer}')  # 输出日志
+            if (wait_text := wait.asDisplay(text_only=True)) != answer:  # 如果回答不正确
+                if re.match(r'^[A-Za-z0-9]+$', wait_text):
+                    try:
+                        parse_ = parse_elements(wait_text)  # 解析消息中的化学元素
+                        value = 0
+                        for i in parse_:
+                            value += parse_[i]
+                        v_ = csr['length'] - value
+                        if v_ < 0:
+                            v_ = -v_
+                        if v_ > 6:
+                            await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind1'))
+                        else:
+                            if csr['elements'] == parse_:
+                                await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind5'))
+                            elif v_ <= 2:
+                                await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind3'))
+                            else:
+                                incorrect_list = []
+                                for i in csr['elements']:
+                                    if i in parse_:
+                                        if parse_[i] != csr['elements'][i]:
+                                            incorrect_list.append(i)
+                                    else:
+                                        await wait.sendMessage(
+                                            wait.locale.t('chemical_code.message.incorrect.remind4'))
+                                        incorrect_list = []
+                                        break
+
+                                if incorrect_list:
+                                    await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind2',
+                                                                         elements=', '.join(incorrect_list)))
+
+                    except ValueError:
+                        traceback.print_exc()
+
+                Logger.info(f'{wait_text} != {answer}')  # 输出日志
                 return await ans(wait, answer)  # 进行下一轮检查
             else:
-                await wait.sendMessage(msg.locale.t('chemical_code.message.correct'))
+                await wait.sendMessage(wait.locale.t('chemical_code.message.correct'))
                 play_state[msg.target.targetId]['active'] = False  # 将对象标记为非活跃状态
 
     async def timer(start):  # 计时器函数
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if datetime.now().timestamp() - start > 60 * set_timeout:  # 如果超过2分钟
-                await msg.sendMessage(msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.targetId]["answer"]))
+                await msg.sendMessage(
+                    msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.targetId]["answer"]))
                 play_state[msg.target.targetId]['active'] = False
             else:  # 如果未超时
                 await asyncio.sleep(1)  # 等待1秒
@@ -158,5 +231,6 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
             if result.asDisplay(text_only=True) == csr['name']:
                 await result.sendMessage(msg.locale.t('chemical_code.message.correct'))
             else:
-                await result.sendMessage(msg.locale.t('chemical_code.message.incorrect', answer=play_state[msg.target.targetId]["answer"]))
+                await result.sendMessage(
+                    msg.locale.t('chemical_code.message.incorrect', answer=play_state[msg.target.targetId]["answer"]))
             play_state[msg.target.targetId]['active'] = False
