@@ -83,5 +83,17 @@
     "wiki.message.rollback": "无法发送转发消息，已自动回滚至传统样式。",
     "wiki.rc.help.desc": "获取默认 Wiki 的最近更改。",
     "wiki.ab.help.desc": "获取默认 Wiki 的最近滥用日志。",
-    "wiki.newbie.help.desc": "获取默认 Wiki 的新用户。"
+    "wiki.newbie.help.desc": "获取默认 Wiki 的新用户。",
+    "wiki.wikilib.message.get.failed.moegirl": "萌娘百科的api接口不稳定，请稍后再试或直接访问站点。",
+    "wiki.wikilib.message.get.failed.cloudflare": "CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。",
+    "wiki.wikilib.message.get.failed.timeout": "错误：尝试建立连接超时。",
+    "wiki.wikilib.message.get.failed.forbidden": "服务器拒绝了机器人的请求。",
+    "wiki.wikilib.message.get.failed.no_http_or_https_headers": "所给的链接没有指明协议头（链接应以http://或https://开头）。",
+    "wiki.wikilib.message.get.failed.not_a_mediawiki": "此站点也许不是一个有效的Mediawiki：",
+    "wiki.wikilib.message.get.failed.api": "从API获取信息时出错：",
+    "wiki.wikilib.message.no_textextracts": "警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。",
+    "wiki.wikilib.message.error": "发生错误：",
+    "wiki.wikilib.message.error.empty": "发生错误：API未返回任何内容，请联系此站点管理员获取原因。",
+    "wiki.wikilib.message.error.invalid_character": "请求的页面标题包含非法字符：",
+
 }

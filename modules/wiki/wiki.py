@@ -16,10 +16,10 @@ from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, In
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 
 wiki = module('wiki',
-                  alias={'wiki_start_site': 'wiki set',
-                         'interwiki': 'wiki iw'},
-                  recommend_modules='wiki_inline',
-                  developers=['OasisAkari'])
+              alias={'wiki_start_site': 'wiki set',
+                     'interwiki': 'wiki iw'},
+              recommend_modules='wiki_inline',
+              developers=['OasisAkari'])
 
 
 @wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
@@ -147,17 +147,19 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
             for rd in ready_for_query_pages:
                 if rd in ['随机页面', '隨機頁面', 'Random']:
                     tasks.append(asyncio.create_task(
-                        WikiLib(q, headers).random_page()))
+                        WikiLib(q, headers, locale=session.locale.locale).random_page()))
                 else:
                     if template:
                         rd = f'Template:{rd}'
                     if mediawiki:
                         rd = f'MediaWiki:{rd}'
                     tasks.append(asyncio.ensure_future(
-                        WikiLib(q, headers).parse_page_info(title=rd, inline=inline_mode, lang=lang)))
+                        WikiLib(q, headers, locale=session.locale.locale)
+                        .parse_page_info(title=rd, inline=inline_mode, lang=lang)))
             for rdp in ready_for_query_ids:
                 tasks.append(asyncio.ensure_future(
-                    WikiLib(q, headers).parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)))
+                    WikiLib(q, headers, locale=session.locale.locale)
+                    .parse_page_info(pageid=rdp, inline=inline_mode, lang=lang)))
             query = await asyncio.gather(*tasks)
             for result in query:
                 Logger.debug(result.__dict__)
@@ -178,7 +180,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if display_before_title is not None and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
                             plain_slice.append(session.locale.t('wiki.message.redirect.template_to_page',
-                                                                title=display_before_title, redirected_title=display_title))
+                                                                title=display_before_title,
+                                                                redirected_title=display_title))
                         else:
                             plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
                                                                 redirected_title=display_title))
@@ -212,24 +215,32 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         if isinstance(session, Bot.MessageSession) and session.Feature.wait:
                             if not session.options.get('wiki_redlink', False):
                                 if len(r.possible_research_title) > 1:
-                                    wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.choice', title=display_before_title))
+                                    wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.choice',
+                                                                             title=display_before_title))
                                     pi = 0
                                     for p in r.possible_research_title:
                                         pi += 1
                                         wait_plain_slice.append(
                                             f'{pi}. {p}')
-                                    wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.choice.prompt', number=str(r.possible_research_title.index(display_title) + 1)))
+                                    wait_plain_slice.append(
+                                        session.locale.t('wiki.message.not_found.autofix.choice.prompt', number=str(
+                                            r.possible_research_title.index(display_title) + 1)))
                                     wait_possible_list.append({display_before_title: {display_title:
                                                                                           r.possible_research_title}})
                                 else:
-                                    wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.confirm', title=display_before_title, redirected_title=display_title))
+                                    wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.confirm',
+                                                                             title=display_before_title,
+                                                                             redirected_title=display_title))
                             else:
                                 if r.edit_link is not None:
                                     plain_slice.append(r.edit_link + session.locale.t('wiki.redlink.message.not_found'))
                                 else:
-                                    plain_slice.append(session.locale.t('wiki.redlink.message.not_found.uneditable', title=display_before_title))
+                                    plain_slice.append(session.locale.t('wiki.redlink.message.not_found.uneditable',
+                                                                        title=display_before_title))
                         else:
-                            wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix', title=display_before_title, redirected_title=display_title))
+                            wait_plain_slice.append(
+                                session.locale.t('wiki.message.not_found.autofix', title=display_before_title,
+                                                 redirected_title=display_title))
                         if len(r.possible_research_title) == 1:
                             wait_list.append({display_title: display_before_title})
                     elif r.before_title is not None:
@@ -239,7 +250,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
-                        plain_slice.append(session.locale.t('wiki.message.invalid_namespace', namespace=r.invalid_namespace))
+                        plain_slice.append(
+                            session.locale.t('wiki.message.invalid_namespace', namespace=r.invalid_namespace))
                     if r.before_page_property == 'template':
                         if r.before_title.split(':')[1].isupper():
                             plain_slice.append(session.locale.t('wiki.message.magic_word'))
@@ -329,20 +341,23 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 wait_list_ = []
                 for w in wait_list:
                     for wd in w:
-                        preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=w[wd], redirected_title=wd))
+                        preset_message.append(
+                            session.locale.t('wiki.message.redirect.autofix', title=w[wd], redirected_title=wd))
                         wait_list_.append(wd)
                 if auto_index:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
-                            preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=keys[0]))
+                            preset_message.append(
+                                session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=keys[0]))
                             wait_list_.append(keys[0])
                 else:
                     for wp in wait_possible_list:
                         for wpk in wp:
                             keys = list(wp[wpk].keys())
                             if len(wp[wpk][keys[0]]) > index:
-                                preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk, redirected_title=wp[wpk][keys[0]][index]))
+                                preset_message.append(session.locale.t('wiki.message.redirect.autofix', title=wpk,
+                                                                       redirected_title=wp[wpk][keys[0]][index]))
                                 wait_list_.append(wp[wpk][keys[0]][index])
 
                 if wait_list_:
