@@ -52,7 +52,7 @@ async def ab_loader(msg: MessageSession):
             await msg.finish(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
-        res = await ab(start_wiki)
+        res = await ab(msg, start_wiki)
         await msg.finish(res)
 
 
