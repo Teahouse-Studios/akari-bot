@@ -94,6 +94,6 @@
     "wiki.wikilib.message.no_textextracts": "警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。",
     "wiki.wikilib.message.error": "发生错误：",
     "wiki.wikilib.message.error.empty": "发生错误：API未返回任何内容，请联系此站点管理员获取原因。",
-    "wiki.wikilib.message.error.invalid_character": "请求的页面标题包含非法字符：",
+    "wiki.wikilib.message.error.invalid_character": "请求的页面标题包含非法字符："
 
 }
