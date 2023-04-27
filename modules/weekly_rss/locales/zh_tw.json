@@ -1,6 +1,6 @@
 {
-    "weekly_rss.help.desc": "啟用後將訂閱中文 Minecraft Wiki 的每週頁面。（每週一 8:30 更新）",
-    "teahouse_weekly_rss.help.desc": "啟用後將訂閱茶館週報的每週頁面。（每週一 8:30 更新）",
+    "weekly_rss.help.desc": "开启后将订阅中文 Minecraft Wiki 的每周页面。（每周一 9:00 更新）",
+    "teahouse_weekly_rss.help.desc": "开启后将订阅茶馆周报的每周页面。（每周一 9:30 更新）",
     "weekly_rss.prompt": "如需取得每週頁面的文字版本及連結，請使用「${prefix} weekly」。",
     "weekly_rss.teahouse.prompt": "如需取得每週頁面的文字版本及連結，請使用「${prefix} weekly teahouse」。"
 }
