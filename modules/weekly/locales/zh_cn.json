@@ -1,4 +1,4 @@
-﻿{
+{
     "weekly.help": "获取中文 Minecraft Wiki 的每周页面。",
     "weekly.image.help": "获取中文 Minecraft Wiki 的每周页面（图片版）。",
     "weekly.message": "本周页面：\n\n${text}",
