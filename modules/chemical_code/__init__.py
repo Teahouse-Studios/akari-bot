@@ -183,7 +183,15 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                             if csr['elements'] == parse_:
                                 await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind5'))
                             elif v_ <= 2:
-                                await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind3'))
+                                missing_something = False
+                                for i in csr['elements']:
+                                    if i not in parse_:
+                                        await wait.sendMessage(
+                                            wait.locale.t('chemical_code.message.incorrect.remind4'))
+                                        missing_something = True
+                                        break
+                                if not missing_something:
+                                    await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind3'))
                             else:
                                 incorrect_list = []
                                 for i in csr['elements']:
