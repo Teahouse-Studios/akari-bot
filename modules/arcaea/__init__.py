@@ -13,3 +13,4 @@ assets_path = os.path.abspath('./assets/')
 @arc.handle('<no_one_cares>')
 async def _(msg: Bot.MessageSession):
     await msg.finish(Image(assets_path + '/noc.jpg'))
+    await msg.finish(Image(assets_path + '/aof.jpg'))
