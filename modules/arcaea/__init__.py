@@ -13,7 +13,6 @@ assets_path = os.path.abspath('./assets/')
 
 
 @arc.handle()
-@arc.handle('<no_one_cares>')
 async def _(msg: Bot.MessageSession):
     await msg.finish([msg.locale.t("arcaea.message.sb616"), Image(assets_path + '/noc.jpg'), Image(assets_path + '/aof.jpg')])
 
