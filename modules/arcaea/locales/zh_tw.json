@@ -66,5 +66,10 @@
     "arcaea.random.help": "隨機一首曲目。",
     "arcaea.rank.help.free": "檢視目前免費包遊玩排行。",
     "arcaea.rank.help.paid": "檢視目前付費包遊玩排行。",
-    "arcaea.help.desc": "查詢 Arcaea 相關內容。"
+    "arcaea.help.desc": "查詢 Arcaea 相關內容。",
+    "arcaea": {
+        "message": {
+            "sb616": "由於眾所周知的原因，「arcaea」模組的查分功能將無限期停用。\n人生自古誰無死？不幸地，Guy 的母親已經逝世，因此無法繼續與您互動，讓我們永遠緬懷她。"
+        }
+    }
 }
