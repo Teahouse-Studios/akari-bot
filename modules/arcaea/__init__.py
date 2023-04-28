@@ -2,7 +2,8 @@ import os
 
 from config import Config
 from core.builtins import Bot
-from core.builtins import Image
+from core.builtins import Image, Plain
+from core.utils.http import get_url
 from core.component import module
 
 webrender = Config('web_render')
