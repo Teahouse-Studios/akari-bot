@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
 @arc.command('download {{arcaea.download.help}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish([msg.locale.t("arcaea.message.no_webrender"))])
+        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
                          fmt='json')
     if resp:
