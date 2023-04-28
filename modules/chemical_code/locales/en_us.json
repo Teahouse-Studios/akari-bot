@@ -17,7 +17,7 @@
     "chemical_code.help.desc": "A game about chemical formulas.",
     "chemical_code.help": "Default mode (Time limits, multiple)",
     "chemical_code.stop.help": "Stop the current game.",
-    "chemical_code.stop.message": "Stopped. The correct answer is $answer.",
+    "chemical_code.stop.message": "Stopped. The correct answer is ${answer}.",
     "chemical_code.stop.message.none": "There is no game in progress.",
     "chemical_code.message": "Please answer the chemical formula of this compound within ${times} minutes. (Alphabetical order except C, H. e.g. CHBrClF)"
 }
