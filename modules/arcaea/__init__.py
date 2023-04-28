@@ -8,7 +8,7 @@ from core.component import module
 
 webrender = Config('web_render')
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
-             alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
+             alias={'b30': 'arcaea', 'a': 'arcaea', 'arc': 'arcaea'})
 assets_path = os.path.abspath('./assets/')
 
 
