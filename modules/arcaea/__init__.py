@@ -43,7 +43,7 @@ async def _(msg: Bot.MessageSession):
 @arc.command('rank free {{arcaea.rank.help.free}}', 'rank paid {{arcaea.rank.help.paid}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish([.no_webrender")])
+        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     if msg.parsed_msg.get('free', False):
         resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
     else:
