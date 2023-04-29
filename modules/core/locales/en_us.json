@@ -93,7 +93,7 @@
     "core.resume.message.done": "Resume complete.",
     "core.resume.message.nothing": "No messages to be resumed.",
     "core.resume.message.skip": "Skip a message, resuming ${counts} messages...",
-    "core.resume.message.clean": "已清理全部消息。",
+    "core.resume.message.clean": "All messages cleared.",
     "core.version.help": "View robot version.",
     "core.version.message": "Current robot version: ${version_tag} (${commit})",
     "core.ping.help": "Get robot status.",
