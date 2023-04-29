@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+echo $(pwd)
+java -Dfile.encoding=UTF-8 -jar PhigrosRpc-3.0-all.jar 9090 difficulty.csv

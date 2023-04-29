@@ -7,14 +7,14 @@ from database import session, auto_rollback_error
 from .orm import PgrBindInfo
 
 
-class ArcBindInfoManager:
+class PgrBindInfoManager:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def __init__(self, msg: Bot.MessageSession):
         self.targetId = msg.target.senderId
         self.query = session.query(PgrBindInfo).filter_by(targetId=self.targetId).first()
         if self.query is None:
-            session.add_all([PgrBindInfo(targetId=self.targetId, sessiontoken='')])
+            session.add_all([PgrBindInfo(targetId=self.targetId, sessiontoken='', username='Guest')])
             session.commit()
             self.query = session.query(PgrBindInfo).filter_by(targetId=self.targetId).first()
 
@@ -28,8 +28,7 @@ class ArcBindInfoManager:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def set_bind_info(self, username, sessiontoken):
-        self.query.username = username
+    def set_bind_info(self, sessiontoken):
         self.query.sessiontoken = sessiontoken
         session.commit()
         return True

@@ -13,7 +13,7 @@ class PgrBindInfo(Base):
     __tablename__ = table_prefix + 'PgrBindInfo'
     targetId = Column(String(512), primary_key=True)
     sessiontoken = Column(String(512))
-    eula = Column(Boolean, default=False)
+    username = Column(String(512))
 
 
 Session.create()

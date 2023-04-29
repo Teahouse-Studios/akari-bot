@@ -1255,6 +1255,8 @@ tabulate==0.9.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.
 tenacity==8.2.1 ; python_full_version >= "3.8.1" and python_version < "4.0" \
     --hash=sha256:c7bb4b86425b977726a7b49971542d4f67baf72096597d283f3ffd01f33b92df \
     --hash=sha256:dd1b769ca7002fda992322939feca5bee4fa11f39146b0af14e0b8d9f27ea854
+thrift==0.16.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:2b5b6488fcded21f9d312aa23c9ff6a0195d0f6ae26ddbd5ad9e3e25dfc14408
 toml==0.10.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f

@@ -26,7 +26,7 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
                                          senderId=senderId,
                                          senderName=ctx.author.name if isinstance(ctx,
                                                                                   discord.ApplicationContext) else ctx.interaction.user.name,
-                                         targetFrom=target, senderFrom="Discord|Client",
+                                         targetFrom='Discord|Slash', senderFrom="Discord|Client",
                                          clientName='Discord|Slash',
                                          messageId=0),
                           session=Session(message=ctx,

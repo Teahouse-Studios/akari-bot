@@ -48,6 +48,7 @@ webcolors = "^1.12"
 langchain = "^0.0.146"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^2.8.6"
+thrift = "^0.16.0"
 
 
 [tool.poetry.group.dev.dependencies]
