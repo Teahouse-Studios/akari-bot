@@ -86,24 +86,27 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
             'elements': elements}
 
 
-cc = module('chemical_code', alias={'cc': 'chemical_code',
+ccode = module('chemical_code', alias={'cc': 'chemical_code',
+                                    'ccode': 'chemical_code',
                                     'chemicalcode': 'chemical_code',
+                                    'chemical_captcha: 'chemical_code captcha',
+                                    'chemicalcaptcha: 'chemical_code captcha',
                                     'ccaptcha': 'chemical_code captcha'},
             desc='{chemical_code.help.desc}', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
-@cc.command('{{chemical_code.help}}')  # 直接使用 cc 命令将触发此装饰器
+@ccode.command('{{chemical_code.help}}')  # 直接使用 ccode 命令将触发此装饰器
 async def chemical_code_by_random(msg: Bot.MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
-@cc.command('captcha {{chemical_code.help.captcha}}')
+@ccode.command('captcha {{chemical_code.help.captcha}}')
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@cc.command('stop {{chemical_code.stop.help}}')
+@ccode.command('stop {{chemical_code.stop.help}}')
 async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
@@ -118,7 +121,7 @@ async def s(msg: Bot.MessageSession):
         await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
 
 
-@cc.command('<csid> {{chemical_code.help.csid}}')
+@ccode.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
     if (id.isdigit() and int(id) > 0):  # 如果 ID 为纯数字
