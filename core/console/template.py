@@ -68,7 +68,7 @@ class Template(MS):
         send = None
         if msgchain is not None:
             send = await self.sendMessage(msgchain)
-        if self.session.auto_interactions is not None:
+        if self.session.auto_interactions:
             c = self.session.auto_interactions[0]
             del self.session.auto_interactions[0]
         else:

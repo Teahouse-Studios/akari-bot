@@ -98,7 +98,7 @@ async def _(msg: Bot.MessageSession):
         if msg.parsed_msg['<Interwiki>'] in query:
             await msg.finish(Url(query[msg.parsed_msg['<Interwiki>']]))
         else:
-            await msg.finish(msg.locale.t("wiki.iw.get.message.not_found", iw=iw))
+            await msg.finish(msg.locale.t("wiki.iw.get.message.not_found", iw=msg.parsed_msg["<Interwiki>"]))
     else:
         await msg.finish(msg.locale.t("wiki.iw.message.none", prefix=msg.prefixes[0]))
 

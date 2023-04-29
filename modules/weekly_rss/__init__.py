@@ -12,7 +12,7 @@ weekly_rss = module('weekly_rss',
                     developers=['Dianliang233'], alias='weeklyrss')
 
 
-@weekly_rss.handle(CronTrigger.from_crontab('30 8 * * MON'))
+@weekly_rss.handle(CronTrigger.from_crontab('0 9 * * MON'))
 async def weekly_rss():
     Logger.info('Checking MCWZH weekly...')
 
@@ -34,7 +34,7 @@ teahouse_weekly_rss = module('teahouse_weekly_rss',
                              developers=['OasisAkari'], alias=['teahouseweeklyrss', 'teahouserss'])
 
 
-@teahouse_weekly_rss.handle(trigger=CronTrigger.from_crontab('30 8 * * MON'))
+@teahouse_weekly_rss.handle(trigger=CronTrigger.from_crontab('30 9 * * MON'))
 async def weekly_rss():
     Logger.info('Checking teahouse weekly...')
 

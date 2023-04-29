@@ -290,6 +290,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         await warn_target(msg, str(e))
                         temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                                  'ts': datetime.now().timestamp()}
+                    else:
+                        await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=e))
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
@@ -393,6 +395,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                 await warn_target(msg, str(e))
                                 temp_ban_counter[msg.target.senderId] = {'count': 1,
                                                                          'ts': datetime.now().timestamp()}
+                            else:
+                                await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=e))
 
                         except Exception as e:
                             Logger.error(traceback.format_exc())

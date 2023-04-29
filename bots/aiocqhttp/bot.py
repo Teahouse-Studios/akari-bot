@@ -34,7 +34,8 @@ async def _(event: Event):
 async def _(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
-            return await bot.send(event, '请先添加好友后再进行命令交互。')
+            if Config('qq_disable_temp_session'):
+                return await bot.send(event, '请先添加好友后再进行命令交互。')
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml.*?>.*?', event.message)
     if filter_msg:
         return

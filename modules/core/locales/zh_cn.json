@@ -35,7 +35,6 @@
     "core.module.message.disable.qqchannel_global.success": "成功：为所有文字频道禁用“${module}”模块。",
     "core.module.message.disable.already": "失败：“${module}”模块已禁用。",
     "core.module.message.disable.success": "成功：禁用模块“${module}”。",
-    "core.module.message.reload.not_bound": "失败：“${module}”模块尚未绑定。",
     "core.module.message.reload.base": "失败：“${module}”为基础模块，无法重载。",
     "core.module.message.reload.confirm": "该操作将额外同时重载以下模块：\n${modules}\n是否继续？",
     "core.module.message.reload.permission.denied": "失败：你没有重载模块的权限。",
@@ -56,9 +55,9 @@
     "core.module.message.help.legacy.external": "模块扩展命令：",
     "core.module.message.help.legacy.more_information": "使用“${prefix}help <对应模块名>”查看详细信息。\n使用“${prefix}module list”查看所有的可用模块。\n您也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/",
     "core.module.message.help.legacy.availables": "当前可用的模块有：",
-    "core.module.message.reload.success": "成功：重载模块：",
+    "core.module.message.reload.success": "成功：重载模块：“${module}”",
     "core.module.message.reload.with": "，以及该模块下的 ${reloadCnt} 个文件。",
-    "core.module.message.reload.no_more": "，未发现已加载的其余文件",
+    "core.module.message.reload.no_more": "，未发现已加载的其余文件。",
     "core.module.message.reload.failed": "重载模块失败。",
     "core.prefix.help.add": "设置自定义机器人命令前缀。",
     "core.prefix.help.remove": "移除自定义机器人命令前缀。",
@@ -136,5 +135,6 @@
     "core.module.message.help.legacy.revoke": "[本消息将在一分钟后撤回]",
     "core.module.message.enable.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",
     "core.petal.help": "获取当前群组的花瓣数。",
-    "core.petal.message": "当前群组的花瓣数为：${petal}。"
+    "core.petal.message": "当前群组的花瓣数为：${petal}。",
+    "core.module.message.reload.unbound": "失败：“${module}”模块尚未绑定。"
 }

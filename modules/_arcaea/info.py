@@ -7,7 +7,7 @@ from config import Config
 from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.http import get_url
-from modules.arcaea.utils import autofix_b30_song_background
+from modules._arcaea.utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")

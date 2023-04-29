@@ -132,10 +132,11 @@ class PageInfo:
 
 
 class WikiLib:
-    def __init__(self, url: str, headers=None):
+    def __init__(self, url: str, headers=None, locale='zh_cn'):
         self.url = url
         self.wiki_info = WikiInfo()
         self.headers = headers
+        self.locale = Locale(locale)
 
     async def get_json_from_api(self, api, **kwargs) -> dict:
         api = re.sub(r'https://zh\.moegirl\.org\.cn/', 'https://mzh.moegirl.org.cn/', api)  # 萌娘百科强制使用移动版 API
@@ -148,7 +149,7 @@ class WikiLib:
             return await get_url(api, status_code=200, headers=self.headers, fmt="json")
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
-                raise InvalidWikiError('尝试请求萌娘百科失败，可能站点正在遭受攻击。请直接访问萌娘百科以获取信息。')
+                raise InvalidWikiError(self.locale.t("wiki.wikilib.message.get.failed.moegirl"))
             raise e
 
     def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
@@ -210,7 +211,7 @@ class WikiLib:
                 get_page = await get_url(self.url, fmt='text', headers=self.headers)
                 if get_page.find('<title>Attention Required! | Cloudflare</title>') != -1:
                     return WikiStatus(available=False, value=False,
-                                      message='CloudFlare拦截了机器人的请求，请联系站点管理员解决此问题。')
+                                      message=self.locale.t("wiki.wikilib.message.get.failed.cloudflare"))
                 m = re.findall(
                     r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
                     get_page)
@@ -220,17 +221,17 @@ class WikiLib:
                 # Logger.info(api_match)
                 wiki_api_link = api_match
             except (TimeoutError, asyncio.TimeoutError):
-                return WikiStatus(available=False, value=False, message='错误：尝试建立连接超时。')
+                return WikiStatus(available=False, value=False, message=self.locale.t("wiki.wikilib.message.get.failed.timeout"))
             except Exception as e:
                 Logger.debug(traceback.format_exc())
                 if e.args == (403,):
-                    message = '服务器拒绝了机器人的请求。'
+                    message = self.locale.t("wiki.wikilib.message.get.failed.forbidden")
                 elif not re.match(r'^(https?://).*', self.url):
-                    message = '所给的链接没有指明协议头（链接应以http://或https://开头）。'
+                    message = self.locale.t("wiki.wikilib.message.get.failed.no_http_or_https_headers")
                 else:
-                    message = '此站点也许不是一个有效的Mediawiki：' + str(e)
+                    message = self.locale.t("wiki.wikilib.message.get.failed.not_a_mediawiki") + str(e)
                 if self.url.find('moegirl.org.cn') != -1:
-                    message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
+                    message += '\n' + self.locale.t("wiki.wikilib.message.get.failed.moegirl")
                 return WikiStatus(available=False, value=False, message=message)
         get_cache_info = DBSiteInfo(wiki_api_link).get()
         if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
@@ -244,14 +245,14 @@ class WikiLib:
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
             Logger.debug(traceback.format_exc())
-            message = '从API获取信息时出错：' + str(e)
+            message = self.locale.t("wiki.wikilib.message.get.failed.api") + str(e)
             if self.url.find('moegirl.org.cn') != -1:
-                message += '\n萌娘百科的api接口不稳定，请稍后再试或直接访问站点。'
+                message += '\n' + self.locale.t("wiki.wikilib.message.get.failed.moegirl")
             return WikiStatus(available=False, value=False, message=message)
         DBSiteInfo(wiki_api_link).update(get_json)
         info = self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(available=True, value=info,
-                          message='警告：此wiki没有启用TextExtracts扩展，返回的页面预览内容将为未处理的原始Wikitext文本。'
+                          message=self.locale.t("wiki.wikilib.message.no_textextracts")
                           if 'TextExtracts' not in info.extensions else '')
 
     async def check_wiki_info_from_database_cache(self):
@@ -401,7 +402,7 @@ class WikiLib:
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
             return PageInfo(title=title if title is not None else pageid, id=pageid,
-                            link=link, desc='发生错误：' + str(e), info=self.wiki_info, templates=[])
+                            link=link, desc=self.locale.t("wiki.wikilib.message.error") + str(e), info=self.wiki_info, templates=[])
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
@@ -462,7 +463,7 @@ class WikiLib:
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
         if query is None:
-            return PageInfo(title=title, link=None, desc='发生错误：API未返回任何内容，请联系此站点管理员获取原因。',
+            return PageInfo(title=title, link=None, desc=self.locale.t("wiki.wikilib.message.error.empty"),
                             info=self.wiki_info)
         redirects_: List[Dict[str, str]] = query.get('redirects')
         if redirects_ is not None:
@@ -488,9 +489,10 @@ class WikiLib:
                 if 'editurl' in page_raw:
                     page_info.edit_link = page_raw['editurl']
                 if 'invalid' in page_raw:
-                    rs1 = re.sub('The requested page title contains invalid characters:', '请求的页面标题包含非法字符：',
+                    rs1 = re.sub('The requested page title contains invalid characters:',
+                                 self.locale.t("wiki.wikilib.message.error.invalid_character"),
                                  page_raw['invalidreason'])
-                    rs = '发生错误：“' + rs1 + '”。'
+                    rs = self.locale.t("wiki.wikilib.message.error") + '“' + rs1 + '”。'
                     rs = re.sub('".”', '"”', rs)
                     page_info.desc = rs
                 elif 'missing' in page_raw:

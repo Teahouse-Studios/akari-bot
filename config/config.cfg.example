@@ -13,6 +13,7 @@ curseforge_api_key =
 exchange_rate_api_key =
 
 [cfg]
+base_superuser = QQ|2596322644
 debug = False
 cache_path = ./cache/
 db_cache = False
@@ -22,9 +23,9 @@ wiki_whitelist_url = https://s.wd-ljt.com/botwhitelist
 qq_msg_logging_to_db = True
 qq_host = 127.0.0.1:11451
 qq_account = 2052142661
-base_superuser = QQ|2596322644
 qq_enable_dirty_check = True
 qq_enable_urlmanager = True
+qq_disable_temp_session = False
 web_render_local =
 slower_schedule = False
 enable_tos = False

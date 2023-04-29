@@ -34,7 +34,8 @@ class FinishedSession(FinS):
         if self.session.target.targetFrom in ['QQ|Group', 'QQ']:
             try:
                 for x in self.messageId:
-                    await bot.call_action('delete_msg', message_id=x)
+                    if x != 0:
+                        await bot.call_action('delete_msg', message_id=x)
             except Exception:
                 Logger.error(traceback.format_exc())
 
@@ -86,7 +87,13 @@ class MessageSession(MS):
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
                                          channel_id=int(match_guild.group(2)), message=msg)
         else:
-            send = await bot.send_private_msg(user_id=self.session.target, message=msg)
+            try:
+                send = await bot.send_private_msg(user_id=self.session.target, message=msg)
+            except aiocqhttp.exceptions.ActionFailed as e:
+                if self.session.message.detail_type == 'private' and self.session.message.sub_type == 'group':
+                    return FinishedSession(self, 0, [{}])
+                else:
+                    raise e
         return FinishedSession(self, send['message_id'], [send])
 
     async def checkPermission(self):
