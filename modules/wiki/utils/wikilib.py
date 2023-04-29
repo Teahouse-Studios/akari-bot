@@ -402,7 +402,7 @@ class WikiLib:
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
             return PageInfo(title=title if title is not None else pageid, id=pageid,
-                            link=link, desc=self.locale.t("wiki.wikilib.message.error") + str(e), info=self.wiki_info, templates=[])
+                            link=link, desc=self.locale.t("error") + str(e), info=self.wiki_info, templates=[])
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
