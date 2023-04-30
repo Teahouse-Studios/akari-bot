@@ -20,11 +20,8 @@ w = module(
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
     res = await asyncio.get_event_loop().run_in_executor(None, client.query, query)
-    assumption = []
-    for pod in res.pods:
-        if pod.text is None:
-            continue
-        assumption.append(pod.text)
-    answer = next(res.results).text
-    assumptions = ',\n'.join(assumption)
-    await msg.finish(f"Answer: {answer}\n===\nAssumption: \n{assumptions}")
+    details = res.details
+    answer = []
+    for title, detail in details.items():
+        answer.append(f'{title}: {detail}')
+    await msg.finish('\n'.join(answer))
