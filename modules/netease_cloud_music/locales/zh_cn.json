@@ -1,0 +1,17 @@
+{
+    "ncmusic.help_doc.search":"搜索音乐",
+    "ncmusic.help_doc.info":"获取音乐详细信息",
+    "ncmusic.come_from.character":"——",
+    "ncmusic.character.(":"（",
+    "ncmusic.character.)":"）",
+    "ncmusic.search_result":"搜索结果：",
+    "ncmusic.message.wrong_grammar":"语法错误。\n请输入“~help music”查看帮助。",
+    "ncmusic.message.delete":"[该消息将在90秒后撤回]",
+    "ncmusic.message.none_config":"尚未绑定API！请检查配置文件。",
+    "ncmusic.message.error":"出现错误！请联系管理员解决问题",
+    "ncmusic.info.name":"歌名：",
+    "ncmusic.info.album":"专辑名：",
+    "ncmusic.info.artists":"歌手：",
+    "ncmusic.info.song_page":"歌曲详情页：",
+    "ncmusic.info.song_url":"歌曲链接："
+}
