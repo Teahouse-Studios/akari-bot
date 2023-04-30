@@ -11,7 +11,7 @@ from core.builtins import Plain, Image
 from core.component import module
 from core.utils.http import get_url
 from .dbutils import PgrBindInfoManager
-from .update import update_difficulty_csv
+from .update import update_difficulty_csv, update_assets
 
 phi = module('phigros', developers=['OasisAkari'], desc='查询 Phigros 相关内容。SessionToken获取参考：'
                                                         'https://mivik.gitee.io/pgr-bot-help/index.html#%E5%AE%89%E5%8D%93',
@@ -59,6 +59,13 @@ async def _(msg: Bot.MessageSession):
         transport.close()
 
 
+@phi.command('update assets')
+async def _(msg: Bot.MessageSession):
+    await update_assets()
+
+
 @phi.command('update rating')
 async def _(msg: Bot.MessageSession):
     await update_difficulty_csv()
+
+

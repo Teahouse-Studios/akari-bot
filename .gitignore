@@ -16,6 +16,7 @@ assets/feedback_*.txt
 assets/cytoid-avatar/
 assets/cytoid-cover/
 assets/maimai*
+assets/phigros*
 bots/**/assets
 core/unused_bots/**/assets
 .version*

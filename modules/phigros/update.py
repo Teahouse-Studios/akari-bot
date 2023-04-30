@@ -1,35 +1,26 @@
-import math
+import csv
 import csv
 import os
 import re
-import string
 import shutil
+import string
+import traceback
 
 import ujson as json
 
-from PIL import Image, ImageFilter, ImageEnhance, ImageDraw
-
-from core.logger import Logger
-from core.utils.http import get_url
 from core.utils.cache import random_cache_path
+from core.utils.http import get_url, download_to_cache
 
-
-assets_path = os.path.abspath('./assets')
+assets_path = os.path.abspath('./assets/phigros')
 cache_path = os.path.abspath('./cache')
 csv_path = os.path.abspath('./services/phigros/difficulty.csv')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 
 
 def remove_punctuations(text):
-    # 中文和日语标点符号
     punctuations = '！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～、。〃〈〉《》「」『』【】〒〔〕〖〗〘〙〚〛〜・♫☆×♪↑↓ '
-
-    # 移除所有标点符号
     text = ''.join([char for char in text if char not in string.punctuation and char not in punctuations])
-
-    # 移除多余的空格
     text = re.sub(' +', ' ', text)
-
     return text
 
 
@@ -49,6 +40,24 @@ async def update_difficulty_csv():
         writer.writerows(rows)
         f.close()
     shutil.copy(gen_csv_path, csv_path)
-    
+
+
+async def update_assets():
+    illustration_path = os.path.join(assets_path, 'illustration')
+    if not os.path.exists(illustration_path):
+        os.makedirs(illustration_path, exist_ok=True)
+    illustration_list = os.listdir(illustration_path)
+    update_json = json.loads(await get_url(json_url, 200))
+    for song in update_json:
+        song_name = remove_punctuations(update_json[song]['song'])
+        if song_name not in illustration_list:
+            try:
+                download_file = await download_to_cache(update_json[song]['illustration'])
+                if download_file:
+                    shutil.move(download_file, os.path.join(illustration_path, song_name))
+            except Exception:
+                traceback.print_exc()
+    return True
+
 
 
