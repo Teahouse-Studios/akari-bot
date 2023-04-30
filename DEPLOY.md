@@ -301,6 +301,17 @@ assets
 
 此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
 
+#### music
+
+music模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
+
+具体配置教程请查看链接所指向的文档。
+
+配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.cfg` 文件中填写以下字段：
+
++ `web_render` - Webrender 的地址（IP 或域名）及端口
++ `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
+
 ### 其他功能
 
 `qq_msg_logging_to_db = True` - 将 QQ 平台内的命令触发消息记录至 `database/msg.db` 中，有助于判断是否存在违规使用机器人的情况。
