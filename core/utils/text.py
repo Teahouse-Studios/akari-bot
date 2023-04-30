@@ -4,4 +4,3 @@ def remove_suffix(string, suffix):
 
 def remove_prefix(string, prefix):
     return string[len(prefix):] if string.startswith(prefix) else string
-

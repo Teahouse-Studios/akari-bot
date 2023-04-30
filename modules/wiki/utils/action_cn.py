@@ -50,7 +50,7 @@ action = \
             {
                 'move': '移动了%s',
                 'move_redir': '移动了%s重定向',
-            },
+        },
         'newusers':
             {
                 'autocreate': '自动创建了%s用户',
@@ -67,11 +67,11 @@ action = \
                 'move_prot': '保护了%s页面的移动权限',
                 'protect': '保护了%s页面',
                 'unprotect': '取消保护了%s页面',
-            },
+        },
         'rights':
             {
                 'rights': '更改了%s用户的权限'
-            },
+        },
         'tag':
             {'update': '更新了%s'},
         "thanks":

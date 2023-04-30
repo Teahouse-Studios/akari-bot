@@ -88,7 +88,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
         if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
-            or msg.target.senderId in msg.options.get('ban', []):
+                or msg.target.senderId in msg.options.get('ban', []):
             return
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')
@@ -413,7 +413,6 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
     except WaitCancelException:  # 出现于等待被取消的情况
         Logger.warn('Waiting task cancelled by user.')
 
-
     except Exception:
         Logger.error(traceback.format_exc())
     finally:
@@ -457,7 +456,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                                                   1, 0.3)  # 进一步匹配命令
             if match_close_command:
                 match_split = match_close_command[0]
-                m_split_options = filter(None, re.split(r'(\[.*?])', match_split))  # 切割可选参数
+                m_split_options = filter(None, re.split(r'(\\[.*?])', match_split))  # 切割可选参数
                 old_command_split = command_split.copy()
                 del old_command_split[0]
                 new_command_split = [match_close_module[0]]

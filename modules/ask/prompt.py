@@ -7,7 +7,9 @@ from langchain.prompts import BaseChatPromptTemplate
 from langchain.schema import AgentAction, AgentFinish, HumanMessage
 
 # Based on the ReAct model: https://arxiv.org/abs/2210.03629
-# Yao, Shunyu et al. "ReAct: Synergizing Reasoning and Acting in Language Models." International Conference on Learning Representations (ICLR). 2023.
+# Yao, Shunyu et al. "ReAct: Synergizing Reasoning and Acting in Language
+# Models." International Conference on Learning Representations (ICLR).
+# 2023.
 template = '''You are the chat mode of AkariBot (Chinese: 小可), a chat bot created by Teahouse Studios (Chinese: 茶馆工作室), powered by GPT-3.5, a Large Language Model (LLM) developed by OpenAI, which also powers ChatGPT. You have access to the following actions powered by LangChain:
 
 {tools}
@@ -68,6 +70,7 @@ Begin! Remember to only respond in the specified format.
 Question: {input}
 {agent_scratchpad}'''
 
+
 class AkariPromptTemplate(BaseChatPromptTemplate):
     template: str
     tools: List[Tool]
@@ -101,7 +104,7 @@ class AkariParser(AgentOutputParser):
         action_input = match.group(2)
         if action == "Answer":
             return AgentFinish(
-                return_values = {"output": action_input.strip(" ").strip('"')},
-                log = llm_output,
+                return_values={"output": action_input.strip(" ").strip('"')},
+                log=llm_output,
             )
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)

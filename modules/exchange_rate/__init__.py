@@ -35,11 +35,11 @@ async def _(msg: Bot.MessageSession):
             unsupported_currencies.append(base_currency)
         for currencie_names in supported_currencies:
             if target_currency in currencie_names:
-                 break
+                break
         else:
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
-           await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
+            await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
     else:
         data = response.json()
         error_type = data['error-type']
@@ -66,4 +66,3 @@ async def _(msg: Bot.MessageSession):
     else:
         error_type = data['error-type']
         raise NoReportException(f"{error_type}")
-    

@@ -58,7 +58,7 @@ class ErrorMessage(EMsg):
                 for l in locale_str:
                     error_message = error_message.replace(f'{{{l}}}', locale.t(l))
             self.error_message = locale.t('error.prompt', error_msg=error_message) + \
-                                 str(Url(Config('bug_report_url')))
+                str(Url(Config('bug_report_url')))
 
     def __str__(self):
         return self.error_message

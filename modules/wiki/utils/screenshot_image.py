@@ -94,7 +94,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(page_link, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
-        except:
+        except BaseException:
             traceback.print_exc()
             return False
         soup = BeautifulSoup(html, 'html.parser')

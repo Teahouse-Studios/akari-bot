@@ -69,8 +69,9 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
-    name = soup.find('span',
-                     id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
+    name = soup.find(
+        'span',
+        id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
     elements = parse_elements(name)  # 解析化学式，转为dict，key为元素，value为数量
     value = 0
     for element in elements:
@@ -87,12 +88,12 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
 
 
 ccode = module('chemical_code', alias={'cc': 'chemical_code',
-                                    'chemicalcode': 'chemical_code',
-                                    'chemical_captcha': 'chemical_code captcha',
-                                    'chemicalcaptcha': 'chemical_code captcha',
-                                    'ccode': 'chemical_code',
-                                    'ccaptcha': 'chemical_code captcha'},
-            desc='{chemical_code.help.desc}', developers=['OasisAkari'])
+                                       'chemicalcode': 'chemical_code',
+                                       'chemical_captcha': 'chemical_code captcha',
+                                       'chemicalcaptcha': 'chemical_code captcha',
+                                       'ccode': 'chemical_code',
+                                       'ccaptcha': 'chemical_code captcha'},
+               desc='{chemical_code.help.desc}', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
@@ -133,7 +134,7 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
 async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId][
-        'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
+            'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish(msg.locale.t('chemical_code.message.running'))
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
     try:

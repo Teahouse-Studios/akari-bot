@@ -10,7 +10,15 @@ from core.logger import Logger
 
 openai.api_key = Config('openai_api_key')
 
-s = module('summary', developers=['Dianliang233', 'OasisAkari'], desc='{summary.help.desc}', available_for=['QQ', 'QQ|Group'])
+s = module(
+    'summary',
+    developers=[
+        'Dianliang233',
+        'OasisAkari'],
+    desc='{summary.help.desc}',
+    available_for=[
+        'QQ',
+        'QQ|Group'])
 
 
 @s.handle('{{summary.help}}')
@@ -44,14 +52,14 @@ async def _(msg: Bot.MessageSession):
             else:
                 break
     completion = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                    {'role': 'system', "content": "You are a helpful assistants who summarizes chat logs."},
-                    {'role': 'user', "content": f'''{prompt}
+        model='gpt-3.5-turbo',
+        messages=[
+            {'role': 'system', "content": "You are a helpful assistants who summarizes chat logs."},
+            {'role': 'user', "content": f'''{prompt}
 
 {post_texts}'''},
-                ]
-        )
+        ]
+    )
     output = completion['choices'][0]['message']['content']
     await wait_msg.delete()
     if await check_bool(output):

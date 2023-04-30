@@ -56,7 +56,6 @@ def load_locale_file():
     return err_prompt
 
 
-
 class LocaleFile(TypedDict):
     key: str
     string: str
@@ -100,6 +99,7 @@ class Locale:
         else:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
+
 
 def get_available_locales():
     return list(locale_cache.keys())

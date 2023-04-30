@@ -105,7 +105,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     if len(interwiki_split) == 2:
                                         get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
                                         find = interwiki_split[0] + \
-                                               ':' + match_interwiki.group(2)
+                                            ':' + match_interwiki.group(2)
                                         iw = 'w:c:' + interwiki_split[0]
                                     else:
                                         get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'
@@ -199,9 +199,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
-                                                          (r.templates is not None and
-                                                           ('Template:Disambiguation' in r.templates or
-                                                            'Template:Version disambiguation' in r.templates))}})
+                                          (r.templates is not None and
+                                           ('Template:Disambiguation' in r.templates or
+                                            'Template:Version disambiguation' in r.templates))}})
                         elif r.link is not None and r.section is not None and r.info.in_allowlist:
                             render_section_list.append(
                                 {r.link: {'url': r.info.realurl, 'section': r.section,
@@ -226,7 +226,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                         session.locale.t('wiki.message.not_found.autofix.choice.prompt', number=str(
                                             r.possible_research_title.index(display_title) + 1)))
                                     wait_possible_list.append({display_before_title: {display_title:
-                                                                                          r.possible_research_title}})
+                                                                                      r.possible_research_title}})
                                 else:
                                     wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.confirm',
                                                                              title=display_before_title,

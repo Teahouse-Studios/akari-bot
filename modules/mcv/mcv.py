@@ -12,7 +12,10 @@ from core.utils.ip import IP
 async def mcv(msg):
     try:
         data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
-        message1 = msg.locale.t("mcv.mcv.message.message1", release=data['latest']['release'], snapshot=data['latest']['snapshot'])
+        message1 = msg.locale.t(
+            "mcv.mcv.message.message1",
+            release=data['latest']['release'],
+            snapshot=data['latest']['snapshot'])
     except (ConnectionError, OSError):  # Probably...
         message1 = msg.locale.t("mcv.mcv.message.message1.failed")
     try:
@@ -65,13 +68,13 @@ async def mcbv(msg):
     fix = " | "
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
     return \
-(f"""{msg.locale.t("mcv.mcbv.message.play_store")}
+        (f"""{msg.locale.t("mcv.mcbv.message.play_store")}
 {play_store_version if play_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}，
 """ if IP.country != 'China' else '') + \
-f"""{msg.locale.t("mcv.mcbv.message.ms_store")}
+        f"""{msg.locale.t("mcv.mcbv.message.ms_store")}
 {ms_store_version if ms_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}，
 """ +\
-msg.locale.t("mcv.mcbv.message", msg2=msg2)
+        msg.locale.t("mcv.mcbv.message", msg2=msg2)
 
 
 async def mcdv(msg):

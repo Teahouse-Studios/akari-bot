@@ -5,15 +5,17 @@ from core.component import module
 from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = 100
-FACE_UP_RATE = 4994  # n/10000 
+FACE_UP_RATE = 4994  # n/10000
 FACE_DOWN_RATE = 4994
 COIN_DROP_PLACES = ["地上", "桌子上", "桌子底下", "门口", "窗户外", "月球"]  # 硬币可能掉落的位置
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
+
 @coin.command('{{coin.help}}')
 async def _(msg: MessageSession):
     await msg.finish(await flipCoins(1, msg))
+
 
 @coin.command('[<amount>] {{coin.help}}')
 async def _(msg: MessageSession):
