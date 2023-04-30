@@ -1,7 +1,7 @@
 import wolframalpha
 import asyncio
 
-from core.builtins import Bot
+from core.builtins import Bot, Image
 from core.component import module
 from config import Config
 
@@ -22,6 +22,14 @@ async def _(msg: Bot.MessageSession):
     res = await asyncio.get_event_loop().run_in_executor(None, client.query, query)
     details = res.details
     answer = []
+    images = []
     for title, detail in details.items():
+        if title == 'Plot':
+            continue
         answer.append(f'{title}: {detail}')
-    await msg.finish('\n'.join(answer))
+    # Parse out all images that don't have a plaintext counterpart
+    for pod in res.pods:
+        if pod.text is None and 'img' in pod.subpod:
+            images.append(pod.subpod['img']['@src'])
+    bot_images = [Image(image) for image in images]
+    await msg.finish(['\n'.join(answer), *bot_images])
