@@ -98,8 +98,8 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.target.targetFrom == 'QQ' \
-            or self.target.senderId in self.custom_admins \
-            or self.target.senderInfo.query.isSuperUser:
+                or self.target.senderId in self.custom_admins \
+                or self.target.senderInfo.query.isSuperUser:
             return True
         return await self.checkNativePermission()
 

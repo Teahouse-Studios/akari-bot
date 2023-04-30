@@ -59,6 +59,6 @@ async def _(msg: Bot.MessageSession):
                 }
             '''
             pic = await download_to_cache(web_render_local + 'element_screenshot', method='POST', headers={
-                    'Content-Type': 'application/json',
-                }, post_data=json.dumps({'url': f'https://static-tweet.vercel.app/{tweet_id}', 'css': css, 'mw': False, 'element': 'article' }), request_private_ip=True)
+                'Content-Type': 'application/json',
+            }, post_data=json.dumps({'url': f'https://static-tweet.vercel.app/{tweet_id}', 'css': css, 'mw': False, 'element': 'article'}), request_private_ip=True)
             await msg.finish([Image(pic), f"https://twitter.com/{res_json['pageProps']['tweet']['user']['screen_name']}/status/{tweet_id}"])

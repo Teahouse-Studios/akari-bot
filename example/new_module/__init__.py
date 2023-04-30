@@ -90,5 +90,3 @@ async def _(session: MessageSession):
 async def _():
     # Send a message to target which is enabled test module every 60 seconds
     await Bot.FetchTarget.post_message('test', 'test')
-
-

@@ -11,7 +11,8 @@ from langchain.document_loaders import TextLoader
 from config import Config
 from ..utils import AkariTool
 
-docs = [os.path.join(os.path.dirname(__file__), 'src', file) for file in os.listdir(os.path.join(os.path.dirname(__file__), 'src'))]
+docs = [os.path.join(os.path.dirname(__file__), 'src', file)
+        for file in os.listdir(os.path.join(os.path.dirname(__file__), 'src'))]
 texts = []
 
 for doc in docs:
@@ -22,13 +23,29 @@ for doc in docs:
         texts.append(i)
 
 embeddings = OpenAIEmbeddings(openai_api_key=Config('openai_api_key'))
-doc_search = Chroma.from_documents(texts, embeddings, collection_name='myself', persist_directory=os.path.join(os.path.dirname(__file__), 'data'))
+doc_search = Chroma.from_documents(
+    texts,
+    embeddings,
+    collection_name='myself',
+    persist_directory=os.path.join(
+        os.path.dirname(__file__),
+        'data'))
 doc_search.persist()
-llm = ChatOpenAI(temperature=0, openai_api_key=Config('openai_api_key'), model_kwargs={'frequency_penalty': 0.0, 'presence_penalty': 0.0})
-self_knowledge = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=doc_search.as_retriever(search_kwargs={"k": 1}))
+llm = ChatOpenAI(
+    temperature=0,
+    openai_api_key=Config('openai_api_key'),
+    model_kwargs={
+        'frequency_penalty': 0.0,
+        'presence_penalty': 0.0})
+self_knowledge = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=doc_search.as_retriever(
+        search_kwargs={
+            "k": 1}))
 
 self_knowledge_tool = AkariTool(
-    name = 'Self Knowledge',
+    name='Self Knowledge',
     func=self_knowledge.arun,
     description='Get facts about yourself, Akaribot. Useful for when you need to answer questions about yourself if the user is curious. Input should be a full question in English.'
 )

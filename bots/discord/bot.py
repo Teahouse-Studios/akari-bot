@@ -51,7 +51,7 @@ def load_slashcommands():
                 modules = 'bots.discord.slash.' + fun_file
                 importlib.import_module(modules)
                 Logger.info(f'Succeeded loaded bots.discord.slash.{fun_file}!')
-        except:
+        except BaseException:
             tb = traceback.format_exc()
             errmsg = f'Failed to load bots.discord.slash.{fun_file}: \n{tb}'
             Logger.error(errmsg)

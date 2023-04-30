@@ -79,18 +79,18 @@ class MessageSession(MS):
             if isinstance(x, Plain):
                 send_ = await self.session.target.send(x.text,
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None)
+                                                       and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 send_ = await self.session.target.send(file=discord.File(await x.get()),
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None)
+                                                       and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
                 send_ = await self.session.target.send(embed=embeds,
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None,
+                                                       and self.session.message else None,
                                                        files=files)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Embed: {str(x.__dict__)}')
             else:
@@ -106,15 +106,15 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-            or isinstance(self.session.message.channel, discord.DMChannel) \
-            or self.target.senderInfo.query.isSuperUser \
-            or self.target.senderId in self.custom_admins:
+                or isinstance(self.session.message.channel, discord.DMChannel) \
+                or self.target.senderInfo.query.isSuperUser \
+                or self.target.senderId in self.custom_admins:
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-            or isinstance(self.session.message.channel, discord.DMChannel):
+                or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 

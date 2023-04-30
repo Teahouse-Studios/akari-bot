@@ -4,7 +4,8 @@ import uuid
 from core.builtins import Bot
 from core.component import module
 
-r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.help.desc}', )
+r = module('random', alias={'rand': 'random', 'rng': 'random'},
+           developers=['Dianliang233'], desc='{random.help.desc}', )
 
 
 @r.handle('number <min> <max> {{random.help.number}}', )

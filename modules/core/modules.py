@@ -168,8 +168,8 @@ async def config_modules(msg: Bot.MessageSession):
                     return f'{msg.locale.t("core.module.message.reload.success", module=module)}' + ' '.join(
                         extra_modules) + msg.locale.t("core.module.message.reload.with", reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
-                    return f'{msg.locale.t("core.module.message.reload.success", module=module)}' + ' '.join(extra_modules) + \
-                        msg.locale.t("core.module.message.reload.no_more")
+                    return f'{msg.locale.t("core.module.message.reload.success", module=module)}' + \
+                        ' '.join(extra_modules) + msg.locale.t("core.module.message.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.module.message.reload.failed")}'
 
@@ -198,8 +198,7 @@ async def config_modules(msg: Bot.MessageSession):
             await msg.sendMessage('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.waitConfirm(msg.locale.t("core.module.message.recommends",
-                                                     msgs=
-                                                     '\n'.join(recommend_modules_list) + '\n\n' +
+                                                     msgs='\n'.join(recommend_modules_list) + '\n\n' +
                                                      '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):

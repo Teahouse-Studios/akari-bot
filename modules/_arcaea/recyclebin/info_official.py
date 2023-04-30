@@ -76,5 +76,20 @@ async def get_info_official(msg, usercode):
     far = recent['far_count']
     lost = recent['lost_count']
     time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
-    result = {'success': True, 'msg': msg.locale.t('arcaea.info.message.result', username=username, potential=potential, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S"))}
+    result = {
+        'success': True,
+        'msg': msg.locale.t(
+            'arcaea.info.message.result',
+            username=username,
+            potential=potential,
+            trackname=trackname,
+            difficulty=difficulty,
+            score=score,
+            pure=pure,
+            shiny_pure=shiny_pure,
+            far=far,
+            lost=lost,
+            realptt=realptt,
+            ptt=ptt,
+            time_played=time_played.strftime("%Y-%m-%d %H:%M:%S"))}
     return result

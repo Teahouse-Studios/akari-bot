@@ -13,8 +13,8 @@ from core.types.message import MessageChain as MC
 
 class MessageChain(MC):
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
-    Tuple[Union[Plain, Image, Voice, Embed, Url]],
-    Plain, Image, Voice, Embed, Url]):
+                                       Tuple[Union[Plain, Image, Voice, Embed, Url]],
+                                       Plain, Image, Voice, Embed, Url]):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)

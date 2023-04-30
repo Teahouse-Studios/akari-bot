@@ -59,14 +59,29 @@ async def get_info(msg, usercode):
         else:
             usrptt = usrptt / 100
         time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
-        result = [Plain(msg.locale.t('arcaea.info.message.result', username=username, potential=usrptt, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
+        result = [
+            Plain(
+                msg.locale.t(
+                    'arcaea.info.message.result',
+                    username=username,
+                    potential=usrptt,
+                    trackname=trackname,
+                    difficulty=difficulty,
+                    score=score,
+                    pure=pure,
+                    shiny_pure=shiny_pure,
+                    far=far,
+                    lost=lost,
+                    realptt=realptt,
+                    ptt=ptt,
+                    time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         else:
             asyncio.create_task(autofix_b30_song_background(recent["song_id"],
                                                             byd=False if recent["difficulty"] != 3 else True))
         return result
-    
+
     else:
         errcode_string = f"arcaea.errcode.{get_['status']}"
         if locale := msg.locale.t(errcode_string) != errcode_string:

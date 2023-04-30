@@ -10,7 +10,7 @@ from core.utils.cache import random_cache_path
 assets_path = os.path.abspath('./assets/arcaea')
 
 p = module('ptt',
-               developers=['OasisAkari'])
+           developers=['OasisAkari'])
 
 
 @p.handle('<potential> {{ptt.help}}')

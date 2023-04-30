@@ -52,7 +52,7 @@ async def get_rating(uid, query_type):
             }}
           }}
         }}
-        
+
         fragment RecordFragment on UserRecord {{
           id
           date
@@ -150,7 +150,7 @@ async def get_rating(uid, query_type):
                 output.putalpha(mask)
                 output.convert('RGBA')
                 b30img.alpha_composite(output, (1825, 22))
-            except:
+            except BaseException:
                 traceback.print_exc()
 
         font4 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Regular.ttf'), 35)
@@ -231,7 +231,7 @@ async def download_cover_thumb(uid):
                         return path
         else:
             return path
-    except:
+    except BaseException:
         traceback.print_exc()
         return False
 
@@ -252,7 +252,7 @@ async def download_avatar_thumb(link, id):
                 async with async_open(path, 'wb+') as jpg:
                     await jpg.write(await resp.read())
                     return path
-    except:
+    except BaseException:
         traceback.print_exc()
         return False
 
@@ -262,7 +262,7 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     if havecover:
         try:
             img = Image.open(coverpath)
-        except:
+        except BaseException:
             os.remove(coverpath)
             img = Image.new('RGBA', (384, 240), 'black')
     else:
@@ -299,9 +299,9 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     drawtext = ImageDraw.Draw(img)
     drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), chart_name, '#ffffff', font=font)
-    drawtext.text((20, 185),
-                  f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
-                  f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
+    drawtext.text(
+        (20, 185), f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
+        f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
     playtime_width = font3.getsize(playtime)[0]
     songimg_width = 384

@@ -25,8 +25,8 @@ async def rc_qq(wiki_url):
             "uin": qq_account,
             "content": [
                 {"type": "text", "data": {"text": pageurl.replace("$1", 'Special:RecentChanges') +
-                                                  ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
-                                                   if wiki.wiki_info.in_allowlist else '')}}]
+                                          ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
+                                           if wiki.wiki_info.in_allowlist else '')}}]
         }
     }]
     rclist = []
@@ -59,8 +59,10 @@ async def rc_qq(wiki_url):
             if comment == '':
                 comment = '（无摘要内容）'
             t.append(comment)
-            t.append(pageurl.replace('$1',
-                                     f"{urllib.parse.quote(title_checked_map[x['title']])}?oldid={x['old_revid']}&diff={x['revid']}"))
+            t.append(
+                pageurl.replace(
+                    '$1',
+                    f"{urllib.parse.quote(title_checked_map[x['title']])}?oldid={x['old_revid']}&diff={x['revid']}"))
         if x['type'] == 'new':
             r = ''
             if 'redirect' in x:

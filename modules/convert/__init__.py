@@ -11,7 +11,7 @@ ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
 # type: ignoreQ_ = ureg.Quantity
 
 i = module('convert', alias=('conv', 'unit'), desc='全能单位转换。',
-               developers=['Dianliang233'])
+           developers=['Dianliang233'])
 
 
 @i.command('<from_val> <to_unit> {单位转换。大小写敏感。单位原文为英文，由 ChatGPT 翻译生成，欢迎汇报错误。}')

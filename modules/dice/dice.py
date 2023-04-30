@@ -24,7 +24,7 @@ class DiceValueError(Exception):
     """骰子参数值错误"""
 
     def __init__(self, message, value=None):
-        if value != None:
+        if value is not None:
             self.message = f"参数错误: 输入为{value}，{message} "
         else:
             self.message = f"参数错误: {message} "
@@ -206,7 +206,7 @@ async def GenerateMessage(dices: str, times: int, dc: int):
         for dice in diceList:
             dice.Roll()
             outputLine += '+' if dice.postive else '-'
-            if type(dice) is Dice and times * diceCount < MAX_DETAIL_CNT:
+            if isinstance(dice, Dice) and times * diceCount < MAX_DETAIL_CNT:
                 outputLine += f'( {dice.GetDetail()})'
             else:
                 outputLine += str(dice.GetResult())

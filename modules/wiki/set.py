@@ -24,7 +24,7 @@ async def set_start_wiki(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
         result = msg.locale.t('wiki.message.error.add') + \
-                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
+            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
         result = msg.locale.t('wiki.message.error.add') + \
-                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
+            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([Image(img), Plain(mt)])
         else:
             result = msg.locale.t("wiki.iw.list.message.legacy") + '\n' + \
-                     '\n'.join([f'{x}: {query[x]}' for x in query])
+                '\n'.join([f'{x}: {query[x]}' for x in query])
             if base_interwiki_link is not None:
                 result += '\n' + msg.locale.t("wiki.iw.list.message.prompt", url=str(Url(base_interwiki_link)))
             await msg.finish(result)

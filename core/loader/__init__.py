@@ -37,7 +37,7 @@ def load_modules():
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
                 Logger.info(f'Succeeded loaded modules.{fun_file}!')
-        except:
+        except BaseException:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
             Logger.error(errmsg)
@@ -114,7 +114,7 @@ class ModulesManager:
 
     @staticmethod
     def return_modules_list(targetFrom: str = None) -> \
-        Dict[str, Module]:
+            Dict[str, Module]:
         if targetFrom is not None:
             returns = {}
             for m in ModulesManager.modules:
@@ -126,7 +126,6 @@ class ModulesManager:
                         returns.update({m: ModulesManager.modules[m]})
             return returns
         return ModulesManager.modules
-
 
     @staticmethod
     def reload_module(module_name: str):
@@ -154,7 +153,7 @@ class ModulesManager:
             importlib.reload(module)
             Logger.info(f'Succeeded reloaded {module_name}')
             return cnt + 1
-        except:
+        except BaseException:
             tb = traceback.format_exc()
             errmsg = f'Failed to reload {module_name}: \n{tb}'
             Logger.error(errmsg)
