@@ -132,7 +132,7 @@ def run_bot():
                 logger.warning(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
-        sleep(0.001)
+        sleep(0.0001)
 
 
 if __name__ == '__main__':

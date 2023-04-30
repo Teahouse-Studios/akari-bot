@@ -2,7 +2,6 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-
 from .phigrosLibrary import Phigros
 import traceback
 
@@ -12,6 +11,7 @@ from core.builtins import Plain, Image
 from core.component import module
 from core.utils.http import get_url
 from .dbutils import PgrBindInfoManager
+from .update import update_difficulty_csv
 
 phi = module('phigros', developers=['OasisAkari'], desc='查询 Phigros 相关内容。SessionToken获取参考：'
                                                         'https://mivik.gitee.io/pgr-bot-help/index.html#%E5%AE%89%E5%8D%93',
@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession):
     send_msg = []
     if msg.target.targetFrom in ['QQ|Group', 'QQ|Guild', 'Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
         send_msg.append(await msg.sendMessage('警告：您正在群组中绑定账户，这有可能会使您的账户云存档数据被他人篡改。请尽量使用私聊绑定账户以避免这种情况。\n'
-                                     '此次命令产生的消息将在15秒后撤回。'))
+                                              '您可以通过重新登录重置SessionToken，此次命令产生的消息将在15秒后撤回。'))
         need_revoke = True
     token: str = msg.parsed_msg['<sessiontoken>']
     bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=token)
@@ -57,3 +57,8 @@ async def _(msg: Bot.MessageSession):
         result = client.best19(saveurl.saveUrl)
         await msg.sendMessage("查询结果：\n" + str(result))
         transport.close()
+
+
+@phi.command('update rating')
+async def _(msg: Bot.MessageSession):
+    await update_difficulty_csv()
