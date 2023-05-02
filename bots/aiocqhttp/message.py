@@ -160,6 +160,26 @@ class MessageSession(MS):
                 lst.append(f'{m["owner_guild_id"]}|{m["channel_id"]}')
         return lst
 
+    async def toMessageChain(self):
+        m = html.unescape(self.session.message.message)
+        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+        spl = re.split(r'(\[CQ:.*?])', m)
+        lst = []
+        for s in spl:
+            if s == '':
+                continue
+            if s.startswith('[CQ:'):
+                if s.startswith('[CQ:image'):
+                    sspl = s.split(',')
+                    for ss in sspl:
+                        if ss.startswith('url='):
+                            lst.append(Image(ss[4:-1]))
+            else:
+                lst.append(Plain(s))
+
+        return MessageChain(lst)
+
     async def call_api(self, action, **params):
         return await bot.call_action(action, **params)
 

@@ -4,6 +4,7 @@ import traceback
 from typing import List, Union
 
 import discord
+import filetype
 
 from bots.discord.client import client
 from config import Config
@@ -13,6 +14,7 @@ from core.builtins.message.internal import Embed, ErrorMessage
 from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
+from core.utils.http import download_to_cache
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
@@ -117,6 +119,15 @@ class MessageSession(MS):
                 or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
+
+    async def toMessageChain(self):
+        lst = []
+        lst.append(Plain(self.session.message.content))
+        for x in self.session.message.attachments:
+            d = await download_to_cache(x.url)
+            if filetype.is_image(d):
+                lst.append(Image(d))
+        return MessageChain(lst)
 
     def asDisplay(self, text_only=False):
         msg = self.session.message.content
