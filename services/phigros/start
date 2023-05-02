@@ -1,3 +1,6 @@
 #!/usr/bin/env sh
-echo $(pwd)
-java -Dfile.encoding=UTF-8 -jar PhigrosRpc-3.0-all.jar 9090 difficulty.csv
+DIFF=difficulty_update.csv
+if [ ! -f "$DIFF" ]; then
+    DIFF=difficulty.csv
+fi
+java -Dfile.encoding=UTF-8 -jar PhigrosRpc-3.0-all.jar 9090 $DIFF

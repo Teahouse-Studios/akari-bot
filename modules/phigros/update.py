@@ -13,7 +13,7 @@ from core.utils.http import get_url, download_to_cache
 
 assets_path = os.path.abspath('./assets/phigros')
 cache_path = os.path.abspath('./cache')
-csv_path = os.path.abspath('./services/phigros/difficulty.csv')
+csv_path = os.path.abspath('./services/phigros/difficulty_update.csv')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 
 
