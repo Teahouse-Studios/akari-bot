@@ -61,18 +61,6 @@ async def search(msg: Bot.MessageSession):
         await msg.sleep(90)
         await send.delete()
         await msg.finish()
-    elif msg.parsed_msg['<value>'] == None:
-        send_msg = msg.locale.t('ncmusic.message.wrong_grammar')
-        send = await msg.sendMessage(send_msg)
-        await msg.finish()
-    elif api_address == None:
-        send_msg = msg.locale.t('ncmusic.message.none_config')
-        send = await msg.sendMessage(send_msg)
-        await msg.finish()
-    else:
-        send_msg = msg.locale.t('ncmusic.message.error')
-        send = await msg.sendMessage(send_msg)
-        await msg.finish()
 
 @netease_cloud_music.handle('info <ids> {{ncmusic.help_doc.info}}', 
                             required_admin = False, required_superuser = False,
