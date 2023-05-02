@@ -15,7 +15,6 @@ cn = module('__check_newbie__', required_superuser=True, developers=['OasisAkari
 
 
 @cn.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
-
 async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return
@@ -33,7 +32,7 @@ async def newbie():
             if 'title' in xz:
                 if xz['title'] not in qq:
                     prompt = UTC8(xz['timestamp'], 'onlytime') + \
-                             '新增新人：\n' + xz['title']
+                        '新增新人：\n' + xz['title']
                     s = await check(prompt)
                     Logger.debug(s)
                     for z in s:

@@ -2,7 +2,7 @@ import re
 import traceback
 from typing import List, Union
 
-from bots.aiogram.client import dp, bot
+from bots.aiogram.client import dp, bot, token
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
@@ -49,7 +49,7 @@ class MessageSession(MS):
             if isinstance(x, Plain):
                 send_ = await bot.send_message(self.session.target, x.text,
                                                reply_to_message_id=self.session.message.message_id if quote
-                                                                                                      and count == 0 and self.session.message else None)
+                                               and count == 0 and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
                 send.append(send_)
                 count += 1
@@ -61,8 +61,8 @@ class MessageSession(MS):
                             send_ = await bot.send_photo(self.session.target, image,
                                                          reply_to_message_id=self.session.message.message_id
                                                          if quote
-                                                            and count == 0
-                                                            and self.session.message else None)
+                                                         and count == 0
+                                                         and self.session.message else None)
                             Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(xs.__dict__)}')
                             send.append(send_)
                             count += 1
@@ -71,8 +71,8 @@ class MessageSession(MS):
                         send_ = await bot.send_photo(self.session.target, image,
                                                      reply_to_message_id=self.session.message.message_id
                                                      if quote
-                                                        and count == 0
-                                                        and self.session.message else None)
+                                                     and count == 0
+                                                     and self.session.message else None)
                         Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
                         send.append(send_)
                         count += 1
@@ -80,7 +80,7 @@ class MessageSession(MS):
                 with open(x.path, 'rb') as voice:
                     send_ = await bot.send_audio(self.session.target, voice,
                                                  reply_to_message_id=self.session.message.message_id if quote
-                                                                                                        and count == 0 and self.session.message else None)
+                                                 and count == 0 and self.session.message else None)
                     Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
                     send.append(send_)
                     count += 1
@@ -92,7 +92,7 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \
-            or self.target.senderInfo.query.isSuperUser:
+                or self.target.senderInfo.query.isSuperUser:
             return True
         admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
         if self.session.sender in admins:
@@ -109,6 +109,17 @@ class MessageSession(MS):
 
     def asDisplay(self, text_only=False):
         return self.session.message.text
+
+    async def toMessageChain(self):
+        lst = []
+        if self.session.message.photo:
+            file = await bot.get_file(self.session.message.photo[-1]['file_id'])
+            lst.append(Image(f'https://api.telegram.org/file/bot{token}/{file.file_path}'))
+        if self.session.message.caption:
+            lst.append(Plain(self.session.message.caption))
+        if self.session.message.text:
+            lst.append(Plain(self.session.message.text))
+        return MessageChain(lst)
 
     async def delete(self):
         try:

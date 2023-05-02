@@ -25,7 +25,7 @@ async def get_pic(link, source) -> Union[str, bool]:
                 async with session.get(web_render + 'source?url=' + link,
                                        timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
-        except:
+        except BaseException:
             traceback.print_exc()
             return False
         soup = BeautifulSoup(html, 'html.parser')

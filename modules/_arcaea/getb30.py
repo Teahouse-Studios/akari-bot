@@ -68,7 +68,7 @@ async def getb30(usercode, official=False):
                             imgpath = f'{assets_path}/b30background_img{"_official" if official else ""}/random.jpg'
                             asyncio.create_task(autofix_b30_song_background(x['song_id'],
                                                                             byd=False if x[
-                                                                                             'difficulty'] != 3 else True))
+                                'difficulty'] != 3 else True))
                         dsimg(os.path.abspath(imgpath), d, trackname, x['difficulty'], score, ptt, realptt,
                               x['perfect_count'], x['near_count'], x['miss_count'], x['time_played'], newdir)
 

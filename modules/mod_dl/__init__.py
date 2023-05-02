@@ -21,11 +21,13 @@ if not x_api_key:
 else:
     MCIM_MODE = False
 
+
 def cn_chk(string: str):
     for word in string:
         if u'\u4e00' <= word <= u'\u9fff':
             return True
     return False
+
 
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
 async def main(msg: Bot.MessageSession):
@@ -38,7 +40,7 @@ async def main(msg: Bot.MessageSession):
             ver = False
     if cn_chk(mod_name):
         return {'msg': '暂不支持中文搜索。', 'success': False}
-    
+
     async def search_modrinth(name: str, ver: str):
         url = f'https://api.modrinth.com/v2/search?query={name}&limit=10'
         if ver:
@@ -53,7 +55,7 @@ async def main(msg: Bot.MessageSession):
             for project in resp['hits']:
                 results.append(("modrinth", project["title"], project["project_id"], project["versions"]))
             return results
-    
+
     async def search_curseforge(name: str, ver: str):
         if MCIM_MODE:
             # https://mcim.z0z0r4.top/docs#/Curseforge/curseforge_search_curseforge_search_get
@@ -72,7 +74,7 @@ async def main(msg: Bot.MessageSession):
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
             if resp is not None:
-                if not MCIM_MODE: # 没提供 pagination
+                if not MCIM_MODE:  # 没提供 pagination
                     if resp["pagination"]["resultCount"] == 0:
                         return None
                 for mod in resp["data"]:
@@ -80,7 +82,7 @@ async def main(msg: Bot.MessageSession):
         except Exception:
             traceback.print_exc()
         return results
-    
+
     async def get_modrinth_project_version(project_id: str, ver: str):
         url = f'https://api.modrinth.com/v2/project/{project_id}/version?game_versions=["{ver}"]&featured=true'
         resp = (await get_url(url, 200, fmt="json", timeout=5, attempt=3))[0]
@@ -101,7 +103,7 @@ async def main(msg: Bot.MessageSession):
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
         if resp is not None:
             return resp["data"]['latestFilesIndexes']
-        
+
     async def get_curseforge_mod_file(modid: str, ver: str):
         if MCIM_MODE:
             url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}/files?gameVersion={ver}'
@@ -112,15 +114,14 @@ async def main(msg: Bot.MessageSession):
                 'x-api-key': x_api_key
             }
             url = f'https://api.curseforge.com/v1/mods/{modid}/files?gameVersion={ver}'
-        
-            
+
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
             if resp is not None:
                 return resp["data"][0]
         except Exception:
             traceback.print_exc()
-        
+
     # 搜索 Mod
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
     cache_result = []
@@ -160,12 +161,12 @@ async def main(msg: Bot.MessageSession):
                 mod_info = cache_result[replied - 1]
         else:
             return await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
-        
-        if mod_info[0] == "modrinth": # modrinth mod
+
+        if mod_info[0] == "modrinth":  # modrinth mod
             if ver is None:
                 reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n'
-                                              + "\n".join(mod_info[3]) 
-                                              + f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
+                                             + "\n".join(mod_info[3])
+                                             + f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
                 replied2 = reply2.asDisplay(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
@@ -177,15 +178,15 @@ async def main(msg: Bot.MessageSession):
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
                 if version_info is not None:
                     await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
-        else: # curseforge mod
+        else:  # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
             for version in version_index:
                 if version["gameVersion"] not in ver_list:
                     ver_list.append(version["gameVersion"])
             if version_index is not None:
                 if ver is None:
-                    reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n' + 
-                                                 '\n'.join(ver_list) + 
+                    reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n' +
+                                                 '\n'.join(ver_list) +
                                                  f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
                     ver = reply2.asDisplay(text_only=True)
                 elif ver not in ver_list:

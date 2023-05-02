@@ -51,7 +51,7 @@ async def get_user_info(wikiurl, username, pic=False):
             data['global_users_groups'].append(groups[g] if g in groups else g)
     data['registration_time'] = base_user_info['registration']
     data['registration_time'] = UTC8(data['registration_time'], 'full') if data[
-                                                                               'registration_time'] is not None else '未知'
+        'registration_time'] is not None else '未知'
     data['edited_count'] = str(base_user_info['editcount'])
     data['gender'] = base_user_info['gender']
     if data['gender'] == 'female':
@@ -128,12 +128,11 @@ async def get_user_info(wikiurl, username, pic=False):
             bantype=bantype)
         return [Plain(data['url']), Image(image)]
 
-
     else:
         msgs = []
         if user := data.get('username', False):
             msgs.append('用户：' + user + (' | 编辑数：' + data['edited_count']
-                                          if 'edited_count' in data and 'created_page_count' not in data else ''))
+                                        if 'edited_count' in data and 'created_page_count' not in data else ''))
         if users_groups := data.get('users_groups', False):
             msgs.append('用户组：' + '、'.join(users_groups))
         if gender_ := data.get('gender', False):

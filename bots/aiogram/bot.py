@@ -1,6 +1,7 @@
 import os
 
 from aiogram import types, executor
+from aiogram.types import ContentType
 
 from bots.aiogram.client import dp
 from bots.aiogram.message import MessageSession, FetchTarget
@@ -13,7 +14,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 Url.disable_mm = True
 
 
-@dp.message_handler()
+@dp.message_handler(content_types=[ContentType.TEXT, ContentType.PHOTO, ContentType.AUDIO])
 async def msg_handler(message: types.Message):
     targetId = f'Telegram|{message.chat.type}|{message.chat.id}'
     replyId = None

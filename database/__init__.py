@@ -215,7 +215,6 @@ class BotDBUtil:
             session.commit()
             return True
 
-
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error

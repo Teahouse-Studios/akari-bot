@@ -30,8 +30,8 @@ async def bugtracker_get(msg, mojiraId: str, nolink=False):
                 fields = load_json['fields']
                 if 'summary' in fields:
                     data["title"] = data["title"] + \
-                                    fields['summary'] + (
-                                        f' (spx: {data["translation"]})' if data.get("translation", False) else '')
+                        fields['summary'] + (
+                        f' (spx: {data["translation"]})' if data.get("translation", False) else '')
                 if 'issuetype' in fields:
                     data["type"] = fields['issuetype']['name']
                 if 'status' in fields:
@@ -40,7 +40,7 @@ async def bugtracker_get(msg, mojiraId: str, nolink=False):
                     data["project"] = fields['project']['name']
                 if 'resolution' in fields:
                     data["resolution"] = fields['resolution']['name'] if fields[
-                                                                             'resolution'] is not None else 'Unresolved'
+                        'resolution'] is not None else 'Unresolved'
                 if 'versions' in load_json['fields']:
                     Versions = fields['versions']
                     verlist = []

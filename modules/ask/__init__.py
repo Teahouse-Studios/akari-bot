@@ -16,9 +16,10 @@ from .formatting import generate_latex, generate_code_snippet
 
 ONE_K = Decimal('1000')
 # https://openai.com/pricing
-BASE_COST_GPT_3_5 = Decimal('0.002') # gpt-3.5-turbo： $0.002 / 1K tokens
-THIRD_PARTY_MULTIPLIER = Decimal('1.5') # We are not tracking specific tool usage like searches b/c I'm too lazy, use a universal multiplier
-PROFIT_MULTIPLIER = Decimal('1.1') # At the time we are really just trying to break even
+BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo： $0.002 / 1K tokens
+# We are not tracking specific tool usage like searches b/c I'm too lazy, use a universal multiplier
+THIRD_PARTY_MULTIPLIER = Decimal('1.5')
+PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 # Assuming 1 USD = 7 CNY, 100 petal = 1 CNY
 USD_TO_CNY = 7
@@ -30,8 +31,8 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}', required_
 @a.command('<question> {{ask.help}}')
 @a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$')
 async def _(msg: Bot.MessageSession):
-    is_superuser =msg.checkSuperUser()
-    if not is_superuser and msg.data.petal < 100: # refuse
+    is_superuser = msg.checkSuperUser()
+    if not is_superuser and msg.data.petal < 100:  # refuse
         raise NoReportException(msg.locale.t('petal_'))
     if hasattr(msg, 'parsed_msg'):
         question = msg.parsed_msg['<question>']
@@ -65,6 +66,7 @@ async def _(msg: Bot.MessageSession):
     if await check_bool(res):
         raise NoReportException('https://wdf.ink/6OUp')
     await msg.finish(chain)
+
 
 def parse_markdown(md: str):
     regex = r'(```[\s\S]*?\n```|\$\$[\s\S]*?\$\$|[^\n]+)(?:\n|$)'

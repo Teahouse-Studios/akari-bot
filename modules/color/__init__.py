@@ -14,7 +14,7 @@ c = module('color', alias=['colour'], developers=['Dianliang233',], desc='{color
 
 font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 
-with open(os.path.dirname(os.path.abspath(__file__))+'/material_colors.json', 'r', encoding='utf-8') as f:
+with open(os.path.dirname(os.path.abspath(__file__)) + '/material_colors.json', 'r', encoding='utf-8') as f:
     material_colors = material_colors_names_to_hex = json.load(f)
     material_colors_hex_to_names = {v: k for k, v in material_colors.items()}
 
@@ -51,11 +51,15 @@ async def _(msg: Bot.MessageSession):
         color = webcolors.HTML5SimpleColor(*(int(x.strip()[:-1]) * 255 / 100 for x in color))
     elif re.match(r'^hsl\(\d{1,3}, ?\d{1,3}%, ?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
-        color = colorsys.hls_to_rgb(int(color[0].strip()) / 360, int(color[2].strip()[:-1]) / 100, int(color[1].strip()[:-1]) / 100)
+        color = colorsys.hls_to_rgb(int(color[0].strip()) / 360,
+                                    int(color[2].strip()[:-1]) / 100,
+                                    int(color[1].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     elif re.match(r'^hsl\(\d{1,3}deg, ?\d{1,3}%, ?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
-        color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360, int(color[2].strip()[:-1]) / 100, int(color[1].strip()[:-1]) / 100)
+        color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360,
+                                    int(color[2].strip()[:-1]) / 100,
+                                    int(color[1].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
     else:
         await msg.finish(msg.locale.t('color.message.invalid'))
@@ -89,7 +93,15 @@ async def _(msg: Bot.MessageSession):
     elif material_color_name_raw[0] is not None:
         material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{material_color_name_raw[0]}'
 
-    draw.multiline_text((250, 250), f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}', font=font, fill=contrast, anchor='mm', align='center', spacing=20)
+    draw.multiline_text(
+        (250,
+         250),
+        f'{css_color_name_short}{material_color_name_short}{color_hex}\n{color_rgb}\n{color_hsl}',
+        font=font,
+        fill=contrast,
+        anchor='mm',
+        align='center',
+        spacing=20)
     await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])
 
 

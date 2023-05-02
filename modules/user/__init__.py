@@ -6,7 +6,7 @@ from modules.wiki.utils.dbutils import WikiTargetInfo
 from .user import get_user_info
 
 usr = module('user', alias=['u'],
-                 developers=['OasisAkari'])
+             developers=['OasisAkari'])
 
 
 @usr.handle('<username> [-p] {获取一个MediaWiki用户的信息。}', options_desc={'-p': '生成一张图片'})

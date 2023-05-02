@@ -1,6 +1,7 @@
 import ujson as json
 import aiohttp
 
+
 async def generate_latex(formula: str):
     async with aiohttp.ClientSession() as session:
         async with session.post(url='https://wikimedia.org/api/rest_v1/media/math/check/inline-tex', data=json.dumps({
@@ -11,6 +12,7 @@ async def generate_latex(formula: str):
 
         async with session.get(url=f'https://wikimedia.org/api/rest_v1/media/math/render/png/{location}') as img:
             return await img.read()
+
 
 async def generate_code_snippet(code: str, language: str):
     async with aiohttp.ClientSession() as session:

@@ -291,7 +291,6 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
 if Bot.FetchTarget.name == 'QQ':
     resume = module('resume', developers=['OasisAkari'], required_superuser=True)
 
-
     @resume.handle()
     async def resume_sending_group_message(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
@@ -319,12 +318,11 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
 
-
     @resume.handle('clean')
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.sendMessage(msg.locale.t("core.resume.message.clean")) 
+        await msg.sendMessage(msg.locale.t("core.resume.message.clean"))
 
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
@@ -345,7 +343,6 @@ async def _(msg: Bot.MessageSession):
 
 if Config('enable_eval'):
     _eval = module('eval', developers=['Dianliang233'], required_superuser=True)
-
 
     @_eval.handle('<display_msg>')
     async def _(msg: Bot.MessageSession):

@@ -8,7 +8,7 @@ from .rating import get_rating
 from .utils import get_profile_name
 
 cytoid = module('cytoid',
-                    developers=['OasisAkari'], alias='ctd')
+                developers=['OasisAkari'], alias='ctd')
 
 
 @cytoid.handle('profile [<UserID>] {{cytoid.profile.help}}')

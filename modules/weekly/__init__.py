@@ -27,17 +27,22 @@ async def get_weekly(with_img=False, zh_tw=False):
     img = result['parse']['images']
     page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
     msg_list = [Plain(locale.t("weekly.message.expired") if page[
-                                                                0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else locale.t(
+        0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else locale.t(
         "weekly.message", text=text))]
     imglink = None
     if img:
         get_image = await (WikiLib('https://minecraft.fandom.com/zh/wiki/')).parse_page_info('File:' + img[0])
         if get_image.status:
             imglink = get_image.file
-    msg_list.append(Plain(locale.t("weekly.message.link", img=imglink if imglink is not None else locale.t("none"),
-                                   article=str(Url(f'https://minecraft.fandom.com{page[0]}')),
-                                   link=str(
-                                       Url(f'https://minecraft.fandom.com/zh/wiki/?oldid={str(result["parse"]["revid"])}')))))
+    msg_list.append(
+        Plain(
+            locale.t(
+                "weekly.message.link",
+                img=imglink if imglink is not None else locale.t("none"),
+                article=str(
+                    Url(f'https://minecraft.fandom.com{page[0]}')),
+                link=str(
+                    Url(f'https://minecraft.fandom.com/zh/wiki/?oldid={str(result["parse"]["revid"])}')))))
     if imglink is not None and with_img:
         msg_list.append(Image(path=imglink))
 

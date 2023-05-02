@@ -62,7 +62,18 @@ async def _(msg: Bot.MessageSession):
         except Exception:
             FriendList = msg.locale.t('core.ping.message.failed')
         """
-        result += '\n' + msg.locale.t("core.ping.message.detail", system_boot_time=Boot_Start, bot_running_time=timediff, python_version=platform.python_version(), cpu_brand=get_cpu_info()['brand_raw'], cpu_usage=Cpu_usage, ram=RAM, ram_percent=RAM_percent, swap=Swap, swap_percent=Swap_percent, disk_space=Disk, disk_space_total=DiskTotal)
+        result += '\n' + msg.locale.t("core.ping.message.detail",
+                                      system_boot_time=Boot_Start,
+                                      bot_running_time=timediff,
+                                      python_version=platform.python_version(),
+                                      cpu_brand=get_cpu_info()['brand_raw'],
+                                      cpu_usage=Cpu_usage,
+                                      ram=RAM,
+                                      ram_percent=RAM_percent,
+                                      swap=Swap,
+                                      swap_percent=Swap_percent,
+                                      disk_space=Disk,
+                                      disk_space_total=DiskTotal)
     await msg.finish(result)
 
 
@@ -103,7 +114,7 @@ async def config_gu(msg: Bot.MessageSession):
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.ban.message.invalid' ,target=msg.target.senderFrom))
+        await msg.finish(msg.locale.t('core.ban.message.invalid', target=msg.target.senderFrom))
     if user == msg.target.senderId:
         await msg.finish(msg.locale.t("core.ban.message.self"))
     if 'ban' in msg.parsed_msg:
@@ -190,8 +201,15 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t('core.mute.message.enable') if msg.data.switch_mute() else msg.locale.t('core.mute.message.disable'))
 
 
-leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias={'dismiss': 'leave'},
-               desc='{core.leave.help}')
+leave = module(
+    'leave',
+    developers=['OasisAkari'],
+    base=True,
+    required_admin=True,
+    available_for='QQ|Group',
+    alias={
+        'dismiss': 'leave'},
+    desc='{core.leave.help}')
 
 
 @leave.handle()
@@ -200,7 +218,6 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         await msg.sendMessage(msg.locale.t('core.leave.message'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
-
 
 
 petal = module('petal', developers=['Dianliang233'], base=True, alias={'petals': 'petal'},
