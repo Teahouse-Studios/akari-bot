@@ -2,7 +2,7 @@ import re
 import traceback
 from typing import List, Union
 
-from bots.aiogram.client import dp, bot
+from bots.aiogram.client import dp, bot, token
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
@@ -109,6 +109,17 @@ class MessageSession(MS):
 
     def asDisplay(self, text_only=False):
         return self.session.message.text
+
+    async def toMessageChain(self):
+        lst = []
+        if self.session.message.photo:
+            file = await bot.get_file(self.session.message.photo[-1]['file_id'])
+            lst.append(Image(f'https://api.telegram.org/file/bot{token}/{file.file_path}'))
+        if self.session.message.caption:
+            lst.append(Plain(self.session.message.caption))
+        if self.session.message.text:
+            lst.append(Plain(self.session.message.text))
+        return MessageChain(lst)
 
     async def delete(self):
         try:

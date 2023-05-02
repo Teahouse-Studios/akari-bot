@@ -22,6 +22,17 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(secrets.choice(choices))
 
 
+@r.handle('shuffle ... {{random.help.shuffle}}', )
+async def _(msg: Bot.MessageSession):
+    cards: list = msg.parsed_msg['...']
+    x = cards.copy()
+    for i in reversed(range(1, len(x))):
+        # pick an element in x[:i+1] with which to exchange x[i]
+        j = secrets.randbelow(i + 1)
+        x[i], x[j] = x[j], x[i]
+    await msg.finish(', '.join(x))
+
+
 @r.handle('uuid {{random.help.uuid}}', )
 async def _(msg: Bot.MessageSession):
     await msg.finish(str(uuid.uuid4()))

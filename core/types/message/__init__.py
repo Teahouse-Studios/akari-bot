@@ -181,6 +181,11 @@ class MessageSession:
         :param text_only: 是否只保留纯文本（默认为False）
         """
 
+    async def toMessageChain(self) -> MessageChain:
+        """
+        用于将session.message中的消息文本转换为MessageChain。
+        """
+
     async def delete(self):
         """
         用于删除这条消息。
