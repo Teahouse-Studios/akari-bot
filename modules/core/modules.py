@@ -269,7 +269,7 @@ async def bot_help(msg: Bot.MessageSession):
             else:
                 devs = ''
             devs_msg = '\n' + msg.locale.t("core.module.message.help.author.type1") + devs
-            wiki_msg = f'\n' + msg.locale.t("core.module.message.help.helpdoc.address", help_url=Config('help_url')) + f'/' + help_name
+            wiki_msg = '\n' + msg.locale.t("core.module.message.help.helpdoc.address", help_url=Config('help_url')) + '/' + help_name
             if len(doc) > 500 and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
