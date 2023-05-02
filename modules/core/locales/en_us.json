@@ -44,7 +44,7 @@
     "core.module.message.help.regex.no_information": "No description",
     "core.module.message.help.author.type1": "Module author: ",
     "core.module.message.help.author.type2": "Module Author",
-    "core.module.message.help.helpdoc.address": "Module document: https://bot.teahouse.team/wiki/",
+    "core.module.message.help.helpdoc.address": "Module document: ${help_url}",
     "core.module.message.help.table.header.base": "Base Module List",
     "core.module.message.help.table.header.help": "Help",
     "core.module.message.help.table.header.alias": "Command Aliases",
