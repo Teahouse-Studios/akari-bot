@@ -23,8 +23,8 @@
     "calc.help.bin": "转换为二进制：bin(268) -> 0b100001100",
     "calc.help.oct": "转换为八进制：oct(268) ->  0o414",
     "calc.help.hex": "转换为十六进制：hex(268) -> 0x10c",
-    "calc.help.more": "更多可用运算符和函数",
-    "calc.message.invalid": "表达式无效：${expr}",
-    "calc.message.time_out": "计算超时。",
-    "calc.help.desc": "安全地计算 Python ast 表达式。"
+    "calc.help.more": "More available operators and functions",
+    "calc.message.invalid": "Invalid expression: ${expr}",
+    "calc.message.time_out": "Calculation timeout.",
+    "calc.help.desc": "Safely evaluate Python ast expressions."
 }

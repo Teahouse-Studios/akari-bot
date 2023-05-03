@@ -3,6 +3,7 @@ import traceback
 
 from core.builtins import Image, Plain, Bot
 from core.component import module
+from config import Config
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser
@@ -268,7 +269,7 @@ async def bot_help(msg: Bot.MessageSession):
             else:
                 devs = ''
             devs_msg = '\n' + msg.locale.t("core.module.message.help.author.type1") + devs
-            wiki_msg = f'\n' + msg.locale.t("core.module.message.help.helpdoc.address") + help_name
+            wiki_msg = '\n' + msg.locale.t("core.module.message.help.helpdoc.address", help_url=Config('help_url')) + '/' + help_name
             if len(doc) > 500 and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
@@ -363,7 +364,7 @@ async def _(msg: Bot.MessageSession):
                     legacy_help = False
                     await msg.finish([Image(render),
                                       Plain(msg.locale.t("core.module.message.help.more_information",
-                                                         prefix=msg.prefixes[0]))])
+                                                         prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -379,7 +380,7 @@ async def _(msg: Bot.MessageSession):
             if x in target_enabled_list:
                 module_.append(x)
         help_msg.append(' | '.join(module_))
-        help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0]))
+        help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0], help_url=Config('help_url')))
         if msg.Feature.delete:
             help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
         send = await msg.sendMessage('\n'.join(help_msg))
@@ -460,7 +461,7 @@ async def modules_help(msg: Bot.MessageSession):
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
-        help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0]))
+        help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0], help_url=Config('help_url')))
         if msg.Feature.delete:
             help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
         send = await msg.sendMessage('\n'.join(help_msg))
