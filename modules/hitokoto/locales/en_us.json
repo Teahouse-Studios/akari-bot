@@ -1,0 +1,19 @@
+{
+    "hitokoto.help_doc": "Get Hitokoto",
+    "hitokoto.name": "Hitokoto",
+    "hitokoto.type2name.a": "Animate",
+    "hitokoto.type2name.b": "Comic",
+    "hitokoto.type2name.c": "Game",
+    "hitokoto.type2name.d": "Literature",
+    "hitokoto.type2name.e": "Orginal",
+    "hitokoto.type2name.f": "From the network",
+    "hitokoto.type2name.g": "Other",
+    "hitokoto.type2name.h": "Movies",
+    "hitokoto.type2name.i": "Poetry",
+    "hitokoto.type2name.j": "NetEase Cloud",
+    "hitokoto.type2name.k": "Philosophy",
+    "hitokoto.type2name.l": "Show oneself",
+    "hitokoto.come_from": "Source: ",
+    "hitokoto.unknown": "Unknown",
+    "hitokoto.message.delete": "[This message will be recalled in 90 seconds]"
+}
