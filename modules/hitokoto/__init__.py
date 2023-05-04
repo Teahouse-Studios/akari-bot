@@ -8,11 +8,11 @@ hitokoto = module('hitokoto', developers=['bugungu'], desc='{hitokoto.help.desc}
 
 @hitokoto.handle('{{hitokoto.help}}')
 
-async def print_out(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     url = 'https://v1.hitokoto.cn/?encode=json'
-    responce = responce = await get_url(url, 200, fmt = 'json')
-    if responce['from_who'] != None:
-        send_msg = msg.locale.t("hitokoto.message") + ' #' + str(responce['id']) + '\n\n' + responce['hitokoto'] + '\n\n' + msg.locale.t("hitokoto.message.from") + msg.locale.t('hitokoto.type2name.' + responce['type']) + ' - ' + responce['from'] + ' - ' + responce['from_who']
-    else:
-        send_msg = msg.locale.t("hitokoto.message") + ' #' + str(responce['id']) + '\n\n' + responce['hitokoto'] + '\n\n' + msg.locale.t("hitokoto.message.from") + msg.locale.t('hitokoto.type2name.' + responce['type']) + ' - ' + responce['from'] + ' - ' + msg.locale.t("hitokoto.message.unknown")
-    send = await msg.sendMessage(send_msg)
+    responce = await get_url(url, 200, fmt = 'json')
+    data = json.loads(response)
+    from_who = data["from_who"] or ""
+    types = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + responce['type'])
+    hitokoto_url = 'https://hitokoto.cn?id={data["id"]}'
+    await msg.sendMessage(f'''{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{types}\n{hitokoto_url}''')
