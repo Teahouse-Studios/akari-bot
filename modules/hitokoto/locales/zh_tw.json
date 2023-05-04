@@ -1,0 +1,19 @@
+{
+    "hitokoto.help_doc":"獲取一言",
+    "hitokoto.name":"一言",
+    "hitokoto.type2name.a":"動畫",
+    "hitokoto.type2name.b":"漫畫",
+    "hitokoto.type2name.c":"遊戲",
+    "hitokoto.type2name.d":"文學",
+    "hitokoto.type2name.e":"原創",
+    "hitokoto.type2name.f":"來自網絡",
+    "hitokoto.type2name.g":"其他",
+    "hitokoto.type2name.h":"影視",
+    "hitokoto.type2name.i":"詩詞",
+    "hitokoto.type2name.j":"網易雲",
+    "hitokoto.type2name.k":"哲學",
+    "hitokoto.type2name.l":"抖機靈",
+    "hitokoto.come_from":"來源:",
+    "hitokoto.unknown":"未知",
+    "hitokoto.message.delete":"[該消息將在90秒后撤回]"
+}
