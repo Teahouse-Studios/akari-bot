@@ -10,8 +10,7 @@ hitokoto = module('hitokoto', developers=['bugungu'], desc='{hitokoto.help.desc}
 
 async def _(msg: Bot.MessageSession):
     url = 'https://v1.hitokoto.cn/?encode=json'
-    responce = await get_url(url, 200, fmt = 'json')
-    data = json.loads(response)
+    data = await get_url(url, 200, fmt = 'json')
     from_who = data["from_who"] or ""
     types = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + responce['type'])
     hitokoto_url = 'https://hitokoto.cn?id={data["id"]}'
