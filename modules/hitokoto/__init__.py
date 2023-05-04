@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
     url = 'https://v1.hitokoto.cn/?'
     if set_type is not None:
         if set_type not in hitokoto_types:
-            await msg.finish(locale.msg.t('hitokoto.message.error.type'))
+            await msg.finish(msg.locale.t('hitokoto.message.error.type'))
         else:
             url += "c=" + set_type
     data = await get_url(url, 200, fmt = 'json')
