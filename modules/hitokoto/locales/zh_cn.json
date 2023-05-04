@@ -1,6 +1,6 @@
 {
-    "hitokoto.help_doc":"获取一言",
-    "hitokoto.name":"一言",
+    "hitokoto.help.desc":"获取一言。",
+    "hitokoto.message":"一言",
     "hitokoto.type2name.a":"动画",
     "hitokoto.type2name.b":"漫画",
     "hitokoto.type2name.c":"游戏",
@@ -13,7 +13,6 @@
     "hitokoto.type2name.j":"网易云",
     "hitokoto.type2name.k":"哲学",
     "hitokoto.type2name.l":"抖机灵",
-    "hitokoto.come_from":"来源：",
-    "hitokoto.unknown":"未知",
-    "hitokoto.message.delete":"[该消息将在90秒后撤回]"
+    "hitokoto.message.from":"来源：",
+    "hitokoto.message.unknown":"未知"
 }
