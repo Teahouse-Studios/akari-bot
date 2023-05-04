@@ -13,5 +13,5 @@ async def _(msg: Bot.MessageSession):
     data = await get_url(url, 200, fmt = 'json')
     from_who = data["from_who"] or ""
     types = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + data['type'])
-    link = 'https://hitokoto.cn?id=' + data["id"]
-    await msg.sendMessage(f'''{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{types}\n{link}''')
+    link = 'https://hitokoto.cn?id='
+    await msg.sendMessage(f'''{data["hitokoto"]}\n——{from_who}「{data["from"]}」\n{types}\n{link}{data["id"]}''')
