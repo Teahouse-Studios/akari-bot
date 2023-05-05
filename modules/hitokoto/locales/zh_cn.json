@@ -1,7 +1,6 @@
 {
     "hitokoto.help.desc": "获取一言。",
-    "hitokoto.help": "随机获取一言。",
-    "hitokoto.help.type": "指定类型获取一言。",
+    "hitokoto.help.type": "获取一言，留空则随机类型。",
     "hitokoto.message.type.a": "动画",
     "hitokoto.message.type.b": "漫画",
     "hitokoto.message.type.c": "游戏",

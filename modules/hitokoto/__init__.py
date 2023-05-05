@@ -8,7 +8,7 @@ hitokoto_types = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
 
 hitokoto = module('hitokoto', developers=['bugungu', 'DoroWolf'], desc='{hitokoto.help.desc}', support_languages=['zh_cn'])
 
-@hitokoto.handle('{{hitokoto.help}}')
+@hitokoto.handle()
 @hitokoto.handle('[<type>] {{hitokoto.help.type}}')
 
 async def _(msg: Bot.MessageSession):
