@@ -57,6 +57,13 @@ async def update_assets():
                     shutil.move(download_file, os.path.join(illustration_path, song_name))
             except Exception:
                 traceback.print_exc()
+    another_assets_url = 'https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
+    download_file = await download_to_cache(another_assets_url)
+    if download_file:
+        ca = random_cache_path()
+        shutil.unpack_archive(download_file, ca)
+        shutil.copytree(os.path.join(ca, 'PhigrosLibrary-master', 'illustration'), illustration_path, dirs_exist_ok=True)
+        os.remove(download_file)
     return True
 
 

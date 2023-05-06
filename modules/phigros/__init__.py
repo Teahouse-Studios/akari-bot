@@ -12,6 +12,7 @@ from core.component import module
 from core.utils.http import get_url
 from .dbutils import PgrBindInfoManager
 from .update import update_difficulty_csv, update_assets
+from .genb19 import drawb19
 
 phi = module('phigros', developers=['OasisAkari'], desc='查询 Phigros 相关内容。SessionToken获取参考：'
                                                         'https://mivik.gitee.io/pgr-bot-help/index.html#%E5%AE%89%E5%8D%93',
@@ -55,17 +56,21 @@ async def _(msg: Bot.MessageSession):
         transport.open()
         saveurl = client.getSaveUrl(bind)
         result = client.best19(saveurl.saveUrl)
-        await msg.sendMessage("查询结果：\n" + str(result))
         transport.close()
+        await msg.sendMessage([Plain('查询结果：\n'), Image(drawb19('', result))])
 
 
 @phi.command('update assets')
 async def _(msg: Bot.MessageSession):
-    await update_assets()
+    update_ = await update_assets()
+    if update_:
+        await msg.finish("更新成功。")
 
 
 @phi.command('update rating')
 async def _(msg: Bot.MessageSession):
-    await update_difficulty_csv()
+    update_ = await update_difficulty_csv()
+    if update_:
+        await msg.finish("更新成功。")
 
 

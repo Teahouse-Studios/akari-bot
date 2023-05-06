@@ -17,7 +17,8 @@ from ..exceptions import NoReportException
 
 logging_resp = False
 debug = Config('debug')
-proxy = ''
+if not (proxy := Config('proxy')):
+    proxy = ''
 
 
 def private_ip_check(url: str):
