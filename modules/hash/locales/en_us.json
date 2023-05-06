@@ -1,8 +1,7 @@
 {
-    "hash.help.desc": "Generate the hash digest of a string.",
-    "hash.help.generate": "Generate the hash digest of a string.",
-    "hash.help.algorithms": "Returns a list of supported hashing algorithms.",
-    "hash.output": "${algorithm} digest of the string is: ${digest}",
-    "hash.algorithms": "Supported algorithms: ${algorithms}",
-    "hash.unsupported_algorithm": "Algorithm not supported: ${algorithm}"
+    "hash.help": "Generate the hash digest of a string.",
+    "hash.help.list": "Returns a list of supported hashing algorithms.",
+    "hash.message.output": "${algorithm} digest of the string is: ${digest}",
+    "hash.message.unsupported_algorithm": "Algorithm not supported: ${algorithm}",
+    "hash.message.algorithms_list": "Supported algorithms: ${algorithms}"
 }

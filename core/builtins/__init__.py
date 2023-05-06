@@ -15,7 +15,7 @@ class Bot:
     FetchTarget = FetchTarget
 
     @staticmethod
-    async def sendMessage(target: Union[FetchedSession, str], msg: Union[MessageChain, list],
+    async def sendMessage(target: Union[FetchedSession, MessageSession, str], msg: Union[MessageChain, list],
                           disable_secret_check=False,
                           allow_split_image=True):
         if isinstance(target, str):

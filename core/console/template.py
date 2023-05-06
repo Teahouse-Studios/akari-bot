@@ -97,6 +97,9 @@ class Template(MS):
     def asDisplay(self, text_only=False):
         return self.session.message
 
+    async def toMessageChain(self):
+        return MessageChain(Plain(self.session.message))
+
     async def delete(self):
         print(
             f"(Tried to delete {self.session.message}, but I'm a console so I cannot do it :< )")

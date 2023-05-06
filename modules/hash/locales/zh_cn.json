@@ -1,8 +1,7 @@
 {
-    "hash.help.desc": "生成字符串的哈希/散列值。",
-    "hash.help.generate": "生成字符串的哈希/散列值。",
-    "hash.help.algorithms": "返回支持的散列算法。",
-    "hash.output": "上述字符串的 ${algorithm} 散列值：${digest}",
-    "hash.algorithms": "支持的算法：${algorithms}",
-    "hash.unsupported_algorithm": "不支持此算法：${algorithm}"
+    "hash.help": "生成字符串的哈希/散列值。",
+    "hash.help.list": "返回支持的散列算法。",
+    "hash.message.output": "上述字符串的 ${algorithm} 散列值为：${digest}",
+    "hash.message.unsupported_algorithm": "不支持此算法：${algorithm}",
+    "hash.message.algorithms_list": "支持的算法：${algorithms}"
 }
