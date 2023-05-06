@@ -13,7 +13,7 @@ cave = module('cave', desc = '{cave.help.desc}', developers = ['bugungu'])
 @cave.command('add {{cave.help.add}}')
 
 async def add(msg: Bot.MessageSession):
-    filename = './modules/cave/data.json'
+    filename = './modules/cave/data/data.json'
     add = await msg.waitNextMessage(msg.locale.t('cave.msg.add'), delete = True)
     responce = await add.toMessageChain()
     data_json = []
@@ -31,8 +31,9 @@ async def add(msg: Bot.MessageSession):
             image_count += 1
             image_path = await download_to_cache(i, image_name)
             Logger.info('Get Image Path: ' + image_path)
-            shutil.copy(image_path, '.\\modules\\cave\\images\\')
-            write_json['content'].append({'image':'.\\modules\\cave\\images\\' + image_name})
+            shutil.copy(image_path, '.\modules\cave\data')
+            write_json['content'].append({'image':'.\\modules\\cave\\data\\' + image_name})
+            if (data_json['image_max_count'] != image_id): data_json['image_max_count'] += 1
         if isinstance(v, Plain):
             i = v.text
             write_json['content'].append({'text':i})
@@ -49,7 +50,7 @@ async def add(msg: Bot.MessageSession):
 @cave.command('delete <id> {{cave.help.delete}}', required_superuser = True)
 
 async def delete(msg: Bot.MessageSession):
-    filename = './modules/cave/data.json'
+    filename = './modules/cave/data/data.json'
     data_json = []
     with open(filename, 'r', encoding = 'utf-8') as data:
         data_json = json.loads(data.read())
@@ -64,7 +65,7 @@ async def delete(msg: Bot.MessageSession):
 @cave.command('{{cave.help.get}}')
 
 async def get(msg: Bot.MessageSession):
-    filename = './modules/cave/data.json'
+    filename = './modules/cave/data/data.json'
     data_json = []
     send_msg = []
     id = 0
