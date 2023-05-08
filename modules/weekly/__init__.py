@@ -59,7 +59,7 @@ async def get_weekly_img(with_img=False, zh_tw=False):
     if with_img:
         result = json.loads(await get_url(
             'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
-            ('?variant=zh-tw' if zh_tw else ''),
+            ('&variant=zh-tw' if zh_tw else ''),
             200))
         img = result['parse']['images']
         if img:
