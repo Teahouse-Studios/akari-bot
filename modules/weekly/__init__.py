@@ -52,14 +52,14 @@ async def get_weekly(with_img=False, zh_tw=False):
 async def get_weekly_img(with_img=False, zh_tw=False):
     locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
     img = await generate_screenshot_v2('https://minecraft.fandom.com/zh/wiki/Minecraft_Wiki/weekly' +
-                                       ('&variant=zh_tw' if zh_tw else ''), content_mode=True, allow_special_page=True)
+                                       ('?variant=zh-tw' if zh_tw else ''), content_mode=True, allow_special_page=True)
     msg_ = []
     if img:
         msg_.append(Image(path=img))
     if with_img:
         result = json.loads(await get_url(
             'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
-            ('&variant=zh-tw' if zh_tw else ''),
+            ('?variant=zh-tw' if zh_tw else ''),
             200))
         img = result['parse']['images']
         if img:
