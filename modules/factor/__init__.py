@@ -14,7 +14,7 @@ async def prime(msg: Bot.MessageSession):
     n=number
     i=2
     primes_list=[]
-    if num<=1:
+    if number<=1:
         await msg.finish('{factor.message.prime.invalid}')
     while i<=n:
         if n%i==0:
