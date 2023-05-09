@@ -9,14 +9,17 @@ factor = module('factor', developers=[
 @factor.handle('prime <number> {{factor.prime.help}}')
 async def prime(msg: Bot.MessageSession):
     number_str = msg.parsed_msg.get('<number>')
-    number = int(number_str)
     start_time = time.time()
+    try:
+        number = int(number_str)
+        if number <= 1:
+            await msg.finish(msg.locale.t('factor.prime.message.error'))
+    except ValueError:
+        await msg.finish(msg.locale.t('factor.prime.message.error'))
     n = number
     i = 2
     loopcnt = 0
     primes_list = []
-    if number <= 1 or not number_str.isdigit():
-        await msg.finish(msg.locale.t('factor.prime.message.error'))
     while i <= n:
         loopcnt += 1
         if not(loopcnt % 100):
