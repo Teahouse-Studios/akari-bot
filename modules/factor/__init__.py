@@ -16,7 +16,7 @@ async def prime(msg: Bot.MessageSession):
     if number <= 1:
         await msg.finish(msg.locale.t('factor.prime.message.error'))
     while i <= n:
-        if running_time >= 10:
+        if time.time() - start_time >= 10:
             await msg.finish(msg.locale.t('factor.message.time_out'))
         if n % i:
             i += 1
