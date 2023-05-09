@@ -26,7 +26,7 @@ async def prime(msg: Bot.MessageSession):
             primes_list.append(str(i))
     prime="*".join(primes_list)
     if len(primes_list) == 1:
-        result = msg.locale.t('factor.prime.message.is_prime', num=number))
+        result = msg.locale.t('factor.prime.message.is_prime', num=number)
     else:
         result = f"{number} = {prime}"
     checkpermisson = msg.checkSuperUser()
