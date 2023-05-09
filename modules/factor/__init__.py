@@ -1,9 +1,5 @@
-import asyncio
-
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import NoReportException
-from core.logger import Logger
 
 f = module('factor', developers=[
     'DoroWolf'], desc='{factor.help.desc}', required_superuser=True)
@@ -11,7 +7,7 @@ f = module('factor', developers=[
 @f.handle('prime <number> {{factor.help.prime}}')
 async def prime(msg: Bot.MessageSession):
     number = msg.parsed_msg.get('<number>')
-    n=number
+    n=int(number)
     i=2
     primes_list=[]
     if number<=1:
