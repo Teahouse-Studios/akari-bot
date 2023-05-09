@@ -6,8 +6,8 @@ f = module('factor', developers=[
 
 @f.handle('prime <number> {{factor.help.prime}}')
 async def prime(msg: Bot.MessageSession):
-    number = msg.parsed_msg.get('<number>')
-    n=int(number)
+    number = int(msg.parsed_msg.get('<number>'))
+    n=number
     i=2
     primes_list=[]
     if number<=1:
