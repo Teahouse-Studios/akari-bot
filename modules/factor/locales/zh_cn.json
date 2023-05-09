@@ -3,3 +3,4 @@
   "factor.prime.help": "分解质因数",
   "factor.prime.message.error": "发生错误：数字必须大于 1",
   "factor.prime.message.is_prime": "${num} 是质数。"
+}
