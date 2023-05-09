@@ -10,14 +10,13 @@ factor = module('factor', developers=[
 async def prime(msg: Bot.MessageSession):
     number = int(msg.parsed_msg.get('<number>'))
     start_time = time.time()
-    running_time = time.time() - start_time
     n = number
     i = 2
     primes_list = []
     if number <= 1:
         await msg.finish(msg.locale.t('factor.prime.message.error'))
     while i <= n:
-        if running_time >= 10:
+        if time.time() - start_time >= 10:
             await msg.finish(msg.locale.t('factor.message.time_out'))
         if n % i:
             i += 1
@@ -31,5 +30,5 @@ async def prime(msg: Bot.MessageSession):
         result = f"{number} = {prime}"
     checkpermisson = msg.checkSuperUser()
     if checkpermisson:
-        result += '\n' + msg.locale.t("factor.message.running_time", time=f"{running_time:.2f}")
+        result += '\n' + msg.locale.t("factor.message.running_time", time=f"{time.time() - start_time:.2f}")
     await msg.finish(result)
