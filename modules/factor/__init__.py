@@ -14,10 +14,10 @@ async def prime(msg: Bot.MessageSession):
     i = 2
     primes_list = []
     if number <= 1:
-        await msg.finish(msg.locale.t('factor.prime.message.error.invalid'))
+        await msg.finish(msg.locale.t('factor.prime.message.error'))
     while i <= n:
         if time.time() - start_time >= 10:
-            await msg.finish(msg.locale.t('factor.prime.message.error.time_out'))
+            await msg.finish(msg.locale.t('factor.message.time_out'))
         if n % i:
             i += 1
         else:
@@ -25,6 +25,6 @@ async def prime(msg: Bot.MessageSession):
             primes_list.append(str(i))
     prime="*".join(primes_list)
     if len(primes_list) == 1:
-        await msg.finish(msg.locale.t('factor.prime.message.is_prime'))
+        await msg.finish(msg.locale.t('factor.prime.message.is_prime', num=number))
     else:
         await msg.finish(f"{number}={prime}")
