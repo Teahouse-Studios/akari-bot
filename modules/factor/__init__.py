@@ -4,7 +4,7 @@ from core.builtins import Bot
 from core.component import module
 
 factor = module('factor', developers=[
-    'DoroWolf'], desc='{factor.help.desc}', required_superuser=True)
+    'DoroWolf'], desc='{factor.help.desc}')
 
 @factor.handle('prime <number> {{factor.prime.help}}')
 async def prime(msg: Bot.MessageSession):
