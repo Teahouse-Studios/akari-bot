@@ -5,10 +5,10 @@ from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
 
-factor = module('factor', developers=[
+f = module('factor', developers=[
     'DoroWolf'], desc='{factor.help.desc}', required_superuser=True)
 
-@c.handle('prime <number> {{factor.help.prime}}')
+@f.handle('prime <number> {{factor.help.prime}}')
 async def prime(msg: Bot.MessageSession):
     number = msg.parsed_msg.get('<number>')
     n=number
