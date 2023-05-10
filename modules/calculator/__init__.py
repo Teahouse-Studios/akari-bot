@@ -109,7 +109,10 @@ async def prime(msg: Bot.MessageSession):
             n //= i
             primes_list.append(str(i))
     primes_list.append(str(n))
-    prime="*".join(primes_list)
+    if msg.target.senderFrom == "Discord|Client":
+        prime="\*".join(primes_list)
+    else:
+        prime="*".join(primes_list)
     end_time = time.time()
     running_time = end_time - start_time
     if len(primes_list) == 1:
