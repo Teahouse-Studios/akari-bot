@@ -1,7 +1,0 @@
-{
-  "factor.message.time_out": "计算超时。",
-  "factor.message.running_time": "计算花费时间：${time} s / 10.00 s。",
-  "factor.prime.help": "分解质因数。",
-  "factor.prime.message.error": "发生错误：必须为大于 1 的正整数。",
-  "factor.prime.message.is_prime": "${num} 是质数。"
-}
