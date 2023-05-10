@@ -108,6 +108,7 @@ async def prime(msg: Bot.MessageSession):
         else:
             n //= i
             primes_list.append(str(i))
+    primes_list.append(str(n))
     prime="*".join(primes_list)
     end_time = time.time()
     running_time = end_time - start_time
