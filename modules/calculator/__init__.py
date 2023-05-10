@@ -44,7 +44,8 @@ async def _(msg: Bot.MessageSession):
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
             res = subprocess.check_output(
-                ['python', os.path.abspath("./modules/calc/calculator.calc.py"), expr], timeout=10, shell=False).decode('utf-8')
+                [sys.executable, os.path.abspath("./modules/calc/calculator.calc.py"), expr], timeout=10, shell=False)\
+                .decode('utf-8')
             if res[0:6] == 'Result':
                 await msg.finish(f'{(expr)} = {res[7:]}')
             else:
@@ -53,7 +54,8 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(msg.locale.t("calculator.calc.message.time_out"))
     else:
         try:
-            p = await asyncio.create_subprocess_exec('python', os.path.abspath("./modules/calc/calculator.calc.py"), expr,
+            p = await asyncio.create_subprocess_exec(sys.executable, os.path.abspath("./modules/calc/calculator.calc.py"),
+                                                     expr,
                                                      stdout=asyncio.subprocess.PIPE,
                                                      stderr=asyncio.subprocess.PIPE
                                                      )
@@ -84,6 +86,7 @@ async def _(msg: Bot.MessageSession):
 
 factor = module('factor', developers=['DoroWolf, Light-Beacon'])
 
+
 @factor.handle('prime <number> {{calculator.factor.prime.help}}')
 async def prime(msg: Bot.MessageSession):
     number_str = msg.parsed_msg.get('<number>')
@@ -100,7 +103,7 @@ async def prime(msg: Bot.MessageSession):
     primes_list = []
     while i ** 2 <= n:
         loopcnt += 1
-        if not(loopcnt % 1000):
+        if not (loopcnt % 1000):
             if time.time() - start_time >= 10:
                 await msg.finish(msg.locale.t('calculator.message.time_out'))
         if n % i:
@@ -110,9 +113,9 @@ async def prime(msg: Bot.MessageSession):
             primes_list.append(str(i))
     primes_list.append(str(n))
     if msg.target.senderFrom == "Discord|Client":
-        prime="\*".join(primes_list)
+        prime = "\\*".join(primes_list)
     else:
-        prime="*".join(primes_list)
+        prime = "*".join(primes_list)
     end_time = time.time()
     running_time = end_time - start_time
     if len(primes_list) == 1:
