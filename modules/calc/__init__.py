@@ -121,16 +121,16 @@ async def prime(msg: Bot.MessageSession):
             n //= i
             primes_list.append(str(i))
     primes_list.append(str(n))
-    if msg.target.senderFrom == "Discord|Client":
-        prime = "\\*".join(primes_list)
-    else:
-        prime = "*".join(primes_list)
+    prime = "*".join(primes_list)
     end_time = time.time()
     running_time = end_time - start_time
     if len(primes_list) == 1:
         result = msg.locale.t("calc.factor.prime.message.is_prime", num=number)
     else:
-        result = f"{number} = {prime}"
+        if msg.target.senderFrom == "Discord|Client":
+            result = f"{number} = ``{prime}``"
+        else:
+            result = f"{number} = {prime}"
     checkpermisson = msg.checkSuperUser()
     if checkpermisson:
         result += '\n' + msg.locale.t("calc.factor.message.running_time", time=f"{running_time:.2f}")
