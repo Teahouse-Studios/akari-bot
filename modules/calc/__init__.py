@@ -50,7 +50,10 @@ async def _(msg: Bot.MessageSession):
                 [sys.executable, calc_dir + '/calc.py', expr], timeout=10, shell=False)\
                 .decode('utf-8')
             if res[0:6] == 'Result':
-                await msg.finish(f'{(expr)} = {res[7:]}')
+                if msg.target.senderFrom == "Discord|Client":
+                    await msg.finish(f'``{(expr)}`` = {res[7:]}')
+                else:
+                    await msg.finish(f'{(expr)} = {res[7:]}')
             else:
                 await msg.finish(msg.locale.t("calc.calc.message.invalid", expr={res[7:]}))
         except subprocess.TimeoutExpired:
