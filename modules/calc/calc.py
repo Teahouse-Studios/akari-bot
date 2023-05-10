@@ -12,7 +12,9 @@ from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, 
 
 from constant import consts
 
-sys.set_int_max_str_digits(0)
+
+if sys.version_info.minor > 8 or sys.version_info.micro >= 14:  # Added in 3.8.14, 3.7 and below not supported so
+    sys.set_int_max_str_digits(0)
 if os.name == 'posix':
     os.nice(15)
     import resource

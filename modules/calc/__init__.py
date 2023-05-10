@@ -9,6 +9,9 @@ from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
 
+
+calc_dir = os.path.dirname(os.path.abspath(__file__))
+
 c = module('calc', developers=[
     'Dianliang233'], desc='{calc.calc.help.desc}')
 
@@ -44,17 +47,17 @@ async def _(msg: Bot.MessageSession):
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
             res = subprocess.check_output(
-                [sys.executable, os.path.abspath("./modules/calc/calc.py"), expr], timeout=10, shell=False)\
+                [sys.executable, calc_dir + '/calc.py', expr], timeout=10, shell=False)\
                 .decode('utf-8')
             if res[0:6] == 'Result':
                 await msg.finish(f'{(expr)} = {res[7:]}')
             else:
-                await msg.finish(msg.locale.t("calc.calc.message.invalid", exp={res[7:]}))
+                await msg.finish(msg.locale.t("calc.calc.message.invalid", expr={res[7:]}))
         except subprocess.TimeoutExpired:
             raise NoReportException(msg.locale.t("calc.calc.message.time_out"))
     else:
         try:
-            p = await asyncio.create_subprocess_exec(sys.executable, os.path.abspath("./modules/calc/calc.py"),
+            p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + '/calc.py',
                                                      expr,
                                                      stdout=asyncio.subprocess.PIPE,
                                                      stderr=asyncio.subprocess.PIPE
