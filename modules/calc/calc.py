@@ -76,5 +76,5 @@ s_eval = EvalWithCompoundTypes(
 try:  # rina's rina lazy solution :rina:
     sys.stdout.write('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
 except Exception as e:
-    sys.stdout.write('Failed ' + str(e))
+    sys.stdout.write(f'Failed {str(e)}')
 sys.exit()

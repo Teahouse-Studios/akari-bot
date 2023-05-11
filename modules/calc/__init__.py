@@ -61,13 +61,16 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("calc.calc.message.invalid", expr={res[7:]}))
 
 
-factor = module('factor', developers=['DoroWolf, Light-Beacon'])
+factor = module('factor', developers=['DoroWolf, Light-Beacon', 'Dianliang233'])
 
 
 @factor.handle('prime <number> {{calc.factor.prime.help}}')
 async def prime(msg: Bot.MessageSession):
     try:
-        num = int(msg.parsed_msg.get('<number>'))
+        num_str = msg.parsed_msg.get('<number>')
+        if num_str is None:
+            raise ValueError
+        num = int()
         if num <= 1:
             return await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
     except ValueError:
@@ -76,20 +79,20 @@ async def prime(msg: Bot.MessageSession):
     res = await spawn_subprocess('/factor.py', str(num), msg)
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
-    if res[:6] == 'Result':
-        primes = json.loads(res[7:])
-        prime = "*".join(primes)
-        if len(primes) == 1:
-            m = msg.locale.t("calc.factor.prime.message.is_prime", num=num)
-        if msg.target.senderFrom == "Discord|Client":
-            m = f'`{(num)}` = {prime}'
-        else:
-            m = f'{(num)} = {prime}'
-        if msg.checkSuperUser():
-            m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
-        await msg.finish(m)
-    else:
+    if res[:6] != 'Result':
         raise ValueError(res)
+    primes = json.loads(res[7:])
+    prime = "*".join(primes)
+    if len(primes) == 1:
+        m = msg.locale.t("calc.factor.prime.message.is_prime", num=num)
+    m = (
+        f'`{num}` = {prime}'
+        if msg.target.senderFrom == "Discord|Client"
+        else f'{num} = {prime}'
+    )
+    if msg.checkSuperUser():
+        m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
+    await msg.finish(m)
 
 
 async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> str:
@@ -98,8 +101,8 @@ async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> st
             return subprocess.check_output(
                 [sys.executable, calc_dir + file, input], timeout=10, shell=False)\
                 .decode('utf-8')
-        except subprocess.TimeoutExpired:
-            raise NoReportException(msg.locale.t("calc.calc.message.time_out"))
+        except subprocess.TimeoutExpired as e:
+            raise NoReportException(msg.locale.t("calc.calc.message.time_out")) from e
     else:
         try:
             p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + file,
@@ -109,18 +112,18 @@ async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> st
                                                      )
             try:
                 await asyncio.wait_for(p.wait(), timeout=10)
-            except asyncio.TimeoutError:
+            except asyncio.TimeoutError as e:
                 p.kill()
-                raise NoReportException(msg.locale.t("calc.message.time_out"))
+                raise NoReportException(msg.locale.t("calc.message.time_out")) from e
             stdout_data, stderr_data = await p.communicate()
             if p.returncode != 0:
-                Logger.error(f'calc.py exited with code {p.returncode}')
+                Logger.error(f'{file} exited with code {p.returncode}')
                 try:
                     Logger.error(
-                        f'calc.py stderr: {stderr_data.decode("utf-8")}')
+                        f'{file} stderr: {stderr_data.decode("utf-8")}')
                 except UnicodeDecodeError:
                     Logger.error(
-                        f'calc.py stderr: {stderr_data.decode("gbk")}')
+                        f'{file} stderr: {stderr_data.decode("gbk")}')
             return stdout_data.decode('utf-8')
         except Exception as e:
-            raise NoReportException(e)
+            raise NoReportException(e) from e
