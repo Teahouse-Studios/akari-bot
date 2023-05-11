@@ -10,7 +10,6 @@ from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
 
-
 calc_dir = os.path.dirname(os.path.abspath(__file__))
 
 c = module('calc', developers=[
@@ -96,10 +95,12 @@ async def prime(msg: Bot.MessageSession):
 
 
 async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> str:
+    envs = os.environ.copy()
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
             return subprocess.check_output(
-                [sys.executable, calc_dir + file, input], timeout=10, shell=False)\
+                [sys.executable, calc_dir + file, input], timeout=10, shell=False,
+                cwd=os.path.abspath('.'), env=envs) \
                 .decode('utf-8')
         except subprocess.TimeoutExpired as e:
             raise NoReportException(msg.locale.t("calc.calc.message.time_out")) from e
@@ -108,7 +109,8 @@ async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> st
             p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + file,
                                                      input,
                                                      stdout=asyncio.subprocess.PIPE,
-                                                     stderr=asyncio.subprocess.PIPE
+                                                     stderr=asyncio.subprocess.PIPE,
+                                                     cwd=os.path.abspath('.'), env=envs
                                                      )
             try:
                 await asyncio.wait_for(p.wait(), timeout=10)
