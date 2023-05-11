@@ -70,7 +70,7 @@ async def prime(msg: Bot.MessageSession):
         num_str = msg.parsed_msg.get('<number>')
         if num_str is None:
             raise ValueError
-        num = int()
+        num = int(num_str)
         if num <= 1:
             return await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
     except ValueError:
