@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import time
+import ujson as json
 
 from core.builtins import Bot
 from core.component import module
@@ -44,24 +45,65 @@ c = module('calc', developers=[
                                               })
 async def _(msg: Bot.MessageSession):
     expr = msg.asDisplay().split(' ', 1)[1]
+    start = time.perf_counter_ns()
+    res = await spawn_subprocess('/calc.py', expr, msg)
+    stop = time.perf_counter_ns()
+    delta = (stop - start) / 1000000
+    if res[:6] == 'Result':
+        if msg.target.senderFrom == "Discord|Client":
+            m = f'`{(expr)}` = {res[7:]}'
+        else:
+            m = f'{(expr)} = {res[7:]}'
+        if msg.checkSuperUser():
+            m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
+        await msg.finish(m)
+    else:
+        await msg.finish(msg.locale.t("calc.calc.message.invalid", expr={res[7:]}))
+
+
+factor = module('factor', developers=['DoroWolf, Light-Beacon'])
+
+
+@factor.handle('prime <number> {{calc.factor.prime.help}}')
+async def prime(msg: Bot.MessageSession):
+    try:
+        num = int(msg.parsed_msg.get('<number>'))
+        if num <= 1:
+            return await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
+    except ValueError:
+        return await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
+    start = time.perf_counter_ns()
+    res = await spawn_subprocess('/factor.py', str(num), msg)
+    stop = time.perf_counter_ns()
+    delta = (stop - start) / 1000000
+    if res[:6] == 'Result':
+        primes = json.loads(res[7:])
+        prime = "*".join(primes)
+        if len(primes) == 1:
+            m = msg.locale.t("calc.factor.prime.message.is_prime", num=num)
+        if msg.target.senderFrom == "Discord|Client":
+            m = f'`{(num)}` = {prime}'
+        else:
+            m = f'{(num)} = {prime}'
+        if msg.checkSuperUser():
+            m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
+        await msg.finish(m)
+    else:
+        raise ValueError(res)
+
+
+async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> str:
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
-            res = subprocess.check_output(
-                [sys.executable, calc_dir + '/calc.py', expr], timeout=10, shell=False)\
+            return subprocess.check_output(
+                [sys.executable, calc_dir + file, input], timeout=10, shell=False)\
                 .decode('utf-8')
-            if res[0:6] == 'Result':
-                if msg.target.senderFrom == "Discord|Client":
-                    await msg.finish(f'``{(expr)}`` = {res[7:]}')
-                else:
-                    await msg.finish(f'{(expr)} = {res[7:]}')
-            else:
-                await msg.finish(msg.locale.t("calc.calc.message.invalid", expr={res[7:]}))
         except subprocess.TimeoutExpired:
             raise NoReportException(msg.locale.t("calc.calc.message.time_out"))
     else:
         try:
-            p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + '/calc.py',
-                                                     expr,
+            p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + file,
+                                                     input,
                                                      stdout=asyncio.subprocess.PIPE,
                                                      stderr=asyncio.subprocess.PIPE
                                                      )
@@ -71,17 +113,7 @@ async def _(msg: Bot.MessageSession):
                 p.kill()
                 raise NoReportException(msg.locale.t("calc.message.time_out"))
             stdout_data, stderr_data = await p.communicate()
-            if p.returncode == 0:
-                res = stdout_data.decode('utf-8')
-
-                if res[0:6] == 'Result':
-                    if msg.target.senderFrom == "Discord|Client":
-                        await msg.finish(f'``{(expr)}`` = {res[7:]}')
-                    else:
-                        await msg.finish(f'{(expr)} = {res[7:]}')
-                else:
-                    await msg.finish(msg.locale.t("calc.calc.message.invalid", expr=res[7:]))
-            else:
+            if p.returncode != 0:
                 Logger.error(f'calc.py exited with code {p.returncode}')
                 try:
                     Logger.error(
@@ -89,49 +121,6 @@ async def _(msg: Bot.MessageSession):
                 except UnicodeDecodeError:
                     Logger.error(
                         f'calc.py stderr: {stderr_data.decode("gbk")}')
+            return stdout_data.decode('utf-8')
         except Exception as e:
             raise NoReportException(e)
-
-
-factor = module('factor', developers=['DoroWolf, Light-Beacon'])
-
-
-@factor.handle('prime <number> {{calc.factor.prime.help}}')
-async def prime(msg: Bot.MessageSession):
-    number_str = msg.parsed_msg.get('<number>')
-    start_time = time.time()
-    try:
-        number = int(number_str)
-        if number <= 1:
-            await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
-    except ValueError:
-        await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
-    n = number
-    i = 2
-    loopcnt = 0
-    primes_list = []
-    while i ** 2 <= n:
-        loopcnt += 1
-        if not (loopcnt % 1000):
-            if time.time() - start_time >= 10:
-                await msg.finish(msg.locale.t('calc.message.time_out'))
-        if n % i:
-            i += 1
-        else:
-            n //= i
-            primes_list.append(str(i))
-    primes_list.append(str(n))
-    prime = "*".join(primes_list)
-    end_time = time.time()
-    running_time = end_time - start_time
-    if len(primes_list) == 1:
-        result = msg.locale.t("calc.factor.prime.message.is_prime", num=number)
-    else:
-        if msg.target.senderFrom == "Discord|Client":
-            result = f"{number} = ``{prime}``"
-        else:
-            result = f"{number} = {prime}"
-    checkpermisson = msg.checkSuperUser()
-    if checkpermisson:
-        result += '\n' + msg.locale.t("calc.message.running_time", time=f"{running_time:.2f}")
-    await msg.finish(result)

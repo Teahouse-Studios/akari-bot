@@ -27,7 +27,7 @@
     "calc.calc.message.invalid": "表达式无效：${expr}",
     "calc.calc.help.desc": "安全地计算 Python ast 表达式。",
     "calc.message.time_out": "计算超时。",
-    "calc.message.running_time": "计算花费时间：${time} s / 10.00 s。",
+    "calc.message.running_time": "计算花费时间：${time} ms / 10000 ms。",
     "calc.factor.prime.help": "分解质因数。",
     "calc.factor.prime.message.error": "发生错误：必须为大于 1 的正整数。",
     "calc.factor.prime.message.is_prime": "${num} 是质数。"
