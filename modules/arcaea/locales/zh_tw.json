@@ -1,4 +1,6 @@
 {
+    "arcaea.download.help": "取得最新版本的遊戲 apk。",
+    "arcaea.download.message.success": "目前的最新版本為 ${version}。\n下載網址：${url}",
     "arcaea.random.help": "隨機一首曲目。",
     "arcaea.rank.help.free": "檢視目前免費包遊玩排行。",
     "arcaea.rank.help.paid": "檢視目前付費包遊玩排行。",
