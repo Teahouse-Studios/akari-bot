@@ -1,4 +1,6 @@
 {
+    "arcaea.download.help": "Get the latest version of game apk.",
+    "arcaea.download.message.success": "Current latest version is ${version}.\nDownload: ${url}",
     "arcaea.random.help": "Random a track.",
     "arcaea.rank.help.free": "View the current rank of the free packs.",
     "arcaea.rank.help.paid": "View the current rank of the paid packs.",

@@ -17,7 +17,16 @@ assets_path = os.path.abspath('./assets/')
 async def _(msg: Bot.MessageSession):
     await msg.finish([msg.locale.t("arcaea.message.sb616"), Image(assets_path + '/noc.jpg'), Image(assets_path + '/aof.jpg')])
 
-
+@arc.command('download {{arcaea.download.help}}')
+async def _(msg: Bot.MessageSession):
+    if not webrender:
+        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
+    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
+                         fmt='json')
+    if resp:
+        await msg.finish([Plain(msg.locale.t("arcaea.download.message.success", version=resp["value"]["version"],
+                                             url=resp['value']['url']))])
+        
 @arc.command('random {{arcaea.random.help}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:

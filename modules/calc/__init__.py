@@ -133,5 +133,5 @@ async def prime(msg: Bot.MessageSession):
             result = f"{number} = {prime}"
     checkpermisson = msg.checkSuperUser()
     if checkpermisson:
-        result += '\n' + msg.locale.t("calc.factor.message.running_time", time=f"{running_time:.2f}")
+        result += '\n' + msg.locale.t("calc.message.running_time", time=f"{running_time:.2f}")
     await msg.finish(result)
