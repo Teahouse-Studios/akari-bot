@@ -1,6 +1,6 @@
 import utils
 import sys
-import ujson as json
+import json
 
 n = int(sys.argv[1])
 i = 2
