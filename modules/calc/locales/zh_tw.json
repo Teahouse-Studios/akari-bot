@@ -7,7 +7,7 @@
     "calc.calc.help.modulo": "取模：5 % 2 -> 1",
     "calc.calc.help.equal": "等於：1 == 1 -> True",
     "calc.calc.help.less_equal": "小於等於：1 <= 2 -> True",
-    "calc.calc.help.greater_equal": "大于等于：1 >= 2 -> False",
+    "calc.calc.help.greater_equal": "大於等於：1 >= 2 -> False",
     "calc.calc.help.move_right": "x 右移 y 位（相当于 x / (2 ** y)，y < 10000）：32 >> 5 -> 1",
     "calc.calc.help.move_left": "x 左移 y 位（相当于 x * (2 ** y)，y < 10000）：1 << 5 -> 32",
     "calc.calc.help.xor": "按位异或：1 ^ 1 -> 0",
@@ -26,9 +26,9 @@
     "calc.calc.help.more": "更多可用運算子和函式",
     "calc.calc.message.invalid": "表達式無效：${expr}",
     "calc.calc.help.desc": "安全地計算 Python ast 表達式。",
-    "calc.message.time_out": "计算超时。",
-    "calc.message.running_time": "计算花费时间：${time} ms / 10000 ms。",
-    "calc.factor.prime.help": "分解质因数。",
-    "calc.factor.prime.message.error": "发生错误：必须为大于 1 的正整数。",
-    "calc.factor.prime.message.is_prime": "${num} 是质数。"
+    "calc.message.time_out": "計算逾時。",
+    "calc.message.running_time": "計算耗費時間：${time} ms / 10000 ms。",
+    "calc.factor.prime.help": "分解質因數。",
+    "calc.factor.prime.message.error": "發生錯誤：必須為大於 1 的正整數。",
+    "calc.factor.prime.message.is_prime": "${num} 是質數。"
 }
