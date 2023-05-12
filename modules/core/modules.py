@@ -412,7 +412,11 @@ async def modules_help(msg: Bot.MessageSession):
                 help_ = CommandParser(
                     module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes, msg=msg)
                 if module_.desc is not None:
-                    doc_.append(module_.desc)
+                    desc = module_.desc
+                    if locale_str := re.findall(r'\{(.*)}', desc):
+                        for l in locale_str:
+                            desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
+                    doc_.append(desc)
                 if help_.args:
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
