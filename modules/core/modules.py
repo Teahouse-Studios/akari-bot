@@ -328,9 +328,9 @@ async def _(msg: Bot.MessageSession):
                         if pattern:
                             desc = regex.desc
                             if desc:
-                                if locale_str := re.findall(r'\{(.*)}', x):
+                                if locale_str := re.findall(r'\{(.*)}', desc):
                                     for l in locale_str:
-                                        x = x.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
+                                        desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                                 doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
                                                                       msg=desc)
                             else:
