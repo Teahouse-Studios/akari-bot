@@ -25,10 +25,10 @@
     "calc.calc.help.hex": "转换为十六进制：hex(268) -> 0x10c",
     "calc.calc.help.more": "More available operators and functions",
     "calc.calc.message.invalid": "Invalid expression: ${expr}",
+    "calc.calc.message.time_out": "Calculation timeout.",
     "calc.calc.help.desc": "Safely evaluate Python ast expressions.",
-    "calc.message.time_out": "计算超时。",
     "calc.message.running_time": "计算花费时间：${time} ms / 10000 ms。",
     "calc.factor.prime.help": "分解质因数。",
     "calc.factor.prime.message.error": "发生错误：必须为大于 1 的正整数。",
-    "calc.factor.prime.message.is_prime": "${num} 是质数。"
+    "calc.factor.prime.message.is_prime": "${num} is prime number."
 }

@@ -81,7 +81,7 @@ class MessageSession:
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
         "enabled_modules", "muted", "custom_admins", "data", "locale")
 
-    parsed_msg: dict
+    parsed_msg: dict[str, str]
 
     def __init__(self,
                  target: MsgInfo,
