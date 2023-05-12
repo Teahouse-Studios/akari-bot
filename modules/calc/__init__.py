@@ -84,22 +84,23 @@ async def prime(msg: Bot.MessageSession):
     prime = "*".join(primes)
     if len(primes) == 1:
         m = msg.locale.t("calc.factor.prime.message.is_prime", num=num)
-    m = (
-        f'`{num}` = {prime}'
-        if msg.target.senderFrom == "Discord|Client"
-        else f'{num} = {prime}'
-    )
+    else:
+        m = (
+            f'{num} = `{prime}`'
+            if msg.target.senderFrom == "Discord|Client"
+            else f'{num} = {prime}'
+        )
     if msg.checkSuperUser():
         m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
     await msg.finish(m)
 
 
-async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> str:
+async def spawn_subprocess(file: str, arg: str, msg: Bot.MessageSession) -> str:
     envs = os.environ.copy()
     if sys.platform == 'win32' and sys.version_info.minor < 10:
         try:
             return subprocess.check_output(
-                [sys.executable, calc_dir + file, input], timeout=10, shell=False,
+                [sys.executable, calc_dir + file, arg], timeout=10, shell=False,
                 cwd=os.path.abspath('.'), env=envs) \
                 .decode('utf-8')
         except subprocess.TimeoutExpired as e:
@@ -107,7 +108,7 @@ async def spawn_subprocess(file: str, input: str, msg: Bot.MessageSession) -> st
     else:
         try:
             p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + file,
-                                                     input,
+                                                     arg,
                                                      stdout=asyncio.subprocess.PIPE,
                                                      stderr=asyncio.subprocess.PIPE,
                                                      cwd=os.path.abspath('.'), env=envs

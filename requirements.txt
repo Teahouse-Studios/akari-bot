@@ -1338,9 +1338,9 @@ pillow==9.4.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0"
     --hash=sha256:f6e78171be3fb7941f9910ea15b4b14ec27725865a73c15277bc39f5ca4f8391 \
     --hash=sha256:f715c32e774a60a337b2bb8ad9839b4abf75b267a0f18806f6f4f5f1688c4b5a \
     --hash=sha256:fb5c1ad6bad98c57482236a21bf985ab0ef42bd51f7ad4e4538e89a997624e12
-pint==0.20.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:387cf04078dc7dfe4a708033baad54ab61d82ab06c4ee3d4922b1e45d5626067 \
-    --hash=sha256:68afe65665542ee3ec99f69f043b1d39bfe7c6d61b786940157138fd08b838fb
+pint==0.21 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:3e98bdf01f4dcf840cc0207c0b6f7510d4e0c6288efc1bf470626e875c831172 \
+    --hash=sha256:998b695e84a34d11702da4a8b9457a39bb5c7ab5ec68db90e948e30878e421f1
 platformdirs==3.0.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:8a1228abb1ef82d788f74139988b137e78692984ec7b08eaa6c65f1723af28f9 \
     --hash=sha256:b1d5eb14f221506f50d6604a561f4c5786d9e80355219694a1b244bcd96f4567
