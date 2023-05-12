@@ -328,7 +328,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
-                confirm = await session.waitNextMessage(wait_msg_list, delete=True)
+                confirm = await session.waitNextMessage(wait_msg_list)
                 auto_index = False
                 index = 0
                 if confirm.asDisplay(text_only=True) in confirm_command:
