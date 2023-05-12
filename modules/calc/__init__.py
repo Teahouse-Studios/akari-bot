@@ -85,7 +85,7 @@ async def prime(msg: Bot.MessageSession):
     if len(primes) == 1:
         m = msg.locale.t("calc.factor.prime.message.is_prime", num=num)
     m = (
-        f'`{num}` = {prime}'
+        f'{num} = `{prime}`'
         if msg.target.senderFrom == "Discord|Client"
         else f'{num} = {prime}'
     )
