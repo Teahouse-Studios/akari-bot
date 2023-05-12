@@ -241,7 +241,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
                                     await msg.sendMessage(msg.locale.t("parser.command.format.invalid",
-                                                                       module=command_first_word, prefix=msg.prefixes[0]))
+                                                                       module=command_first_word,
+                                                                       prefix=msg.prefixes[0]))
                                     """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,
@@ -272,6 +273,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except ActionFailed:
+                    if msg.target.targetFrom == 'QQ|Group':
+                        await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                           message=f'[CQ:poke,qq={Config("qq_account")}]')
                     await msg.sendMessage(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -406,6 +410,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             ExecutionLockList.remove(msg)
 
             except ActionFailed:
+                if msg.target.targetFrom == 'QQ|Group':
+                    await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                       message=f'[CQ:poke,qq={Config("qq_account")}]')
                 await msg.sendMessage((msg.locale.t("error.message.limited")))
                 continue
         return msg
