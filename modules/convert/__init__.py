@@ -6,10 +6,9 @@ from pint import UnitRegistry
 from core.builtins import Bot
 from core.component import module
 
-ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
-                    '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
-# type: ignoreQ_ = ureg.Quantity
-
+# ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
+#                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
+ureg = UnitRegistry(non_int_type=Decimal)
 i = module('convert', alias=('conv', 'unit'), desc='全能单位转换。',
            developers=['Dianliang233'])
 
