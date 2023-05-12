@@ -269,7 +269,8 @@ async def bot_help(msg: Bot.MessageSession):
             else:
                 devs = ''
             devs_msg = '\n' + msg.locale.t("core.module.message.help.author.type1") + devs
-            wiki_msg = '\n' + msg.locale.t("core.module.message.help.helpdoc.address", help_url=Config('help_url')) + '/' + help_name
+            wiki_msg = '\n' + msg.locale.t("core.module.message.help.helpdoc.address",
+                                           help_url=Config('help_url')) + '/' + help_name
             if len(doc) > 500 and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
@@ -380,7 +381,11 @@ async def _(msg: Bot.MessageSession):
             if x in target_enabled_list:
                 module_.append(x)
         help_msg.append(' | '.join(module_))
-        help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0], help_url=Config('help_url')))
+        help_msg.append(
+            msg.locale.t(
+                "core.module.message.help.legacy.more_information",
+                prefix=msg.prefixes[0],
+                help_url=Config('help_url')))
         if msg.Feature.delete:
             help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
         send = await msg.sendMessage('\n'.join(help_msg))
@@ -422,9 +427,9 @@ async def modules_help(msg: Bot.MessageSession):
                         if pattern:
                             desc = regex.desc
                             if desc:
-                                if locale_str := re.findall(r'\{(.*)}', x):
+                                if locale_str := re.findall(r'\{(.*)}', desc):
                                     for l in locale_str:
-                                        x = x.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
+                                        desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
                                 doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
                                                                       msg=desc)
                             else:
@@ -461,7 +466,11 @@ async def modules_help(msg: Bot.MessageSession):
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
-        help_msg.append(msg.locale.t("core.module.message.help.legacy.more_information", prefix=msg.prefixes[0], help_url=Config('help_url')))
+        help_msg.append(
+            msg.locale.t(
+                "core.module.message.help.legacy.more_information",
+                prefix=msg.prefixes[0],
+                help_url=Config('help_url')))
         if msg.Feature.delete:
             help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
         send = await msg.sendMessage('\n'.join(help_msg))
