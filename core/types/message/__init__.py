@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Union
+from typing import List, Union, Dict
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
@@ -81,7 +81,7 @@ class MessageSession:
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
         "enabled_modules", "muted", "custom_admins", "data", "locale")
 
-    parsed_msg: dict[str, str]
+    parsed_msg: Dict[str, str]
 
     def __init__(self,
                  target: MsgInfo,

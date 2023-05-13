@@ -213,7 +213,7 @@ class WikiLib:
                     return WikiStatus(available=False, value=False,
                                       message=self.locale.t("wiki.wikilib.message.get.failed.cloudflare"))
                 m = re.findall(
-                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
+                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/?\s*>',
                     get_page)
                 api_match = m[0]
                 if api_match.startswith('//'):
