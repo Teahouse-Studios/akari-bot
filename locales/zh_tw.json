@@ -4,7 +4,7 @@
     "error.prompt.report": "執行指令時發生錯誤，請回報機器人開發人員：\n${err_msg}\n錯誤回報網址：",
     "error.prompt.noreport": "執行指令時發生錯誤：\n${err_msg}\n此問題並非機器人程式錯誤（API 請求錯誤等），請勿將此訊息回報給機器人開發人員。",
     "error.message.limited": "訊息傳送失敗，可能被風控，請稍後再試。",
-    "error.message.paused": "群消息发送被服务器拦截，已暂停群消息发送，使用 ${prefix}resume 命令恢复推送。",
+    "error.message.paused": "群消息发送被服务器拦截，已暂停群消息发送，使用「${prefix}resume」命令恢复推送。",
     "error.message.chain.invalid": "機器人嘗試傳送無效訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.plain.empty": "機器人嘗試傳送空白文字訊息，請聯絡機器人開發人員解決問題。",

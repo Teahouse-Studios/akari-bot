@@ -13,10 +13,10 @@ w = module(
         'wolfram': 'wolframalpha'},
     developers=['Dianliang233'],
     desc='{wolframalpha.help.desc}',
-    support_languages=['en'])
+    support_languages=['en_us'])
 
 
-@w.handle('<query> {{wolframalpha.help.query}}')
+@w.handle('<query> {{wolframalpha.help}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
     res = await asyncio.get_event_loop().run_in_executor(None, client.query, query)
