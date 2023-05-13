@@ -3,6 +3,7 @@ import asyncio
 
 from core.builtins import Bot, Image
 from core.component import module
+from core.dirty_check import check_bool
 from config import Config
 
 client = wolframalpha.Client(Config('wolfram_alpha_appid'))
@@ -32,4 +33,7 @@ async def _(msg: Bot.MessageSession):
         if pod.text is None and 'img' in pod.subpod:
             images.append(pod.subpod['img']['@src'])
     bot_images = [Image(image) for image in images]
-    await msg.finish(['\n'.join(answer), *bot_images])
+    if await check_bool(answer):
+        await msg.finish('https://wdf.ink/6OUp')
+    else:
+        await msg.finish(['\n'.join(answer), *bot_images])
