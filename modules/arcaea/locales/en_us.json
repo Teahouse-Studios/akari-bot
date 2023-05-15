@@ -1,4 +1,11 @@
 {
+    "arcaea.download.help": "Get the latest version of game apk.",
+    "arcaea.download.message.success": "Current latest version is ${version}.\nDownload: ${url}",
+    "arcaea.random.help": "Random a track.",
+    "arcaea.rank.help.free": "View the current rank of the free packs.",
+    "arcaea.rank.help.paid": "View the current rank of the paid packs.",
+    "arcaea.help.desc": "Queries about Arcaea.",
+    "arcaea.message.sb616": "For obvious reasons, score-checking features of the \"arcaea\" module are disabled indefinitely.\nMen are mortal. Unfortunately, Guy's mom has passed away and can no longer answer you. She shall be always remembered.\n",
     "arcaea.errcode.-1": "Invalid username or friend ID",
     "arcaea.errcode.-2": "Invalid friend ID",
     "arcaea.errcode.-3": "User not found",
@@ -55,17 +62,10 @@
     "arcaea.song.message.side.light": "Light",
     "arcaea.bind.help": "Bind Arcaea user.",
     "arcaea.bind.message.success": "Binding successed: ${username} (${friendcode})",
-    "arcaea.bind.message.success.but.failed.fetch.username": "Binding successed, but could not fetch user information. Please check your own command available.",
+    "arcaea.bind.message.success.but_failed_fetch_username": "Binding successed, but could not fetch user information. Please check your own command available.",
     "arcaea.bind.message.failed": "Binding failed, please try binding with your friend ID.",
     "arcaea.unbind.help": "Unbind user.",
     "arcaea.unbind.message.success": "Unbind succeeded.",
     "arcaea.initialize.message.not_found": "arc.apk not found!",
-    "arcaea.initialize.message.success": "Initialized successed!",
-    "arcaea.download.help": "Get the latest version of game apk.",
-    "arcaea.download.message.success": "Current latest version is ${version}.\nDownload: ${url}",
-    "arcaea.random.help": "Random a track.",
-    "arcaea.rank.help.free": "View the current rank of the free packs.",
-    "arcaea.rank.help.paid": "View the current rank of the paid packs.",
-    "arcaea.help.desc": "Queries about Arcaea.",
-    "arcaea.message.sb616": "For obvious reasons, score-checking features of the \"arcaea\" module are disabled indefinitely.\nMen are mortal. Unfortunately, Guy's mom has passed away and can no longer answer you. She shall be always remembered.\n"
+    "arcaea.initialize.message.success": "Initialized successed!"
 }

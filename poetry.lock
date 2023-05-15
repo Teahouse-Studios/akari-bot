@@ -2755,19 +2755,20 @@ tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "pa
 
 [[package]]
 name = "pint"
-version = "0.20.1"
+version = "0.21"
 description = "Physical quantities module"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Pint-0.20.1-py3-none-any.whl", hash = "sha256:68afe65665542ee3ec99f69f043b1d39bfe7c6d61b786940157138fd08b838fb"},
-    {file = "Pint-0.20.1.tar.gz", hash = "sha256:387cf04078dc7dfe4a708033baad54ab61d82ab06c4ee3d4922b1e45d5626067"},
+    {file = "Pint-0.21-py3-none-any.whl", hash = "sha256:998b695e84a34d11702da4a8b9457a39bb5c7ab5ec68db90e948e30878e421f1"},
+    {file = "Pint-0.21.tar.gz", hash = "sha256:3e98bdf01f4dcf840cc0207c0b6f7510d4e0c6288efc1bf470626e875c831172"},
 ]
 
 [package.extras]
 babel = ["babel (<=2.8)"]
 dask = ["dask"]
+mip = ["mip (>=1.13)"]
 numpy = ["numpy (>=1.19.5)"]
 pandas = ["pint-pandas (>=0.3)"]
 test = ["pytest", "pytest-cov", "pytest-mpl", "pytest-subtests"]
@@ -4650,4 +4651,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "b314dae3b3d7a19d684f1b31b0d0bb7ccea4b7cc7cd3ec1ae3cae8a4a2d13c28"
+content-hash = "2202e5078442e9270813ecef8797781a35b89a77f24a4ce7c33c18fb330dde13"

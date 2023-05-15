@@ -6,15 +6,14 @@ from pint import UnitRegistry
 from core.builtins import Bot
 from core.component import module
 
-ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
-                    '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
-# type: ignoreQ_ = ureg.Quantity
-
-i = module('convert', alias=('conv', 'unit'), desc='全能单位转换。',
+# ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
+#                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
+ureg = UnitRegistry(non_int_type=Decimal)
+i = module('convert', alias=('conv', 'unit'), desc='{convert.help.desc}',
            developers=['Dianliang233'])
 
 
-@i.command('<from_val> <to_unit> {单位转换。大小写敏感。单位原文为英文，由 ChatGPT 翻译生成，欢迎汇报错误。}')
+@i.command('<from_val> <to_unit> {convert.help}')
 async def _(msg: Bot.MessageSession):
     from_val = msg.parsed_msg['<from_val>']
     to_unit = msg.parsed_msg['<to_unit>']

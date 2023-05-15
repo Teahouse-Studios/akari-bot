@@ -45,7 +45,7 @@
     "core.help.alias": "Alias: ",
     "parser.module.desc": "Description:\n${desc}",
     "check.redacted": "<REDACTED>",
-    "check.redacted.all": "<REDACTED ALL>",
+    "check.redacted.all": "<ALL REDACTED>",
     "none": "None",
     "language": "English"
 }

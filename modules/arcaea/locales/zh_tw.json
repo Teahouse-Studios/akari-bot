@@ -1,4 +1,11 @@
 {
+    "arcaea.download.help": "取得最新版本的遊戲 apk。",
+    "arcaea.download.message.success": "目前的最新版本為 ${version}。\n下載網址：${url}",
+    "arcaea.random.help": "隨機一首曲目。",
+    "arcaea.rank.help.free": "檢視目前免費包遊玩排行。",
+    "arcaea.rank.help.paid": "檢視目前付費包遊玩排行。",
+    "arcaea.help.desc": "查詢 Arcaea 相關內容。",
+    "arcaea.message.sb616": "由於眾所周知的原因，「arcaea」模組的查分功能將無限期停用。\n人生自古誰無死？不幸地，Guy 的母親已經逝世，因此無法繼續與您互動，讓我們永遠緬懷她。",
     "arcaea.errcode.-1": "無效的使用者名稱或好友 ID",
     "arcaea.errcode.-2": "無效的好友 ID",
     "arcaea.errcode.-3": "找不到使用者",
@@ -55,17 +62,10 @@
     "arcaea.song.message.side.light": "光芒",
     "arcaea.bind.help": "綁定 Arcaea 使用者。",
     "arcaea.bind.message.success": "綁定成功：${username} (${friendcode})",
-    "arcaea.bind.message.success.but.failed.fetch.username": "綁定成功，但是無法取得使用者資訊。請自行檢查指令是否可用。",
+    "arcaea.bind.message.success.but_failed_fetch_username": "綁定成功，但是無法取得使用者資訊。請自行檢查指令是否可用。",
     "arcaea.bind.message.failed": "綁定失敗，請嘗試使用好友 ID 綁定。",
     "arcaea.unbind.help": "解除綁定使用者。",
     "arcaea.unbind.message.success": "解除綁定成功。",
     "arcaea.initialize.message.not_found": "找不到 arc.apk！",
-    "arcaea.initialize.message.success": "成功初始化！",
-    "arcaea.download.help": "取得最新版本的遊戲 apk。",
-    "arcaea.download.message.success": "目前的最新版本為 ${version}。\n下載網址：${url}",
-    "arcaea.random.help": "隨機一首曲目。",
-    "arcaea.rank.help.free": "檢視目前免費包遊玩排行。",
-    "arcaea.rank.help.paid": "檢視目前付費包遊玩排行。",
-    "arcaea.help.desc": "查詢 Arcaea 相關內容。",
-    "arcaea.message.sb616": "由於眾所周知的原因，「arcaea」模組的查分功能將無限期停用。\n人生自古誰無死？不幸地，Guy 的母親已經逝世，因此無法繼續與您互動，讓我們永遠緬懷她。"
+    "arcaea.initialize.message.success": "成功初始化！"
 }
