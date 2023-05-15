@@ -62,7 +62,7 @@
     "arcaea.song.message.side.light": "Light",
     "arcaea.bind.help": "Bind Arcaea user.",
     "arcaea.bind.message.success": "Binding successed: ${username} (${friendcode})",
-    "arcaea.bind.message.success.but.failed.fetch.username": "Binding successed, but could not fetch user information. Please check your own command available.",
+    "arcaea.bind.message.success.but_failed_fetch_username": "Binding successed, but could not fetch user information. Please check your own command available.",
     "arcaea.bind.message.failed": "Binding failed, please try binding with your friend ID.",
     "arcaea.unbind.help": "Unbind user.",
     "arcaea.unbind.message.success": "Unbind succeeded.",

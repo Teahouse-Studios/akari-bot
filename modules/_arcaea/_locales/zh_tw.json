@@ -55,7 +55,7 @@
     "arcaea.song.message.side.light": "光芒",
     "arcaea.bind.help": "綁定 Arcaea 使用者。",
     "arcaea.bind.message.success": "綁定成功：${username} (${friendcode})",
-    "arcaea.bind.message.success.but.failed.fetch.username": "綁定成功，但是無法取得使用者資訊。請自行檢查指令是否可用。",
+    "arcaea.bind.message.success.but_failed_fetch_username": "綁定成功，但是無法取得使用者資訊。請自行檢查指令是否可用。",
     "arcaea.bind.message.failed": "綁定失敗，請嘗試使用好友 ID 綁定。",
     "arcaea.unbind.help": "解除綁定使用者。",
     "arcaea.unbind.message.success": "解除綁定成功。",
