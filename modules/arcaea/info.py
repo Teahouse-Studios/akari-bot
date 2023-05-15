@@ -7,16 +7,16 @@ from config import Config
 from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.http import get_url
-from modules._arcaea.utils import autofix_b30_song_background
+from modules.arcaea.utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
+headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 
 
 async def get_info(msg, usercode):
-    headers = {"User-Agent": Config('botarcapi_agent')}
     try:
-        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True",
+        get_ = await get_url(api_url + f"user/info?user_code={usercode}&recent=1&with_song_info=True",
                              status_code=200,
                              headers=headers,
                              fmt='json')
@@ -40,7 +40,7 @@ async def get_info(msg, usercode):
             difficulty = 'FTR'
         elif recent['difficulty'] == 3:
             difficulty = 'BYD'
-        songinfo = get_['content']['songinfo'][0]
+        songinfo = get_['content']['song_info'][0]
         trackname = songinfo['name_en']
         imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
         if not os.path.exists(imgpath):
