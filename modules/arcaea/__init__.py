@@ -53,12 +53,15 @@ async def _(msg: Bot.MessageSession):
         query_code = await get_friendcode(msg)
     if query_code is not None:
         try:
+            if msg.target.senderId in query_tasks:
+                await msg.finish(msg.locale.t("arcaea.b30.message.wait.already"))
             query_tasks.add(msg.target.senderId)
             get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
                                  fmt='json')
             if get_['status'] == 0:
-                await msg.sendMessage([Plain(msg.locale.t("arcaea.b30.message.wait")), Image(assets_path + '/noc.jpg'),
-                                       Image(assets_path + '/aof.jpg')])
+                await msg.sendMessage([Plain(msg.locale.t("arcaea.b30.message.wait")),
+                                       Image(os.path.abspath('./assets/noc.jpg')),
+                                       Image(os.path.abspath('./assets/aof.jpg'))])
             elif get_['status'] == -33:
                 await msg.sendMessage(msg.locale.t("arcaea.b30.message.wait.cached"))
             ExecutionLockList.remove(msg)
