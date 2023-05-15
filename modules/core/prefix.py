@@ -6,7 +6,8 @@ p = module('prefix', required_admin=True, base=True)
 
 @p.command('add <prefix> {{core.prefix.help.add}}',
            'remove <prefix> {{core.prefix.help.remove}}',
-           'reset {{core.prefix.help.reset}}')
+           'reset {{core.prefix.help.reset}}',
+           'list {{core.prefix.help.list}}')
 async def set_prefix(msg: Bot.MessageSession):
     prefixes = msg.options.get('command_prefix')
     arg1 = msg.parsed_msg.get('<prefix>', False)
