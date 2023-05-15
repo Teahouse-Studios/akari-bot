@@ -184,7 +184,7 @@ async def _(msg: Bot.MessageSession):
 
 @arc.command('bind <friendcode|username> {{arcaea.bind.help}}')
 async def _(msg: Bot.MessageSession):
-    code: str = msg.parsed_msg['<friendcode/username>']
+    code: str = msg.parsed_msg['<friendcode|username>']
     getcode = await get_userinfo(code)
     if getcode:
         bind = ArcBindInfoManager(msg).set_bind_info(username=getcode[0], friendcode=getcode[1])
