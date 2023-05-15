@@ -31,3 +31,8 @@ async def set_prefix(msg: Bot.MessageSession):
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_prefix', [])
         await msg.sendMessage(msg.locale.t("core.prefix.message.reset"))
+    elif 'list' in msg.parsed_msg:
+        if len(prefixes) == 0:
+            await msg.sendMessage(msg.locale.t("core.prefix.message.list.none"))
+        else:
+            await msg.finish(msg.locale.t('core.prefix.message.list', prefixes=', '.join(prefixes)))
