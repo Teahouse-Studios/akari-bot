@@ -189,7 +189,7 @@ async def _(msg: Bot.MessageSession):
     if getcode:
         bind = ArcBindInfoManager(msg).set_bind_info(username=getcode[0], friendcode=getcode[1])
         if bind:
-            await msg.finish(msg.locale.t("arcaea.message.bind.success", username=getcode[0], friendcode=getcode[1]))
+            await msg.finish(msg.locale.t("arcaea.bind.message.success", username=getcode[0], friendcode=getcode[1]))
     else:
         if code.isdigit():
             bind = ArcBindInfoManager(msg).set_bind_info(username='', friendcode=code)
