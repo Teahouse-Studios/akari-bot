@@ -69,10 +69,10 @@ async def mcbv(msg):
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
     return \
         (f"""{msg.locale.t("mcv.mcbv.message.play_store")}
-{play_store_version if play_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}，
+{play_store_version if play_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}
 """ if IP.country != 'China' else '') + \
         f"""{msg.locale.t("mcv.mcbv.message.ms_store")}
-{ms_store_version if ms_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}，
+{ms_store_version if ms_store_version is not None else msg.locale.t('mcv.mcbv.message.failed')}
 """ +\
         msg.locale.t("mcv.mcbv.message", msg2=msg2)
 

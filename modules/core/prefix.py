@@ -6,7 +6,8 @@ p = module('prefix', required_admin=True, base=True)
 
 @p.command('add <prefix> {{core.prefix.help.add}}',
            'remove <prefix> {{core.prefix.help.remove}}',
-           'reset {{core.prefix.help.reset}}')
+           'reset {{core.prefix.help.reset}}',
+           'list {{core.prefix.help.list}}')
 async def set_prefix(msg: Bot.MessageSession):
     prefixes = msg.options.get('command_prefix')
     arg1 = msg.parsed_msg.get('<prefix>', False)
@@ -31,3 +32,8 @@ async def set_prefix(msg: Bot.MessageSession):
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_prefix', [])
         await msg.sendMessage(msg.locale.t("core.prefix.message.reset"))
+    elif 'list' in msg.parsed_msg:
+        if len(prefixes) == 0:
+            await msg.sendMessage(msg.locale.t("core.prefix.message.list.none"))
+        else:
+            await msg.finish(msg.locale.t('core.prefix.message.list', prefixes=', '.join(prefixes)))

@@ -104,7 +104,7 @@ async def spawn_subprocess(file: str, arg: str, msg: Bot.MessageSession) -> str:
                 cwd=os.path.abspath('.'), env=envs) \
                 .decode('utf-8')
         except subprocess.TimeoutExpired as e:
-            raise NoReportException(msg.locale.t("calc.calc.message.time_out")) from e
+            raise NoReportException(msg.locale.t("calc.message.time_out")) from e
     else:
         try:
             p = await asyncio.create_subprocess_exec(sys.executable, calc_dir + file,

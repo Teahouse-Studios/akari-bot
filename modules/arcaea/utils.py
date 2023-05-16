@@ -7,7 +7,7 @@ from core.utils.http import get_url, download_to_cache
 from .initialize import blur_song_img
 
 botarcapi_url = Config("botarcapi_url")
-headers = {"User-Agent": Config('botarcapi_agent')}
+headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 assets_path = os.path.abspath('./assets')
 cache_path = os.path.abspath('./cache')
 assets_arc = os.path.abspath(f'{assets_path}/arcaea')
@@ -15,7 +15,7 @@ assets_arc = os.path.abspath(f'{assets_path}/arcaea')
 
 async def get_userinfo(user):
     try:
-        get_ = await get_url(botarcapi_url + f"user/info?user={user}", status_code=200, headers=headers, fmt='json')
+        get_ = await get_url(botarcapi_url + f"user/info?user_name={user}", status_code=200, headers=headers, fmt='json')
         username = get_['content']['account_info']['name']
         code = get_['content']['account_info']['code']
         return username, code
@@ -28,7 +28,7 @@ async def autofix_b30_song_background(songid, byd=False):
     has_byd_jacket = False
     if byd:
         try:
-            get_ = await get_url(botarcapi_url + f"song/info?songid={songid}", status_code=200, headers=headers,
+            get_ = await get_url(botarcapi_url + f"song/info?song_id={songid}", status_code=200, headers=headers,
                                  fmt='json')
             difficulties = get_['content']['difficulties']
             if len(difficulties) == 4:
@@ -38,7 +38,7 @@ async def autofix_b30_song_background(songid, byd=False):
             traceback.print_exc()
     file_name = f"{songid}{'_3' if has_byd_jacket else ''}.jpg"
     file = await download_to_cache(
-        botarcapi_url + f"assets/song?songid={songid}" + ('&difficulty=3' if has_byd_jacket else ''),
+        botarcapi_url + f"assets/song?song_id={songid}" + ('&difficulty=3' if has_byd_jacket else ''),
         headers=headers)
     if file:
         dst = assets_arc + '/jacket/'
