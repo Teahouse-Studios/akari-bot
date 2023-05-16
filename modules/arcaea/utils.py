@@ -38,7 +38,7 @@ async def autofix_b30_song_background(songid, byd=False):
             traceback.print_exc()
     file_name = f"{songid}{'_3' if has_byd_jacket else ''}.jpg"
     file = await download_to_cache(
-        botarcapi_url + f"assets/song?song_id={songid}" + ('&difficulty=3' if has_byd_jacket else ''),
+        botarcapi_url + f"assets/song?song_id={songid}" + ('&difficulty=3' if has_byd_jacket else '&difficulty=0'),
         headers=headers)
     if file:
         dst = assets_arc + '/jacket/'
