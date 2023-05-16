@@ -11,6 +11,7 @@ engine = db.engine
 
 class ArcBindInfo(Base):
     __tablename__ = table_prefix + 'ArcBindInfo'
+    __table_args__ = {'extend_existing': True}
     targetId = Column(String(512), primary_key=True)
     username = Column(String(512))
     friendcode = Column(String(512))
