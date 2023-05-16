@@ -7,7 +7,7 @@
     "mcv.mcv.message": "目前啟動器內最新版本為：\n${message1}\nMojira 上所記錄最新版本為：\n${message2}\n（以啟動器內最新版本為準，Mojira 僅作版本號預覽用）",
     "mcv.mcv.message.message1": "最新版：${release}，最新快照：${snapshot}，",
     "mcv.mcv.message.message1.failed": "取得 manifest.json 失敗。",
-    "mcv.mcv.message.message2.failed": "取得 Mojira 訊息失敗。",
+    "mcv.mcv.message.message2.failed": "取得 Mojira 資訊失敗。",
     "mcv.mcbv.message.ms_store": "目前 Microsoft Store 內最新正式版為：",
     "mcv.mcbv.message.play_store": "目前 Google Play 商店內最新正式版為：",
     "mcv.mcbv.message.failed": "取得失敗。",
