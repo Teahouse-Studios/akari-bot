@@ -49,6 +49,7 @@ async def _(msg: Bot.MessageSession):
     friendcode: str = msg.parsed_msg.get('<friendcode>', False)
     if friendcode:
         await check_friendcode(msg, friendcode)
+        query_code = friendcode
     else:
         query_code = await get_friendcode(msg)
     if query_code is not None:
@@ -148,6 +149,7 @@ async def _(msg: Bot.MessageSession):
     friendcode = msg.parsed_msg.get('<friendcode>', False)
     if friendcode:
         await check_friendcode(msg, friendcode)
+        query_code = friendcode
     else:
         query_code = await get_friendcode(msg)
     if query_code is not None:
