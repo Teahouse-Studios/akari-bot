@@ -42,6 +42,7 @@
     "arcaea.b30.message.wait.timeout": "查询超时，建议过一段时间后重试。",
     "arcaea.b30.message.wait.cached": "你已在 12 小时内提交过一次查询，将使用上次查询缓存的结果。",
     "arcaea.b30.message.wait.already": "我们正在执行你上次使用的命令中，稍安勿躁…",
+    "arcaea.b30.message.low_potential": "你的潜力值过低（10.0），无法使用此命令。",
     "arcaea.b30.message.success": "Result\nBest 30：${b30} | Recent 10：${r10}\nBest 30 last 5 list: \n${last5list}",
     "arcaea.info.help": "Query the play record of Arcaea user. ",
     "arcaea.info.message.result": "Recent play record of ${username} (${potential}): \n${trackname} (${difficulty})\nScore: ${score}\nPure: ${pure} (${shiny_pure})\nFar: ${far}\nLost: ${lost}\nPotential: ${realptt} -> ${ptt}\nTime: ${time_played} (UTC+8)",
