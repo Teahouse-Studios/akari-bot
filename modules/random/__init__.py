@@ -1,5 +1,6 @@
 import secrets
 import uuid
+import string
 
 from core.builtins import Bot
 from core.component import module
@@ -32,7 +33,26 @@ async def _(msg: Bot.MessageSession):
         x[i], x[j] = x[j], x[i]
     await msg.finish(', '.join(x))
 
+@r.handle('string <count> {{random.help.shuffle}}', )
+async def _(msg: Bot.MessageSession):
+    length = int(msg.parsed_msg['<count>'])
+    characters = ""
+    if msg.parsed_msg.get('-u', False):
+            characters += string.ascii_uppercase
+    if msg.parsed_msg.get('-l', False):
+            characters += string.ascii_lowercase
+    if msg.parsed_msg.get('-n', False):
+            characters += string.digits
+    if msg.parsed_msg.get('-s', False):
+            characters += string.punctuation
 
+    if not characters:
+        characters = string.ascii_letters + string.digits
+        
+    strings = ''.join(secrets.choice(characters) for _ in range(length))
+    await msg.finish(strings)
+
+    
 @r.handle('uuid {{random.help.uuid}}', )
 async def _(msg: Bot.MessageSession):
     await msg.finish(str(uuid.uuid4()))
