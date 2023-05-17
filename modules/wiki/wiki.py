@@ -25,7 +25,7 @@ wiki = module('wiki',
 @wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
              options_desc={'-l': '{wiki.help.l}'})
 async def _(msg: Bot.MessageSession):
-    get_lang: dict = msg.parsed_msg.get('-l', False)
+    get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
     else:
@@ -33,13 +33,13 @@ async def _(msg: Bot.MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
 
 
-@wiki.handle('id <PageID> [-i <CustomIW>]  {{wiki.id.help}}')
+@wiki.handle('id <PageID> {{wiki.id.help}}')
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get('-i', False):
-        iw: str = msg.parsed_msg['-i'].get('<CustomIW>', '')
-    else:
-        iw = ''
     page_id: str = msg.parsed_msg['<PageID>']
+    iw = None
+    if match_iw := re.match(r'(.*?):(.*)', page_id):
+        iw = match_iw.group(1)
+        page_id = match_iw.group(2)
     if not page_id.isdigit():
         await msg.finish(msg.locale.t('wiki.id.message.error'))
     Logger.debug(msg.parsed_msg)
@@ -60,7 +60,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
             enabled_fandom_addon = False
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
-        interwiki_list = []
+        interwiki_list = {}
         headers = session.headers
         prefix = session.prefix
         enabled_fandom_addon = False
@@ -71,6 +71,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         if isinstance(session, Bot.MessageSession):
             await session.sendMessage(session.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
+    if lang in interwiki_list:
+        start_wiki = interwiki_list[lang]
+        lang = None
     if title is not None:
         if isinstance(title, str):
             title = [title]
@@ -122,8 +125,17 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         if iw == '':
             query_task = {start_wiki: {'queryid': [pageid], 'iw_prefix': ''}}
         else:
-            query_task = {interwiki_list[iw]: {
-                'queryid': [pageid], 'iw_prefix': iw}}
+            if iw in interwiki_list:
+                query_task = {interwiki_list[iw]: {
+                    'queryid': [pageid], 'iw_prefix': iw}}
+            else:
+                get_wiki_info = WikiLib(start_wiki)
+                await get_wiki_info.fixup_wiki_info()
+                if iw in get_wiki_info.wiki_info.interwiki:
+                    query_task = {get_wiki_info.wiki_info.interwiki[iw]: {
+                        'queryid': [pageid], 'iw_prefix': iw}}
+                else:
+                    raise ValueError(f'iw_prefix "{iw}" not found.')
     else:
         raise ValueError('title or pageid must be specified.')
     Logger.debug(query_task)
