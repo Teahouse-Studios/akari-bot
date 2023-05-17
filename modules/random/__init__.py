@@ -33,7 +33,11 @@ async def _(msg: Bot.MessageSession):
         x[i], x[j] = x[j], x[i]
     await msg.finish(', '.join(x))
 
-@r.handle('string <count> {{random.help.shuffle}}', )
+@r.handle('string <count> [-u] [-l] [-n] [-s] {{random.help.string}}', 
+         options_desc={'-u': '{random.help.string.u}', 
+                      '-l': '{random.help.string.l}', 
+                      '-n': '{random.help.string.n}', 
+                      '-s': '{random.help.string.s}'})
 async def _(msg: Bot.MessageSession):
     length = int(msg.parsed_msg['<count>'])
     characters = ""
