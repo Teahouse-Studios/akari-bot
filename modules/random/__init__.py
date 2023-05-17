@@ -17,7 +17,7 @@ async def _(msg: Bot.MessageSession):
     except ValueError:
         return await msg.finish(msg.locale.t('random.message.number.error'))
     random = secrets.randbelow(_max - _min + 1) + _min
-    await msg.finish(random)
+    await msg.finish('' + str(random))
 
 
 @r.handle('choice ... {{random.help.choice}}', )
