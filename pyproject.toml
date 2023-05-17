@@ -48,6 +48,7 @@ webcolors = "^1.12"
 langchain = "^0.0.152"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^2.8.6"
+thrift = "^0.16.0"
 chromadb = "^0.3.21"
 tiktoken = "^0.3.3"
 

@@ -16,6 +16,7 @@ exchange_rate_api_key =
 base_superuser = QQ|2596322644
 debug = False
 cache_path = ./cache/
+extra_services = False
 db_cache = False
 bug_report_url = https://s.wd-ljt.com/botreportbug
 donate_url = https://afdian.net/@teahouse
