@@ -15,7 +15,7 @@ async def _(msg: Bot.MessageSession):
         _min = int(msg.parsed_msg['<min>'])
         _max = int(msg.parsed_msg['<max>'])
     except ValueError:
-        return await msg.finish(msg.locale.t('random.message.number.error.invalid'))    if _min > _max:
+        return await msg.finish(msg.locale.t('random.message.number.error.invalid'))
     if _min > _max:
         return await msg.finish(msg.locale.t('random.message.number.error.out_of_range'))
 
