@@ -66,12 +66,9 @@ factor = module('factor', developers=['DoroWolf, Light-Beacon', 'Dianliang233'])
 @factor.handle('prime <number> {{calc.factor.prime.help}}')
 async def prime(msg: Bot.MessageSession):
     try:
-        num_str = msg.parsed_msg.get('<number>')
-        if num_str is None:
-            raise ValueError
-        num = int(num_str)
+        num = int(msg.parsed_msg.get('<number>'))
         if num <= 1:
-            return await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
+            raise ValueError
     except ValueError:
         return await msg.finish(msg.locale.t('calc.factor.prime.message.error'))
     start = time.perf_counter_ns()
