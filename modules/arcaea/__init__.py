@@ -59,7 +59,7 @@ async def _(msg: Bot.MessageSession):
             get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
                                  fmt='json')
             if get_['status'] == 0:
-                await msg.sendMessage([Plain(msg.locale.t("arcaea.b30.message.wait"))
+                await msg.sendMessage([Plain(msg.locale.t("arcaea.b30.message.wait")),
                                        Plain(msg.locale.t("arcaea.message.sb616")),
                                        Image(os.path.abspath('./assets/noc.jpg')),
                                        Image(os.path.abspath('./assets/aof.jpg'))])
