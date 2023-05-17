@@ -66,6 +66,8 @@ async def _(msg: Bot.MessageSession):
                                        Image(os.path.abspath('./assets/aof.jpg'))])
             elif get_['status'] == -33:
                 await msg.sendMessage(msg.locale.t("arcaea.b30.message.wait.cached"))
+            else:
+                await msg.sendMessage(msg.locale.t("arcaea.message.failed.fetch") + get_['message'])
             ExecutionLockList.remove(msg)
 
             async def _get_result(session):
