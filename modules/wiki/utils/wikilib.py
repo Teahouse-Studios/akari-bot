@@ -213,7 +213,7 @@ class WikiLib:
                     return WikiStatus(available=False, value=False,
                                       message=self.locale.t("wiki.wikilib.message.get.failed.cloudflare"))
                 m = re.findall(
-                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/\s*>',
+                    r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/?\s*>',
                     get_page)
                 api_match = m[0]
                 if api_match.startswith('//'):
@@ -221,7 +221,8 @@ class WikiLib:
                 # Logger.info(api_match)
                 wiki_api_link = api_match
             except (TimeoutError, asyncio.TimeoutError):
-                return WikiStatus(available=False, value=False, message=self.locale.t("wiki.wikilib.message.get.failed.timeout"))
+                return WikiStatus(available=False, value=False, message=self.locale.t(
+                    "wiki.wikilib.message.get.failed.timeout"))
             except Exception as e:
                 Logger.debug(traceback.format_exc())
                 if e.args == (403,):
@@ -377,7 +378,7 @@ class WikiLib:
         title_split = page_name.split(':')
         invalid_namespace = False
         if len(title_split) > 1 and title_split[0] not in self.wiki_info.namespaces \
-            and title_split[0].lower() not in self.wiki_info.namespacealiases:
+                and title_split[0].lower() not in self.wiki_info.namespacealiases:
             invalid_namespace = title_split[0]
         return new_page_name, invalid_namespace
 
@@ -402,7 +403,7 @@ class WikiLib:
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
             return PageInfo(title=title if title is not None else pageid, id=pageid,
-                            link=link, desc=self.locale.t("wiki.wikilib.message.error") + str(e), info=self.wiki_info, templates=[])
+                            link=link, desc=self.locale.t("error") + str(e), info=self.wiki_info, templates=[])
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
             ban = True
@@ -492,7 +493,7 @@ class WikiLib:
                     rs1 = re.sub('The requested page title contains invalid characters:',
                                  self.locale.t("wiki.wikilib.message.error.invalid_character"),
                                  page_raw['invalidreason'])
-                    rs = self.locale.t("wiki.wikilib.message.error") + '“' + rs1 + '”。'
+                    rs = self.locale.t("error") + '“' + rs1 + '”。'
                     rs = re.sub('".”', '"”', rs)
                     page_info.desc = rs
                 elif 'missing' in page_raw:
@@ -500,7 +501,7 @@ class WikiLib:
                         if 'known' in page_raw:
                             full_url = re.sub(r'\$1', urllib.parse.quote(page_info.title.encode('UTF-8')),
                                               self.wiki_info.articlepath) \
-                                       + page_info.args
+                                + page_info.args
                             page_info.link = full_url
                             file = None
                             if 'imageinfo' in page_raw:
@@ -511,12 +512,12 @@ class WikiLib:
                             split_title = title.split(':')
                             reparse = False
                             if (len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local
-                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template'):
+                                    and self.wiki_info.namespaces_local[split_title[0]] == 'Template'):
                                 rstitle = ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle)
                                 page_info.before_page_property = 'template'
                             elif len(split_title) > 1 and split_title[
-                                0].lower() in self.wiki_info.namespacealiases and not _search:
+                                    0].lower() in self.wiki_info.namespacealiases and not _search:
                                 rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
                                           + ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle, _search=True)
@@ -571,8 +572,9 @@ class WikiLib:
                     page_info.status = True
                     templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
                     if 'special' in page_raw:
-                        full_url = re.sub(r'\$1', urllib.parse.quote(title.encode('UTF-8')), self.wiki_info.articlepath) \
-                                   + page_info.args
+                        full_url = re.sub(r'\$1',
+                                          urllib.parse.quote(title.encode('UTF-8')),
+                                          self.wiki_info.articlepath) + page_info.args
                         page_info.link = full_url
                         page_info.status = True
                     else:
@@ -629,8 +631,8 @@ class WikiLib:
                             split_title = title.split(':')
                             get_desc = True
                             if not _doc and len(split_title) > 1 and split_title[0] in self.wiki_info.namespaces_local \
-                                and self.wiki_info.namespaces_local[split_title[0]] == 'Template' \
-                                and 'Template:Documentation' in templates:
+                                    and self.wiki_info.namespaces_local[split_title[0]] == 'Template' \
+                                    and 'Template:Documentation' in templates:
                                 get_all_text = await self.get_wikitext(title)
                                 match_doc = re.match(r'.*{{documentation\|?(.*?)}}.*', get_all_text, re.I | re.S)
                                 if match_doc:

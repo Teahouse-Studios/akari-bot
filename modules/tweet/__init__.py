@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession):
     res = await get_url(f'https://static-tweet.vercel.app/_next/data/{build_id}/{tweet_id}.json')
     res_json = json.loads(res)
     if 'notFound' in res_json:
-        await msg.finish('{tweet.message.not_found}')
+        await msg.finish(msg.locale.t('{tweet.message.not_found}'))
     else:
         if await check_bool(res_json['pageProps']['tweet']['text'], res_json['pageProps']['tweet']['user']['name'], res_json['pageProps']['tweet']['user']['screen_name']):
             await msg.finish('https://wdf.ink/6OUp')
@@ -59,6 +59,6 @@ async def _(msg: Bot.MessageSession):
                 }
             '''
             pic = await download_to_cache(web_render_local + 'element_screenshot', method='POST', headers={
-                    'Content-Type': 'application/json',
-                }, post_data=json.dumps({'url': f'https://static-tweet.vercel.app/{tweet_id}', 'css': css, 'mw': False, 'element': 'article' }), request_private_ip=True)
+                'Content-Type': 'application/json',
+            }, post_data=json.dumps({'url': f'https://static-tweet.vercel.app/{tweet_id}', 'css': css, 'mw': False, 'element': 'article'}), request_private_ip=True)
             await msg.finish([Image(pic), f"https://twitter.com/{res_json['pageProps']['tweet']['user']['screen_name']}/status/{tweet_id}"])

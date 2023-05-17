@@ -8,7 +8,7 @@ from core.builtins.message.internal import Embed, EmbedField
 
 def removeIneffectiveText(prefix: str, lst: list) -> list:
     '''删除命令首尾的空格和换行以及重复命令。
-    
+
     :param prefix: 机器人的命令前缀。
     :param lst: 字符串（List/Union）。
     :returns: 净化后的字符串。'''

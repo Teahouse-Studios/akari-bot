@@ -89,9 +89,7 @@ async def fetch_device_token():
             'DeviceType': 'Win32',
             'SerialNumber': f'{{{uuid.uuid3(uuid.UUID("6ba7b811-9dad-11d1-80b4-00c04fd430c8"), str(datetime.datetime.now().timestamp()))}}}',
             'Version': '10.0.18363',
-            'ProofKey': signer.proof_field
-        }
-    }
+            'ProofKey': signer.proof_field}}
     h = {
         'Pragma': 'no-cache',
         'Accept': 'application/json',
@@ -202,7 +200,7 @@ async def login(email, password):
 
     # python 3.x will error if this string is not a
     # bytes-like object
-    url_re = b'urlPost:\\\'([A-Za-z0-9:\?_\-\.&/=]+)'
+    url_re = b'urlPost:\\\'([A-Za-z0-9:\\?_\\-\\.&/=]+)'
     ppft_re = b'sFTTag:\\\'.*value="(.*)"/>'
 
     login_post_url = re.search(url_re, resp).group(1).decode('utf-8')

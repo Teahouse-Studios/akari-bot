@@ -24,18 +24,19 @@ special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "45
               "4575371", "4885606", "4885717", "4886482", "4886484", "20473555", "21865276",
               "21865280"]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
-element_lists = ['C', 'H', 'He', 'Li', 'Be', 'B', 'N', 'O', 'F', 'Ne', 'Na',
-                 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc',
-                 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga',
-                 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb',
-                 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb',
-                 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm',
-                 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu',
-                 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl',
-                 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
-                 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md',
-                 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg',
-                 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og']
+element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
+                 'Ar', 'Ca', 'Sc', 'Ti', 'Cr', 'Mn', 'Fe', 'Co', 'Ni',
+                 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb',
+                 'Sr', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag',
+                 'Cd', 'In', 'Sn', 'Sb', 'Te', 'Xe', 'Cs', 'Ba', 'La',
+                 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy',
+                 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'Re', 'Os',
+                 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At',
+                 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'Np', 'Pu', 'Am',
+                 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf',
+                 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'Nh',
+                 'Fl', 'Mc', 'Lv', 'Ts', 'Og', 'C', 'H', 'B', 'K', 'N',
+                 'O', 'F', 'P', 'S', 'V', 'I', 'U', 'Y', 'W']
 
 
 def parse_elements(formula: str) -> dict:
@@ -68,8 +69,9 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
-    name = soup.find('span',
-                     id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
+    name = soup.find(
+        'span',
+        id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
     elements = parse_elements(name)  # 解析化学式，转为dict，key为元素，value为数量
     value = 0
     for element in elements:
@@ -85,24 +87,27 @@ async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的
             'elements': elements}
 
 
-cc = module('chemical_code', alias={'cc': 'chemical_code',
-                                    'chemicalcode': 'chemical_code',
-                                    'captcha': 'chemical_code captcha'},
-            desc='{chemical_code.help.desc}', developers=['OasisAkari'])
+ccode = module('chemical_code', alias={'cc': 'chemical_code',
+                                       'chemicalcode': 'chemical_code',
+                                       'chemical_captcha': 'chemical_code captcha',
+                                       'chemicalcaptcha': 'chemical_code captcha',
+                                       'ccode': 'chemical_code',
+                                       'ccaptcha': 'chemical_code captcha'},
+               desc='{chemical_code.help.desc}', developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
-@cc.command('{{chemical_code.help}}')  # 直接使用 cc 命令将触发此装饰器
+@ccode.command('{{chemical_code.help}}')  # 直接使用 ccode 命令将触发此装饰器
 async def chemical_code_by_random(msg: Bot.MessageSession):
     await chemical_code(msg)  # 将消息会话传入 chemical_code 函数
 
 
-@cc.command('captcha {{chemical_code.help.captcha}}')
+@ccode.command('captcha {{chemical_code.help.captcha}}')
 async def _(msg: Bot.MessageSession):
     await chemical_code(msg, captcha_mode=True)
 
 
-@cc.command('stop {{chemical_code.stop.help}}')
+@ccode.command('stop {{chemical_code.stop.help}}')
 async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
@@ -117,7 +122,7 @@ async def s(msg: Bot.MessageSession):
         await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
 
 
-@cc.command('<csid> {{chemical_code.help.csid}}')
+@ccode.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
     if (id.isdigit() and int(id) > 0):  # 如果 ID 为纯数字
@@ -129,7 +134,7 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
 async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId][
-        'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
+            'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish(msg.locale.t('chemical_code.message.running'))
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
     try:
@@ -182,7 +187,15 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                             if csr['elements'] == parse_:
                                 await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind5'))
                             elif v_ <= 2:
-                                await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind3'))
+                                missing_something = False
+                                for i in csr['elements']:
+                                    if i not in parse_:
+                                        await wait.sendMessage(
+                                            wait.locale.t('chemical_code.message.incorrect.remind4'))
+                                        missing_something = True
+                                        break
+                                if not missing_something:
+                                    await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind3'))
                             else:
                                 incorrect_list = []
                                 for i in csr['elements']:

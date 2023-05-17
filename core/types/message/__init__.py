@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Union
+from typing import List, Union, Dict
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
@@ -81,7 +81,7 @@ class MessageSession:
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
         "enabled_modules", "muted", "custom_admins", "data", "locale")
 
-    parsed_msg: dict
+    parsed_msg: Dict[str, str]
 
     def __init__(self,
                  target: MsgInfo,
@@ -179,6 +179,11 @@ class MessageSession:
         """
         用于将消息转换为一般文本格式。
         :param text_only: 是否只保留纯文本（默认为False）
+        """
+
+    async def toMessageChain(self) -> MessageChain:
+        """
+        用于将session.message中的消息文本转换为MessageChain。
         """
 
     async def delete(self):

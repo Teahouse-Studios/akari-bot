@@ -4,6 +4,7 @@ import traceback
 from typing import List, Union
 
 import discord
+import filetype
 
 from bots.discord.client import client
 from config import Config
@@ -13,6 +14,7 @@ from core.builtins.message.internal import Embed, ErrorMessage
 from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
+from core.utils.http import download_to_cache
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
@@ -79,18 +81,18 @@ class MessageSession(MS):
             if isinstance(x, Plain):
                 send_ = await self.session.target.send(x.text,
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None)
+                                                       and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 send_ = await self.session.target.send(file=discord.File(await x.get()),
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None)
+                                                       and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
                 send_ = await self.session.target.send(embed=embeds,
                                                        reference=self.session.message if quote and count == 0
-                                                                                         and self.session.message else None,
+                                                       and self.session.message else None,
                                                        files=files)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Embed: {str(x.__dict__)}')
             else:
@@ -106,17 +108,26 @@ class MessageSession(MS):
 
     async def checkPermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-            or isinstance(self.session.message.channel, discord.DMChannel) \
-            or self.target.senderInfo.query.isSuperUser \
-            or self.target.senderId in self.custom_admins:
+                or isinstance(self.session.message.channel, discord.DMChannel) \
+                or self.target.senderInfo.query.isSuperUser \
+                or self.target.senderId in self.custom_admins:
             return True
         return False
 
     async def checkNativePermission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-            or isinstance(self.session.message.channel, discord.DMChannel):
+                or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
+
+    async def toMessageChain(self):
+        lst = []
+        lst.append(Plain(self.session.message.content))
+        for x in self.session.message.attachments:
+            d = await download_to_cache(x.url)
+            if filetype.is_image(d):
+                lst.append(Image(d))
+        return MessageChain(lst)
 
     def asDisplay(self, text_only=False):
         msg = self.session.message.content

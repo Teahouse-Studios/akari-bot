@@ -5,7 +5,7 @@ from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
 aud = module('wiki_audit', alias='wa',
-                 developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
+             developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
 
 @aud.handle(['trust <apiLink>', 'block <apiLink>'])
@@ -28,7 +28,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('wiki.wiki_audit.add.message.success', list_name=list_name) + api)
     else:
         result = msg.locale.t('wiki.message.error.add') + \
-                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
+            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('wiki.wiki_audit.remove.message.success', list_name=list_name) + api)
     else:
         result = msg.locale.t('wiki.message.error.query') + \
-                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
+            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(api + msg.locale.t('wiki.wiki_audit.query.message.none'))
     else:
         result = msg.locale.t('wiki.message.error.query') + \
-                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
+            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
         await msg.finish(result)
 
 
@@ -93,9 +93,9 @@ async def _(msg: Bot.MessageSession):
         allow_columns = [[x[0], x[1]] for x in allow_list]
         if allow_columns:
             allow_table = ImageTable(data=allow_columns, headers=[
-                msg.locale.t('wiki.wiki_audit.list.message.table.header.apilink'), 
+                msg.locale.t('wiki.wiki_audit.list.message.table.header.apilink'),
                 msg.locale.t('wiki.wiki_audit.list.message.table.header.operator')
-                ])
+            ])
             if allow_table:
                 allow_image = await image_table_render(allow_table)
                 if allow_image:
@@ -104,9 +104,9 @@ async def _(msg: Bot.MessageSession):
         block_columns = [[x[0], x[1]] for x in block_list]
         if block_columns:
             block_table = ImageTable(data=block_columns, headers=[
-                msg.locale.t('wiki.wiki_audit.list.message.table.header.apilink'), 
+                msg.locale.t('wiki.wiki_audit.list.message.table.header.apilink'),
                 msg.locale.t('wiki.wiki_audit.list.message.table.header.operator')
-                ])
+            ])
             if block_table:
                 block_image = await image_table_render(block_table)
                 if block_image:

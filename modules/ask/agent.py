@@ -16,7 +16,12 @@ prompt = AkariPromptTemplate(
 
 output_parser = AkariParser()
 
-llm = ChatOpenAI(temperature=0, openai_api_key=Config('openai_api_key'), model_kwargs={'frequency_penalty': 0.0, 'presence_penalty': 0.0})
+llm = ChatOpenAI(
+    temperature=0,
+    openai_api_key=Config('openai_api_key'),
+    model_kwargs={
+        'frequency_penalty': 0.0,
+        'presence_penalty': 0.0})
 
 llm_chain = LLMChain(llm=llm, prompt=prompt)
 

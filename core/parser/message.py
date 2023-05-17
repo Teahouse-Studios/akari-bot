@@ -88,7 +88,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         msg.trigger_msg = display
         msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
         if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
-            or msg.target.senderId in msg.options.get('ban', []):
+                or msg.target.senderId in msg.options.get('ban', []):
             return
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')
@@ -117,6 +117,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         if in_prefix_list or disable_prefix:  # 检查消息前缀
             if len(display) <= 1 or display[:2] == '~~':  # 排除 ~~xxx~~ 的情况
                 return
+            if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
+                msg.prefixes.remove(display_prefix)
+                msg.prefixes.insert(0, display_prefix)
 
             Logger.info(
                 f'{identify_str} -> [Bot]: {display}')
@@ -241,7 +244,8 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
                                     await msg.sendMessage(msg.locale.t("parser.command.format.invalid",
-                                                                       module=command_first_word, prefix=msg.prefixes[0]))
+                                                                       module=command_first_word,
+                                                                       prefix=msg.prefixes[0]))
                                     """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,
@@ -272,6 +276,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except ActionFailed:
+                    if msg.target.targetFrom == 'QQ|Group':
+                        await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                           message=f'[CQ:poke,qq={Config("qq_account")}]')
                     await msg.sendMessage(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
@@ -406,13 +413,15 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             ExecutionLockList.remove(msg)
 
             except ActionFailed:
+                if msg.target.targetFrom == 'QQ|Group':
+                    await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                       message=f'[CQ:poke,qq={Config("qq_account")}]')
                 await msg.sendMessage((msg.locale.t("error.message.limited")))
                 continue
         return msg
 
     except WaitCancelException:  # 出现于等待被取消的情况
         Logger.warn('Waiting task cancelled by user.')
-
 
     except Exception:
         Logger.error(traceback.format_exc())
@@ -457,7 +466,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                                                   1, 0.3)  # 进一步匹配命令
             if match_close_command:
                 match_split = match_close_command[0]
-                m_split_options = filter(None, re.split(r'(\[.*?])', match_split))  # 切割可选参数
+                m_split_options = filter(None, re.split(r'(\\[.*?])', match_split))  # 切割可选参数
                 old_command_split = command_split.copy()
                 del old_command_split[0]
                 new_command_split = [match_close_module[0]]

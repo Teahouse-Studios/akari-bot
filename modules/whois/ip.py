@@ -71,6 +71,7 @@ async def check_ip(ip: str):
                 res[key] = data[key]
     return res
 
+
 def parse_coordinate(axis: str, value: float):
     if axis == 'latitude':
         return f'{value}°{"N" if value > 0 else "S"}'

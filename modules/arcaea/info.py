@@ -11,12 +11,12 @@ from modules.arcaea.utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
+headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 
 
 async def get_info(msg, usercode):
-    headers = {"User-Agent": Config('botarcapi_agent')}
     try:
-        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True",
+        get_ = await get_url(api_url + f"user/info?user_code={usercode}&recent=1&with_song_info=True",
                              status_code=200,
                              headers=headers,
                              fmt='json')
@@ -40,7 +40,7 @@ async def get_info(msg, usercode):
             difficulty = 'FTR'
         elif recent['difficulty'] == 3:
             difficulty = 'BYD'
-        songinfo = get_['content']['songinfo'][0]
+        songinfo = get_['content']['song_info'][0]
         trackname = songinfo['name_en']
         imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
         if not os.path.exists(imgpath):
@@ -59,14 +59,29 @@ async def get_info(msg, usercode):
         else:
             usrptt = usrptt / 100
         time_played = datetime.fromtimestamp(recent['time_played'] / 1000)
-        result = [Plain(msg.locale.t('arcaea.info.message.result', username=username, potential=usrptt, trackname=trackname, difficulty=difficulty, score=score, pure=pure, shiny_pure=shiny_pure, far=far, lost=lost, realptt=realptt, ptt=ptt, time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
+        result = [
+            Plain(
+                msg.locale.t(
+                    'arcaea.info.message.result',
+                    username=username,
+                    potential=usrptt,
+                    trackname=trackname,
+                    difficulty=difficulty,
+                    score=score,
+                    pure=pure,
+                    shiny_pure=shiny_pure,
+                    far=far,
+                    lost=lost,
+                    realptt=realptt,
+                    ptt=ptt,
+                    time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]
         if os.path.exists(imgpath):
             result.append(Image(imgpath))
         else:
             asyncio.create_task(autofix_b30_song_background(recent["song_id"],
                                                             byd=False if recent["difficulty"] != 3 else True))
         return result
-    
+
     else:
         errcode_string = f"arcaea.errcode.{get_['status']}"
         if locale := msg.locale.t(errcode_string) != errcode_string:

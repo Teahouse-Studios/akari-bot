@@ -9,8 +9,8 @@ class MessageChain:
     """
 
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
-    Tuple[Union[Plain, Image, Voice, Embed, Url]],
-    Plain, Image, Voice, Embed, Url]):
+                                       Tuple[Union[Plain, Image, Voice, Embed, Url]],
+                                       Plain, Image, Voice, Embed, Url]):
         """
         :param elements: 消息链元素
         """

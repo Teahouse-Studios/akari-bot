@@ -6,6 +6,7 @@ from .random import random_choice_tool, random_number_tool, random_uuid_tool
 from .search import search_tool
 from .server import server_tool
 from .wolfram import wolfram_tool
+from .self_knowledge import self_knowledge_tool
 
 tools = [
     search_tool,
@@ -17,7 +18,8 @@ tools = [
     random_choice_tool,
     random_number_tool,
     random_uuid_tool,
-    bugtracker_tool
+    bugtracker_tool,
+    self_knowledge_tool
 ]
 
 tool_names = [tool.name for tool in tools]

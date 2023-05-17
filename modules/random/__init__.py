@@ -4,7 +4,8 @@ import uuid
 from core.builtins import Bot
 from core.component import module
 
-r = module('random', alias={'rand': 'random', 'rng': 'random'}, developers=['Dianliang233'], desc='{random.help.desc}', )
+r = module('random', alias={'rand': 'random', 'rng': 'random'},
+           developers=['Dianliang233'], desc='{random.help.desc}', )
 
 
 @r.handle('number <min> <max> {{random.help.number}}', )
@@ -19,6 +20,17 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     choices = msg.parsed_msg['...']
     await msg.finish(secrets.choice(choices))
+
+
+@r.handle('shuffle ... {{random.help.shuffle}}', )
+async def _(msg: Bot.MessageSession):
+    cards: list = msg.parsed_msg['...']
+    x = cards.copy()
+    for i in reversed(range(1, len(x))):
+        # pick an element in x[:i+1] with which to exchange x[i]
+        j = secrets.randbelow(i + 1)
+        x[i], x[j] = x[j], x[i]
+    await msg.finish(', '.join(x))
 
 
 @r.handle('uuid {{random.help.uuid}}', )

@@ -68,13 +68,13 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
 
         try:
             pic = await download_to_cache(web_render_local if use_local else web_render, method='POST', headers={
-                    'Content-Type': 'application/json',
-                }, post_data=json.dumps(html), request_private_ip=True)
+                'Content-Type': 'application/json',
+            }, post_data=json.dumps(html), request_private_ip=True)
         except aiohttp.ClientConnectorError:
             if use_local:
                 pic = await download_to_cache(web_render, method='POST', headers={
-                        'Content-Type': 'application/json',
-                    }, post_data=json.dumps(html), request_private_ip=True)
+                    'Content-Type': 'application/json',
+                }, post_data=json.dumps(html), request_private_ip=True)
             else:
                 return False
         return pic

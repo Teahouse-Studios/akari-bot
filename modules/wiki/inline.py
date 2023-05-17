@@ -109,10 +109,9 @@ async def _(msg: Bot.MessageSession):
                                 if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
                                     get_infobox = await generate_screenshot_v2(qq,
                                                                                allow_special_page=q[qq].in_allowlist,
-                                                                               content_mode=
-                                                                               get_page.has_template_doc or
+                                                                               content_mode=get_page.has_template_doc or
                                                                                get_page.title.split(':')[0] in [
-                                                                                   'User'] or \
+                                                                                   'User'] or
                                                                                ('Template:Disambiguation' in get_page.templates
                                                                                 or 'Template:Version disambiguation' in get_page.templates))
                                     if get_infobox:

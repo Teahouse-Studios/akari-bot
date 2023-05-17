@@ -32,7 +32,7 @@ async def inner_level_q(ds1, ds2=None):
 
 
 mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
-                 desc='有关maimai相关的工具，移植自mai-bot。')
+             desc='有关maimai相关的工具，移植自mai-bot。')
 
 
 @mai.handle(['inner <rating> {根据定数查询对应歌曲}',

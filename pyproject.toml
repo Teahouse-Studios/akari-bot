@@ -22,7 +22,7 @@ gql = "^3.4.0"
 filetype = "^1.2.0"
 SQLAlchemy = "^1.4.46"
 APScheduler = "^3.9.1.post1"
-aioconsole = "^0.5.1"
+aioconsole = "^0.6.1"
 aiogram = "^2.24"
 ujson = "^5.7.0"
 PyMySQL = "^1.0.2"
@@ -37,7 +37,7 @@ aiofile = "^3.8.1"
 loguru = "^0.6.0"
 numpy = "^1.24.1"
 matplotlib = "^3.6.3"
-pint = "^0.20.1"
+pint = "^0.21"
 simpleeval = "^0.9.12"
 pywin32 = { version = "^305", platform = "win32" }
 tenacity = "^8.1.0"
@@ -45,14 +45,16 @@ openai = "^0.27.2"
 cryptography = "^39.0.1"
 pre-commit = "^3.0.4"
 webcolors = "^1.12"
-langchain = "^0.0.146"
+langchain = "^0.0.152"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^2.8.6"
 thrift = "^0.16.0"
+chromadb = "^0.3.21"
+tiktoken = "^0.3.3"
 
 
 [tool.poetry.group.dev.dependencies]
-autopep8 = "^2.0.1"
+autopep8 = "^2.0.2"
 
 [build-system]
 requires = ["poetry-core"]

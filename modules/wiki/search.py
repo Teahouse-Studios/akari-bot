@@ -55,7 +55,7 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
                                 if len(interwiki_split) == 2:
                                     get_link = f'https://{interwiki_split[1]}.fandom.com/api.php'
                                     find = interwiki_split[0] + \
-                                           ':' + match_interwiki.group(2)
+                                        ':' + match_interwiki.group(2)
                                     iw = 'w:c:' + interwiki_split[0]
                                 else:
                                     get_link = f'https://{match_interwiki.group(1)}.fandom.com/api.php'

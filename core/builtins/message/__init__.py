@@ -70,7 +70,7 @@ class MessageSession(MessageSession):
         ExecutionLockList.remove(self)
         msgchain = MessageChain(msgchain)
         if append_instruction:
-           msgchain.append(Plain(self.locale.t("message.reply.prompt")))
+            msgchain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.sendMessage(msgchain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)
