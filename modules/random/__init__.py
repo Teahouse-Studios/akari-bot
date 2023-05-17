@@ -11,10 +11,13 @@ r = module('random', alias={'rand': 'random', 'rng': 'random'},
 
 @r.handle('number <min> <max> {{random.help.number}}', )
 async def _(msg: Bot.MessageSession):
-    _min = msg.parsed_msg['<min>']
-    _max = msg.parsed_msg['<max>']
-    random = secrets.randbelow(int(_max) - int(_min) + 1) + int(_min)
-    await msg.finish('' + str(random))
+    try:
+        _min = int(msg.parsed_msg['<min>'])
+        _max = int(msg.parsed_msg['<max>'])
+    except ValueError:
+        return await msg.finish(msg.locale.t('random.message.number.error'))
+    random = secrets.randbelow(_max - _min + 1) + _min
+    await msg.finish(random)
 
 
 @r.handle('choice ... {{random.help.choice}}', )
@@ -59,8 +62,8 @@ async def _(msg: Bot.MessageSession):
     if not characters:
         characters = string.ascii_letters + string.digits
         
-    strings = ''.join(secrets.choice(characters) for _ in range(length))
-    await msg.finish(strings)
+    random = ''.join(secrets.choice(characters) for _ in range(length))
+    await msg.finish(random)
 
     
 @r.handle('uuid {{random.help.uuid}}', )
