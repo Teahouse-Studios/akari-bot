@@ -29,7 +29,7 @@ class WithErrCode(Exception):
 
 async def check_friendcode(msg: Bot.MessageSession, friendcode: str):
     if friendcode.isdigit():
-        if len(friendcode) == 9:
+        if len(friendcode) != 9:
             await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
     else:
         await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.format"))
