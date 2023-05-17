@@ -8,27 +8,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 assets_path = os.path.abspath('./assets/phigros')
 
-
-def makeShadow(image, iterations, border, offset, backgroundColour, shadowColour):
-    fullWidth = image.size[0] + abs(offset[0]) + 2 * border
-    fullHeight = image.size[1] + abs(offset[1]) + 2 * border
-    shadow = Image.new(image.mode, (fullWidth, fullHeight), backgroundColour)
-    shadowLeft = border + max(offset[0], 0)
-    shadowTop = border + max(offset[1], 0)
-    shadow.paste(shadowColour,
-                 (shadowLeft, shadowTop,
-                  shadowLeft + image.size[0],
-                  shadowTop + image.size[1]))
-    for i in range(iterations):
-        shadow = shadow.filter(ImageFilter.BLUR)
-    imgLeft = border - min(offset[0], 0)
-    imgTop = border - min(offset[1], 0)
-    shadow.paste(image, (imgLeft, imgTop))
-    return shadow
-
-
 def drawb19(username, b19data):
-    b19img = Image.new("RGBA", (1590, 1400), '#1e2129')
+    b19img = Image.new("RGBA", (1590, 1340), '#1e2129')
     # b30card
     i = 0
     fname = 1
@@ -67,7 +48,7 @@ def drawb19(username, b19data):
                     else:
                         cardimg = downlight.enhance(0.5).resize((384, img_h))
             w = 15 + 384 * i
-            h = 160
+            h = 100
             if s == 4:
                 s = 0
                 t += 1
@@ -97,8 +78,6 @@ def drawb19(username, b19data):
             draw_card = ImageDraw.Draw(cardimg)
             draw_card.text((20, 155), song.id, '#ffffff', font=font3)
             draw_card.text((20, 180), f'Score: {song.s} Acc: {song.a}\nRks: {song.rks}', '#ffffff', font=font)
-            cardimg = makeShadow(cardimg, 4, 9, [0, 3], 'rgba(0,0,0,0)', '#000000')
-
 
             b19img.alpha_composite(cardimg, (w, h))
             fname += 1
