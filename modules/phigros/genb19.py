@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 assets_path = os.path.abspath('./assets/phigros')
 
+
 def drawb19(username, b19data):
     b19img = Image.new("RGBA", (1590, 1340), '#1e2129')
     # b30card
@@ -27,6 +28,8 @@ def drawb19(username, b19data):
                     cardimg = Image.new('RGBA', (384, 240), 'black')
                 else:
                     cardimg = Image.open(imgpath)
+                    if cardimg.mode != 'RGBA':
+                        cardimg = cardimg.convert('RGBA')
                     downlight = ImageEnhance.Brightness(cardimg)
                     img_size = downlight.image.size
                     resize_multiplier = 384 / img_size[0]
@@ -38,9 +41,9 @@ def drawb19(username, b19data):
                         crop_start_x = int((resize_img_w - 384) / 2)
                         crop_start_y = int((resize_img_h - 240) / 2)
                         cardimg = downlight.enhance(0.5).resize((resize_img_w,
-                                                             resize_img_h),
-                                                            ).crop((crop_start_x, crop_start_y,
-                                                                    384 + crop_start_x, 240 + crop_start_y))
+                                                                 resize_img_h),
+                                                                ).crop((crop_start_x, crop_start_y,
+                                                                        384 + crop_start_x, 240 + crop_start_y))
                     elif img_h > 240:
                         crop_start_y = int((img_h - 240) / 2)
                         cardimg = downlight.enhance(0.5).resize((384, img_h)) \
