@@ -6,7 +6,7 @@ from core.builtins import Bot
 from core.component import module
 
 r = module('random', alias={'rand': 'random', 'rng': 'random'},
-           developers=['Dianliang233'], desc='{random.help.desc}', )
+           developers=['Dianliang233', 'DoroWolf'], desc='{random.help.desc}', )
 
 
 @r.handle('number <min> <max> {{random.help.number}}', )
@@ -39,7 +39,13 @@ async def _(msg: Bot.MessageSession):
                       '-n': '{random.help.string.n}', 
                       '-s': '{random.help.string.s}'})
 async def _(msg: Bot.MessageSession):
-    length = int(msg.parsed_msg['<count>'])
+
+    try:
+        length = int(msg.parsed_msg['<count>'])
+        if length < 1 or length > 100:
+            raise ValueError
+    except ValueError:
+        return await msg.finish(msg.locale.t('random.message.string.error'))
     characters = ""
     if msg.parsed_msg.get('-u', False):
             characters += string.ascii_uppercase
