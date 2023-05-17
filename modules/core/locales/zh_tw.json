@@ -62,7 +62,7 @@
     "core.prefix.help.add": "設定自訂指令前綴。",
     "core.prefix.help.remove": "移除自訂指令前綴。",
     "core.prefix.help.reset": "重設自訂指令前綴。",
-    "core.prefix.message.add.success": "已新增自訂指令前綴：${prefix}\n說明文件將預設使用此前綴進行展示。",
+    "core.prefix.message.add.success": "已新增自訂指令前綴：${prefix}",
     "core.prefix.message.add.already": "此指令前綴已存在於自訂前綴列表。",
     "core.prefix.message.remove.success": "已移除自訂指令前綴：",
     "core.prefix.message.remove.not_found": "此指令前綴不存在於自訂前綴列表。",
