@@ -60,7 +60,7 @@ async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('-n', False):
             characters += string.digits
     if msg.parsed_msg.get('-s', False):
-            characters += string.punctuation
+            characters += "!@#$%^&*-_+=?"
 
     if not characters:
         characters = string.ascii_letters + string.digits
