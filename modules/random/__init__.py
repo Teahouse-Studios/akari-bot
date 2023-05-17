@@ -14,8 +14,10 @@ async def _(msg: Bot.MessageSession):
     try:
         _min = int(msg.parsed_msg['<min>'])
         _max = int(msg.parsed_msg['<max>'])
+    if _min > _max:
+        return await msg.finish(msg.locale.t('random.message.number.error.out_of_range'))
     except ValueError:
-        return await msg.finish(msg.locale.t('random.message.number.error'))
+        return await msg.finish(msg.locale.t('random.message.number.error.invalid'))
     random = secrets.randbelow(_max - _min + 1) + _min
     await msg.finish('' + str(random))
 
@@ -48,7 +50,7 @@ async def _(msg: Bot.MessageSession):
         if length < 1 or length > 100:
             raise ValueError
     except ValueError:
-        return await msg.finish(msg.locale.t('random.message.string.error'))
+        return await msg.finish(msg.locale.t('random.message.string.error.invalid'))
     characters = ""
     if msg.parsed_msg.get('-u', False):
             characters += string.ascii_uppercase
