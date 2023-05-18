@@ -27,7 +27,7 @@
     "arcaea.message.failed.fetch": "获取失败。",
     "arcaea.message.invalid.friendcode.format": "请输入正确的好友 ID！",
     "arcaea.message.invalid.friendcode.non_digital": "好友 ID 必须是 9 位数字！",
-    "arcaea.message.user.unbound": "未绑定用户，请使用“${prefix}arcaea bind <friendcode>”绑定一个用户。",
+    "arcaea.message.user_unbound": "未绑定用户，请使用“${prefix}arcaea bind <friendcode>”绑定一个用户。",
     "arcaea.message.no_webrender": "未配置 webrender，无法使用此命令。",
     "arcaea.b30.help": "查询 Arcaea 用户的 b30 列表。",
     "arcaea.b30.message.success": "获取结果\nB30：${b30} | R10：${r10}\nB30 倒 5 列表：\n${last5list}",

@@ -154,23 +154,28 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.prefix.reset.message.success"))
 
 
-@wiki.handle('fandom enable {{wiki.fandom.enable.help}}', 'fandom disable {{wiki.fandom.disable.help}}',
+@wiki.handle('fandom {{wiki.fandom.enable.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get('enable', False):
-        msg.data.edit_option('wiki_fandom_addon', True)
-        await msg.finish(msg.locale.t("wiki.fandom.enable.message"))
-    else:
+
+    fandom_addon_state = msg.data.edit_option('wiki_fandom_addon', False)
+    
+    if fandom_addon_state:
         msg.data.edit_option('wiki_fandom_addon', False)
         await msg.finish(msg.locale.t("wiki.fandom.disable.message"))
+    else:
+        msg.data.edit_option('wiki_fandom_addon', True)
+        await msg.finish(msg.locale.t("wiki.fandom.enable.message"))
 
 
-@wiki.handle('redlink enable {{wiki.redlink.enable.help}}', 'redlink disable {{wiki.redlink.disable.help}}',
+@wiki.handle('redlink {{wiki.redlink.enable.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get('enable', False):
-        msg.data.edit_option('wiki_redlink', True)
-        await msg.finish(msg.locale.t("wiki.redlink.enable.message"))
-    else:
+    redlink_state = msg.data.edit_option('wiki_redlink', False)
+    
+    if redlink_state:
         msg.data.edit_option('wiki_redlink', False)
         await msg.finish(msg.locale.t("wiki.redlink.disable.message"))
+    else:
+        msg.data.edit_option('wiki_redlink', True)
+        await msg.finish(msg.locale.t("wiki.redlink.enable.message"))

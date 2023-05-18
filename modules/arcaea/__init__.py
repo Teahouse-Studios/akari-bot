@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession):
         finally:
             query_tasks.remove(msg.target.senderId)
     else:
-        await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
 @arc.command('info [<friendcode>] {{arcaea.info.help}}')
@@ -164,7 +164,7 @@ async def _(msg: Bot.MessageSession):
             traceback.print_exc()
             await msg.finish(msg.locale.t("arcaea.message.failed.fetch"))
     else:
-        await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
 @arc.command('song <songname> <prs|pst|ftr|byd> {{arcaea.song.help}}')

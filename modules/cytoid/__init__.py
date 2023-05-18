@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
 
 @cytoid.handle('bind <username> {{cytoid.bind.help}}')
 async def _(msg: Bot.MessageSession):
-    code: str = msg.parsed_msg['<username>']
+    code: str = lower(msg.parsed_msg['<username>'])
     getcode = await get_profile_name(code)
     if getcode:
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])

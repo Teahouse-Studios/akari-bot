@@ -27,7 +27,7 @@
     "arcaea.message.failed.fetch": "Failed to fetch.",
     "arcaea.message.invalid.friendcode.format": "Please enter the correct friend ID!",
     "arcaea.message.invalid.friendcode.non_digital": "Friend ID must be 9 digits!",
-    "arcaea.message.user.unbound": "Unbound user. Please bind user by \"${prefix}arcaea bind <friendcode>\".",
+    "arcaea.message.user_unbound": "Unbound user. Please bind user by \"${prefix}arcaea bind\".",
     "arcaea.message.no_webrender": "No webrender configured, this command cannot be used.",
     "arcaea.b30.help": "Query the best 30 list of Arcaea user. ",
     "arcaea.b30.message.success": "Result\nBest 30：${b30} | Recent 10：${r10}\nBest 30 last 5 list: \n${last5list}",

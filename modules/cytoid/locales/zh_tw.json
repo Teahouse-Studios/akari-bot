@@ -1,13 +1,13 @@
 {
     "cytoid.profile.help": "查詢一個使用者的基本資訊。",
-    "cytoid.b30.help": "查詢 Cytoid 使用者的 b30/r30 列表。",
+    "cytoid.b30.help": "查詢 Cytoid 使用者的 B30/R30 列表。",
     "cytoid.b30.message.cooldown": "距离上次执行已过去 ${time} 秒，本命令的冷却时间为 150 秒。（据官方人员所述，此 API 的调用十分昂贵，故手动做出这一限制，请谅解。）",
     "cytoid.bind.help": "绑定 Cytoid 使用者。",
     "cytoid.bind.message.success": "綁定成功。",
     "cytoid.bind.message.failed": "綁定失敗，請檢查輸入。",
     "cytoid.unbind.help": "解除綁定使用者。",
     "cytoid.unbind.message.success": "解除綁定成功。",
-    "cytoid.message.user.unbound": "未綁定使用者，請使用「${prefix}cytoid bind <username>」綁定一個使用者。",
+    "cytoid.message.user.unbound": "未綁定使用者，請使用「${prefix}cytoid bind」綁定一個使用者。",
     "cytoid.message.user.not_found": "使用者不存在。",
     "cytoid.message.error.user.not_found": "發生錯誤：此使用者不存在。"
 }
