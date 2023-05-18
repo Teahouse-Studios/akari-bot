@@ -154,7 +154,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.prefix.reset.message.success"))
 
 
-@wiki.handle('fandom {{wiki.fandom.enable.help}}',
+@wiki.handle('fandom {{wiki.fandom.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
 
@@ -168,7 +168,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.fandom.enable.message"))
 
 
-@wiki.handle('redlink {{wiki.redlink.enable.help}}',
+@wiki.handle('redlink {{wiki.redlink.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
     redlink_state = msg.data.options.get('wiki_redlink')
