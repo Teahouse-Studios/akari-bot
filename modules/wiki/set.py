@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession):
              required_admin=True)
 async def _(msg: Bot.MessageSession):
 
-    fandom_addon_state = msg.data.edit_option('wiki_fandom_addon', False)
+    fandom_addon_state = msg.data.options.get('wiki_fandom_addon')
     
     if fandom_addon_state:
         msg.data.edit_option('wiki_fandom_addon', False)
@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession):
 @wiki.handle('redlink {{wiki.redlink.enable.help}}',
              required_admin=True)
 async def _(msg: Bot.MessageSession):
-    redlink_state = msg.data.edit_option('wiki_redlink', False)
+    redlink_state = msg.data.options.get('wiki_redlink')
     
     if redlink_state:
         msg.data.edit_option('wiki_redlink', False)
