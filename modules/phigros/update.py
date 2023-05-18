@@ -33,13 +33,19 @@ async def update_difficulty_csv():
         rows = []
         for s in update_json:
             lst = []
-            lst.append(remove_punctuations(update_json[s]['song']) + '.' + remove_punctuations(update_json[s]['composer']))
+            lst.append(
+                remove_punctuations(
+                    update_json[s]['song']) +
+                '.' +
+                remove_punctuations(
+                    update_json[s]['composer']))
             for c in update_json[s]['chart']:
                 lst.append(update_json[s]['chart'][c]['difficulty'])
             rows.append(lst)
         writer.writerows(rows)
         f.close()
     shutil.copy(gen_csv_path, csv_path)
+    return True
 
 
 async def update_assets():
@@ -62,9 +68,12 @@ async def update_assets():
     if download_file:
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
-        shutil.copytree(os.path.join(ca, 'PhigrosLibrary-master', 'illustration'), illustration_path, dirs_exist_ok=True)
+        shutil.copytree(
+            os.path.join(
+                ca,
+                'PhigrosLibrary-master',
+                'illustration'),
+            illustration_path,
+            dirs_exist_ok=True)
         os.remove(download_file)
     return True
-
-
-
