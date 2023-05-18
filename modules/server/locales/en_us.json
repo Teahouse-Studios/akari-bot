@@ -1,5 +1,5 @@
 {
-    "server.revoke.help": "Whether to enable automatic revoke (default enable).",
+    "server.revoke.help": "是否开启自动撤回功能（默认为是）。",
     "server.help": "Get Minecraft: Java/Bedrock Edition server motd.",
     "server.help.p": "Show Players List",
     "server.help.r": "Show Raw Info",
@@ -11,7 +11,7 @@
     "server.message.player.current": "Current online player: \n",
     "server.message.player.current.none": "Current online player: \nNone",
     "server.revoke.message": "[This message will be revoked after 90 seconds]",
-    "server.revoke.message.disable": "Automatic revoke has been disabled.",
-    "server.revoke.message.enable": "Automatic revoke has been enabled.",
+    "server.revoke.message.disable": "已关闭自动撤回功能。",
+    "server.revoke.message.enable": "已开启自动撤回功能。",
     "server.message.version": "Game version: "
 }
