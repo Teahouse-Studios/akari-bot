@@ -90,7 +90,7 @@
     "wiki.wikilib.message.get.failed.not_a_mediawiki": "此站点也许不是一个有效的 Mediawiki：",
     "wiki.wikilib.message.get.failed.api": "从 API 获取信息时出错：",
     "wiki.wikilib.message.no_textextracts": "警告：此 Wiki 没有开启 TextExtracts 扩展，返回的页面预览内容将为未处理的原始 Wikitext 文本。",
-    "wiki.wikilib.message.error.empty": "发生错误：API未返回任何内容，请联系此站点管理员获取原因。",
+    "wiki.wikilib.message.error.empty": "发生错误：API 未返回任何内容，请联系此站点管理员获取原因。",
     "wiki.wikilib.message.error.invalid_character": "请求的页面标题包含非法字符：",
     "wiki.ab.message.slice": "•${title} - ${user}于${time}\n 过滤器名：${filter_name}\n 过滤器ID：${filter_id}\n 处理结果：${result}",
     "wiki.ab.message.only_last_5": "...仅显示前 5 条内容",
