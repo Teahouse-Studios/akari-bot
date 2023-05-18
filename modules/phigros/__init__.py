@@ -63,15 +63,8 @@ async def _(msg: Bot.MessageSession):
     update_assets_ = await update_assets()
     update_difficulty_csv_ = await update_difficulty_csv()
     
-    if update_assets_ and update_difficulty_csv_:
+    if update_assets_ or update_difficulty_csv_:
         await msg.finish(msg.locale.t("phigros.message.update.success"))
-    else:
-        if not update_assets_ and not update_difficulty_csv_:
-            await msg.finish(msg.locale.t("phigros.message.update.failed"))
-        elif not update_assets_:
-            await msg.finish("not a")
-        elif not update_difficulty_csv_:
-            await msg.finish("not b")
 
  
 @phi.command('update rating', required_superuser=True)
