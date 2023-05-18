@@ -66,4 +66,9 @@ async def _(msg: Bot.MessageSession):
     if update_assets_ and update_difficulty_csv_:
         await msg.finish(msg.locale.t("phigros.message.update.success"))
     else:
-        await msg.finish(msg.locale.t("phigros.message.update.failed"))
+        if not update_assets_ and not update_difficulty_csv_:
+            await msg.finish(msg.locale.t("phigros.message.update.failed"))
+        elif not update_assets_:
+            await msg.finish("not a")
+        elif not update_difficulty_csv_:
+            await msg.finish("not b")
