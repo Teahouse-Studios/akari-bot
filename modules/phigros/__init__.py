@@ -72,3 +72,10 @@ async def _(msg: Bot.MessageSession):
             await msg.finish("not a")
         elif not update_difficulty_csv_:
             await msg.finish("not b")
+
+ 
+@phi.command('update rating', required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    update_ = await update_difficulty_csv()
+    if update_:
+        await msg.finish(msg.locale.t("phigros.message.update.success"))
