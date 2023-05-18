@@ -1,5 +1,5 @@
 {
-    "server.revoke.help": "是否启用自动撤回功能（默认为是）。",
+    "server.revoke.help": "是否开启自动撤回功能（默认为是）。",
     "server.help": "获取 Minecraft：Java 版/基岩版服务器 motd。",
     "server.help.p": "显示玩家列表",
     "server.help.r": "显示原始信息",
@@ -11,7 +11,7 @@
     "server.message.player.current": "当前在线玩家：\n",
     "server.message.player.current.none": "当前在线玩家：\n无",
     "server.revoke.message": "[本消息将在 90 秒后撤回]",
-    "server.revoke.message.disable": "已禁用自动撤回功能。",
-    "server.revoke.message.enable": "已启用自动撤回功能。",
+    "server.revoke.message.disable": "已关闭自动撤回功能。",
+    "server.revoke.message.enable": "已开启自动撤回功能。",
     "server.message.version": "游戏版本："
 }
