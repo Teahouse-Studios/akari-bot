@@ -31,7 +31,7 @@
     "parser.superuser.permission.denied": "你沒有使用此指令的權限。",
     "parser.admin.module.permission.denied": "${module} 模組下的指令僅能由該群組的管理員所使用，請聯絡管理員執行此指令。",
     "parser.admin.submodule.permission.denied": "此指令僅能由該群組的管理員所使用，請聯絡管理員執行此指令。",
-    "parser.module.disabled.prompt": "${module} 模組未啟用，請使用「${prefix}enable ${module}」啟用此模組。",
+    "parser.module.disabled.prompt": "${module} 模块未开启，请使用“${prefix}enable ${module}”开启本模块。",
     "error": "發生錯誤：",
     "example": "你好世界！",
     "success": "成功。",
