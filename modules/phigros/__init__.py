@@ -58,17 +58,15 @@ async def _(msg: Bot.MessageSession):
         await msg.sendMessage(Image(drawb19('', result)))
 
 
-@phi.command('update assets')
+@phi.command('update assets', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     update_ = await update_assets()
     if update_:
         await msg.finish(msg.locale.t("phigros.message.update.success"))
 
 
-@phi.command('update rating')
+@phi.command('update rating', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     update_ = await update_difficulty_csv()
     if update_:
         await msg.finish(msg.locale.t("phigros.message.update.success"))
-
-
