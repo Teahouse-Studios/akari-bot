@@ -4,6 +4,6 @@
     "weekly.message": "Weekly page:\n\n${text}",
     "weekly.message.image": "Image: ${img}",
     "weekly.message.link": "\nImage: ${img}\n\nArticle Link: ${article}\nWeekly Pages: ${link}",
-    "weekly.message.error.expired": "发生错误：本周页面已过期，请联系中文 Minecraft Wiki 更新。",
-    "weekly.help.teahouse": "获取茶馆周报。"
+    "weekly.message.error.expired": "An error occurred: The weekly page has expired. Please contact Chinese Minecraft Wiki to update.",
+    "weekly.help.teahouse": "Get Teahouse Weekly."
 }
