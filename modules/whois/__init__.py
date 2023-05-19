@@ -20,7 +20,9 @@ async def _(msg: Bot.MessageSession):
     # elif query_type == 'domain':
     #     res = await check_domain(query)
     #     await msg.finish(await format_domain(res))
-
+    else:
+        await msg.finish(msg.locale.t("whois.message.unknown"))
+        
 
 def ip_or_domain(string: str):
     ip_regex = r'^((\d{1,3}\.){3}\d{1,3})$'
@@ -30,5 +32,3 @@ def ip_or_domain(string: str):
         return 'ip'
     elif re.match(domain_regex, string):
         return 'domain'
-    else:
-        await msg.finish(msg.locale.t("whois.message.unknown"))
