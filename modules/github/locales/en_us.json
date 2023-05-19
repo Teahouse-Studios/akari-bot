@@ -1,12 +1,12 @@
 {
     "github.help": "Trying to automatically identifying and distinguishing repo/user.",
-    "github.repo.help": "Getting GitHub repository information.",
-    "github.repo.message.not_found": "The repository does not exist, please check your input.",
-    "github.user.help": "Getting GitHub user or organization information.",
-    "github.user.message.not_found": "The user cannot be found; please check your input.",
-    "github.search.help": "Searching repositories on GitHub.",
-    "github.search.message": "Successfully to search for ${result} results:",
-    "github.search.message.not_found": "The repository cannot be found; please check your input.",
+    "github.help.repo": "获取 GitHub 存储库信息。",
+    "github.message.repo.not_found": "此存储库不存在，请检查输入。",
+    "github.help.user": "获取 GitHub 用户或组织信息。",
+    "github.message.user.not_found": "查无此人，请检查输入。",
+    "github.help.search": "搜索 GitHub 上的存储库。",
+    "github.message.search": "搜索成功，共 ${result} 条结果：",
+    "github.message.search.not_found": "找不到存储库，请检查输入。",
     "github.message.error": "An error occurred: The repository cannot be found; please check your spelling.",
-    "github.search.message.more_information": "Truncated due to chat limits; ${more_result} more results may not be shown."
+    "github.message.search.more_information": "另有 ${more_result} 条结果未显示。"
 }
