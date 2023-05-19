@@ -1,9 +1,9 @@
 {
     "weekly.help": "Get the weekly page of Chinese Minecraft Wiki.",
-    "weekly.image.help": "获取中文 Minecraft Wiki 的每周页面（图片版）。",
+    "weekly.help.image": "获取中文 Minecraft Wiki 的每周页面（图片版）。",
     "weekly.message": "Weekly page:\n\n${text}",
     "weekly.message.image": "Image: ${img}",
     "weekly.message.link": "\nImage: ${img}\n\nArticle Link: ${article}\nWeekly Pages: ${link}",
-    "weekly.message.expired": "An error occurred: The weekly page has expired. Please contact Chinese Minecraft Wiki to update.",
-    "weekly.teahouse.help": "Get Teahouse Weekly."
+    "weekly.message.error.expired": "An error occurred: The weekly page has expired. Please contact Chinese Minecraft Wiki to update.",
+    "weekly.help.teahouse": "Get Teahouse Weekly."
 }

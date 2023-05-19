@@ -80,7 +80,8 @@ async def _(msg: Bot.MessageSession):
     css_color_name_short = ''
     if css_color_name_raw[1]:
         css_color_name = f'\n{msg.locale.t("color.message.css")}{css_color_name_raw[0]}'
-        css_color_name_short = f'{css_color_name_raw[0]}\n'
+        if css_color_name_raw[0] != 'black' and css_color_name_raw[0] != 'white':
+            css_color_name_short = f'{css_color_name_raw[0]}\n'
     elif css_color_name_raw[0] is not None:
         css_color_name = f'\n{msg.locale.t("color.message.css.approximate")}{css_color_name_raw[0]}'
 
@@ -92,6 +93,8 @@ async def _(msg: Bot.MessageSession):
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0] is not None:
         material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{material_color_name_raw[0]}'
+
+
 
     draw.multiline_text(
         (250,

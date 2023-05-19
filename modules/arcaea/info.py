@@ -29,7 +29,7 @@ async def get_info(msg, usercode):
     if get_["status"] == 0:
         recent = get_['content']["recent_score"]
         if len(recent) < 0:
-            return [Plain(msg.locale.t('arcaea.info.message.result.none'))]
+            return [Plain(msg.locale.t('arcaea.message.info.result.none'))]
         recent = recent[0]
         difficulty = '???'
         if recent['difficulty'] == 0:
@@ -62,7 +62,7 @@ async def get_info(msg, usercode):
         result = [
             Plain(
                 msg.locale.t(
-                    'arcaea.info.message.result',
+                    'arcaea.message.info.result',
                     username=username,
                     potential=usrptt,
                     trackname=trackname,

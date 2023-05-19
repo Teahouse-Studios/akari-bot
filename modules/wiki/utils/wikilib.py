@@ -149,7 +149,7 @@ class WikiLib:
             return await get_url(api, status_code=200, headers=self.headers, fmt="json")
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
-                raise InvalidWikiError(self.locale.t("wiki.wikilib.message.get.failed.moegirl"))
+                raise InvalidWikiError(self.locale.t("wiki.message.wikilib.get.failed.moegirl"))
             raise e
 
     def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
@@ -211,7 +211,7 @@ class WikiLib:
                 get_page = await get_url(self.url, fmt='text', headers=self.headers)
                 if get_page.find('<title>Attention Required! | Cloudflare</title>') != -1:
                     return WikiStatus(available=False, value=False,
-                                      message=self.locale.t("wiki.wikilib.message.get.failed.cloudflare"))
+                                      message=self.locale.t("wiki.message.wikilib.get.failed.cloudflare"))
                 m = re.findall(
                     r'(?im)<\s*link\s*rel="EditURI"\s*type="application/rsd\+xml"\s*href="([^>]+?)\?action=rsd"\s*/?\s*>',
                     get_page)
@@ -222,17 +222,17 @@ class WikiLib:
                 wiki_api_link = api_match
             except (TimeoutError, asyncio.TimeoutError):
                 return WikiStatus(available=False, value=False, message=self.locale.t(
-                    "wiki.wikilib.message.get.failed.timeout"))
+                    "wiki.message.wikilib.get.failed.timeout"))
             except Exception as e:
                 Logger.debug(traceback.format_exc())
                 if e.args == (403,):
-                    message = self.locale.t("wiki.wikilib.message.get.failed.forbidden")
+                    message = self.locale.t("wiki.message.wikilib.get.failed.forbidden")
                 elif not re.match(r'^(https?://).*', self.url):
-                    message = self.locale.t("wiki.wikilib.message.get.failed.no_http_or_https_headers")
+                    message = self.locale.t("wiki.message.wikilib.get.failed.no_http_or_https_headers")
                 else:
-                    message = self.locale.t("wiki.wikilib.message.get.failed.not_a_mediawiki") + str(e)
+                    message = self.locale.t("wiki.message.wikilib.get.failed.not_a_mediawiki") + str(e)
                 if self.url.find('moegirl.org.cn') != -1:
-                    message += '\n' + self.locale.t("wiki.wikilib.message.get.failed.moegirl")
+                    message += '\n' + self.locale.t("wiki.message.wikilib.get.failed.moegirl")
                 return WikiStatus(available=False, value=False, message=message)
         get_cache_info = DBSiteInfo(wiki_api_link).get()
         if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
@@ -246,14 +246,14 @@ class WikiLib:
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
             Logger.debug(traceback.format_exc())
-            message = self.locale.t("wiki.wikilib.message.get.failed.api") + str(e)
+            message = self.locale.t("wiki.message.wikilib.get.failed.api") + str(e)
             if self.url.find('moegirl.org.cn') != -1:
-                message += '\n' + self.locale.t("wiki.wikilib.message.get.failed.moegirl")
+                message += '\n' + self.locale.t("wiki.message.wikilib.get.failed.moegirl")
             return WikiStatus(available=False, value=False, message=message)
         DBSiteInfo(wiki_api_link).update(get_json)
         info = self.rearrange_siteinfo(get_json, wiki_api_link)
         return WikiStatus(available=True, value=info,
-                          message=self.locale.t("wiki.wikilib.message.no_textextracts")
+                          message=self.locale.t("wiki.message.wikilib.no_textextracts")
                           if 'TextExtracts' not in info.extensions else '')
 
     async def check_wiki_info_from_database_cache(self):
@@ -464,7 +464,7 @@ class WikiLib:
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
         if query is None:
-            return PageInfo(title=title, link=None, desc=self.locale.t("wiki.wikilib.message.error.empty"),
+            return PageInfo(title=title, link=None, desc=self.locale.t("wiki.message.wikilib.error.empty"),
                             info=self.wiki_info)
         redirects_: List[Dict[str, str]] = query.get('redirects')
         if redirects_ is not None:
@@ -491,7 +491,7 @@ class WikiLib:
                     page_info.edit_link = page_raw['editurl']
                 if 'invalid' in page_raw:
                     rs1 = re.sub('The requested page title contains invalid characters:',
-                                 self.locale.t("wiki.wikilib.message.error.invalid_character"),
+                                 self.locale.t("wiki.message.wikilib.error.invalid_character"),
                                  page_raw['invalidreason'])
                     rs = self.locale.t("error") + '“' + rs1 + '”。'
                     rs = re.sub('".”', '"”', rs)

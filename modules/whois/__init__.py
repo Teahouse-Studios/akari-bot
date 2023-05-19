@@ -1,4 +1,4 @@
-import ipaddress
+import re
 
 from core.builtins import Bot
 from core.component import module
@@ -20,11 +20,15 @@ async def _(msg: Bot.MessageSession):
     # elif query_type == 'domain':
     #     res = await check_domain(query)
     #     await msg.finish(await format_domain(res))
-
+    else:
+        await msg.finish(msg.locale.t("whois.message.unknown"))
+        
 
 def ip_or_domain(string: str):
-    try:
-        ipaddress.ip_address(string)
+    ip_regex = r'^((\d{1,3}\.){3}\d{1,3})$'
+    domain_regex = r'^([a-zA-Z0-9-]+\.){1,}[a-zA-Z]{2,}$'
+    
+    if re.match(ip_regex, string):
         return 'ip'
-    except ValueError:
+    elif re.match(domain_regex, string):
         return 'domain'

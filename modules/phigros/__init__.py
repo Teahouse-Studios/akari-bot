@@ -23,26 +23,26 @@ async def _(msg: Bot.MessageSession):
     need_revoke = False
     send_msg = []
     if msg.target.targetFrom in ['QQ|Group', 'QQ|Guild', 'Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
-        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.bind.message.warning")))
+        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.warning")))
         need_revoke = True
     token: str = msg.parsed_msg['<sessiontoken>']
     bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=token)
     if bind:
-        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.bind.message.success")))
+        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.success")))
     if need_revoke:
         await msg.sleep(15)
         for i in send_msg:
             await i.delete()
 
 
-@phi.command('unbind {{phigros.unbind.help}}')
+@phi.command('unbind {{phigros.help.unbind}}')
 async def _(msg: Bot.MessageSession):
     unbind = PgrBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish(msg.locale.t("phigros.unbind.message.success"))
+        await msg.finish(msg.locale.t("phigros.message.unbind.success"))
 
 
-@phi.command('b19 {{phigros.b19.help}}')
+@phi.command('b19 {{phigros.help.b19}}')
 async def _(msg: Bot.MessageSession):
     bind = PgrBindInfoManager(msg).get_bind_sessiontoken()
     if bind is None:

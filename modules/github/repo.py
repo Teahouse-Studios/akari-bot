@@ -11,7 +11,7 @@ async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish(msg.locale.t("github.repo.message.not_found"))
+            await msg.finish(msg.locale.t("github.message.repo.not_found"))
         elif 'message' in result and result['message']:
             await msg.finish(result['message'])
         rlicense = 'Unknown'

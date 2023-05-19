@@ -26,32 +26,32 @@ async def get_song_info(msgsession, sid, diff: int, usercode=None):
         msg = []
         difficulties = song_info["content"]["difficulties"]
         if len(difficulties) < diff:
-            return [Plain(msgsession.locale.t('arcaea.song.message.invalid.difficulty'))]
+            return [Plain(msgsession.locale.t('arcaea.message.song.invalid.difficulty'))]
         song_name = difficulties[diff]['name_en']
         diff_display_name = 'PST' if diff == 0 else 'PRS' if diff == 1 else 'FTR' if diff == 2 else 'BYD' \
             if diff == 3 else '???'
-        side_display_name = msgsession.locale.t('arcaea.song.message.side.light') if difficulties[diff]['side'] == 0 else msgsession.locale.t(
-            'arcaea.song.message.side.conflict') if difficulties[diff]['side'] == 1 else msgsession.locale.t('arcaea.song.message.side.colorless') if difficulties[diff]['side'] == 2 else '???'
+        side_display_name = msgsession.locale.t('arcaea.message.song.side.light') if difficulties[diff]['side'] == 0 else msgsession.locale.t(
+            'arcaea.message.song.side.conflict') if difficulties[diff]['side'] == 1 else msgsession.locale.t('arcaea.message.song.side.colorless') if difficulties[diff]['side'] == 2 else '???'
         msg.append(f'{song_name} ({diff_display_name}/{side_display_name})')
         display_rating_1 = difficulties[diff]['difficulty'] / 2
         display_rating_2 = difficulties[diff]['difficulty'] // 2
         display_rating = str(display_rating_2) + ("+" if display_rating_1 > display_rating_2 else "")
         rating = difficulties[diff]['rating'] / 10
-        msg.append(msgsession.locale.t('arcaea.song.message.difficulty_rating') + display_rating + f' ({rating})')
-        msg.append(msgsession.locale.t('arcaea.song.message.artist') + difficulties[diff]['artist'])
-        msg.append(msgsession.locale.t('arcaea.song.message.jacket_designer') + difficulties[diff]['jacket_designer'])
-        msg.append(msgsession.locale.t('arcaea.song.message.chart_designer') + difficulties[diff]['chart_designer'])
-        msg.append(msgsession.locale.t('arcaea.song.message.note') + str(difficulties[diff]['note']))
-        msg.append(msgsession.locale.t('arcaea.song.message.bpm') + str(difficulties[diff]['bpm']))
-        msg.append(msgsession.locale.t('arcaea.song.message.set_friendly') + difficulties[diff]['set_friendly'])
-        msg.append(msgsession.locale.t('arcaea.song.message.time') +
+        msg.append(msgsession.locale.t('arcaea.message.song.difficulty_rating') + display_rating + f' ({rating})')
+        msg.append(msgsession.locale.t('arcaea.message.song.artist') + difficulties[diff]['artist'])
+        msg.append(msgsession.locale.t('arcaea.message.song.jacket_designer') + difficulties[diff]['jacket_designer'])
+        msg.append(msgsession.locale.t('arcaea.message.song.chart_designer') + difficulties[diff]['chart_designer'])
+        msg.append(msgsession.locale.t('arcaea.message.song.note') + str(difficulties[diff]['note']))
+        msg.append(msgsession.locale.t('arcaea.message.song.bpm') + str(difficulties[diff]['bpm']))
+        msg.append(msgsession.locale.t('arcaea.message.song.set_friendly') + difficulties[diff]['set_friendly'])
+        msg.append(msgsession.locale.t('arcaea.message.song.time') +
                    str(difficulties[diff]['time']) +
-                   msgsession.locale.t('arcaea.song.message.time.second'))
-        msg.append(msgsession.locale.t('arcaea.song.message.date') +
+                   msgsession.locale.t('arcaea.message.song.time.second'))
+        msg.append(msgsession.locale.t('arcaea.message.song.date') +
                    datetime.fromtimestamp(difficulties[diff]["date"]).strftime("%Y-%m-%d"))
-        msg.append(msgsession.locale.t('arcaea.song.message.world_unlock') +
+        msg.append(msgsession.locale.t('arcaea.message.song.world_unlock') +
                    (msgsession.locale.t('yes') if difficulties[diff]['world_unlock'] else msgsession.locale.t('no')))
-        msg.append(msgsession.locale.t('arcaea.song.message.remote_download') +
+        msg.append(msgsession.locale.t('arcaea.message.song.remote_download') +
                    (msgsession.locale.t('yes') if difficulties[diff]['remote_download'] else msgsession.locale.t('no')))
         if usercode:
             try:
@@ -61,7 +61,7 @@ async def get_song_info(msgsession, sid, diff: int, usercode=None):
                     headers=headers, status_code=200,
                     fmt='json')
                 if play_info["status"] == 0:
-                    msg.append(msgsession.locale.t('arcaea.song.message.best') +
+                    msg.append(msgsession.locale.t('arcaea.message.song.best') +
                                str(play_info["content"]["record"]["score"]) +
                                f'\n({str(play_info["content"]["record"]["rating"])}, '
                                f'P: {str(play_info["content"]["record"]["perfect_count"])}'
