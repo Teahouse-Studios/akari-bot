@@ -1,8 +1,8 @@
 {
-    "server.help.revoke": "是否开启自动撤回功能（默认为是）。",
+    "server.help.revoke": "Whether to enable automatic revoke (default enable).",
     "server.help": "Get Minecraft: Java/Bedrock Edition server motd.",
-    "server.option.p": "显示玩家列表",
-    "server.option.r": "显示原始信息",
+    "server.option.p": "Show Players List",
+    "server.option.r": "Show Raw Info",
     "server.message.error": "An error occurred while querying for the API.",
     "server.message.gamemode": "Game mode: ",
     "server.message.local_ip": "An error occurred: Invalid IP address.",
@@ -10,8 +10,8 @@
     "server.message.player": "Online player: ",
     "server.message.player.current": "Current online player: \n",
     "server.message.player.current.none": "Current online player: \nNone",
-    "server.message.revoke": "[本消息将在 90 秒后撤回]",
-    "server.message.revoke.disable": "已关闭自动撤回功能。",
-    "server.message.revoke.enable": "已开启自动撤回功能。",
+    "server.message.revoke": "[This message will be revoked after 90 seconds]",
+    "server.message.revoke.disable": "Automatic revoke has been disabled.",
+    "server.message.revoke.enable": "Automatic revoke has been enabled.",
     "server.message.version": "Game version: "
 }
