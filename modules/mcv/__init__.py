@@ -9,7 +9,7 @@ m = module(
     recommend_modules=['mcbv', 'mcdv'])
 
 
-@m.handle('{{mcv.mcv.help}}')
+@m.handle('{{mcv.help.mcv}}')
 async def mcv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcv(msg))
 
@@ -19,7 +19,7 @@ mb = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@mb.handle('{{mcv.mcbv.help}}')
+@mb.handle('{{mcv.help.mcbv}}')
 async def mcbv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcbv(msg))
 
@@ -29,7 +29,7 @@ md = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@md.handle('{{mcv.mcdv.help}}')
+@md.handle('{{mcv.help.mcdv}}')
 async def mcdv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcdv(msg))
 
@@ -39,6 +39,6 @@ me = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@me.handle('{{mcv.mcev.help}}')
+@me.handle('{{mcv.help.mcev}}')
 async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mcev(msg))

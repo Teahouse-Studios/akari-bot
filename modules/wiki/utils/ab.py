@@ -11,12 +11,12 @@ async def ab(msg: Bot.MessageSession, wiki_url):
     d = []
     for x in query['query']['abuselog'][:5]:
         if 'title' in x:
-            d.append(msg.locale.t("wiki.ab.message.slice", title=x['title'], user=x['user'],
+            d.append(msg.locale.t("wiki.message.ab.slice", title=x['title'], user=x['user'],
                                   time=UTC8(x['timestamp'], 'onlytimenoutc'),
                                   filter_name=x['filter'], result=x['result']))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
-        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.ab.message.only_last_5")}\n{msg.locale.t("wiki.ab.message.ban")}'
+        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.ab.only_last_5")}\n{msg.locale.t("wiki.message.ab.ban")}'
     else:
-        return f'{str(Url(pageurl))}\n{y}\n' + msg.locale.t("wiki.ab.message.only_last_5")
+        return f'{str(Url(pageurl))}\n{y}\n' + msg.locale.t("wiki.message.ab.only_last_5")

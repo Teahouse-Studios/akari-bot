@@ -13,16 +13,16 @@ async def _(msg: Bot.MessageSession):
         await user.user(msg)
 
 
-@github.handle('repo <name> {{github.repo.help}}')
+@github.handle('repo <name> {{github.help.repo}}')
 async def _(msg: Bot.MessageSession):
     await repo.repo(msg)
 
 
-@github.handle('[user|org] <name> {{github.user.help}}')
+@github.handle('[user|org] <name> {{github.help.user}}')
 async def _(msg: Bot.MessageSession):
     await user.user(msg)
 
 
-@github.handle('search <query> {{github.search.help}}')
+@github.handle('search <query> {{github.help.search}}')
 async def _(msg: Bot.MessageSession):
     await search.search(msg)

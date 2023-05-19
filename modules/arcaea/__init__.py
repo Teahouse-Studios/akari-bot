@@ -41,7 +41,7 @@ async def get_friendcode(msg: Bot.MessageSession):
         return get_friendcode_from_db
 
 
-@arc.command('b30 [<friendcode>] {{arcaea.b30.help}}')
+@arc.command('b30 [<friendcode>] {{arcaea.help.b30}}')
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
         await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
@@ -55,19 +55,19 @@ async def _(msg: Bot.MessageSession):
     if query_code is not None:
         try:
             if msg.target.senderId in query_tasks:
-                await msg.finish(msg.locale.t("arcaea.b30.message.wait.already"))
+                await msg.finish(msg.locale.t("arcaea.message.b30.wait.already"))
             query_tasks.add(msg.target.senderId)
             get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
                                  fmt='json')
             if get_['status'] == 0:
-                await msg.sendMessage([Plain(msg.locale.t("arcaea.b30.message.wait")),
+                await msg.sendMessage([Plain(msg.locale.t("arcaea.message.b30.wait")),
                                        Plain(msg.locale.t("arcaea.message.sb616")),
                                        Image(os.path.abspath('./assets/noc.jpg')),
                                        Image(os.path.abspath('./assets/aof.jpg'))])
             elif get_['status'] == -33:
-                await msg.sendMessage(msg.locale.t("arcaea.b30.message.wait.cached"))
+                await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.cached"))
             elif get_['status'] == -23:
-                await msg.finish(msg.locale.t("arcaea.b30.message.low_potential"))
+                await msg.finish(msg.locale.t("arcaea.message.b30.low_potential"))
             else:
                 await msg.finish(msg.locale.t("arcaea.message.failed.fetch") + get_['message'])
             ExecutionLockList.remove(msg)
@@ -100,7 +100,7 @@ async def _(msg: Bot.MessageSession):
                     if _result := await _get_result(session):
                         return _result
                 elif tried == 1:
-                    await msg.sendMessage(msg.locale.t("arcaea.b30.message.wait.check"))
+                    await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.check"))
                     await msg.sleep(60)
                     if _result := await _get_result(session):
                         return _result
@@ -109,7 +109,7 @@ async def _(msg: Bot.MessageSession):
                     if _result := await _get_result(session):
                         return _result
                 else:
-                    await msg.sendMessage(msg.locale.t("arcaea.b30.message.wait.timeout"))
+                    await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.timeout"))
                     return False
                 tried += 1
                 return await _check(msg, session, tried)
@@ -118,7 +118,7 @@ async def _(msg: Bot.MessageSession):
             if resp:
                 resp = await make_b30_img(resp)
                 if resp['status']:
-                    msgchain = [Plain(msg.locale.t("arcaea.b30.message.success", b30=resp["b30"], r10=resp["r10"],
+                    msgchain = [Plain(msg.locale.t("arcaea.message.b30.success", b30=resp["b30"], r10=resp["r10"],
                                                    last5list=resp["last5list"]))]
                     if 'file' in resp and msg.Feature.image:
                         msgchain.append(Image(path=resp['file']))
@@ -141,10 +141,10 @@ async def _(msg: Bot.MessageSession):
         finally:
             query_tasks.remove(msg.target.senderId)
     else:
-        await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('info [<friendcode>] {{arcaea.info.help}}')
+@arc.command('info [<friendcode>] {{arcaea.help.info}}')
 async def _(msg: Bot.MessageSession):
     if not os.path.exists(assets_path):
         await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
@@ -164,10 +164,10 @@ async def _(msg: Bot.MessageSession):
             traceback.print_exc()
             await msg.finish(msg.locale.t("arcaea.message.failed.fetch"))
     else:
-        await msg.finish(msg.locale.t("arcaea.message.user.unbound", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('song <songname> <prs|pst|ftr|byd> {{arcaea.song.help}}')
+@arc.command('song <songname> <prs|pst|ftr|byd> {{arcaea.help.song}}')
 async def _(msg: Bot.MessageSession):
     songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
     songname_split = songname_.split(' ')
@@ -186,59 +186,59 @@ async def _(msg: Bot.MessageSession):
             songname_split.remove(s)
             break
     if diff == -1:
-        await msg.finish(msg.locale.t("arcaea.song.message.invalid.difficulty"))
+        await msg.finish(msg.locale.t("arcaea.message.song.invalid.difficulty"))
     songname = ' '.join(songname_split)
     usercode = await get_friendcode(msg)
     await msg.finish(Plain(await get_song_info(msg, songname, diff, usercode)))
 
 
-@arc.command('bind <friendcode|username> {{arcaea.bind.help}}')
+@arc.command('bind <friendcode|username> {{arcaea.help.bind}}')
 async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<friendcode|username>']
     getcode = await get_userinfo(code)
     if getcode:
         bind = ArcBindInfoManager(msg).set_bind_info(username=getcode[0], friendcode=getcode[1])
         if bind:
-            await msg.finish(msg.locale.t("arcaea.bind.message.success", username=getcode[0], friendcode=getcode[1]))
+            await msg.finish(msg.locale.t("arcaea.message.bind.success", username=getcode[0], friendcode=getcode[1]))
     else:
         if code.isdigit():
             bind = ArcBindInfoManager(msg).set_bind_info(username='', friendcode=code)
             if bind:
-                await msg.finish(msg.locale.t("arcaea.bind.message.success.but_failed_fetch_username"))
+                await msg.finish(msg.locale.t("arcaea.message.bind.success.but_failed_fetch_username"))
         else:
-            await msg.finish(msg.locale.t("arcaea.bind.message.failed"))
+            await msg.finish(msg.locale.t("arcaea.message.bind.failed"))
 
 
-@arc.command('unbind {{arcaea.unbind.help}}')
+@arc.command('unbind {{arcaea.help.unbind}}')
 async def _(msg: Bot.MessageSession):
     unbind = ArcBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish(msg.locale.t("arcaea.unbind.message.success"))
+        await msg.finish(msg.locale.t("arcaea.message.unbind.success"))
 
 
 @arc.command('initialize', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     assets_apk = os.path.abspath('./assets/arc.apk')
     if not os.path.exists(assets_apk):
-        await msg.finish(msg.locale.t("arcaea.initialize.message.not_found"))
+        await msg.finish(msg.locale.t("arcaea.message.initialize.not_found"))
         return
     result = await arcb30init()
     if result:
-        await msg.finish(msg.locale.t("arcaea.initialize.message.success"))
+        await msg.finish(msg.locale.t("arcaea.message.initialize.success"))
 
 
-@arc.command('download {{arcaea.download.help}}')
+@arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
                          fmt='json')
     if resp:
-        await msg.finish([Plain(msg.locale.t("arcaea.download.message.success", version=resp["value"]["version"],
+        await msg.finish([Plain(msg.locale.t("arcaea.message.download.success", version=resp["value"]["version"],
                                              url=resp['value']['url']))])
 
 
-@arc.command('random {{arcaea.random.help}}')
+@arc.command('random {{arcaea.help.random}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
@@ -252,7 +252,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@arc.command('rank free {{arcaea.rank.help.free}}', 'rank paid {{arcaea.rank.help.paid}}')
+@arc.command('rank free {{arcaea.help.rank.free}}', 'rank paid {{arcaea.help.rank.paid}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("arcaea.message.no_webrender")])

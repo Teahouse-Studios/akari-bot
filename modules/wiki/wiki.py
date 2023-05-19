@@ -23,7 +23,7 @@ wiki = module('wiki',
 
 
 @wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
-             options_desc={'-l': '{wiki.help.l}'})
+             options_desc={'-l': '{wiki.option.l}'})
 async def _(msg: Bot.MessageSession):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
@@ -33,7 +33,7 @@ async def _(msg: Bot.MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
 
 
-@wiki.handle('id <PageID> {{wiki.id.help}}')
+@wiki.handle('id <PageID> {{wiki.help.id}}')
 async def _(msg: Bot.MessageSession):
     page_id: str = msg.parsed_msg['<PageID>']
     iw = None
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         iw = match_iw.group(1)
         page_id = match_iw.group(2)
     if not page_id.isdigit():
-        await msg.finish(msg.locale.t('wiki.id.message.error'))
+        await msg.finish(msg.locale.t('wiki.message.id.error'))
     Logger.debug(msg.parsed_msg)
     await query_pages(msg, pageid=page_id, iw=iw)
 
@@ -69,7 +69,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
     if start_wiki is None:
         if isinstance(session, Bot.MessageSession):
-            await session.sendMessage(session.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
+            await session.sendMessage(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if lang in interwiki_list:
         start_wiki = interwiki_list[lang]
@@ -245,9 +245,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                                                              redirected_title=display_title))
                             else:
                                 if r.edit_link is not None:
-                                    plain_slice.append(r.edit_link + session.locale.t('wiki.redlink.message.not_found'))
+                                    plain_slice.append(r.edit_link + session.locale.t('wiki.message.redlink.not_found'))
                                 else:
-                                    plain_slice.append(session.locale.t('wiki.redlink.message.not_found.uneditable',
+                                    plain_slice.append(session.locale.t('wiki.message.redlink.not_found.uneditable',
                                                                         title=display_before_title))
                         else:
                             wait_plain_slice.append(
@@ -258,7 +258,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     elif r.before_title is not None:
                         plain_slice.append(session.locale.t('wiki.message.not_found', title=display_before_title))
                     elif r.id != -1:
-                        plain_slice.append(session.locale.t('wiki.id.message.not_found', id=str(r.id)))
+                        plain_slice.append(session.locale.t('wiki.message.id.not_found', id=str(r.id)))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:

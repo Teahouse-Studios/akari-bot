@@ -66,7 +66,7 @@ trigger_times = 60 if not Config('slower_schedule') else 180
 mcv_rss = module('mcv_rss',
                  developers=['OasisAkari', 'Dianliang233'],
                  recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
-                 desc='{mcv_rss.mcv_rss.help.desc}', alias='mcvrss')
+                 desc='{mcv_rss.help.mcv_rss.desc}', alias='mcvrss')
 
 
 @mcv_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -79,7 +79,7 @@ async def mcv_rss():
         snapshot = file['latest']['snapshot']
         if release not in verlist:
             Logger.info(f'huh, we find {release}.')
-            await bot.post_message('mcv_rss', 'mcv_rss.mcv_rss.message.release', i18n=True, version=file['latest']['release'])
+            await bot.post_message('mcv_rss', 'mcv_rss.message.mcv_rss.release', i18n=True, version=file['latest']['release'])
             verlist.append(release)
             update_stored_list(bot, 'mcv_rss', verlist)
             article = await get_article(release)
@@ -91,7 +91,7 @@ async def mcv_rss():
                     update_stored_list(bot, 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
-            await bot.post_message('mcv_rss', 'mcv_rss.mcv_rss.message.snapshot', i18n=True, version=file['latest']['snapshot'])
+            await bot.post_message('mcv_rss', 'mcv_rss.message.mcv_rss.snapshot', i18n=True, version=file['latest']['snapshot'])
             verlist.append(snapshot)
             update_stored_list(bot, 'mcv_rss', verlist)
             article = await get_article(snapshot)
@@ -107,7 +107,7 @@ async def mcv_rss():
 
 mcbv_rss = module('mcbv_rss', developers=['OasisAkari'],
                   recommend_modules=['mcbv_jira_rss'],
-                  desc='{mcv_rss.mcbv_rss.help.desc}', alias='mcbvrss')
+                  desc='{mcv_rss.help.mcbv_rss.desc}', alias='mcbvrss')
 
 
 @mcbv_rss.handle(IntervalTrigger(seconds=180))
@@ -119,7 +119,7 @@ async def mcbv_rss():
         version = google_play_scraper('com.mojang.minecraftpe')['version']
         if version not in verlist:
             Logger.info(f'huh, we find bedrock {version}.')
-            await bot.post_message('mcbv_rss', 'mcv_rss.mcbv_rss.message', i18n=True, version=version)
+            await bot.post_message('mcbv_rss', 'mcv_rss.message.mcbv_rss', i18n=True, version=version)
             verlist.append(version)
             update_stored_list(bot, 'mcbv_rss', verlist)
     except Exception:
@@ -128,7 +128,7 @@ async def mcbv_rss():
 
 mcv_jira_rss = module('mcv_jira_rss', developers=['OasisAkari', 'Dianliang233'],
                       recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],
-                      desc='{mcv_rss.mcv_jira_rss.help.desc}', alias='mcvjirarss')
+                      desc='{mcv_rss.help.mcv_jira_rss.desc}', alias='mcvjirarss')
 
 
 @mcv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -147,9 +147,9 @@ async def mcv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
                 if release.lower().find('future version') != -1:
-                    await bot.post_message('mcv_jira_rss', 'mcv_rss.mcv_jira_rss.message.future', i18n=True, version=release)
+                    await bot.post_message('mcv_jira_rss', 'mcv_rss.message.mcv_jira_rss.future', i18n=True, version=release)
                 else:
-                    await bot.post_message('mcv_jira_rss', 'mcv_rss.mcv_jira_rss.message', i18n=True, version=release)
+                    await bot.post_message('mcv_jira_rss', 'mcv_rss.message.mcv_jira_rss', i18n=True, version=release)
                 verlist.append(release)
                 update_stored_list(bot, 'mcv_jira_rss', verlist)
 
@@ -160,7 +160,7 @@ async def mcv_jira_rss():
 mcbv_jira_rss = module('mcbv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        recommend_modules=['mcv_rss', 'mcv_jira_rss', 'mcdv_jira_rss'],
-                       desc='{mcv_rss.mcbv_jira_rss.help.desc}', alias='mcbvjirarss')
+                       desc='{mcv_rss.help.mcbv_jira_rss.desc}', alias='mcbvjirarss')
 
 
 @mcbv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -179,7 +179,7 @@ async def mcbv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
 
-                await bot.post_message('mcbv_jira_rss', 'mcv_rss.mcbv_jira_rss.message', i18n=True, version=release)
+                await bot.post_message('mcbv_jira_rss', 'mcv_rss.message.mcbv_jira_rss', i18n=True, version=release)
                 verlist.append(release)
                 update_stored_list(bot, 'mcbv_jira_rss', verlist)
     except Exception:
@@ -189,7 +189,7 @@ async def mcbv_jira_rss():
 mcdv_jira_rss = module('mcdv_jira_rss',
                        developers=['OasisAkari', 'Dianliang233'],
                        recommend_modules=['mcv_rss', 'mcbv_jira_rss', 'mcv_jira_rss'],
-                       desc='{mcv_rss.mcdv_jira_rss.help.desc}', alias='mcdvjirarss')
+                       desc='{mcv_rss.help.mcdv_jira_rss.desc}', alias='mcdvjirarss')
 
 
 @mcdv_jira_rss.handle(IntervalTrigger(seconds=trigger_times))
@@ -208,7 +208,7 @@ async def mcdv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
 
-                await bot.post_message('mcdv_jira_rss', 'mcv_rss.mcdv_jira_rss.message', i18n=True, version=release)
+                await bot.post_message('mcdv_jira_rss', 'mcv_rss.message.mcdv_jira_rss', i18n=True, version=release)
                 verlist.append(release)
                 update_stored_list(bot, 'mcdv_jira_rss', verlist)
     except Exception:

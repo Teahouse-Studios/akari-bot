@@ -5,7 +5,7 @@
     "arcaea.help.rank.free": "View the current rank of the free packs.",
     "arcaea.help.rank.paid": "View the current rank of the paid packs.",
     "arcaea.help.desc": "Queries about Arcaea.",
-    "arcaea.message.sb616": "\nP.S. Men are mortal. Unfortunately, Guy's mom has passed away and can no longer answer you. She shall be always remembered.\n",
+    "arcaea.message.sb616": "P.S. Men are mortal. Unfortunately, Guy's mom has passed away and can no longer answer you. She shall be always remembered.\n",
     "arcaea.errcode.-1": "Invalid username or friend ID",
     "arcaea.errcode.-2": "Invalid friend ID",
     "arcaea.errcode.-3": "User not found",

@@ -14,41 +14,39 @@ from .dbutils import PgrBindInfoManager
 from .update import update_difficulty_csv, update_assets
 from .genb19 import drawb19
 
-phi = module('phigros', developers=['OasisAkari'], desc='查询 Phigros 相关内容。SessionToken获取参考：'
-                                                        'https://mivik.gitee.io/pgr-bot-help/index.html#%E5%AE%89%E5%8D%93',
+phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
              alias={'p': 'phigros', 'pgr': 'phigros', 'phi': 'phigros'})
 
 
-@phi.command('bind <sessiontoken> {使用云存档SessionToken绑定一个账户。（请在私聊绑定账户）}')
+@phi.command('bind <sessiontoken> {{phigros.help.bind}}')
 async def _(msg: Bot.MessageSession):
     need_revoke = False
     send_msg = []
     if msg.target.targetFrom in ['QQ|Group', 'QQ|Guild', 'Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
-        send_msg.append(await msg.sendMessage('警告：您正在群组中绑定账户，这有可能会使您的账户云存档数据被他人篡改。请尽量使用私聊绑定账户以避免这种情况。\n'
-                                              '您可以通过重新登录重置SessionToken，此次命令产生的消息将在15秒后撤回。'))
+        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.warning")))
         need_revoke = True
     token: str = msg.parsed_msg['<sessiontoken>']
     bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=token)
     if bind:
-        send_msg.append(await msg.sendMessage("成功绑定账户。"))
+        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.success")))
     if need_revoke:
         await msg.sleep(15)
         for i in send_msg:
             await i.delete()
 
 
-@phi.command('unbind {取消绑定账户。}')
+@phi.command('unbind {{phigros.help.unbind}}')
 async def _(msg: Bot.MessageSession):
     unbind = PgrBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish("成功取消绑定账户。")
+        await msg.finish(msg.locale.t("phigros.message.unbind.success"))
 
 
-@phi.command('b19 {查询B19信息。}')
+@phi.command('b19 {{phigros.help.b19}}')
 async def _(msg: Bot.MessageSession):
     bind = PgrBindInfoManager(msg).get_bind_sessiontoken()
     if bind is None:
-        await msg.finish("您还未绑定账户。")
+        await msg.finish(msg.locale.t("phigros.message.user_unbound"))
     else:
         transport = TTransport.TBufferedTransport(TSocket.TSocket())
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
@@ -57,20 +55,20 @@ async def _(msg: Bot.MessageSession):
         saveurl = client.getSaveUrl(bind)
         result = client.best19(saveurl.saveUrl)
         transport.close()
-        await msg.sendMessage([Plain('查询结果：\n'), Image(drawb19('', result))])
+        await msg.sendMessage(Image(drawb19('', result)))
 
 
-@phi.command('update assets')
+@phi.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    update_ = await update_assets()
-    if update_:
-        await msg.finish("更新成功。")
-
-
-@phi.command('update rating')
-async def _(msg: Bot.MessageSession):
-    update_ = await update_difficulty_csv()
-    if update_:
-        await msg.finish("更新成功。")
-
-
+    update_assets_ = await update_assets()
+    update_difficulty_csv_ = await update_difficulty_csv()
+    
+    if update_assets_ and update_difficulty_csv_:
+        await msg.finish(msg.locale.t("phigros.message.update.success"))
+    else:
+        if not update_assets_ and not update_difficulty_csv_:
+            await msg.finish(msg.locale.t("phigros.message.update.failed"))
+        elif not update_assets_:
+            await msg.finish("assets " + msg.locale.t("phigros.message.update.failed"))
+        elif not update_difficulty_csv_:
+            await msg.finish("difficulty_csv " + msg.locale.t("phigros.message.update.failed"))

@@ -108,7 +108,9 @@ class MessageSession(MS):
         return False
 
     def asDisplay(self, text_only=False):
-        return self.session.message.text
+        if self.session.message.text:
+            return self.session.message.text
+        return ''
 
     async def toMessageChain(self):
         lst = []

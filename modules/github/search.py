@@ -10,7 +10,7 @@ async def search(msg: Bot.MessageSession):
         result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200,
                                fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish(msg.locale.t("github.search.message.not_found"))
+            await msg.finish(msg.locale.t("github.message.search.not_found"))
         elif 'message' in result and result['message']:
             await msg.finish(result['message'])
         items = result['items']
@@ -22,10 +22,10 @@ async def search(msg: Bot.MessageSession):
             except TypeError:
                 continue
         footnotes = msg.locale.t(
-            "github.search.message.more_information",
+            "github.message.search.more_information",
             more_result=result['total_count'] -
             5) if item_count_expected == 5 else ''
-        message = msg.locale.t("github.search.message", result=result['total_count']) + '\n' + '\n'.join(
+        message = msg.locale.t("github.message.search", result=result['total_count']) + '\n' + '\n'.join(
             items_out[0:item_count_expected]) + f'\n{footnotes}'
 
         is_dirty = await dirty_check(message) or darkCheck(message)

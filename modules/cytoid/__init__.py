@@ -11,13 +11,13 @@ cytoid = module('cytoid',
                 developers=['OasisAkari'], alias='ctd')
 
 
-@cytoid.handle('profile [<UserID>] {{cytoid.profile.help}}')
+@cytoid.handle('profile [<UserID>] {{cytoid.help.profile}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)
 
 
-@cytoid.handle('(b30|r30) [<UserID>] {{cytoid.b30.help}}')
+@cytoid.handle('(b30|r30) [<UserID>] {{cytoid.help.b30}}')
 async def _(msg: Bot.MessageSession):
     if 'b30' in msg.parsed_msg:
         query = 'b30'
@@ -48,12 +48,12 @@ async def _(msg: Bot.MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            await msg.sendMessage(msg.locale.t('cytoid.b30.message.cooldown', time=int(c)))
+            await msg.sendMessage(msg.locale.t('cytoid.message.b30.cooldown', time=int(c)))
 
 
-@cytoid.handle('bind <username> {{cytoid.bind.help}}')
+@cytoid.handle('bind <username> {{cytoid.help.bind}}')
 async def _(msg: Bot.MessageSession):
-    code: str = msg.parsed_msg['<username>']
+    code: str = lower(msg.parsed_msg['<username>'])
     getcode = await get_profile_name(code)
     if getcode:
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])
@@ -62,13 +62,13 @@ async def _(msg: Bot.MessageSession):
                 m = f'{getcode[1]}({getcode[0]})'
             else:
                 m = getcode[0]
-            await msg.finish(msg.locale.t('cytoid.bind.message.success') + m)
+            await msg.finish(msg.locale.t('cytoid.message.bind.success') + m)
     else:
-        await msg.finish(msg.locale.t('cytoid.bind.message.failed'))
+        await msg.finish(msg.locale.t('cytoid.message.bind.failed'))
 
 
-@cytoid.handle('unbind {{cytoid.unbind.help}}')
+@cytoid.handle('unbind {{cytoid.help.unbind}}')
 async def _(msg: Bot.MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:
-        await msg.finish(msg.locale.t('cytoid.unbind.message.success'))
+        await msg.finish(msg.locale.t('cytoid.message.unbind.success'))

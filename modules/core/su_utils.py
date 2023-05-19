@@ -23,20 +23,20 @@ su = module('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233']
 async def add_su(message: Bot.MessageSession):
     user = message.parsed_msg['<user>']
     if not user.startswith(f'{message.target.senderFrom}|'):
-        await message.finish(message.locale.t("core.superuser.message.invalid", prefix=message.prefixes[0]))
+        await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.finish(message.locale.t("core.superuser.message.add.success", user=user))
+            await message.finish(message.locale.t("core.message.superuser.add.success", user=user))
 
 
 @su.handle('del <user>')
 async def del_su(message: Bot.MessageSession):
     user = message.parsed_msg['<user>']
     if not user.startswith(f'{message.target.senderFrom}|'):
-        await message.finish(message.locale.t("core.superuser.message.invalid", prefix=message.prefixes[0]))
+        await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.finish(message.locale.t("core.superuser.message.remove.success", user=user))
+            await message.finish(message.locale.t("core.message.superuser.remove.success", user=user))
 
 
 ana = module('analytics', required_superuser=True)
@@ -97,16 +97,16 @@ set_ = module('set', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     target = msg.parsed_msg['<targetId>']
     if not target.startswith(f'{msg.target.targetFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.waitConfirm(msg.locale.t("core.set.message.confirm.init"))
+        wait_confirm = await msg.waitConfirm(msg.locale.t("core.message.set.confirm.init"))
         if not wait_confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.targetFrom)]
     target_data.enable(modules)
-    await msg.finish(msg.locale.t("core.set.message.module.success") + ", ".join(modules))
+    await msg.finish(msg.locale.t("core.message.set.module.success") + ", ".join(modules))
 
 
 @set_.handle('option <targetId> <k> <v>')
@@ -115,10 +115,10 @@ async def _(msg: Bot.MessageSession):
     k = msg.parsed_msg['<k>']
     v = msg.parsed_msg['<v>']
     if not target.startswith(f'{msg.target.targetFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.waitConfirm(msg.locale.t("core.set.message.confirm.init"))
+        wait_confirm = await msg.waitConfirm(msg.locale.t("core.message.set.confirm.init"))
         if not wait_confirm:
             return
     if v.startswith(('[', '{')):
@@ -128,7 +128,7 @@ async def _(msg: Bot.MessageSession):
     elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
-    await msg.finish(msg.locale.t("core.set.message.option.success", k=k, v=v))
+    await msg.finish(msg.locale.t("core.message.set.option.success", k=k, v=v))
 
 
 ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
@@ -138,9 +138,9 @@ ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superus
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     warns = BotDBUtil.SenderInfo(user).query.warns
-    await msg.finish(msg.locale.t("core.abuse.message.check.warns", user=user, warns=warns))
+    await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns))
 
 
 @ae.handle('warn <user> [<count>]')
@@ -148,9 +148,9 @@ async def _(msg: Bot.MessageSession):
     count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     warn_count = await warn_user(user, count)
-    await msg.finish(msg.locale.t("core.abuse.message.warn.success", user=user, counts=count, warn_counts=warn_count))
+    await msg.finish(msg.locale.t("core.message.abuse.warn.success", user=user, counts=count, warn_counts=warn_count))
 
 
 @ae.handle('revoke <user> [<count>]')
@@ -158,45 +158,45 @@ async def _(msg: Bot.MessageSession):
     count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     warn_count = await warn_user(user, count)
-    await msg.finish(msg.locale.t("core.abuse.message.revoke.success", user=user, counts=count, warn_counts=warn_count))
+    await msg.finish(msg.locale.t("core.message.abuse.revoke.success", user=user, counts=count, warn_counts=warn_count))
 
 
 @ae.handle('clear <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     await pardon_user(user)
-    await msg.finish(msg.locale.t("core.abuse.message.clear.success", user=user))
+    await msg.finish(msg.locale.t("core.message.abuse.clear.success", user=user))
 
 
 @ae.handle('untempban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     await remove_temp_ban(user)
-    await msg.finish(msg.locale.t("core.abuse.message.untempban.success", user=user))
+    await msg.finish(msg.locale.t("core.message.abuse.untempban.success", user=user))
 
 
 @ae.handle('ban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
-        await msg.finish(msg.locale.t("core.abuse.message.ban.success", user=user))
+        await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
 
 
 @ae.handle('unban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t("core.set.message.invalid"))
+        await msg.finish(msg.locale.t("core.message.set.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
-        await msg.finish(msg.locale.t("core.abuse.message.unban.success", user=user))
+        await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
 rst = module('restart', developers=['OasisAkari'], required_superuser=True)
@@ -220,24 +220,24 @@ async def wait_for_restart(msg: Bot.MessageSession):
     get = ExecutionLockList.get()
     if datetime.now().timestamp() - restart_time[0] < 60:
         if len(get) != 0:
-            await msg.sendMessage(msg.locale.t("core.restart.message.wait", count=len(get)))
+            await msg.sendMessage(msg.locale.t("core.message.restart.wait", count=len(get)))
             await asyncio.sleep(10)
             return await wait_for_restart(msg)
         else:
-            await msg.sendMessage(msg.locale.t("core.restart.message.restarting"))
+            await msg.sendMessage(msg.locale.t("core.message.restart.restarting"))
             get_wait_list = MessageTaskManager.get()
             for x in get_wait_list:
                 for y in get_wait_list[x]:
                     if get_wait_list[x][y]['active']:
-                        await get_wait_list[x][y]['original_session'].sendMessage(get_wait_list[x][y]['original_session'].locale.t("core.restart.message.prompt"))
+                        await get_wait_list[x][y]['original_session'].sendMessage(get_wait_list[x][y]['original_session'].locale.t("core.message.restart.prompt"))
 
     else:
-        await msg.sendMessage(msg.locale.t("core.restart.message.timeout"))
+        await msg.sendMessage(msg.locale.t("core.message.restart.timeout"))
 
 
 @rst.handle()
 async def restart_bot(msg: Bot.MessageSession):
-    await msg.sendMessage(msg.locale.t("core.confirm"))
+    await msg.sendMessage(msg.locale.t("core.message.confirm"))
     confirm = await msg.waitConfirm()
     if confirm:
         restart_time.append(datetime.now().timestamp())
@@ -265,7 +265,7 @@ def update_dependencies():
 
 @upd.handle()
 async def update_bot(msg: Bot.MessageSession):
-    await msg.sendMessage(msg.locale.t("core.confirm"))
+    await msg.sendMessage(msg.locale.t("core.message.confirm"))
     confirm = await msg.waitConfirm()
     if confirm:
         await msg.sendMessage(pull_repo())
@@ -277,7 +277,7 @@ upds = module('update&restart', developers=['OasisAkari'], required_superuser=Tr
 
 @upds.handle()
 async def update_and_restart_bot(msg: Bot.MessageSession):
-    await msg.sendMessage(msg.locale.t("core.confirm"))
+    await msg.sendMessage(msg.locale.t("core.message.confirm"))
     confirm = await msg.waitConfirm()
     if confirm:
         restart_time.append(datetime.now().timestamp())
@@ -295,34 +295,34 @@ if Bot.FetchTarget.name == 'QQ':
     async def resume_sending_group_message(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(msg.locale.t("core.resume.message.processing", counts=len(targets)))
+            await msg.sendMessage(msg.locale.t("core.message.resume.processing", counts=len(targets)))
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
-            await msg.sendMessage(msg.locale.t("core.resume.message.done"))
+            await msg.sendMessage(msg.locale.t("core.message.resume.done"))
         else:
-            await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
+            await msg.sendMessage(msg.locale.t("core.message.resume.nothing"))
 
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(msg.locale.t("core.resume.message.skip", counts=len(targets)))
+            await msg.sendMessage(msg.locale.t("core.message.resume.skip", counts=len(targets)))
             for x in targets:
                 await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
-            await msg.sendMessage(msg.locale.t("core.resume.message.done"))
+            await msg.sendMessage(msg.locale.t("core.message.resume.done"))
         else:
-            await msg.sendMessage(msg.locale.t("core.resume.message.nothing"))
+            await msg.sendMessage(msg.locale.t("core.message.resume.nothing"))
 
     @resume.handle('clean')
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.sendMessage(msg.locale.t("core.resume.message.clean"))
+        await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
 
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
