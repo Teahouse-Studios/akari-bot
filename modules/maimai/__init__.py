@@ -224,10 +224,10 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
             await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
 
 
-@mai.handle('b40 <username> {查询B40信息（仅限大陆版maimai使用）}')
+@mai.handle('b40 [<username>] {查询B40信息（仅限大陆版maimai使用）}')
 async def _(msg: Bot.MessageSession):
-    username = msg.parsed_msg['<username>']
-    if username == "":
+    username = msg.parsed_msg.get('<username>', None)
+    if username is None:
         payload = {'qq': msg.session.sender}
     else:
         payload = {'username': username}
@@ -242,10 +242,10 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(img)])
 
 
-@mai.handle('b50 <username> {查询B50信息（仅限大陆版maimai使用）}')
+@mai.handle('b50 [<username>] {查询B50信息（仅限大陆版maimai使用）}')
 async def _(msg: Bot.MessageSession):
-    username = msg.parsed_msg['<username>']
-    if username == "":
+    username = msg.parsed_msg.get('<username>', None)
+    if username is None:
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
         payload = {'username': username, 'b50': True}
