@@ -44,7 +44,7 @@
     "core.message.module.help.regex.no_information": "No description",
     "core.message.module.help.author.type1": "Module author: ",
     "core.message.module.help.author.type2": "Module Author",
-    "core.message.module.help.helpdoc.address": "Module document: ${help_url}",
+    "core.message.module.help.helpdoc.address": "Online module document: ${help_url}",
     "core.message.module.help.table.header.base": "Base Module List",
     "core.message.module.help.table.header.help": "Help",
     "core.message.module.help.table.header.alias": "Command Aliases",
