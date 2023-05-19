@@ -227,9 +227,11 @@ BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT
 @mai.handle('b40 [<username>] {查询B40信息（仅限大陆版maimai使用）}')
 async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
-    if username is None:
+    if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender}
     else:
+        if username is None:
+            await msg.finish("请提供用户名！")
         payload = {'username': username}
     img, success = await generate(payload)
     if success == 400:
@@ -245,9 +247,11 @@ async def _(msg: Bot.MessageSession):
 @mai.handle('b50 [<username>] {查询B50信息（仅限大陆版maimai使用）}')
 async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
-    if username is None:
+    if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
+        if username is None:
+            await msg.finish("请提供用户名！")
         payload = {'username': username, 'b50': True}
     img, success = await generate50(payload)
     if success == 400:
