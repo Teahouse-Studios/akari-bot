@@ -23,7 +23,7 @@ async def pttimg(msg: Bot.MessageSession):
         try:
             ptt = float(ptt)
         except ValueError:
-            await msg.finish(msg.locale.t('ptt.message.invalid'))
+            await msg.finish(msg.locale.t('ptt.message.error.invalid'))
     if ptt >= 13.00:
         pttimg = 7
     elif ptt >= 12.50:
@@ -76,7 +76,7 @@ async def pttimg(msg: Bot.MessageSession):
         drawptt = ImageDraw.Draw(pttimg)
         drawptt.text((0, 0), ptt, 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
     else:
-        return await msg.finish(msg.locale.t('ptt.message.invalid'))
+        return await msg.finish(msg.locale.t('ptt.message.error.invalid'))
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))

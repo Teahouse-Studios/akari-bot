@@ -26,7 +26,7 @@ async def get_weekly(with_img=False, zh_tw=False):
     text = re.sub(r'\n*$', '', text)
     img = result['parse']['images']
     page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
-    msg_list = [Plain(locale.t("weekly.message.expired") if page[
+    msg_list = [Plain(locale.t("weekly.message.error.expired") if page[
         0] == '/zh/wiki/%E7%8E%BB%E7%92%83' else locale.t(
         "weekly.message", text=text))]
     imglink = None
@@ -79,19 +79,19 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(weekly)
 
 
-@wky.handle('image {{weekly.image.help}}')
+@wky.handle('image {{weekly.help.image}}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(await get_weekly_img(True if msg.target.clientName in ['QQ', 'TEST'] else False,
                                           zh_tw=True if msg.locale.locale == 'zh_tw' else False))
 
 
-@wky.handle('teahouse {{weekly.teahouse.help}}')
+@wky.handle('teahouse {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     await msg.finish(weekly)
 
 
-@wky.handle('teahouse image {{weekly.teahouse.help}}')
+@wky.handle('teahouse image {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
     await msg.finish(Image(await msgchain2image([Plain(weekly)])))

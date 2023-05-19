@@ -10,7 +10,7 @@ from .newbie import newbie
 from .rc import rc
 from .rc_qq import rc_qq
 
-rc_ = module('rc', desc='{wiki.rc.help.desc}', developers=['OasisAkari'])
+rc_ = module('rc', desc='{wiki.help.rc.desc}', developers=['OasisAkari'])
 
 
 @rc_.handle()
@@ -33,7 +33,7 @@ async def rc_loader(msg: MessageSession):
         await msg.finish(res)
 
 
-a = module('ab', desc='{wiki.ab.help.desc}', developers=['OasisAkari'])
+a = module('ab', desc='{wiki.help.ab.desc}', developers=['OasisAkari'])
 
 
 @a.handle()
@@ -56,7 +56,7 @@ async def ab_loader(msg: MessageSession):
         await msg.finish(res)
 
 
-n = module('newbie', desc='{wiki.newbie.help.desc}', developers=['OasisAkari'])
+n = module('newbie', desc='{wiki.help.newbie.desc}', developers=['OasisAkari'])
 
 
 @n.handle()

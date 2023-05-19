@@ -1,12 +1,12 @@
 {
     "github.help": "嘗試自動識別並區分 repo/user。",
-    "github.repo.help": "取得 Github 儲存庫資訊。",
-    "github.repo.message.not_found": "此儲存庫不存在，請檢查輸入。",
-    "github.user.help": "取得 Github 使用者或組織資訊。",
-    "github.user.message.not_found": "找不到使用者，請檢查輸入。",
-    "github.search.help": "搜尋 Github 上的儲存庫。",
-    "github.search.message": "搜尋成功，共 ${result} 條結果：",
-    "github.search.message.not_found": "找不到儲存庫，請檢查輸入。",
+    "github.help.repo": "取得 Github 儲存庫資訊。",
+    "github.message.repo.not_found": "此儲存庫不存在，請檢查輸入。",
+    "github.help.user": "取得 Github 使用者或組織資訊。",
+    "github.message.user.not_found": "找不到使用者，請檢查輸入。",
+    "github.help.search": "搜尋 Github 上的儲存庫。",
+    "github.message.search": "搜尋成功，共 ${result} 條結果：",
+    "github.message.search.not_found": "找不到儲存庫，請檢查輸入。",
     "github.message.error": "發生錯誤：找不到儲存庫，請檢查拼字是否正確。",
-    "github.search.message.more_information": "另有 ${more_result} 條結果未顯示。"
+    "github.message.search.more_information": "另有 ${more_result} 條結果未顯示。"
 }

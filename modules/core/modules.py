@@ -20,24 +20,24 @@ m = module('module',
            )
 
 
-@m.command(['enable <module>... {{core.module.help.enable}}',
-            'enable all {{core.module.help.enable_all}}',
-            'disable <module>... {{core.module.help.disable}}',
-            'disable all {{core.module.help.disable_all}}',
-            'reload <module> ... {{core.module.help.reload}}',
-            'list {{core.module.help.list}}'], exclude_from=['QQ|Guild'])
+@m.command(['enable <module>... {{core.help.module.enable}}',
+            'enable all {{core.help.module.enable_all}}',
+            'disable <module>... {{core.help.module.disable}}',
+            'disable all {{core.help.module.disable_all}}',
+            'reload <module> ... {{core.help.module.reload}}',
+            'list {{core.help.module.list}}'], exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         await modules_help(msg)
     await config_modules(msg)
 
 
-@m.command(['enable <module>... {{core.module.help.enable}}',
-            'enable all {{core.module.help.enable_all}}',
-            'disable <module>... {{core.module.help.disable}}',
-            'disable all {{core.module.help.disable_all}}',
-            'reload <module> ... {{core.module.help.reload}}',
-            'list {{core.module.help.list}}'], options_desc={'-g': '{core.module.option.g}'},
+@m.command(['enable <module>... {{core.help.module.enable}}',
+            'enable all {{core.help.module.enable_all}}',
+            'disable <module>... {{core.help.module.disable}}',
+            'disable all {{core.help.module.disable_all}}',
+            'reload <module> ... {{core.help.module.reload}}',
+            'list {{core.help.module.list}}'], options_desc={'-g': '{core.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -74,13 +74,13 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             for module_ in wait_config_list:
                 if module_ not in modules_:
-                    msglist.append(msg.locale.t("core.module.message.enable.not_found", module=module_))
+                    msglist.append(msg.locale.t("core.message.module.enable.not_found", module=module_))
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(msg.locale.t("core.module.message.enable.perimission.denied",
+                        msglist.append(msg.locale.t("core.message.module.enable.perimission.denied",
                                                     module=module_))
                     elif modules_[module_].base:
-                        msglist.append(msg.locale.t("core.module.message.enable.base", module=module_))
+                        msglist.append(msg.locale.t("core.message.module.enable.base", module=module_))
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
@@ -94,23 +94,23 @@ async def config_modules(msg: Bot.MessageSession):
                 query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
                 query.enable(enable_list)
             for x in enable_list:
-                msglist.append(msg.locale.t("core.module.message.enable.qq_channel_global.success", module=x))
+                msglist.append(msg.locale.t("core.message.module.enable.qq_channel_global.success", module=x))
         else:
             if msg.data.enable(enable_list):
                 for x in enable_list:
                     if x in enabled_modules_list:
-                        msglist.append(msg.locale.t("core.module.message.enable.already", module=x))
+                        msglist.append(msg.locale.t("core.message.module.enable.already", module=x))
                     else:
-                        msglist.append(msg.locale.t("core.module.message.enable.success", module=x))
+                        msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
                         support_lang = modules_[x].support_languages
                         if support_lang is not None:
                             if msg.locale.locale not in support_lang:
-                                msglist.append(msg.locale.t("core.module.message.enable.unsupported_language",
+                                msglist.append(msg.locale.t("core.message.module.unsupported_language",
                                                             module=x))
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    recommend_modules_help_doc_list.append(msg.locale.t("core.module.message.module.help", module=m
+                    recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.module.help", module=m
                                                                         ))
 
                     if modules_[m].desc is not None:
@@ -138,13 +138,13 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             for module_ in wait_config_list:
                 if module_ not in modules_:
-                    msglist.append(msg.locale.t("core.module.message.disable.not_found", module=module_))
+                    msglist.append(msg.locale.t("core.message.module.disable.not_found", module=module_))
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(msg.locale.t("core.module.message.disable.permission.denied",
+                        msglist.append(msg.locale.t("core.message.module.disable.permission.denied",
                                                     module=module_))
                     elif modules_[module_].base:
-                        msglist.append(msg.locale.t("core.module.message.disable.base", module=module_))
+                        msglist.append(msg.locale.t("core.message.module.disable.base", module=module_))
                     else:
                         disable_list.append(module_)
         if '-g' in msg.parsed_msg and msg.parsed_msg['-g']:
@@ -153,59 +153,59 @@ async def config_modules(msg: Bot.MessageSession):
                 query = BotDBUtil.TargetInfo(f'{msg.target.targetFrom}|{x}')
                 query.disable(disable_list)
             for x in disable_list:
-                msglist.append(msg.locale.t("core.module.message.disable.qqchannel_global.success", module=x))
+                msglist.append(msg.locale.t("core.message.module.disable.qqchannel_global.success", module=x))
         else:
             if msg.data.disable(disable_list):
                 for x in disable_list:
                     if x not in enabled_modules_list:
-                        msglist.append(msg.locale.t("core.module.message.disable.already", module=x))
+                        msglist.append(msg.locale.t("core.message.module.disable.already", module=x))
                     else:
-                        msglist.append(msg.locale.t("core.module.message.disable.success", module=x))
+                        msglist.append(msg.locale.t("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get('reload', False):
         if msg.checkSuperUser():
             def module_reload(module, extra_modules):
                 reloadCnt = ModulesManager.reload_module(module)
                 if reloadCnt > 1:
-                    return f'{msg.locale.t("core.module.message.reload.success", module=module)}' + ' '.join(
-                        extra_modules) + msg.locale.t("core.module.message.reload.with", reloadCnt=reloadCnt - 1)
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + ' '.join(
+                        extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
-                    return f'{msg.locale.t("core.module.message.reload.success", module=module)}' + \
-                        ' '.join(extra_modules) + msg.locale.t("core.module.message.reload.no_more")
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + \
+                        ' '.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
                 else:
-                    return f'{msg.locale.t("core.module.message.reload.failed")}'
+                    return f'{msg.locale.t("core.message.module.reload.failed")}'
 
             if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                 msglist.append(module_reload(module_))
             elif module_ not in modules_:
-                msglist.append(msg.locale.t("core.module.message.reload.unbound", module=module_))
+                msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
             else:
                 if modules_[module_].base:
-                    msglist.append(msg.locale.t("core.module.message.reload.base", module=module_))
+                    msglist.append(msg.locale.t("core.message.module.reload.base", module=module_))
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if len(extra_reload_modules):
-                        confirm = await msg.waitConfirm(msg.locale.t("core.module.message.reload.confirm",
+                        confirm = await msg.waitConfirm(msg.locale.t("core.message.module.reload.confirm",
                                                                      modules='\n'.join(extra_reload_modules)))
                         if not confirm:
                             await msg.finish()
                             return
                     msglist.append(module_reload(module_, extra_reload_modules))
         else:
-            msglist.append(msg.locale.t("core.module.message.reload.permission.denied"))
+            msglist.append(msg.locale.t("core.message.module.reload.permission.denied"))
     if msglist is not None:
         if not recommend_modules_help_doc_list:
             await msg.finish('\n'.join(msglist))
         else:
             await msg.sendMessage('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
-        confirm = await msg.waitConfirm(msg.locale.t("core.module.message.recommends",
+        confirm = await msg.waitConfirm(msg.locale.t("core.message.module.recommends",
                                                      msgs='\n'.join(recommend_modules_list) + '\n\n' +
                                                      '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):
                 msglist = []
                 for x in recommend_modules_list:
-                    msglist.append(msg.locale.t("core.module.message.enable.success", module=x))
+                    msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
                 await msg.finish('\n'.join(msglist))
     else:
         await msg.finish()
@@ -217,7 +217,7 @@ hlp = module('help',
              )
 
 
-@hlp.command('<module> {{core.module.help.help.detail}}')
+@hlp.command('<module> {{core.help.module.help.detail}}')
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         targetFrom=msg.target.targetFrom)
@@ -242,7 +242,7 @@ async def bot_help(msg: Bot.MessageSession):
 
             doc = '\n'.join(msgs)
             if module_.regex_list.set:
-                doc += '\n' + msg.locale.t("core.module.message.help.support_regex")
+                doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
                 for regex in module_.regex_list.set:
                     pattern = None
                     if isinstance(regex.pattern, str):
@@ -255,10 +255,10 @@ async def bot_help(msg: Bot.MessageSession):
                             if locale_str := re.findall(r'\{(.*)}', desc):
                                 for l in locale_str:
                                     desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
-                            doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
+                            doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.detail",
                                                                   msg=desc)
                         else:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.no_information")
+                            doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.no_information")
             module_alias = module_.alias
             malias = []
             if module_alias:
@@ -268,15 +268,15 @@ async def bot_help(msg: Bot.MessageSession):
                 devs = '、'.join(module_.developers)
             else:
                 devs = ''
-            devs_msg = '\n' + msg.locale.t("core.module.message.help.author.type1") + devs
-            wiki_msg = '\n' + msg.locale.t("core.module.message.help.helpdoc.address",
+            devs_msg = '\n' + msg.locale.t("core.message.module.help.author.type1") + devs
+            wiki_msg = '\n' + msg.locale.t("core.message.module.help.helpdoc.address",
                                            help_url=Config('help_url')) + '/' + help_name
             if len(doc) > 500 and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
-                                         [msg.locale.t("core.module.message.help.table.header.help"),
-                                          msg.locale.t("core.module.message.help.table.header.alias"),
-                                          msg.locale.t("core.module.message.help.author.type2")])]
+                                         [msg.locale.t("core.message.module.help.table.header.help"),
+                                          msg.locale.t("core.message.module.help.table.header.alias"),
+                                          msg.locale.t("core.message.module.help.author.type2")])]
                     render = await image_table_render(tables)
                     if render:
                         await msg.finish([Image(render),
@@ -287,10 +287,10 @@ async def bot_help(msg: Bot.MessageSession):
                 doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
             await msg.finish(doc + devs_msg + wiki_msg)
         else:
-            await msg.finish(msg.locale.t("core.module.message.help.not_found"))
+            await msg.finish(msg.locale.t("core.message.module.help.not_found"))
 
 
-@hlp.command('{{core.module.help.help}}')
+@hlp.command('{{core.help.module.help}}')
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         targetFrom=msg.target.targetFrom)
@@ -318,7 +318,7 @@ async def _(msg: Bot.MessageSession):
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
                 if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.module.message.help.support_regex")
+                    doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
                     for regex in module_.regex_list.set:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -331,10 +331,10 @@ async def _(msg: Bot.MessageSession):
                                 if locale_str := re.findall(r'\{(.*)}', desc):
                                     for l in locale_str:
                                         desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
-                                doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.detail",
                                                                       msg=desc)
                             else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.no_information")
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.no_information")
                 appends.append(doc)
                 module_alias = module_.alias
                 malias = []
@@ -350,32 +350,32 @@ async def _(msg: Bot.MessageSession):
                     m.append(appends)
             if essential:
                 tables.append(ImageTable(
-                    essential, [msg.locale.t("core.module.message.help.table.header.base"),
-                                msg.locale.t("core.module.message.help.table.header.help"),
-                                msg.locale.t("core.module.message.help.table.header.alias"),
-                                msg.locale.t("core.module.message.help.author.type2")]))
+                    essential, [msg.locale.t("core.message.module.help.table.header.base"),
+                                msg.locale.t("core.message.module.help.table.header.help"),
+                                msg.locale.t("core.message.module.help.table.header.alias"),
+                                msg.locale.t("core.message.module.help.author.type2")]))
             if m:
-                tables.append(ImageTable(m, [msg.locale.t("core.module.message.help.table.header.external"),
-                                             msg.locale.t("core.module.message.help.table.header.help"),
-                                             msg.locale.t("core.module.message.help.table.header.alias"),
-                                             msg.locale.t("core.module.message.help.author.type2")]))
+                tables.append(ImageTable(m, [msg.locale.t("core.message.module.help.table.header.external"),
+                                             msg.locale.t("core.message.module.help.table.header.help"),
+                                             msg.locale.t("core.message.module.help.table.header.alias"),
+                                             msg.locale.t("core.message.module.help.author.type2")]))
             if tables:
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
                     await msg.finish([Image(render),
-                                      Plain(msg.locale.t("core.module.message.help.more_information",
+                                      Plain(msg.locale.t("core.message.module.help.more_information",
                                                          prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
         except Exception:
             traceback.print_exc()
     if legacy_help:
-        help_msg = [msg.locale.t("core.module.message.help.legacy.base")]
+        help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
         essential = []
         for x in module_list:
             if module_list[x].base:
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
-        help_msg.append(msg.locale.t("core.module.message.help.legacy.external"))
+        help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
         module_ = []
         for x in module_list:
             if x in target_enabled_list:
@@ -383,11 +383,11 @@ async def _(msg: Bot.MessageSession):
         help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
-                "core.module.message.help.legacy.more_information",
+                "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
         if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
+            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()
@@ -421,7 +421,7 @@ async def modules_help(msg: Bot.MessageSession):
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
                 if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.module.message.help.support_regex")
+                    doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
                     for regex in module_.regex_list.set:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -434,10 +434,10 @@ async def modules_help(msg: Bot.MessageSession):
                                 if locale_str := re.findall(r'\{(.*)}', desc):
                                     for l in locale_str:
                                         desc = desc.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
-                                doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.detail",
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.detail",
                                                                       msg=desc)
                             else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.module.message.help.regex.no_information")
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.no_information")
                 appends.append(doc)
                 module_alias = module_.alias
                 malias = []
@@ -449,10 +449,10 @@ async def modules_help(msg: Bot.MessageSession):
                     appends.append('、'.join(module_.developers))
                 m.append(appends)
             if m:
-                tables.append(ImageTable(m, [msg.locale.t("core.module.message.help.table.header.external"),
-                                             msg.locale.t("core.module.message.help.table.header.help"),
-                                             msg.locale.t("core.module.message.help.table.header.alias"),
-                                             msg.locale.t("core.module.message.help.author.type2")]))
+                tables.append(ImageTable(m, [msg.locale.t("core.message.module.help.table.header.external"),
+                                             msg.locale.t("core.message.module.help.table.header.help"),
+                                             msg.locale.t("core.message.module.help.table.header.alias"),
+                                             msg.locale.t("core.message.module.help.author.type2")]))
             if tables:
                 render = await image_table_render(tables)
                 if render:
@@ -461,7 +461,7 @@ async def modules_help(msg: Bot.MessageSession):
         except Exception:
             traceback.print_exc()
     if legacy_help:
-        help_msg = [msg.locale.t("core.module.message.help.legacy.availables")]
+        help_msg = [msg.locale.t("core.message.module.help.legacy.availables")]
         module_ = []
         for x in module_list:
             if x[0] == '_':
@@ -472,11 +472,11 @@ async def modules_help(msg: Bot.MessageSession):
         help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
-                "core.module.message.help.legacy.more_information",
+                "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
         if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.module.message.help.legacy.revoke"))
+            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
         send = await msg.sendMessage('\n'.join(help_msg))
         await msg.sleep(60)
         await send.delete()

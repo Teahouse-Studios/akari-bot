@@ -10,7 +10,7 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
 @s.handle('<ServerIP:Port> [-r] [-p] {{server.help}}',
-          options_desc={'-r': '{server.help.r}', '-p': '{server.help.p}'})
+          options_desc={'-r': '{server.option.r}', '-p': '{server.option.p}'})
 async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')
     if enabled_addon is None:
@@ -52,7 +52,7 @@ async def main(msg: Bot.MessageSession):
     if g == ['', '']:
         msg_ = msg.locale.t('server.message.none')
         if msg.Feature.delete and enabled_addon:
-            msg_ += '\n' + msg.locale.t('server.revoke.message')
+            msg_ += '\n' + msg.locale.t('server.message.revoke')
         send = await msg.sendMessage(msg_)
         if msg.Feature.delete and enabled_addon:
             await msg.sleep(90)
@@ -60,14 +60,14 @@ async def main(msg: Bot.MessageSession):
             await msg.finish()
 
 
-@s.handle('revoke <enable|disable> {{server.revoke.help}}')
+@s.handle('revoke <enable|disable> {{server.help.revoke}}')
 async def revoke(msg: Bot.MessageSession):
     if msg.parsed_msg.get('<enable|disable>') == 'enable':
         msg.data.edit_option('server_revoke', True)
-        await msg.finish(msg.locale.t('server.revoke.message.enable'))
+        await msg.finish(msg.locale.t('server.message.revoke.enable'))
     elif msg.parsed_msg.get('<enable|disable>') == 'disable':
         msg.data.edit_option('server_revoke', False)
-        await msg.finish(msg.locale.t('server.revoke.message.disable'))
+        await msg.finish(msg.locale.t('server.message.revoke.disable'))
 
 
 async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
@@ -77,7 +77,7 @@ async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_add
         for x in sendmsg:
             m = x['content']
             if msg.Feature.delete and enabled_addon:
-                m += '\n' + msg.locale.t('server.revoke.message')
+                m += '\n' + msg.locale.t('server.message.revoke')
             send = await msg.sendMessage(m)
             if msg.Feature.delete and enabled_addon:
                 await msg.sleep(90)

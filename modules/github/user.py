@@ -9,7 +9,7 @@ async def user(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
         if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish(msg.locale.t("github.user.message.not_found"))
+            await msg.finish(msg.locale.t("github.message.user.not_found"))
         elif 'message' in result and result['message']:
             await msg.finish(result['message'])
         optional = []
