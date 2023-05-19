@@ -12,7 +12,7 @@ from core.utils.http import download_to_cache
 
 web_render = Config('web_render')
 web_render_local = Config('web_render_local')
-elements = ['div#issue-content']
+elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
 font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
