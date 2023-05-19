@@ -1,8 +1,8 @@
 {
-    "server.revoke.help": "是否开启自动撤回功能（默认为是）。",
+    "server.help.revoke": "是否开启自动撤回功能（默认为是）。",
     "server.help": "取得 Minecraft：Java 版/基岩版伺服器 motd。",
-    "server.help.p": "顯示玩家列表",
-    "server.help.r": "顯示原始資訊",
+    "server.option.p": "显示玩家列表",
+    "server.option.r": "显示原始信息",
     "server.message.error": "查詢呼叫 API 時發生錯誤。",
     "server.message.gamemode": "遊戲模式：",
     "server.message.local_ip": "發生錯誤：無效的 IP 位址。",
@@ -10,8 +10,8 @@
     "server.message.player": "在線玩家：",
     "server.message.player.current": "目前在線玩家：\n",
     "server.message.player.current.none": "目前在線玩家：\n無",
-    "server.revoke.message": "[本訊息將在 90 秒後撤回]",
-    "server.revoke.message.disable": "已关闭自动撤回功能。",
-    "server.revoke.message.enable": "已开启自动撤回功能。",
+    "server.message.revoke": "[本消息将在 90 秒后撤回]",
+    "server.message.revoke.disable": "已关闭自动撤回功能。",
+    "server.message.revoke.enable": "已开启自动撤回功能。",
     "server.message.version": "遊戲版本："
 }
