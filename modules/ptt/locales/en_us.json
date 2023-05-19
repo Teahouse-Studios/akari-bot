@@ -1,4 +1,4 @@
 {
     "ptt.help": "Generate a Potential image of Arcaea.",
-    "ptt.message.error.invalid": "发生错误：Potential 必须为 ≥0.00 且 ≤99.99 的数字。"
+    "ptt.message.error.invalid": "An error occurred: Potential must be a number greater than 0.00 and less than 99.99."
 }
