@@ -21,7 +21,7 @@
     "wiki.message.search.prompt": "回复编号以查询对应的页面。",
     "wiki.help.set": "设置起始查询 Wiki。",
     "wiki.message.set.success": "成功设置起始 Wiki：${name}",
-    "wiki.message.set.default": "没有设置起始 Wiki，已默认为中文 Minecraft Wiki，使用“${prefix}wiki set <域名>”设置自定义起始 Wiki。\n示例：${prefix}wiki set https://minecraft.fandom.com/zh/wiki/",
+    "wiki.message.set.default": "没有设置起始 Wiki，已默认为中文 Minecraft Wiki，使用“${prefix}wiki set”设置自定义起始 Wiki。\n示例：${prefix}wiki set https://minecraft.fandom.com/zh/wiki/",
     "wiki.message.iw.none": "当前没有设置任何 Interwiki，可使用“${prefix}wiki iw add <interwiki> <api_endpoint_link>”添加。",
     "wiki.help.iw.set": "添加自定义 Interwiki。",
     "wiki.message.iw.set.success": "成功：已添加自定义 Interwiki：\n${iw} -> ${name}",
