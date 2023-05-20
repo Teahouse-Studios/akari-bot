@@ -323,12 +323,12 @@ class getSaveUrl_args(object):
 
     """
 
-
     def __init__(self, sessionToken=None,):
         self.sessionToken = sessionToken
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -338,7 +338,8 @@ class getSaveUrl_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.sessionToken = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.sessionToken = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -371,6 +372,8 @@ class getSaveUrl_args(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(getSaveUrl_args)
 getSaveUrl_args.thrift_spec = (
     None,  # 0
@@ -385,12 +388,12 @@ class getSaveUrl_result(object):
 
     """
 
-
     def __init__(self, success=None,):
         self.success = success
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -434,6 +437,8 @@ class getSaveUrl_result(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(getSaveUrl_result)
 getSaveUrl_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [Summary, None], None, ),  # 0
@@ -447,12 +452,12 @@ class best19_args(object):
 
     """
 
-
     def __init__(self, saveUrl=None,):
         self.saveUrl = saveUrl
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -462,7 +467,8 @@ class best19_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.saveUrl = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.saveUrl = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -495,6 +501,8 @@ class best19_args(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(best19_args)
 best19_args.thrift_spec = (
     None,  # 0
@@ -509,12 +517,12 @@ class best19_result(object):
 
     """
 
-
     def __init__(self, success=None,):
         self.success = success
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -566,6 +574,8 @@ class best19_result(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(best19_result)
 best19_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT, [SongLevel, None], False), None, ),  # 0
@@ -580,13 +590,13 @@ class bestn_args(object):
 
     """
 
-
     def __init__(self, saveUrl=None, num=None,):
         self.saveUrl = saveUrl
         self.num = num
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -596,7 +606,8 @@ class bestn_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.saveUrl = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.saveUrl = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
@@ -638,6 +649,8 @@ class bestn_args(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(bestn_args)
 bestn_args.thrift_spec = (
     None,  # 0
@@ -653,12 +666,12 @@ class bestn_result(object):
 
     """
 
-
     def __init__(self, success=None,):
         self.success = success
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -710,6 +723,8 @@ class bestn_result(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(bestn_result)
 bestn_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT, [SongLevel, None], False), None, ),  # 0
@@ -723,12 +738,12 @@ class songExpects_args(object):
 
     """
 
-
     def __init__(self, saveUrl=None,):
         self.saveUrl = saveUrl
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -738,7 +753,8 @@ class songExpects_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.saveUrl = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.saveUrl = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -771,6 +787,8 @@ class songExpects_args(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(songExpects_args)
 songExpects_args.thrift_spec = (
     None,  # 0
@@ -785,12 +803,12 @@ class songExpects_result(object):
 
     """
 
-
     def __init__(self, success=None,):
         self.success = success
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -842,6 +860,8 @@ class songExpects_result(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(songExpects_result)
 songExpects_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT, [SongExpect, None], False), None, ),  # 0

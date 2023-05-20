@@ -49,7 +49,6 @@ class Summary(object):
 
     """
 
-
     def __init__(self, saveUrl=None, saveVersion=None, challenge=None, rks=None, gameVersion=None, avatar=None,):
         self.saveUrl = saveUrl
         self.saveVersion = saveVersion
@@ -59,7 +58,8 @@ class Summary(object):
         self.avatar = avatar
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -69,7 +69,8 @@ class Summary(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.saveUrl = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.saveUrl = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
@@ -94,7 +95,8 @@ class Summary(object):
                     iprot.skip(ftype)
             elif fid == 6:
                 if ftype == TType.STRING:
-                    self.avatar = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.avatar = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -174,7 +176,6 @@ class SongLevel(object):
 
     """
 
-
     def __init__(self, id=None, level=None, s=None, a=None, c=None, difficulty=None, rks=None,):
         self.id = id
         self.level = level
@@ -185,7 +186,8 @@ class SongLevel(object):
         self.rks = rks
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -195,7 +197,8 @@ class SongLevel(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.id = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.id = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
@@ -308,7 +311,6 @@ class SongExpect(object):
 
     """
 
-
     def __init__(self, id=None, level=None, acc=None, expect=None,):
         self.id = id
         self.level = level
@@ -316,7 +318,8 @@ class SongExpect(object):
         self.expect = expect
 
     def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+        if iprot._fast_decode is not None and isinstance(iprot.trans,
+                                                         TTransport.CReadableTransport) and self.thrift_spec is not None:
             iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
             return
         iprot.readStructBegin()
@@ -326,7 +329,8 @@ class SongExpect(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.id = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.id = iprot.readString().decode(
+                        'utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
@@ -394,6 +398,8 @@ class SongExpect(object):
 
     def __ne__(self, other):
         return not (self == other)
+
+
 all_structs.append(Summary)
 Summary.thrift_spec = (
     None,  # 0

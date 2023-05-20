@@ -21,7 +21,10 @@ from phigrosLibrary.ttypes import *
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
-    print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
+    print(
+        'Usage: ' +
+        sys.argv[0] +
+        ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
     print('  Summary getSaveUrl(string sessionToken)')
@@ -78,15 +81,15 @@ if sys.argv[argi] == '-novalidate':
     argi += 1
 
 if sys.argv[argi] == '-ca_certs':
-    ca_certs = sys.argv[argi+1]
+    ca_certs = sys.argv[argi + 1]
     argi += 2
 
 if sys.argv[argi] == '-keyfile':
-    keyfile = sys.argv[argi+1]
+    keyfile = sys.argv[argi + 1]
     argi += 2
 
 if sys.argv[argi] == '-certfile':
-    certfile = sys.argv[argi+1]
+    certfile = sys.argv[argi + 1]
     argi += 2
 
 cmd = sys.argv[argi]
@@ -96,7 +99,13 @@ if http:
     transport = THttpClient.THttpClient(host, port, uri)
 else:
     if ssl:
-        socket = TSSLSocket.TSSLSocket(host, port, validate=validate, ca_certs=ca_certs, keyfile=keyfile, certfile=certfile)
+        socket = TSSLSocket.TSSLSocket(
+            host,
+            port,
+            validate=validate,
+            ca_certs=ca_certs,
+            keyfile=keyfile,
+            certfile=certfile)
     else:
         socket = TSocket.TSocket(host, port)
     if framed:
