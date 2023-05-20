@@ -48,7 +48,9 @@ async def _(msg: Bot.MessageSession):
     if bind is None:
         await msg.finish(msg.locale.t("phigros.message.user_unbound"))
     else:
-        transport = TTransport.TBufferedTransport(TSocket.TSocket())
+        s = TSocket.TSocket()
+        s.setTimeout(10000)
+        transport = TTransport.TBufferedTransport(s)
         protocol = TBinaryProtocol.TBinaryProtocol(transport)
         client = Phigros.Client(protocol)
         transport.open()
