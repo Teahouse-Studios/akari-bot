@@ -32,6 +32,8 @@ async def update_difficulty_csv():
         writer = csv.writer(f)
         rows = []
         for s in update_json:
+            if update_json[s]['song'] == 'Introduction':
+                continue
             lst = []
             lst.append(
                 remove_punctuations(
