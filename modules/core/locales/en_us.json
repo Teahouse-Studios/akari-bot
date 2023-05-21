@@ -27,6 +27,7 @@
     "core.help.petal": "Get the number of petals in the current group.",
     "core.help.ping": "Get robot status.",
     "core.help.prefix.add": "Set custom command prefix.",
+    "core.help.prefix.list": "列出自定义命令前缀列表。",
     "core.help.prefix.remove": "Remove custom command prefix.",
     "core.help.prefix.reset": "Reset custom command prefix.",
     "core.help.toggle.check": "Toggles whether to display command check prompts.",
