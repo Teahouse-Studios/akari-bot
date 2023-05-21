@@ -23,6 +23,9 @@
     "wiki.help.search": "搜索一个 Wiki 页面。",
     "wiki.help.set": "设置起始查询 Wiki。",
     "wiki.help.wiki_inline.desc": "开启后将自动解析消息中带有 [[ ]] 或 {{ }} 的字符串并自动查询 Wiki，例如 [[海晶石]]。",
+    "wiki.help.wiki_inline.page": "在 [[ ]] 内输入标题以自动查询页面。",
+    "wiki.help.wiki_inline.template": "在 {{ }} 内输入标题以自动查询模板。",
+    "wiki.help.wiki_inline.url": "发送 Wiki 页面的 URL 以生成 infobox 图片。",
     "wiki.message.ab.qq.title": "滥用过滤器日志",
     "wiki.message.ab.qq.title.address": "滥用过滤器日志地址",
     "wiki.message.ab.slice": "•${title} - ${user}于${time}\n 过滤器名：${filter_name}\n 过滤器 ID：${filter_id}\n 处理结果：${result}",
@@ -75,6 +78,7 @@
     "wiki.message.utils.banned": "检测到外来信息介入，请前往滥用日志查看所有消息。",
     "wiki.message.utils.only_last_5": "…仅显示前 5 条内容。",
     "wiki.message.utils.qq.prompt": "Tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。",
+    "wiki.message.utils.time.infinity": "无限期",
     "wiki.message.utils.wikilib.error.empty": "发生错误：API未返回任何内容，请联系此站点管理员获取原因。",
     "wiki.message.utils.wikilib.error.invalid_character": "发生错误：请求的页面标题包含非法字符：",
     "wiki.message.utils.wikilib.get_failed.api": "获取失败：从 API 获取信息时出错：",
@@ -100,6 +104,5 @@
     "wiki.message.wiki_audit.remove.failed": "失败，此 Wiki 不存在于${list_name}中：",
     "wiki.message.wiki_audit.remove.failed.other": "失败，此 Wiki 不存在于白名单中，此 Wiki 的白名单可能来自其他同一域名的 Wiki：",
     "wiki.message.wiki_audit.remove.success": "成功从${list_name}删除：",
-    "wiki.message.wiki_inline.flies": "此页面包括以下文件：${file}",
-    "wiki.message.utils.time.infinity": "无限期"
+    "wiki.message.wiki_inline.flies": "此页面包括以下文件：${file}"
 }

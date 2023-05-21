@@ -7,7 +7,6 @@ from .zhNum2Int import Zh2Int
 MAX_COIN_NUM = 100
 FACE_UP_RATE = 4994  # n/10000
 FACE_DOWN_RATE = 4994
-COIN_DROP_PLACES = ["地上", "桌子上", "桌子底下", "门口", "窗户外", "月球"]  # 硬币可能掉落的位置
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
@@ -26,7 +25,7 @@ async def _(msg: MessageSession):
         await msg.finish(await flipCoins(int(amount), msg))
 
 
-@coin.regex(r"[丢|抛]([^个|枚]*)?[个|枚]?硬币", desc='[丢/抛](n)[个/枚]?硬币')
+@coin.regex(r"[丢|抛]([^个|枚]*)?[个|枚]?硬币", desc='{coin.help.regex}')
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
@@ -42,7 +41,7 @@ async def _(message: MessageSession):
 
 async def flipCoins(count: int, msg):
     if count > MAX_COIN_NUM:
-        return msg.locale.t("coin.message.error.max", max=MAX_COIN_NUM)
+        return msg.locale.t("coin.message.error.out_of_range", max=MAX_COIN_NUM)
     if count <= 0:
         return msg.locale.t("coin.message.error.nocoin")
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0:
@@ -60,8 +59,6 @@ async def flipCoins(count: int, msg):
             stand += 1
     head = msg.locale.t("coin.message.prompt", count=count)
     if count == 1:
-        drop_place = COIN_DROP_PLACES[secrets.randbelow(len(COIN_DROP_PLACES))]
-        head += msg.locale.t("coin.message.drop_place", drop_place=drop_place) + '\n'
         if faceUp:
             return head + msg.locale.t("coin.message.head")
         elif faceDown:
@@ -70,11 +67,11 @@ async def flipCoins(count: int, msg):
             return head + msg.locale.t("coin.message.stand")
     else:
         if not (stand or faceDown):
-            return head + msg.locale.t("coin.message.head.all")
+            return head + msg.locale.t("coin.message.all.head")
         if not (stand or faceUp):
-            return head + msg.locale.t("coin.message.tail.all")
+            return head + msg.locale.t("coin.message.all.tail")
         if not (faceUp or faceDown):
-            return head + msg.locale.t("coin.message.stand.all")
+            return head + msg.locale.t("coin.message.all.stand")
         output = head + msg.locale.t("coin.message.mix")
         if faceUp:
             output += msg.locale.t("coin.message.mix.head", head=faceUp)

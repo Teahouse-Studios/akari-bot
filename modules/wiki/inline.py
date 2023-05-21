@@ -20,7 +20,7 @@ wiki_inline = module('wiki_inline',
 
 
 @wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A',
-            desc="[[想查找的页面]]")
+            desc="{wiki.help.wiki_inline.page}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A',
-            desc="{{想查找的模板}}")
+            desc="{wiki.help.wiki_inline.template}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -54,7 +54,8 @@ async def _(msg: Bot.MessageSession):
 
 @wiki_inline.handle(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
-    mode='A', show_typing=False, logging=False)
+    mode='A', show_typing=False, logging=False, 
+    desc="{wiki.help.wiki_inline.url}")
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
