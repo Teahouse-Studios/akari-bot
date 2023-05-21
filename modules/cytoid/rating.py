@@ -14,6 +14,7 @@ from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
 from config import Config
+from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
 
