@@ -4,7 +4,7 @@ from core.builtins.message import MessageSession
 from core.component import module
 from .zhNum2Int import Zh2Int
 
-MAX_COIN_NUM = 100
+MAX_COIN_NUM = 10000
 FACE_UP_RATE = 4994  # n/10000
 FACE_DOWN_RATE = 4994
 
