@@ -16,10 +16,21 @@ excr = module('exchange_rate',
 
 
 @excr.command('<base> <target> [<amount>] {{exchange_rate.help}}')
-async def _(msg: Bot.MessageSession):
-    base_currency = msg.parsed_msg['<base>'].upper()
-    target_currency = msg.parsed_msg['<target>'].upper()
+async def _(msg: MessageSession):
+    base = msg.parsed_msg['<base>'].upper()
+    target = msg.parsed_msg['<target>'].upper()
+    amount = msg.parsed_msg.get('<amount>', '1')
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
+    except ValueError:
+        await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
+    await msg.finish(await exchange(base, target, amount, msg))
 
+
+
+async def exchange(base_currency, target_currency, amount: float, msg):
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/codes'
     data = await get_url(url, 200, fmt='json')
     supported_currencies = data['supported_codes']
@@ -41,14 +52,6 @@ async def _(msg: Bot.MessageSession):
         error_type = data['error-type']
         raise NoReportException(f"{error_type}")
 
-    amount = msg.parsed_msg.get('<amount>', '1')
-    try:
-        amount = float(amount)
-        if amount <= 0:
-            await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
-    except ValueError:
-        await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
-
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     data = await get_url(url, 200, fmt='json')
     current_time = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -62,10 +65,11 @@ async def _(msg: Bot.MessageSession):
         raise NoReportException(f"{error_type}")
 
 
+
 @excr.regex(r"(\d+(\.\d+)?)([a-zA-Z]{3})[至|到| to ]([a-zA-Z]{3})", desc='{exchange_rate.help.regex}')
 async def _(msg: Bot.MessageSession):
     groups = message.matched_msg.groups()
     amount = msg.groups[0] if groups[0] else '1'
-    base_currency = groups[3]
-    target_currency = groups[4]
-    await msg.finish(await _(msg))
+    base = groups[3]
+    target = groups[4]
+    await msg.finish(await exchange(base, target, amount, msg))
