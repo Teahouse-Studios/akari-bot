@@ -1,9 +1,9 @@
 import re
 
 
-def UTC8(msg: Bot.MessageSession, t, outtype):
+def UTC8(t, outtype):
     if t in ['infinity', 'infinite']:
-        return msg.locale.t('wiki.message.utils.time.infinity')
+        return '无限期'
     else:
         q = re.match(r'(.*)-(.*)-(.*)T(.*):(.*):(.*)Z', t)
         if not q:

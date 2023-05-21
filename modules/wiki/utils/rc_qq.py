@@ -8,7 +8,7 @@ from modules.wiki.utils.action_cn import action
 from modules.wiki.utils.wikilib import WikiLib
 
 
-async def rc_qq(msg: Bot.MessageSession, wiki_url):
+async def rc_qq(wiki_url):
     wiki = WikiLib(wiki_url)
     qq_account = Config("qq_account")
     query = await wiki.get_json(action='query', list='recentchanges',
@@ -21,11 +21,11 @@ async def rc_qq(msg: Bot.MessageSession, wiki_url):
     nodelist = [{
         "type": "node",
         "data": {
-            "name": f"{msg.locale.t('wiki.message.rc.qq.title.address')}",
+            "name": f"最近更改地址",
             "uin": qq_account,
             "content": [
                 {"type": "text", "data": {"text": pageurl.replace("$1", 'Special:RecentChanges') +
-                                          ('\n' + msg.locale.t('wiki.message.utils.qq.prompt')
+                                          ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
                                            if wiki.wiki_info.in_allowlist else '')}}]
         }
     }]
@@ -93,7 +93,7 @@ async def rc_qq(msg: Bot.MessageSession, wiki_url):
             {
                 "type": "node",
                 "data": {
-                    "name": f"{msg.locale.t('wiki.message.rc.qq.title')}",
+                    "name": f"最近更改",
                     "uin": qq_account,
                     "content": [{"type": "text", "data": {"text": x}}],
                 }
