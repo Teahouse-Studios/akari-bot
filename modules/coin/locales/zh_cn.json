@@ -8,7 +8,7 @@
     "coin.message.error.amount": "发生错误：无效的硬币个数：",
     "coin.message.error.nocoin": "发生错误：你抛了个空气，什么也没发生…",
     "coin.message.error.out_of_range": "发生错误：你最多只能抛 ${max} 个硬币",
-    "coin.message.error.rate": "发生错误：硬币概率错误",
+    "coin.message.error.rate": "发生错误：硬币概率错误。",
     "coin.message.head": "…\n…是正面！",
     "coin.message.mix": "，其中…\n",
     "coin.message.mix.end": "。",
