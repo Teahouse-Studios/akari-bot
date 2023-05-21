@@ -69,7 +69,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
 @excr.regex(r"(\d+(\.\d+)?)([a-zA-Z]{3})[至|到| to ]([a-zA-Z]{3})", desc='{exchange_rate.help.regex}')
 async def _(msg: Bot.MessageSession):
     groups = message.matched_msg.groups()
-    amount = msg.groups[0] if groups[0] else '1'
+    amount = groups[0] if groups[0] else '1'
     base = groups[3].upper()
     target = groups[4].upper()
     await msg.finish(await exchange(base, target, amount, msg))
