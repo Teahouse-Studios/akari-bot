@@ -1,15 +1,15 @@
 {
-    "random.help.number": "Generate a random integer within a given range.",
-    "random.message.number.error.invalid": "发生错误：无效的数字区间。",
-    "random.message.number.error.out_of_range": "发生错误：最小值大于最大值。",
     "random.help.choice": "Select an element from a given set.",
+    "random.help.desc": "Random number generator (cryptographically secure)",
+    "random.help.number": "Generate a random integer within a given range.",
+    "random.help.option.string.l": "在随机字符串中使用小写字母。",
+    "random.help.option.string.n": "在随机字符串中使用数字。",
+    "random.help.option.string.s": "在随机字符串中使用特殊符号。",
+    "random.help.option.string.u": "在随机字符串中使用大写字母。",
     "random.help.shuffle": "Shuffle the order of a given set.",
     "random.help.string": "生成随机字符串，默认为字母和数字组合。",
-    "random.option.string.u": "在随机字符串中使用大写字母。",
-    "random.option.string.l": "在随机字符串中使用小写字母。",
-    "random.option.string.n": "在随机字符串中使用数字。",
-    "random.option.string.s": "在随机字符串中使用特殊符号。",
-    "random.message.string.error.invalid": "发生错误：长度必须为小于 100 的正整数。",
     "random.help.uuid": "Generate random UUID (v4).",
-    "random.help.desc": "Random number generator (cryptographically secure)"
+    "random.message.number.error.invalid": "发生错误：无效的数字区间。",
+    "random.message.number.error.out_of_range": "发生错误：最小值大于最大值。",
+    "random.message.string.error.invalid": "发生错误：长度必须为小于 100 的正整数。"
 }

@@ -40,10 +40,10 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(', '.join(x))
 
 @r.handle('string <count> [-u] [-l] [-n] [-s] {{random.help.string}}', 
-         options_desc={'-u': '{random.option.string.u}', 
-                      '-l': '{random.option.string.l}', 
-                      '-n': '{random.option.string.n}', 
-                      '-s': '{random.option.string.s}'})
+         options_desc={'-u': '{random.help.option.string.u}', 
+                      '-l': '{random.help.option.string.l}', 
+                      '-n': '{random.help.option.string.n}', 
+                      '-s': '{random.help.option.string.s}'})
 async def _(msg: Bot.MessageSession):
 
     try:

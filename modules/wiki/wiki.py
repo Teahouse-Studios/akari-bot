@@ -23,7 +23,7 @@ wiki = module('wiki',
 
 
 @wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
-             options_desc={'-l': '{wiki.option.l}'})
+             options_desc={'-l': '{wiki.help.option.l}'})
 async def _(msg: Bot.MessageSession):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:

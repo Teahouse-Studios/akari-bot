@@ -5,7 +5,7 @@ from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 
 
-async def ab_qq(wiki_url):
+async def ab_qq(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     qq_account = Config("qq_account")
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp',
@@ -14,10 +14,10 @@ async def ab_qq(wiki_url):
     nodelist = [{
         "type": "node",
         "data": {
-            "name": f"滥用过滤器日志地址",
+            "name": f"{msg.locale.t('wiki.message.ab.qq.title.address')}",
             "uin": qq_account,
             "content": [
-                {"type": "text", "data": {"text": pageurl + ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
+                {"type": "text", "data": {"text": pageurl + ('\n' + msg.locale.t('wiki.message.utils.qq.prompt')
                                                              if wiki.wiki_info.in_allowlist else '')}}]
         }
     }]
@@ -53,7 +53,7 @@ async def ab_qq(wiki_url):
             {
                 "type": "node",
                 "data": {
-                    "name": f"滥用过滤器日志",
+                    "name": f"{msg.locale.t('wiki.message.ab.qq.title')}",
                     "uin": qq_account,
                     "content": [{"type": "text", "data": {"text": x}}],
                 }

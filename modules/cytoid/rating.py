@@ -18,7 +18,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def get_rating(uid, query_type):
+async def get_rating(uid, query_type, msg: Bot.MessageSession):
     try:
         if query_type == 'b30':
             query_type = 'bestRecords'
@@ -28,7 +28,7 @@ async def get_rating(uid, query_type):
         Profile_json = json.loads(await get_url(Profile_url, 200))
         if 'statusCode' in Profile_json:
             if Profile_json['statusCode'] == 404:
-                return {'status': False, 'text': '发生错误：此用户不存在。'}
+                return {'status': False, 'text': msg.locale.t('cytoid.message.error.user_not_found')}
         ProfileId = Profile_json['user']['id']
         ProfileRating = Profile_json['rating']
         ProfileLevel = Profile_json['exp']['currentLevel']

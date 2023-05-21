@@ -128,7 +128,7 @@ async def _(msg: Bot.MessageSession):
     elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
-    await msg.finish(msg.locale.t("core.message.set.option.success", k=k, v=v))
+    await msg.finish(msg.locale.t("core.message.set.help.option.tion.tion.tion.tion.tion.success", k=k, v=v))
 
 
 ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)

@@ -58,7 +58,7 @@ async def flipCoins(count: int, msg):
             faceDown += 1
         else:
             stand += 1
-    head = msg.locale.t("coin.message", count=count)
+    head = msg.locale.t("coin.message.prompt", count=count)
     if count == 1:
         drop_place = COIN_DROP_PLACES[secrets.randbelow(len(COIN_DROP_PLACES))]
         head += msg.locale.t("coin.message.drop_place", drop_place=drop_place) + '\n'

@@ -1,5 +1,5 @@
 {
-    "tweet.message.not_found": "找不到推文。",
+    "tweet.help": "透過推文 ID 或連結取得推文摘要圖片。（P.S. 我們沒有付 $200 月費）",
     "tweet.help.desc": "取得推文摘要。",
-    "tweet.help": "透過推文 ID 或連結取得推文摘要圖片。（P.S. 我們沒有付 $200 月費）"
+    "tweet.message.not_found": "找不到推文。"
 }

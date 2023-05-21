@@ -4,7 +4,7 @@ from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 
 
-async def rc(wiki_url):
+async def rc(msg: Bot.MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     query = await wiki.get_json(action='query', list='recentchanges', rcprop='title|user|timestamp', rctype='edit')
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:RecentChanges')
@@ -16,7 +16,7 @@ async def rc(wiki_url):
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
-        msg = f'{str(Url(pageurl))}\n{y}\n...仅显示前5条内容\n检测到外来信息介入，请前往最近更改查看所有消息。'
+        msg = f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.only_last_5")}\n{msg.locale.t("wiki.message.utils.banned")}'
     else:
-        msg = f'{str(Url(pageurl))}\n{y}\n...仅显示前5条内容'
+        msg = f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.only_last_5")}'
     return msg

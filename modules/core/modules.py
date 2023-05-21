@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
             'disable <module>... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
             'reload <module> ... {{core.help.module.reload}}',
-            'list {{core.help.module.list}}'], options_desc={'-g': '{core.option.module.g}'},
+            'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.tion.tion.tion.tion.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):

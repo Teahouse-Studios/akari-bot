@@ -10,7 +10,7 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
 @s.handle('<ServerIP:Port> [-r] [-p] {{server.help}}',
-          options_desc={'-r': '{server.option.r}', '-p': '{server.option.p}'})
+          options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
 async def main(msg: Bot.MessageSession):
     enabled_addon = msg.options.get('server_revoke')
     if enabled_addon is None:
@@ -41,7 +41,7 @@ async def main(msg: Bot.MessageSession):
                 if matchserip.group(3) == '0':
                     is_local_ip = True
     if is_local_ip:
-        return await msg.sendMessage(msg.locale.t('server.message.local_ip'))
+        return await msg.sendMessage(msg.locale.t('server.message.error.local_ip'))
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
@@ -50,7 +50,7 @@ async def main(msg: Bot.MessageSession):
             enabled_addon)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        msg_ = msg.locale.t('server.message.none')
+        msg_ = msg.locale.t('server.message.not_found')
         if msg.Feature.delete and enabled_addon:
             msg_ += '\n' + msg.locale.t('server.message.revoke')
         send = await msg.sendMessage(msg_)
