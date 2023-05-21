@@ -11,9 +11,9 @@
     "coin.message.error.rate": "发生错误：硬币概率错误",
     "coin.message.head": "…是正面！",
     "coin.message.mix": "，其中……",
-    "coin.message.mix.head": "$\n有 ${head} 枚是正面。",
+    "coin.message.mix.head": "\n有 ${head} 枚是正面",
     "coin.message.mix.stand": "\n…还有 ${stand} 枚立起来了！",
-    "coin.message.mix.tail": "\n$有 ${tail} 枚是反面。",
+    "coin.message.mix.tail": "\n有 ${tail} 枚是反面",
     "coin.message.prompt": "你抛了 ${count} 枚硬币",
     "coin.message.stand": "……它立起来了！",
     "coin.message.tail": "……是反面！"
