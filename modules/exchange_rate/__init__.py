@@ -16,7 +16,7 @@ excr = module('exchange_rate',
 
 
 @excr.command('<base> <target> [<amount>] {{exchange_rate.help}}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     base = msg.parsed_msg['<base>'].upper()
     target = msg.parsed_msg['<target>'].upper()
     amount = msg.parsed_msg.get('<amount>', '1')
@@ -70,6 +70,6 @@ async def exchange(base_currency, target_currency, amount: float, msg):
 async def _(msg: Bot.MessageSession):
     groups = message.matched_msg.groups()
     amount = msg.groups[0] if groups[0] else '1'
-    base = groups[3]
-    target = groups[4]
+    base = groups[3].upper()
+    target = groups[4].upper()
     await msg.finish(await exchange(base, target, amount, msg))
