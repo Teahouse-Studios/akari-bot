@@ -3,7 +3,7 @@ import re
 from core.logger import Logger
 from core.utils.i18n import Locale
 from modules.wiki import query_pages
-from modules.wiki.utils.utils.wikilib import QueryInfo
+from modules.wiki.utils.wikilib import QueryInfo
 
 
 async def moegirl(term: str, locale: Locale):
