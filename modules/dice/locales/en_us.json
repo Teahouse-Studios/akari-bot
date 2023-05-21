@@ -2,6 +2,7 @@
     "dice.help": "投掷指定骰子,可指定投骰次数与 dc 判断判定。",
     "dice.help.desc": "随机骰子。",
     "dice.help.option.dn": "表示 n 面骰。",
+    "dice.help.regex": "(扔|投|掷|丢)<数量>个[<面数>面]骰子",
     "dice.message.count.too_long": "数量过大，已省略 ${count} 个数据。",
     "dice.message.dc.check": "▷ 判定成功数量：${success}  判定失败数量：${failed}",
     "dice.message.dc.failed": "，判定失败！",

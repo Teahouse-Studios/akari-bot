@@ -1,4 +1,4 @@
 {
-    "ptt.help": "生成一张 Arcaea Potential 图片。",
-    "ptt.message.error.invalid": "发生错误：Potential 必须为 ≥0.00 且 ≤99.99 的数字。"
+    "ptt.help": "生成一张 Arcaea 潜力值图片。",
+    "ptt.message.error.invalid": "发生错误：潜力值必须为 ≥0.00 且 ≤99.99 的数字。"
 }
