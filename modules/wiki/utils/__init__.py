@@ -64,5 +64,5 @@ async def newbie_loader(msg: MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
-    res = await newbie(start_wiki)
+    res = await newbie(msg, start_wiki)
     await msg.finish(res)

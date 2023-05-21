@@ -35,3 +35,6 @@ enable_tos = False
 enable_analytics = True
 allow_request_private_ip = False
 enable_eval = True
+coin_limit = 10000
+coin_faceup_rate = 4994
+coin_facedown_rate = 4994

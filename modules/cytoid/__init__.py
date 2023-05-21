@@ -39,7 +39,7 @@ async def _(msg: Bot.MessageSession):
             qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
             c = qc.check(150)
         if c == 0:
-            img = await get_rating(query_id, query)
+            img = await get_rating(query_id, query, msg)
             if 'path' in img:
                 await msg.sendMessage([Image(path=img['path'])], allow_split_image=False)
             if 'text' in img:
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
 
 @cytoid.handle('bind <username> {{cytoid.help.bind}}')
 async def _(msg: Bot.MessageSession):
-    code: str = lower(msg.parsed_msg['<username>'])
+    code: str = msg.parsed_msg['<username>']
     getcode = await get_profile_name(code)
     if getcode:
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])

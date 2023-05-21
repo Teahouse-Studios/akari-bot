@@ -6,13 +6,13 @@ from core.component import module
 from core.exceptions import NoReportException
 from core.utils.http import get_url
 
+api_key = Config('exchange_rate_api_key')
+
 exchange_rate = module('exchange_rate',
                        desc='{exchange_rate.help.desc}',
                        alias={'exchangerate': 'exchange_rate',
                               'excr': 'exchange_rate'},
                        developers=['DoroWolf'])
-
-api_key = Config('exchange_rate_api_key')
 
 
 @exchange_rate.command('<base> <target> [<amount>] {{exchange_rate.help}}')
