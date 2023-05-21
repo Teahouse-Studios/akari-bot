@@ -70,6 +70,6 @@ async def exchange(base_currency, target_currency, amount: float, msg):
 async def _(msg: Bot.MessageSession):
     groups = message.matched_msg.groups()
     amount = groups[0] if groups[0] else '1'
-    base = groups[3].upper()
-    target = groups[4].upper()
+    base = groups[2].upper()
+    target = groups[3].upper()
     await msg.finish(await exchange(base, target, amount, msg))
