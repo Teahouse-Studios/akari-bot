@@ -1,12 +1,13 @@
 import secrets
 
+from config import Config
 from core.builtins.message import MessageSession
 from core.component import module
 from .zhNum2Int import Zh2Int
 
-MAX_COIN_NUM = 10000
-FACE_UP_RATE = 4994  # n/10000
-FACE_DOWN_RATE = 4994
+MAX_COIN_NUM = Config('coin_limit')
+FACE_UP_RATE = Config('coin_faceup_rate')  # n/10000
+FACE_DOWN_RATE = Config('coin_facedown_rate')
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
@@ -25,7 +26,7 @@ async def _(msg: MessageSession):
         await msg.finish(await flipCoins(int(amount), msg))
 
 
-@coin.regex(r"[丢|抛]([^个|枚]*)?[个|枚]?硬币", desc='{coin.help.regex}')
+@coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex}')
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
