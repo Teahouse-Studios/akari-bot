@@ -8,14 +8,14 @@ from core.utils.http import get_url
 
 api_key = Config('exchange_rate_api_key')
 
-exchange_rate = module('exchange_rate',
+excr = module('exchange_rate',
                        desc='{exchange_rate.help.desc}',
                        alias={'exchangerate': 'exchange_rate',
                               'excr': 'exchange_rate'},
                        developers=['DoroWolf'])
 
 
-@exchange_rate.command('<base> <target> [<amount>] {{exchange_rate.help}}')
+@excr.command('<base> <target> [<amount>] {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base_currency = msg.parsed_msg['<base>'].upper()
     target_currency = msg.parsed_msg['<target>'].upper()
@@ -60,3 +60,12 @@ async def _(msg: Bot.MessageSession):
     else:
         error_type = data['error-type']
         raise NoReportException(f"{error_type}")
+
+
+@excr.regex(r"(\d+(\.\d+)?)([a-zA-Z]{3})[至|到| to ]([a-zA-Z]{3})", desc='{exchange_rate.help.regex}')
+async def _(msg: MessageSession):
+    res = msg.matched_msg
+    amount = groups[0] if groups[0] else '1'
+    base_currency = groups[3]
+    target_currency = groups[4]
+    await msg.finish(await _(msg))
