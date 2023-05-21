@@ -22,7 +22,7 @@ async def rc_qq(msg: Bot.MessageSession, wiki_url):
     nodelist = [{
         "type": "node",
         "data": {
-            "name": f"{msg.locale.t('wiki.message.rc.qq.title.address')}",
+            "name": f"滥用过滤器日志地址",
             "uin": qq_account,
             "content": [
                 {"type": "text", "data": {"text": pageurl.replace("$1", 'Special:RecentChanges') +
@@ -94,7 +94,7 @@ async def rc_qq(msg: Bot.MessageSession, wiki_url):
             {
                 "type": "node",
                 "data": {
-                    "name": f"{msg.locale.t('wiki.message.rc.qq.title')}",
+                    "name": f"滥用过滤器日志地址",
                     "uin": qq_account,
                     "content": [{"type": "text", "data": {"text": x}}],
                 }

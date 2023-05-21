@@ -18,7 +18,7 @@ async def ab_qq(wiki_url):
             "name": f"滥用过滤器日志地址",
             "uin": qq_account,
             "content": [
-                {"type": "text", "data": {"text": pageurl + ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
+                {"type": "text", "data": {"text": pageurl + ('\n' + {msg.locale.t('wiki.message.utils.qq.prompt')}
                                                              if wiki.wiki_info.in_allowlist else '')}}]
         }
     }]
