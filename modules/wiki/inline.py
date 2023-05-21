@@ -19,7 +19,8 @@ wiki_inline = module('wiki_inline',
                      alias='wiki_regex', developers=['OasisAkari'])
 
 
-@wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A')
+@wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A',
+            desc="[[想查找的页面]]")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -29,7 +30,8 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list, inline_mode=True)
 
 
-@wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A')
+@wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A',
+            desc="{{想查找的模板}}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
