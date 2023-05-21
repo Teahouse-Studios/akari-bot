@@ -1,5 +1,5 @@
 {
-    "tweet.help": "Get tweet image from tweet ID or link. (P.S. We didn't pay the $200 Elon tax)",
+    "tweet.message.not_found": "Tweet not found.",
     "tweet.help.desc": "Get tweet image from tweet ID or link. (P.S. We didn't pay the $200 Elon tax)",
-    "tweet.message.not_found": "Tweet not found."
+    "tweet.help": "Get tweet image from tweet ID or link. (P.S. We didn't pay the $200 Elon tax)"
 }
