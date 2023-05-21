@@ -1,4 +1,5 @@
 from config import Config
+from core.builtins import Bot
 from core.dirty_check import check
 from core.logger import Logger
 from modules.wiki.utils.UTC8 import UTC8
