@@ -77,7 +77,7 @@ async def _(msg: Bot.MessageSession):
             await msg.sendMessage(Image(drawb19('', b19_data)))
         except Exception as e:
             traceback.print_exc()
-            await msg.sendMessage(Plain('获取失败，请尝试重新绑定Token或报告开发者：\n' + str(e)))
+            await msg.sendMessage(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
 
 
 @phi.command('update', required_superuser=True)
