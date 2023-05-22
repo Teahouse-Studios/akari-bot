@@ -29,9 +29,9 @@ def drawb19(username, b19data):
             if song_id == '':
                 cardimg = Image.new('RGBA', (384, 240), 'black')
             else:
-                imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.split(".")[0]}')
+                imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.split(".")[0].lower()}')
                 if not os.path.exists(imgpath):
-                    imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id}.png')
+                    imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.lower()}.png')
                 if not os.path.exists(imgpath):
                     cardimg = Image.new('RGBA', (384, 240), 'black')
                 else:
