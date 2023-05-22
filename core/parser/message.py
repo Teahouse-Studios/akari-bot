@@ -257,7 +257,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                                         kwargs[param_name] = float(msg.parsed_msg[param_name_])
                                                     elif param_obj.annotation == bool:
                                                         kwargs[param_name] = bool(msg.parsed_msg[param_name_])
-                                                except KeyError:
+                                                except (KeyError, ValueError):
                                                     raise InvalidCommandFormatError
                                             else:
                                                 if param_name_ not in kwargs:
