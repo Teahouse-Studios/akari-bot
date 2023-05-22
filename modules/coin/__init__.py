@@ -18,9 +18,7 @@ async def _(msg: MessageSession):
 
 
 @coin.command('[<amount>] {{coin.help}}')
-async def _(msg: MessageSession, amount: int):
-    if not amount:
-        amount = 1
+async def _(msg: MessageSession, amount: int = 1):
     await msg.finish(await flipCoins(int(amount), msg))
 
 
