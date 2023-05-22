@@ -72,5 +72,4 @@ async def _(msg: Bot.MessageSession):
     amount = groups[0] if groups[0] else '1'
     base = groups[2].upper()
     target = groups[4].upper()
-    await msg.sendMessage(amount)
     await msg.finish(await exchange(base, target, amount, msg))
