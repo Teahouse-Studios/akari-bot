@@ -40,15 +40,13 @@ async def _(msg: Bot.MessageSession):
 
 @phi.command('unbind {{phigros.help.unbind}}')
 async def _(msg: Bot.MessageSession):
-    unbind = PgrBindInfoManager(msg).remove_bind_info()
-    if unbind:
+    if PgrBindInfoManager(msg).remove_bind_info():
         await msg.finish(msg.locale.t("phigros.message.unbind.success"))
 
 
 @phi.command('b19 {{phigros.help.b19}}')
 async def _(msg: Bot.MessageSession):
-    bind = PgrBindInfoManager(msg).get_bind_info()
-    if bind is None:
+    if bind := PgrBindInfoManager(msg).get_bind_info() is None:
         await msg.finish(msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0]))
     else:
         try:
@@ -61,24 +59,16 @@ async def _(msg: Bot.MessageSession):
             rd_path = random_cache_path()
             shutil.unpack_archive(download, rd_path)
             game_records = parse_game_record(os.path.join(rd_path, 'gameRecord'))
-            flattened = {}
-            for song in game_records:
-                for level in game_records[song]:
-                    flattened[f'{level}.{song}'] = game_records[song][level]
-            sort_by_rks = sorted(flattened.items(), key=lambda x: x[1]['rks'], reverse=True)
-            phi_list = []
-            for s in sort_by_rks:
-                if s[1]['score'] == 1000000:
-                    phi_list.append(s)
-            if phi_list:
-                b19_data = [sorted(phi_list, key=lambda x: x[1]['rks'], reverse=True)[0]] + sort_by_rks[0: 19]
-            else:
-                b19_data = sort_by_rks[0: 20]
-            rks_acc = [i[1]['rks'] for i in b19_data]
-            if len(rks_acc) < 20:
+            sort_by_rks = sorted({f'{level}.{song}':
+                                  game_records[song][level] for song in game_records for level in
+                                  game_records[song]}.items(),
+                                 key=lambda x: x[1]['rks'], reverse=True)
+            phi_list = [s for s in sort_by_rks if s[1]['score'] == 1000000]
+            b19_data = ([sorted(phi_list, key=lambda x: x[1]['rks'], reverse=True)[0]]
+                        if phi_list else []) + sort_by_rks[0: 19]
+            if len(rks_acc := [i[1]['rks'] for i in b19_data]) < 20:
                 rks_acc += [0] * (20 - len(rks_acc))
-            rks_acc = round(sum(rks_acc) / len(rks_acc), 2)
-            await msg.sendMessage(Image(drawb19(bind[1], rks_acc, b19_data)))
+            await msg.sendMessage(Image(drawb19(bind[1], round(sum(rks_acc) / len(rks_acc), 2), b19_data)))
         except Exception as e:
             traceback.print_exc()
             await msg.sendMessage(msg.locale.t("phigros.message.b19.get_failed", err=str(e)))
@@ -86,8 +76,7 @@ async def _(msg: Bot.MessageSession):
 
 @phi.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
-    update_assets_ = await update_assets()
-    if update_assets_:
+    if await update_assets():
         await msg.finish(msg.locale.t("phigros.message.update.success"))
     else:
         await msg.finish(msg.locale.t("phigros.message.update.failed"))
