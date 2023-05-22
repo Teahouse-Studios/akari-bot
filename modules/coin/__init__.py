@@ -26,7 +26,7 @@ async def _(msg: MessageSession):
         await msg.finish(await flipCoins(int(amount), msg))
 
 
-@coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex}')
+@coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex.desc}')
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
