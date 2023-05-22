@@ -28,8 +28,9 @@ class PgrBindInfoManager:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def set_bind_info(self, sessiontoken):
+    def set_bind_info(self, sessiontoken, username='Guest'):
         self.query.sessiontoken = sessiontoken
+        self.query.username = username
         session.commit()
         return True
 

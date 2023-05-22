@@ -8,7 +8,7 @@ from core.builtins import Plain, Image
 from core.component import module
 from core.utils.http import get_url, download_to_cache
 from .dbutils import PgrBindInfoManager
-from .update import update_assets
+from .update import update_assets, p_headers
 from .genb19 import drawb19
 from .game_record import parse_game_record
 
@@ -24,13 +24,18 @@ async def _(msg: Bot.MessageSession):
         send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.warning")))
         need_revoke = True
     token: str = msg.parsed_msg['<sessiontoken>']
-    bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=token)
-    if bind:
-        send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.success")))
-    if need_revoke:
-        await msg.sleep(15)
-        for i in send_msg:
-            await i.delete()
+    headers = p_headers.copy()
+    headers['X-LC-Session'] = token
+    get_user_info = await get_url('https://phigrosserver.pigeongames.cn/1.1/users/me', headers=headers, fmt='json')
+    if 'nickname' in get_user_info:
+        bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=token, username=get_user_info['nickname'])
+        if bind:
+            send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.success",
+                                                               username=get_user_info['nickname'])))
+        if need_revoke:
+            await msg.sleep(15)
+            for i in send_msg:
+                await i.delete()
 
 
 @phi.command('unbind {{phigros.help.unbind}}')
@@ -47,14 +52,10 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0]))
     else:
         try:
-            get_save_url = await get_url('https://phigrosserver.pigeongames.cn/1.1/classes/_GameSave', headers={
-                'Accept': 'application/json',
-                'X-LC-Session': bind,
-                'X-LC-Id': 'rAK3FfdieFob2Nn8Am',
-                'X-LC-Key': 'Qr9AEqtuoSVS3zeD6iVbM4ZC0AtkJcQ89tywVyi0',
-                'User-Agent': 'LeanCloud-CSharp-SDK/1.0.3',
-
-            }, fmt='json')
+            headers = p_headers.copy()
+            headers['X-LC-Session'] = bind
+            get_save_url = await get_url('https://phigrosserver.pigeongames.cn/1.1/classes/_GameSave', headers=headers,
+                                         fmt='json')
             save_url = get_save_url['results'][0]['gameFile']['url']
             download = await download_to_cache(save_url)
             rd_path = random_cache_path()

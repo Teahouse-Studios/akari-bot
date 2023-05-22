@@ -15,6 +15,11 @@ cache_path = os.path.abspath('./cache')
 rating_path = os.path.abspath('./assets/phigros/rating.json')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 
+p_headers = {'Accept': 'application/json',
+             'X-LC-Id': 'rAK3FfdieFob2Nn8Am',
+             'X-LC-Key': 'Qr9AEqtuoSVS3zeD6iVbM4ZC0AtkJcQ89tywVyi0',
+             'User-Agent': 'LeanCloud-CSharp-SDK/1.0.3'}
+
 
 def remove_punctuations(text):
     punctuations = '！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～、。〃〈〉《》「」『』【】〒〔〕〖〗〘〙〚〛〜・♫☆×♪↑↓ '
