@@ -20,10 +20,10 @@ class PgrBindInfoManager:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def get_bind_sessiontoken(self) -> Union[str, None]:
-        bind_info = self.query.sessiontoken
-        if bind_info != '':
-            return bind_info
+    def get_bind_info(self):
+        sessiontoken = self.query.sessiontoken
+        if sessiontoken != '':
+            return sessiontoken, self.query.username
         return None
 
     @retry(stop=stop_after_attempt(3), reraise=True)

@@ -9,9 +9,22 @@ assets_path = os.path.abspath('./assets/phigros')
 levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
 
 
-def drawb19(username, b19data):
-    b19img = Image.new("RGBA", (1590, 1340), '#1e2129')
-    # b30card
+def drawb19(username, rks_acc, b19data):
+    b19img = Image.new("RGBA", (1570, 1320), '#1e2129')
+    font = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
+    font2 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 15)
+    font3 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 25)
+
+    # username
+    drawtext = ImageDraw.Draw(b19img)
+    get_img_width = b19img.width
+    text1_width = font.getbbox(username)[2]
+    drawtext.text((get_img_width - text1_width - 20, 30), username, '#ffffff', font=font)
+    rks_text = f'Rks Acc: {rks_acc}'
+    text2_width = font.getbbox(rks_text)[2]
+    drawtext.text((get_img_width - text2_width - 20, 52), rks_text, '#ffffff', font=font)
+
+    # b19card
     i = 0
     fname = 1
     t = 0
@@ -71,9 +84,6 @@ def drawb19(username, b19data):
             draw.polygon([(0, 0), (0, 100), (100, 0)],
                          fill=['#11b231', '#0273b7', '#cd1314', '#383838'][levels[song_level]])
             text_img = Image.new('RGBA', (70, 70), 'rgba(0,0,0,0)')
-            font = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
-            font2 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 15)
-            font3 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 25)
             text_draw = ImageDraw.Draw(text_img)
             text1 = ['EZ', 'HD', 'IN', 'AT'][levels[song_level]]
             text2 = str(round(song_base_rks, 1))
