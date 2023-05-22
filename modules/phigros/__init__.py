@@ -70,12 +70,14 @@ async def _(msg: Bot.MessageSession):
             for s in sort_by_rks:
                 if s[1]['score'] == 1000000:
                     phi_list.append(s)
-            if not phi_list:
-                phi_list.append(sort_by_rks[0])
-            best_phi = sorted(phi_list, key=lambda x: x[1]['rks'], reverse=True)[0]
-            b19_data = [best_phi] + sort_by_rks[0: 19]
+            if phi_list:
+                b19_data = [sorted(phi_list, key=lambda x: x[1]['rks'], reverse=True)[0]] + sort_by_rks[0: 19]
+            else:
+                b19_data = sort_by_rks[0: 20]
             rks_acc = [i[1]['rks'] for i in b19_data]
-            rks_acc = sum(rks_acc) / len(rks_acc)
+            if len(rks_acc) < 20:
+                rks_acc += [0] * (20 - len(rks_acc))
+            rks_acc = round(sum(rks_acc) / len(rks_acc), 2)
             await msg.sendMessage(Image(drawb19(bind[1], rks_acc, b19_data)))
         except Exception as e:
             traceback.print_exc()
