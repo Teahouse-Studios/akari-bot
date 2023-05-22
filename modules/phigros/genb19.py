@@ -1,12 +1,12 @@
-import asyncio
 import os
-import random
 import traceback
 import uuid
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 assets_path = os.path.abspath('./assets/phigros')
+
+levels = {'EZ': 0, 'HD': 1, 'IN': 2, 'AT': 3}
 
 
 def drawb19(username, b19data):
@@ -16,14 +16,22 @@ def drawb19(username, b19data):
     fname = 1
     t = 0
     s = 0
-    for song in b19data:
+    for song_ in b19data:
         try:
-            if song.id == '':
+            split_id = song_[0].split('.')
+            song_id = split_id[1]
+            song_level = split_id[0]
+            song_score = song_[1]['score']
+            song_rks = song_[1]['rks']
+            song_acc = song_[1]['accuracy']
+            song_base_rks = song_[1]['base_rks']
+
+            if song_id == '':
                 cardimg = Image.new('RGBA', (384, 240), 'black')
             else:
-                imgpath = os.path.abspath(f'{assets_path}/illustration/{song.id.split(".")[0]}')
+                imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.split(".")[0]}')
                 if not os.path.exists(imgpath):
-                    imgpath = os.path.abspath(f'{assets_path}/illustration/{song.id}.png')
+                    imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id}.png')
                 if not os.path.exists(imgpath):
                     cardimg = Image.new('RGBA', (384, 240), 'black')
                 else:
@@ -60,14 +68,15 @@ def drawb19(username, b19data):
             i += 1
             triangle_img = Image.new('RGBA', (100, 100), 'rgba(0,0,0,0)')
             draw = ImageDraw.Draw(triangle_img)
-            draw.polygon([(0, 0), (0, 100), (100, 0)], fill=['#11b231', '#0273b7', '#cd1314', '#383838'][song.level])
+            draw.polygon([(0, 0), (0, 100), (100, 0)],
+                         fill=['#11b231', '#0273b7', '#cd1314', '#383838'][levels[song_level]])
             text_img = Image.new('RGBA', (70, 70), 'rgba(0,0,0,0)')
             font = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
             font2 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 15)
             font3 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 25)
             text_draw = ImageDraw.Draw(text_img)
-            text1 = ['EZ', 'HD', 'IN', 'AT'][song.level]
-            text2 = str(round(song.difficulty, 1))
+            text1 = ['EZ', 'HD', 'IN', 'AT'][levels[song_level]]
+            text2 = str(round(song_base_rks, 1))
             text_size1 = font.getbbox(text1)
             text_size2 = font2.getbbox(text2)
             text_draw.text(((text_img.width - text_size1[2]) / 2, (text_img.height - text_size1[3]) / 2), text1,
@@ -79,8 +88,8 @@ def drawb19(username, b19data):
             triangle_img.alpha_composite(text_img.rotate(45, expand=True), (-25, -25))
             cardimg.alpha_composite(triangle_img.resize((75, 75)), (0, 0))
             draw_card = ImageDraw.Draw(cardimg)
-            draw_card.text((20, 155), song.id, '#ffffff', font=font3)
-            draw_card.text((20, 180), f'Score: {song.s} Acc: {song.a}\nRks: {song.rks}', '#ffffff', font=font)
+            draw_card.text((20, 155), song_id, '#ffffff', font=font3)
+            draw_card.text((20, 180), f'Score: {song_score} Acc: {song_acc}\nRks: {song_rks}', '#ffffff', font=font)
 
             b19img.alpha_composite(cardimg, (w, h))
             fname += 1
@@ -94,20 +103,3 @@ def drawb19(username, b19data):
         savefilename = os.path.abspath(f'./cache/{str(uuid.uuid4())}.jpg')
         b19img.convert("RGB").save(savefilename)
         return savefilename
-
-
-if __name__ == '__main__':
-    from thrift.transport import TSocket
-    from thrift.transport import TTransport
-    from thrift.protocol import TBinaryProtocol
-
-    from phigrosLibrary import Phigros
-
-    transport = TTransport.TBufferedTransport(TSocket.TSocket())
-    protocol = TBinaryProtocol.TBinaryProtocol(transport)
-    client = Phigros.Client(protocol)
-    transport.open()
-    saveurl = client.getSaveUrl('kqt1ptgjwniiab6z7k8xk9hm4')
-    result = client.best19(saveurl.saveUrl)
-    drawb19('', result)
-    transport.close()
