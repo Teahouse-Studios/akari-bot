@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     bind = PgrBindInfoManager(msg).get_bind_sessiontoken()
     if bind is None:
-        await msg.finish(msg.locale.t("phigros.message.user_unbound"))
+        await msg.finish(msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0]))
     else:
         try:
             get_save_url = await get_url('https://phigrosserver.pigeongames.cn/1.1/classes/_GameSave', headers={
