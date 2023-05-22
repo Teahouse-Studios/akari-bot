@@ -18,12 +18,10 @@ async def _(msg: MessageSession):
 
 
 @coin.command('[<amount>] {{coin.help}}')
-async def _(msg: MessageSession):
-    amount = msg.parsed_msg.get('<amount>', '1')
-    if not amount.isdigit():
-        await msg.finish(msg.locale.t('coin.message.error.amount') + amount)
-    else:
-        await msg.finish(await flipCoins(int(amount), msg))
+async def _(msg: MessageSession, amount: int):
+    if not amount:
+        amount = 1
+    await msg.finish(await flipCoins(int(amount), msg))
 
 
 @coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex.desc}')

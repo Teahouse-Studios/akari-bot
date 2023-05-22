@@ -17,18 +17,17 @@ phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
 
 
 @phi.command('bind <sessiontoken> {{phigros.help.bind}}')
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, sessiontoken: str):
     need_revoke = False
     send_msg = []
     if msg.target.targetFrom in ['QQ|Group', 'QQ|Guild', 'Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
         send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.warning")))
         need_revoke = True
-    token: str = msg.parsed_msg['<sessiontoken>']
     headers = p_headers.copy()
-    headers['X-LC-Session'] = token
+    headers['X-LC-Session'] = sessiontoken
     get_user_info = await get_url('https://phigrosserver.pigeongames.cn/1.1/users/me', headers=headers, fmt='json')
     if 'nickname' in get_user_info:
-        bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=token, username=get_user_info['nickname'])
+        bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=sessiontoken, username=get_user_info['nickname'])
         if bind:
             send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.success",
                                                                username=get_user_info['nickname'])))
@@ -46,7 +45,7 @@ async def _(msg: Bot.MessageSession):
 
 @phi.command('b19 {{phigros.help.b19}}')
 async def _(msg: Bot.MessageSession):
-    if bind := PgrBindInfoManager(msg).get_bind_info() is None:
+    if (bind := PgrBindInfoManager(msg).get_bind_info()) is None:
         await msg.finish(msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0]))
     else:
         try:

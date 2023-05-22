@@ -1,10 +1,12 @@
 import re
 import traceback
+import inspect
 from datetime import datetime
 
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
+from core.types import MessageSession as MessageSession_T
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
@@ -236,11 +238,38 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                          msg.target.targetFrom not in submodule.available_for):
                                         raise InvalidCommandFormatError
 
+                                    kwargs = {}
+                                    func_params = inspect.signature(submodule.function).parameters
+                                    if len(func_params) > 1:
+                                        for param_name, param_obj in func_params.items():
+                                            if isinstance(param_obj.annotation, MessageSession_T.__class__):
+                                                kwargs[param_name] = msg
+                                            param_name_ = param_name
+                                            if (param_name__ := f'<{param_name}>') in msg.parsed_msg:
+                                                param_name_ = param_name__
+
+                                            if param_name_ in msg.parsed_msg:
+                                                kwargs[param_name] = msg.parsed_msg[param_name_]
+                                                try:
+                                                    if param_obj.annotation == int:
+                                                        kwargs[param_name] = int(msg.parsed_msg[param_name_])
+                                                    elif param_obj.annotation == float:
+                                                        kwargs[param_name] = float(msg.parsed_msg[param_name_])
+                                                    elif param_obj.annotation == bool:
+                                                        kwargs[param_name] = bool(msg.parsed_msg[param_name_])
+                                                except KeyError:
+                                                    raise InvalidCommandFormatError
+                                            else:
+                                                if param_name_ not in kwargs:
+                                                    kwargs[param_name_] = None
+                                    else:
+                                        kwargs[func_params[list(func_params.keys())[0]].name] = msg
+
                                     if not senderInfo.query.disable_typing:
                                         async with msg.Typing(msg):
-                                            await parsed_msg[0].function(msg)  # 将msg传入下游模块
+                                            await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:
-                                        await parsed_msg[0].function(msg)
+                                        await parsed_msg[0].function(**kwargs)
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
                                     await msg.sendMessage(msg.locale.t("parser.command.format.invalid",
