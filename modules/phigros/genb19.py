@@ -20,7 +20,7 @@ def drawb19(username, rks_acc, b19data):
     get_img_width = b19img.width
     text1_width = font.getbbox(username)[2]
     drawtext.text((get_img_width - text1_width - 20, 30), username, '#ffffff', font=font)
-    rks_text = f'Rks Acc: {rks_acc}'
+    rks_text = f'Rks Avg: {rks_acc}'
     text2_width = font.getbbox(rks_text)[2]
     drawtext.text((get_img_width - text2_width - 20, 52), rks_text, '#ffffff', font=font)
 
