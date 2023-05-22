@@ -1,8 +1,8 @@
-import ujson as json
 import struct
 
+import ujson as json
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Util.Padding import unpad
 
 from core.logger import Logger
 
@@ -32,7 +32,7 @@ def parse_game_record(file_path):
             score_length = data[pos]
             pos += 1
 
-            score = data[(pos):(pos + score_length)]
+            score = data[pos:(pos + score_length)]
             pos += score_length
 
             has_score = score[0]
