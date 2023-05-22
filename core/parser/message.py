@@ -241,27 +241,33 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     kwargs = {}
                                     func_params = inspect.signature(submodule.function).parameters
                                     if len(func_params) > 1:
+                                        parsed_msg_ = msg.parsed_msg.copy()
                                         for param_name, param_obj in func_params.items():
                                             if isinstance(param_obj.annotation, MessageSession_T.__class__):
                                                 kwargs[param_name] = msg
                                             param_name_ = param_name
-                                            if (param_name__ := f'<{param_name}>') in msg.parsed_msg:
+                                            if (param_name__ := f'<{param_name}>') in parsed_msg_:
                                                 param_name_ = param_name__
 
-                                            if param_name_ in msg.parsed_msg:
-                                                kwargs[param_name] = msg.parsed_msg[param_name_]
+                                            if param_name_ in parsed_msg_:
+                                                kwargs[param_name] = parsed_msg_[param_name_]
                                                 try:
                                                     if param_obj.annotation == int:
-                                                        kwargs[param_name] = int(msg.parsed_msg[param_name_])
+                                                        kwargs[param_name] = int(parsed_msg_[param_name_])
                                                     elif param_obj.annotation == float:
-                                                        kwargs[param_name] = float(msg.parsed_msg[param_name_])
+                                                        kwargs[param_name] = float(parsed_msg_[param_name_])
                                                     elif param_obj.annotation == bool:
-                                                        kwargs[param_name] = bool(msg.parsed_msg[param_name_])
+                                                        kwargs[param_name] = bool(parsed_msg_[param_name_])
+                                                    del parsed_msg_[param_name_]
                                                 except (KeyError, ValueError):
                                                     raise InvalidCommandFormatError
                                             else:
                                                 if param_name_ not in kwargs:
-                                                    kwargs[param_name_] = None
+                                                    if param_obj.default is not inspect.Parameter.empty:
+                                                        kwargs[param_name_] = param_obj.default
+                                                    else:
+                                                        kwargs[param_name_] = None
+
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
