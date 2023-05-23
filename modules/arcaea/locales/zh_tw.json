@@ -45,7 +45,7 @@
     "arcaea.message.download.success": "目前的最新版本為 ${version}。\n下載網址：${url}",
     "arcaea.message.failed": "查詢失敗。",
     "arcaea.message.failed.errcode": "查詢失敗：",
-    "arcaea.message.failed.fetch": "取得失敗。",
+    "arcaea.message.get_failed": "取得失敗。",
     "arcaea.message.info.result": "${username} (${potential}) 的最近遊玩紀錄：\n${trackname}（${difficulty}）\n分數：${score}\nPure：${pure} (${shiny_pure})\nFar：${far}\nLost：${lost}\n潛力值：${realptt} -> ${ptt}\n時間：${time_played} (UTC+8)",
     "arcaea.message.info.result.none": "此使用者無遊玩紀錄。",
     "arcaea.message.initialize.not_found": "找不到「arc.apk」！",

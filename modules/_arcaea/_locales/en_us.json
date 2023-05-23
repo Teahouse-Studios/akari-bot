@@ -39,7 +39,7 @@
     "arcaea.message.download.success": "Current latest version is ${version}.\nDownload: ${url}",
     "arcaea.message.failed": "Failed to query.",
     "arcaea.message.failed.errcode": "Failed to query: ",
-    "arcaea.message.failed.fetch": "Failed to fetch.",
+    "arcaea.message.get_failed": "Failed to fetch.",
     "arcaea.message.info.result": "Recent play record of ${username} (${potential}): \n${trackname} (${difficulty})\nScore: ${score}\nPure: ${pure} (${shiny_pure})\nFar: ${far}\nLost: ${lost}\nPotential: ${realptt} -> ${ptt}\nTime: ${time_played} (UTC+8)",
     "arcaea.message.info.result.none": "This user has no play record.",
     "arcaea.message.initialize.not_found": "arc.apk not found!",

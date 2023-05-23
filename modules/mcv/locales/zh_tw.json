@@ -5,7 +5,7 @@
     "mcv.help.mcv": "查詢目前 Minecraft：Java 版在啟動器內最新版本。",
     "mcv.message.error.server": "伺服器錯誤。",
     "mcv.message.mcbv": "Mojira 上所記錄最新版本為：\n${msg2}\n（以商店內最新版本為準，Mojira 僅作版本號預覽用）",
-    "mcv.message.mcbv.failed": "取得失敗。",
+    "mcv.message.mcbv.get_failed": "取得失敗。",
     "mcv.message.mcbv.ms_store": "目前 Microsoft Store 內最新正式版為：",
     "mcv.message.mcbv.play_store": "目前 Google Play 商店內最新正式版為：",
     "mcv.message.mcdv": "最新版：${mcdversion}\n（數據來源於 Mojira，可能會比官方發布要早一段時間。信息僅供參考。）",

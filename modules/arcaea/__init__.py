@@ -69,7 +69,7 @@ async def _(msg: Bot.MessageSession):
             elif get_['status'] == -23:
                 await msg.finish(msg.locale.t("arcaea.message.b30.low_potential"))
             else:
-                await msg.finish(msg.locale.t("arcaea.message.failed.fetch") + get_['message'])
+                await msg.finish(msg.locale.t("arcaea.message.get_failed") + get_['message'])
             ExecutionLockList.remove(msg)
 
             async def _get_result(session):
@@ -132,12 +132,12 @@ async def _(msg: Bot.MessageSession):
             err_key = "arcaea.errcode." + str(e.args[0])
             err_msg = msg.locale.t(err_key)
             if err_key != err_msg:
-                await msg.finish(msg.locale.t("arcaea.message.failed.fetch") + err_msg)
+                await msg.finish(msg.locale.t("arcaea.message.get_failed") + err_msg)
             else:
-                await msg.finish(msg.locale.t("arcaea.message.failed.fetch"))
+                await msg.finish(msg.locale.t("arcaea.message.get_failed"))
         except Exception:
             traceback.print_exc()
-            await msg.finish(msg.locale.t("arcaea.message.failed.fetch"))
+            await msg.finish(msg.locale.t("arcaea.message.get_failed"))
         finally:
             query_tasks.remove(msg.target.senderId)
     else:
@@ -162,7 +162,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(resp)
         except Exception:
             traceback.print_exc()
-            await msg.finish(msg.locale.t("arcaea.message.failed.fetch"))
+            await msg.finish(msg.locale.t("arcaea.message.get_failed"))
     else:
         await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
