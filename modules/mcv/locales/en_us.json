@@ -5,7 +5,6 @@
     "mcv.help.mcv": "Get the latest version of Minecraft: Java Edition in the launcher.",
     "mcv.message.error.server": "Server error.",
     "mcv.message.mcbv": "The latest version recorded on Mojira is:\n${msg2}\n(The latest version in the stores shall prevail, Mojira is only for previewing the version)",
-    "mcv.message.mcbv.failed": "Failed to fetch.",
     "mcv.message.mcbv.ms_store": "Currently the latest version in Microsoft Store is: ",
     "mcv.message.mcbv.play_store": "Currently the latest version in Google Play Store is: ",
     "mcv.message.mcdv": "The latest version: ${mcdversion}\n(The data from Mojira may be earlier than the official release. Information is for reference purposes only).",
@@ -13,5 +12,6 @@
     "mcv.message.mcv": "The latest version in the launcher is: \n${message1}\nThe latest version recorded on Mojira is: \n${message2}\n(The latest version in the launcher shall prevail, Mojira is only for previewing the version)",
     "mcv.message.mcv.message1": "The latest release: ${release}, the latest snapshot: ${snapshot},",
     "mcv.message.mcv.message1.failed": "Failed to get manifest.json.",
-    "mcv.message.mcv.message2.failed": "Failed to get Mojira information."
+    "mcv.message.mcv.message2.failed": "Failed to get Mojira information.",
+    "mcv.message.mcbv.get_failed": "Failed to fetch."
 }
