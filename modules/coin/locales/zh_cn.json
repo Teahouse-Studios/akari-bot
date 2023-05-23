@@ -1,11 +1,11 @@
 {
     "coin.help": "抛任意枚硬币。",
     "coin.help.desc": "抛硬币。",
-    "coin.help.regex.desc": "(丢|抛)<count>[(个|枚)]硬币",
+    "coin.help.regex.desc": "(丢|抛)[<count>(个|枚)]硬币",
     "coin.message.all.head": "…\n…全是正面！",
     "coin.message.all.stand": "…\n…全都立起来了？！",
     "coin.message.all.tail": "…\n…全是反面！",
-    "coin.message.error.amount": "发生错误：无效的硬币个数：",
+    "coin.message.error.amount": "发生错误：无效的硬币数量。",
     "coin.message.error.nocoin": "发生错误：你抛了个空气，什么也没发生…",
     "coin.message.error.out_of_range": "发生错误：你最多只能抛 ${max} 枚硬币。",
     "coin.message.error.rate": "发生错误：硬币概率错误。",
