@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
     tweet_id = msg.parsed_msg['<tweet>'].split('/')[-1]
     if not tweet_id.isdigit():
         await msg.finish(msg.locale.t('tweet.message.error'))
-    failed_request = await get_url('https://static-tweet.vercel.app/1', statuawait msg.finish(s_code=404))
+    failed_request = await get_url('https://static-tweet.vercel.app/1', status_code=404)
     build_id = re.search(r'"buildId"\:"(.*?)"', failed_request).group(1)
     res = await get_url(f'https://static-tweet.vercel.app/_next/data/{build_id}/{tweet_id}.json')
     res_json = json.loads(res)
