@@ -45,7 +45,6 @@
     "arcaea.message.download.success": "目前的最新版本为 ${version}。\n下载地址：${url}",
     "arcaea.message.failed": "查询失败。",
     "arcaea.message.failed.errcode": "查询失败：",
-    "arcaea.message.get_failed": "获取失败。",
     "arcaea.message.info.result": "${username} (${potential}) 的最近游玩记录：\n${trackname}（${difficulty}）\n分数：${score}\nPure：${pure} (${shiny_pure})\nFar：${far}\nLost：${lost}\n潜力值：${realptt} -> ${ptt}\n时间：${time_played} (UTC+8)",
     "arcaea.message.info.result.none": "此用户无游玩记录。",
     "arcaea.message.initialize.not_found": "未找到“arc.apk”！",
@@ -73,5 +72,6 @@
     "arcaea.message.song.time.second": " 秒",
     "arcaea.message.song.world_unlock": "需要通过世界解锁：",
     "arcaea.message.unbind.success": "解绑成功。",
-    "arcaea.message.user_unbound": "未绑定用户，请使用“${prefix}arcaea bind”绑定一个用户。"
+    "arcaea.message.user_unbound": "未绑定用户，请使用“${prefix}arcaea bind”绑定一个用户。",
+    "arcaea.message.get_failed": "获取失败。"
 }

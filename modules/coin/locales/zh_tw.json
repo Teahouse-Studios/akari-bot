@@ -1,11 +1,11 @@
 {
     "coin.help": "拋任意枚硬幣。",
     "coin.help.desc": "拋硬幣。",
-    "coin.help.regex.desc": "(丟|拋)<count>[(個|枚)]硬幣",
+    "coin.help.regex.desc": "(丟|拋)[<count>(個|枚)]硬幣",
     "coin.message.all.head": "…\n…全是正面！",
     "coin.message.all.stand": "…\n…全都立起来了？！",
     "coin.message.all.tail": "…\n…全是反面！",
-    "coin.message.error.amount": "發生錯誤：無效的硬幣數量：",
+    "coin.message.error.amount": "發生錯誤：無效的硬幣數量。",
     "coin.message.error.nocoin": "發生錯誤：你拋了 0 枚硬幣，什麼也沒有發生…",
     "coin.message.error.out_of_range": "發生錯誤：你最多只能拋 ${max} 枚硬幣。",
     "coin.message.error.rate": "發生錯誤：硬幣概率錯誤。",
