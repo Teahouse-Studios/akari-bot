@@ -151,13 +151,13 @@ async def _(msg: Bot.MessageSession):
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
+    await msg.sendMessage(msg.locale.t("maimai.message.b50.waiting"))
     img, success = await generate50(payload)
     if success == 400:
         await msg.finish(msg.locale.t("maimai.message.not_found"))
     elif success == 403:
         await msg.finish(msg.locale.t("maimai.message.forbidden"))
     else:
-        await msg.sendMessage(msg.locale.t("maimai.message.b50.waiting"))
         if img:
             await msg.finish([BImage(img)])
 
