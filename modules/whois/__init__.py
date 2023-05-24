@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession):
         
 
 def ip_or_domain(string: str):
-    ip_regex = r'^((\d{1,3}\.){3}\d{1,3})$'
+    ip_regex = r'^((\d{1,3}\.){3}\d{1,3})$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$'
     domain_regex = r'^([a-zA-Z0-9-]+\.){1,}[a-zA-Z]{2,}$'
     
     if re.match(ip_regex, string):
