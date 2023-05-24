@@ -1,5 +1,4 @@
 import csv
-import csv
 import os
 import re
 import shutil
@@ -13,41 +12,20 @@ from core.utils.http import get_url, download_to_cache
 
 assets_path = os.path.abspath('./assets/phigros')
 cache_path = os.path.abspath('./cache')
-csv_path = os.path.abspath('./services/phigros/difficulty_update.csv')
+rating_path = os.path.abspath('./assets/phigros/rating.json')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
+
+p_headers = {'Accept': 'application/json',
+             'X-LC-Id': 'rAK3FfdieFob2Nn8Am',
+             'X-LC-Key': 'Qr9AEqtuoSVS3zeD6iVbM4ZC0AtkJcQ89tywVyi0',
+             'User-Agent': 'LeanCloud-CSharp-SDK/1.0.3'}
 
 
 def remove_punctuations(text):
     punctuations = '！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～、。〃〈〉《》「」『』【】〒〔〕〖〗〘〙〚〛〜・♫☆×♪↑↓ '
     text = ''.join([char for char in text if char not in string.punctuation and char not in punctuations])
     text = re.sub(' +', ' ', text)
-    return text
-
-
-async def update_difficulty_csv():
-    update_json = json.loads(await get_url(json_url, 200))
-
-    gen_csv_path = random_cache_path() + '.csv'
-    with open(gen_csv_path, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.writer(f)
-        rows = []
-        for s in update_json:
-            if update_json[s]['song'] == 'Introduction':
-                continue
-            lst = []
-            lst.append(
-                remove_punctuations(
-                    update_json[s]['song']) +
-                '.' +
-                remove_punctuations(
-                    update_json[s]['composer']))
-            for c in update_json[s]['chart']:
-                lst.append(update_json[s]['chart'][c]['difficulty'])
-            rows.append(lst)
-        writer.writerows(rows)
-        f.close()
-    shutil.copy(gen_csv_path, csv_path)
-    return True
+    return text.lower()
 
 
 async def update_assets():
@@ -55,8 +33,16 @@ async def update_assets():
     if not os.path.exists(illustration_path):
         os.makedirs(illustration_path, exist_ok=True)
     illustration_list = os.listdir(illustration_path)
+    file_path = random_cache_path() + '.json'
+    data = {}
     update_json = json.loads(await get_url(json_url, 200))
     for song in update_json:
+        diff = {}
+        for c in update_json[song]['chart']:
+            diff[c] = update_json[song]['chart'][c]['difficulty']
+        data[remove_punctuations(update_json[song]['song']) + '.' +
+             remove_punctuations(update_json[song]['composer'])] = diff
+
         song_name = remove_punctuations(update_json[song]['song'])
         if song_name not in illustration_list:
             try:
@@ -77,5 +63,16 @@ async def update_assets():
                 'illustration'),
             illustration_path,
             dirs_exist_ok=True)
+
+        with open(os.path.join(ca, 'PhigrosLibrary-master', 'difficulty.csv'), 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                data[row[0].lower()] = {'EZ': row[1], 'HD': row[2], 'IN': row[3]}
+                if len(row) > 4:
+                    data[row[0].lower()]['AT'] = row[4]
+
         os.remove(download_file)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(data, indent=4, ensure_ascii=False))
+    shutil.move(file_path, rating_path)
     return True

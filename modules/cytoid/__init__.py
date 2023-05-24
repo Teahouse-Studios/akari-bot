@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            await msg.finish(msg.locale.t('cytoid.message.user.unbound'))
+            await msg.finish(msg.locale.t('cytoid.message.user.unbound', prefix=msg.prefixes[0]))
     if query:
         if msg.target.targetFrom == 'TEST|Console':
             c = 0
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
 
 @cytoid.handle('bind <username> {{cytoid.help.bind}}')
 async def _(msg: Bot.MessageSession):
-    code: str = msg.parsed_msg['<username>']
+    code: str = msg.parsed_msg['<username>'].lower()
     getcode = await get_profile_name(code)
     if getcode:
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])

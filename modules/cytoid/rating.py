@@ -132,7 +132,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         for x in cards_:
             for k in x:
                 cards_d[k] = x[k]
-        cards = [cards_d[x] for x in cards_d]
+        sorted_cards = sorted(cards_d.items(), key=lambda x: x[0])
 
         # b30card
         b30img = Image.new("RGBA", (1955, 1600), '#1e2129')
@@ -185,7 +185,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         fname = 1
         t = 0
         s = 0
-        for card in cards:
+        for card in sorted_cards:
             try:
                 w = 15 + 384 * i
                 h = 135
@@ -195,7 +195,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
                 h = h + 240 * t
                 w = w - 384 * 5 * t
                 i += 1
-                b30img.alpha_composite(card, (w, h))
+                b30img.alpha_composite(card[1], (w, h))
                 fname += 1
                 s += 1
             except Exception:

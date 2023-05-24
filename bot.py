@@ -72,23 +72,6 @@ def run_bot():
             runlst.append(p)
             pidlst.append(p.pid)
 
-    if Config('extra_services'):
-        services_dir = './services/'
-        services_lst = os.listdir(services_dir)
-        for x in services_lst:
-            if sys.platform == 'win32':
-                service_exec = os.path.abspath(f'{services_dir}{x}/start.cmd')
-            else:
-                service_exec = os.path.abspath(f'{services_dir}{x}/start')
-            if os.path.exists(service_exec):
-                if sys.platform != 'win32':
-                    os.chmod(service_exec, 0o755)
-                p = subprocess.Popen([service_exec], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                     cwd=os.path.abspath(f'{services_dir}{x}'))
-                runlst.append(p)
-                pidlst.append(p.pid)
-
-
     with open(pid_cache, 'w') as c:
         c.write('\n'.join(str(p) for p in pidlst))
 

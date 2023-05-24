@@ -18,15 +18,11 @@ async def _(msg: MessageSession):
 
 
 @coin.command('[<amount>] {{coin.help}}')
-async def _(msg: MessageSession):
-    amount = msg.parsed_msg.get('<amount>', '1')
-    if not amount.isdigit():
-        await msg.finish(msg.locale.t('coin.message.error.amount') + amount)
-    else:
-        await msg.finish(await flipCoins(int(amount), msg))
+async def _(msg: MessageSession, amount: int = 1):
+    await msg.finish(await flipCoins(int(amount), msg))
 
 
-@coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex}')
+@coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex.desc}')
 async def _(message: MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
@@ -46,8 +42,10 @@ async def flipCoins(count: int, msg):
     facedown_rate = int(FACE_DOWN_RATE)
     if count > count_max:
         return msg.locale.t("coin.message.error.out_of_range", max=count_max)
-    if count <= 0:
+    if count == 0:
         return msg.locale.t("coin.message.error.nocoin")
+    if count < 0:
+        return msg.locale.t("coin.message.error.amount") 
     if faceup_rate + facedown_rate > 10000 or faceup_rate < 0 or facedown_rate < 0:
         raise OverflowError(msg.locale.t("coin.message.error.rate"))
     faceUp = 0
