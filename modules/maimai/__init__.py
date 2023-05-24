@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession):
         result_set = await inner_level_q(float(msg.parsed_msg['<rating>']))
     else:
         result_set = await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>']))
-    if len(result_set) > 50:
+    if len(result_set) > 150:
         return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
     s = ""
     for elem in result_set:
@@ -151,6 +151,7 @@ async def _(msg: Bot.MessageSession):
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
+        await session.sendMessage(msg.locale.t("maimai.message.b50.waiting"))
     img, success = await generate50(payload)
     if success == 400:
         await msg.finish(msg.locale.t("maimai.message.not_found"))
