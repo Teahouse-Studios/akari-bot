@@ -36,7 +36,7 @@
     "arcaea.message.b30.success": "取得結果\nB30：${b30} | R10：${r10}\nB30 倒 5 列表：\n${last5list}",
     "arcaea.message.b30.wait": "已將查詢提交給隊列，請耐心等待…",
     "arcaea.message.b30.wait.already": "正在執行你上次使用的指令中，稍安勿躁…",
-    "arcaea.message.b30.wait.cached": "你已在 12 小時內提交過一次查詢，將使用上次查詢的快取結果。",
+    "arcaea.message.b30.wait.cached": "你已在 12 小時內提交過一次查詢，將使用上次查詢的暂存結果。",
     "arcaea.message.b30.wait.check": "目前查詢用時較長，我們將在 30 分鐘內每分鐘檢查一次返回的結果，請耐心等待…",
     "arcaea.message.b30.wait.timeout": "查詢逾時，請稍後重試。",
     "arcaea.message.bind.failed": "綁定失敗，請嘗試使用好友 ID 綁定。",
