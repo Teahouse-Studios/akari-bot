@@ -7,7 +7,7 @@ from core.utils.http import get_url
 
 
 async def check_ip(ip: str):
-    info = ipaddress.ip_address(ip)
+    info = ipaddress.ip_interface(ip)
     ip_property = ''
     real_ip = None
     skip_geoip = False
