@@ -1,3 +1,4 @@
+import ipaddress
 import re
 
 from core.builtins import Bot
