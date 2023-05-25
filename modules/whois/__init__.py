@@ -6,8 +6,9 @@ from .ip import check_ip, format_ip
 
 # from .domain import check_domain, format_domain
 
-w = module('whois', desc='{whois.help.desc}',
-           developers=['Dianliang233'])
+w = module('whois', desc='{whois.help.desc}', 
+            alias=['ip'],
+            developers=['Dianliang233'])
 
 
 @w.handle('<ip_or_domain>')
