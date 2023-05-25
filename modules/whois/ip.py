@@ -27,6 +27,9 @@ async def check_ip(ip: str):
     elif info.is_reserved:
         ip_property = 'reserved'
         skip_geoip = True
+    elif info.is_private:
+        ip_property = 'private'
+        skip_geoip = True
     elif isinstance(info, ipaddress.IPv6Address):
         if info.is_site_local:
             ip_property = 'site_local'
@@ -39,10 +42,6 @@ async def check_ip(ip: str):
         elif info.teredo:
             ip_property = 'teredo'
             ip = str(info.teredo)
-        elif info.is_private:
-            ip_property = 'private'
-    elif info.is_private:
-        ip_property = 'private'
     else:
         ip_property = 'unknown'
         skip_geoip = True

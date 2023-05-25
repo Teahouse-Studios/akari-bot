@@ -21,5 +21,5 @@
     "whois.message.ip.reverse": "反向解析：",
     "whois.message.ip.type": "類型：",
     "whois.message.ip.utc": "時區：",
-    "whois.message.unknown": "無法識別類型，請檢查輸入是否正確。"
+    "whois.message.unknown": "無法辨識類型，請檢查輸入。"
 }
