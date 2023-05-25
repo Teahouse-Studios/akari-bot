@@ -12,6 +12,7 @@
     "whois.message.ip.ip_property.site_local": "站点本地",
     "whois.message.ip.ip_property.sixtofour": "6to4 ",
     "whois.message.ip.ip_property.teredo": "Teredo ",
+    "whois.message.ip.ip_property.unknown": "未知",
     "whois.message.ip.ip_property.unspecified": "未指定",
     "whois.message.ip.location": "位置：",
     "whois.message.ip.organization": "组织：",

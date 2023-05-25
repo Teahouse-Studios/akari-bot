@@ -39,8 +39,12 @@ async def check_ip(ip: str):
         elif info.teredo:
             ip_property = 'teredo'
             ip = str(info.teredo)
+        elif info.is_private:
+            ip_property = 'private'
     elif info.is_private:
         ip_property = 'private'
+    else:
+        ip_property = 'unknown'
         skip_geoip = True
 
     res = {
@@ -93,6 +97,7 @@ async def format_ip(msg, info: Dict[str, Any]):
         'sixtofour': msg.locale.t('whois.message.ip.ip_property.sixtofour'),
         'teredo': msg.locale.t('whois.message.ip.ip_property.teredo'),
         'site_local': msg.locale.t('whois.message.ip.ip_property.site_local')
+        'unknown': msg.locale.t('whois.message.ip.ip_property.unknown')
     }
 
     return f'''\
