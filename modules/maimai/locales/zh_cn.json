@@ -8,5 +8,6 @@
     "maimai.message.no_username": "请提供用户名！",
     "maimai.message.not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。",
     "maimai.message.forbidden": "此用户禁止了其他人获取数据。",
-    "maimai.message.chart_not_found": "未找到该谱面。"
+    "maimai.message.chart_not_found": "未找到该谱面。",
+    "maimai.message.b50.waiting": "加载时间较长，请稍等……"
 }

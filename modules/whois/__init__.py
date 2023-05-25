@@ -1,3 +1,4 @@
+import ipaddress
 import re
 
 from core.builtins import Bot
@@ -6,8 +7,9 @@ from .ip import check_ip, format_ip
 
 # from .domain import check_domain, format_domain
 
-w = module('whois', desc='{whois.help.desc}',
-           developers=['Dianliang233'])
+w = module('whois', desc='{whois.help.desc}', 
+            alias=['ip'],
+            developers=['Dianliang233'])
 
 
 @w.handle('<ip_or_domain>')
@@ -25,10 +27,10 @@ async def _(msg: Bot.MessageSession):
         
 
 def ip_or_domain(string: str):
-    ip_regex = r'^((\d{1,3}\.){3}\d{1,3})$'
-    domain_regex = r'^([a-zA-Z0-9-]+\.){1,}[a-zA-Z]{2,}$'
-    
-    if re.match(ip_regex, string):
+    domain_regex = r'^https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*$'
+    try:
+        ipaddress.ip_address(string)
         return 'ip'
-    elif re.match(domain_regex, string):
-        return 'domain'
+    except ValueError:
+        if re.match(domain_regex, string):
+            return 'domain'
