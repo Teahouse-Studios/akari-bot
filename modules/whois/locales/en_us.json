@@ -12,6 +12,7 @@
     "whois.message.ip.ip_property.site_local": "Site Local",
     "whois.message.ip.ip_property.sixtofour": "6to4",
     "whois.message.ip.ip_property.teredo": "Teredo",
+    "whois.message.ip.ip_property.unknown": "Unknown",
     "whois.message.ip.ip_property.unspecified": "Unspecified",
     "whois.message.ip.location": "Location: ",
     "whois.message.ip.organization": "Organization: ",

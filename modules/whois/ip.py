@@ -27,6 +27,9 @@ async def check_ip(ip: str):
     elif info.is_reserved:
         ip_property = 'reserved'
         skip_geoip = True
+    elif info.is_private:
+        ip_property = 'private'
+        skip_geoip = True
     elif isinstance(info, ipaddress.IPv6Address):
         if info.is_site_local:
             ip_property = 'site_local'
@@ -39,8 +42,9 @@ async def check_ip(ip: str):
         elif info.teredo:
             ip_property = 'teredo'
             ip = str(info.teredo)
-    elif info.is_private:
-        ip_property = 'private'
+    else:
+        ip_property = 'unknown'
+        skip_geoip = True
 
     res = {
         'ip': ip,
@@ -91,7 +95,8 @@ async def format_ip(msg, info: Dict[str, Any]):
         'ipv4_mapped': msg.locale.t('whois.message.ip.ip_property.ipv4_mapped'),
         'sixtofour': msg.locale.t('whois.message.ip.ip_property.sixtofour'),
         'teredo': msg.locale.t('whois.message.ip.ip_property.teredo'),
-        'site_local': msg.locale.t('whois.message.ip.ip_property.site_local')
+        'site_local': msg.locale.t('whois.message.ip.ip_property.site_local'),
+        'unknown': msg.locale.t('whois.message.ip.ip_property.unknown')
     }
 
     return f'''\
