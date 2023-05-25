@@ -96,7 +96,7 @@ async def format_ip(msg, info: Dict[str, Any]):
         'ipv4_mapped': msg.locale.t('whois.message.ip.ip_property.ipv4_mapped'),
         'sixtofour': msg.locale.t('whois.message.ip.ip_property.sixtofour'),
         'teredo': msg.locale.t('whois.message.ip.ip_property.teredo'),
-        'site_local': msg.locale.t('whois.message.ip.ip_property.site_local')
+        'site_local': msg.locale.t('whois.message.ip.ip_property.site_local'),
         'unknown': msg.locale.t('whois.message.ip.ip_property.unknown')
     }
 
