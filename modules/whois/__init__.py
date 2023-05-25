@@ -8,7 +8,7 @@ from .ip import check_ip, format_ip
 # from .domain import check_domain, format_domain
 
 w = module('whois', desc='{whois.help.desc}', 
-            alias=['ip'],
+            alias={'ip': 'whois ip'}
             developers=['Dianliang233'])
 
 
@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(await format_ip(msg, res))
     # elif query_type == 'domain':
     #     res = await check_domain(query)
-    #     await msg.finish(await format_domain(res))
+    #     await msg.finish(await format_domain(msg, res))
     else:
         await msg.finish(msg.locale.t("whois.message.unknown"))
         
@@ -34,3 +34,19 @@ def ip_or_domain(string: str):
     except ValueError:
         if re.match(domain_regex, string):
             return 'domain'
+
+
+
+@w.handle('ip <ip>')
+async def _(msg: Bot.MessageSession):
+    query = msg.parsed_msg['<ip>']
+    res = await check_ip(query)
+    await msg.finish(await format_ip(msg, res))
+
+
+
+@w.handle('domain <domain>', required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    query = msg.parsed_msg['<domain>']
+    res = await check_domain(query)
+    await msg.finish(await format_domain(msg, res))
