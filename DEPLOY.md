@@ -74,11 +74,11 @@ $ poetry install
 
 #### 安装依赖
 
-在终端中运行：
+1. 于 `requirements.txt` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
 
-```sh
-$ pip install -r requirements.txt
-```
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+
+3. 于终端内输入 `pip install -r requirements.txt` 来安装依赖（如果觉得下载速度较慢的话，请善用搜索引擎来查找适合的 Python 镜像源）
 
 ## 配置
 
@@ -132,7 +132,9 @@ $ pip install -r requirements.txt
 你可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
 
 1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
+
 2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+
 3. 于终端内输入 `python console.py` 来启动测试控制台。
 
 ## 配置平台机器人
@@ -145,28 +147,65 @@ $ pip install -r requirements.txt
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-`qq_host = 127.0.0.1:11451` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
+1. 从 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest) 。
 
-`qq_account = 2052142661` - 填写机器人的 QQ 号。
+      | 系统类型          | 可执行文件                         | 压缩文件                            |
+      |:-------------:|:-----------------------------:|:-------------------------------:|
+      | Intel 版 Macos | Not available                 | `go-cqhttp_darwin_amd64.tar.gz` |
+      | M1 版 Macos    | Not available                 | `go-cqhttp_darwin_arm64.tar.gz` |
+      | 32 位 Linux    | Not available                 | `go-cqhttp_linux_386.tar.gz`    |
+      | 64 位 Linux    | Not available                 | `go-cqhttp_linux_amd64.tar.gz`  |
+      | arm64 Linux   | Not available                 | `go-cqhttp_linux_arm64.tar.gz`  |
+      | armv7 Linux   | Not available                 | `go-cqhttp_linux_armv7.tar.gz`  |
+      | 32 位 Windows  | `go-cqhttp_windows_386.exe`   | `go-cqhttp_windows_386.zip`     |
+      | 64 位 Windows  | `go-cqhttp_windows_amd64.exe` | `go-cqhttp_windows_amd64.zip`   |
+      | arm64 Windows | `go-cqhttp_windows_arm64.exe` | `go-cqhttp_windows_arm64.zip`   |
+      | armv7 Windows | `go-cqhttp_windows_armv7.exe` | `go-cqhttp_windows_armv7.zip`   |
 
-填写好后，请配置 `go-cqhttp` 的 `config.yml` 文件中的对应的连接方式。
 
-```
-...
-# 连接服务列表
-servers:
-  # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
-  #- http: # http 通信
-  #- ws:   # 正向 Websocket
-  #- ws-reverse: # 反向 Websocket
-  #- pprof: #性能分析服务器
-  - ws-reverse:
-      universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
-      reconnect-interval: 3000
-      middlewares:
-        <<: *default # 引用默认中间件
-...
-```
+2. 解压下载好的文件到一个已经预先准备好的文件夹中， Windows下请使用自己熟悉的解压软件自行解压，Linux下请在命令行中输入 `tar -xzvf [文件名]` 。
+
+3. 运行 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) ：
+    - 在 Windows 下：
+      1. 双击`go-cqhttp_*.exe`，根据提示生成运行脚本
+      2. 双击运行脚本
+    - 在 Linux 下：
+      1. 通过 SSH 连接到服务器
+      2. `cd`到解压目录
+      3. 输入 `./go-cqhttp`, `Enter`运行
+
+4.  此时将提示：
+    ```
+    [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在
+    [INFO]: 默认配置文件已生成,请编辑 config.yml 后重启程序.
+    ```
+    程序将会自动在存放 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 文件夹的目录下生成一个默认配置文件 `config.yml`。
+
+    请在小可机器人的配置文件 `config.cfg` 填写以下字段：
+    - `qq_host = 127.0.0.1:11451` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
+
+    - `qq_account = 2052142661` - 填写机器人的 QQ 号。
+
+    填写好后，请配置 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的 `config.yml` 文件中的对应的连接方式。
+
+    ```
+    ...
+    # 连接服务列表
+    servers:
+      # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
+      #- http: # http 通信
+      #- ws:   # 正向 Websocket
+      #- ws-reverse: # 反向 Websocket
+      #- pprof: #性能分析服务器
+      - ws-reverse:
+          universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
+          reconnect-interval: 3000
+          middlewares:
+            <<: *default # 引用默认中间件
+    ...
+    ```
+
+*若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)
 
 ### Discord
 
@@ -261,11 +300,19 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 #### Arcaea
 
-Arcaea 模块使用了 BotArcAPI 进行开发。
+Arcaea 模块使用了 Lowiro 官方的 ArcaeaLimitedAPI 和 BotArcAPI 进行开发。
+
+ArcaeaLimitedAPI 需要向 Lowiro 官方发送邮件申请以获得 Token。
+
+在没有 ArcaeaLimitedAPI Token 的情况下，也亦可仅使用 BotArcAPI 来支持模块部分功能运作。
+
+`arcapi_official_url =` - 填写你于邮件中获得的 ArcaeaLimitedAPI 地址
+
+`arcapi_official_token =` - 填写你于邮件中获得的 ArcaeaLimitedAPI Token
 
 `botarcapi_url =` - 填写 BotArcAPI 公用实例地址
 
-`botarcapi_token =` - 填写 BotArcAPI 公用实例申请到token
+`botarcapi_agent =` - 填写 BotArcAPI 公用实例申请到的 UA 名
 
 填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
 启动后使用 `~arcaea initialize` 来初始化资源文件。
