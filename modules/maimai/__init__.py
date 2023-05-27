@@ -107,9 +107,9 @@ async def _(msg: Bot.MessageSession):
 
 @mai.handle('random [<level>] [<diff>] [<group>]{{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
-    level = msg.parsed_msg.get['<level>']
-    diff = msg.parsed_msg.get['<diff>']
-    group = msg.parsed_msg.get['<group>']
+    level = msg.parsed_msg.get('<level>')
+    diff = msg.parsed_msg.get('<diff>')
+    group = msg.parsed_msg.get('<group>')
     try:
         if group in ["dx"]:
             tp = ["DX"]
