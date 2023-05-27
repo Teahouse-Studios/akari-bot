@@ -63,8 +63,8 @@
 #### PREFIXES ####
 
 # decimal prefixes
-quecto- = 1e-30 = q- # zh-CN SI name not decided yet
-ronto- = 1e-27 = r- # zh-CN SI name not decided yet
+quecto- = 1e-30 = q- = 亏可托- = 亏
+ronto- = 1e-27 = r- = 柔托- = 柔
 yocto- = 1e-24 = y- = 幺科托- = 幺-
 zepto- = 1e-21 = z- = 仄普托- = 仄-
 atto- =  1e-18 = a- = 阿托- = 阿-
@@ -87,8 +87,8 @@ peta- =  1e15  = P- = 拍它- = 拍-
 exa- =   1e18  = E- = 艾可萨- = 艾-
 zetta- = 1e21  = Z- = 泽它- = 泽-
 yotta- = 1e24  = Y- = 尧它- = 尧-
-ronna- = 1e27 = R- # zh-CN SI name not decided yet
-quetta- = 1e30 = Q- # zh-CN SI name not decided yet
+ronna- = 1e27 = R- = 容那- = 容
+quetta- = 1e30 = Q- = 昆它- = 昆
 
 # binary_prefixes
 kibi- = 2**10 = Ki-

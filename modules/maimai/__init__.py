@@ -81,6 +81,8 @@ async def _(msg: Bot.MessageSession):
         s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+    if len(result_set) == 0:
+        return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) > 200:
         return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
     img = text_to_image(s)
