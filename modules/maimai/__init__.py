@@ -49,7 +49,7 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
 @mai.handle('level <level> {{maimai.help.level}}')
 async def _(msg: Bot.MessageSession):
     level = msg.parsed_msg['<level>']
-    result_set = await diff.level_q(level)
+    result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
