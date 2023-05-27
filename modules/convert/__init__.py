@@ -1,8 +1,6 @@
 import os
 from decimal import Decimal
 
-from pint import DimensionalityError
-from pint import UndefinedUnitError
 from pint import UnitRegistry
 
 from core.builtins import Bot
