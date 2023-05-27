@@ -41,12 +41,10 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
 async def _(msg: Bot.MessageSession):
     if '<rating_max>' not in msg.parsed_msg:
         result_set = [msg.finish(msg.locale.t('maimai.message.inline', rating=msg.parsed_msg['<rating>']))]
-        inner_result = await inner_level_q(float(msg.parsed_msg['<rating>']))
-        result_set += inner_result
+        result_set.extend(await inner_level_q(float(msg.parsed_msg['<rating>'])))
     else:
         result_set = [msg.finish(msg.locale.t('maimai.message.inline.range', rating=msg.parsed_msg['<rating>'], rating_max=msg.parsed_msg['<rating_max>']))]
-        inner_result = await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>']))
-        result_set += inner_result
+        result_set.extend(await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>'])))
 
     s = ""
     for elem in result_set:
