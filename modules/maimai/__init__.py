@@ -105,11 +105,11 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle('random [<group>] [<level>] [<diff>]{{maimai.help.random}}')
+@mai.handle('random [<level>] [<diff>] [<group>]{{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
-    group = msg.parsed_msg.get['<group>']
     level = msg.parsed_msg.get['<level>']
     diff = msg.parsed_msg.get['<diff>']
+    group = msg.parsed_msg.get['<group>']
     try:
         if group in ["dx"]:
             tp = ["DX"]
@@ -117,29 +117,26 @@ async def _(msg: Bot.MessageSession):
             tp = ["SD"]
         else:
             tp = ["SD", "DX"]
-        if level is None and diff is None:
+        if level is None:
             await msg.finish(song_txt((await total_list.get()).random()))
         else:
-            filters = {}
-            if level is not None:
-                filters["level"] = level
-            if diff is not None:
-                filters["diff"] = [diff_label.index(diff)]
-            filters["type"] = tp
-            music_data = (await total_list.get()).filter(**filters)
-        
+            if diff is None:
+                music_data = (await total_list.get()).filter(level=level, type=tp)
+            else:
+                music_data = (await total_list.get()).filter(level=level, diff=[diff_label.index(diff)],
+                                                             type=tp)
         if len(music_data) == 0:
-            rand_result = msg.locale.t("maimai.message.music_not_found")
+            rand_result = msg.locale.t("maimai.message.chart_not_found")
         else:
             rand_result = song_txt(music_data.random())
         await msg.finish(rand_result)
     except Exception as e:
         Logger.error(e)
-        await msg.finish(msg.locale.t("error"))
+        await msg.finish("随机命令错误，请检查语法")
 
 
 
-@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"), desc="{maimai.help.random.regex}")
+@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"), desc='{maimai.help.random.regex}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
