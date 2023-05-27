@@ -105,34 +105,8 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle('random [<requirement>]{{maimai.help.random}}')
-async def _(msg: Bot.MessageSession):
-    res = msg.parsed_msg.get('<requirement>')
-    try:
-        if res.groups()[2] in ["dx"]:
-            tp = ["DX"]
-        elif res.groups()[2] in ["sd", "标准", "標準"]:
-            tp = ["SD"]
-        else:
-            tp = ["SD", "DX"]
-        level = res.groups()[0]
-        if res.groups()[1] is None:
-            music_data = (await total_list.get()).filter(level=level, type=tp)
-        else:
-            music_data = (await total_list.get()).filter(level=level, diff=[diff_label.index(res.groups()[1])],
-                                                         type=tp)
-        if len(music_data) == 0:
-            rand_result = msg.locale.t("maimai.message.music_not_found")
-        else:
-            rand_result = song_txt(music_data.random())
-        await msg.finish(rand_result)
-    except Exception as e:
-        Logger.error(e)
-        await msg.finish(msg.locale.t("maimai.message.random.error"))
-
-
-
-@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"), desc='{maimai.help.random.regex}')
+@mai.handle('random {{maimai.help.random}}')
+@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*(什么|什麼)"), desc='{maimai.help.random.regex}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
