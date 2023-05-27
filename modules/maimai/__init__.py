@@ -53,6 +53,8 @@ async def _(msg: Bot.MessageSession):
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+    if len(result_set) > 200:
+        return await msg.finish(msg.locale.t("maimai.message.waiting"))
     img = text_to_image(s)
     await msg.finish([BImage(img)])
 
@@ -114,7 +116,7 @@ async def _(msg: Bot.MessageSession):
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
-    await msg.sendMessage(msg.locale.t("maimai.message.b50.waiting"))
+    await msg.sendMessage(msg.locale.t("maimai.message.waiting"))
     img, success = await generate50(payload)
     if success == 400:
         await msg.finish(msg.locale.t("maimai.message.user_not_found"))
