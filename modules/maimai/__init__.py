@@ -11,7 +11,8 @@ from modules.maimai.libraries.tool import hash_
 
 total_list = TotalList()
 
-wm_list = ['拼机', '推分', '越级', '下埋', '夜勤', '练底力', '练手法', '打旧框', '干饭', '抓绝赞', '收歌']
+diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
+diff_label_zh = ['绿', '黄', '红', '紫', '白']
 
 def song_txt(music: Music):
     return [Plain(f"{music.id}. {music.title}\n"),
@@ -21,7 +22,6 @@ def song_txt(music: Music):
 
 async def inner_level_q(ds1, ds2=None):
     result_set = []
-    diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
     if ds2 is not None:
         music_data = (await total_list.get()).filter(ds=(ds1, ds2))
     else:
@@ -65,30 +65,6 @@ async def _(msg: Bot.MessageSession):
 
 
 
-# @mai.handle('today {{maimai.help.today}}')
-# async def _(msg: Bot.MessageSession):
-#     if msg.target.senderFrom == "Discord|Client":
-#         qq = msg.session.sender.id
-#     else:
-#         qq = msg.session.sender
-#     h = hash_(qq)
-#     rp = h % 100
-#     wm_value = []
-#     for i in range(11):
-#         wm_value.append(h & 3)
-#         h >>= 2
-#     s = f"今日人品值：{rp}\n"
-#     for i in range(11):
-#         if wm_value[i] == 3:
-#             s += f'宜 {wm_list[i]}\n'
-#         elif wm_value[i] == 0:
-#             s += f'忌 {wm_list[i]}\n'
-#     s += "刘大鸽提醒您：打机时不要大力拍打或滑动哦\n今日推荐歌曲："
-#     music = (await total_list.get())[h % len((await total_list.get()))]
-#     await msg.finish([Plain(s)] + song_txt(music))
-
-
-
 @mai.handle('b40 [<username>] {{maimai.help.b40}}')
 async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
@@ -100,7 +76,7 @@ async def _(msg: Bot.MessageSession):
         payload = {'username': username}
     img, success = await generate(payload)
     if success == 400:
-        await msg.finish(msg.locale.t("maimai.message.not_found"))
+        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
     elif success == 403:
         await msg.finish(msg.locale.t("maimai.message.forbidden"))
     else:
@@ -120,7 +96,7 @@ async def _(msg: Bot.MessageSession):
     await msg.sendMessage(msg.locale.t("maimai.message.b50.waiting"))
     img, success = await generate50(payload)
     if success == 400:
-        await msg.finish(msg.locale.t("maimai.message.not_found"))
+        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
     elif success == 403:
         await msg.finish(msg.locale.t("maimai.message.forbidden"))
     else:
@@ -129,8 +105,41 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle('random {{maimai.help.random}}')
-@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"), desc='{maimai.help.random}')
+@mai.handle('random [<group>] [<level>] [<diff>]{{maimai.help.random}}')
+async def _(msg: Bot.MessageSession):
+    group = msg.parsed_msg.get['<group>']
+    level = msg.parsed_msg.get['<level>']
+    diff = msg.parsed_msg.get['<diff>']
+    try:
+        if group in ["dx"]:
+            tp = ["DX"]
+        elif group in ["sd", "标准", "標準"]:
+            tp = ["SD"]
+        else:
+            tp = ["SD", "DX"]
+        if level is None and diff is None:
+            await msg.finish(song_txt((await total_list.get()).random()))
+        else:
+            filters = {}
+            if level is not None:
+                filters["level"] = level
+            if diff is not None:
+                filters["diff"] = [diff_label.index(diff)]
+            filters["type"] = tp
+            music_data = (await total_list.get()).filter(**filters)
+        
+        if len(music_data) == 0:
+            rand_result = msg.locale.t("maimai.message.music_not_found")
+        else:
+            rand_result = song_txt(music_data.random())
+        await msg.finish(rand_result)
+    except Exception as e:
+        Logger.error(e)
+        await msg.finish(msg.locale.t("error"))
+
+
+
+@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么", desc='{maimai.help.random.regex}'))
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
@@ -142,9 +151,9 @@ async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         try:
-            if res.groups()[0] == "dx":
+            if res.groups()[0] in ["dx", "DX"]:
                 tp = ["DX"]
-            elif res.groups()[0] == "sd" or res.groups()[0] == "标准":
+            elif res.groups()[0] in ["sd", "SD", "标准"]:
                 tp = ["SD"]
             else:
                 tp = ["SD", "DX"]
@@ -152,7 +161,7 @@ async def _(msg: Bot.MessageSession):
             if res.groups()[1] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=['绿黄红紫白'.index(res.groups()[1])],
+                music_data = (await total_list.get()).filter(level=level, diff=[diff_label_zh.index(res.groups()[1])],
                                                              type=tp)
             if len(music_data) == 0:
                 rand_result = "没有这样的乐曲哦。"
@@ -185,11 +194,9 @@ async def _(msg: Bot.MessageSession):
 @mai.handle(re.compile(r"([绿黄红紫白]?)id([0-9]+)"), desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
 async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
-    level_labels = ['绿', '黄', '红', '紫', '白']
     if groups[0] != "":
         try:
-            level_index = level_labels.index(groups[0])
-            level_name = ['Basic', 'Advanced', 'Expert', 'Master', 'Re: MASTER']
+            level_index = diff_label_zh.index(groups[0])
             name = groups[1]
             music = (await total_list.get()).by_id(name)
             chart = music['charts'][level_index]
@@ -197,14 +204,14 @@ async def _(message: Bot.MessageSession):
             level = music['level'][level_index]
             file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
             if len(chart['notes']) == 4:
-                msg = f'''{level_name[level_index]} {level}({ds})
+                msg = f'''{diff_label[level_index]} {level}({ds})
 TAP: {chart['notes'][0]}
 HOLD: {chart['notes'][1]}
 SLIDE: {chart['notes'][2]}
 BREAK: {chart['notes'][3]}
 谱师: {chart['charter']}'''
             else:
-                msg = f'''{level_name[level_index]} {level}({ds})
+                msg = f'''{diff_label[level_index]} {level}({ds})
 TAP: {chart['notes'][0]}
 HOLD: {chart['notes'][1]}
 SLIDE: {chart['notes'][2]}
@@ -256,9 +263,7 @@ BREAK\t5/12.5/25(外加200落)'''
     elif args2 is not None:
         try:
             grp = re.match(r, arg1).groups()
-            level_labels = ['绿', '黄', '红', '紫', '白']
-            level_labels2 = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
-            level_index = level_labels.index(grp[0])
+            level_index = diff_label_zh.index(grp[0])
             chart_id = grp[2]
             line = float(arg1)
             music = (await total_list.get()).by_id(chart_id)
@@ -274,7 +279,7 @@ BREAK\t5/12.5/25(外加200落)'''
             reduce = 101 - line
             if reduce <= 0 or reduce >= 101:
                 raise ValueError
-            await msg.finish(f'''{music['title']} {level_labels2[level_index]}
+            await msg.finish(f'''{music['title']} {diff_label[level_index]}
 分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
 BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
         except Exception:
