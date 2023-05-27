@@ -17,7 +17,7 @@ async def _(msg: Bot.MessageSession):
     except AttributeError:
         set_type = None
     url = 'https://v1.hitokoto.cn/?'
-    if not set_type:
+    if nset_type is not None:
         if set_type not in hitokoto_types:
             await msg.finish(msg.locale.t('hitokoto.message.error.type'))
         else:

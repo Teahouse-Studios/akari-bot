@@ -49,7 +49,7 @@ async def _(msg: Bot.MessageSession):
         return await msg.finish(msg.locale.t('error.range.notnumber'))
     if rating > rating_max:
         return await msg.finish(msg.locale.t('error.range.invalid'))
-    if not rating_max:
+    if rating_max is None:
         result_set = await inner_level_q(rating)
         s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
     else:
@@ -57,7 +57,7 @@ async def _(msg: Bot.MessageSession):
         s = msg.locale.t("maimai.message.inner.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
-    if len(result_set) > 150:
+    if len(result_set) > 200:
         return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
     img = text_to_image(s)
     await msg.finish([BImage(img)])
