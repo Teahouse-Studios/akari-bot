@@ -4,7 +4,7 @@ import re
 from core.builtins import Bot
 from core.component import module
 from .ip import check_ip, format_ip
-from .domain import check_domain, format_domain
+# from .domain import check_domain, format_domain
 
 w = module('whois', desc='{whois.help.desc}', 
             alias={'ip': 'whois ip'},
@@ -48,8 +48,8 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@w.handle('domain <domain>', required_superuser=True)
-async def _(msg: Bot.MessageSession):
-    query = msg.parsed_msg['<domain>']
-    res = await check_domain(query)
-    await msg.finish(await format_domain(msg, res))
+# @w.handle('domain <domain>', required_superuser=True)
+# async def _(msg: Bot.MessageSession):
+#     query = msg.parsed_msg['<domain>']
+#     res = await check_domain(query)
+#     await msg.finish(await format_domain(msg, res))
