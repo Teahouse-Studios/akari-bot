@@ -5,6 +5,7 @@ from pint import UnitRegistry
 
 from core.builtins import Bot
 from core.component import module
+from core.exceptions import NoReportException
 
 # ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
 #                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
@@ -17,7 +18,9 @@ i = module('convert', alias=('conv', 'unit'), desc='{convert.help.desc}',
 async def _(msg: Bot.MessageSession):
     from_val = msg.parsed_msg['<from_val>']
     to_unit = msg.parsed_msg['<to_unit>']
-    ori = ureg.parse_expression(from_val)
-    res = ureg.parse_expression(from_val).to(to_unit)
-
-    await msg.finish(f"{ori:~Pg} = {res:~Pg}")
+    try:
+        ori = ureg.parse_expression(from_val)
+        res = ureg.parse_expression(from_val).to(to_unit)
+        await msg.finish(f"{ori:~Pg} = {res:~Pg}")
+    except:
+        raise NoReportException
