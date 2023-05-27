@@ -40,7 +40,7 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
 @mai.handle('inner <rating> [<rating_max>] {{maimai.help.inner}}')
 async def _(msg: Bot.MessageSession):
     try:
-    rating = float(msg.parsed_msg['<rating>'])
+        rating = float(msg.parsed_msg['<rating>'])
         try:
             rating_max = float(msg.parsed_msg.get('<rating_max>'))
         except AttributeError:
