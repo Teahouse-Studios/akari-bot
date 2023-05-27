@@ -4,8 +4,7 @@ import re
 from core.builtins import Bot
 from core.component import module
 from .ip import check_ip, format_ip
-
-# from .domain import check_domain, format_domain
+from .domain import check_domain, format_domain
 
 w = module('whois', desc='{whois.help.desc}', 
             alias={'ip': 'whois ip'},
@@ -40,7 +39,11 @@ def ip_or_domain(string: str):
 @w.handle('ip <ip>')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<ip>']
-    res = await check_ip(query)
+    try:
+        ipaddress.ip_address(query)
+    except:
+        return msg.finish(msg.locale.t('whois.message.ip.error.unknown'))
+    res = await check_ip(msg, query)
     await msg.finish(await format_ip(msg, res))
 
 
