@@ -42,7 +42,7 @@ async def _(msg: Bot.MessageSession):
     try:
         ipaddress.ip_address(query)
     except:
-        return msg.finish(msg.locale.t('whois.message.ip.error.unknown'))
+        await msg.finish(msg.locale.t('whois.message.ip.error.unknown'))
     res = await check_ip(query)
     await msg.finish(await format_ip(msg, res))
 

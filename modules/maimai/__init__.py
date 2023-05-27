@@ -50,27 +50,27 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(s.strip())
 
 
-@mai.handle('today {{maimai.help.today}}')
-async def _(msg: Bot.MessageSession):
-    if msg.target.senderFrom == "Discord|Client":
-        qq = msg.session.sender.id
-    else:
-        qq = msg.session.sender
-    h = hash_(qq)
-    rp = h % 100
-    wm_value = []
-    for i in range(11):
-        wm_value.append(h & 3)
-        h >>= 2
-    s = f"今日人品值：{rp}\n"
-    for i in range(11):
-        if wm_value[i] == 3:
-            s += f'宜 {wm_list[i]}\n'
-        elif wm_value[i] == 0:
-            s += f'忌 {wm_list[i]}\n'
-    s += "刘大鸽提醒您：打机时不要大力拍打或滑动哦\n今日推荐歌曲："
-    music = (await total_list.get())[h % len((await total_list.get()))]
-    await msg.finish([Plain(s)] + song_txt(music))
+# @mai.handle('today {{maimai.help.today}}')
+# async def _(msg: Bot.MessageSession):
+#     if msg.target.senderFrom == "Discord|Client":
+#         qq = msg.session.sender.id
+#     else:
+#         qq = msg.session.sender
+#     h = hash_(qq)
+#     rp = h % 100
+#     wm_value = []
+#     for i in range(11):
+#         wm_value.append(h & 3)
+#         h >>= 2
+#     s = f"今日人品值：{rp}\n"
+#     for i in range(11):
+#         if wm_value[i] == 3:
+#             s += f'宜 {wm_list[i]}\n'
+#         elif wm_value[i] == 0:
+#             s += f'忌 {wm_list[i]}\n'
+#     s += "刘大鸽提醒您：打机时不要大力拍打或滑动哦\n今日推荐歌曲："
+#     music = (await total_list.get())[h % len((await total_list.get()))]
+#     await msg.finish([Plain(s)] + song_txt(music))
 
 
 @mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
@@ -161,6 +161,13 @@ async def _(msg: Bot.MessageSession):
         if img:
             await msg.finish([BImage(img)])
 
+
+
+@mai.handle('random {{maimai.help.random}}')
+@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"))
+async def _(msg: Bot.MessageSession):
+    await msg.finish(song_txt((await total_list.get()).random()))
+
             
 
 @mai.handle(re.compile(r"随个((?:dx|sd|标准))?([绿黄红紫白]?)([0-9]+\+?)"),
@@ -190,11 +197,6 @@ async def _(msg: Bot.MessageSession):
             Logger.error(e)
             await msg.finish("随机命令错误，请检查语法")
 
-
-
-@mai.handle(re.compile(r".*maimai.*什么"), desc='XXXmaimaiXXX什么 随机一首歌')
-async def _(msg: Bot.MessageSession):
-    await msg.finish(song_txt((await total_list.get()).random()))
 
 
 @mai.handle(re.compile(r"查歌(.+)"), desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
