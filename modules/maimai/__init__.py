@@ -105,34 +105,30 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle('random [<level>] [<diff>] [<group>]{{maimai.help.random}}')
+@mai.handle('random [<requirement>]{{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
-    level = msg.parsed_msg.get('<level>')
-    diff = msg.parsed_msg.get('<diff>')
-    group = msg.parsed_msg.get('<group>')
+    res = msg.parsed_msg.get('<requirement>')
     try:
-        if group in ["dx"]:
+        if res.groups()[2] in ["dx"]:
             tp = ["DX"]
-        elif group in ["sd", "标准", "標準"]:
+        elif res.groups()[2] in ["sd", "标准", "標準"]:
             tp = ["SD"]
         else:
             tp = ["SD", "DX"]
-        if level is None:
-            await msg.finish(song_txt((await total_list.get()).random()))
+        level = res.groups()[0]
+        if res.groups()[1] is None:
+            music_data = (await total_list.get()).filter(level=level, type=tp)
         else:
-            if diff is None:
-                music_data = (await total_list.get()).filter(level=level, type=tp)
-            else:
-                music_data = (await total_list.get()).filter(level=level, diff=[diff_label.index(diff)],
-                                                             type=tp)
+            music_data = (await total_list.get()).filter(level=level, diff=[diff_label.index(res.groups()[1])],
+                                                         type=tp)
         if len(music_data) == 0:
-            rand_result = msg.locale.t("maimai.message.chart_not_found")
+            rand_result = msg.locale.t("maimai.message.music_not_found")
         else:
             rand_result = song_txt(music_data.random())
         await msg.finish(rand_result)
     except Exception as e:
         Logger.error(e)
-        await msg.finish("随机命令错误，请检查语法")
+        await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
 
@@ -161,13 +157,13 @@ async def _(msg: Bot.MessageSession):
                 music_data = (await total_list.get()).filter(level=level, diff=[diff_label_zh.index(res.groups()[1])],
                                                              type=tp)
             if len(music_data) == 0:
-                rand_result = "没有这样的乐曲哦。"
+                rand_result = msg.locale.t("maimai.message.music_not_found")
             else:
                 rand_result = song_txt(music_data.random())
             await msg.finish(rand_result)
         except Exception as e:
             Logger.error(e)
-            await msg.finish("随机命令错误，请检查语法")
+            await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
 
