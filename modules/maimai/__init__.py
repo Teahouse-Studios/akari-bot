@@ -41,20 +41,21 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
 async def _(msg: Bot.MessageSession):
     try:
         rating = float(msg.parsed_msg['<rating>'])
-        try:
-            rating_max = float(msg.parsed_msg.get('<rating_max>'))
-        except AttributeError:
-            rating_max = None
     except ValueError:
         return await msg.finish(msg.locale.t('error.range.notnumber'))
-    if rating > rating_max:
-        return await msg.finish(msg.locale.t('error.range.invalid'))
-    if rating_max is None:
-        result_set = await inner_level_q(rating)
-        s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
-    else:
+    rating_max = msg.parsed_msg.get('<rating_max>')
+    if rating_max is not None:
+        try:
+            rating_max = float(rating_max)
+        except ValueError:
+            return await msg.finish(msg.locale.t('error.range.notnumber'))
+        if rating > rating_max:
+            return await msg.finish(msg.locale.t('error.range.invalid'))
         result_set = await inner_level_q(rating, rating_max)
         s = msg.locale.t("maimai.message.inner.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
+    else:
+        result_set = await inner_level_q(rating)
+        s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
     if len(result_set) > 200:

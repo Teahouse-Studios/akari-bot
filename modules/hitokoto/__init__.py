@@ -12,10 +12,7 @@ hitokoto = module('hitokoto', developers=['bugungu', 'DoroWolf'], desc='{hitokot
 @hitokoto.handle('[<type>] {{hitokoto.help.type}}')
 
 async def _(msg: Bot.MessageSession):
-    try:
-        set_type = msg.parsed_msg.get('<type>')
-    except AttributeError:
-        set_type = None
+    set_type = msg.parsed_msg.get('<type>')
     url = 'https://v1.hitokoto.cn/?'
     if nset_type is not None:
         if set_type not in hitokoto_types:
