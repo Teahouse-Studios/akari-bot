@@ -14,6 +14,5 @@
     "maimai.message.music_not_found": "未找到符合要求的歌曲。",
     "maimai.message.no_username": "请提供用户名！",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
-    "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。",
-    "maimai.message.waiting": "加载时间较长，请稍等……"
+    "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
 }
