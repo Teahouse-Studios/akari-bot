@@ -42,7 +42,7 @@ async def inner_level_q(ds1, ds2=None):
 
 
 mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
-             desc='{maimai.help.desc}')
+             desc='{maimai.help.desc}', support_languages=['zh_cn'])
 
 
 
