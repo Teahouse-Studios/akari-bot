@@ -36,12 +36,16 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
              desc='{maimai.help.desc}')
 
 
-@mai.handle('inner <rating> [<rating_max>] {maimai.help.inner}')
+@mai.handle('inner <rating> [<rating_max>] {{maimai.help.inner}}')
 async def _(msg: Bot.MessageSession):
-    if '<rating_max>' not in msg.parsed_msg:
-        result_set = await inner_level_q(float(msg.parsed_msg['<rating>']))
+    rating = msg.parsed_msg['<rating>']
+    rating_max = msg.parsed_msg['<rating_max>']
+    if not rating_max:
+        result_set = msg.finish(msg.locale.t('maimai.message.inline', rating=rating))
+        result_set += await inner_level_q(float(rating))
     else:
-        result_set = await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>']))
+        result_set = msg.finish(msg.locale.t('maimai.message.inline.range', rating=rating, rating_max=rating_max))
+        result_set += await inner_level_q(float(rating), float(rating_max))
     s = ""
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
