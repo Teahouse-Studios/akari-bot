@@ -42,12 +42,17 @@ async def _(msg: Bot.MessageSession):
         result_set = await inner_level_q(float(msg.parsed_msg['<rating>']))
     else:
         result_set = await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>']))
-    if len(result_set) > 150:
-        return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
     s = ""
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
-    await msg.finish(s.strip())
+    if len(result_set) > 150:
+        return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
+    elif len(result_set) > 50:
+        img = text_to_image(s)
+        if img:
+            await msg.finish([BImage(img)])
+    else:
+        await msg.finish(s.strip())
 
 
 # @mai.handle('today {{maimai.help.today}}')
@@ -164,7 +169,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai.handle('random {{maimai.help.random}}')
-@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"))
+@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*什么"), desc='{maimai.help.random}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
