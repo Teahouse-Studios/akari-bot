@@ -20,6 +20,15 @@ def song_txt(music: Music):
             Plain(f"\n{'/'.join(music.level)}")]
 
 
+async def diff_level_q(level):
+    result_set = []
+    music_data = (await total_list.get()).filter(level=level)
+    for music in sorted(music_data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
+    return result_set
+
+
 async def inner_level_q(ds1, ds2=None):
     result_set = []
     if ds2 is not None:
@@ -34,6 +43,18 @@ async def inner_level_q(ds1, ds2=None):
 
 mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
              desc='{maimai.help.desc}')
+
+
+
+@mai.handle('level <level> {{maimai.help.level}}')
+async def _(msg: Bot.MessageSession):
+    level = msg.parsed_msg['<level>']
+    result_set = await diff.level_q(level)
+    s = msg.locale.t("maimai.message.level", level=level) + "\n"
+    for elem in result_set:
+        s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+    img = text_to_image(s)
+    await msg.finish([BImage(img)])
 
 
 

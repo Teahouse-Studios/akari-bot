@@ -15,5 +15,5 @@
     "maimai.message.b50.waiting": "加载时间较长，请稍等……",
     "maimai.message.inner": "以下为定数 ${rating} 的曲目列表：",
     "maimai.message.inner.range": "以下为定数 ${rating}-${rating_max} 的曲目列表：",
-    "maimai.message.random.error": "发生错误：请检查语法。"
+    "maimai.message.level": "以下为难度 ${rating} 的曲目列表："
 }
