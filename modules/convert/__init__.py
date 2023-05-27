@@ -23,7 +23,5 @@ async def _(msg: Bot.MessageSession):
         ori = ureg.parse_expression(from_val)
         res = ureg.parse_expression(from_val).to(to_unit)
         await msg.finish(f"{ori:~Pg} = {res:~Pg}")
-    except pint.errors.UndefinedUnitError:
-        return msg.locale.t("convert.message.error.invalid_unit") 
-    except pint.errors.DimensionalityError:
-        return msg.locale.t("convert.message.error.cannot_convert") 
+    except:
+        return msg.locale.t("convert.message.error") 
