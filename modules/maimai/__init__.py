@@ -39,21 +39,28 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
 
 @mai.handle('inner <rating> [<rating_max>] {{maimai.help.inner}}')
 async def _(msg: Bot.MessageSession):
-    if '<rating_max>' not in msg.parsed_msg:
-        result_set = await inner_level_q(float(msg.parsed_msg['<rating>']))
+    try:
+    rating = float(msg.parsed_msg['<rating>'])
+        try:
+            rating_max = float(msg.parsed_msg.get('<rating_max>'))
+        except AttributeError:
+            rating_max = None
+    except ValueError:
+        return await msg.finish(msg.locale.t('error.range.notnumber'))
+    if rating > rating_max:
+        return await msg.finish(msg.locale.t('error.range.invalid'))
+    if not rating_max:
+        result_set = await inner_level_q(rating)
+        s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
     else:
-        result_set = await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>']))
-    s = ""
+        result_set = await inner_level_q(rating, rating_max)
+        s = msg.locale.t("maimai.message.inner.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
     if len(result_set) > 150:
         return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
-    elif len(result_set) > 50:
-        img = text_to_image(s)
-        if img:
-            await msg.finish([BImage(img)])
-    else:
-        await msg.finish(s.strip())
+    img = text_to_image(s)
+    await msg.finish([BImage(img)])
 
 
 

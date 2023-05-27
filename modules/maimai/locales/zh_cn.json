@@ -11,6 +11,6 @@
     "maimai.message.forbidden": "此用户禁止了其他人获取数据。",
     "maimai.message.chart_not_found": "未找到该谱面。",
     "maimai.message.b50.waiting": "加载时间较长，请稍等……",
-    "maimai.message.inline": "以下为定数 ${rating} 的曲目列表：",
-    "maimai.message.inline.range": "以下为定数 ${rating}-${rating_max} 的曲目列表："
+    "maimai.message.inner": "以下为定数 ${rating} 的曲目列表：",
+    "maimai.message.inner.range": "以下为定数 ${rating}-${rating_max} 的曲目列表："
 }

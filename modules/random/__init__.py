@@ -15,9 +15,9 @@ async def _(msg: Bot.MessageSession):
         _min = int(msg.parsed_msg['<min>'])
         _max = int(msg.parsed_msg['<max>'])
     except ValueError:
-        return await msg.finish(msg.locale.t('random.message.number.error.invalid'))
+        return await msg.finish(msg.locale.t('error.range.notnumber'))
     if _min > _max:
-        return await msg.finish(msg.locale.t('random.message.number.error.out_of_range'))
+        return await msg.finish(msg.locale.t('error.range.invalid'))
 
     random = secrets.randbelow(_max - _min + 1) + _min
     await msg.finish('' + str(random))
