@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
         inner_result = await inner_level_q(float(msg.parsed_msg['<rating>']))
         result_set += inner_result
     else:
-        result_set = [msg.finish(msg.locale.t('maimai.message.inline.range', rating=msg.parsed_msg['<rating>'], rating_max=rating_max = msg.parsed_msg['<rating_max>']))]
+        result_set = [msg.finish(msg.locale.t('maimai.message.inline.range', rating=msg.parsed_msg['<rating>'], rating_max=msg.parsed_msg['<rating_max>']))]
         inner_result = await inner_level_q(float(msg.parsed_msg['<rating>']), float(msg.parsed_msg['<rating_max>']))
         result_set += inner_result
 
