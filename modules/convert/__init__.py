@@ -7,7 +7,6 @@ from pint import UnitRegistry
 
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import NoReportException
 
 # ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
 #                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
@@ -24,7 +23,7 @@ async def _(msg: Bot.MessageSession):
         ori = ureg.parse_expression(from_val)
         res = ureg.parse_expression(from_val).to(to_unit)
         await msg.finish(f"{ori:~Pg} = {res:~Pg}")
-    except UndefinedUnitError:
+    except pint.errors.UndefinedUnitError:
         return msg.locale.t("convert.message.error.invalid_unit") 
-    except DimensionalityError:
+    except pint.errors.DimensionalityError:
         return msg.locale.t("convert.message.error.cannot_convert") 
