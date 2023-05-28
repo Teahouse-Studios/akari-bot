@@ -42,7 +42,50 @@ async def info(msg: Bot.MessageSession):
     url = f"{api_address}song/url?id={result['song']['id']}"
     song_url = await get_url(url, 200, fmt='json')
 
-    await message.finish([Image(f"{info['al']['picUrl']}"),
+    await message.finish([Image(f"{result['song']['al']['picUrl']}"),
                         Plain(message.locale.t("ncmusic.message.info", name=result['song']['name'], id=result['song']['id'], 
                                     album=result['song']['al']['name'], album_id=result['song']['al']['id'], artists='&'.join([ar['name'] for ar in result['song']['ar']]), 
                                     detail=detail_url, url=song_url['data'][0]['url']))])
+
+
+
+#@netease_cloud_music.handle('info <ids> {{ncmusic.help_doc.info}}', 
+#                            required_admin=False, required_superuser=False,
+#                            available_for='*')
+#async def info(msg: Bot.MessageSession):
+#    api_address = Config('netease_cloud_music_api')
+#    if not api_address:
+#        await msg.sendMessage(msg.locale.t('ncmusic.message.none_config'))
+#        return await msg.finish()
+
+#    ids = msg.parsed_msg['<ids>']
+#    if not ids:
+#        await msg.sendMessage(msg.locale.t('ncmusic.message.wrong_grammar'))
+#        return await msg.finish()
+
+#    url = f"{api_address}song/detail?ids={ids}"
+#    result = await get_url(url, 200, fmt='text', request_private_ip=True)
+#    result_json = json.loads(result)
+
+#    send_msg = []
+#    for k in result_json['songs']:
+#        send_msg.append(Image(k['al']['picUrl']))
+#        send_msg_plain = ''
+#        send_msg_plain += f"{msg.locale.t('ncmusic.info.name')}{k['name']}({k['id']})\n"
+#        send_msg_plain += f"{msg.locale.t('ncmusic.info.album')}{k['al']['name']}({k['al']['id']})\n"
+#        send_msg_plain += f"{msg.locale.t('ncmusic.info.artists')}"
+#        send_msg_plain += ' & '.join([ar['name'] for ar in k['ar']])
+#        send_msg_plain += '\n'
+#        song_page = f"https://music.163.com/#/song?id={k['id']}"
+#        send_msg_plain += f"{msg.locale.t('ncmusic.info.song_page')}{song_page}\n"
+#        url = f"{api_address}song/url?id={k['id']}"
+#        song = await get_url(url, 200, fmt='text', request_private_ip=True)
+#        song_url = json.loads(song)
+#        send_msg_plain += f"{msg.locale.t('ncmusic.info.song_url')}{song_url['data'][0]['url']}\n"
+#        send_msg.append(Plain(send_msg_plain))
+
+#    send_msg.append(Plain(f"\n{msg.locale.t('ncmusic.message.delete')}"))
+#    send = await msg.sendMessage(send_msg)
+#    await msg.sleep(90)
+#    await send.delete()
+#    await msg.finish()
