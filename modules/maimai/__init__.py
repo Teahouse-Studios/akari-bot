@@ -179,11 +179,11 @@ async def _(message: Bot.MessageSession):
             file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
             if len(chart['notes']) == 4:
                 msg = message.locale.t("maimai.message.song.sd", diff=diff_label[level_index], level=level, ds=ds, 
-                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], break=chart['notes'][3], 
+                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], _break=chart['notes'][3], 
                                         charter=chart['charter'])
             else:
                 msg = message.locale.t("maimai.message.song.dx", diff=diff_label[level_index], level=level, ds=ds, 
-                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], break=chart['notes'][4], 
+                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], _break=chart['notes'][4], 
                                         charter=chart['charter'])
             await message.finish([Plain(f"{music['id']}. {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
         except Exception:
