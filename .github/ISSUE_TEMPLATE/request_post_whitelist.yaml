@@ -28,7 +28,7 @@ body:
       description: 您的QQ号。
       placeholder: e.g. 10000
     validations:
-      required: false
+      required: true
   - type: input
     id: group-id
     attributes:
@@ -36,4 +36,4 @@ body:
       description: 您想要申请的群号。
       placeholder: e.g. 1000000
     validations:
-      required: false
+      required: true
