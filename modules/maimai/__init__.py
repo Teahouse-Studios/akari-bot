@@ -158,9 +158,49 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai.handle('random {{maimai.help.random}}')
-@mai.handle(re.compile(r".*\s?(M|m)aimai\s?.*(什么|什麼)"), desc='{maimai.help.random.regex}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
+
+
+
+    
+@mai.handle('song <id> [<diff>] {{maimai.help.song}}')
+async def _(message: Bot.MessageSession):
+    id = msg.parsed_msg['<id>']
+    diff = msg.parsed_msg.get('<diff>', None)
+    if diff is not None:
+        try:
+            level_index = diff_label.index(diff)
+            name = id
+            music = (await total_list.get()).by_id(name)
+            chart = music['charts'][level_index]
+            ds = music['ds'][level_index]
+            level = music['level'][level_index]
+            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
+            if len(chart['notes']) == 4:
+                msg = message.locale.t("maimai.message.song.sd", diff=diff_label[level_index], level=level, ds=ds, 
+                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], break=chart['notes'][3], 
+                                        charter=chart['charter'])
+            else:
+                msg = message.locale.t("maimai.message.song.dx", diff=diff_label[level_index], level=level, ds=ds, 
+                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], break=chart['notes'][4], 
+                                        charter=chart['charter'])
+            await message.finish([Plain(f"{music['id']}. {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
+        except Exception:
+            await message.finish(message.locale.t("maimai.message.chart_not_found"))
+    else:
+        name = id
+        music = (await total_list.get()).by_id(name)
+        try:
+            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
+            await message.finish([Plain(f"{music['id']}. {music['title']}\n"),
+                                  BImage(f"{file}"),
+                                  Plain(message.locale.t("maimai.message.song", 
+                                        artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
+                                        bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
+                                        level='/'.join(music['level'])))])
+        except Exception:
+            await message.finish(message.locale.t("maimai.message.music_not_found"))
 
             
 
@@ -190,53 +230,6 @@ async def _(msg: Bot.MessageSession):
         except Exception as e:
             Logger.error(e)
             await msg.finish(msg.locale.t("maimai.message.random.error"))
-
-
-
-@mai.handle(re.compile(r"([绿黄红紫白]?)id([0-9]+)"), desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
-async def _(message: Bot.MessageSession):
-    groups = message.matched_msg.groups()
-    if groups[0] != "":
-        try:
-            level_index = diff_label_zh.index(groups[0])
-            name = groups[1]
-            music = (await total_list.get()).by_id(name)
-            chart = music['charts'][level_index]
-            ds = music['ds'][level_index]
-            level = music['level'][level_index]
-            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
-            if len(chart['notes']) == 4:
-                msg = f'''{diff_label[level_index]} {level}({ds})
-TAP: {chart['notes'][0]}
-HOLD: {chart['notes'][1]}
-SLIDE: {chart['notes'][2]}
-BREAK: {chart['notes'][3]}
-谱师: {chart['charter']}'''
-            else:
-                msg = f'''{diff_label[level_index]} {level}({ds})
-TAP: {chart['notes'][0]}
-HOLD: {chart['notes'][1]}
-SLIDE: {chart['notes'][2]}
-TOUCH: {chart['notes'][3]}
-BREAK: {chart['notes'][4]}
-谱师: {chart['charter']}'''
-            await message.finish([Plain(f"{music['id']}. {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
-        except Exception:
-            await message.finish("未找到该谱面")
-    else:
-        name = groups[1]
-        music = (await total_list.get()).by_id(name)
-        try:
-            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
-            await message.finish([Plain(f"{music['id']}. {music['title']}\n"),
-                                  BImage(f"{file}"),
-                                  Plain(f"艺术家: {music['basic_info']['artist']}\n"
-                                        f"分类: {music['basic_info']['genre']}\n"
-                                        f"BPM: {music['basic_info']['bpm']}\n"
-                                        f"版本: {music['basic_info']['from']}\n"
-                                        f"难度: {'/'.join(music['level'])}")])
-        except Exception:
-            await message.finish("未找到该乐曲")
 
 
 
