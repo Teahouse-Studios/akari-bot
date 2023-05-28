@@ -35,7 +35,7 @@ async def search(msg: Bot.MessageSession):
 @ncmusic.handle('info <id> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession):
     ids = msg.parsed_msg['<id>']
-    info+url = f"{api_address}song/detail?ids={ids}"
+    info_url = f"{api_address}song/detail?ids={ids}"
     result = await get_url(info_url, 200, fmt='text', request_private_ip=True)
     result_json = json.loads(result)
 
