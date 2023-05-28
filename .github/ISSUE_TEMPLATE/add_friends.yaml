@@ -64,7 +64,7 @@ body:
     id: group-key
     attributes:
       label: 加好友方式
-      description: 您是否有特殊的验证答案？请将它们备注至此。注：您的入群答案将在申请完成后被删除。请放心填写。
+      description: 您是否有特殊的验证答案？请将它们备注至此。注：您的验证答案将在申请完成后被删除。请放心填写。
       value: 加我为好友无须特殊验证答案。
     validations:
       required: true
