@@ -17,9 +17,9 @@ async def search(msg: Bot.MessageSession):
     result = await get_url(search_url, 200, fmt='text', request_private_ip=True)
     result_json = json.loads(result)
     send_msg = msg.locale.t('ncmusic.search.result') + '\n'
-    cnt = 1
+    i = 1
     for song in result_json['result']['songs']:
-        send_msg += f"{cnt}. {song['name']}"
+        send_msg += f"{i}. {song['name']}"
         if 'transNames' in song:
             send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['transNames']))
         send_msg += f"--{' & '.join(artist['name'] for artist in song['artists'])}"
@@ -27,7 +27,7 @@ async def search(msg: Bot.MessageSession):
         if 'transNames' in song['album']:
             send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['album']['transNames']))
         send_msg += msg.locale.t("ncmusic.message.character", value=song['id']) + "\n"
-        cnt += 1
+        i += 1
     img_path = await msgchain2image([Plain(send_msg)])
     send = await msg.sendMessage(Image(img_path))
     await msg.sendMessage(send_msg)
@@ -53,7 +53,7 @@ async def info(msg: Bot.MessageSession):
         url = f"{api_address}song/url?id={k['id']}"
         song = await get_url(url, 200, fmt='text', request_private_ip=True)
         song_url = json.loads(song)
-        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.url')}{song_url['data'][0]['url']}\n"
+        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.url')}{song_url['data'][0]['url']}"
         send_msg.append(Plain(send_msg_plain))
 
     await msg.sendMessage(send_msg)
