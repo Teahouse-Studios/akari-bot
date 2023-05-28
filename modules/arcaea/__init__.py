@@ -27,29 +27,20 @@ class WithErrCode(Exception):
     pass
 
 
-async def check_friendcode(msg: Bot.MessageSession, friendcode: str):
-    if friendcode.isdigit():
-        if len(friendcode) != 9:
-            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
-    else:
-        await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.format"))
-
-
 async def get_friendcode(msg: Bot.MessageSession):
     get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
     if get_friendcode_from_db is not None:
         return get_friendcode_from_db
 
 
-@arc.command('b30 [<friendcode>] {{arcaea.help.b30}}')
-async def _(msg: Bot.MessageSession):
+@arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
+async def _(msg: Bot.MessageSession, friend_code: int = None):
     if not os.path.exists(assets_path):
         await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
-    query_code = None
-    friendcode: str = msg.parsed_msg.get('<friendcode>', False)
-    if friendcode:
-        await check_friendcode(msg, friendcode)
-        query_code = friendcode
+    if friend_code is not None:
+        if len(str(friend_code)) != 9:
+            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
+        query_code = friend_code
     else:
         query_code = await get_friendcode(msg)
     if query_code is not None:
@@ -144,16 +135,15 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('info [<friendcode>] {{arcaea.help.info}}')
-async def _(msg: Bot.MessageSession):
+@arc.command('info [<friend_code>] {{arcaea.help.info}}')
+async def _(msg: Bot.MessageSession, friend_code: int = None):
     if not os.path.exists(assets_path):
         await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
         return
-    query_code = None
-    friendcode = msg.parsed_msg.get('<friendcode>', False)
-    if friendcode:
-        await check_friendcode(msg, friendcode)
-        query_code = friendcode
+    if friend_code is not None:
+        if len(str(friend_code)) != 9:
+            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
+        query_code = friend_code
     else:
         query_code = await get_friendcode(msg)
     if query_code is not None:

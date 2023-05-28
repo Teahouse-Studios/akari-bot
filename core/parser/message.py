@@ -6,8 +6,7 @@ from datetime import datetime
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.types import MessageSession as MessageSession_T
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url, Bot
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
 from core.loader import ModulesManager
@@ -243,7 +242,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     if len(func_params) > 1:
                                         parsed_msg_ = msg.parsed_msg.copy()
                                         for param_name, param_obj in func_params.items():
-                                            if isinstance(param_obj.annotation, MessageSession_T.__class__):
+                                            if param_obj.annotation == Bot.MessageSession:
                                                 kwargs[param_name] = msg
                                             param_name_ = param_name
                                             if (param_name__ := f'<{param_name}>') in parsed_msg_:
