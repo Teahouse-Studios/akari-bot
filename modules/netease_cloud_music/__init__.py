@@ -13,36 +13,30 @@ ncmusic = module(bind_prefix='ncmusic', developers=['bugungu'], required_superus
 @ncmusic.handle('search <keyword> {{ncmusic.help.search}}')
 async def search(msg: Bot.MessageSession):
     keyword = msg.parsed_msg['<keyword>']
-    if api_address and keyword:
-        api_address += f"search?limit=10&keywords={keyword}"
-        result = await get_url(api_address, 200, fmt='text', request_private_ip=True)
-        result_json = json.loads(result)
-        send_msg = msg.locale.t('ncmusic.search.result') + '\n'
-        cnt = 1
-        for song in result_json['result']['songs']:
-            send_msg += f"{cnt}. {song['name']}"
-            if 'transNames' in song:
-                send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['transNames']))
-            send_msg += f"--{' & '.join(artist['name'] for artist in song['artists'])}"
-            send_msg += f"--{song['album']['name']}"
-            if 'transNames' in song['album']:
-                send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['album']['transNames']))
-            send_msg += msg.locale.t("ncmusic.message.character", value=song['id']) + "\n"
-            cnt += 1
-        img_path = await msgchain2image([Plain(send_msg)])
-        send = await msg.sendMessage(Image(img_path))
-    else:
-        send_msg = msg.locale.t('ncmusic.message.none_config')
+    search_url = f"{api_address}search?limit=10&keywords={keyword}"
+    result = await get_url(search_url, 200, fmt='text', request_private_ip=True)
+    result_json = json.loads(result)
+    send_msg = msg.locale.t('ncmusic.search.result') + '\n'
+    cnt = 1
+    for song in result_json['result']['songs']:
+        send_msg += f"{cnt}. {song['name']}"
+        if 'transNames' in song:
+            send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['transNames']))
+        send_msg += f"--{' & '.join(artist['name'] for artist in song['artists'])}"
+        send_msg += f"--{song['album']['name']}"
+        if 'transNames' in song['album']:
+            send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['album']['transNames']))
+        send_msg += msg.locale.t("ncmusic.message.character", value=song['id']) + "\n"
+        cnt += 1
+    img_path = await msgchain2image([Plain(send_msg)])
+    send = await msg.sendMessage(Image(img_path))
     await msg.sendMessage(send_msg)
 
 @ncmusic.handle('info <id> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession):
-    if not api_address:
-        await msg.sendMessage(msg.locale.t('ncmusic.message.none_config'))
-
     ids = msg.parsed_msg['<id>']
-    url = f"{api_address}song/detail?ids={ids}"
-    result = await get_url(url, 200, fmt='text', request_private_ip=True)
+    info+url = f"{api_address}song/detail?ids={ids}"
+    result = await get_url(info_url, 200, fmt='text', request_private_ip=True)
     result_json = json.loads(result)
 
     send_msg = []
