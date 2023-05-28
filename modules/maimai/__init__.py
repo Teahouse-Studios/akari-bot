@@ -13,7 +13,7 @@ total_list = TotalList()
 
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']
-diff_label_zht = ['綠', '黃', '紅', '紫', '白']
+diff_label_zht = ['綠', '黃', '紅']
 
 
 def song_txt(music: Music):
@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
     result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
-        s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+        s += f"{elem[0]} {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) <= 10:
@@ -84,7 +84,7 @@ async def _(msg: Bot.MessageSession):
         result_set = await inner_level_q(rating)
         s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
     for elem in result_set:
-        s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+        s += f"{elem[0]} {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) > 200:
@@ -121,7 +121,7 @@ async def _(msg: Bot.MessageSession):
     else:
         search_result = msg.locale.t("maimai.message.search") + "\n"
         for music in sorted(res, key=lambda i: int(i['id'])):
-            search_result += f"{music['id']}. {music['title']}\n"
+            search_result += f"{music['id']} {music['title']}\n"
         if len(res) <= 10:
             await msg.finish([Plain(search_result.strip())])
         else:
@@ -184,7 +184,7 @@ async def _(message: Bot.MessageSession):
     if diff is not None:
         try:
             level_index = get_label(diff)
-            if level_index == None:
+            if level_index is None:
                 await msg.finish(msg.locale.t("maimai.message.error.diff_invalid"))
             name = id
             music = (await total_list.get()).by_id(name)
@@ -200,7 +200,7 @@ async def _(message: Bot.MessageSession):
                 msg = message.locale.t("maimai.message.song.dx", diff=diff_label[level_index], level=level, ds=ds, 
                                         tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], _break=chart['notes'][4], 
                                         charter=chart['charter'])
-            await message.finish([Plain(f"{music['id']}. {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
+            await message.finish([Plain(f"{music['id']} {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
         except Exception:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
     else:
@@ -208,7 +208,7 @@ async def _(message: Bot.MessageSession):
         music = (await total_list.get()).by_id(name)
         try:
             file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
-            await message.finish([Plain(f"{music['id']}. {music['title']}\n"),
+            await message.finish([Plain(f"{music['id']} {music['title']}\n"),
                                   BImage(f"{file}"),
                                   Plain(message.locale.t("maimai.message.song", 
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
