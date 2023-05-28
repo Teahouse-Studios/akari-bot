@@ -44,7 +44,7 @@ async def info(msg: Bot.MessageSession):
     song = await get_url(url, 200, fmt='text', request_private_ip=True)
     song_url = json.loads(song)
 
-    await message.finish([Plain(f"Image(f"{info['al']['picUrl']}"),
+    await message.finish([Image(f"{info['al']['picUrl']}"),
                                   Plain(message.locale.t("ncmusic.message.info", name=info['name'], id=info['id'], 
-                                  album=info['al']['name'], album_id=info['al']['id'], artists=' & '.join([ar['name'] for ar in info['ar']]), 
+                                  album=info['al']['name'], album_id=info['al']['id'], artists='&'.join([ar['name'] for ar in info['ar']]), 
                                   detail=detail_url, url=song_url['data'][0]['url'])))])
