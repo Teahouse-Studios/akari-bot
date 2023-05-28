@@ -34,7 +34,7 @@ def get_label(diff):
     return level
 
 
-mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
+mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias=['mai'],
              desc='{maimai.help.desc}', support_languages=['zh_cn'])
 
 
