@@ -55,8 +55,8 @@ async def _(msg: Bot.MessageSession):
         s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    if len(result_set) <= 11:
-        await msg.finish(s)
+    if len(result_set) <= 10:
+        await msg.finish(s.strip())
     else:
         img = text_to_image(s)
         await msg.finish([BImage(img)])
@@ -90,8 +90,8 @@ async def _(msg: Bot.MessageSession):
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) > 200:
         return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
-    if len(result_set) <= 11:
-        await msg.finish(s)
+    if len(result_set) <= 10:
+        await msg.finish(s.strip())
     else:
         img = text_to_image(s)
         await msg.finish([BImage(img)])
