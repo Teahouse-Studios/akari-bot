@@ -246,49 +246,49 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
-             'scoreline help {查看分数线帮助}'])
-async def _(msg: Bot.MessageSession):
-    r = "([绿黄红紫白])(id)?([0-9]+)"
-    arg1 = msg.parsed_msg.get('<difficulty+sid>')
-    args2 = msg.parsed_msg.get('<scoreline>')
-    argh = msg.parsed_msg.get('help', False)
-    if argh:
-        s = '''此功能为查找某首歌分数线设计。
-命令格式：maimai scoreline <difficulty+sid> <scoreline>
-例如：分数线 紫799 100
-命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
-以下为 TAP GREAT 的对应表：
-GREAT/GOOD/MISS
-TAP\t1/2.5/5
-HOLD\t2/5/10
-SLIDE\t3/7.5/15
-TOUCH\t1/2.5/5
-BREAK\t5/12.5/25(外加200落)'''
-        img = text_to_image(s)
-        if img:
-            await msg.finish([BImage(img)])
-    elif args2 is not None:
-        try:
-            grp = re.match(r, arg1).groups()
-            level_index = diff_label_zhs.index(grp[0])
-            chart_id = grp[2]
-            line = float(arg1)
-            music = (await total_list.get()).by_id(chart_id)
-            chart: Dict[Any] = music['charts'][level_index]
-            tap = int(chart['notes'][0])
-            slide = int(chart['notes'][2])
-            hold = int(chart['notes'][1])
-            touch = int(chart['notes'][3]) if len(chart['notes']) == 5 else 0
-            brk = int(chart['notes'][-1])
-            total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
-            break_bonus = 0.01 / brk
-            break_50_reduce = total_score * break_bonus / 4
-            reduce = 101 - line
-            if reduce <= 0 or reduce >= 101:
-                raise ValueError
-            await msg.finish(f'''{music['title']} {diff_label[level_index]}
-分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
-BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
-        except Exception:
-            await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
+#@mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
+#             'scoreline help {查看分数线帮助}'])
+#async def _(msg: Bot.MessageSession):
+#    r = "([绿黄红紫白])(id)?([0-9]+)"
+#    arg1 = msg.parsed_msg.get('<difficulty+sid>')
+#    args2 = msg.parsed_msg.get('<scoreline>')
+#    argh = msg.parsed_msg.get('help', False)
+#    if argh:
+#        s = '''此功能为查找某首歌分数线设计。
+#命令格式：maimai scoreline <difficulty+sid> <scoreline>
+#例如：分数线 紫799 100
+#命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
+#以下为 TAP GREAT 的对应表：
+#GREAT/GOOD/MISS
+#TAP\t1/2.5/5
+#HOLD\t2/5/10
+#SLIDE\t3/7.5/15
+#TOUCH\t1/2.5/5
+#BREAK\t5/12.5/25(外加200落)'''
+#        img = text_to_image(s)
+#        if img:
+#            await msg.finish([BImage(img)])
+#    elif args2 is not None:
+#        try:
+#            grp = re.match(r, arg1).groups()
+#            level_index = diff_label_zhs.index(grp[0])
+#            chart_id = grp[2]
+#            line = float(arg1)
+#            music = (await total_list.get()).by_id(chart_id)
+#            chart: Dict[Any] = music['charts'][level_index]
+#            tap = int(chart['notes'][0])
+#            slide = int(chart['notes'][2])
+#            hold = int(chart['notes'][1])
+#            touch = int(chart['notes'][3]) if len(chart['notes']) == 5 else 0
+#            brk = int(chart['notes'][-1])
+#            total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
+#            break_bonus = 0.01 / brk
+#            break_50_reduce = total_score * break_bonus / 4
+#            reduce = 101 - line
+#            if reduce <= 0 or reduce >= 101:
+#                raise ValueError
+#            await msg.finish(f'''{music['title']} {diff_label[level_index]}
+#分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
+#BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
+#        except Exception:
+#            await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
