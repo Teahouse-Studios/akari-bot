@@ -1,4 +1,4 @@
-from core.builtins import Bot
+from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.http import get_url
 from config import Config
@@ -30,30 +30,21 @@ async def search(msg: Bot.MessageSession):
         i += 1
     img_path = await msgchain2image([Plain(send_msg)])
     send = await msg.sendMessage(Image(img_path))
-    await msg.sendMessage(send_msg)
+    await msg.finish(send_msg)
 
 @ncmusic.handle('info <id> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession):
     ids = msg.parsed_msg['<id>']
     info_url = f"{api_address}song/detail?ids={ids}"
     result = await get_url(info_url, 200, fmt='text', request_private_ip=True)
-    result_json = json.loads(result)
+    info = json.loads(result)['songs']
 
-    send_msg = []
-    for k in result_json['songs']:
-        send_msg.append(Image(k['al']['picUrl']))
-        send_msg_plain = ''
-        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.name')}{k['name']}({k['id']})\n"
-        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.album')}{k['al']['name']}({k['al']['id']})\n"
-        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.artists')}"
-        send_msg_plain += ' & '.join([ar['name'] for ar in k['ar']])
-        send_msg_plain += '\n'
-        song_page = f"https://music.163.com/#/song?id={k['id']}"
-        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.song_page')}{song_page}\n"
-        url = f"{api_address}song/url?id={k['id']}"
-        song = await get_url(url, 200, fmt='text', request_private_ip=True)
-        song_url = json.loads(song)
-        send_msg_plain += f"{msg.locale.t('ncmusic.message.info.url')}{song_url['data'][0]['url']}"
-        send_msg.append(Plain(send_msg_plain))
+    detail_url = f"https://music.163.com/#/song?id={info['id']}"
+    url = f"{api_address}song/url?id={k['id']}"
+    song = await get_url(url, 200, fmt='text', request_private_ip=True)
+    song_url = json.loads(song)
 
-    await msg.sendMessage(send_msg)
+    await message.finish([Plain(f"Image(f"{info['al']['picUrl']}"),
+                                  Plain(message.locale.t("ncmusic.message.info", name=info['name'], id=info['id'], 
+                                  album=info['al']['name'], album_id=info['al']['id'], artists=' & '.join([ar['name'] for ar in info['ar']]), 
+                                  detail=detail_url, url=song_url['data'][0]['url'])))])
