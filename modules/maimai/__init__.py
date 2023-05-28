@@ -30,7 +30,7 @@ def get_label(msg, diff):
     elif diff in diff_label:
         level = diff_label.index(diff)
     else:
-        await msg.finish(msg.locale.t("maimai.message.error.diff_invalid"))
+        level = None
     return level
 
 
@@ -184,6 +184,8 @@ async def _(message: Bot.MessageSession):
     if diff is not None:
         try:
             level_index = get_label(message, diff)
+            if level_index = None:
+                await msg.finish(msg.locale.t("maimai.message.error.diff_invalid"))
             name = id
             music = (await total_list.get()).by_id(name)
             chart = music['charts'][level_index]
