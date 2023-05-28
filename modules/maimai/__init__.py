@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
     result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
-        s += f"{elem[0]} {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+        s += f"{elem[0]} {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) <= 10:
@@ -84,7 +84,7 @@ async def _(msg: Bot.MessageSession):
         result_set = await inner_level_q(rating)
         s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
     for elem in result_set:
-        s += f"{elem[0]} {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+        s += f"{elem[0]} {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) > 200:
@@ -184,8 +184,6 @@ async def _(message: Bot.MessageSession):
     if diff is not None:
         try:
             level_index = get_label(diff)
-            if level_index is None:
-                await msg.finish(msg.locale.t("maimai.message.error.diff_invalid"))
             name = id
             music = (await total_list.get()).by_id(name)
             chart = music['charts'][level_index]
