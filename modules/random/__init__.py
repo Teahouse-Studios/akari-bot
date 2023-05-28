@@ -1,6 +1,6 @@
 import secrets
-import uuid
 import string
+import uuid
 
 from core.builtins import Bot
 from core.component import module
@@ -39,11 +39,12 @@ async def _(msg: Bot.MessageSession):
         x[i], x[j] = x[j], x[i]
     await msg.finish(', '.join(x))
 
-@r.handle('string <count> [-u] [-l] [-n] [-s] {{random.help.string}}', 
-         options_desc={'-u': '{random.help.option.string.u}', 
-                      '-l': '{random.help.option.string.l}', 
-                      '-n': '{random.help.option.string.n}', 
-                      '-s': '{random.help.option.string.s}'})
+
+@r.handle('string <count> [-u] [-l] [-n] [-s] {{random.help.string}}',
+          options_desc={'-u': '{random.help.option.string.u}',
+                        '-l': '{random.help.option.string.l}',
+                        '-n': '{random.help.option.string.n}',
+                        '-s': '{random.help.option.string.s}'})
 async def _(msg: Bot.MessageSession):
 
     try:
@@ -54,21 +55,21 @@ async def _(msg: Bot.MessageSession):
         return await msg.finish(msg.locale.t('random.message.string.error.invalid'))
     characters = ""
     if msg.parsed_msg.get('-u', False):
-            characters += string.ascii_uppercase
+        characters += string.ascii_uppercase
     if msg.parsed_msg.get('-l', False):
-            characters += string.ascii_lowercase
+        characters += string.ascii_lowercase
     if msg.parsed_msg.get('-n', False):
-            characters += string.digits
+        characters += string.digits
     if msg.parsed_msg.get('-s', False):
-            characters += "!@#$%^&*-_+=?"
+        characters += "!@#$%^&*-_+=?"
 
     if not characters:
         characters = string.ascii_letters + string.digits
-        
+
     random = ''.join(secrets.choice(characters) for _ in range(length))
     await msg.finish(random)
 
-    
+
 @r.handle('uuid {{random.help.uuid}}', )
 async def _(msg: Bot.MessageSession):
     await msg.finish(str(uuid.uuid4()))

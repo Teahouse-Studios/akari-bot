@@ -10,7 +10,6 @@ import sys
 from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 
 from constant import consts
-import utils
 
 funcs = {}
 named_funcs = {}

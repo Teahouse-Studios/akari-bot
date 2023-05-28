@@ -2,15 +2,15 @@ import os.path
 import shutil
 import traceback
 
-from core.utils.cache import random_cache_path
 from core.builtins import Bot
-from core.builtins import Plain, Image
+from core.builtins import Image
 from core.component import module
+from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from .dbutils import PgrBindInfoManager
-from .update import update_assets, p_headers
-from .genb19 import drawb19
 from .game_record import parse_game_record
+from .genb19 import drawb19
+from .update import update_assets, p_headers
 
 phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
              alias={'p': 'phigros', 'pgr': 'phigros', 'phi': 'phigros'})

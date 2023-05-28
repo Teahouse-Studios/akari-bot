@@ -1,4 +1,3 @@
-import os
 from decimal import Decimal
 
 from pint import UnitRegistry

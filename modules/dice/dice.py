@@ -3,6 +3,8 @@ import secrets
 
 import numpy as np
 
+from core.utils.text import remove_prefix
+
 MAX_DICE_COUNT = 100  # 一次摇动最多的骰子数量
 MAX_ROLL_TIMES = 10  # 一次命令最多的摇动次数
 MAX_MOD_NUMBER = 10000  # 骰子最大加权值
@@ -211,7 +213,7 @@ async def GenerateMessage(dices: str, times: int, dc: int):
             else:
                 outputLine += str(dice.GetResult())
             result += dice.GetResult(False)
-        outputLine = outputLine.removeprefix('+')  # 移除多项式首个+
+        outputLine = remove_prefix(outputLine, '+')  # 移除多项式首个+
         outputLine += ' = ' + str(result)
         if dc != 0:
             if result > dc:

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String
 
 from database.orm import Session
 from database.orm_base import Base
