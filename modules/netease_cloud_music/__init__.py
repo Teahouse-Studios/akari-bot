@@ -36,15 +36,13 @@ async def search(msg: Bot.MessageSession):
 async def info(msg: Bot.MessageSession):
     ids = msg.parsed_msg['<id>']
     info_url = f"{api_address}song/detail?ids={ids}"
-    result = await get_url(info_url, 200, fmt='text', request_private_ip=True)
-    info = json.loads(result)['songs']
+    result = await get_url(info_url, 200, fmt='json')
 
-    detail_url = f"https://music.163.com/#/song?id={info['id']}"
-    url = f"{api_address}song/url?id={info['id']}"
-    song = await get_url(url, 200, fmt='text', request_private_ip=True)
-    song_url = json.loads(song)
+    detail_url = f"https://music.163.com/#/song?id={result['song']['id']}"
+    url = f"{api_address}song/url?id={result['song']['id']}"
+    song_url = await get_url(url, 200, fmt='json')
 
     await message.finish([Image(f"{info['al']['picUrl']}"),
-                        Plain(message.locale.t("ncmusic.message.info", name=info['name'], id=info['id'], 
-                                    album=info['al']['name'], album_id=info['al']['id'], artists='&'.join([ar['name'] for ar in info['ar']]), 
+                        Plain(message.locale.t("ncmusic.message.info", name=result['song']['name'], id=result['song']['id'], 
+                                    album=result['song']['al']['name'], album_id=result['song']['al']['id'], artists='&'.join([ar['name'] for ar in result['song']['ar']]), 
                                     detail=detail_url, url=song_url['data'][0]['url']))])
