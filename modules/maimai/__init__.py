@@ -20,26 +20,6 @@ def song_txt(music: Music):
             Plain(f"\n{'/'.join(music.level)}")]
 
 
-async def diff_level_q(level):
-    result_set = []
-    music_data = (await total_list.get()).filter(level=level)
-    for music in sorted(music_data, key=lambda i: int(i['id'])):
-        for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
-    return result_set
-
-
-async def inner_level_q(ds1, ds2=None):
-    result_set = []
-    if ds2 is not None:
-        music_data = (await total_list.get()).filter(ds=(ds1, ds2))
-    else:
-        music_data = (await total_list.get()).filter(ds=ds1)
-    for music in sorted(music_data, key=lambda i: int(i['id'])):
-        for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
-    return result_set
-
 
 mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
              desc='{maimai.help.desc}', support_languages=['zh_cn'])
@@ -61,7 +41,13 @@ async def _(msg: Bot.MessageSession):
         img = text_to_image(s)
         await msg.finish([BImage(img)])
 
-
+async def diff_level_q(level):
+    result_set = []
+    music_data = (await total_list.get()).filter(level=level)
+    for music in sorted(music_data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
+    return result_set
 
 
 
@@ -96,6 +82,44 @@ async def _(msg: Bot.MessageSession):
         img = text_to_image(s)
         await msg.finish([BImage(img)])
 
+async def inner_level_q(ds1, ds2=None):
+    result_set = []
+    if ds2 is not None:
+        music_data = (await total_list.get()).filter(ds=(ds1, ds2))
+    else:
+        music_data = (await total_list.get()).filter(ds=ds1)
+    for music in sorted(music_data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
+    return result_set
+
+
+
+@mai.handle('search <keyword> {{maimai.help.search}}')
+async def _(msg: Bot.MessageSession):
+    name = msg.parsed_msg['<keyword>']
+    result_set = await search_level_q(name)
+    s = msg.locale.t("maimai.message.search") + "\n"
+    for elem in result_set:
+        s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
+    if len(result_set) == 0:
+        return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+    if len(result_set) > 200:
+        return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
+    if len(result_set) <= 10:
+        await msg.finish(s.strip())
+    else:
+        img = text_to_image(s)
+        await msg.finish([BImage(img)])
+
+async def search_level_q(name):
+    result_set = []
+    music_data = (await total_list.get()).filter(title_search=name)
+    for music in sorted(music_data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
+    return result_set
+
 
 
 @mai.handle('b40 [<username>] {{maimai.help.b40}}')
@@ -115,6 +139,7 @@ async def _(msg: Bot.MessageSession):
     else:
         if img:
             await msg.finish([BImage(img)])
+
 
 
 @mai.handle('b50 [<username>] {{maimai.help.b50}}')
@@ -171,23 +196,6 @@ async def _(msg: Bot.MessageSession):
             Logger.error(e)
             await msg.finish(msg.locale.t("maimai.message.random.error"))
 
-
-
-@mai.handle(re.compile(r"查歌(.+)"), desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
-async def _(msg: Bot.MessageSession):
-    name = msg.matched_msg.groups()[0].strip()
-    if name == "":
-        return
-    res = (await total_list.get()).filter(title_search=name)
-    if len(res) == 0:
-        await msg.finish("没有找到这样的乐曲。")
-    elif len(res) < 50:
-        search_result = ""
-        for music in sorted(res, key=lambda i: int(i['id'])):
-            search_result += f"{music['id']}. {music['title']}\n"
-        await msg.finish([Plain(search_result.strip())])
-    else:
-        await msg.finish(f"结果过多（{len(res)} 条），请缩小查询范围。")
 
 
 @mai.handle(re.compile(r"([绿黄红紫白]?)id([0-9]+)"), desc='[绿黄红紫白]id<歌曲编号> 查询乐曲信息或谱面信息')
