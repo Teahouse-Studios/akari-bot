@@ -21,7 +21,7 @@ body:
       options:
         - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)
           required: true
-        - label: 我有必须在私聊使用机器人服务的需求（如Phigros绑定）
+        - label: 我有必须在私聊使用机器人服务的需求
           required: true
   - type: markdown
     attributes:
@@ -53,3 +53,18 @@ body:
       placeholder: e.g. QQ 1000000
     validations:
       required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 理由
+      description: 您需要私聊使用机器人的原因
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: 备注
+      description: 您还想告诉我们什么？
+      placeholder: 什么都可以哦，没有就算了吧。
+    validations:
+      required: false
