@@ -14,7 +14,7 @@ body:
         
         **我们恕不接受任何因使用不当或故意滥用而造成的警告或封禁。**
         
-        另请注意，我们可能会要求您提交更多信息。因此，请关注您的GitHub绑定邮箱通知。若您未在24小时内回复我们的要求，我们将关闭您的申请，不过您还可以再次提交。
+        另请注意，我们可能会要求您提交更多信息。因此，请关注您的 GitHub 绑定邮箱通知。若您未在 24 小时内回复我们的要求，我们将关闭您的申请，不过您还可以再次提交。
         
         若您仍然继续滥用此功能，我们不会再接受您发送的任何申请。
   - type: checkboxes
@@ -23,7 +23,7 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)。
           required: true
         - label: 我确定这是机器人误判而造成的封禁。
           required: true
@@ -43,26 +43,26 @@ body:
     id: platform
     attributes:
       label: 聊天平台
-      description: 您的账号所在平台
+      description: 您的账号所在平台。
       options:
         - Discord
         - Telegram
-        - QQ群
-        - QQ频道
+        - QQ 群
+        - QQ 频道
   - type: input
     id: user-id
     attributes:
-      label: 用户ID
-      description: 您的QQ号/Telegram ID/Discord handle。
-      placeholder: e.g. QQ 10000/TG @Dll233/DC Dianliang233#1230
+      label: 用户 ID
+      description: 您的 QQ 号/Telegram ID/Discord handle。
+      placeholder: e.g. QQ 10000/TG @Example/DC Example#1234
     validations:
       required: true
   - type: input
     id: group-id
     attributes:
-      label: 群组ID
-      description: 您的群组的QQ群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
-      placeholder: e.g. QQ 1000000/TG <https://t.me/fandom_zh>/DC 683236421687050252/DC <https://discord.gg/kK5Ttan>
+      label: 群组 ID
+      description: 您的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
+      placeholder: e.g. QQ 1000000/TG <https://t.me/example>/DC 12345678910111213/DC <https://discord.gg/exAmpl3>
     validations:
       required: true
   - type: input
@@ -84,7 +84,7 @@ body:
     id: other
     attributes:
       label: 备注
-      description: 你还想告诉我们什么？
+      description: 您还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false
