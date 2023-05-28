@@ -1,5 +1,5 @@
 name: 报告漏洞
-description: 发现机器人的功能出现问题
+description: 发现机器人的功能出现问题。
 title: "[BUG]: "
 labels: ["bug"]
 assignees:

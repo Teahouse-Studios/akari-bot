@@ -1,5 +1,5 @@
 name: 添加机器人为好友
-description: 让机器人加你为好友
+description: 让机器人添加你为好友。
 title: "[NEW]: 添加好友"
 labels: ["new"]
 assignees:
