@@ -40,7 +40,7 @@ async def info(msg: Bot.MessageSession):
     info = json.loads(result)['songs']
 
     detail_url = f"https://music.163.com/#/song?id={info['id']}"
-    url = f"{api_address}song/url?id={k['id']}"
+    url = f"{api_address}song/url?id={info['id']}"
     song = await get_url(url, 200, fmt='text', request_private_ip=True)
     song_url = json.loads(song)
 
