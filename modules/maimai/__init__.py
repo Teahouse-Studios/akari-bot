@@ -12,13 +12,26 @@ from modules.maimai.libraries.tool import hash_
 total_list = TotalList()
 
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
-diff_label_zh = ['绿', '黄', '红', '紫', '白']
+diff_label_zhs = ['绿', '黄', '红', '紫', '白']
+diff_label_zht = ['綠', '黃', '紅', '紫', '白']
+
 
 def song_txt(music: Music):
     return [Plain(f"{music.id}. {music.title}\n"),
             BImage(f"https://www.diving-fish.com/covers/{get_cover_len4_id(music.id)}.png", ),
             Plain(f"\n{'/'.join(music.level)}")]
 
+
+def get_label(msg, diff):
+    if diff in diff_label_zhs:
+        level = diff_label_zhs.index(diff)
+    elif diff in diff_label_zht:
+        level = diff_label_zht.index(diff)
+    elif diff in diff_label:
+        level = diff_label.index(diff)
+    else:
+        await msg.finish(msg.locale.t("maimai.message.error.diff_invalid"))
+    return level
 
 
 mai = module('maimai', developers=['mai-bot', 'OasisAkari'], alias=['mai'],
@@ -170,7 +183,7 @@ async def _(message: Bot.MessageSession):
     diff = message.parsed_msg.get('<diff>', None)
     if diff is not None:
         try:
-            level_index = diff_label.index(diff)
+            level_index = get_label(message, diff)
             name = id
             music = (await total_list.get()).by_id(name)
             chart = music['charts'][level_index]
@@ -220,7 +233,7 @@ async def _(msg: Bot.MessageSession):
             if res.groups()[1] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[diff_label_zh.index(res.groups()[1])],
+                music_data = (await total_list.get()).filter(level=level, diff=[diff_label_zhs.index(res.groups()[1])],
                                                              type=tp)
             if len(music_data) == 0:
                 rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -258,7 +271,7 @@ BREAK\t5/12.5/25(外加200落)'''
     elif args2 is not None:
         try:
             grp = re.match(r, arg1).groups()
-            level_index = diff_label_zh.index(grp[0])
+            level_index = diff_label_zhs.index(grp[0])
             chart_id = grp[2]
             line = float(arg1)
             music = (await total_list.get()).by_id(chart_id)
