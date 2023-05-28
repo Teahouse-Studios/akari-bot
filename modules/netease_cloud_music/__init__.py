@@ -8,8 +8,7 @@ import ujson as json
 
 netease_cloud_music = module(bind_prefix='music', developers=['bugungu'])
 
-@netease_cloud_music.handle('search <value> {{ncmusic.help_doc.search}}',
-                            required_admin=False, required_superuser=False, available_for='*')
+@netease_cloud_music.handle('search <value> {{ncmusic.help_doc.search}}', required_superuser=)
 async def search(msg: Bot.MessageSession):
     api_address = Config('netease_cloud_music_api')
     value = msg.parsed_msg['<value>']
