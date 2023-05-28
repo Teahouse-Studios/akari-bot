@@ -127,7 +127,7 @@ class MusicList(List[Music]):
                genre: Optional[Union[str, List[str]]] = None,
                bpm: Optional[Union[float, List[float], Tuple[float, float]]] = None,
                type: Optional[Union[str, List[str]]] = None,
-               diff: List[int] = []],
+               diff: List[int] = [],
                ):
         new_list = MusicList()
         for music in self:
