@@ -1,0 +1,13 @@
+{
+    "ncmusic.msg.help.search":"搜索音乐",
+    "ncmusic.msg.help.info":"获取音乐详细信息",
+    "ncmusic.msg.come_from":"——",
+    "ncmusic.msg.character":"（${value}）",
+    "ncmusic.msg.search_result":"搜索结果：",
+    "ncmusic.msg.recall":"[该消息将在90秒后撤回]",
+    "ncmusic.msg.name":"歌名：",
+    "ncmusic.msg.album":"专辑名：",
+    "ncmusic.msg.artists":"歌手：",
+    "ncmusic.msg.song_page":"歌曲详情页：",
+    "ncmusic.msg.song_url":"歌曲链接："
+}
