@@ -35,3 +35,19 @@ body:
         对于任何违反上述协议、或是由我们判定为出现其它不合适的行为，我们将视情况终止对您的服务，并有权利公开相关的不良行为。
         
         请注意：上述提示不能视为对服务条款的替代。
+  - type: input
+    id: user-id
+    attributes:
+      label: 用户ID
+      description: 您的QQ号。
+      placeholder: e.g. QQ 10000
+    validations:
+      required: true
+  - type: input
+    id: group-id
+    attributes:
+      label: 群组ID
+      description: 您所在的拥有小可的群组的QQ群号
+      placeholder: e.g. QQ 1000000
+    validations:
+      required: true
