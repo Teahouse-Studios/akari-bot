@@ -121,13 +121,13 @@ class MusicList(List[Music]):
 
     def filter(self,
                *,
-               level: Optional[Union[str, List[str]]] = None,
-               ds: Optional[Union[float, List[float], Tuple[float, float]]] = None,
-               title_search: Optional[str] = None,
-               genre: Optional[Union[str, List[str]]] = None,
-               bpm: Optional[Union[float, List[float], Tuple[float, float]]] = None,
-               type: Optional[Union[str, List[str]]] = None,
-               diff: List[int] = [],
+               level: Optional[Union[str, List[str]]] = ...,
+               ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+               title_search: Optional[str] = ...,
+               genre: Optional[Union[str, List[str]]] = ...,
+               bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
+               type: Optional[Union[str, List[str]]] = ...,
+               diff: List[int] = ...,
                ):
         new_list = MusicList()
         for music in self:

@@ -98,27 +98,22 @@ async def inner_level_q(ds1, ds2=None):
 @mai.handle('search <keyword> {{maimai.help.search}}')
 async def _(msg: Bot.MessageSession):
     name = msg.parsed_msg['<keyword>'].strip()
-    result_set = await search_level_q(name)
-    s = msg.locale.t("maimai.message.search") + "\n"
-    for elem in result_set:
-        s += f"{elem[0]}. {elem[1]} {elem[3]} {elem[4]}({elem[2]})\n"
-    if len(result_set) == 0:
+    if name == "":
+        return
+    res = (await total_list.get()).filter(title_search=name)
+    if len(res) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    if len(result_set) > 200:
+    if len(res) > 200:
         return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
-    if len(result_set) <= 10:
-        await msg.finish(s.strip())
     else:
-        img = text_to_image(s)
-        await msg.finish([BImage(img)])
-
-async def search_level_q(name):
-    result_set = []
-    music_data = (await total_list.get()).filter(title_search=name)
-    for music in sorted(music_data, key=lambda i: int(i['id'])):
-        for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i]))
-    return result_set
+        search_result = msg.locale.t("maimai.message.search") + "\n"
+        for music in sorted(res, key=lambda i: int(i['id'])):
+            search_result += f"{music['id']}. {music['title']}\n"
+        if len(res) <= 10:
+            await msg.finish([Plain(search_result.strip())])
+        else:
+            img = text_to_image(search_result)
+            await msg.finish([BImage(img)])
 
 
 
