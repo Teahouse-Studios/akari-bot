@@ -97,7 +97,7 @@ async def inner_level_q(ds1, ds2=None):
 
 @mai.handle('search <keyword> {{maimai.help.search}}')
 async def _(msg: Bot.MessageSession):
-    name = msg.parsed_msg['<keyword>']
+    name = msg.parsed_msg['<keyword>'].strip()
     result_set = await search_level_q(name)
     s = msg.locale.t("maimai.message.search") + "\n"
     for elem in result_set:
