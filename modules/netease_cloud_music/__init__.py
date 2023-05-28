@@ -6,11 +6,11 @@ from core.utils.image import msgchain2image
 from core.builtins import Image, Plain
 import ujson as json
 
-api_address = Config('netease_cloud_music_api')
+api_address = Config('netease_cloud_music_api_url')
 
-ncmusic = module(bind_prefix='ncmusic', developers=['bugungu'])
+ncmusic = module(bind_prefix='ncmusic', developers=['bugungu'], required_superuser=True)
 
-@ncmusic.handle('search <keyword> {{ncmusic.help.search}}', required_superuser=True)
+@ncmusic.handle('search <keyword> {{ncmusic.help.search}}')
 async def search(msg: Bot.MessageSession):
     keyword = msg.parsed_msg['<keyword>']
     if api_address and keyword:
@@ -31,21 +31,16 @@ async def search(msg: Bot.MessageSession):
             cnt += 1
         img_path = await msgchain2image([Plain(send_msg)])
         send = await msg.sendMessage(Image(img_path))
-    elif not keyword:
-        send_msg = msg.locale.t('ncmusic.message.wrong_grammar')
     else:
         send_msg = msg.locale.t('ncmusic.message.none_config')
     await msg.sendMessage(send_msg)
 
-@ncmusic.handle('info <ids> {{ncmusic.help.info}}', required_superuser=True)
+@ncmusic.handle('info <id> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession):
     if not api_address:
         await msg.sendMessage(msg.locale.t('ncmusic.message.none_config'))
 
-    ids = msg.parsed_msg['<ids>']
-    if not ids:
-        await msg.sendMessage(msg.locale.t('ncmusic.message.wrong_grammar'))
-
+    ids = msg.parsed_msg['<id>']
     url = f"{api_address}song/detail?ids={ids}"
     result = await get_url(url, 200, fmt='text', request_private_ip=True)
     result_json = json.loads(result)
