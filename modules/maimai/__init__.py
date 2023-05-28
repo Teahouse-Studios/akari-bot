@@ -166,8 +166,8 @@ async def _(msg: Bot.MessageSession):
     
 @mai.handle('song <id> [<diff>] {{maimai.help.song}}')
 async def _(message: Bot.MessageSession):
-    id = msg.parsed_msg['<id>']
-    diff = msg.parsed_msg.get('<diff>', None)
+    id = message.parsed_msg['<id>']
+    diff = message.parsed_msg.get('<diff>', None)
     if diff is not None:
         try:
             level_index = diff_label.index(diff)
