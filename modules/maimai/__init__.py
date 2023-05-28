@@ -22,7 +22,7 @@ def song_txt(music: Music):
             Plain(f"\n{'/'.join(music.level)}")]
 
 
-def get_label(msg, diff):
+def get_label(diff):
     if diff in diff_label_zhs:
         level = diff_label_zhs.index(diff)
     elif diff in diff_label_zht:
@@ -183,8 +183,8 @@ async def _(message: Bot.MessageSession):
     diff = message.parsed_msg.get('<diff>', None)
     if diff is not None:
         try:
-            level_index = get_label(message, diff)
-            if level_index = None:
+            level_index = get_label(diff)
+            if level_index == None:
                 await msg.finish(msg.locale.t("maimai.message.error.diff_invalid"))
             name = id
             music = (await total_list.get()).by_id(name)
