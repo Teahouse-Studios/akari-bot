@@ -39,4 +39,4 @@ enable_eval = True
 coin_limit = 10000
 coin_faceup_rate = 4994
 coin_facedown_rate = 4994
-qq_enable_listen_self_message = False
+qq_enable_listening_self_message = False
