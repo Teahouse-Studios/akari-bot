@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         need_revoke = True
     headers = p_headers.copy()
     headers['X-LC-Session'] = sessiontoken
-    get_user_info = await get_url('https://phigrosserver.pigeongames.cn/1.1/users/me', headers=headers, fmt='json')
+    get_user_info = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me', headers=headers, fmt='json')
     if 'nickname' in get_user_info:
         bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=sessiontoken, username=get_user_info['nickname'])
         if bind:
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession):
         try:
             headers = p_headers.copy()
             headers['X-LC-Session'] = bind[0]
-            get_save_url = await get_url('https://phigrosserver.pigeongames.cn/1.1/classes/_GameSave', headers=headers,
+            get_save_url = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave', headers=headers,
                                          fmt='json')
             save_url = get_save_url['results'][0]['gameFile']['url']
             download = await download_to_cache(save_url)
