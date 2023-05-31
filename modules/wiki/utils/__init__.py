@@ -29,7 +29,7 @@ async def rc_loader(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
-        res = await rc(start_wiki, wiki_url=start_wiki)
+        res = await rc(msg, start_wiki, wiki_url=start_wiki)
         await msg.finish(res)
 
 

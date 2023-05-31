@@ -28,7 +28,7 @@
     "wiki.help.wiki_inline.url": "傳送 Wiki 頁面的 URL 以生成 infobox 圖片。",
     "wiki.message.ab.qq.title": "防濫用過濾器日誌",
     "wiki.message.ab.qq.title.address": "防濫用過濾器位址",
-    "wiki.message.ab.slice": "•${title} - ${user}於${time}\n 過濾器名：${filter_name}\n 過濾器 ID：${filter_id}\n 處理結果：${result}",
+    "wiki.message.ab.slice": "•${title} - ${user} 於 ${time}\n 過濾器名：${filter_name}\n 過濾器 ID：${filter_id}\n 處理結果：${result}",
     "wiki.message.error.add": "發生錯誤：無法新增此 Wiki。",
     "wiki.message.error.blocked": "發生錯誤：${name} 處於黑名單中。",
     "wiki.message.error.info": "詳細訊息：",
