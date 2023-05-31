@@ -1,9 +1,9 @@
 import re
 import traceback
 
+from config import Config
 from core.builtins import Image, Plain, Bot
 from core.component import module
-from config import Config
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager
 from core.parser.command import CommandParser

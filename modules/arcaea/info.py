@@ -46,12 +46,14 @@ async def get_info(msg, usercode):
         if not os.path.exists(imgpath):
             imgpath = f'{assets_path}/jacket/{recent["song_id"]}.jpg'
         realptt = songinfo['rating'] / 10
-        ptt = recent['rating']
         score = recent['score']
-        shiny_pure = recent['shiny_perfect_count']
-        pure = recent['perfect_count']
-        far = recent['near_count']
-        lost = recent['miss_count']
+        ptt = realptt
+        if score >= 10000000:
+            ptt += 2
+        elif score >= 9800000:
+            ptt += 1 + (score - 9800000) / 200000
+        else:
+            ptt += (score - 9500000) / 300000
         username = get_['content']['account_info']['name']
         usrptt = int(get_['content']['account_info']['rating'])
         if usrptt == -1:
@@ -68,10 +70,6 @@ async def get_info(msg, usercode):
                     trackname=trackname,
                     difficulty=difficulty,
                     score=score,
-                    pure=pure,
-                    shiny_pure=shiny_pure,
-                    far=far,
-                    lost=lost,
                     realptt=realptt,
                     ptt=ptt,
                     time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]

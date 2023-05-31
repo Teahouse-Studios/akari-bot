@@ -1,7 +1,6 @@
 import re
 
 import ujson as json
-from urllib.parse import urlparse
 
 from config import Config
 from core.builtins import Bot

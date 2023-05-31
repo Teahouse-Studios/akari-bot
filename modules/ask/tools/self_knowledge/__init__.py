@@ -1,12 +1,12 @@
 
 import os
 
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import TextLoader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import Chroma
 
 from config import Config
 from ..utils import AkariTool

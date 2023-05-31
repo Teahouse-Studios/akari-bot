@@ -1,6 +1,6 @@
 {
-    "maimai.help.b40": "查询 B40 信息。（仅限大陆版舞萌）",
-    "maimai.help.b50": "查询 B50 信息。（仅限大陆版舞萌）",
+    "maimai.help.b40": "查询 B40 信息。（仅限大陆版 Maimai）",
+    "maimai.help.b50": "查询 B50 信息。（仅限大陆版 Maimai）",
     "maimai.help.desc": "与 Maimai 相关的工具，移植自 Mai-bot。",
     "maimai.help.inner": "根据定数或定数范围搜索歌曲。",
     "maimai.help.level": "根据等级搜索歌曲。",

@@ -1,13 +1,12 @@
+import inspect
 import re
 import traceback
-import inspect
 from datetime import datetime
 
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.types import MessageSession as MessageSession_T
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
 from core.loader import ModulesManager
@@ -27,13 +26,13 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 temp_ban_counter = {}  # 临时限制计数
 
 
-async def remove_temp_ban(msg: MessageSession):
+async def remove_temp_ban(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         del temp_ban_counter[msg.target.senderId]
 
 
-async def msg_counter(msg: MessageSession, command: str):
+async def msg_counter(msg: Bot.MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
     if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
         # 检查是否滥用（重复使用同一命令）
@@ -53,7 +52,7 @@ async def msg_counter(msg: MessageSession, command: str):
             raise AbuseWarning(msg.locale.t("tos.reason.abuse"))
 
 
-async def temp_ban_check(msg: MessageSession):
+async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
@@ -68,7 +67,7 @@ async def temp_ban_check(msg: MessageSession):
                 raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
 
 
-async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
+async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
     接收消息必经的预处理器
@@ -213,7 +212,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         if func.help_doc:
                             none_doc = False
                     if not none_doc:  # 如果有，送入命令解析
-                        async def execute_submodule(msg: MessageSession, command_first_word, command_split):
+                        async def execute_submodule(msg: Bot.MessageSession, command_first_word, command_split):
                             try:
                                 command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
                                                                command_prefixes=msg.prefixes)
@@ -243,7 +242,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     if len(func_params) > 1:
                                         parsed_msg_ = msg.parsed_msg.copy()
                                         for param_name, param_obj in func_params.items():
-                                            if isinstance(param_obj.annotation, MessageSession_T.__class__):
+                                            if param_obj.annotation == Bot.MessageSession:
                                                 kwargs[param_name] = msg
                                             param_name_ = param_name
                                             if (param_name__ := f'<{param_name}>') in parsed_msg_:

@@ -56,13 +56,6 @@ async def update_assets():
     if download_file:
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
-        shutil.copytree(
-            os.path.join(
-                ca,
-                'PhigrosLibrary-master',
-                'illustration'),
-            illustration_path,
-            dirs_exist_ok=True)
 
         with open(os.path.join(ca, 'PhigrosLibrary-master', 'difficulty.csv'), 'r', encoding='utf-8') as f:
             reader = csv.reader(f)

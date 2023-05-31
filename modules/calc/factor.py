@@ -1,6 +1,9 @@
-import utils
-import sys
 import json
+import sys
+
+from utils import do_something
+
+do_something()
 
 n = int(sys.argv[1])
 i = 2

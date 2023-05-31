@@ -1,8 +1,10 @@
 import logging
 import os
 import re
+import traceback
+from typing import Dict, Any
 
-from aiocqhttp import Event
+from aiocqhttp import Event, Error
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.message import MessageSession, FetchTarget
@@ -17,6 +19,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
 Url.disable_mm = not Config('qq_enable_urlmanager')
 qq_account = Config("qq_account")
+enable_listening_self_message = Config("qq_enable_listening_self_message")
 
 
 @bot.on_startup
@@ -30,8 +33,7 @@ async def _(event: Event):
     await load_prompt(FetchTarget)
 
 
-@bot.on_message('group', 'private')
-async def _(event: Event):
+async def message_handler(event: Event):
     if event.detail_type == 'private':
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session'):
@@ -64,6 +66,17 @@ async def _(event: Event):
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
     await parser(msg, running_mention=True, prefix=prefix)
+
+
+if enable_listening_self_message:
+    @bot.on('message_sent')
+    async def _(event: Event):
+        await message_handler(event)
+
+
+@bot.on_message('group', 'private')
+async def _(event: Event):
+    await message_handler(event)
 
 
 class GuildAccountInfo:

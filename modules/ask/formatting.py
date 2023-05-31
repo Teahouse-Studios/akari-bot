@@ -1,5 +1,5 @@
-import ujson as json
 import aiohttp
+import ujson as json
 
 
 async def generate_latex(formula: str):

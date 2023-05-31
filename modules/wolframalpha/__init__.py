@@ -1,10 +1,11 @@
-import wolframalpha
 import asyncio
 
+import wolframalpha
+
+from config import Config
 from core.builtins import Bot, Image
 from core.component import module
 from core.dirty_check import check_bool
-from config import Config
 
 client = wolframalpha.Client(Config('wolfram_alpha_appid'))
 
