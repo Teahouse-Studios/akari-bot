@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
 
 
-factor = module('factor', developers=['DoroWolf, Light-Beacon', 'Dianliang233'])
+factor = module('factor', developers=['DoroWolf', 'Light-Beacon', 'Dianliang233'])
 
 
 @factor.handle('prime <number> {{calc.help.factor.prime}}')
