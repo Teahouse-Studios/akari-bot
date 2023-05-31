@@ -75,7 +75,7 @@
     "wiki.message.set.success": "成功设置起始 Wiki：${name}",
     "wiki.message.untrust": "注意：此 Wiki 当前没有加入机器人的白名单列表中，查询此 Wiki 时将会对返回内容进行限制。\n若需取消限制，请在此处申请白名单：\n",
     "wiki.message.utils.banned": "检测到外来信息介入，请前往滥用日志查看所有消息。",
-    "wiki.message.utils.only_last_5": "……仅显示前 5 条内容。",
+    "wiki.message.utils.only_last_5": "…仅显示前 5 条内容。",
     "wiki.message.utils.qq.prompt": "Tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。",
     "wiki.message.utils.time.infinity": "无限期",
     "wiki.message.utils.wikilib.error.empty": "发生错误：API 未返回任何内容，请联系此站点管理员获取原因。",

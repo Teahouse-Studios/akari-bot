@@ -45,7 +45,7 @@
     "arcaea.message.download.success": "Current latest version is ${version}.\nDownload: ${url}",
     "arcaea.message.failed": "Failed to query.",
     "arcaea.message.failed.errcode": "Failed to query: ",
-    "arcaea.message.info.result": "Recent play record of ${username} (${potential}): \n${trackname} (${difficulty})\nScore: ${score}\nPure: ${pure} (${shiny_pure})\nFar: ${far}\nLost: ${lost}\nPotential: ${realptt} -> ${ptt}\nTime: ${time_played} (UTC+8)",
+    "arcaea.message.info.result": "${username} (${potential}) 的最近游玩记录：\n${trackname}（${difficulty}）\n分数：${score}\n潜力值：${realptt} -> ${ptt}\n时间：${time_played} (UTC+8)",
     "arcaea.message.info.result.none": "This user has no play record.",
     "arcaea.message.initialize.not_found": "\"arc.apk\" not found!",
     "arcaea.message.initialize.success": "Initialized successed!",

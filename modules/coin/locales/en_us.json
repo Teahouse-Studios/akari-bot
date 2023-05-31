@@ -14,7 +14,7 @@
     "coin.message.mix.end": ".",
     "coin.message.mix.head": " ${head} is/are heads",
     "coin.message.mix.stand": "... and ${stand} stand(s) up!",
-    "coin.message.mix.tail": ", ${head} is/are tails",
+    "coin.message.mix.tail": ", ${tail} is/are tails",
     "coin.message.mix.tail2": " ${tail} is/are tails",
     "coin.message.prompt": "You toss ${count} coin(s)",
     "coin.message.stand": "...\n...It is standing up!",
