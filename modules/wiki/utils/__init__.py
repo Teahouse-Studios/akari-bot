@@ -26,7 +26,7 @@ async def rc_loader(msg: Bot.MessageSession):
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.finish(msg.locale.t('wiki.message.rollback'))
+            await msg.sendMessage(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
         res = await rc(msg, start_wiki)
@@ -49,7 +49,7 @@ async def ab_loader(msg: Bot.MessageSession):
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.finish(msg.locale.t('wiki.message.rollback'))
+            await msg.sendMessage(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
         res = await ab(msg, start_wiki)
