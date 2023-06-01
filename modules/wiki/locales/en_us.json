@@ -28,7 +28,7 @@
     "wiki.help.wiki_inline.url": "发送 Wiki 页面的 URL 以生成 infobox 图片。",
     "wiki.message.ab.qq.title": "滥用过滤器日志",
     "wiki.message.ab.qq.title.address": "滥用过滤器日志地址",
-    "wiki.message.ab.slice": "•${title} - ${user} 于 ${time}\n 过滤器名：${filter_name}\n 过滤器ID：${filter_id}\n 处理结果：${result}",
+    "wiki.message.ab.slice": "•${title} - ${user} 于 ${time}\n 过滤器名：${filter_name}\n 处理结果：${result}",
     "wiki.message.error.add": "发生错误：无法添加此 Wiki。",
     "wiki.message.error.blocked": "发生错误：${name} 处于黑名单中。",
     "wiki.message.error.info": "详细信息：",
