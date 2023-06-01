@@ -5,7 +5,7 @@ from core.component import module
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from .user import get_user_info
 
-usr = module('user', alias=['u'],
+usr = module('user', alias='u',
              developers=['OasisAkari'])
 
 

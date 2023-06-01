@@ -8,7 +8,7 @@ from core.component import module
 # ureg = UnitRegistry(os.path.dirname(os.path.abspath(__file__)) +
 #                     '/default_bi_zh-cn_en.txt', non_int_type=Decimal)
 ureg = UnitRegistry(non_int_type=Decimal)
-i = module('convert', alias=('conv', 'unit'), desc='{convert.help.desc}',
+i = module('convert', alias=['conv', 'unit'], desc='{convert.help.desc}',
            developers=['Dianliang233'], support_languages=['en_us'])
 
 

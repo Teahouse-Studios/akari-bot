@@ -206,8 +206,7 @@ leave = module(
     base=True,
     required_admin=True,
     available_for='QQ|Group',
-    alias={
-        'dismiss': 'leave'},
+    alias='dismiss',
     desc='{core.help.leave}')
 
 
@@ -219,7 +218,7 @@ async def _(msg: Bot.MessageSession):
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
-petal = module('petal', developers=['Dianliang233'], base=True, alias={'petals': 'petal'},
+petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
                desc='{core.help.petal}')
 
 

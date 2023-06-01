@@ -16,7 +16,7 @@ from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from database import BotDBUtil
 
-su = module('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
+su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
 
 @su.handle('add <user>')
@@ -131,7 +131,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("core.message.set.help.option.tion.tion.tion.tion.tion.success", k=k, v=v))
 
 
-ae = module('abuse', alias=['ae'], developers=['Dianliang233'], required_superuser=True)
+ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True)
 
 
 @ae.handle('check <user>')

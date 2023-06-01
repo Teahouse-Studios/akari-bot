@@ -9,7 +9,7 @@ from modules.meme.urban import urban
 meme = module(
     bind_prefix='meme',
     # well, people still use it though it only lived for an hour or so
-    alias=['nbnhhsh'],
+    alias='nbnhhsh',
     desc='{meme.help.desc}',
     developers=['Dianliang233'],
     support_languages=['zh_cn', 'en_us'])

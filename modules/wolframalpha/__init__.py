@@ -11,8 +11,7 @@ client = wolframalpha.Client(Config('wolfram_alpha_appid'))
 
 w = module(
     'wolframalpha',
-    alias={
-        'wolfram': 'wolframalpha'},
+    alias='wolfram',
     developers=['Dianliang233'],
     desc='{wolframalpha.help.desc}',
     support_languages=['en_us'])
