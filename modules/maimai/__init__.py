@@ -117,7 +117,7 @@ async def _(msg: Bot.MessageSession):
     if len(res) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(res) > 200:
-        return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
+        return await msg.finish(msg.locale.t("maimai.message.too_much", length=len(res)))
     else:
         search_result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
         for music in sorted(res, key=lambda i: int(i['id'])):
