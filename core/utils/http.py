@@ -20,6 +20,10 @@ debug = Config('debug')
 if not (proxy := Config('proxy')):
     proxy = ''
 
+_matcher_private_ips = re.compile(
+    r'^(?:127\.|0?10\.|172\.0?1[6-9]\.|172\.0?2[0-9]\.172\.0?3[01]\.|192\.168\.|169\.254\.|::1|[fF][cCdD][0-9a-fA-F]{2}:|[fF][eE][89aAbB][0-9a-fA-F]:)'
+)
+
 
 def private_ip_check(url: str):
     '''检查是否为私有IP，若是则抛出ValueError异常。
@@ -27,10 +31,9 @@ def private_ip_check(url: str):
     :param url: 需要检查的url。'''
     hostname = urllib.parse.urlparse(url).hostname
     addr_info = socket.getaddrinfo(hostname, 80)
-    private_ips = re.compile(
-        r'^(?:127\.|0?10\.|172\.0?1[6-9]\.|172\.0?2[0-9]\.172\.0?3[01]\.|192\.168\.|169\.254\.|::1|[fF][cCdD][0-9a-fA-F]{2}:|[fF][eE][89aAbB][0-9a-fA-F]:)')
+    
     addr = addr_info[0][4][0]
-    if private_ips.match(addr):
+    if _matcher_private_ips.match(addr):
         raise ValueError(
             f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
