@@ -28,6 +28,8 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             Logger.warn('[Webrender] Webrender is not configured.')
             return False
         use_local = False
+    pic = False
+    
     try:
         tblst = []
         if isinstance(table, ImageTable):
@@ -64,23 +66,31 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             with open(fname, 'w', encoding='utf-8') as fi:
                 fi.write(tblst + css)
 
-        pic = False
-
         try:
-            pic = await download_to_cache(web_render_local if use_local else web_render, method='POST', headers={
-                'Content-Type': 'application/json',
-            }, post_data=json.dumps(html), request_private_ip=True)
+            pic = await download_to_cache(
+                web_render_local if use_local else web_render, 
+                method='POST',
+                post_data=json.dumps(html), 
+                request_private_ip=True,
+                headers={
+                    'Content-Type': 'application/json',
+                }
+            )
         except aiohttp.ClientConnectorError:
             if use_local:
-                pic = await download_to_cache(web_render, method='POST', headers={
-                    'Content-Type': 'application/json',
-                }, post_data=json.dumps(html), request_private_ip=True)
-            else:
-                return False
-        return pic
+                pic = await download_to_cache(
+                    web_render, 
+                    method='POST', 
+                    post_data=json.dumps(html), 
+                    request_private_ip=True,
+                    headers={
+                        'Content-Type': 'application/json',
+                    }
+                )
     except Exception:
-        Logger.error(traceback.format_exc())
-        return False
+        Logger.exception("error at image_table_render")
+    
+    return pic
 
 
 __all__ = ['ImageTable', 'image_table_render']
