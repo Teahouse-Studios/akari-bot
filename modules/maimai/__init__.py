@@ -66,7 +66,7 @@ async def diff_level_q(level):
     music_data = (await total_list.get()).filter(level=level)
     for music in sorted(music_data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i], music['type'][i]))
+            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i], music['type']))
     return result_set
 
 
@@ -110,7 +110,7 @@ async def inner_level_q(ds1, ds2=None):
         music_data = (await total_list.get()).filter(ds=ds1)
     for music in sorted(music_data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i], music['type'][i]))
+            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i], music['type']))
     return result_set
 
 
