@@ -15,6 +15,7 @@ from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from database import BotDBUtil
+from core.utils.storedata import get_stored_list, update_stored_list
 
 su = module('superuser', alias=['su'], developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -323,6 +324,20 @@ if Bot.FetchTarget.name == 'QQ':
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
         await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
+
+    forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
+
+    @forward_msg.handle()
+    async def _(msg: Bot.MessageSession):
+        alist = get_stored_list(Bot.FetchTarget, 'forward_msg')
+        if not alist:
+            alist = {'status': True}
+        alist['status'] = not alist['status']
+        update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
+        if alist['status']:
+            await msg.sendMessage('已开启转发消息')
+        else:
+            await msg.sendMessage('已关闭转发消息')
 
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)

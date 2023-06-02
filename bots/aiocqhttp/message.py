@@ -21,6 +21,7 @@ from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
 from database import BotDBUtil
+from core.utils.storedata import get_stored_list
 
 enable_analytics = Config('enable_analytics')
 base_superuser = Config('base_superuser')
@@ -137,6 +138,10 @@ class MessageSession(MS):
 
     async def fake_forward_msg(self, nodelist):
         if self.target.targetFrom == 'QQ|Group':
+            get_ = get_stored_list(Bot.FetchTarget, 'forward_msg')
+            if not get_['status']:
+                await self.sendMessage('转发消息已禁用。')
+                raise
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 
     async def delete(self):
