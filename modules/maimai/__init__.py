@@ -213,12 +213,12 @@ async def _(message: Bot.MessageSession):
         music = (await total_list.get()).by_id(name)
         try:
             file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
-            await message.finish([Plain(f"{music['id']} {music['title']}\n"),
+            await message.finish([Plain(f"{music['id']} {music['title']}" + (" (DX)" if music['type'] == "dx" else "") + "\n"),
                                   BImage(f"{file}"),
                                   Plain(message.locale.t("maimai.message.song", 
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
                                         bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
-                                        level='/'.join(music['ds'])))])
+                                        level='/'.join(music['level'])))])
         except Exception:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
 
