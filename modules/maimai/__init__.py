@@ -205,7 +205,7 @@ async def _(message: Bot.MessageSession):
                 msg = message.locale.t("maimai.message.song.dx", diff=diff_label[level_index], level=level, ds=ds, 
                                         tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], _break=chart['notes'][4], 
                                         charter=chart['charter'])
-            await message.finish([Plain(f"{music['id']} {music['title']} {" (DX)" if music['type'] == "DX" else ""}\n"), BImage(f"{file}"), Plain(msg)])
+            await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"), BImage(f"{file}"), Plain(msg)])
         except Exception:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
     else:
@@ -213,7 +213,7 @@ async def _(message: Bot.MessageSession):
         music = (await total_list.get()).by_id(name)
         try:
             file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
-            await message.finish([Plain(f"{music['id']} {music['title']} {" (DX)" if music['type'] == "DX" else ""}\n"),
+            await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
                                   BImage(f"{file}"),
                                   Plain(message.locale.t("maimai.message.song", 
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
