@@ -11,7 +11,7 @@ from modules.maimai.libraries.tool import hash_
 
 total_list = TotalList()
 
-diff_label = ['basic', 'advanced', 'expert', 'master', 're:master']
+diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']
 diff_label_zht = ['綠', '黃', '紅']
@@ -25,17 +25,20 @@ def song_txt(music: Music):
 
 def get_label(diff):
     diff = diff.lower()
+    diff_label_lower = [label.lower() for label in diff_label]
+    
     if diff in diff_label_zhs:
         level = diff_label_zhs.index(diff)
     elif diff in diff_label_zht:
         level = diff_label_zht.index(diff)
     elif diff in diff_label_abbr:
         level = diff_label_abbr.index(diff)
-    elif diff in diff_label:
-        level = diff_label.index(diff)
+    elif diff in diff_label_lower:
+        level = diff_label_lower.index(diff)
     else:
         level = None
     return level
+
 
 
 mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='mai',
@@ -213,9 +216,10 @@ async def _(message: Bot.MessageSession):
             await message.finish([Plain(f"{music['id']} {music['title']}\n"),
                                   BImage(f"{file}"),
                                   Plain(message.locale.t("maimai.message.song", 
+                                        tp=music['type']
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
                                         bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
-                                        level='/'.join(music['level'])))])
+                                        level='/'.join(music['ds'])))])
         except Exception:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
 
