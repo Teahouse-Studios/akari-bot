@@ -6,11 +6,9 @@ hitokoto_types = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"]
 
 hitokoto = module(
     'hitokoto',
-    developers=[
-        'bugungu',
-        'DoroWolf'],
+    developers=['bugungu','DoroWolf'],
     desc='{hitokoto.help.desc}',
-    alias=['htkt'],
+    alias='htkt',
     support_languages=['zh_cn'])
 
 

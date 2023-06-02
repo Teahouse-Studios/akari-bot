@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 from core.builtins import Bot, Image as BotImage
 from core.component import module
 
-c = module('color', alias=['colour'], developers=['Dianliang233',], desc='{color.help.desc}')
+c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}')
 
 font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 
