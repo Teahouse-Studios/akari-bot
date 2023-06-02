@@ -205,7 +205,7 @@ async def _(message: Bot.MessageSession):
                 msg = message.locale.t("maimai.message.song.dx", diff=diff_label[level_index], level=level, ds=ds, 
                                         tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], _break=chart['notes'][4], 
                                         charter=chart['charter'])
-            await message.finish([Plain(f"{music['id']} {music['title']}\n"), BImage(f"{file}"), Plain(msg)])
+            await message.finish([Plain(f"{music['id']} {music['title']}" + (" (DX)" if music['type'] == "dx" else "") + "\n"), BImage(f"{file}"), Plain(msg)])
         except Exception:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
     else:
@@ -216,7 +216,6 @@ async def _(message: Bot.MessageSession):
             await message.finish([Plain(f"{music['id']} {music['title']}\n"),
                                   BImage(f"{file}"),
                                   Plain(message.locale.t("maimai.message.song", 
-                                        tp=music['type']
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
                                         bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
                                         level='/'.join(music['ds'])))])
