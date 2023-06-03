@@ -21,19 +21,19 @@ bot_version = 'v4.0.11'
 async def init_async() -> None:
     load_modules()
     version = os.path.abspath(PrivateAssets.path + '/version')
-    write_version = open(version, 'w')
-    try:
-        write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
-    except Exception as e:
-        write_version.write(bot_version)
-    write_version.close()
+    with open(version, 'w') as write_version:
+        try:
+            write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
+        except Exception as e:
+            write_version.write(bot_version)
+    
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
-    write_tag = open(tag, 'w')
-    try:
-        write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
-    except Exception as e:
-        write_tag.write(bot_version)
-    write_tag.close()
+    with open(tag, 'w') as write_tag:
+        try:
+            write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
+        except Exception as e:
+            write_tag.write(bot_version)
+
     gather_list = []
     Modules = ModulesManager.return_modules_list()
     for x in Modules:
