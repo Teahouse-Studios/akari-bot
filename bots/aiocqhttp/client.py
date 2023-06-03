@@ -1,6 +1,7 @@
 import traceback
+from typing import Dict, Any, Optional
 
-bot = CQHttp()
+from aiocqhttp import CQHttp, Error
 from aiocqhttp.event import Event
 
 
@@ -8,7 +9,7 @@ class EventModded(Event):
     @staticmethod
     def from_payload(payload: Dict[str, Any]) -> 'Optional[Event]':
         """
-        ´Ó OneBot ÊÂ¼şÊı¾İ¹¹Ôì `Event` ¶ÔÏó¡£
+        ä» OneBot äº‹ä»¶æ•°æ®æ„é€  `Event` å¯¹è±¡ã€‚
         """
         try:
             e = EventModded(payload)
@@ -21,8 +22,8 @@ class EventModded(Event):
     @property
     def detail_type(self) -> str:
         """
-        ÊÂ¼ş¾ßÌåÀàĞÍ£¬ÒÀ `type` µÄ²»Í¬¶ø²»Í¬£¬ÒÔ ``message`` ÀàĞÍÎªÀı£¬ÓĞ
-        ``private``¡¢``group``¡¢``discuss`` µÈ¡£
+        äº‹ä»¶å…·ä½“ç±»å‹ï¼Œä¾ `type` çš„ä¸åŒè€Œä¸åŒï¼Œä»¥ ``message`` ç±»å‹ä¸ºä¾‹ï¼Œæœ‰
+        ``private``ã€``group``ã€``discuss`` ç­‰ã€‚
         """
         if self.type == 'message_sent':
             return self['message_type']
