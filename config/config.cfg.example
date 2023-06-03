@@ -25,3 +25,4 @@ allow_request_private_ip = False
 enable_eval = True
 openai_api_key =
 nl2c_model =
+qq_enable_listening_self_message = False

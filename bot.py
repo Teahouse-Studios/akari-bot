@@ -30,13 +30,6 @@ def enqueue_output(out, queue):
 
 
 def init_bot():
-    cache_path = os.path.abspath(Config('cache_path'))
-    if os.path.exists(cache_path):
-        shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
-
     base_superuser = Config('base_superuser')
     if base_superuser:
         BotDBUtil.SenderInfo(base_superuser).edit('isSuperUser', True)
@@ -46,6 +39,13 @@ pidlst = []
 
 
 def run_bot():
+    cache_path = os.path.abspath(Config('cache_path'))
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+        os.mkdir(cache_path)
+    else:
+        os.mkdir(cache_path)
+
     pid_cache = os.path.abspath('.pid_last')
     if os.path.exists(pid_cache):
         with open(pid_cache, 'r') as f:
