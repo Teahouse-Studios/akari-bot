@@ -2,7 +2,7 @@ from core.builtins import Bot
 from core.component import on_command
 from config import Config
 import requests
-import json
+import ujson as json
 import subprocess
 import redis
 import random

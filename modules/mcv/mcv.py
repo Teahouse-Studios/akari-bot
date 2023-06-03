@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import re
 
 from google_play_scraper import app as google_play_scraper

@@ -4,7 +4,7 @@ from config import Config
 from .server import server
 from ast import literal_eval
 import redis
-import json
+import ujson as json
 import itertools
 import re
 

@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import random
 import time
 from core.builtins import Bot, Plain, Image

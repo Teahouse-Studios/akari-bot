@@ -1,4 +1,4 @@
-import json
+import ujson as json
 
 from core.builtins import Url, ErrorMessage
 from core.utils.http import get_url
