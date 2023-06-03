@@ -3,7 +3,7 @@ from core.builtins import Bot
 import ast
 import re
 
-zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_admin=True)
+zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_superuser=True)
 
 
 @zlp.handle(pattern=r'[\s\S]*^',
