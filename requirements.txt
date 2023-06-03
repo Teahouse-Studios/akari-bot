@@ -1531,9 +1531,9 @@ regex==2023.5.5 ; python_full_version >= "3.8.1" and python_full_version < "4.0.
     --hash=sha256:f83fe9e10f9d0b6cf580564d4d23845b9d692e4c91bd8be57733958e4c602956 \
     --hash=sha256:fb2b495dd94b02de8215625948132cc2ea360ae84fe6634cd19b6567709c8ae2 \
     --hash=sha256:fee0016cc35a8a91e8cc9312ab26a6fe638d484131a7afa79e1ce6165328a135
-requests==2.30.0 ; python_full_version >= "3.8.1" and python_version < "4.0" \
-    --hash=sha256:10e94cc4f3121ee6da529d358cdaeaff2f1c409cd377dbc72b825852f2f7e294 \
-    --hash=sha256:239d7d4458afcb28a692cdd298d87542235f4ca8d36d03a15bfc128a6559a2f4
+requests==2.31.0; python_full_version >= "3.8.1" and python_version < "4.0" \
+    --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
+    --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1
 scikit-learn==1.2.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:065e9673e24e0dc5113e2dd2b4ca30c9d8aa2fa90f4c0597241c93b63130d233 \
     --hash=sha256:2dd3ffd3950e3d6c0c0ef9033a9b9b32d910c61bd06cb8206303fb4514b88a49 \
