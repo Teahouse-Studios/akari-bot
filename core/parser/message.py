@@ -420,7 +420,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             if enable_tos and rfunc.show_typing:
                                 await msg_counter(msg, msg.trigger_msg)
                             else:
-                                Logger.debug(f'Tos is disabled.')
+                                Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
                             continue
                         except NoReportException as e:

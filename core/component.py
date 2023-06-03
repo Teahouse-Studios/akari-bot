@@ -78,14 +78,9 @@ class Bind:
 
             return decorator
 
-        def on_command(self, *args, **kwargs):
-            return self.command(*args, **kwargs)
-
-        def on_regex(self, *args, **kwargs):
-            return self.regex(*args, **kwargs)
-
-        def on_schedule(self, *args, **kwargs):
-            return self.schedule(*args, **kwargs)
+        on_command = command
+        on_regex = regex
+        on_schedule = schedule
 
         def handle(self, *args, **kwargs):
             first_key = args[0] if args else (kwargs[list(kwargs.keys())[0]] if kwargs else None)
