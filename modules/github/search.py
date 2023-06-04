@@ -9,22 +9,23 @@ async def search(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200,
                                fmt='json')
-        if 'message' in result and result['message']:
-            await msg.finish(result['message'])
-        items = result['items']
-        item_count_expected = int(result['total_count']) if result['total_count'] < 5 else 5
-        items_out = []
-        for item in items:
-            try:
-                items_out.append(str(item['full_name'] + ': ' + str(Url(item['html_url']))))
-            except TypeError:
-                continue
-        footnotes = msg.locale.t(
-            "github.message.search.more_information",
-            more_result=result['total_count'] -
-            5) if item_count_expected == 5 else ''
-        message = msg.locale.t("github.message.search", result=result['total_count']) + '\n' + '\n'.join(
-            items_out[0:item_count_expected]) + f'\n{footnotes}'
+        if result['total_count'] == 0:
+             message = msg.locale.t("github.message.search.none")
+        else:
+            items = result['items']
+            item_count_expected = int(result['total_count']) if result['total_count'] < 5 else 5
+            items_out = []
+            for item in items:
+                try:
+                    items_out.append(str(item['full_name'] + ': ' + str(Url(item['html_url']))))
+                except TypeError:
+                    continue
+            footnotes = msg.locale.t(
+                "github.message.search.more_information",
+                more_result=result['total_count'] -
+                5) if item_count_expected == 5 else ''
+            message = msg.locale.t("github.message.search", result=result['total_count']) + '\n' + '\n'.join(
+                items_out[0:item_count_expected]) + f'\n{footnotes}'
 
         is_dirty = await dirty_check(message) or darkCheck(message)
         if is_dirty:
@@ -32,8 +33,5 @@ async def search(msg: Bot.MessageSession):
 
         await msg.finish(message)
     except ValueError as e:
-        if str(e).startswith('404'):
-            await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        else:
-           await msg.sendMessage(ErrorMessage(str(e)))
+        await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()

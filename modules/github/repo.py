@@ -10,8 +10,6 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
-        if 'message' in result and result['message']:
-            await msg.finish(result['message'])
         rlicense = 'Unknown'
         if 'license' in result and result['license'] is not None:
             if 'spdx_id' in result['license']:
