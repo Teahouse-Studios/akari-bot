@@ -10,9 +10,7 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
-        if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        elif 'message' in result and result['message']:
+        if 'message' in result and result['message']:
             await msg.finish(result['message'])
         rlicense = 'Unknown'
         if 'license' in result and result['license'] is not None:
@@ -70,8 +68,9 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
             asyncio.create_task(download())
 
-    except ValueError:
-        await msg.finish(msg.locale.t("github.message.error"))
-    except Exception as e:
-        await msg.sendMessage(ErrorMessage(str(e)))
+    except ValueError as e:
+        if str(e).startswith('404'):
+            await msg.finish(msg.locale.t("github.message.repo.not_found"))
+        else:
+           await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()
