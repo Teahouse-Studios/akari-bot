@@ -35,7 +35,7 @@ async def search(msg: Bot.MessageSession):
 async def info(msg: Bot.MessageSession):
 
     ids = msg.parsed_msg['<id>']
-    url = f"{api_address}song/detail?ids={id}"
+    url = f"{api_address}song/detail?ids={ids}"
     result = await get_url(url, 200, fmt='json')
 
     send_msg = []

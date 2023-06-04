@@ -33,7 +33,7 @@
     "arcaea.help.unbind": "解除綁定使用者。",
     "arcaea.message.assets.not_found": "找不到資源檔案！ 請放置一份 Arcaea 的 Apk 檔案到機器人的「assets」目錄並重命名為「arc.apk」後，使用「${prefix}arcaea initialize」初始化資源。",
     "arcaea.message.b30.low_potential": "你的潛力值過低（10.0），無法使用此指令。",
-    "arcaea.message.b30.success": "取得結果\nB30：${b30} | R10：${r10}\nB30 倒 5 列表：\n${last5list}",
+    "arcaea.message.b30.success": "B30：${b30} | R10：${r10}\nB30 倒 5 列表：\n${last5list}",
     "arcaea.message.b30.wait": "已將查詢提交給隊列，請耐心等待……",
     "arcaea.message.b30.wait.already": "正在執行你上次使用的指令中，稍安勿躁……",
     "arcaea.message.b30.wait.cached": "你已在 12 小時內提交過一次查詢，將使用上次查詢的暂存結果。",

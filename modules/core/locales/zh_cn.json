@@ -1,6 +1,7 @@
 {
     "core.analytics.message.counts": "机器人已执行命令次数（自 ${first_record} 开始统计）：${counts}",
     "core.analytics.message.days": "最近 30 天的 ${module} 命令调用次数统计（自 ${first_record} 开始统计）：",
+    "core.analytics.message.months": "最近一年的 ${module} 命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.analytics.message.disabled": "机器人未开启命令统计功能。",
     "core.help.admin": "一些群组管理员可使用的命令。",
     "core.help.admin.add": "设置成员为机器人管理员。以实现不设置成员为群组管理员的状況下管理机器人的效果。已是群组管理员无需设置此项目。",
