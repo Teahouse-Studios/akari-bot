@@ -7,16 +7,16 @@ from config import Config
 from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.http import get_url
-from modules._arcaea.utils import autofix_b30_song_background
+from modules.arcaea.utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
 api_url = Config("botarcapi_url")
+headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 
 
 async def get_info(msg, usercode):
-    headers = {"User-Agent": Config('botarcapi_agent')}
     try:
-        get_ = await get_url(api_url + f"user/info?usercode={usercode}&recent=1&withsonginfo=True",
+        get_ = await get_url(api_url + f"user/info?user_code={usercode}&recent=1&with_song_info=True",
                              status_code=200,
                              headers=headers,
                              fmt='json')
@@ -29,7 +29,7 @@ async def get_info(msg, usercode):
     if get_["status"] == 0:
         recent = get_['content']["recent_score"]
         if len(recent) < 0:
-            return [Plain(msg.locale.t('arcaea.info.message.result.none'))]
+            return [Plain(msg.locale.t('arcaea.message.info.result.none'))]
         recent = recent[0]
         difficulty = '???'
         if recent['difficulty'] == 0:
@@ -40,18 +40,20 @@ async def get_info(msg, usercode):
             difficulty = 'FTR'
         elif recent['difficulty'] == 3:
             difficulty = 'BYD'
-        songinfo = get_['content']['songinfo'][0]
+        songinfo = get_['content']['song_info'][0]
         trackname = songinfo['name_en']
         imgpath = f'{assets_path}/jacket/{recent["song_id"]}_{recent["difficulty"]}.jpg'
         if not os.path.exists(imgpath):
             imgpath = f'{assets_path}/jacket/{recent["song_id"]}.jpg'
         realptt = songinfo['rating'] / 10
-        ptt = recent['rating']
         score = recent['score']
-        shiny_pure = recent['shiny_perfect_count']
-        pure = recent['perfect_count']
-        far = recent['near_count']
-        lost = recent['miss_count']
+        ptt = realptt
+        if score >= 10000000:
+            ptt += 2
+        elif score >= 9800000:
+            ptt += 1 + (score - 9800000) / 200000
+        else:
+            ptt += (score - 9500000) / 300000
         username = get_['content']['account_info']['name']
         usrptt = int(get_['content']['account_info']['rating'])
         if usrptt == -1:
@@ -62,16 +64,12 @@ async def get_info(msg, usercode):
         result = [
             Plain(
                 msg.locale.t(
-                    'arcaea.info.message.result',
+                    'arcaea.message.info.result',
                     username=username,
                     potential=usrptt,
                     trackname=trackname,
                     difficulty=difficulty,
                     score=score,
-                    pure=pure,
-                    shiny_pure=shiny_pure,
-                    far=far,
-                    lost=lost,
                     realptt=realptt,
                     ptt=ptt,
                     time_played=time_played.strftime("%Y-%m-%d %H:%M:%S")))]

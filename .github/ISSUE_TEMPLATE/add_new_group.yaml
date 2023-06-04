@@ -1,5 +1,5 @@
 name: 加入新群/频道
-description: 让机器人加入一个新群/频道
+description: 让机器人加入一个新群/频道。
 title: "[NEW]: 加入新群"
 labels: ["new"]
 assignees:
@@ -8,16 +8,16 @@ body:
   - type: markdown
     attributes:
       value: |
-        感谢您使用小可。若您需要让小可加入您的QQ群/频道，请填写下方的表单。申请提交后，我们将会在24小时内进行处理。
+        感谢您使用小可。若您需要让小可加入您的 QQ 群/频道，请填写下方的表单。申请提交后，我们将会在 24 小时内进行处理。
         
-        另请注意，我们可能会要求您提交更多信息。因此，请关注您的GitHub绑定邮箱通知。若您未在24小时内回复我们的要求，我们将关闭您的申请，不过您还可以再次提交。
+        另请注意，我们可能会要求您提交更多信息。因此，请关注您的 GitHub 绑定邮箱通知。若您未在 24 小时内回复我们的要求，我们将关闭您的申请，不过您还可以再次提交。
   - type: checkboxes
     id: preflight
     attributes:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)。
           required: true
         - label: 我是群组的管理员，或群主或管理员允许机器人入群
           required: true
@@ -81,7 +81,7 @@ body:
     id: other
     attributes:
       label: 备注
-      description: 你还想告诉我们什么？
+      description: 您还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false

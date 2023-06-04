@@ -37,7 +37,7 @@ aiofile = "^3.8.1"
 loguru = "^0.6.0"
 numpy = "^1.24.1"
 matplotlib = "^3.6.3"
-pint = "^0.20.1"
+pint = "^0.21"
 simpleeval = "^0.9.12"
 pywin32 = { version = "^305", platform = "win32" }
 tenacity = "^8.1.0"
@@ -50,6 +50,7 @@ wolframalpha = "^5.0.0"
 duckduckgo-search = "^2.8.6"
 chromadb = "^0.3.21"
 tiktoken = "^0.3.3"
+pycryptodome = "^3.18.0"
 
 
 [tool.poetry.group.dev.dependencies]

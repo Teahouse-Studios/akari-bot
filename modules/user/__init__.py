@@ -5,11 +5,11 @@ from core.component import module
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from .user import get_user_info
 
-usr = module('user', alias=['u'],
+usr = module('user', alias='u',
              developers=['OasisAkari'])
 
 
-@usr.handle('<username> [-p] {获取一个MediaWiki用户的信息。}', options_desc={'-p': '生成一张图片'})
+@usr.handle('<username> [-p] {{user.help.desc}}', options_desc={'-p': '{user.help.option.p}'})
 async def user(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     get_url = target.get_start_wiki()
@@ -25,4 +25,4 @@ async def user(msg: Bot.MessageSession):
                                         pic=msg.parsed_msg['-p']))
         await msg.finish(await get_user_info(metaurl, username, pic=msg.parsed_msg['-p']))
     else:
-        await msg.finish('未设置起始wiki。')
+        await msg.finish(msg.locale.t('wiki.message.not_set'))

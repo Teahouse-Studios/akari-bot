@@ -13,7 +13,7 @@ from database import BotDBUtil
 
 version = module('version',
                  base=True,
-                 desc='{core.version.help}',
+                 desc='{core.help.version}',
                  developers=['OasisAkari', 'Dianliang233']
                  )
 
@@ -24,14 +24,14 @@ async def bot_version(msg: Bot.MessageSession):
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     open_version = open(ver, 'r')
     open_tag = open(tag, 'r')
-    msgs = msg.locale.t('core.version.message', version_tag=open_tag.read(), commit=open_version.read())
+    msgs = msg.locale.t('core.message.version', version_tag=open_tag.read(), commit=open_version.read())
     open_version.close()
     await msg.finish(msgs, msgs)
 
 
 ping = module('ping',
               base=True,
-              desc='{core.ping.help}',
+              desc='{core.help.ping}',
               developers=['OasisAkari']
               )
 
@@ -56,13 +56,13 @@ async def _(msg: Bot.MessageSession):
         try:
             GroupList = len(await app.groupList())
         except Exception:
-            GroupList = msg.locale.t('core.ping.message.failed')
+            GroupList = msg.locale.t('core.message.ping.failed')
         try:
             FriendList = len(await app.friendList())
         except Exception:
-            FriendList = msg.locale.t('core.ping.message.failed')
+            FriendList = msg.locale.t('core.message.ping.failed')
         """
-        result += '\n' + msg.locale.t("core.ping.message.detail",
+        result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=Boot_Start,
                                       bot_running_time=timediff,
                                       python_version=platform.python_version(),
@@ -81,107 +81,106 @@ admin = module('admin',
                base=True,
                required_admin=True,
                developers=['OasisAkari'],
-               desc='{core.admin.help}'
+               desc='{core.help.admin}'
                )
 
 
 @admin.handle([
-    'add <UserID> {{core.admin.help.add}}',
-    'del <UserID> {{core.admin.help.del}}',
-    'list {{core.admin.help.list}}'])
+    'add <UserID> {{core.help.admin.add}}',
+    'del <UserID> {{core.help.admin.del}}',
+    'list {{core.help.admin.list}}'])
 async def config_gu(msg: Bot.MessageSession):
     if 'list' in msg.parsed_msg:
         if msg.custom_admins:
-            await msg.finish(msg.locale.t("core.admin.message.list") + '\n'.join(msg.custom_admins))
+            await msg.finish(msg.locale.t("core.message.admin.list") + '\n'.join(msg.custom_admins))
         else:
-            await msg.finish(msg.locale.t("core.admin.message.list.none"))
+            await msg.finish(msg.locale.t("core.message.admin.list.none"))
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.superuser.message.invalid', prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t('core.message.superuser.invalid', prefix=msg.prefixes[0]))
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
                 await msg.finish(msg.locale.t('success'))
         else:
-            await msg.finish(msg.locale.t("core.admin.message.already"))
+            await msg.finish(msg.locale.t("core.message.admin.already"))
     if 'del' in msg.parsed_msg:
         if user:
             if msg.data.remove_custom_admin(user):
                 await msg.finish(msg.locale.t('success'))
 
 
-@admin.handle('ban <UserID> {{core.ban.help.ban}}', 'unban <UserID> {{core.ban.help.unban}}')
+@admin.handle('ban <UserID> {{core.help.ban.ban}}', 'unban <UserID> {{core.help.ban.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.ban.message.invalid', target=msg.target.senderFrom))
+        await msg.finish(msg.locale.t('core.message.ban.invalid', target=msg.target.senderFrom))
     if user == msg.target.senderId:
-        await msg.finish(msg.locale.t("core.ban.message.self"))
+        await msg.finish(msg.locale.t("core.message.ban.self"))
     if 'ban' in msg.parsed_msg:
         if user not in msg.options.get('ban', []):
             msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
             await msg.finish(msg.locale.t('success'))
         else:
-            await msg.finish(msg.locale.t("core.ban.message.already"))
+            await msg.finish(msg.locale.t("core.message.ban.already"))
     if 'unban' in msg.parsed_msg:
         if user in (banlist := msg.options.get('ban', [])):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
             await msg.finish(msg.locale.t('success'))
         else:
-            await msg.finish(msg.locale.t("core.ban.message.not_yet"))
+            await msg.finish(msg.locale.t("core.message.ban.not_yet"))
 
 
 locale = module('locale',
                 base=True,
                 required_admin=True,
-                developers=['Dianliang233'],
-                desc='{core.locale.help}'
+                developers=['Dianliang233']
                 )
 
 
-@locale.handle(['<lang> {{core.locale.help.locale}}'])
+@locale.handle(['<lang> {{core.help.locale}}'])
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'zh_tw', 'en_us']:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             await msg.finish(Locale(lang).t('success'))
     else:
-        await msg.finish(msg.locale.t("core.locale.message.invalid", lang='、'.join(get_available_locales())))
+        await msg.finish(msg.locale.t("core.message.locale.invalid", lang='、'.join(get_available_locales())))
 
 
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
 
-@whoami.handle('{{core.whoami.help}}')
+@whoami.handle('{{core.help.whoami}}')
 async def _(msg: Bot.MessageSession):
     rights = ''
     if await msg.checkNativePermission():
-        rights += '\n' + msg.locale.t("core.whoami.message.admin")
+        rights += '\n' + msg.locale.t("core.message.whoami.admin")
     elif await msg.checkPermission():
-        rights += '\n' + msg.locale.t("core.whoami.message.botadmin")
+        rights += '\n' + msg.locale.t("core.message.whoami.botadmin")
     if msg.checkSuperUser():
-        rights += '\n' + msg.locale.t("core.whoami.message.superuser")
-    await msg.finish(msg.locale.t('core.whoami.message', senderid=msg.target.senderId, targetid=msg.target.targetId) + rights,
+        rights += '\n' + msg.locale.t("core.message.whoami.superuser")
+    await msg.finish(msg.locale.t('core.message.whoami', senderid=msg.target.senderId, targetid=msg.target.targetId) + rights,
                      disable_secret_check=True)
 
 
 tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
 
 
-@tog.handle('typing {{core.toggle.help.typing}}')
+@tog.handle('typing {{core.help.toggle.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.senderId)
     state = target.query.disable_typing
     if not state:
         target.edit('disable_typing', True)
-        await msg.finish(msg.locale.t('core.toggle.message.typing.disable'))
+        await msg.finish(msg.locale.t('core.message.toggle.typing.disable'))
     else:
         target.edit('disable_typing', False)
-        await msg.finish(msg.locale.t('core.toggle.message.typing.enable'))
+        await msg.finish(msg.locale.t('core.message.toggle.typing.enable'))
 
 
-@tog.handle('check {{core.toggle.help.check}}')
+@tog.handle('check {{core.help.toggle.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state is None:
@@ -189,16 +188,16 @@ async def _(msg: Bot.MessageSession):
     else:
         state = not state
     msg.data.edit_option('typo_check', state)
-    await msg.finish(msg.locale.t('core.toggle.message.check.enable') if state else msg.locale.t('core.toggle.message.check.disable'))
+    await msg.finish(msg.locale.t('core.message.toggle.check.enable') if state else msg.locale.t('core.message.toggle.check.disable'))
 
 
 mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
-              desc='{core.mute.help}')
+              desc='{core.help.mute}')
 
 
 @mute.handle()
 async def _(msg: Bot.MessageSession):
-    await msg.finish(msg.locale.t('core.mute.message.enable') if msg.data.switch_mute() else msg.locale.t('core.mute.message.disable'))
+    await msg.finish(msg.locale.t('core.message.mute.enable') if msg.data.switch_mute() else msg.locale.t('core.message.mute.disable'))
 
 
 leave = module(
@@ -207,30 +206,29 @@ leave = module(
     base=True,
     required_admin=True,
     available_for='QQ|Group',
-    alias={
-        'dismiss': 'leave'},
-    desc='{core.leave.help}')
+    alias='dismiss',
+    desc='{core.help.leave}')
 
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.waitConfirm(msg.locale.t('core.leave.confirm'))
+    confirm = await msg.waitConfirm(msg.locale.t('core.message.leave.confirm'))
     if confirm:
-        await msg.sendMessage(msg.locale.t('core.leave.message'))
+        await msg.sendMessage(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
-petal = module('petal', developers=['Dianliang233'], base=True, alias={'petals': 'petal'},
-               desc='{core.petal.help}')
+petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
+               desc='{core.help.petal}')
 
 
 @petal.handle()
 async def _(msg: Bot.MessageSession):
-    await msg.finish(msg.locale.t('core.petal.message', petal=msg.data.petal))
+    await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
 
 
 @petal.handle('modify <petal>')
 async def _(msg: Bot.MessageSession):
     petal = msg.parsed_msg['<petal>']
     msg.data.modify_petal(int(petal))
-    await msg.finish(msg.locale.t('core.petal.message', petal=msg.data.petal))
+    await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))

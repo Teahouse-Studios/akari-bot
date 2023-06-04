@@ -9,7 +9,7 @@ from .dbutils import CytoidBindInfoManager
 async def cytoid_profile(msg: Bot.MessageSession):
     pat = msg.parsed_msg.get('<UserID>', False)
     if pat:
-        query_id = pat
+        query_id = pat.lower()
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:

@@ -19,8 +19,8 @@ async def weekly_rss():
     weekly_cn = await get_weekly(True if Bot.FetchTarget.name == 'QQ' else False)
     weekly_tw = await get_weekly(True if Bot.FetchTarget.name == 'QQ' else False, zh_tw=True)
     if Bot.FetchTarget.name == 'QQ':
-        weekly_cn = [Plain(Locale('zh_cn').t('weekly_rss.prompt', prefix=command_prefix[0]))] + weekly_cn
-        weekly_tw = [Plain(Locale('zh_tw').t('weekly_rss.prompt', prefix=command_prefix[0]))] + weekly_tw
+        weekly_cn = [Plain(Locale('zh_cn').t('weekly_rss.message', prefix=command_prefix[0]))] + weekly_cn
+        weekly_tw = [Plain(Locale('zh_tw').t('weekly_rss.message', prefix=command_prefix[0]))] + weekly_tw
         weekly_cn = Image(await msgchain2image(weekly_cn))
         weekly_tw = Image(await msgchain2image(weekly_tw))
     post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
@@ -30,7 +30,7 @@ async def weekly_rss():
 
 teahouse_weekly_rss = module('teahouse_weekly_rss',
 
-                             desc='{teahouse_weekly_rss.help.desc}',
+                             desc='{weekly_rss.help.teahouse_weekly_rss.desc}',
                              developers=['OasisAkari'], alias=['teahouseweeklyrss', 'teahouserss'])
 
 
@@ -40,10 +40,21 @@ async def weekly_rss():
 
     weekly = await get_teahouse_rss()
     if Bot.FetchTarget.name == 'QQ':
-        weekly_cn = [Plain(Locale('zh_cn').t('weekly_rss.teahouse.prompt', prefix=command_prefix[0]))] + weekly
-        weekly_tw = [Plain(Locale('zh_tw').t('weekly_rss.teahouse.prompt', prefix=command_prefix[0]))] + weekly
-        weekly_en = [Plain(Locale('en_us').t('weekly_rss.teahouse.prompt', prefix=command_prefix[0]))] + weekly
-        post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'en_us': weekly_en, 'fallback': weekly_cn}
+        weekly_cn = [
+            Plain(
+                Locale('zh_cn').t(
+                    'weekly_rss.message.teahouse_weekly_rss',
+                    prefix=command_prefix[0]) +
+                weekly)]
+        weekly_tw = [
+            Plain(
+                Locale('zh_tw').t(
+                    'weekly_rss.message.teahouse_weekly_rss',
+                    prefix=command_prefix[0]) +
+                weekly)]
+        weekly_cn = Image(await msgchain2image(weekly_cn))
+        weekly_tw = Image(await msgchain2image(weekly_tw))
+        post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
         await Bot.FetchTarget.post_message('teahouse_weekly_rss', post_msg, i18n=True)
     else:
         await Bot.FetchTarget.post_message('teahouse_weekly_rss', weekly)

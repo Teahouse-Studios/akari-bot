@@ -4,35 +4,19 @@ import decimal
 import fractions
 import math
 import operator as op
-import os
 import statistics
 import sys
+
+from utils import do_something
 
 from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 
 from constant import consts
 
-sys.set_int_max_str_digits(0)
-if os.name == 'posix':
-    os.nice(15)
-    import resource
-
-    resource.setrlimit(resource.RLIMIT_AS,
-                       (16 * 1024 * 1024, 16 * 1024 * 1024))
-    resource.setrlimit(resource.RLIMIT_DATA,
-                       (16 * 1024 * 1024, 16 * 1024 * 1024))
-    resource.setrlimit(resource.RLIMIT_STACK,
-                       (16 * 1024 * 1024, 16 * 1024 * 1024))
-elif os.name == 'nt':
-    import win32process
-
-    win32process.SetPriorityClass(win32process.GetCurrentProcess(
-    ), 16384)
-    win32process.SetProcessWorkingSetSize(
-        win32process.GetCurrentProcess(), 1, 16 * 1024 * 1024)
-
 funcs = {}
 named_funcs = {}
+
+do_something()
 
 
 def add_func(module):
@@ -95,5 +79,5 @@ s_eval = EvalWithCompoundTypes(
 try:  # rina's rina lazy solution :rina:
     sys.stdout.write('Result ' + str(s_eval.eval(' '.join(sys.argv[1:]))))
 except Exception as e:
-    sys.stdout.write('Failed ' + str(e))
+    sys.stdout.write(f'Failed {str(e)}')
 sys.exit()

@@ -14,11 +14,12 @@ from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
 from config import Config
+from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
 
 
-async def get_rating(uid, query_type):
+async def get_rating(uid, query_type, msg: Bot.MessageSession):
     try:
         if query_type == 'b30':
             query_type = 'bestRecords'
@@ -28,7 +29,7 @@ async def get_rating(uid, query_type):
         Profile_json = json.loads(await get_url(Profile_url, 200))
         if 'statusCode' in Profile_json:
             if Profile_json['statusCode'] == 404:
-                return {'status': False, 'text': '发生错误：此用户不存在。'}
+                return {'status': False, 'text': msg.locale.t('cytoid.message.error.user_not_found')}
         ProfileId = Profile_json['user']['id']
         ProfileRating = Profile_json['rating']
         ProfileLevel = Profile_json['exp']['currentLevel']
@@ -131,7 +132,7 @@ async def get_rating(uid, query_type):
         for x in cards_:
             for k in x:
                 cards_d[k] = x[k]
-        cards = [cards_d[x] for x in cards_d]
+        sorted_cards = sorted(cards_d.items(), key=lambda x: x[0])
 
         # b30card
         b30img = Image.new("RGBA", (1955, 1600), '#1e2129')
@@ -184,7 +185,7 @@ async def get_rating(uid, query_type):
         fname = 1
         t = 0
         s = 0
-        for card in cards:
+        for card in sorted_cards:
             try:
                 w = 15 + 384 * i
                 h = 135
@@ -194,7 +195,7 @@ async def get_rating(uid, query_type):
                 h = h + 240 * t
                 w = w - 384 * 5 * t
                 i += 1
-                b30img.alpha_composite(card, (w, h))
+                b30img.alpha_composite(card[1], (w, h))
                 fname += 1
                 s += 1
             except Exception:

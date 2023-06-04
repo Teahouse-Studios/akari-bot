@@ -261,19 +261,11 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 #### Arcaea
 
-Arcaea 模块使用了 Lowiro 官方的 ArcaeaLimitedAPI 和 BotArcAPI 进行开发。
-
-ArcaeaLimitedAPI 需要向 Lowiro 官方发送邮件申请以获得 Token。
-
-在没有 ArcaeaLimitedAPI Token 的情况下，也亦可仅使用 BotArcAPI 来支持模块部分功能运作。
-
-`arcapi_official_url =` - 填写你于邮件中获得的 ArcaeaLimitedAPI 地址
-
-`arcapi_official_token =` - 填写你于邮件中获得的 ArcaeaLimitedAPI Token
+Arcaea 模块使用了 BotArcAPI 进行开发。
 
 `botarcapi_url =` - 填写 BotArcAPI 公用实例地址
 
-`botarcapi_agent =` - 填写 BotArcAPI 公用实例申请到的 UA 名
+`botarcapi_token =` - 填写 BotArcAPI 公用实例申请到token
 
 填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
 启动后使用 `~arcaea initialize` 来初始化资源文件。
@@ -300,6 +292,17 @@ assets
 #### secret
 
 此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
+
+#### music
+
+music模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
+
+具体配置教程请查看链接所指向的文档。
+
+配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.cfg` 文件中填写以下字段：
+
++ `web_render` - Webrender 的地址（IP 或域名）及端口
++ `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
 
 ### 其他功能
 

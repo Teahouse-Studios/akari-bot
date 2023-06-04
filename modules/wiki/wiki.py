@@ -23,9 +23,9 @@ wiki = module('wiki',
 
 
 @wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
-             options_desc={'-l': '{wiki.help.l}'})
+             options_desc={'-l': '{wiki.help.option.l}'})
 async def _(msg: Bot.MessageSession):
-    get_lang: dict = msg.parsed_msg.get('-l', False)
+    get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
     else:
@@ -33,15 +33,15 @@ async def _(msg: Bot.MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
 
 
-@wiki.handle('id <PageID> [-i <CustomIW>]  {{wiki.id.help}}')
+@wiki.handle('id <PageID> {{wiki.help.id}}')
 async def _(msg: Bot.MessageSession):
-    if msg.parsed_msg.get('-i', False):
-        iw: str = msg.parsed_msg['-i'].get('<CustomIW>', '')
-    else:
-        iw = ''
     page_id: str = msg.parsed_msg['<PageID>']
+    iw = None
+    if match_iw := re.match(r'(.*?):(.*)', page_id):
+        iw = match_iw.group(1)
+        page_id = match_iw.group(2)
     if not page_id.isdigit():
-        await msg.finish(msg.locale.t('wiki.id.message.error'))
+        await msg.finish(msg.locale.t('wiki.message.id.error'))
     Logger.debug(msg.parsed_msg)
     await query_pages(msg, pageid=page_id, iw=iw)
 
@@ -60,7 +60,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
             enabled_fandom_addon = False
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
-        interwiki_list = []
+        interwiki_list = {}
         headers = session.headers
         prefix = session.prefix
         enabled_fandom_addon = False
@@ -69,8 +69,11 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
     if start_wiki is None:
         if isinstance(session, Bot.MessageSession):
-            await session.sendMessage(session.locale.t('wiki.set.message.default', prefix=session.prefixes[0]))
+            await session.sendMessage(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
+    if lang in interwiki_list:
+        start_wiki = interwiki_list[lang]
+        lang = None
     if title is not None:
         if isinstance(title, str):
             title = [title]
@@ -122,8 +125,17 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         if iw == '':
             query_task = {start_wiki: {'queryid': [pageid], 'iw_prefix': ''}}
         else:
-            query_task = {interwiki_list[iw]: {
-                'queryid': [pageid], 'iw_prefix': iw}}
+            if iw in interwiki_list:
+                query_task = {interwiki_list[iw]: {
+                    'queryid': [pageid], 'iw_prefix': iw}}
+            else:
+                get_wiki_info = WikiLib(start_wiki)
+                await get_wiki_info.fixup_wiki_info()
+                if iw in get_wiki_info.wiki_info.interwiki:
+                    query_task = {get_wiki_info.wiki_info.interwiki[iw]: {
+                        'queryid': [pageid], 'iw_prefix': iw}}
+                else:
+                    raise ValueError(f'iw_prefix "{iw}" not found.')
     else:
         raise ValueError('title or pageid must be specified.')
     Logger.debug(query_task)
@@ -233,9 +245,9 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                                                              redirected_title=display_title))
                             else:
                                 if r.edit_link is not None:
-                                    plain_slice.append(r.edit_link + session.locale.t('wiki.redlink.message.not_found'))
+                                    plain_slice.append(r.edit_link + session.locale.t('wiki.message.redlink.not_found'))
                                 else:
-                                    plain_slice.append(session.locale.t('wiki.redlink.message.not_found.uneditable',
+                                    plain_slice.append(session.locale.t('wiki.message.redlink.not_found.uneditable',
                                                                         title=display_before_title))
                         else:
                             wait_plain_slice.append(
@@ -246,7 +258,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     elif r.before_title is not None:
                         plain_slice.append(session.locale.t('wiki.message.not_found', title=display_before_title))
                     elif r.id != -1:
-                        plain_slice.append(session.locale.t('wiki.id.message.not_found', id=str(r.id)))
+                        plain_slice.append(session.locale.t('wiki.message.id.not_found', id=str(r.id)))
                     if r.desc is not None and r.desc != '':
                         plain_slice.append(r.desc)
                     if r.invalid_namespace and r.before_title is not None:
@@ -328,7 +340,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
-                confirm = await session.waitNextMessage(wait_msg_list, delete=True)
+                confirm = await session.waitNextMessage(wait_msg_list)
                 auto_index = False
                 index = 0
                 if confirm.asDisplay(text_only=True) in confirm_command:

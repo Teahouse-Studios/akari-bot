@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 assets_path = os.path.abspath('./assets/arcaea')
 
 
-def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, playtime, path=''):
+def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, shiny_pure, far, lost, playtime, path=''):
     # score rating
     if score >= 9900000:
         scoretype = 'EX+'
@@ -66,7 +66,7 @@ def dsimg(img, rank, name, difficulty, score, ptt, realptt, pure, far, lost, pla
         score = "'".join(score)
     drawtext.text((20, 50), f'{score}  [{scoretype}]', '#ffffff', font=font2)
     drawtext.text((20, 80), f'Potential: {ptt}', '#ffffff', font=font2)
-    drawtext.text((120, 115), f'P {str(pure)}', '#ffffff', font=font2)
+    drawtext.text((120, 115), f'P {str(pure)} ({shiny_pure})', '#ffffff', font=font2)
     drawtext.text((120, 145), f'F {str(far)} L {str(lost)}', '#ffffff', font=font2)
     songimg_width = songimg.size[0]
     playtime_width = font2.getsize(playtime)[0]

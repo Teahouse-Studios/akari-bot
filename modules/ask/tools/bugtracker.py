@@ -3,7 +3,7 @@ from .utils import fake_msg, AkariTool
 
 
 async def bugtracker(input: str):
-    return await bugtracker_get(fake_msg, input)
+    return (await bugtracker_get(fake_msg, input))[0]
 
 bugtracker_tool = AkariTool(
     name='Mojira',

@@ -1,4 +1,4 @@
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import module
 from .dice import GenerateMessage
 
@@ -22,22 +22,20 @@ dice = module('dice', alias={'d4': 'dice d4',
                   '多项式最前面加 N#': '将这个式子的操作重复N次（投掷N次），之后输出N次的结果',
                   'dc': '在每一次投掷输出结果时进行判定，结果大于dc判定为成功，否则判定失败'
               })
-async def _(msg: MessageSession):
-    dice = msg.parsed_msg['<dices>']
-    dc = msg.parsed_msg.get('<dc>', '0')
+async def _(msg: Bot.MessageSession, dices, dc='0'):
     times = '1'
-    if '#' in dice:
-        times = dice.partition('#')[0]
-        dice = dice.partition('#')[2]
+    if '#' in dices:
+        times = dices.partition('#')[0]
+        dices = dices.partition('#')[2]
     if not times.isdigit():
         await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
     if not dc.isdigit():
         await msg.finish(msg.locale.t('dice.message.error.dc.invalid') + dc)
-    await msg.finish(await GenerateMessage(dice, int(times), int(dc)))
+    await msg.finish(await GenerateMessage(dices, int(times), int(dc)))
 
 
-@dice.regex(r"[扔|投|掷|丢]([0-9]*)?个([0-9]*面)?骰子?")
-async def _(message: MessageSession):
+@dice.regex(r"[扔|投|掷|丢]([0-9]*)?个([0-9]*面)?骰子?", desc="{dice.help.regex.desc}")
+async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     diceType = groups[1][:-1] if groups[1] else '6'
     await message.finish(await GenerateMessage(f'{groups[0]}D{diceType}', 1, 0))

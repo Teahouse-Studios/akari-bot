@@ -28,7 +28,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:
-                        print(await req.text())
+                        Logger.error(await req.text())
                     else:
                         jejson = json.loads(await req.text())
                         try:
@@ -74,7 +74,6 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
     if mode == 'b':
         try:
             beurl = 'http://motd.wd-api.com/v1/bedrock?host=' + serip + '&port=' + port2
-            print(beurl)
             async with aiohttp.ClientSession() as session2:
                 async with session2.get(beurl, timeout=aiohttp.ClientTimeout(total=20)) as req:
                     if req.status != 200:

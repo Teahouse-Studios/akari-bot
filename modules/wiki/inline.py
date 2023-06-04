@@ -15,11 +15,12 @@ from modules.wiki.utils.wikilib import WikiLib
 from .wiki import query_pages, generate_screenshot_v2_blocklist
 
 wiki_inline = module('wiki_inline',
-                     desc='{wiki.wiki_inline.help.desc}',
+                     desc='{wiki.help.wiki_inline.desc}',
                      alias='wiki_regex', developers=['OasisAkari'])
 
 
-@wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A')
+@wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A',
+            desc="{wiki.help.wiki_inline.page}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -29,7 +30,8 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list, inline_mode=True)
 
 
-@wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A')
+@wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A',
+            desc="{wiki.help.wiki_inline.template}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -52,7 +54,8 @@ async def _(msg: Bot.MessageSession):
 
 @wiki_inline.handle(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
-    mode='A', show_typing=False, logging=False)
+    mode='A', show_typing=False, logging=False, 
+    desc="{wiki.help.wiki_inline.url}")
 async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
@@ -97,12 +100,12 @@ async def _(msg: Bot.MessageSession):
                             if guess_type is not None:
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                                     if msg.Feature.image:
-                                        await msg.sendMessage([Plain(msg.locale.t('wiki.wiki_inline.message.flies', file=get_page.file)), Image(dl)],
+                                        await msg.sendMessage([Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)), Image(dl)],
                                                               quote=False)
                                         img_send = True
                                 elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                                     if msg.Feature.voice:
-                                        await msg.sendMessage([Plain(msg.locale.t('wiki.wiki_inline.message.flies', file=get_page.file)), Voice(dl)],
+                                        await msg.sendMessage([Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)), Voice(dl)],
                                                               quote=False)
                         if msg.Feature.image:
                             if get_page.status and wiki_.wiki_info.in_allowlist:

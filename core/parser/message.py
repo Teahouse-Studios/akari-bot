@@ -1,3 +1,4 @@
+import inspect
 import re
 import traceback
 from datetime import datetime
@@ -5,7 +6,7 @@ from datetime import datetime
 from aiocqhttp.exceptions import ActionFailed
 
 from config import Config
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException
 from core.loader import ModulesManager
@@ -25,13 +26,13 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 temp_ban_counter = {}  # 临时限制计数
 
 
-async def remove_temp_ban(msg: MessageSession):
+async def remove_temp_ban(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         del temp_ban_counter[msg.target.senderId]
 
 
-async def msg_counter(msg: MessageSession, command: str):
+async def msg_counter(msg: Bot.MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
     if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
         # 检查是否滥用（重复使用同一命令）
@@ -51,7 +52,7 @@ async def msg_counter(msg: MessageSession, command: str):
             raise AbuseWarning(msg.locale.t("tos.reason.abuse"))
 
 
-async def temp_ban_check(msg: MessageSession):
+async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
@@ -66,7 +67,7 @@ async def temp_ban_check(msg: MessageSession):
                 raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
 
 
-async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
+async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
     接收消息必经的预处理器
@@ -117,6 +118,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         if in_prefix_list or disable_prefix:  # 检查消息前缀
             if len(display) <= 1 or display[:2] == '~~':  # 排除 ~~xxx~~ 的情况
                 return
+            if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
+                msg.prefixes.remove(display_prefix)
+                msg.prefixes.insert(0, display_prefix)
 
             Logger.info(
                 f'{identify_str} -> [Bot]: {display}')
@@ -208,7 +212,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         if func.help_doc:
                             none_doc = False
                     if not none_doc:  # 如果有，送入命令解析
-                        async def execute_submodule(msg: MessageSession, command_first_word, command_split):
+                        async def execute_submodule(msg: Bot.MessageSession, command_first_word, command_split):
                             try:
                                 command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
                                                                command_prefixes=msg.prefixes)
@@ -233,15 +237,49 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                          msg.target.targetFrom not in submodule.available_for):
                                         raise InvalidCommandFormatError
 
+                                    kwargs = {}
+                                    func_params = inspect.signature(submodule.function).parameters
+                                    if len(func_params) > 1:
+                                        parsed_msg_ = msg.parsed_msg.copy()
+                                        for param_name, param_obj in func_params.items():
+                                            if param_obj.annotation == Bot.MessageSession:
+                                                kwargs[param_name] = msg
+                                            param_name_ = param_name
+                                            if (param_name__ := f'<{param_name}>') in parsed_msg_:
+                                                param_name_ = param_name__
+
+                                            if param_name_ in parsed_msg_:
+                                                kwargs[param_name] = parsed_msg_[param_name_]
+                                                try:
+                                                    if param_obj.annotation == int:
+                                                        kwargs[param_name] = int(parsed_msg_[param_name_])
+                                                    elif param_obj.annotation == float:
+                                                        kwargs[param_name] = float(parsed_msg_[param_name_])
+                                                    elif param_obj.annotation == bool:
+                                                        kwargs[param_name] = bool(parsed_msg_[param_name_])
+                                                    del parsed_msg_[param_name_]
+                                                except (KeyError, ValueError):
+                                                    raise InvalidCommandFormatError
+                                            else:
+                                                if param_name_ not in kwargs:
+                                                    if param_obj.default is not inspect.Parameter.empty:
+                                                        kwargs[param_name_] = param_obj.default
+                                                    else:
+                                                        kwargs[param_name_] = None
+
+                                    else:
+                                        kwargs[func_params[list(func_params.keys())[0]].name] = msg
+
                                     if not senderInfo.query.disable_typing:
                                         async with msg.Typing(msg):
-                                            await parsed_msg[0].function(msg)  # 将msg传入下游模块
+                                            await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:
-                                        await parsed_msg[0].function(msg)
+                                        await parsed_msg[0].function(**kwargs)
                                     raise FinishedException(msg.sent)  # if not using msg.finish
                                 except InvalidCommandFormatError:
                                     await msg.sendMessage(msg.locale.t("parser.command.format.invalid",
-                                                                       module=command_first_word, prefix=msg.prefixes[0]))
+                                                                       module=command_first_word,
+                                                                       prefix=msg.prefixes[0]))
                                     """if msg.options.get('typo_check', True):  # 判断是否开启错字检查
                                         nmsg, command_first_word, command_split = await typo_check(msg,
                                                                                                    display_prefix,
@@ -272,16 +310,19 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
                 except ActionFailed:
+                    if msg.target.targetFrom == 'QQ|Group':
+                        await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                           message=f'[CQ:poke,qq={Config("qq_account")}]')
                     await msg.sendMessage(msg.locale.t("error.message.limited"))
 
                 except FinishedException as e:
                     time_used = datetime.now() - time_start
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
-                    if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
+                    if (msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module') and enable_tos:
                         await msg_counter(msg, msg.trigger_msg)
                     else:
-                        Logger.debug(f'Tos is disabled, check the configuration is correct.')
+                        Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
@@ -379,7 +420,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             if enable_tos and rfunc.show_typing:
                                 await msg_counter(msg, msg.trigger_msg)
                             else:
-                                Logger.debug(f'Tos is disabled.')
+                                Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
                             continue
                         except NoReportException as e:
@@ -406,6 +447,9 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             ExecutionLockList.remove(msg)
 
             except ActionFailed:
+                if msg.target.targetFrom == 'QQ|Group':
+                    await msg.call_api('send_group_msg', group_id=msg.session.target,
+                                       message=f'[CQ:poke,qq={Config("qq_account")}]')
                 await msg.sendMessage((msg.locale.t("error.message.limited")))
                 continue
         return msg

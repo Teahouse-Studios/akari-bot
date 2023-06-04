@@ -1,6 +1,5 @@
 from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
-from config import Config
 from .utils import to_async_func, AkariTool
 
 search = DuckDuckGoSearchAPIWrapper()

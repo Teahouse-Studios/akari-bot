@@ -4,7 +4,7 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 
-n = module('natural', alias=['nl2c'], developers=['Dianliang233'], desc='{natural.help}')
+n = module('natural', alias='nl2c', developers=['Dianliang233'], desc='{natural.help}', required_superuser=True)
 
 # Load your API key from an environment variable or secret management service
 openai.api_key = Config('openai_api_key')

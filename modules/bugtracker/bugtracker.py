@@ -1,12 +1,60 @@
-import json
+import os
 
+import aiohttp
+import ujson as json
+from PIL import ImageFont
+
+from config import Config
 from core.builtins import Url, ErrorMessage
+from core.logger import Logger
+from core.utils.http import download_to_cache
 from core.utils.http import get_url
+
+web_render = Config('web_render')
+web_render_local = Config('web_render_local')
+elements = ['div#descriptionmodule']
+assets_path = os.path.abspath('./assets/')
+font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
 spx_cache = {}
 
 
-async def bugtracker_get(msg, mojiraId: str, nolink=False):
+async def make_screenshot(page_link, use_local=True):
+    elements_ = elements.copy()
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return False
+        use_local = False
+    Logger.info('[Webrender] Generating element screenshot...')
+    try:
+        img = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
+                                      status_code=200,
+                                      headers={'Content-Type': 'application/json'},
+                                      method="POST",
+                                      post_data=json.dumps({
+                                          'url': page_link,
+                                          'element': elements_}),
+                                      attempt=1,
+                                      timeout=30,
+                                      request_private_ip=True
+                                      )
+        if img:
+            return img
+        else:
+            Logger.info('[Webrender] Generation Failed.')
+            return False
+    except aiohttp.ClientConnectorError:
+        if use_local:
+            return await make_screenshot(page_link, use_local=False)
+        else:
+            return False
+    except ValueError:
+        Logger.info('[Webrender] Generation Failed.')
+        return False
+
+
+async def bugtracker_get(session, mojiraId: str, nolink=False):
     data = {}
     id_ = mojiraId.upper()
     json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
@@ -64,7 +112,8 @@ async def bugtracker_get(msg, mojiraId: str, nolink=False):
                         if fields['fixVersions']:
                             data["fixversion"] = fields['fixVersions'][0]['name']
     else:
-        return ErrorMessage(msg.locale.t('bugtracker.message.error'))
+        return ErrorMessage(session.locale.t('bugtracker.message.error'))
+    issue_link = None
     msglist = []
     if errmsg != '':
         msglist.append(errmsg)
@@ -95,5 +144,6 @@ async def bugtracker_get(msg, mojiraId: str, nolink=False):
             msglist.append(version)
         if (link := data.get("link", False)) and not nolink:
             msglist.append(str(Url(link)))
+            issue_link = link
     msg = '\n'.join(msglist)
-    return msg
+    return msg, issue_link
