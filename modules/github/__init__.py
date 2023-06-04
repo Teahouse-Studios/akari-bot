@@ -6,8 +6,8 @@ github = module('github', alias='gh', developers=['Dianliang233'])
 
 
 @github.handle('<name> {{github.help}}')
-async def _(msg: Bot.MessageSession):
-    if '/' in msg.parsed_msg['<name>']:
+async def _(msg: Bot.MessageSession, name: str):
+    if '/' in name:
         await repo.repo(msg)
     else:
         await user.user(msg)

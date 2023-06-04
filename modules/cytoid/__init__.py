@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession):
     elif 'r30' in msg.parsed_msg:
         query = 'r30'
     else:
-        query = False
+        raise
     pat = msg.parsed_msg.get('<UserID>', False)
     if pat:
         query_id = pat
