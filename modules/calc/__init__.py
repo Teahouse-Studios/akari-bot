@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
 
 factor = module('factor', 
         developers=['DoroWolf', 'Light-Beacon', 'Dianliang233'], 
-        recommend_modules=['calc']),
+        recommend_modules=['calc'])
 
 
 @factor.command('prime <number> {{calc.help.factor.prime}}')
