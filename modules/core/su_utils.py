@@ -92,7 +92,7 @@ async def _(msg: Bot.MessageSession):
                 Image(path)])
         
 
-@ana.handle('months [<name>]')
+@ana.handle('years [<name>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
