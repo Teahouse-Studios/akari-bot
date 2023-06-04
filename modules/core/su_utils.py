@@ -62,6 +62,11 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
+        if module_ is None:
+            result = msg.locale.t("core.analytics.message.days.total", first_record=first_record.timestamp)
+        else:
+            result = msg.locale.t("core.analytics.message.days", module=module_,
+                             first_record=first_record.timestamp)
         data_ = {}
         for d in range(30):
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
@@ -85,11 +90,7 @@ async def _(msg: Bot.MessageSession):
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish(
-            [Plain(
-                msg.locale.t("core.analytics.message.days", module=module_ if module_ is not None else "",
-                             first_record=first_record.timestamp)),
-                Image(path)])
+        await msg.finish([Plain(result), Image(path)])
         
 
 @ana.handle('years [<name>]')
@@ -99,6 +100,11 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
+        if module_ is None:
+            result = msg.locale.t("core.analytics.message.years.total", first_record=first_record.timestamp)
+        else:
+            result = msg.locale.t("core.analytics.message.years", module=module_,
+                             first_record=first_record.timestamp)
         data_ = {}
         for d in range(12):
             new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d - 1)
@@ -122,11 +128,7 @@ async def _(msg: Bot.MessageSession):
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish(
-            [Plain(
-                msg.locale.t("core.analytics.message.months", module=module_ if module_ is not None else "",
-                             first_record=first_record.timestamp)),
-                Image(path)])
+        await msg.finish([Plain(result), Image(path)])
 
 
 
