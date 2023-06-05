@@ -21,7 +21,7 @@ diff_label_zht = ['綠', '黃', '紅']
 def song_txt(music: Music):
     return [Plain(f"{music.id} {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
             BImage(f"https://www.diving-fish.com/covers/{get_cover_len4_id(music.id)}.png", ),
-            Plain(f"\n{'/'.join(str(music.ds))}")]
+            Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
 def get_label(diff):
@@ -250,7 +250,7 @@ async def _(message: Bot.MessageSession):
                                   Plain(message.locale.t("maimai.message.song", 
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
                                         bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
-                                        level='/'.join((str(music['ds'])))))])
+                                        level='/'.join((str(ds) for ds in music['ds']))))])
         except Exception:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
 
