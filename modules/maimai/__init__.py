@@ -21,7 +21,7 @@ diff_label_zht = ['綠', '黃', '紅']
 def song_txt(music: Music):
     return [Plain(f"{music.id} {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
             BImage(f"https://www.diving-fish.com/covers/{get_cover_len4_id(music.id)}.png", ),
-            Plain(f"\n{'/'.join(music.level)}")]
+            Plain(f"\n{'/'.join(str(music.ds))}")]
 
 
 def get_label(diff):
@@ -178,12 +178,11 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle('random <diff> <level> [<type>] {{maimai.help.random.filter}}')
+@mai.handle('random <level> <diff> [<type>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession):
-    diff = msg.parsed_msg['<diff>']
     level = msg.parsed_msg['<level>']
+    diff = msg.parsed_msg['<diff>']
     tp = msg.parsed_msg.get('<type>', None)
-    diff_index = get_label(diff)
     try:
         if tp == "dx":
             tp = ["DX"]
@@ -198,10 +197,7 @@ async def _(msg: Bot.MessageSession):
             else:
                 music_data = (await total_list.get()).filter(level=level, type=tp)
         else:
-            if level == "#":
-                music_data = (await total_list.get()).filter(diff=[diff_index], type=tp)
-            else:
-                music_data = (await total_list.get()).filter(level=level, diff=[diff_index], type=tp)
+            music_data = (await total_list.get()).filter(level=level, diff=get_label(diff), type=tp)
 
         if len(music_data) == 0:
             rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -254,7 +250,7 @@ async def _(message: Bot.MessageSession):
                                   Plain(message.locale.t("maimai.message.song", 
                                         artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
                                         bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
-                                        level='/'.join(music['level'])))])
+                                        level='/'.join((str(music['ds'])))))])
         except Exception:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
 
