@@ -27,9 +27,8 @@ async def search(msg: Bot.MessageSession):
             send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['album']['transNames']))
         send_msg += msg.locale.t("ncmusic.message.character", value=song['id']) + "\n"
         i += 1
-    img_path = await msgchain2image([Plain(send_msg)])
-    send = await msg.sendMessage(Image(img_path))
-    await msg.finish(send_msg)
+    img = await msgchain2image([Plain(send_msg)])
+    await msg.finish(Image(img))
 
 @ncmusic.handle('info <id> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession):

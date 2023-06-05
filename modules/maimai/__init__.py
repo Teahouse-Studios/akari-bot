@@ -3,6 +3,7 @@ import re
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
+from core.utils.image import msgchain2image
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_40 import generate
 from modules.maimai.libraries.maimai_best_50 import generate50
@@ -58,7 +59,7 @@ async def _(msg: Bot.MessageSession):
     if len(result_set) <= 10:
         await msg.finish(s.strip())
     else:
-        img = text_to_image(s)
+        img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
 async def diff_level_q(level):
@@ -99,7 +100,7 @@ async def _(msg: Bot.MessageSession):
     if len(result_set) <= 10:
         await msg.finish(s.strip())
     else:
-        img = text_to_image(s)
+        img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
 async def inner_level_q(ds1, ds2=None):
@@ -132,7 +133,7 @@ async def _(msg: Bot.MessageSession):
         if len(res) <= 10:
             await msg.finish([Plain(search_result.strip())])
         else:
-            img = text_to_image(search_result)
+            img = await msgchain2image([Plain(search_result)])
             await msg.finish([BImage(img)])
 
 
