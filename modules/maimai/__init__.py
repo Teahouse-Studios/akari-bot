@@ -191,14 +191,14 @@ async def _(msg: Bot.MessageSession):
         else:
             tp = ["SD", "DX"]
 
-        if diff == "#":
-            if level == "#":
+        if level == "#":
+            if diff == "#":
                 music_data = (await total_list.get()).filter(type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, type=tp)
-        else:
-            if level == "#":
                 raise ValueError
+        else:
+            if diff == "#":
+                music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
                 music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=tp)
 
