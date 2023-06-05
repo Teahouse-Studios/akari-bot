@@ -180,8 +180,8 @@ async def _(msg: Bot.MessageSession):
 
 @mai.handle('random <level> <diff> [<type>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession):
-    level = msg.parsed_msg['<level>']
     diff = msg.parsed_msg['<diff>']
+    level = msg.parsed_msg['<level>']
     tp = msg.parsed_msg.get('<type>', None)
     try:
         if tp == "dx":
@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
             else:
                 music_data = (await total_list.get()).filter(level=level, type=tp)
         else:
-            music_data = (await total_list.get()).filter(level=level, diff=get_label(diff), type=tp)
+            music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=tp)
 
         if len(music_data) == 0:
             rand_result = msg.locale.t("maimai.message.music_not_found")
