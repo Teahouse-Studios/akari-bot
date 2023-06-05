@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
             else:
                 music_data = (await total_list.get()).filter(level=level, type=tp)
         else:
-            if diff == "#":
+            if level == "#":
                 raise ValueError
             else:
                 music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=tp)
