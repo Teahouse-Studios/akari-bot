@@ -4,7 +4,7 @@ from core.builtins import Bot, Image
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
-bug = module('bug', alias='b', developers=['OasisAkari'])
+bug = module('bugtracker', alias='bug', developers=['OasisAkari'])
 
 
 @bug.handle('<MojiraID> {{bugtracker.help}}')

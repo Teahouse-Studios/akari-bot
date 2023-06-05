@@ -11,8 +11,8 @@ mcplayer = module(
 
 
 @mcplayer.handle('<username_or_uuid> {{mcplayer.help}}')
-async def main(msg: Bot.MessageSession):
-    arg = msg.parsed_msg['<username_or_uuid>']
+async def main(msg: Bot.MessageSession, username_or_uuid: str):
+    arg = username_or_uuid
     try:
         if len(arg) == 32:
             name = await uuid_to_name(arg)

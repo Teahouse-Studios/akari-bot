@@ -1,7 +1,7 @@
 import os
 from collections.abc import MutableMapping
 from string import Template
-from typing import TypedDict
+from typing import TypedDict, Dict, Any
 
 import ujson as json
 
@@ -16,7 +16,7 @@ locale_cache = {}
 
 
 # From https://stackoverflow.com/a/6027615
-def flatten(d, parent_key='', sep='.'):
+def flatten(d: Dict[str, Any], parent_key='', sep='.'):
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -39,19 +39,18 @@ def load_locale_file():
         err_prompt.append(str(e))
     modules_path = os.path.abspath('./modules')
     for m in os.listdir(modules_path):
-        if os.path.isdir(f'{modules_path}/{m}'):
-            if os.path.exists(f'{modules_path}/{m}/locales'):
-                locales_m = os.listdir(f'{modules_path}/{m}/locales')
-                for lm in locales_m:
-                    ml = f'{modules_path}/{m}/locales/{lm}'
-                    with open(ml, 'r', encoding='utf-8') as f:
-                        try:
-                            if remove_suffix(lm, '.json') in locale_cache:
-                                locale_cache[remove_suffix(lm, '.json')].update(flatten(json.load(f)))
-                            else:
-                                locale_cache[remove_suffix(lm, '.json')] = flatten(json.load(f))
-                        except Exception as e:
-                            err_prompt.append(f'Failed to load {ml}: {e}')
+        if os.path.isdir(f'{modules_path}/{m}/locales'):
+            locales_m = os.listdir(f'{modules_path}/{m}/locales')
+            for lm in locales_m:
+                ml = f'{modules_path}/{m}/locales/{lm}'
+                with open(ml, 'r', encoding='utf-8') as f:
+                    try:
+                        if remove_suffix(lm, '.json') in locale_cache:
+                            locale_cache[remove_suffix(lm, '.json')].update(flatten(json.load(f)))
+                        else:
+                            locale_cache[remove_suffix(lm, '.json')] = flatten(json.load(f))
+                    except Exception as e:
+                        err_prompt.append(f'Failed to load {ml}: {e}')
 
     return err_prompt
 

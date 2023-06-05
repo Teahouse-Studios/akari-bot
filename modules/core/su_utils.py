@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +16,7 @@ from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from database import BotDBUtil
+from core.utils.storedata import get_stored_list, update_stored_list
 
 su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -60,6 +62,11 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
+        if module_ is None:
+            result = msg.locale.t("core.analytics.message.days.total", first_record=first_record.timestamp)
+        else:
+            result = msg.locale.t("core.analytics.message.days", module=module_,
+                             first_record=first_record.timestamp)
         data_ = {}
         for d in range(30):
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
@@ -83,11 +90,46 @@ async def _(msg: Bot.MessageSession):
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish(
-            [Plain(
-                msg.locale.t("core.analytics.message.days", module=module_ if module_ is not None else "",
-                             first_record=first_record.timestamp)),
-                Image(path)])
+        await msg.finish([Plain(result), Image(path)])
+        
+
+@ana.handle('years [<name>]')
+async def _(msg: Bot.MessageSession):
+    if Config('enable_analytics'):
+        first_record = BotDBUtil.Analytics.get_first()
+        module_ = None
+        if '<name>' in msg.parsed_msg:
+            module_ = msg.parsed_msg['<name>']
+        if module_ is None:
+            result = msg.locale.t("core.analytics.message.years.total", first_record=first_record.timestamp)
+        else:
+            result = msg.locale.t("core.analytics.message.years", module=module_,
+                             first_record=first_record.timestamp)
+        data_ = {}
+        for d in range(12):
+            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d - 1)
+            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d)
+            get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
+            data_[old.month] = get_
+        data_x = []
+        data_y = []
+        for x in data_:
+            data_x.append(str(x))
+            data_y.append(data_[x])
+        plt.plot(data_x, data_y, "-o")
+        plt.plot(data_x[-1], data_y[-1], "-ro")
+        plt.xlabel('Months')
+        plt.ylabel('Counts')
+        plt.tick_params(axis='x', labelrotation=45, which='major', labelsize=10)
+
+        plt.gca().yaxis.get_major_locator().set_params(integer=True)
+        for xitem, yitem in np.nditer([data_x, data_y]):
+            plt.annotate(yitem, (xitem, yitem), textcoords="offset points", xytext=(0, 10), ha="center")
+        path = random_cache_path() + '.png'
+        plt.savefig(path)
+        plt.close()
+        await msg.finish([Plain(result), Image(path)])
+
 
 
 set_ = module('set', required_superuser=True)
@@ -323,6 +365,20 @@ if Bot.FetchTarget.name == 'QQ':
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
         await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
+
+    forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
+
+    @forward_msg.handle()
+    async def _(msg: Bot.MessageSession):
+        alist = get_stored_list(Bot.FetchTarget, 'forward_msg')
+        if not alist:
+            alist = {'status': True}
+        alist['status'] = not alist['status']
+        update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
+        if alist['status']:
+            await msg.sendMessage('已开启转发消息')
+        else:
+            await msg.sendMessage('已关闭转发消息')
 
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)

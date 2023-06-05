@@ -78,19 +78,11 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
                     return False
 
             async def _check(msg: Bot.MessageSession, session, tried):
-                if tried == 0:  # too lazy to make it short :rina:
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
+                if tried == 0:
+                    for _ in range(4):
+                        await msg.sleep(15)
+                        if _result := await _get_result(session):
+                            return _result
                 elif tried == 1:
                     await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.check"))
                     await msg.sleep(60)
@@ -158,27 +150,25 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
         await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('song <songname> <prs|pst|ftr|byd> {{arcaea.help.song}}')
+@arc.command('song <songname> [<diff>] {{arcaea.help.song}}')
 async def _(msg: Bot.MessageSession):
-    songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
-    songname_split = songname_.split(' ')
-    diff = -1
-    for s in songname_split:
-        s_ = s.lower()
-        if s_ == 'pst':
-            diff = 0
-        elif s_ == 'prs':
-            diff = 1
-        elif s_ == 'ftr':
-            diff = 2
-        elif s_ == 'byd':
-            diff = 3
-        if diff != -1:
-            songname_split.remove(s)
-            break
-    if diff == -1:
+    songname = msg.parsed_msg['<songname>']
+    diff_ = msg.parsed_msg.get('<diff>')
+    if not diff_:
+        diff_ = 'FTR'
+
+    s = diff_.upper()
+    if s in ['PST', 'PAST']:
+        diff = 0
+    elif s in ['PRS', 'PRESENT']:
+        diff = 1
+    elif s in ['FTR', 'FUTURE']:
+        diff = 2
+    elif s in ['BYD', 'BEYOND']:
+        diff = 3
+    else:
         await msg.finish(msg.locale.t("arcaea.message.song.invalid.difficulty"))
-    songname = ' '.join(songname_split)
+
     usercode = await get_friendcode(msg)
     await msg.finish(Plain(await get_song_info(msg, songname, diff, usercode)))
 

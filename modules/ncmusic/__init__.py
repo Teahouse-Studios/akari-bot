@@ -15,14 +15,14 @@ async def search(msg: Bot.MessageSession):
     keyword = msg.parsed_msg['<keyword>']
     search_url = f"{api_address}search?limit=10&keywords={keyword}"
     result = await get_url(search_url, 200, fmt='json')
-    send_msg = msg.locale.t('ncmusic.search.result') + '\n'
+    send_msg = msg.locale.t('ncmusic.message.search.result') + '\n'
     i = 1
     for song in result['result']['songs']:
         send_msg += f"{i}. {song['name']}"
         if 'transNames' in song:
             send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['transNames']))
         send_msg += f"--{' & '.join(artist['name'] for artist in song['artists'])}"
-        send_msg += f"--{song['album']['name']}"
+        send_msg += f"《{song['album']['name']}》"
         if 'transNames' in song['album']:
             send_msg += msg.locale.t("ncmusic.message.character", value=' / '.join(song['album']['transNames']))
         send_msg += msg.locale.t("ncmusic.message.character", value=song['id']) + "\n"
@@ -35,7 +35,7 @@ async def search(msg: Bot.MessageSession):
 async def info(msg: Bot.MessageSession):
 
     ids = msg.parsed_msg['<id>']
-    url = f"{api_address}song/detail?ids={id}"
+    url = f"{api_address}song/detail?ids={ids}"
     result = await get_url(url, 200, fmt='json')
 
     send_msg = []

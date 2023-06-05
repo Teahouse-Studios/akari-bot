@@ -37,7 +37,7 @@ def load_modules():
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
                 Logger.info(f'Succeeded loaded modules.{fun_file}!')
-        except BaseException:
+        except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
             Logger.error(errmsg)
