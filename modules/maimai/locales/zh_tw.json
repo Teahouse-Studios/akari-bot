@@ -16,8 +16,8 @@
     "maimai.message.no_username": "請提供使用者名稱！",
     "maimai.message.search": "「${keyword}」的搜尋結果：",
     "maimai.message.song": "藝術家：${artist}\n分類：${genre}\nBPM：${bpm}\n版本：${version}\n難度：${level}",
-    "maimai.message.song.dx": "${diff} ${level}（${ds}）\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${_break}\n譜師：${charter}",
-    "maimai.message.song.sd": "${diff} ${level}（${ds}）\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${_break}\n譜師：${charter}",
+    "maimai.message.song.dx": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${_break}\n譜師：${charter}",
+    "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${_break}\n譜師：${charter}",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
     "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。"
 }
