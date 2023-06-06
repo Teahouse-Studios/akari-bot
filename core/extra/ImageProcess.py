@@ -3,6 +3,12 @@ from textwrap import fill
 
 
 def pir(text: str, line_length: int = 28, word_wrap=False):
+    """
+    pillow生图
+    text:要转换为图片的文字
+    line_length:自动换行长度(如未开启填了没效果)
+    word_wrap:自动换行(默认关闭)
+    """
     text = text
     image = Image.new("RGB", (100, 100), 'white')  # 新建一个图像
     draw = ImageDraw.Draw(image)  # 建立一个绘图的对象
