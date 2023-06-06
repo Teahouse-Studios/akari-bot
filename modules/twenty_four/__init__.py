@@ -16,24 +16,22 @@ def is_valid(expression):
     numbers = [str(i) for i in range(1, 14)]
     valid_chars = numbers + operators + ['(', ')']
 
-    for i in range(10, 14):
-        valid_chars.append(str(i))
-
     i = 0
+    num_numbers = 0  # Track the number of numbers
     while i < len(expression):
         char = expression[i]
         if char.isdigit():
             # Collect consecutive digits
-            number = char
-            i += 1
             while i < len(expression) and expression[i].isdigit():
-                number += expression[i]
                 i += 1
-            if number not in numbers:
-                return False
+            num_numbers += 1
         elif char not in valid_chars:
             return False
         i += 1
+
+    # Check if the number of numbers is valid
+    if num_numbers > 9:
+        return False
 
     return True
 
@@ -58,11 +56,19 @@ def has_solution(numbers):
 
 def contains_all_numbers(expression, numbers):
     used_numbers = [str(num) for num in numbers]
-    for char in expression:
+    i = 0
+    while i < len(expression):
+        char = expression[i]
         if char.isdigit():
-            if char not in used_numbers:
-                return False
-            used_numbers.remove(char)
+            # Collect consecutive digits
+            number = char
+            while i + 1 < len(expression) and expression[i + 1].isdigit():
+                number += expression[i + 1]
+                i += 1
+            if number in used_numbers:
+                used_numbers.remove(number)
+        i += 1
+
     return len(used_numbers) == 0
 
 
@@ -83,7 +89,7 @@ async def _(msg: Bot.MessageSession):
     answer = await msg.waitNextMessage(msg.locale.t('twenty_four.message', numbers=numbers))
     expression = answer.asDisplay(text_only=True)
     if play_state[msg.target.targetId]['24']['active']:
-        if expression.lower() in ['无解', 'none']:
+        if expression.lower() in ['无解', '無解', 'none']:
             if has_solution_flag:
                 await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.have_solution'))
             else:
