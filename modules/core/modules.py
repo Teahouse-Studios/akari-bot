@@ -9,6 +9,7 @@ from core.parser.command import CommandParser
 from core.types import Command
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
+from textwrap import fill
 
 module = on_command('module',
                     base=True,
@@ -239,7 +240,7 @@ async def bot_help(msg: Bot.MessageSession):
                 devs = ''
             devs_msg = '\n模块作者：' + devs if devs != '' else ''
             wiki_msg = f'\n模块文档：https://bot.teahouse.team/wiki/' + help_name
-            await msg.finish(Image(pir(doc + devs_msg)))
+            await msg.finish(Image(pir(doc + devs_msg, word_wrap=False)))
         else:
             await msg.finish('此模块可能不存在，请检查输入。')
 
@@ -309,13 +310,13 @@ async def _(msg: Bot.MessageSession):
         for x in module_list:
             if isinstance(module_list[x], Command) and module_list[x].base:
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(essential))
+        help_msg.append(fill(' | '.join(essential), 28*2))
         help_msg.append('模块扩展命令：')
         module_ = []
         for x in module_list:
             if x in target_enabled_list:
                 module_.append(x)
-        help_msg.append(' | '.join(module_))
+        help_msg.append(fill(' | '.join(module_), 28*2))
         help_msg_t = f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n' \
                      f'你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
         if msg.Feature.delete:
