@@ -3,11 +3,11 @@ import itertools
 
 from core.builtins import Bot
 from core.component import module
-from simpleeval import seval
+from simpleeval import simple_eval
 
 def calc(expression):
     try:
-        return seval(expression)
+        return simple_eval(expression)
     except:
         return None
 
