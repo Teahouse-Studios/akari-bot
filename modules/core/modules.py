@@ -320,7 +320,7 @@ async def _(msg: Bot.MessageSession):
                      f'你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
         if msg.Feature.delete:
             help_msg_t += '[本消息将在一分钟后撤回]'
-        send = await msg.sendMessage(Image(pir('\n'.join(help_msg))), Plain(help_msg_t))
+        send = await msg.sendMessage([Image(pir('\n'.join(help_msg))), Plain(help_msg_t)])
         await msg.sleep(60)
         await send.delete()
 
