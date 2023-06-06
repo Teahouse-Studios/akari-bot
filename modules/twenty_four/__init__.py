@@ -17,11 +17,10 @@ def is_valid(expression):
     valid_chars = numbers + operators + ['(', ')']
 
     i = 0
-    num_numbers = 0  # Track the number of numbers
+    num_numbers = 0  
     while i < len(expression):
         char = expression[i]
         if char.isdigit():
-            # Collect consecutive digits
             while i < len(expression) and expression[i].isdigit():
                 i += 1
             num_numbers += 1
@@ -29,7 +28,6 @@ def is_valid(expression):
             return False
         i += 1
 
-    # Check if the number of numbers is valid
     if num_numbers > 9:
         return False
 
@@ -60,7 +58,6 @@ def contains_all_numbers(expression, numbers):
     while i < len(expression):
         char = expression[i]
         if char.isdigit():
-            # Collect consecutive digits
             number = char
             while i + 1 < len(expression) and expression[i + 1].isdigit():
                 number += expression[i + 1]
