@@ -5,7 +5,7 @@ import uuid
 from core.builtins import Bot
 from core.component import module
 
-r = module('random', alias={'rand': 'random', 'rng': 'random'},
+r = module('random', alias=['rand', 'rng'],
            developers=['Dianliang233', 'DoroWolf'], desc='{random.help.desc}', )
 
 
