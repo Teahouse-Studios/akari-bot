@@ -1,7 +1,6 @@
 from core.component import on_regex
 from core.builtins import Bot
 from ast import literal_eval
-from re import search
 
 zlp = on_regex('zhongli-probe', desc='对接钟离挂钩', developers='haoye_qwq', required_superuser=True)
 
