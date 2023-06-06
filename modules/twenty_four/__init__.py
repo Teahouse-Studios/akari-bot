@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession):
     answer = await msg.waitNextMessage(msg.locale.t('twenty_four.message', numbers=numbers))
     expression = answer.asDisplay(text_only=True)
     if play_state[msg.target.targetId]['24']['active']:
-        if expression.lower() in ['无解', '無解', 'none']:
+        if expression.lower() in ['无解', '無解', 'none', 'n/a']:
             if has_solution_flag:
                 await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.have_solution'))
             else:
