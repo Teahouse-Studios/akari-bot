@@ -127,6 +127,6 @@ async def s(msg: Bot.MessageSession):
             play_state[msg.target.targetId]['24']['active'] = False
             await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
         else:
-            await msg.sendMessage(msg.locale.t('twenty_four.stop.message.other'))
+            await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
     else:
         await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
