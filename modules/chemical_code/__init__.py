@@ -113,13 +113,13 @@ async def s(msg: Bot.MessageSession):
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.targetId]['ccode']['active'] = False  # 标记为非活跃状态
-            await msg.sendMessage(
+            await msg.finish(
                 msg.locale.t('chemical_code.stop.message', answer=play_state[msg.target.targetId]["answer"]),
                 quote=False)  # 发送存储于 play_state 中的答案
         else:
-            await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
+            await msg.finish(msg.locale.t('chemical_code.stop.message.none'))
     else:
-        await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
+        await msg.finish(msg.locale.t('chemical_code.stop.message.none'))
 
 
 @ccode.command('<csid> {{chemical_code.help.csid}}')
