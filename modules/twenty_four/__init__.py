@@ -13,8 +13,29 @@ def calc(expression):
 
 def is_valid(expression):
     operators = ['+', '-', '*', '/']
-    numbers = [str(i) for i in range(1, 10)]
-    return all(char in numbers + operators + ['(', ')'] for char in expression)
+    numbers = [str(i) for i in range(1, 14)]
+    valid_chars = numbers + operators + ['(', ')']
+
+    for i in range(10, 14):
+        valid_chars.append(str(i))
+
+    i = 0
+    while i < len(expression):
+        char = expression[i]
+        if char.isdigit():
+            # Collect consecutive digits
+            number = char
+            i += 1
+            while i < len(expression) and expression[i].isdigit():
+                number += expression[i]
+                i += 1
+            if number not in numbers:
+                return False
+        elif char not in valid_chars:
+            return False
+        i += 1
+
+    return True
 
 def has_solution(numbers):
     permutations = list(itertools.permutations(numbers))
@@ -33,6 +54,17 @@ def has_solution(numbers):
             if calc(exp) == 24:
                 return True
     return False
+
+
+def contains_all_numbers(expression, numbers):
+    used_numbers = [str(num) for num in numbers]
+    for char in expression:
+        if char.isdigit():
+            if char not in used_numbers:
+                return False
+            used_numbers.remove(char)
+    return len(used_numbers) == 0
+
 
 tf = module('twenty_four', alias=['twentyfour', '24'],
                desc='{twenty_four.help.desc}', developers=['DoroWolf'])
@@ -58,7 +90,7 @@ async def _(msg: Bot.MessageSession):
                 await answer.sendMessage(msg.locale.t('twenty_four.message.correct'))
         elif is_valid(expression):
             result = calc(expression)
-            if result == 24:
+            if result == 24 and contains_all_numbers(expression, numbers):
                 await answer.sendMessage(msg.locale.t('twenty_four.message.correct'))
             else:
                 await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect'))
