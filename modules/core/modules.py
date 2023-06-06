@@ -316,11 +316,11 @@ async def _(msg: Bot.MessageSession):
             if x in target_enabled_list:
                 module_.append(x)
         help_msg.append(' | '.join(module_))
-        help_msg.append(
-            f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
+        help_msg_t = f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n' \
+                     f'你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
         if msg.Feature.delete:
-            help_msg.append('[本消息将在一分钟后撤回]')
-        send = await msg.sendMessage(Image(pir('\n'.join(help_msg))))
+            help_msg_t += '[本消息将在一分钟后撤回]'
+        send = await msg.sendMessage(Image(pir('\n'.join(help_msg))), Plain(help_msg_t))
         await msg.sleep(60)
         await send.delete()
 
