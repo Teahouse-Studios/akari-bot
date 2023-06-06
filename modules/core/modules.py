@@ -310,13 +310,13 @@ async def _(msg: Bot.MessageSession):
         for x in module_list:
             if isinstance(module_list[x], Command) and module_list[x].base:
                 essential.append(module_list[x].bind_prefix)
-        help_msg.append(fill(' | '.join(essential), 28*2))
+        help_msg.append(fill(' | '.join(essential), 28 * 2))
         help_msg.append('模块扩展命令：')
         module_ = []
         for x in module_list:
             if x in target_enabled_list:
                 module_.append(x)
-        help_msg.append(fill(' | '.join(module_), 28*2))
+        help_msg.append(fill(' | '.join(module_), 28 * 2))
         help_msg_t = f'使用{msg.prefixes[0]}help <对应模块名>查看详细信息。\n使用{msg.prefixes[0]}module list查看所有的可用模块。\n' \
                      f'你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
         if msg.Feature.delete:
@@ -383,11 +383,10 @@ async def modules_help(msg: Bot.MessageSession):
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
-        help_msg.append(
-            '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/')
+        help_msg_t = '使用~help <模块名>查看详细信息。\n你也可以通过查阅文档获取帮助：\nhttps://bot.teahouse.team/wiki/'
         if msg.Feature.delete:
-            help_msg.append('[本消息将在一分钟后撤回]')
-        send = await msg.sendMessage(Image(pir('\n'.join(help_msg))))
+            help_msg_t += '\n[本消息将在一分钟后撤回]'
+        send = await msg.sendMessage([Image(pir('\n'.join(help_msg))), Plain(help_msg_t)])
         await msg.sleep(60)
         await send.delete()
 
