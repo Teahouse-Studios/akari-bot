@@ -15,23 +15,39 @@ def is_valid(expression):
     operators = ['+', '-', '*', '/']
     numbers = [str(i) for i in range(1, 14)]
     valid_chars = numbers + operators + ['(', ')']
+    valid_chars_set = set(valid_chars)
 
     i = 0
-    num_numbers = 0  
+    num_numbers = 0  # Track the number of numbers
     while i < len(expression):
         char = expression[i]
+
         if char.isdigit():
             while i < len(expression) and expression[i].isdigit():
                 i += 1
             num_numbers += 1
-        elif char not in valid_chars:
-            return False
-        i += 1
+
+        elif char in valid_chars_set:
+            i += 1
+            if i < len(expression) and expression[i] == ' ':
+                i += 1
+                if i < len(expression) and expression[i] == ' ':
+                    return False
+            continue
+
+        elif char == ' ':
+            i += 1
+            if i < len(expression) and expression[i] == ' ':
+                return False
+
+        else:
+            return False  # Invalid character
 
     if num_numbers > 9:
         return False
 
     return True
+
 
 def has_solution(numbers):
     permutations = list(itertools.permutations(numbers))
