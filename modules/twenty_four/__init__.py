@@ -12,13 +12,13 @@ def calc(expression):
         return None
 
 def is_valid(expression):
-    operators = ['+', '-', '*', '/']
+    operators = ['+', '-', '*', '/', '(', ')']
     numbers = [str(i) for i in range(1, 14)]
-    valid_chars = numbers + operators + ['(', ')']
+    valid_chars = numbers + operators
     valid_chars_set = set(valid_chars)
 
     i = 0
-    num_numbers = 0  # Track the number of numbers
+    num_numbers = 0
     while i < len(expression):
         char = expression[i]
 
