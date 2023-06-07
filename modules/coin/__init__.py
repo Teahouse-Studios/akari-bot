@@ -5,9 +5,9 @@ from core.builtins import Bot
 from core.component import module
 from .zhNum2Int import Zh2Int
 
-MAX_COIN_NUM = Config('coin_limit')
-FACE_UP_RATE = Config('coin_faceup_rate')  # n/10000
-FACE_DOWN_RATE = Config('coin_facedown_rate')
+MAX_COIN_NUM = int(Config('coin_limit'))
+FACE_UP_RATE = int(Config('coin_faceup_rate'))  # n/10000
+FACE_DOWN_RATE = int(Config('coin_facedown_rate'))
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
