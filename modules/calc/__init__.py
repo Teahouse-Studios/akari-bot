@@ -66,7 +66,7 @@ prime = module('prime',
         recommend_modules=['calc'])
 
 
-@prime.handle('prime <number> {{calc.help.prime}}')
+@prime.handle('<number> {{calc.help.prime}}')
 async def prime(msg: Bot.MessageSession):
     try:
         num = int(msg.parsed_msg.get('<number>'))
