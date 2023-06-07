@@ -99,8 +99,9 @@ async def func(msg: Bot.MessageSession):
 async def count(msg: Bot.MessageSession):
     de_symbol = None
     text = msg.parsed_msg['<text>'].replace(' ', '')
-    symbol = re.findall(r'[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b\-,.?:;\'\"!()]',
-                        text)
+    symbol = re.findall(
+        r'[`~!@#$%^&*()_\\\-+=<>?:\"{}|,./;\'\[\]·！￥…（）—\-+《》？：“”【】、；‘，。]',
+        text)
     for i in symbol:
         de_symbol = text.replace(i, '')
     count_text = len(text)
