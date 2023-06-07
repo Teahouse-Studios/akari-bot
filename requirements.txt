@@ -1364,3 +1364,5 @@ aioconsole
 sympy
 
 redis
+
+scipy
