@@ -18,8 +18,8 @@ MAX_ITEM_COUNT = 10  # 骰子多项式最多的项数
 class DiceSyntaxError(Exception):
     """骰子语法错误"""
 
-    def __init__(self, message):
-        self.message = f"语法错误: {message}"
+    def __init__(self, session, message):
+        self.message = session.locale.t("dice.message.error.syntax") + message
 
 
 class DiceValueError(Exception):
@@ -166,7 +166,7 @@ class Dice(DiceItemBase):
 
 async def GenerateMessage(msg, dices: str, times: int, dc: int):
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
-        return DiceSyntaxError(msg.locale.t('dice.message.error.syntax.invalid')).message
+        return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
         return DiceValueError(msg.locale.t('dice.message.error.value.N.out_of_range', max=MAX_ROLL_TIMES), times).message
     diceCodeList = re.compile(r'[+-]?[^+-]+').findall(dices)
