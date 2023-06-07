@@ -124,8 +124,11 @@ async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)
     if state:
         if state['active']:
-            play_state[msg.target.targetId]['24']['active'] = False
-            await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
+            if play_state[msg.target.targetId]['game'] == '24': #检查游戏类型
+                play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
+                await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
+            else:
+                await msg.finish(msg.locale.t('twenty_four.stop.message.failed'))
         else:
             await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
     else:
