@@ -5,6 +5,8 @@ from core.builtins import Bot
 from core.component import module
 from simpleeval import simple_eval
 
+no_solution = ['无解', '無解', 'none', 'n/a']
+
 def calc(expression):
     try:
         return simple_eval(expression)
@@ -94,7 +96,7 @@ play_state = {}
 async def _(msg: Bot.MessageSession):
     if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']: 
         await msg.finish(msg.locale.t('twenty_four.message.running'))
-    play_state.update({msg.target.targetId: {'game': '24', 'active': True}})
+    play_state.update({msg.target.targetId: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
     has_solution_flag = has_solution(numbers)
@@ -102,7 +104,7 @@ async def _(msg: Bot.MessageSession):
     answer = await msg.waitNextMessage(msg.locale.t('twenty_four.message', numbers=numbers))
     expression = answer.asDisplay(text_only=True)
     if play_state[msg.target.targetId]['active']:
-        if expression.lower() in ['无解', '無解', 'none', 'n/a']:
+        if expression.lower() in no_solution:
             if has_solution_flag:
                 await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.have_solution'))
             else:
@@ -124,11 +126,8 @@ async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)
     if state:
         if state['active']:
-            if play_state[msg.target.targetId]['game'] == '24': #检查游戏类型
-                play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-                await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
-            else:
-                await msg.finish(msg.locale.t('twenty_four.stop.message.failed'))
+            play_state[msg.target.targetId]['active'] = False
+            await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
         else:
             await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
     else:

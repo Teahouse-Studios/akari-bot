@@ -112,13 +112,10 @@ async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
-            if play_state[msg.target.targetId]['game'] == 'ccode': #检查游戏类型
-                play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-                await msg.finish(
+            play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
+            await msg.finish(
                     msg.locale.t('chemical_code.stop.message', answer=play_state[msg.target.targetId]["answer"]),
                     quote=False)  # 发送存储于 play_state 中的答案
-            else:
-                await msg.finish(msg.locale.t('chemical_code.stop.message.failed'))
         else:
             await msg.finish(msg.locale.t('chemical_code.stop.message.none'))
     else:
@@ -138,7 +135,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
         await msg.finish(msg.locale.t('chemical_code.message.running'))
-    play_state.update({msg.target.targetId: {'game': 'ccode', 'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
+    play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
     try:
         csr = await search_csr(id)  # 尝试获取 ChemSpider ID 对应的化学式列表
     except Exception as e:  # 意外情况
