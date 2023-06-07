@@ -5,7 +5,7 @@ import hashlib
 hsh = on_command('hash', desc='生成对应字符串的哈希值', developers='haoye_qwq')
 
 
-@hsh.handle('<algorithm> <string>', options_desc={'sha256'})
+@hsh.handle('<algorithm> <string>')
 async def _(msg: Bot.MessageSession):
     try:
         hash_ = hashlib.new(msg.parsed_msg['algorithm'], msg.parsed_msg['<string>'])
