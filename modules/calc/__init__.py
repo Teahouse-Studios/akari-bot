@@ -88,3 +88,4 @@ async def func(msg: Bot.MessageSession):
     await msg.sendMessage(Image(img))
     await msg.sleep(10)
     os.remove(img)
+
