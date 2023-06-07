@@ -1,4 +1,4 @@
 {
     "bugtracker.help": "查詢 Mojira 上的錯誤編號內容。",
-    "bugtracker.message.error": "發生錯誤：取得 json 失敗。"
+    "bugtracker.message.error": "發生錯誤：取得内容失敗。"
 }

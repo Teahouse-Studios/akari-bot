@@ -164,11 +164,11 @@ class Dice(DiceItemBase):
         self.result = result
 
 
-async def GenerateMessage(dices: str, times: int, dc: int):
+async def GenerateMessage(msg, dices: str, times: int, dc: int):
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
-        return DiceSyntaxError('骰子语句中存在无法识别的字符').message
+        return DiceSyntaxError(msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
-        return DiceValueError(f'投骰次数不得小于 1 或 大于 {MAX_ROLL_TIMES}', times).message
+        return DiceValueError(msg.locale.t('dice.message.error.value.N.out_of_range', max=MAX_ROLL_TIMES), times).message
     diceCodeList = re.compile(r'[+-]?[^+-]+').findall(dices)
     diceList = []
     haveErr = False
@@ -176,7 +176,7 @@ async def GenerateMessage(dices: str, times: int, dc: int):
     diceCount = 0
     i = 0
     if len(diceCodeList) > MAX_ITEM_COUNT:
-        return DiceValueError('骰子多项式项数超过限制', len(diceCodeList)).message
+        return DiceValueError(msg.locale.t('dice.message.error.value.too_long'), len(diceCodeList)).message
     # 初始化骰子序列
     for item in diceCodeList:
         i += 1
@@ -194,13 +194,13 @@ async def GenerateMessage(dices: str, times: int, dc: int):
             elif item.isdigit():
                 diceList.append(DiceMod(item, isAdd))
         except (DiceSyntaxError, DiceValueError) as ex:
-            output += f'\n第{i}项发生{ex.message}'
+            output += msg.locale.t('dice.message.error.prompt', i=i, msg=ex.message)
             haveErr = True
     if haveErr:
-        return '解析骰子多项式时存在以下错误：' + output
+        return msg.locale.t('dice.message.error') + output
     successNum = 0
     failNum = 0
-    output = '你掷得的结果是：'
+    output = msg.locale.t('dice.message.output')
     # 开始摇动并输出
     for i in range(times):
         outputLine = ''
@@ -217,12 +217,12 @@ async def GenerateMessage(dices: str, times: int, dc: int):
         outputLine += ' = ' + str(result)
         if dc != 0:
             if result > dc:
-                outputLine += '，判定成功！'
+                outputLine += msg.locale.t('dice.message.dc.success')
                 successNum += 1
             else:
-                outputLine += '，判定失败！'
+                outputLine += msg.locale.t('dice.message.dc.failed')
                 failNum += 1
         output += f'\n{dices} = {outputLine}'
     if dc != 0 and times > 1:
-        output += '\n▷ 判定成功数量：' + str(successNum) + '  判定失败数量：' + str(failNum)
+        output += '\n' + msg.locale.t('dice.message.dc.check', success=str(successNum), failed=str(failNum))
     return output

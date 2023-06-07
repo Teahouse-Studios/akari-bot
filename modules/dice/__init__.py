@@ -31,11 +31,11 @@ async def _(msg: Bot.MessageSession, dices, dc='0'):
         await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
     if not dc.isdigit():
         await msg.finish(msg.locale.t('dice.message.error.dc.invalid') + dc)
-    await msg.finish(await GenerateMessage(dices, int(times), int(dc)))
+    await msg.finish(await GenerateMessage(msg, dices, int(times), int(dc)))
 
 
 @dice.regex(r"[扔|投|掷|丢]([0-9]*)?个([0-9]*面)?骰子?", desc="{dice.help.regex.desc}")
 async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     diceType = groups[1][:-1] if groups[1] else '6'
-    await message.finish(await GenerateMessage(f'{groups[0]}D{diceType}', 1, 0))
+    await message.finish(await GenerateMessage(message, f'{groups[0]}D{diceType}', 1, 0))
