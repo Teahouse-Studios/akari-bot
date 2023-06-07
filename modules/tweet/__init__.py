@@ -15,8 +15,10 @@ t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', )
 
 @t.handle('<tweet> {{tweet.help}}', )
 async def _(msg: Bot.MessageSession):
-    tweet_id = msg.parsed_msg['<tweet>'].split('/')[-1]
-    if not tweet_id.isdigit():
+    match = re.search(r"status/(\d+)", msg.parsed_msg['<tweet>'])
+    if match:
+        tweet_id = match.group(1)
+    else:
         await msg.finish(msg.locale.t('tweet.message.error'))
     failed_request = await get_url('https://static-tweet.vercel.app/1', status_code=404)
     build_id = re.search(r'"buildId"\:"(.*?)"', failed_request).group(1)

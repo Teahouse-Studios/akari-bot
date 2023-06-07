@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list, template=True, inline_mode=True)
 
 
-@wiki_inline.handle(re.compile(r'≺(.*?)≻|⧼(.*?)⧽|⟨(.*?)⟩', flags=re.I), mode='A', show_typing=False,
+@wiki_inline.handle(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False,
             desc='{wiki.help.wiki_inline.mediawiki}')
 async def _(msg: Bot.MessageSession):
     query_list = []
