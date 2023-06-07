@@ -41,7 +41,7 @@ def is_valid(expression):
                 return False
 
         else:
-            return False  # Invalid character
+            return False
 
     if num_numbers > 9:
         return False
