@@ -103,17 +103,15 @@ async def count(msg: Bot.MessageSession):
         r'^[`~!@#$%^&*()_\\\-+=<>?:\"{}|,./;\'\[\]·！￥…（）—\-+《》？：“”【】、；‘，。]',
         text)
     for i in symbol:
-        de_symbol = text.replace(i, '')
+        text = text.replace(i, '')
     if text is None:
         count_text = 0
     else:
         count_text = len(text)
-    if de_symbol is None:
-        count_de_symbol = 0
-    else:
-        count_de_symbol = len(de_symbol)
     if symbol is None:
         count_symbol = 0
     else:
         count_symbol = len(symbol)
-    await msg.sendMessage(f"字符数: {count_text}\n字数: {count_de_symbol}\n符号数: {count_symbol}")
+    await msg.sendMessage(
+        f"字符数: {len(msg.parsed_msg['<text>'].replace(' ', ''))}\n字数: {count_text}\n符号数: {count_symbol}"
+    )
