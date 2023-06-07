@@ -97,7 +97,7 @@ async def func(msg: Bot.MessageSession):
 
 @c.handle('count <text> {统计文字字数}')
 async def count(msg: Bot.MessageSession):
-    text = msg.parsed_msg['<text>'].replace(' ', '')
+    text = msg.parsed_msg['<text>'].replace(' ', '').chomp
     symbol = re.findall(
         r'[`~!@#$%^&*()_\\\-+=<>?:\"{}|,./;\'\[\]·！￥…（）—\-+《》？：“”【】、；‘，。]',
         msg.parsed_msg['<text>'].replace(' ', ''))
@@ -112,5 +112,5 @@ async def count(msg: Bot.MessageSession):
     else:
         count_symbol = len(symbol)
     await msg.sendMessage(
-        f"字符数: {len(msg.parsed_msg['<text>'].replace(' ', ''))}\n字数: {count_text}\n符号数: {count_symbol}"
+        f"字符数: {len(msg.parsed_msg['<text>'].replace(' ', '').chomp)}\n字数: {count_text}\n符号数: {count_symbol}"
     )
