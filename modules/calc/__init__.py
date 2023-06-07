@@ -84,7 +84,7 @@ async def _(msg: Bot.MessageSession):
 
 @c.handle('function <function> {绘制函数图像}')
 async def func(msg: Bot.MessageSession):
-    img = await func_img(msg.parsed_msg['<function>'])
+    img = await func_img(str(msg.parsed_msg['<function>']))
     await msg.sendMessage(Image(img))
     await msg.sleep(10)
     os.remove(img)
