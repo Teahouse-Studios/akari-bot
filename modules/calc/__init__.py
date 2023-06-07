@@ -10,7 +10,6 @@ from core.exceptions import NoReportException
 from core.logger import Logger
 from .function import *
 
-global de_symbol
 c = on_command('calc', developers=[
     'Dianliang233', 'haoye_qwq'], alias={'calc chemical_equation': 'calc ce'}, desc='计算器')
 
@@ -98,7 +97,7 @@ async def func(msg: Bot.MessageSession):
 
 @c.handle('count <text> {统计文字字数}')
 async def count(msg: Bot.MessageSession):
-    global de_symbol
+    de_symbol = None
     text = msg.parsed_msg['<text>'].replace(' ', '')
     symbol = re.findall(
         r'^[`~!@#$%^&*()_\\\-+=<>?:\"{}|,./;\'\[\]·！￥…（）—\-+《》？：“”【】、；‘，。]',
