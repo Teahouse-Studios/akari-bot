@@ -80,7 +80,7 @@ class Dice(DiceItemBase):
     def __init__(self, session, diceCode: str, postive: bool):
         diceCode = diceCode.replace(' ', '')
         super().__init__(diceCode, postive)
-        args = self.GetArgs()
+        args = self.GetArgs(session)
         self.count = args[0]
         self.type = args[1]
         self.adv = args[2]
