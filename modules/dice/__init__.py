@@ -13,14 +13,14 @@ dice = module('dice', alias={'d4': 'dice d4',
 
 @dice.command('<dices> [<dc>] {{dice.help}}',
               options_desc={
-                  'dn': '表示n面骰',
-                  'mdn': '表示m个n面骰，输出其所有点数之和（m若省略即为1）',
-                  'mdnkx': '表示m个n面骰，输出其最大的x个骰子点数之和',
-                  'mdnklx': '与上一个相同，但其会输出最小的x个骰子点数之和',
-                  '多项式': '式子可以兼容多项，如“10d4-2d20”会输出10个4面骰所有点数之和减去2个20面骰点数之和',
-                  '整数项': '一项可以是一个整数（也就是调节值），如“d20+5”会输出1个20面骰的点数加上5的结果',
-                  '多项式最前面加 N#': '将这个式子的操作重复N次（投掷N次），之后输出N次的结果',
-                  'dc': '在每一次投掷输出结果时进行判定，结果大于dc判定为成功，否则判定失败'
+                  '{dice.help.option.polynomial.title}': '{dice.help.option.polynomial}',
+                  'n': '{dice.help.option.n}',
+                  'm': '{dice.help.option.m}',
+                  'kx': '{dice.help.option.kx}',
+                  'klx': '{dice.help.option.klx}',
+                  'y': '{dice.help.option.y}',
+                  'N': '{dice.help.option.N}',
+                  'dc': '{dice.help.option.dc}'
               })
 async def _(msg: Bot.MessageSession, dices, dc='0'):
     times = '1'

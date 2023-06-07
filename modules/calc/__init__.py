@@ -17,31 +17,31 @@ c = module('calc', developers=[
     'Dianliang233'], desc='{calc.help.calc.desc}')
 
 
-@c.command('<math_expression>', options_desc={'+': '{calc.help.calc.plus}',
-                                              '-': '{calc.help.calc.minus}',
-                                              '/': '{calc.help.calc.multiply}',
-                                              '*': '{calc.help.calc.divide}',
-                                              '**': '{calc.help.calc.power}',
-                                              '%': '{calc.help.calc.modulo}',
-                                              '==': '{calc.help.calc.equal}',
-                                              '<=': '{calc.help.calc.less_equal}',
-                                              '>=': '{calc.help.calc.greater_equal}',
-                                              '>>': '{calc.help.calc.move_right}',
-                                              '<<': '{calc.help.calc.move_left}',
-                                              '^': '{calc.help.calc.xor}',
-                                              'not': '{calc.help.calc.not}',
-                                              'is': '{calc.help.calc.is}',
-                                              'randint(x)': '{calc.help.calc.randint}',
-                                              'rand()': '{calc.help.calc.rand}',
-                                              'int()': '{calc.help.calc.int}',
-                                              'float()': '{calc.help.calc.float}',
-                                              'str()': '{calc.help.calc.str}',
-                                              'complex()': '{calc.help.calc.complex}',
-                                              'bool()': '{calc.help.calc.bool}',
-                                              'bin()': '{calc.help.calc.bin}',
-                                              'oct()': '{calc.help.calc.oct}',
-                                              'hex()': '{calc.help.calc.hex}',
-                                              '{calc.help.calc.more}': 'https://bot.teahouse.team/-/340',
+@c.command('<math_expression>', options_desc={'+': '{calc.help.calc.option.plus}',
+                                              '-': '{calc.help.calc.option.minus}',
+                                              '/': '{calc.help.calc.option.multiply}',
+                                              '*': '{calc.help.calc.option.divide}',
+                                              '**': '{calc.help.calc.option.power}',
+                                              '%': '{calc.help.calc.option.modulo}',
+                                              '==': '{calc.help.calc.option.equal}',
+                                              '<=': '{calc.help.calc.option.less_equal}',
+                                              '>=': '{calc.help.calc.option.greater_equal}',
+                                              '>>': '{calc.help.calc.option.move_right}',
+                                              '<<': '{calc.help.calc.option.move_left}',
+                                              '^': '{calc.help.calc.option.xor}',
+                                              'not': '{calc.help.calc.option.not}',
+                                              'is': '{calc.help.calc.option.is}',
+                                              'randint(x)': '{calc.help.calc.option.randint}',
+                                              'rand()': '{calc.help.calc.option.rand}',
+                                              'int()': '{calc.help.calc.option.int}',
+                                              'float()': '{calc.help.calc.option.float}',
+                                              'str()': '{calc.help.calc.option.str}',
+                                              'complex()': '{calc.help.calc.option.complex}',
+                                              'bool()': '{calc.help.calc.option.bool}',
+                                              'bin()': '{calc.help.calc.option.bin}',
+                                              'oct()': '{calc.help.calc.option.oct}',
+                                              'hex()': '{calc.help.calc.option.hex}',
+                                              '{calc.help.calc.option.more}': 'https://bot.teahouse.team/-/340',
                                               })
 async def _(msg: Bot.MessageSession):
     expr = msg.asDisplay().split(' ', 1)[1]
@@ -61,21 +61,21 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
 
 
-factor = module('factor', 
+prime = module('prime', 
         developers=['DoroWolf', 'Light-Beacon', 'Dianliang233'], 
         recommend_modules=['calc'])
 
 
-@factor.handle('prime <number> {{calc.help.factor.prime}}')
+@prime.handle('prime <number> {{calc.help.prime}}')
 async def prime(msg: Bot.MessageSession):
     try:
         num = int(msg.parsed_msg.get('<number>'))
         if num <= 1:
             raise ValueError
     except ValueError:
-        return await msg.finish(msg.locale.t('calc.message.factor.prime.error'))
+        return await msg.finish(msg.locale.t('calc.message.prime.error'))
     start = time.perf_counter_ns()
-    res = await spawn_subprocess('/factor.py', str(num), msg)
+    res = await spawn_subprocess('/prime.py', str(num), msg)
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if res[:6] != 'Result':
@@ -83,7 +83,7 @@ async def prime(msg: Bot.MessageSession):
     primes = json.loads(res[7:])
     prime = "*".join(primes)
     if len(primes) == 1:
-        m = msg.locale.t("calc.message.factor.prime.is_prime", num=num)
+        m = msg.locale.t("calc.message.prime.is_prime", num=num)
     else:
         m = (
             f'{num} = `{prime}`'

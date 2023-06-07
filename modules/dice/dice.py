@@ -194,14 +194,14 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
             elif item.isdigit():
                 diceList.append(DiceMod(item, isAdd))
         except (DiceSyntaxError, DiceValueError) as ex:
-            output += msg.locale.t('dice.message.error.prompt', i=i, msg=ex.message)
+            output += '\n' + msg.locale.t('dice.message.error.prompt', i=i) + ex.message
             haveErr = True
     if haveErr:
         return msg.locale.t('dice.message.error') + output
     successNum = 0
     failNum = 0
     output = msg.locale.t('dice.message.output')
-    # 开始摇动并输出
+    # 开始投掷并输出
     for i in range(times):
         outputLine = ''
         result = 0
