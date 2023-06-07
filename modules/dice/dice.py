@@ -3,16 +3,17 @@ import secrets
 
 import numpy as np
 
+from config import Config
 from core.utils.text import remove_prefix
 
-MAX_DICE_COUNT = 100  # 一次摇动最多的骰子数量
-MAX_ROLL_TIMES = 10  # 一次命令最多的摇动次数
-MAX_MOD_NUMBER = 10000  # 骰子最大加权值
-MIN_MOD_NUMBER = -10000  # 骰子最小加权值
-MAX_OUTPUT_NUM = 50  # 输出的最多数据量
-MAX_OUTPUT_LEN = 200  # 输出的最大长度
-MAX_DETAIL_CNT = 5  # n次摇动的骰子的总量超过该值时将不再显示详细信息
-MAX_ITEM_COUNT = 10  # 骰子多项式最多的项数
+MAX_DICE_COUNT = Config('dice_limit')  # 一次摇动最多的骰子数量
+MAX_ROLL_TIMES = Config('dice_roll_limit')  # 一次命令最多的摇动次数
+MAX_MOD_NUMBER = Config('dice_mod_max')  # 骰子最大加权值
+MIN_MOD_NUMBER = Config('dice_mod_min')  # 骰子最小加权值
+MAX_OUTPUT_CNT = Config('dice_output_cnt')  # 输出的最多数据量
+MAX_OUTPUT_LEN = Config('dice_output_len')  # 输出的最大长度
+MAX_DETAIL_CNT = Config('dice_detail_cnt')  # n次摇动的骰子的总量超过该值时将不再显示详细信息
+MAX_ITEM_COUNT = Config('dice_count_limit')  # 骰子多项式最多的项数
 
 
 class DiceSyntaxError(Exception):
@@ -155,7 +156,7 @@ class Dice(DiceItemBase):
                     outputBuffer += '*'
                 if i < self.count - 1:
                     outputBuffer += ','
-            if self.count >= MAX_OUTPUT_NUM:
+            if self.count >= MAX_OUTPUT_CNT:
                 outputBuffer = session.locale.t("dice.message.output.too_long", length=self.count)
             output += outputBuffer + ' ) = '
             diceResults = newResults
@@ -163,11 +164,11 @@ class Dice(DiceItemBase):
         length = len(diceResults)
         if (length > 1):
             output += '[ '
-            if length > MAX_OUTPUT_NUM:  # 显示数据含100
+            if length > MAX_OUTPUT_CNT:  # 显示数据含100
                 output += session.locale.t("dice.message.output.too_long", length=length)
             for i in range(length):
                 result += diceResults[i]
-                if length <= MAX_OUTPUT_NUM:  # 显示数据含100
+                if length <= MAX_OUTPUT_CNT:  # 显示数据含100
                     output += str(diceResults[i])
                     if i < length - 1:
                         output += '+'
@@ -222,7 +223,7 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
         outputLine = ''
         result = 0
         for dice in diceList:
-            dice.Roll()
+            dice.Roll(msg)
             outputLine += '+' if dice.postive else '-'
             if isinstance(dice, Dice) and times * diceCount < MAX_DETAIL_CNT:
                 outputLine += f'( {dice.GetDetail()})'
