@@ -2,6 +2,7 @@ import asyncio
 import os
 import subprocess
 import sys
+import re
 
 from core.builtins import Bot, Image
 from core.component import on_command
@@ -88,4 +89,17 @@ async def func(msg: Bot.MessageSession):
     await msg.sendMessage(Image(img))
     await msg.sleep(10)
     os.remove(img)
+
+
+@c.handle('count <text> {统计文字字数}')
+async def count(msg: Bot.MessageSession):
+    de_symbol = None
+    text = msg.parsed_msg['<text>']
+    symbol = re.findall(r'[\u3002\uff1b\uff0c\uff1a\u201c\u201d\uff08\uff09\u3001\uff1f\u300a\u300b\-,.?:;\'\"!]', text)
+    for i in symbol:
+        de_symbol = text.replace(i, '')
+    count_text = len(text)
+    count_de_symbol = len(de_symbol)
+    count_symbol = len(symbol)
+    await msg.sendMessage(f"字符数: {count_text}\n字数: {count_de_symbol}\n符号数: {count_symbol}")
 
