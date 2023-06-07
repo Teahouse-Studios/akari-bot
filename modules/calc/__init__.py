@@ -82,7 +82,7 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(e)
 
 
-@c.handle('<function> {绘制函数图像}')
+@c.handle('function <function> {绘制函数图像}')
 async def func(msg: Bot.MessageSession):
     img = await func_img(msg.parsed_msg['<function>'])
     await msg.sendMessage(Image(img))
