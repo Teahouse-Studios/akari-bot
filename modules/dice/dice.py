@@ -204,11 +204,11 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
             item = item[1:]
         try:
             if 'D' in item or 'd' in item:
-                d = Dice(item, isAdd)
+                d = Dice(msg, item, isAdd)
                 diceList.append(d)
                 diceCount += d.count
             elif item.isdigit():
-                diceList.append(DiceMod(item, isAdd))
+                diceList.append(DiceMod(msg, item, isAdd))
         except (DiceSyntaxError, DiceValueError) as ex:
             output += '\n' + msg.locale.t('dice.message.error.prompt', i=i) + ex.message
             haveErr = True
