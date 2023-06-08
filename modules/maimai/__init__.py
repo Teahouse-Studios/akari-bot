@@ -138,30 +138,29 @@ async def _(msg: Bot.MessageSession):
 
 
 
-#@mai.handle('b40 [<username>] {{maimai.help.b40}}')
-#async def _(msg: Bot.MessageSession):
-#    username = msg.parsed_msg.get('<username>', None)
-#    if username is None and msg.target.senderFrom == "QQ":
-#        payload = {'qq': msg.session.sender}
-#    else:
-#        if username is None:
-#            await msg.finish(msg.locale.t("maimai.message.no_username"))
-#        payload = {'username': username}
-#    img, success = await generate(payload)
-#    if success == 400:
-#        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-#    elif success == 403:
-#        await msg.finish(msg.locale.t("maimai.message.forbidden"))
-#    else:
-#        if img:
-#            await msg.finish([BImage(img)])
-
-
-
-@mai.handle('(b40|b50) [<username>] {{maimai.help.b50}}')
+@mai.handle('b40 [<username>]')
 async def _(msg: Bot.MessageSession):
-    if 'b40' in msg.parsed_msg:
-        await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
+    username = msg.parsed_msg.get('<username>', None)
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender}
+    else:
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username}
+    await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
+    img, success = await generate50(payload)
+    if success == 400:
+        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+    elif success == 403:
+        await msg.finish(msg.locale.t("maimai.message.forbidden"))
+    else:
+        if img:
+            await msg.finish([BImage(img)])
+
+
+
+@mai.handle('b50 [<username>] {{maimai.help.b50}}')
+async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
