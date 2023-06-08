@@ -142,11 +142,11 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
     if username is None and msg.target.senderFrom == "QQ":
-        payload = {'qq': msg.session.sender}
+        payload = {'qq': msg.session.sender, 'b50': True}
     else:
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username}
+        payload = {'username': username, 'b50': True}
     await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
     img, success = await generate50(payload)
     if success == 400:
