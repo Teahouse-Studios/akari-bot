@@ -13,13 +13,11 @@ i = module('convert', alias=['conv', 'unit'], desc='{convert.help.desc}',
 
 
 @i.command('<from_val> <to_unit> {convert.help}')
-async def _(msg: Bot.MessageSession):
-    from_val = msg.parsed_msg['<from_val>']
-    to_unit = msg.parsed_msg['<to_unit>']
+async def _(msg: Bot.MessageSession, from_val: str, to_unit: str):
     try:
         ori = ureg.parse_expression(from_val)
         res = ureg.parse_expression(from_val).to(to_unit)
-    except:
+    except BaseException:
         await msg.finish(msg.locale.t("convert.message.error"))
 
     await msg.finish(f"{ori:~Pg} = {res:~Pg}")
