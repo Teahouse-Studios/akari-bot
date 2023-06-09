@@ -26,7 +26,7 @@ def song_txt(music: Music):
 def get_label(diff):
     diff = diff.lower()
     diff_label_lower = [label.lower() for label in diff_label]
-    
+
     if diff in diff_label_zhs:
         level = diff_label_zhs.index(diff)
     elif diff in diff_label_zht:
@@ -40,15 +40,12 @@ def get_label(diff):
     return level
 
 
-
 mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='mai',
              desc='{maimai.help.desc}')
 
 
-
 @mai.handle('level <level> {{maimai.help.level}}')
-async def _(msg: Bot.MessageSession):
-    level = msg.parsed_msg['<level>']
+async def _(msg: Bot.MessageSession, level: str):
     result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
@@ -61,28 +58,26 @@ async def _(msg: Bot.MessageSession):
         img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
+
 async def diff_level_q(level):
     result_set = []
     music_data = (await total_list.get()).filter(level=level)
     for music in sorted(music_data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i], music['type']))
+            result_set.append(
+                (music['id'],
+                 music['title'],
+                    music['ds'][i],
+                    diff_label[i],
+                    music['level'][i],
+                    music['type']))
     return result_set
 
 
-
 @mai.handle('inner <rating> [<rating_max>] {{maimai.help.inner}}')
-async def _(msg: Bot.MessageSession):
-    try:
-        rating = float(msg.parsed_msg['<rating>'])
-    except ValueError:
-        return await msg.finish(msg.locale.t('error.range.notnumber'))
+async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
     rating_max = msg.parsed_msg.get('<rating_max>')
     if rating_max is not None:
-        try:
-            rating_max = float(rating_max)
-        except ValueError:
-            return await msg.finish(msg.locale.t('error.range.notnumber'))
         if rating > rating_max:
             return await msg.finish(msg.locale.t('error.range.invalid'))
         result_set = await inner_level_q(rating, rating_max)
@@ -102,6 +97,7 @@ async def _(msg: Bot.MessageSession):
         img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
+
 async def inner_level_q(ds1, ds2=None):
     result_set = []
     if ds2 is not None:
@@ -110,14 +106,19 @@ async def inner_level_q(ds1, ds2=None):
         music_data = (await total_list.get()).filter(ds=ds1)
     for music in sorted(music_data, key=lambda i: int(i['id'])):
         for i in music.diff:
-            result_set.append((music['id'], music['title'], music['ds'][i], diff_label[i], music['level'][i], music['type']))
+            result_set.append(
+                (music['id'],
+                 music['title'],
+                    music['ds'][i],
+                    diff_label[i],
+                    music['level'][i],
+                    music['type']))
     return result_set
 
 
-
 @mai.handle('search <keyword> {{maimai.help.search}}')
-async def _(msg: Bot.MessageSession):
-    name = msg.parsed_msg['<keyword>'].strip()
+async def _(msg: Bot.MessageSession, keyword: str):
+    name = keyword.strip()
     if name == "":
         return
     res = (await total_list.get()).filter(title_search=name)
@@ -136,10 +137,8 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(img)])
 
 
-
 @mai.handle('b40 [<username>] {{maimai.help.b40}}')
-async def _(msg: Bot.MessageSession):
-    username = msg.parsed_msg.get('<username>', None)
+async def _(msg: Bot.MessageSession, username: str = None):
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
@@ -157,10 +156,8 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(img)])
 
 
-
 @mai.handle('b50 [<username>] {{maimai.help.b50}}')
-async def _(msg: Bot.MessageSession):
-    username = msg.parsed_msg.get('<username>', None)
+async def _(msg: Bot.MessageSession, username: str = None):
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
@@ -177,11 +174,8 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(img)])
 
 
-
 @mai.handle('random <level> <diff> [<type>] {{maimai.help.random.filter}}')
-async def _(msg: Bot.MessageSession):
-    diff = msg.parsed_msg['<diff>']
-    level = msg.parsed_msg['<level>']
+async def _(msg: Bot.MessageSession, level: str, diff: str):
     tp = msg.parsed_msg.get('<type>', None)
     try:
         if tp == "dx":
@@ -217,67 +211,75 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
-
-    
-@mai.handle('song <id> [<diff>] {{maimai.help.song}}')
-async def _(message: Bot.MessageSession):
-    id = message.parsed_msg['<id>']
-    diff = message.parsed_msg.get('<diff>', None)
+@mai.handle('song <name> [<diff>] {{maimai.help.song}}')
+async def _(message: Bot.MessageSession, name: str, diff: str = None):
     if diff is not None:
         try:
             diff_index = get_label(diff)
-            name = id
             music = (await total_list.get()).by_id(name)
             chart = music['charts'][diff_index]
             ds = music['ds'][diff_index]
             level = music['level'][diff_index]
             file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
             if len(chart['notes']) == 4:
-                msg = message.locale.t("maimai.message.song.sd", diff=diff_label[diff_index], level=level, ds=ds, 
-                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], _break=chart['notes'][3], 
-                                        charter=chart['charter'])
+                msg = message.locale.t(
+                    "maimai.message.song.sd",
+                    diff=diff_label[diff_index],
+                    level=level,
+                    ds=ds,
+                    tap=chart['notes'][0],
+                    hold=chart['notes'][1],
+                    slide=chart['notes'][2],
+                    _break=chart['notes'][3],
+                    charter=chart['charter'])
             else:
-                msg = message.locale.t("maimai.message.song.dx", diff=diff_label[diff_index], level=level, ds=ds, 
-                                        tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], touch=chart['notes'][3], _break=chart['notes'][4], 
-                                        charter=chart['charter'])
+                msg = message.locale.t(
+                    "maimai.message.song.dx",
+                    diff=diff_label[diff_index],
+                    level=level,
+                    ds=ds,
+                    tap=chart['notes'][0],
+                    hold=chart['notes'][1],
+                    slide=chart['notes'][2],
+                    touch=chart['notes'][3],
+                    _break=chart['notes'][4],
+                    charter=chart['charter'])
             await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"), BImage(f"{file}"), Plain(msg)])
         except Exception:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
     else:
-        name = id
         music = (await total_list.get()).by_id(name)
         try:
             file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
             await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
                                   BImage(f"{file}"),
-                                  Plain(message.locale.t("maimai.message.song", 
-                                        artist=music['basic_info']['artist'], genre=music['basic_info']['genre'], 
-                                        bpm=music['basic_info']['bpm'], version=music['basic_info']['from'], 
+                                  Plain(message.locale.t("maimai.message.song",
+                                        artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
+                                        bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
                                         level='/'.join((str(ds) for ds in music['ds']))))])
         except Exception:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
 
-            
 
-#@mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
+# @mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
 #             'scoreline help {查看分数线帮助}'])
-#async def _(msg: Bot.MessageSession):
+# async def _(msg: Bot.MessageSession):
 #    r = "([绿黄红紫白])(id)?([0-9]+)"
 #    arg1 = msg.parsed_msg.get('<difficulty+sid>')
 #    args2 = msg.parsed_msg.get('<scoreline>')
 #    argh = msg.parsed_msg.get('help', False)
 #    if argh:
 #        s = '''此功能为查找某首歌分数线设计。
-#命令格式：maimai scoreline <difficulty+sid> <scoreline>
-#例如：分数线 紫799 100
-#命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
-#以下为 TAP GREAT 的对应表：
-#GREAT/GOOD/MISS
-#TAP\t1/2.5/5
-#HOLD\t2/5/10
-#SLIDE\t3/7.5/15
-#TOUCH\t1/2.5/5
-#BREAK\t5/12.5/25(外加200落)'''
+# 命令格式：maimai scoreline <difficulty+sid> <scoreline>
+# 例如：分数线 紫799 100
+# 命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
+# 以下为 TAP GREAT 的对应表：
+# GREAT/GOOD/MISS
+# TAP\t1/2.5/5
+# HOLD\t2/5/10
+# SLIDE\t3/7.5/15
+# TOUCH\t1/2.5/5
+# BREAK\t5/12.5/25(外加200落)'''
 #        img = text_to_image(s)
 #        if img:
 #            await msg.finish([BImage(img)])
@@ -301,7 +303,7 @@ async def _(message: Bot.MessageSession):
 #            if reduce <= 0 or reduce >= 101:
 #                raise ValueError
 #            await msg.finish(f'''{music['title']} {diff_label[diff_index]}
-#分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
-#BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
+# 分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
+# BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
 #        except Exception:
 #            await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
