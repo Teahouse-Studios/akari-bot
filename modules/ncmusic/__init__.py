@@ -10,9 +10,9 @@ api_address = Config('netease_cloud_music_api_url')
 
 ncmusic = module(bind_prefix='ncmusic', developers=['bugungu'], required_superuser=True)
 
+
 @ncmusic.handle('search <keyword> {{ncmusic.help.search}}')
-async def search(msg: Bot.MessageSession):
-    keyword = msg.parsed_msg['<keyword>']
+async def search(msg: Bot.MessageSession, keyword: str):
     search_url = f"{api_address}search?limit=10&keywords={keyword}"
     result = await get_url(search_url, 200, fmt='json')
     send_msg = msg.locale.t('ncmusic.message.search.result') + '\n'
@@ -30,9 +30,9 @@ async def search(msg: Bot.MessageSession):
     img = await msgchain2image([Plain(send_msg)])
     await msg.finish(Image(img))
 
+
 @ncmusic.handle('info <id> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession):
-
     ids = msg.parsed_msg['<id>']
     url = f"{api_address}song/detail?ids={ids}"
     result = await get_url(url, 200, fmt='json')

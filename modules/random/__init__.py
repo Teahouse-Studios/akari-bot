@@ -10,16 +10,11 @@ r = module('random', alias=['rand', 'rng'],
 
 
 @r.handle('number <min> <max> {{random.help.number}}', )
-async def _(msg: Bot.MessageSession):
-    try:
-        _min = int(msg.parsed_msg['<min>'])
-        _max = int(msg.parsed_msg['<max>'])
-    except ValueError:
-        return await msg.finish(msg.locale.t('error.range.notnumber'))
-    if _min > _max:
+async def _(msg: Bot.MessageSession, min: int, max: int):
+    if min > max:
         return await msg.finish(msg.locale.t('error.range.invalid'))
 
-    random = secrets.randbelow(_max - _min + 1) + _min
+    random = secrets.randbelow(max - min + 1) + min
     await msg.finish('' + str(random))
 
 
@@ -45,13 +40,8 @@ async def _(msg: Bot.MessageSession):
                         '-l': '{random.help.option.string.l}',
                         '-n': '{random.help.option.string.n}',
                         '-s': '{random.help.option.string.s}'})
-async def _(msg: Bot.MessageSession):
-
-    try:
-        length = int(msg.parsed_msg['<count>'])
-        if length < 1 or length > 100:
-            raise ValueError
-    except ValueError:
+async def _(msg: Bot.MessageSession, count: int):
+    if count < 1 or count > 100:
         return await msg.finish(msg.locale.t('random.message.string.error.invalid'))
     characters = ""
     if msg.parsed_msg.get('-u', False):
@@ -66,7 +56,7 @@ async def _(msg: Bot.MessageSession):
     if not characters:
         characters = string.ascii_letters + string.digits
 
-    random = ''.join(secrets.choice(characters) for _ in range(length))
+    random = ''.join(secrets.choice(characters) for _ in range(count))
     await msg.finish(random)
 
 

@@ -13,13 +13,12 @@ web_render_local = Config('web_render_local')
 t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', )
 
 
-@t.handle('<tweet> {{tweet.help}}', )
-async def _(msg: Bot.MessageSession):
-    input = msg.parsed_msg['<tweet>']
-    if input.isdigit():
-        tweet_id = input
+@t.handle('<tweet> {{tweet.help}}')
+async def _(msg: Bot.MessageSession, tweet: str):
+    if tweet.isdigit():
+        tweet_id = tweet
     else:
-        match = re.search(r"status/(\d+)", )
+        match = re.search(r"status/(\d+)", tweet)
         if match:
             tweet_id = match.group(1)
         else:
