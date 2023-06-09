@@ -87,8 +87,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
         if len(display) == 0:
             return
         msg.trigger_msg = display
-        msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
-        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
+        msg.target.senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
+        if msg.senderInfo.query.isInBlockList and not msg.senderInfo.query.isInAllowList \
                 or msg.target.senderId in msg.options.get('ban', []):
             return
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
@@ -270,7 +270,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-                                    if not senderInfo.query.disable_typing:
+                                    if not msg.senderInfo.query.disable_typing:
                                         async with msg.Typing(msg):
                                             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:
@@ -303,7 +303,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         msg.parsed_msg = None
                         for func in module.command_list.set:
                             if not func.help_doc:
-                                if not senderInfo.query.disable_typing:
+                                if not msg.senderInfo.query.disable_typing:
                                     async with msg.Typing(msg):
                                         await func.function(msg)  # 将msg传入下游模块
                                 else:
@@ -401,7 +401,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     ExecutionLockList.add(msg)
                                 else:
                                     return await msg.sendMessage(msg.locale.t("parser.command.running.prompt"))
-                                if rfunc.show_typing and not senderInfo.query.disable_typing:
+                                if rfunc.show_typing and not msg.senderInfo.query.disable_typing:
                                     async with msg.Typing(msg):
                                         await rfunc.function(msg)  # 将msg传入下游模块
                                 else:
