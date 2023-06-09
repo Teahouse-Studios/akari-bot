@@ -174,27 +174,26 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish([BImage(img)])
 
 
-@mai.handle('random <level> <diff> [<type>] {{maimai.help.random.filter}}')
-async def _(msg: Bot.MessageSession, level: str, diff: str):
-    tp = msg.parsed_msg.get('<type>', None)
+@mai.handle('random <level> <diff> [<mode>] {{maimai.help.random.filter}}')
+async def _(msg: Bot.MessageSession, level: str, diff: str, mode: str = None):
     try:
-        if tp == "dx":
-            tp = ["DX"]
-        elif tp in ["sd", "标准", "標準"]:
-            tp = ["SD"]
+        if mode == "dx":
+            mode = ["DX"]
+        elif mode in ["sd", "标准", "標準"]:
+            mode = ["SD"]
         else:
-            tp = ["SD", "DX"]
+            mode = ["SD", "DX"]
 
         if level == "#":
             if diff == "#":
-                music_data = (await total_list.get()).filter(type=tp)
+                music_data = (await total_list.get()).filter(type=mode)
             else:
                 raise ValueError
         else:
             if diff == "#":
-                music_data = (await total_list.get()).filter(level=level, type=tp)
+                music_data = (await total_list.get()).filter(level=level, type=mode)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=tp)
+                music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=mode)
 
         if len(music_data) == 0:
             rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -211,12 +210,12 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
-@mai.handle('song <name> [<diff>] {{maimai.help.song}}')
-async def _(message: Bot.MessageSession, name: str, diff: str = None):
+@mai.handle('song <sid> [<diff>] {{maimai.help.song}}')
+async def _(message: Bot.MessageSession, sid: str, diff: str = None):
     if diff is not None:
         try:
             diff_index = get_label(diff)
-            music = (await total_list.get()).by_id(name)
+            music = (await total_list.get()).by_id(sid)
             chart = music['charts'][diff_index]
             ds = music['ds'][diff_index]
             level = music['level'][diff_index]
