@@ -20,7 +20,7 @@ diff_label_zht = ['綠', '黃', '紅']
 
 def song_txt(music: Music):
     return [Plain(f"{music.id} {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len4_id(music.id)}.png", ),
+            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png", ),
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
@@ -142,13 +142,13 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
     if username is None and msg.target.senderFrom == "QQ":
-        payload = {'qq': msg.session.sender, 'b50': True}
+        payload = {'qq': msg.session.sender}
     else:
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username, 'b50': True}
-    await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
-    img, success = await generate50(payload)
+        payload = {'username': username}
+#    await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
+    img, success = await generate(payload)
     if success == 400:
         await msg.finish(msg.locale.t("maimai.message.user_not_found"))
     elif success == 403:
@@ -232,7 +232,7 @@ async def _(message: Bot.MessageSession):
             chart = music['charts'][diff_index]
             ds = music['ds'][diff_index]
             level = music['level'][diff_index]
-            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
+            file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
             if len(chart['notes']) == 4:
                 msg = message.locale.t("maimai.message.song.sd", diff=diff_label[diff_index], level=level, ds=ds, 
                                         tap=chart['notes'][0], hold=chart['notes'][1], slide=chart['notes'][2], _break=chart['notes'][3], 
@@ -248,7 +248,7 @@ async def _(message: Bot.MessageSession):
         name = id
         music = (await total_list.get()).by_id(name)
         try:
-            file = f"https://www.diving-fish.com/covers/{get_cover_len4_id(music['id'])}.png"
+            file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
             await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
                                   BImage(f"{file}"),
                                   Plain(message.locale.t("maimai.message.song", 
