@@ -27,12 +27,6 @@ class WithErrCode(Exception):
     pass
 
 
-async def get_friendcode(msg: Bot.MessageSession):
-    get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
-    if get_friendcode_from_db is not None:
-        return get_friendcode_from_db
-
-
 @arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
 async def _(msg: Bot.MessageSession, friend_code: int = None):
     if not os.path.exists(assets_path):
@@ -42,7 +36,7 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
             await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
         query_code = friend_code
     else:
-        query_code = await get_friendcode(msg)
+        query_code = ArcBindInfoManager(msg).get_bind_friendcode()
     if query_code is not None:
         try:
             if msg.target.senderId in query_tasks:
@@ -138,7 +132,7 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
             await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
         query_code = friend_code
     else:
-        query_code = await get_friendcode(msg)
+        query_code = ArcBindInfoManager(msg).get_bind_friendcode()
     if query_code is not None:
         try:
             resp = await get_info(msg, query_code)
@@ -169,7 +163,7 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish(msg.locale.t("arcaea.message.song.invalid.difficulty"))
 
-    usercode = await get_friendcode(msg)
+    usercode = ArcBindInfoManager(msg).get_bind_friendcode()
     await msg.finish(Plain(await get_song_info(msg, songname, diff, usercode)))
 
 
