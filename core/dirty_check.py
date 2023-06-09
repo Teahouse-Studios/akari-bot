@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import json
 import time
+import re
 
 import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
@@ -37,7 +38,7 @@ def parse_data(result: dict):
             for itemDetail in itemResult['details']:
                 if 'contexts' in itemDetail:
                     for itemContext in itemDetail["contexts"]:
-                        content = content.replace(itemContext['context'], '<吃掉了>')
+                        content = re.sub(itemContext['context'], '<吃掉了>', content, flags=re.I)
                         status = False
                 else:
                     content = "<全部吃掉了>"
