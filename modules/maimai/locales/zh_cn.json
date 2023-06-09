@@ -1,4 +1,5 @@
 {
+    "maimai.help.b40": "查询 B40 信息。（已弃用）",
     "maimai.help.b50": "查询 B50 信息。（仅限大陆版 Maimai）",
     "maimai.help.desc": "查询 Maimai 相关内容。",
     "maimai.help.inner": "根据定数或定数范围搜索歌曲。",

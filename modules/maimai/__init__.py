@@ -5,8 +5,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.image import *
-from modules.maimai.libraries.maimai_best_40 import generate
-from modules.maimai.libraries.maimai_best_50 import generate50
+from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_music import *
 from modules.maimai.libraries.tool import hash_
 
@@ -138,16 +137,16 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai.handle('b40 [<username>]')
+@mai.handle('b40 [<username>] {{maimai.help.b40}}')
 async def _(msg: Bot.MessageSession):
     username = msg.parsed_msg.get('<username>', None)
     if username is None and msg.target.senderFrom == "QQ":
-        payload = {'qq': msg.session.sender}
+        payload = {'qq': msg.session.sender, 'b50': True}
     else:
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username}
-#    await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
+        payload = {'username': username, 'b50': True}
+    await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
     img, success = await generate(payload)
     if success == 400:
         await msg.finish(msg.locale.t("maimai.message.user_not_found"))
@@ -168,7 +167,7 @@ async def _(msg: Bot.MessageSession):
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
-    img, success = await generate50(payload)
+    img, success = await generate(payload)
     if success == 400:
         await msg.finish(msg.locale.t("maimai.message.user_not_found"))
     elif success == 403:
