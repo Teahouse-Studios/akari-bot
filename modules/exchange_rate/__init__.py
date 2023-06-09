@@ -9,9 +9,9 @@ from core.utils.http import get_url
 api_key = Config('exchange_rate_api_key')
 
 excr = module('exchange_rate',
-                       desc='{exchange_rate.help.desc}',
-                       alias=['exchangerate', 'excr'],
-                       developers=['DoroWolf'])
+              desc='{exchange_rate.help.desc}',
+              alias=['exchangerate', 'excr'],
+              developers=['DoroWolf'])
 
 
 @excr.command('<base> <target> [<amount>] {{exchange_rate.help}}')
@@ -26,7 +26,6 @@ async def _(msg: Bot.MessageSession):
     except ValueError:
         await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
     await msg.finish(await exchange(base, target, amount, msg))
-
 
 
 async def exchange(base_currency, target_currency, amount: float, msg):
@@ -62,7 +61,6 @@ async def exchange(base_currency, target_currency, amount: float, msg):
     else:
         error_type = data['error-type']
         raise NoReportException(f"{error_type}")
-
 
 
 @excr.regex(r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})[兑|换|兌|換]([a-zA-Z]{3})", desc='{exchange_rate.help.regex.desc}')
