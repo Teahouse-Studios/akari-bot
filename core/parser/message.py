@@ -3,12 +3,10 @@ import re
 import traceback
 from datetime import datetime
 
-from aiocqhttp.exceptions import ActionFailed
-
 from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
-    WaitCancelException, NoReportException
+    WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser
@@ -308,7 +306,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 else:
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
-                except ActionFailed:
+                except SendMessageFailed:
                     if msg.target.targetFrom == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
                                            message=f'[CQ:poke,qq={Config("qq_account")}]')
@@ -445,7 +443,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         finally:
                             ExecutionLockList.remove(msg)
 
-            except ActionFailed:
+            except SendMessageFailed:
                 if msg.target.targetFrom == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
                                        message=f'[CQ:poke,qq={Config("qq_account")}]')

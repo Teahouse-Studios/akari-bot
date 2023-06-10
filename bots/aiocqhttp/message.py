@@ -20,8 +20,10 @@ from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
+from core.utils.image import msgchain2image
 from database import BotDBUtil
 from core.utils.storedata import get_stored_list
+from core.exceptions import SendMessageFailed
 
 enable_analytics = Config('enable_analytics')
 base_superuser = Config('base_superuser')
@@ -80,9 +82,12 @@ class MessageSession(MS):
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
             except aiocqhttp.exceptions.ActionFailed:
-                anti_autofilter_word_list = ['（ffk）', '（阻止风向控制）', '（房蜂控）']
-                msg = msg + MessageSegment.text(random.choice(anti_autofilter_word_list))
-                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+                msgchain.insert(0, Plain('消息被风控，尝试使用图片发送。'))
+                msg2img = MessageSegment.image(Path(await msgchain2image(msgchain)).as_uri())
+                try:
+                    send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
+                except aiocqhttp.exceptions.ActionFailed:
+                    raise SendMessageFailed
         elif self.target.targetFrom == 'QQ|Guild':
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
