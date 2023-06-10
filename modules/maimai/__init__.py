@@ -247,7 +247,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
         except Exception:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
     else:
-        music = (await total_list.get()).by_id(name)
+        music = (await total_list.get()).by_id(sid)
         try:
             file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
             await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
