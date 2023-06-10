@@ -245,7 +245,6 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                 touch=chart['notes'][3],
                 _break=chart['notes'][4],
                 charter=chart['charter'])
-        await download_to_cache(file)
         await message.sendMessage(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"), Plain(msg)])
