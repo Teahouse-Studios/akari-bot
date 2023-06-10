@@ -62,7 +62,7 @@ async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
 </body>
 </html>"""
 
-    for m in msgchain.elements:
+    for m in msgchain.asSendable(embed=False):
         if isinstance(m, Plain):
             lst.append('<div>' + m.text.replace('\n', '<br>') + '</div>')
         if isinstance(m, Image):

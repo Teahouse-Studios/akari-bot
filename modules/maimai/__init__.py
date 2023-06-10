@@ -3,6 +3,7 @@ import re
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
+from core.utils.http import download_to_cache
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_50 import generate
@@ -67,10 +68,10 @@ async def diff_level_q(level):
             result_set.append(
                 (music['id'],
                  music['title'],
-                    music['ds'][i],
-                    diff_label[i],
-                    music['level'][i],
-                    music['type']))
+                 music['ds'][i],
+                 diff_label[i],
+                 music['level'][i],
+                 music['type']))
     return result_set
 
 
@@ -109,10 +110,10 @@ async def inner_level_q(ds1, ds2=None):
             result_set.append(
                 (music['id'],
                  music['title'],
-                    music['ds'][i],
-                    diff_label[i],
-                    music['level'][i],
-                    music['type']))
+                 music['ds'][i],
+                 diff_label[i],
+                 music['level'][i],
+                 music['type']))
     return result_set
 
 
@@ -213,52 +214,53 @@ async def _(msg: Bot.MessageSession):
 @mai.handle('song <sid> [<diff>] {{maimai.help.song}}')
 async def _(message: Bot.MessageSession, sid: str, diff: str = None):
     if diff is not None:
-        try:
-            diff_index = get_label(diff)
-            music = (await total_list.get()).by_id(sid)
-            chart = music['charts'][diff_index]
-            ds = music['ds'][diff_index]
-            level = music['level'][diff_index]
-            file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
-            if len(chart['notes']) == 4:
-                msg = message.locale.t(
-                    "maimai.message.song.sd",
-                    diff=diff_label[diff_index],
-                    level=level,
-                    ds=ds,
-                    tap=chart['notes'][0],
-                    hold=chart['notes'][1],
-                    slide=chart['notes'][2],
-                    _break=chart['notes'][3],
-                    charter=chart['charter'])
-            else:
-                msg = message.locale.t(
-                    "maimai.message.song.dx",
-                    diff=diff_label[diff_index],
-                    level=level,
-                    ds=ds,
-                    tap=chart['notes'][0],
-                    hold=chart['notes'][1],
-                    slide=chart['notes'][2],
-                    touch=chart['notes'][3],
-                    _break=chart['notes'][4],
-                    charter=chart['charter'])
-            await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"), BImage(f"{file}"), Plain(msg)])
-        except Exception:
+        diff_index = get_label(diff)
+        music = (await total_list.get()).by_id(sid)
+        if music is None:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
+        chart = music['charts'][diff_index]
+        ds = music['ds'][diff_index]
+        level = music['level'][diff_index]
+        file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+        if len(chart['notes']) == 4:
+            msg = message.locale.t(
+                "maimai.message.song.sd",
+                diff=diff_label[diff_index],
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                _break=chart['notes'][3],
+                charter=chart['charter'])
+        else:
+            msg = message.locale.t(
+                "maimai.message.song.dx",
+                diff=diff_label[diff_index],
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                touch=chart['notes'][3],
+                _break=chart['notes'][4],
+                charter=chart['charter'])
+        await download_to_cache(file)
+        await message.sendMessage(
+            [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+             BImage(f"{file}"), Plain(msg)])
     else:
         music = (await total_list.get()).by_id(sid)
-        try:
-            file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
-            await message.finish([Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
-                                  BImage(f"{file}"),
-                                  Plain(message.locale.t("maimai.message.song",
-                                        artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
-                                        bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                                        level='/'.join((str(ds) for ds in music['ds']))))])
-        except Exception:
+        if music is None:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
-
+        file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+        await message.sendMessage(
+            [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+             BImage(f"{file}"),
+             Plain(message.locale.t("maimai.message.song",
+                                    artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
+                                    bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
+                                    level='/'.join((str(ds) for ds in music['ds']))))])
 
 # @mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
 #             'scoreline help {查看分数线帮助}'])
