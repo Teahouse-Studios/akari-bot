@@ -6,7 +6,7 @@ import time
 
 import ujson as json
 
-from core.builtins import Bot
+from core.builtins import Bot, Image, Plain
 from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
@@ -61,38 +61,25 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
 
 
-prime = module('prime', 
-        developers=['DoroWolf', 'Light-Beacon', 'Dianliang233'], 
+func = module('func', 
+        developers=['DoroWolf'], 
         recommend_modules=['calc'])
 
 
-@prime.handle('<number> {{calc.help.prime}}')
-async def prime(msg: Bot.MessageSession):
-    try:
-        num = int(msg.parsed_msg.get('<number>'))
-        if num <= 1:
-            raise ValueError
-    except ValueError:
-        return await msg.finish(msg.locale.t('calc.message.prime.error'))
+@func.handle('<math_expression> {{calc.help.func}}')
+async def _(msg: Bot.MessageSession):
+    expr = msg.asDisplay().split(' ', 1)[1]
     start = time.perf_counter_ns()
-    res = await spawn_subprocess('/prime.py', str(num), msg)
+    res = await spawn_subprocess('/func.py', expr, msg)
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
-    if res[:6] != 'Result':
-        raise ValueError(res)
-    primes = json.loads(res[7:])
-    prime = "*".join(primes)
-    if len(primes) == 1:
-        m = msg.locale.t("calc.message.prime.is_prime", num=num)
+    if res[:6] == 'Result':
+        m = f'{Image(res[7:])}'
+        if msg.checkSuperUser():
+            m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
+        await msg.finish(m)
     else:
-        m = (
-            f'{num} = `{prime}`'
-            if msg.target.senderFrom == "Discord|Client"
-            else f'{num} = {prime}'
-        )
-    if msg.checkSuperUser():
-        m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
-    await msg.finish(m)
+        await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
 
 
 async def spawn_subprocess(file: str, arg: str, msg: Bot.MessageSession) -> str:
