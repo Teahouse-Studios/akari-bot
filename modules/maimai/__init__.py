@@ -175,8 +175,10 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish([BImage(img)])
 
 
-@mai.handle('random <level> <diff> [<mode>] {{maimai.help.random.filter}}')
-async def _(msg: Bot.MessageSession, level: str, diff: str, mode: str = None):
+@mai.handle('random <filter> [<mode>] {{maimai.help.random.filter}}')
+async def _(msg: Bot.MessageSession, filter: str, mode: str = None):
+    level = ''
+    diff = ''
     try:
         if mode in ["dx", "DX"]:
             mode = ["DX"]
@@ -185,13 +187,19 @@ async def _(msg: Bot.MessageSession, level: str, diff: str, mode: str = None):
         else:
             mode = ["SD", "DX"]
 
-        if level == "#":
+        for char in filter:
+            if char.isdigit() or char == '+':
+                level += char
+            else:
+                diff += char
+
+        if level == "":
             if diff == "#":
                 music_data = (await total_list.get()).filter(type=mode)
             else:
                 raise ValueError
         else:
-            if diff == "#":
+            if diff == "":
                 music_data = (await total_list.get()).filter(level=level, type=mode)
             else:
                 music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=mode)
