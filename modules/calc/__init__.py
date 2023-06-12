@@ -6,7 +6,7 @@ import time
 
 import ujson as json
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, Image
 from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger

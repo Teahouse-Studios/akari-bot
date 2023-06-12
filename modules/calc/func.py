@@ -65,6 +65,7 @@ try:
     else:
         path = generate_function(expr)
 
-    sys.stdout.write('Result ' + path)
-except ValueError as e:
+    sys.stdout.write('Result ' + str(path))
+except Exception as e:
     sys.stdout.write(f'Failed {str(e)}')
+sys.exit()
