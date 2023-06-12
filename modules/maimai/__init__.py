@@ -299,4 +299,4 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
                                          b2t_great=b2t_great, 
                                          b2t_great_prop=b2t_great_prop)}''')
     except Exception:
-        await msg.finish(msg.locale.t('maimai.message.scoreline.error'), prefix=command_prefix[0])
+        await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
