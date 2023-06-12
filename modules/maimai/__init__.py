@@ -291,12 +291,12 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         b2t_great = "{:.3f}".format(break_50_reduce / 100)
         b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
         await msg.finish(f'''{music['title']} {diff_label[diff_index]}
-                         {msg.locale.t('maimai.message.scoreline', 
-                                         scoreline=scoreline, 
-                                         tap_great=tap_great, 
-                                         tap_great_prop=tap_great_prop, 
-                                         brk=brk, 
-                                         b2t_great=b2t_great, 
-                                         b2t_great_prop=b2t_great_prop)}''')
+{msg.locale.t('maimai.message.scoreline', 
+                scoreline=scoreline, 
+                tap_great=tap_great, 
+                tap_great_prop=tap_great_prop, 
+                brk=brk, 
+                b2t_great=b2t_great, 
+                b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
