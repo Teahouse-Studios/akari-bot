@@ -4,7 +4,10 @@ import math
 import sys
 
 from core.utils.cache import random_cache_path
+from utils import do_something
 from simpleeval import simple_eval
+
+do_something()
 
 def generate_function(expr, is_3d=False):
     x_range = (-10, 10)
@@ -57,7 +60,7 @@ def generate_function(expr, is_3d=False):
 
     return path
 
-expr = sys.argv[1:]
+expr = ''.join(sys.argv[1:])
 
 try:
     if 'y' in expr:
