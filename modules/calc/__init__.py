@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if res[:6] == 'Result':
-        m = f'{Image(res[7:])}'
+        m = Image(res[7:])
         if msg.checkSuperUser():
             m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
         await msg.finish(m)
