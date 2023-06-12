@@ -8,6 +8,7 @@
     "maimai.help.random.filter": "随机一首指定条件的歌曲，输入为“#”则表示无条件。",
     "maimai.help.search": "根据歌名（或一部分）搜索歌曲。",
     "maimai.help.song": "查询 Maimai 歌曲或谱面的信息。",
+    "maimai.help.scoreline": "查询歌曲的分数线。",
     "maimai.message.chart_not_found": "未找到符合要求的谱面。",
     "maimai.message.b40.deprecated": "B40 已弃用，即将查询 B50……",
     "maimai.message.forbidden": "此用户禁止了其他人获取数据。",
@@ -22,5 +23,7 @@
     "maimai.message.song.dx": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
+    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%），\nBREAK 50落（一共 ${brk} 个）等价于 {b2t_great} 个 TAP GREAT（-{b2t_great_prop}%）",
+    "maimai.message.scoreline.error": "发生错误：无法计算结果，请检查输入。",
     "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
 }

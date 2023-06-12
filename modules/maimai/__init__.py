@@ -1,14 +1,13 @@
 import re
 
 from core.builtins import Bot, Plain, Image as BImage
+from core.builtins import command_prefix
 from core.component import module
 from core.logger import Logger
-from core.utils.http import download_to_cache
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.image import *
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_music import *
-from modules.maimai.libraries.tool import hash_
 
 total_list = TotalList()
 
@@ -24,7 +23,7 @@ def song_txt(music: Music):
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
-def get_label(diff):
+def get_diff(diff):
     diff = diff.lower()
     diff_label_lower = [label.lower() for label in diff_label]
 
@@ -203,7 +202,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             if diff == "":
                 music_data = (await total_list.get()).filter(level=level, type=dx_type)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=dx_type)
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)], type=dx_type)
 
         if len(music_data) == 0:
             rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -223,7 +222,7 @@ async def _(msg: Bot.MessageSession):
 @mai.handle('song <sid> [<diff>] {{maimai.help.song}}')
 async def _(message: Bot.MessageSession, sid: str, diff: str = None):
     if diff is not None:
-        diff_index = get_label(diff)
+        diff_index = get_diff(diff)
         music = (await total_list.get()).by_id(sid)
         if music is None:
             await message.finish(message.locale.t("maimai.message.chart_not_found"))
@@ -270,16 +269,11 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                                     bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
                                     level='/'.join((str(ds) for ds in music['ds']))))])
 
-@mai.handle('scoreline <diff+sid> <scoreline> {查找某首歌的分数线}')
-async def _(msg: Bot.MessageSession, scoreline: float):
-    r = "([绿黄红紫白])(id)?([0-9]+)"
-    songs = msg.parsed_msg.get('<diff+sid>')
+@mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
+async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
-        grp = re.match(r, songs).groups()
-        diff_index = diff_label_zhs.index(grp[0])
-        chart_id = grp[2]
-        line = scoreline
-        music = (await total_list.get()).by_id(chart_id)
+        diff_index = get_diff(diff)
+        music = (await total_list.get()).by_id(sid)
         chart: Dict[Any] = music['charts'][diff_index]
         tap = int(chart['notes'][0])
         slide = int(chart['notes'][2])
@@ -289,28 +283,20 @@ async def _(msg: Bot.MessageSession, scoreline: float):
         total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
         break_bonus = 0.01 / brk
         break_50_reduce = total_score * break_bonus / 4
-        reduce = 101 - line
+        reduce = 101 - scoreline
         if reduce <= 0 or reduce >= 101:
             raise ValueError
+        tap_great = "{:.2f}".format(total_score * reduce / 10000)
+        tap_great_prop = "{:.4f}".format(10000 / total_score)
+        b2t_great = "{:.3f}".format(break_50_reduce / 100)
+        b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
         await msg.finish(f'''{music['title']} {diff_label[diff_index]}
-分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
-BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
+                         \n{msg.locale.t('maimai.message.scoreline', 
+                                         scoreline=scoreline, 
+                                         tap_great=tap_great, 
+                                         tap_great_prop=tap_great_prop, 
+                                         brk=brk, 
+                                         b2t_great=b2t_great, 
+                                         b2t_great_prop=b2t_great_prop)}''')
     except Exception:
-        await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
-
-@mai.handle('scoreline help {查看分数线帮助}')
-async def _(msg: Bot.MessageSession):
-    s = '''此功能为查找某首歌分数线设计。
-命令格式：maimai scoreline <difficulty+sid> <scoreline>
-例如：分数线 紫799 100
-命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
-以下为 TAP GREAT 的对应表：
-GREAT/GOOD/MISS
-TAP\t1/2.5/5
-HOLD\t2/5/10
-SLIDE\t3/7.5/15
-TOUCH\t1/2.5/5
-BREAK\t5/12.5/25(外加200落)'''
-    img = text_to_image(s)
-    if img:
-        await msg.finish([BImage(img)])
+        await msg.finish(msg.locale.t('maimai.message.scoreline.error'), prefix=command_prefix[0])
