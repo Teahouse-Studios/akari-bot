@@ -178,9 +178,9 @@ async def _(msg: Bot.MessageSession, username: str = None):
 @mai.handle('random <level> <diff> [<mode>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession, level: str, diff: str, mode: str = None):
     try:
-        if mode == "dx":
+        if mode in ["dx", "DX"]:
             mode = ["DX"]
-        elif mode in ["sd", "标准", "標準"]:
+        elif mode in ["sd", "SD", "标准", "標準"]:
             mode = ["SD"]
         else:
             mode = ["SD", "DX"]
