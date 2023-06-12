@@ -23,7 +23,7 @@
     "maimai.message.song.dx": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
-    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%），\nBREAK 50落（一共 ${brk} 个）等价于 ${b2t_great} 个 TAP GREAT（-${b2t_great_prop}%）",
+    "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%），\nBREAK 2500（一共 ${brk} 个）等价于 ${b2t_great} 个 TAP GREAT（-${b2t_great_prop}%）",
     "maimai.message.scoreline.error": "发生错误：无法计算结果，请检查输入。",
     "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
 }
