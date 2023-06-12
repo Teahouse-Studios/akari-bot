@@ -175,17 +175,18 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish([BImage(img)])
 
 
-@mai.handle('random <filter> [<mode>] {{maimai.help.random.filter}}')
-async def _(msg: Bot.MessageSession, filter: str, mode: str = None):
+@mai.handle('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
+async def _(msg: Bot.MessageSession, dx_type: str = None):
+    filter = msg.parsed_msg['<diff+level>']
     level = ''
     diff = ''
     try:
-        if mode in ["dx", "DX"]:
-            mode = ["DX"]
-        elif mode in ["sd", "SD", "标准", "標準"]:
-            mode = ["SD"]
+        if dx_type in ["dx", "DX"]:
+            dx_type = ["DX"]
+        elif dx_type in ["sd", "SD", "标准", "標準"]:
+            dx_type = ["SD"]
         else:
-            mode = ["SD", "DX"]
+            dx_type = ["SD", "DX"]
 
         for char in filter:
             if char.isdigit() or char == '+':
@@ -195,14 +196,14 @@ async def _(msg: Bot.MessageSession, filter: str, mode: str = None):
 
         if level == "":
             if diff == "#":
-                music_data = (await total_list.get()).filter(type=mode)
+                music_data = (await total_list.get()).filter(type=dx_type)
             else:
                 raise ValueError
         else:
             if diff == "":
-                music_data = (await total_list.get()).filter(level=level, type=mode)
+                music_data = (await total_list.get()).filter(level=level, type=dx_type)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=mode)
+                music_data = (await total_list.get()).filter(level=level, diff=[get_label(diff)], type=dx_type)
 
         if len(music_data) == 0:
             rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -239,7 +240,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                 tap=chart['notes'][0],
                 hold=chart['notes'][1],
                 slide=chart['notes'][2],
-                _break=chart['notes'][3],
+                brk=chart['notes'][3],
                 charter=chart['charter'])
         else:
             msg = message.locale.t(
@@ -251,7 +252,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                 hold=chart['notes'][1],
                 slide=chart['notes'][2],
                 touch=chart['notes'][3],
-                _break=chart['notes'][4],
+                brk=chart['notes'][4],
                 charter=chart['charter'])
         await message.sendMessage(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
@@ -269,49 +270,47 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                                     bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
                                     level='/'.join((str(ds) for ds in music['ds']))))])
 
-# @mai.handle(['scoreline <difficulty+sid> <scoreline> {查找某首歌的分数线}',
-#             'scoreline help {查看分数线帮助}'])
-# async def _(msg: Bot.MessageSession):
-#    r = "([绿黄红紫白])(id)?([0-9]+)"
-#    arg1 = msg.parsed_msg.get('<difficulty+sid>')
-#    args2 = msg.parsed_msg.get('<scoreline>')
-#    argh = msg.parsed_msg.get('help', False)
-#    if argh:
-#        s = '''此功能为查找某首歌分数线设计。
-# 命令格式：maimai scoreline <difficulty+sid> <scoreline>
-# 例如：分数线 紫799 100
-# 命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
-# 以下为 TAP GREAT 的对应表：
-# GREAT/GOOD/MISS
-# TAP\t1/2.5/5
-# HOLD\t2/5/10
-# SLIDE\t3/7.5/15
-# TOUCH\t1/2.5/5
-# BREAK\t5/12.5/25(外加200落)'''
-#        img = text_to_image(s)
-#        if img:
-#            await msg.finish([BImage(img)])
-#    elif args2 is not None:
-#        try:
-#            grp = re.match(r, arg1).groups()
-#            diff_index = diff_label_zhs.index(grp[0])
-#            chart_id = grp[2]
-#            line = float(arg1)
-#            music = (await total_list.get()).by_id(chart_id)
-#            chart: Dict[Any] = music['charts'][diff_index]
-#            tap = int(chart['notes'][0])
-#            slide = int(chart['notes'][2])
-#            hold = int(chart['notes'][1])
-#            touch = int(chart['notes'][3]) if len(chart['notes']) == 5 else 0
-#            brk = int(chart['notes'][-1])
-#            total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
-#            break_bonus = 0.01 / brk
-#            break_50_reduce = total_score * break_bonus / 4
-#            reduce = 101 - line
-#            if reduce <= 0 or reduce >= 101:
-#                raise ValueError
-#            await msg.finish(f'''{music['title']} {diff_label[diff_index]}
-# 分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
-# BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
-#        except Exception:
-#            await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
+@mai.handle('scoreline <diff+sid> <scoreline> {查找某首歌的分数线}')
+async def _(msg: Bot.MessageSession, scoreline: float):
+    r = "([绿黄红紫白])(id)?([0-9]+)"
+    songs = msg.parsed_msg.get('<diff+sid>')
+    try:
+        grp = re.match(r, songs).groups()
+        diff_index = diff_label_zhs.index(grp[0])
+        chart_id = grp[2]
+        line = scoreline
+        music = (await total_list.get()).by_id(chart_id)
+        chart: Dict[Any] = music['charts'][diff_index]
+        tap = int(chart['notes'][0])
+        slide = int(chart['notes'][2])
+        hold = int(chart['notes'][1])
+        touch = int(chart['notes'][3]) if len(chart['notes']) == 5 else 0
+        brk = int(chart['notes'][-1])
+        total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
+        break_bonus = 0.01 / brk
+        break_50_reduce = total_score * break_bonus / 4
+        reduce = 101 - line
+        if reduce <= 0 or reduce >= 101:
+            raise ValueError
+        await msg.finish(f'''{music['title']} {diff_label[diff_index]}
+分数线 {line}% 允许的最多 TAP GREAT 数量为 {(total_score * reduce / 10000):.2f}(每个-{10000 / total_score:.4f}%),
+BREAK 50落(一共{brk}个)等价于 {(break_50_reduce / 100):.3f} 个 TAP GREAT(-{break_50_reduce / total_score * 100:.4f}%)''')
+    except Exception:
+        await msg.finish("格式错误，输入“~maimai scoreline help”以查看帮助信息")
+
+@mai.handle('scoreline help {查看分数线帮助}')
+async def _(msg: Bot.MessageSession):
+    s = '''此功能为查找某首歌分数线设计。
+命令格式：maimai scoreline <difficulty+sid> <scoreline>
+例如：分数线 紫799 100
+命令将返回分数线允许的 TAP GREAT 容错以及 BREAK 50落等价的 TAP GREAT 数。
+以下为 TAP GREAT 的对应表：
+GREAT/GOOD/MISS
+TAP\t1/2.5/5
+HOLD\t2/5/10
+SLIDE\t3/7.5/15
+TOUCH\t1/2.5/5
+BREAK\t5/12.5/25(外加200落)'''
+    img = text_to_image(s)
+    if img:
+        await msg.finish([BImage(img)])
