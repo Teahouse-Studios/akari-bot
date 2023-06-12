@@ -295,7 +295,7 @@ class FetchTarget(FT):
                 if enable_analytics:
                     BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
                 await asyncio.sleep(0.5)
-            except aiocqhttp.ActionFailed as e:
+            except SendMessageFailed as e:
                 if e.result['wording'] == 'send group message failed: blocked by server':
                     if len(_tsk) >= 3:
                         blocked = True
