@@ -290,7 +290,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         tap_great_prop = "{:.4f}".format(10000 / total_score)
         b2t_great = "{:.3f}".format(break_50_reduce / 100)
         b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
-        await msg.finish(f'''{music['title']} {diff_label[diff_index]}
+        await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline', 
                 scoreline=scoreline, 
                 tap_great=tap_great, 
