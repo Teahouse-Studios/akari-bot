@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
 
 func = module('func', 
         developers=['DoroWolf'], 
-        recommend_modules=['calc'])
+        recommend_modules=['calc'], required_superuser=True)
 
 
 @func.handle('<math_expression> {{calc.help.func}}')

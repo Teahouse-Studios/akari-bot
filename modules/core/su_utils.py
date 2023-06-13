@@ -170,7 +170,7 @@ async def _(msg: Bot.MessageSession):
     elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
-    await msg.finish(msg.locale.t("core.message.set.help.option.tion.tion.tion.tion.tion.success", k=k, v=v))
+    await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
 
 ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True)
@@ -314,7 +314,7 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.sendMessage(update_dependencies())
 
 
-upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias={'u&r': 'update&restart'})
+upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r')
 
 
 @upds.handle()
@@ -376,9 +376,9 @@ if Bot.FetchTarget.name == 'QQ':
         alist['status'] = not alist['status']
         update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
         if alist['status']:
-            await msg.sendMessage('已开启转发消息')
+            await msg.sendMessage(msg.locale.t('core.message.forward_msg.enable'))
         else:
-            await msg.sendMessage('已关闭转发消息')
+            await msg.sendMessage(msg.locale.t('core.message.forward_msg.disable'))
 
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
