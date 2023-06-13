@@ -86,8 +86,8 @@ class MessageSession(MS):
                 msg2img = MessageSegment.image(Path(await msgchain2image(msgchain)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
-                except aiocqhttp.exceptions.ActionFailed:
-                    raise SendMessageFailed
+                except aiocqhttp.exceptions.ActionFailed as e:
+                    raise SendMessageFailed(e.result['wording'])
         elif self.target.targetFrom == 'QQ|Guild':
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
@@ -296,7 +296,23 @@ class FetchTarget(FT):
                     BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
                 await asyncio.sleep(0.5)
             except SendMessageFailed as e:
-                ...
+                if e.args[0] == 'send group message failed: blocked by server':
+                    if len(_tsk) >= 3:
+                        blocked = True
+                    if not blocked:
+                        _tsk.append({'fetch': fetch_, 'message': message})
+                    else:
+                        Temp.data['is_group_message_blocked'] = True
+                        Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                        if _tsk:
+                            for t in _tsk:
+                                Temp.data['waiting_for_send_group_message'].append(t)
+                            _tsk = []
+                        fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
+                        if fetch_base_superuser:
+                            await fetch_base_superuser. \
+                                sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused",
+                                                                                       prefix=command_prefix[0]))
             except Exception:
                 Logger.error(traceback.format_exc())
 
