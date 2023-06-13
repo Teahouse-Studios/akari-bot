@@ -18,7 +18,7 @@ from core.utils.cache import random_cache_path
 from database import BotDBUtil
 from core.utils.storedata import get_stored_list, update_stored_list
 
-su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
+su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], base=True, required_superuser=True)
 
 
 @su.handle('add <user>')
@@ -41,7 +41,7 @@ async def del_su(message: Bot.MessageSession):
             await message.finish(message.locale.t("core.message.superuser.remove.success", user=user))
 
 
-ana = module('analytics', required_superuser=True)
+ana = module('analytics', base=True, required_superuser=True)
 
 
 @ana.handle()
@@ -132,7 +132,7 @@ async def _(msg: Bot.MessageSession):
 
 
 
-set_ = module('set', required_superuser=True)
+set_ = module('set', base=True, required_superuser=True)
 
 
 @set_.handle('modules <targetId> <modules> ...')
@@ -173,7 +173,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
 
-ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True)
+ae = module('abuse', alias='ae', developers=['Dianliang233'], base=True, required_superuser=True)
 
 
 @ae.handle('check <user>')
@@ -241,7 +241,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
-rst = module('restart', developers=['OasisAkari'], required_superuser=True)
+rst = module('restart', developers=['OasisAkari'], base=True, required_superuser=True)
 
 
 def restart():
@@ -288,7 +288,7 @@ async def restart_bot(msg: Bot.MessageSession):
         restart()
 
 
-upd = module('update', developers=['OasisAkari'], required_superuser=True)
+upd = module('update', developers=['OasisAkari'], base=True, required_superuser=True)
 
 
 def pull_repo():
@@ -314,7 +314,7 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.sendMessage(update_dependencies())
 
 
-upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r')
+upds = module('update&restart', developers=['OasisAkari'], base=True, required_superuser=True, alias='u&r')
 
 
 @upds.handle()
@@ -331,7 +331,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
 
 
 if Bot.FetchTarget.name == 'QQ':
-    resume = module('resume', developers=['OasisAkari'], required_superuser=True)
+    resume = module('resume', developers=['OasisAkari'], base=True, required_superuser=True)
 
     @resume.handle()
     async def resume_sending_group_message(msg: Bot.MessageSession):
@@ -366,7 +366,7 @@ if Bot.FetchTarget.name == 'QQ':
         Temp.data['waiting_for_send_group_message'] = []
         await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
 
-    forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
+    forward_msg = module('forward_msg', developers=['OasisAkari'], base=True, required_superuser=True)
 
     @forward_msg.handle()
     async def _(msg: Bot.MessageSession):
@@ -381,7 +381,7 @@ if Bot.FetchTarget.name == 'QQ':
             await msg.sendMessage(msg.locale.t('core.message.forward_msg.disable'))
 
 
-echo = module('echo', developers=['OasisAkari'], required_superuser=True)
+echo = module('echo', developers=['OasisAkari'], base=True, required_superuser=True)
 
 
 @echo.handle('<display_msg>')
@@ -389,7 +389,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'])
 
 
-say = module('say', developers=['OasisAkari'], required_superuser=True)
+say = module('say', developers=['OasisAkari'], base=True, required_superuser=True)
 
 
 @say.handle('<display_msg>')

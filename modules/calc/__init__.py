@@ -4,9 +4,7 @@ import subprocess
 import sys
 import time
 
-import ujson as json
-
-from core.builtins import Bot, Image
+from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
@@ -74,9 +72,12 @@ async def _(msg: Bot.MessageSession):
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if res[:6] == 'Result':
-        m = Image(res[7:])
+        img = Image(res[7:])
         if msg.checkSuperUser():
-            m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
+            txt = Plain(msg.locale.t("calc.message.running_time", time=delta))
+            m = [img, txt]
+        else:
+            m = img
         await msg.finish(m)
     else:
         await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
