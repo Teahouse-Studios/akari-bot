@@ -9,9 +9,8 @@ from PIL import Image as PImage
 from aiofile import async_open
 
 from config import Config
-from core.builtins import Plain, Image, Voice, Embed
+from core.builtins import Plain, Image, Voice, Embed, MessageChain
 from core.logger import Logger
-from core.types.message.chain import MessageChain
 from core.utils.cache import random_cache_path
 from core.utils.http import download_to_cache
 
