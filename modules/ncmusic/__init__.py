@@ -16,7 +16,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
     search_url = f"{api_address}search?keywords={keyword}"
     result = await get_url(search_url, 200, fmt='json')
 
-    songs = result['result']['songs'][:10]
+    songs = result['result']['songs'][0][:10]
     send_msg = msg.locale.t('ncmusic.message.search.result') + '\n'
 
     for i, song in enumerate(songs, start=1):
