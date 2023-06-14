@@ -37,8 +37,8 @@ async def search(msg: Bot.MessageSession, keyword: str):
     if len(result['result']['songs']) > 10:
         send_msg += '\n' + msg.locale.t('ncmusic.message.search.collapse')
 
-    img = await msgchain2image(send_msg)
-    await msg.finish(Image(img))
+    img = await msgchain2image([Plain(send_msg)])
+    await msg.finish([Image(img)])
 
 
 
