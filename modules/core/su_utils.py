@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession):
             result = msg.locale.t("core.analytics.message.days.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.analytics.message.days", module=module_,
-                             first_record=first_record.timestamp)
+                                  first_record=first_record.timestamp)
         data_ = {}
         for d in range(30):
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
@@ -91,7 +91,7 @@ async def _(msg: Bot.MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish([Plain(result), Image(path)])
-        
+
 
 @ana.handle('years [<name>]')
 async def _(msg: Bot.MessageSession):
@@ -104,11 +104,13 @@ async def _(msg: Bot.MessageSession):
             result = msg.locale.t("core.analytics.message.years.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.analytics.message.years", module=module_,
-                             first_record=first_record.timestamp)
+                                  first_record=first_record.timestamp)
         data_ = {}
         for d in range(12):
-            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d - 1)
-            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d)
+            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
+                relativedelta(years=1) - relativedelta(months=12 - d - 1)
+            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
+                relativedelta(years=1) - relativedelta(months=12 - d)
             get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
             data_[old.month] = get_
         data_x = []
@@ -129,7 +131,6 @@ async def _(msg: Bot.MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish([Plain(result), Image(path)])
-
 
 
 set_ = module('set', base=True, required_superuser=True)
@@ -339,7 +340,10 @@ if Bot.FetchTarget.name == 'QQ':
         if targets := Temp.data['waiting_for_send_group_message']:
             await msg.sendMessage(msg.locale.t("core.message.resume.processing", counts=len(targets)))
             for x in targets:
-                await x['fetch'].sendDirectMessage(x['message'])
+                if x['i18n']:
+                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message']))
+                else:
+                    await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
             await msg.sendMessage(msg.locale.t("core.message.resume.done"))

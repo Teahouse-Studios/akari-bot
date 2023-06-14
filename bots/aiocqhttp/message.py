@@ -277,7 +277,8 @@ class FetchTarget(FT):
             nonlocal blocked
             try:
                 if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
-                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
+                                                                        'i18n': i18n})
                 else:
                     if i18n:
                         if isinstance(message, dict):
