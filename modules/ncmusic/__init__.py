@@ -1,10 +1,8 @@
+from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.http import get_url
-from config import Config
 from core.utils.image import msgchain2image
-from core.builtins import Image, Plain
-import ujson as json
 
 api_address = Config('netease_cloud_music_api_url')
 
@@ -35,7 +33,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
         send_msg += f"（{song['id']}）\n"
 
     if len(result['result']['songs']) > 10:
-        send_msg += '\n' + msg.locale.t('ncmusic.message.search.collapse')
+        send_msg += msg.locale.t('ncmusic.message.search.collapse')
 
     img = await msgchain2image([Plain(send_msg)])
     await msg.finish([Image(img)])
