@@ -250,7 +250,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await message.sendMessage(
+        await message.finish(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"), Plain(msg)])
     else:
@@ -258,7 +258,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
         if music is None:
             await message.finish(message.locale.t("maimai.message.music_not_found"))
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
-        await message.sendMessage(
+        await message.finish(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"),
              Plain(message.locale.t("maimai.message.song",
