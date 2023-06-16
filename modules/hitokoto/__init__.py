@@ -17,7 +17,7 @@ hitokoto = module(
 async def _(msg: Bot.MessageSession, msg_type: str = None):
     url = "https://v1.hitokoto.cn/"
     if msg_type:
-        if msg_type in hitokoto_type:
+        if msg_type in hitokoto_types:
             url += f"?c={msg_type}"
         else:
             await msg.finish(msg.locale.t('hitokoto.message.error.type'))
