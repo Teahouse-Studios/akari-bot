@@ -4,6 +4,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
+from modules.maimai.libraries.maimaidx_api_data import *
 from modules.maimai.libraries.maimaidx_music import *
 
 total_list = TotalList()
@@ -218,6 +219,8 @@ async def _(msg: Bot.MessageSession):
 
 @mai.handle('song <sid> [<diff>] {{maimai.help.song}}')
 async def _(message: Bot.MessageSession, sid: str, diff: str = None):
+    if not sid.isdigit():
+        await message.finish(message.locale.t('maimai.message.error.non_digital'))
     if diff is not None:
         diff_index = get_diff(diff)
         music = (await total_list.get()).by_id(sid)
@@ -297,3 +300,16 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
                 b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
+
+
+@mai.handle('rank <username> {{maimai.help.rank}}')
+async def _(msg: Bot.MessageSession, username: str):
+    result = await get_rank(msg, username)
+
+    if result is not None:
+        rate, rank, average_rate, surpassing_rate = result
+        formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
+        await msg.finish(msg.locale.t('maimai.message.rank', 
+                                      rate=rate, rank=rank, average_rate=average_rate,
+                                      surpassing_rate=formatted_surpassing_rate))
+        

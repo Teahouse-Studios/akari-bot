@@ -4,6 +4,5 @@
     "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}",
     "ncmusic.message.search.collapse": "仅显示前 10 条内容……",
     "ncmusic.message.search.not_found": "未找到结果。",
-    "ncmusic.message.search.result": "搜索结果：",
-    "ncmusic.message.api_unconfigured": "API 未配置。"
+    "ncmusic.message.search.result": "搜索结果："
 }
