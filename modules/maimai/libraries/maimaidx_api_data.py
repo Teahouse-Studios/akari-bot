@@ -30,9 +30,12 @@ async def get_rank(msg, player):
 
     average_rate = total_rate / len(data)
 
+    if rank is None:
+        rank = 0
+
     surpassing_rate = (len(data) - rank) / len(data) * 100
 
-    if rate is None or rank is None:
+    if rate is None:
         await msg.finish(msg.locale.t('maimai.message.user_not_found'))
         return None
             
