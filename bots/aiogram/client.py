@@ -4,8 +4,9 @@ from config import Config
 
 token = Config('tg_token')
 
-bot = Bot(token=token)
-if bot and token:
+
+if token:
+    bot = Bot(token=token)
     dp = Dispatcher(bot)
 else:
-    dp = False
+    bot = dp = False
