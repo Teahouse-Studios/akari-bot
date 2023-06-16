@@ -59,9 +59,9 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
 
 
-func = module('func', 
-        developers=['DoroWolf'], 
-        recommend_modules=['calc'], required_superuser=True)
+func = module('func',
+              developers=['DoroWolf'],
+              recommend_modules=['calc'], required_superuser=True)
 
 
 @func.handle('<math_expression> {{calc.help.func}}')
