@@ -22,21 +22,24 @@ async def get_rank(msg, player):
     rank = None
     total_rate = 0
 
-    for i, scoreboard in enumerate(data):
-        if scoreboard['username'] == player:
+    sorted_data = sorted(data, key=lambda x: x['ra'], reverse=True)
+
+    for i, scoreboard in enumerate(sorted_data):
+        if scoreboard['username'].lower() == player.lower():
+            username = scoreboard['username']
             rate = scoreboard['ra']
             rank = i + 1
         total_rate += scoreboard['ra']
 
-    average_rate = total_rate / len(data)
+    average_rate = total_rate / len(sorted_data)
 
     if rank is None:
         rank = 0
 
-    surpassing_rate = (len(data) - rank) / len(data) * 100
+    surpassing_rate = (len(sorted_data) - rank) / len(sorted_data) * 100
 
     if rate is None:
         await msg.finish(msg.locale.t('maimai.message.user_not_found'))
         return None
             
-    return rate, rank, average_rate, surpassing_rate
+    return username, rate, rank, average_rate, surpassing_rate

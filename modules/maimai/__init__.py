@@ -307,9 +307,10 @@ async def _(msg: Bot.MessageSession, username: str):
     result = await get_rank(msg, username)
 
     if result is not None:
-        rate, rank, average_rate, surpassing_rate = result
+        user, rate, rank, average_rate, surpassing_rate = result
         formatted_average_rate = "{:.4f}".format(average_rate)
         formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
-        await msg.finish(msg.locale.t('maimai.message.rank', user=username, 
+            
+        await msg.finish(msg.locale.t('maimai.message.rank', user=user, 
                                       rate=rate, rank=rank, average_rate=formatted_average_rate,
                                       surpassing_rate=formatted_surpassing_rate))
