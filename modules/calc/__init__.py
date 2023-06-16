@@ -4,12 +4,12 @@ import subprocess
 import sys
 import re
 import traceback
+import numpy
 
 from core.builtins import Bot, Image
 from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
-from numpy import median, var, average
 from scipy import stats
 from ast import literal_eval
 from .function import *
@@ -134,7 +134,7 @@ async def mode(msg: Bot.MessageSession):
 async def median(msg: Bot.MessageSession):
     try:
         num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
-        await msg.sendMessage(f"数组 {num_l} 的中位数是 {median(literal_eval(num_l))}")
+        await msg.sendMessage(f"数组 {num_l} 的中位数是 {np.median(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
         traceback.print_exc()
@@ -144,7 +144,7 @@ async def median(msg: Bot.MessageSession):
 async def var(msg: Bot.MessageSession):
     try:
         num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
-        await msg.sendMessage(f"数组 {num_l} 的方差是 {var(literal_eval(num_l))}")
+        await msg.sendMessage(f"数组 {num_l} 的方差是 {np.var(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
         traceback.print_exc()
@@ -157,7 +157,7 @@ async def mean(msg: Bot.MessageSession):
         weights = msg.parsed_msg['<weights>'].replace('【', '[').replace('】', ']').replace('，', ',')
         if len(literal_eval(num_l)) == len(literal_eval(weights)):
             await msg.sendMessage(
-                f"数组 {num_l} 权 {weights} 的加权平均数为 {average(literal_eval(num_l), weights=literal_eval(weights))}")
+                f"数组 {num_l} 权 {weights} 的加权平均数为 {np.average(literal_eval(num_l), weights=literal_eval(weights))}")
         else:
             await msg.sendMessage('数组与权未一一对应')
     except Exception:
