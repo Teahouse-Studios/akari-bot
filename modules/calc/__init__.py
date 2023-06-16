@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import re
+import traceback
 
 from core.builtins import Bot, Image
 from core.component import on_command
@@ -126,6 +127,7 @@ async def mode(msg: Bot.MessageSession):
         await msg.sendMessage(f"数组 {num_l} 的众数是 {stats(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
+        traceback.print_exc()
 
 
 @c.handle('median <num-list> {中位数}')
@@ -135,6 +137,7 @@ async def median(msg: Bot.MessageSession):
         await msg.sendMessage(f"数组 {num_l} 的中位数是 {median(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
+        traceback.print_exc()
 
 
 @c.handle('var <num-list> {方差}')
@@ -144,6 +147,7 @@ async def var(msg: Bot.MessageSession):
         await msg.sendMessage(f"数组 {num_l} 的方差是 {var(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
+        traceback.print_exc()
 
 
 @c.handle('mean <num-list> <weights> {加权平均数}')
@@ -158,3 +162,4 @@ async def mean(msg: Bot.MessageSession):
             await msg.sendMessage('数组与权未一一对应')
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
+        traceback.print_exc()
