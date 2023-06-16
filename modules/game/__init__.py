@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
     await twenty_four(msg, play_state)  # 将消息会话传入 chemical_code 函数
 
 
-@tf.command('stop {{game.chemical_code.stop.help}}')
+@tf.command('stop {{game.stop.help}}')
 async def stop(msg: Bot.MessageSession):
     state = play_state.get(msg.target.targetId, False)
     if state:
