@@ -124,7 +124,7 @@ async def count(msg: Bot.MessageSession):
 async def mode(msg: Bot.MessageSession):
     try:
         num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
-        await msg.sendMessage(f"数组 {num_l} 的众数是 {stats.mode(literal_eval(num_l))[0][0]")
+        await msg.sendMessage(f"数组 {num_l} 的众数是 {stats.mode(literal_eval(num_l))[0][0]}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
         traceback.print_exc()
