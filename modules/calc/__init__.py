@@ -8,6 +8,9 @@ from core.builtins import Bot, Image
 from core.component import on_command
 from core.exceptions import NoReportException
 from core.logger import Logger
+from numpy import median, var, average
+from scipy import stats
+from ast import literal_eval
 from .function import *
 
 c = on_command('calc', developers=[
@@ -51,7 +54,7 @@ async def _(msg: Bot.MessageSession):
             res = subprocess.check_output(
                 ['python', os.path.abspath("./modules/calc/calc.py"), expr], timeout=10, shell=False).decode('utf-8')
             if res[0:6] == 'Result':
-                await msg.finish(f'{(expr)} = {res[7:]}')
+                await msg.finish(f'{expr} = {res[7:]}')
             else:
                 await msg.finish(f'表达式无效：{res[7:]}')
         except subprocess.TimeoutExpired:
@@ -114,3 +117,44 @@ async def count(msg: Bot.MessageSession):
     await msg.sendMessage(
         f"字符数: {len(msg.parsed_msg['<text>'].replace(' ', '').chomp)}\n字数: {count_text}\n符号数: {count_symbol}"
     )
+
+
+@c.handle('mode <num-list> {众数}')
+async def mode(msg: Bot.MessageSession):
+    try:
+        num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
+        await msg.sendMessage(f"数组 {num_l} 的众数是 {str(mode(literal_eval(num_l)))}")
+    except Exception:
+        await msg.sendMessage('出错了，请检查数据类型')
+
+
+@c.handle('median <num-list> {中位数}')
+async def median(msg: Bot.MessageSession):
+    try:
+        num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
+        await msg.sendMessage(f"数组 {num_l} 的中位数是 {str(median(literal_eval(num_l)))}")
+    except Exception:
+        await msg.sendMessage('出错了，请检查数据类型')
+
+
+@c.handle('var <num-list> {方差}')
+async def var(msg: Bot.MessageSession):
+    try:
+        num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
+        await msg.sendMessage(f"数组 {num_l} 的方差是 {str(var(literal_eval(num_l)))}")
+    except Exception:
+        await msg.sendMessage('出错了，请检查数据类型')
+
+
+@c.handle('mean <num-list> <weights> {加权平均数}')
+async def mean(msg: Bot.MessageSession):
+    try:
+        num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
+        weights = msg.parsed_msg['<weights>'].replace('【', '[').replace('】', ']').replace('，', ',')
+        if len(literal_eval(num_l)) == len(literal_eval(weights)):
+            await msg.sendMessage(
+                f"数组 {num_l} 权 {weights} 的加权平均数为 {average(literal_eval(num_l), weights=literal_eval(weights))}")
+        else:
+            await msg.sendMessage('数组与权未一一对应')
+    except Exception:
+        await msg.sendMessage('出错了，请检查数据类型')
