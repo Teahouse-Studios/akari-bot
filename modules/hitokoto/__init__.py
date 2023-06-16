@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         else:
             await msg.finish(msg.locale.t('hitokoto.message.error.type'))
             
-    data = await get_url(url, 200, fmt=json)
+    data = await get_url(url, 200, fmt='json')
     from_who = data.get("from_who", "")
     tp = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + data['type'])
     link = f"https://hitokoto.cn?id={data['id']}"
