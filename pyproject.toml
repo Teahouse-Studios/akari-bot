@@ -51,6 +51,7 @@ duckduckgo-search = "^2.8.6"
 chromadb = "^0.3.21"
 tiktoken = "^0.3.3"
 pycryptodome = "^3.18.0"
+langconv = "^0.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
