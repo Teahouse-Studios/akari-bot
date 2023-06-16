@@ -14,7 +14,7 @@ hitokoto = module(
 
 @hitokoto.handle()
 @hitokoto.handle('[<msg_type>] {{hitokoto.help.type}}')
-async def _(msg: Bot.MessageSession, msg_type: str = None):
+async def _(msg: Bot.MessageSession, msg_type: str = "a"):
     url = 'https://v1.hitokoto.cn/?'
     if msg_type is not None:
         if msg_type not in hitokoto_types:
