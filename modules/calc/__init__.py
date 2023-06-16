@@ -123,7 +123,7 @@ async def count(msg: Bot.MessageSession):
 async def mode(msg: Bot.MessageSession):
     try:
         num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
-        await msg.sendMessage(f"数组 {num_l} 的众数是 {str(mode(literal_eval(num_l)))}")
+        await msg.sendMessage(f"数组 {num_l} 的众数是 {await mode(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
 
@@ -132,7 +132,7 @@ async def mode(msg: Bot.MessageSession):
 async def median(msg: Bot.MessageSession):
     try:
         num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
-        await msg.sendMessage(f"数组 {num_l} 的中位数是 {str(median(literal_eval(num_l)))}")
+        await msg.sendMessage(f"数组 {num_l} 的中位数是 {await median(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
 
@@ -141,7 +141,7 @@ async def median(msg: Bot.MessageSession):
 async def var(msg: Bot.MessageSession):
     try:
         num_l = msg.parsed_msg['<num-list>'].replace('【', '[').replace('】', ']').replace('，', ',')
-        await msg.sendMessage(f"数组 {num_l} 的方差是 {str(var(literal_eval(num_l)))}")
+        await msg.sendMessage(f"数组 {num_l} 的方差是 {await var(literal_eval(num_l))}")
     except Exception:
         await msg.sendMessage('出错了，请检查数据类型')
 
