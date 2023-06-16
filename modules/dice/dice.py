@@ -51,7 +51,7 @@ class DiceItemBase(object):
     def GetDetail(self):
         return self.detail
 
-    def Roll(self):
+    def Roll(self, session):
         pass
 
 
