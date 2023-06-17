@@ -74,7 +74,6 @@ async def diff_level_q(level):
 
 @mai.handle('inner <rating> [<rating_max>] {{maimai.help.inner}}')
 async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
-    rating_max = msg.parsed_msg.get('<rating_max>')
     if rating_max is not None:
         if rating > rating_max:
             return await msg.finish(msg.locale.t('error.range.invalid'))
@@ -269,6 +268,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                                     bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
                                     level='/'.join((str(ds) for ds in music['ds']))))])
 
+
 @mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
 async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
@@ -291,12 +291,12 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         b2t_great = "{:.3f}".format(break_50_reduce / 100)
         b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
-{msg.locale.t('maimai.message.scoreline', 
-                scoreline=scoreline, 
-                tap_great=tap_great, 
-                tap_great_prop=tap_great_prop, 
-                brk=brk, 
-                b2t_great=b2t_great, 
+{msg.locale.t('maimai.message.scoreline',
+                scoreline=scoreline,
+                tap_great=tap_great,
+                tap_great_prop=tap_great_prop,
+                brk=brk,
+                b2t_great=b2t_great,
                 b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
@@ -315,7 +315,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     username, rating, rank, average_rating, surpassing_rate = result
     formatted_average_rating = "{:.4f}".format(average_rating)
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
-            
-    await msg.finish(msg.locale.t('maimai.message.rank', user=username, 
+
+    await msg.finish(msg.locale.t('maimai.message.rank', user=username,
                                   rating=rating, rank=rank, average_rating=formatted_average_rating,
                                   surpassing_rate=formatted_surpassing_rate))

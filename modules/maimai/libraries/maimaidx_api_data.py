@@ -1,23 +1,29 @@
+import ujson as json
+
 from core.builtins import ErrorMessage
 from core.utils.http import get_url, post_url
 
-async def get_alias(input, get_music = False):
+
+async def get_alias(input, get_music=False):
     url = f"https://download.fanyu.site/maimai/alias.json"
     data = await get_url(url, 200, fmt='json')
 
     result = []
-    
+
     if get_music:
         if input in data:
             result = data[input]
     else:
         result = list(data.keys())
-            
+
     return result
+
 
 async def get_rank(msg, payload):
     try:
-        userdata = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player', payload, 200, 
+        userdata = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player',
+                                  data=json.dumps(payload),
+                                  status_code=200,
                                   headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
         username = userdata['username']
         rating = userdata['rating']
@@ -27,7 +33,7 @@ async def get_rank(msg, payload):
         if str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-           await msg.sendMessage(ErrorMessage(str(e)))
+            await msg.sendMessage(ErrorMessage(str(e)))
 
     data = await get_url('https://www.diving-fish.com/api/maimaidxprober/rating_ranking', 200, fmt='json')
     sorted_data = sorted(data, key=lambda x: x['ra'], reverse=True)
