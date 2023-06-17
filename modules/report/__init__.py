@@ -1,10 +1,10 @@
 import redis
-import ujson as json
 
 from config import Config
 from core.builtins import Bot
 from core.component import on_command, on_schedule
 from core.scheduler import CronTrigger
+from ast import literal_eval as lev
 
 rp = on_command('report', developers='haoye_qwq', desc='汇报bug')
 
@@ -19,7 +19,7 @@ def write(data: str, frome: str):
 
 def read():
     _data = db.get('bug')
-    return json.loads(_data)
+    return lev(_data)
 
 
 def exist():
