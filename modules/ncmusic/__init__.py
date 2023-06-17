@@ -13,8 +13,6 @@ ncmusic = module('ncmusic',
 
 @ncmusic.handle('search <keyword> {{ncmusic.help.search}}')
 async def search(msg: Bot.MessageSession, keyword: str):
-    if not api_address:
-        await msg.finish(msg.locale.t('error.config.api_unconfigured'))
     url = f"{api_address}search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
 
