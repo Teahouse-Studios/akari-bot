@@ -15,17 +15,14 @@ hitokoto = module(
 @hitokoto.handle()
 @hitokoto.handle('[<msg_type>] {{hitokoto.help.type}}')
 async def _(msg: Bot.MessageSession, msg_type: str = None):
-    url = "https://v1.hitokoto.cn/"
-    if msg_type:
-        if msg_type in hitokoto_types:
-            url += f"?c={msg_type}"
-        else:
+    url = f'https://v1.hitokoto.cn/'
+    if not msg_type:
+        if msg_type not in hitokoto_types:
             await msg.finish(msg.locale.t('hitokoto.message.error.type'))
-            
+        else:
+            url += "?c=" + msg_type
     data = await get_url(url, 200, fmt='json')
-    from_who = data.get("from_who", "")
+    from_who = data["from_who"] or ""
     tp = msg.locale.t('hitokoto.message.type') + msg.locale.t('hitokoto.message.type.' + data['type'])
     link = f"https://hitokoto.cn?id={data['id']}"
-    response = f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}\n{link}"
-    
-    await msg.finish(response)
+    await msg.finish(f"{data['hitokoto']}\n——{from_who}「{data['from']}」\n{tp}\n{link}")
