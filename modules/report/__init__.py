@@ -12,14 +12,14 @@ redis_ = Config('redis').split(':')
 db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True, charset='UTF-8')
 
 
-def write(data: str, frome: str):
-    _data = read().append({"bug": data, "from": frome})
-    db.set('bug', str(_data))
-
-
 def read():
     _data = db.get('bug')
     return lev(_data)
+
+
+def write(data: str, frome: str):
+    _data = read().append({"bug": data, "from": frome})
+    db.set('bug', str(_data))
 
 
 def exist():
