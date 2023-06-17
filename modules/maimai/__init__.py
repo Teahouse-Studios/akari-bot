@@ -302,8 +302,8 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
 
-@mai.handle('rank <username> {{maimai.help.rank}}')
-async def _(msg: Bot.MessageSession, username: str):
+@mai.handle('rank [<username>] {{maimai.help.rank}}')
+async def _(msg: Bot.MessageSession, username: str = None):
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender}
     else:
@@ -312,10 +312,10 @@ async def _(msg: Bot.MessageSession, username: str):
         payload = {'username': username}
     result = await get_rank(msg, payload)
 
-    user, rate, rank, average_rate, surpassing_rate = result
-    formatted_average_rate = "{:.4f}".format(average_rate)
+    username, rating, rank, average_rating, surpassing_rate = result
+    formatted_average_rating = "{:.4f}".format(average_rating)
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
             
-    await msg.finish(msg.locale.t('maimai.message.rank', user=user, 
-                                  rate=rate, rank=rank, average_rate=formatted_average_rate,
+    await msg.finish(msg.locale.t('maimai.message.rank', user=username, 
+                                  rating=rating, rank=rank, average_rating=formatted_average_rating,
                                   surpassing_rate=formatted_surpassing_rate))
