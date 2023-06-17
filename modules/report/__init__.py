@@ -6,7 +6,7 @@ from core.component import on_command, on_schedule
 from core.scheduler import CronTrigger
 from ast import literal_eval as lev
 
-rp = on_command('report', developers='haoye_qwq', desc='汇报bug')
+rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
 
 redis_ = Config('redis').split(':')
 db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True, charset='UTF-8')
@@ -50,6 +50,14 @@ async def cls(msg: Bot.MessageSession):
         await msg.sendMessage('不存在的id，请检查输入')
 
 
+@rp.handle('list {你有几个bug?}', required_superuser=True)
+async def lst(msg: Bot.MessageSession):
+    _msg = []
+    for i in read():
+        _msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
+    await msg.sendMessage('待解决的bug:\n' + ',\n'.join(_msg))
+
+
 on_schedule(
     bind_prefix='post_bug',
     trigger=CronTrigger.from_crontab('30 10 * * *'),
@@ -63,4 +71,4 @@ async def post(bot: Bot.FetchTarget):
     msg = []
     for i in read():
         msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
-    await bot.post_message('post_bug', '待解决的bug:\n'+',\n'.join(msg))
+    await bot.post_message('post_bug', '待解决的bug:\n' + ',\n'.join(msg))
