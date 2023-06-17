@@ -27,7 +27,7 @@ async def get_user_info(msg, wikiurl, username, pic=False):
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
     if 'missing' in base_user_info:
-        return [Plain(msg.locale.t('user.message.user.message.not_found'))]
+        return [Plain(msg.locale.t('user.message.not_found'))]
     data['username'] = base_user_info['name']
     data['url'] = re.sub(r'\$1', urllib.parse.quote('User:' + username), wiki.wiki_info.articlepath)
     groups = {}
@@ -174,7 +174,7 @@ async def get_user_info(msg, wikiurl, username, pic=False):
         if global_users_groups := data.get('global_users_groups', False):
             msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('delimiter').join(global_users_groups))
         if global_edit_count := data.get('global_edit_count', False):
-            msgs.append(msg.locale.t('user.message.global_edit_count') + global_edit_count)
+            msgs.append(msg.locale.t('user.message.global_edited_count') + global_edit_count)
         if global_home := data.get('global_home', False):
             msgs.append(msg.locale.t('user.message.global_home') + global_home)
 
