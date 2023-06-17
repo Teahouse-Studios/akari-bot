@@ -18,7 +18,7 @@ async def get_alias(input, get_music = False):
 async def get_rank(msg, payload):
     try:
         userdata = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player', payload, 200, 
-                                  header={'Content-Type': 'application/json'}, fmt='json')
+                                  headers={'Content-Type': 'application/json'}, fmt='json')
         username = userdata['username']
         rating = userdata['rating']
     except ValueError as e:
