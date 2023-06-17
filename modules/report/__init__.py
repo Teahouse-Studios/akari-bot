@@ -31,6 +31,10 @@ def delete(bug_id: int):
     db.set('bug', data.pop(bug_id))
 
 
+if not exist():
+    db.set('bug', '[{"bug": "¿", "from": "QQ|2031611695"}]')
+
+
 @rp.handle('open <bug> {汇报一个bug}', required_admin=True)
 async def opn(msg: Bot.MessageSession):
     write(f"#{len(read())}:\n{msg.parsed_msg['<bug>']}\n——{msg.target.senderName}({msg.target.senderId})",
