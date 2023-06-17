@@ -312,10 +312,10 @@ async def _(msg: Bot.MessageSession, username: str = None):
         payload = {'username': username}
 
     result = await get_rank(msg, payload)
-    username, rating, rank, average_rating, surpassing_rate, time = result
+    time, total_rank, average_rating, username, rating, rank, surpassing_rate = result
     formatted_average_rating = "{:.4f}".format(average_rating)
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
-    await msg.finish(msg.locale.t('maimai.message.rank', time=time, user=username,
+    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
                                   rating=rating, rank=rank, average_rating=formatted_average_rating,
                                   surpassing_rate=formatted_surpassing_rate))

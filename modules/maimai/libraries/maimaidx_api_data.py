@@ -41,6 +41,7 @@ async def get_rank(msg, payload):
 
     rank = None
     total_rating = 0
+    total_rank = len(sorted_data)
 
     for i, scoreboard in enumerate(sorted_data):
         if scoreboard['username'] == username:
@@ -48,10 +49,10 @@ async def get_rank(msg, payload):
         total_rating += scoreboard['ra']
 
     if rank is None:
-        rank = len(sorted_data)
+        rank = total_rank
 
-    average_rating = total_rating / len(sorted_data)
-    surpassing_rate = (len(sorted_data) - rank) / len(sorted_data) * 100
+    average_rating = total_rating / total_rank
+    surpassing_rate = (total_rank - rank) / total_rank * 100
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    return username, rating, rank, average_rating, surpassing_rate, time
+    return time, total_rank, average_rating, username, rating, rank, surpassing_rate
