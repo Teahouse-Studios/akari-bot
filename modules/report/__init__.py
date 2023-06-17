@@ -9,7 +9,7 @@ from core.scheduler import CronTrigger
 rp = on_command('report', developers='haoye_qwq', desc='汇报bug')
 
 redis_ = Config('redis').split(':')
-db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True)
+db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True, charset='UTF-8')
 
 
 def write(data: str, frome: str):
