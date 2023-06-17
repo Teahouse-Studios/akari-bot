@@ -2,6 +2,7 @@ import ujson as json
 
 from core.builtins import ErrorMessage
 from core.utils.http import get_url, post_url
+from datetime import datetime
 
 
 async def get_alias(input, get_music=False):
@@ -35,8 +36,8 @@ async def get_rank(msg, payload):
         else:
             await msg.finish(ErrorMessage(str(e)))
 
-    data = await get_url('https://www.diving-fish.com/api/maimaidxprober/rating_ranking', 200, fmt='json')
-    sorted_data = sorted(data, key=lambda x: x['ra'], reverse=True)
+    rank_data = await get_url('https://www.diving-fish.com/api/maimaidxprober/rating_ranking', 200, fmt='json')
+    sorted_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)
 
     rank = None
     total_rating = 0
@@ -46,11 +47,11 @@ async def get_rank(msg, payload):
             rank = i + 1
         total_rating += scoreboard['ra']
 
-    average_rating = total_rating / len(sorted_data)
-
     if rank is None:
         rank = len(sorted_data)
 
+    average_rating = total_rating / len(sorted_data)
     surpassing_rate = (len(sorted_data) - rank) / len(sorted_data) * 100
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    return username, rating, rank, average_rating, surpassing_rate
+    return username, rating, rank, average_rating, surpassing_rate, time

@@ -23,7 +23,7 @@
     "maimai.message.music_not_found": "未找到符合要求的歌曲。",
     "maimai.message.no_username": "请提供用户名！",
     "maimai.message.random.error": "发生错误：无法随机歌曲，请检查输入。",
-    "maimai.message.rank": "${user} 的分数为 ${rating}，\n查分器排名为 #${rank}，\n平均分数为 ${average_rating}，\n你已经超越了 ${surpassing_rate}% 的玩家。",
+    "maimai.message.rank": "截至 ${time}，\n查分器平均分数为 ${average_rating}，\n${user} 的分数为 ${rating}，排名为 #${rank}，\n你已经超越了 ${surpassing_rate}% 的玩家。",
     "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%），\nBREAK 2500（一共 ${brk} 个）等价于 ${b2t_great} 个 TAP GREAT（-${b2t_great_prop}%）",
     "maimai.message.scoreline.error": "发生错误：无法计算结果，请检查输入。",
     "maimai.message.search": "“${keyword}”的搜索结果：",
