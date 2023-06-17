@@ -13,20 +13,12 @@ db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_respons
 
 
 def write(data: str, frome: str):
-    if exist():
-        _data = read().append({"bug": data, "from": frome})
-    else:
-        _data = [{"bug": "初始bug，就是没有bug！", "from": "QQ|2031611695"}]
-        _data = _data.append(data)
+    _data = read().append({"bug": data, "from": frome})
     db.set('bug', str(_data))
 
 
 def read():
-    if exist():
-        _data = db.get('bug')
-    else:
-        _data = '[{"bug": "第一个bug！", "from":"QQ|2031611695"}]'
-        db.set('bug', _data)
+    _data = db.get('bug')
     return json.loads(_data)
 
 
