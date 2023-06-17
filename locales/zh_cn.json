@@ -4,6 +4,7 @@
     "core.help.alias": "命令别名：",
     "core.help.none": "（此模块没有帮助信息）",
     "core.help.options": "参数：",
+    "delimiter": "、",
     "error": "发生错误：",
     "error.config.api_unconfigured": "发生错误：API 未配置。",
     "error.loader.load.failed": "加载模块中发生了以下错误，对应模块未加载：${err_msg}",
