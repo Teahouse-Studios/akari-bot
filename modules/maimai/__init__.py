@@ -4,7 +4,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import *
+from modules.maimai.libraries.maimaidx_api_data import get_rank
 from modules.maimai.libraries.maimaidx_music import *
 
 total_list = TotalList()
@@ -304,13 +304,18 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
 
 @mai.handle('rank <username> {{maimai.help.rank}}')
 async def _(msg: Bot.MessageSession, username: str):
-    result = await get_rank(msg, username)
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender}
+    else:
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username}
+    result = await get_rank(msg, payload)
 
-    if result is not None:
-        user, rate, rank, average_rate, surpassing_rate = result
-        formatted_average_rate = "{:.4f}".format(average_rate)
-        formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
+    user, rate, rank, average_rate, surpassing_rate = result
+    formatted_average_rate = "{:.4f}".format(average_rate)
+    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
             
-        await msg.finish(msg.locale.t('maimai.message.rank', user=user, 
-                                      rate=rate, rank=rank, average_rate=formatted_average_rate,
-                                      surpassing_rate=formatted_surpassing_rate))
+    await msg.finish(msg.locale.t('maimai.message.rank', user=user, 
+                                  rate=rate, rank=rank, average_rate=formatted_average_rate,
+                                  surpassing_rate=formatted_surpassing_rate))
