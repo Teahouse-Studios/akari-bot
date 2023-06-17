@@ -236,7 +236,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                                     kwargs = {}
                                     func_params = inspect.signature(submodule.function).parameters
-                                    if len(func_params) > 1:
+                                    if len(func_params) > 1 and msg.parsed_msg is not None:
                                         parsed_msg_ = msg.parsed_msg.copy()
                                         for param_name, param_obj in func_params.items():
                                             if param_obj.annotation == Bot.MessageSession:
