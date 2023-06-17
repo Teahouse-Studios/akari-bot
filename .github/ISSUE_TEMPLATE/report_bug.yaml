@@ -54,7 +54,8 @@ body:
       description: 请复制粘贴机器人的报错信息（若有）。
       placeholder: |
         发生错误：object bool can't be used in 'await' expression
-        错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+
+        汇报错误：使用~report open <bug>来汇报一个bug
+        或使用GitHub：https://github.com/cloudw233/akari-haoye-bot/issues/new?assignees=cloudw233&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+
     validations:
       required: false
   - type: textarea

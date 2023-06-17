@@ -50,9 +50,8 @@ class Url(U):
 
 class ErrorMessage(EMsg):
     def __init__(self, error_message):
-        self.error_message = '发生错误：' + error_message + '\n错误汇报地址： ' + \
-                             str(Url(
-                                 'https://s.wd-ljt.com/botreportbug'))
+        self.error_message = '发生错误：' + error_message + '\n汇报错误：使用~report open <bug>来汇报一个bug' + \
+                             '\n或使用GitHub：' + str(Url('http://c.nxw.so/7JlZZ'))
 
     def __str__(self):
         return self.error_message
