@@ -33,7 +33,7 @@ async def get_rank(msg, payload):
         if str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            await msg.sendMessage(ErrorMessage(str(e)))
+            await msg.finish(ErrorMessage(str(e)))
 
     data = await get_url('https://www.diving-fish.com/api/maimaidxprober/rating_ranking', 200, fmt='json')
     sorted_data = sorted(data, key=lambda x: x['ra'], reverse=True)
@@ -49,7 +49,7 @@ async def get_rank(msg, payload):
     average_rating = total_rating / len(sorted_data)
 
     if rank is None:
-        rank = 0
+        rank = len(sorted_data)
 
     surpassing_rate = (len(sorted_data) - rank) / len(sorted_data) * 100
 
