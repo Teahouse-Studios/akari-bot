@@ -6,6 +6,8 @@
     "maimai.help.inner": "依據定數或定數範圍內搜尋歌曲。",
     "maimai.help.level": "依據等級搜尋歌曲。",
     "maimai.help.random": "隨機一首歌曲。",
+    "maimai.help.maimai_regex.desc": "更方便地使用 Maimai 相关命令。",
+    "maimai.help.maimai_regex.song": "<ID 或别名>是什么歌 输入 ID 或别名查询歌曲，ID 前需加入“id”",
     "maimai.help.random.filter": "隨機一首指定條件的歌曲，輸入為「#」則表示無條件。",
     "maimai.help.rank": "查看用户在查分器上的分数排行。",
     "maimai.help.scoreline": "查询歌曲的分数线。",
@@ -29,6 +31,7 @@
     "maimai.message.search": "「${keyword}」的搜尋結果：",
     "maimai.message.song": "藝術家：${artist}\n分類：${genre}\nBPM：${bpm}\n版本：${version}\n難度：${level}",
     "maimai.message.song.dx": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${brk}\n谱师：${charter}",
+    "maimai.message.song.prompt": "你要找的是不是：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
     "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。"
