@@ -9,7 +9,7 @@ total_list = TotalList()
 
 mai_regex = module('maimai_regex',
                      desc='{maimai.help.maimai_regex.desc}', recommend_modules=['maimai'],
-                     alias='maimai_regex', developers=['DoroWolf'])
+                     alias='mai_regex', developers=['DoroWolf'])
 
 
 @mai_regex.handle(re.compile(r"(.+)是什么歌"), desc='{maimai.help.maimai_regex.song}')
