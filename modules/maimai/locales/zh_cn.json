@@ -31,7 +31,7 @@
     "maimai.message.search": "“${keyword}”的搜索结果：",
     "maimai.message.song": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}\n难度：${level}",
     "maimai.message.song.dx": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nTOUCH：${touch}\nBREAK：${brk}\n谱师：${charter}",
-    "maimai.message.song.prompt": "你要找的是不是：",
+    "maimai.message.song.prompt": "请回复 ID 选择对应歌曲：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
     "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
