@@ -15,7 +15,7 @@ from .song import get_song_info
 from .utils import get_userinfo
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
-             alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
+             alias=['a', 'arc'])
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 api = Config("botarcapi_url")
