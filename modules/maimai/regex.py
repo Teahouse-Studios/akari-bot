@@ -8,17 +8,17 @@ from modules.maimai.libraries.maimaidx_music import *
 total_list = TotalList()
 
 mai_regex = module('maimai_regex',
-                     desc='{wiki.help.maimai_regex.desc}',
+                     desc='{maimai.help.maimai_regex.desc}',
                      alias='maimai_regex', developers=['DoroWolf'])
 
 
-@mai_regex.handle(re.compile(r"(.+)是什么歌"), desc='查歌<乐曲标题的一部分> 查询符合条件的乐曲')
+@mai_regex.handle(re.compile(r"(.+)是什么歌"), desc='{maimai.help.maimai_regex.song}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0].strip()
     if name == "":
         return
-    elif name.isdigit():
-        music = (await total_list.get()).by_id(name)
+    elif name.lower().startswith("id"):
+        music = (await total_list.get()).by_id(name[2:])
         if music is None:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:

@@ -12,7 +12,7 @@ async def get_alias(input, get_music=False):
     result = []
     if get_music:
         if input in data:
-            result.append(data[input])
+            result.append(data[input][0])
     else:
         for alias, ids in data.items():
             if input in ids:
