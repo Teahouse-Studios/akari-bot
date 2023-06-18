@@ -271,6 +271,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
 
     if diff is not None:
         diff_index = get_diff(diff)
+        if len(music['ds']) == 4 and diff_index == 4:
+            await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
