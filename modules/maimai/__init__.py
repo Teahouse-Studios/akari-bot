@@ -4,7 +4,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_rank
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_rank
 from modules.maimai.libraries.maimaidx_music import *
 
 total_list = TotalList()
@@ -116,8 +116,6 @@ async def inner_level_q(ds1, ds2=None):
 @mai.handle('search <keyword> {{maimai.help.search}}')
 async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
-    if name == "":
-        return
     res = (await total_list.get()).filter(title_search=name)
     if len(res) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -132,6 +130,21 @@ async def _(msg: Bot.MessageSession, keyword: str):
         else:
             img = await msgchain2image([Plain(search_result)])
             await msg.finish([BImage(img)])
+
+
+@mai.handle('alias <sid> {{maimai.help.alias}}')
+async def _(msg: Bot.MessageSession, sid: str):
+    if not sid.isdigit():
+        await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+    music = (await total_list.get()).by_id(sid)
+    title = f"{music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    alias = await get_alias(sid)
+    if len(alias) == 0:
+        return await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
+    else:
+        result = msg.locale.t("maimai.message.alias", title=title) + "\n"
+        result += "\n".join(alias)
+        await msg.finish([Plain(result.strip())])
 
 
 @mai.handle('b40 [<username>] {{maimai.help.b40}}')

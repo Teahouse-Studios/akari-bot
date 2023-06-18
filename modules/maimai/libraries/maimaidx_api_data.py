@@ -6,16 +6,17 @@ from datetime import datetime
 
 
 async def get_alias(input, get_music=False):
-    url = f"https://download.fanyu.site/maimai/alias.json"
+    url = "https://download.fanyu.site/maimai/alias.json"
     data = await get_url(url, 200, fmt='json')
 
     result = []
-
     if get_music:
         if input in data:
-            result = data[input]
+            result.append(data[input])
     else:
-        result = list(data.keys())
+        for alias, ids in data.items():
+            if input in ids:
+                result.append(alias)
 
     return result
 
