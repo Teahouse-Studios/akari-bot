@@ -86,7 +86,7 @@ async def _(msg: Bot.MessageSession):
                 tp = ["SD"]
             else:
                 tp = ["SD", "DX"]
-            level = res.groups()[3]
+            level = res.groups()[4]
             if res.groups()[2] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:

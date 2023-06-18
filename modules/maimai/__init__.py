@@ -265,18 +265,18 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
+    music = (await total_list.get()).by_id(sid)
+    if music is None:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if diff is not None:
         diff_index = get_diff(diff)
-        music = (await total_list.get()).by_id(sid)
-        if music is None:
-            await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
         if len(chart['notes']) == 4:
-            msg = msg.locale.t(
+            message = msg.locale.t(
                 "maimai.message.song.sd",
                 diff=diff_label[diff_index],
                 level=level,
@@ -287,7 +287,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 brk=chart['notes'][3],
                 charter=chart['charter'])
         else:
-            msg = msg.locale.t(
+            message = msg.locale.t(
                 "maimai.message.song.dx",
                 diff=diff_label[diff_index],
                 level=level,
@@ -300,11 +300,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 charter=chart['charter'])
         await msg.finish(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"{file}"), Plain(msg)])
+             BImage(f"{file}"), Plain(message)])
     else:
-        music = (await total_list.get()).by_id(sid)
-        if music is None:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
         await msg.finish(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
