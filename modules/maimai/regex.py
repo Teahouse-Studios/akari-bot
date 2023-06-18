@@ -86,11 +86,11 @@ async def _(msg: Bot.MessageSession):
                 tp = ["SD"]
             else:
                 tp = ["SD", "DX"]
-            level = res.groups()[4]
+            level = res.groups()[3]
             if res.groups()[2] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[3])],
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[2])],
                                                              type=tp)
             if len(music_data) == 0:
                 rand_result = msg.locale.t("maimai.message.music_not_found")
