@@ -8,7 +8,7 @@ from modules.maimai.libraries.maimaidx_music import *
 total_list = TotalList()
 
 mai_regex = module('maimai_regex',
-                     desc='{maimai.help.maimai_regex.desc}',
+                     desc='{maimai.help.maimai_regex.desc}', recommend_modules=['maimai'],
                      alias='maimai_regex', developers=['DoroWolf'])
 
 
@@ -30,32 +30,7 @@ async def _(msg: Bot.MessageSession):
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
                 res += f"{s['id']} {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-
-            reply = await msg.waitReply(res)
-            replied = reply.asDisplay(text_only=True)
-
-            if replied.isdigit():
-                replied = int(replied)
-
-                lines = res.split("\n")
-                id_list = []
-
-                for line in lines:
-                    parts = line.split()
-
-                    if len(parts) > 0:
-                        first_part = parts[0]
-
-                        try:
-                            song_id = int(first_part)
-                            id_list.append(song_id)
-                        except ValueError:
-                            pass
-
-                if replied in id_list:
-                    music = (await total_list.get()).by_id(replied)
-            else:
-                return await msg.finish(msg.locale.t("maimai.message.error.non_digital"))
+            await msg.finish(res.strip())
         else:
             music = (await total_list.get()).by_id(str(sid_list[0]))
 
