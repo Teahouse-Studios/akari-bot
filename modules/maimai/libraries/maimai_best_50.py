@@ -395,7 +395,19 @@ def computeRa(ds: float, achievement: float) -> int:
 
 
 async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
-    resp = get_record(msg, payload)
+    try:
+        resp = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player',
+                                  data=json.dumps(payload),
+                                  status_code=200,
+                                  headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
+    except ValueError as e:
+        if str(e).startswith('400'):
+            await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+        if str(e).startswith('403'):
+            await msg.finish(msg.locale.t("maimai.message.forbidden"))
+        else:
+            await msg.finish(ErrorMessage(str(e)))
+
     sd_best = BestList(35)
     dx_best = BestList(15)
     obj = resp
