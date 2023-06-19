@@ -409,7 +409,7 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
 
     sd_best = BestList(35)
     dx_best = BestList(15)
-    obj = await resp.json()
+    obj = resp
     dx: List[Dict] = obj["charts"]["dx"]
     sd: List[Dict] = obj["charts"]["sd"]
     for c in sd:
