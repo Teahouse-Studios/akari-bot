@@ -393,7 +393,7 @@ def computeRa(ds: float, achievement: float) -> int:
     return math.floor(ds * (min(100.5, achievement) / 100) * baseRa)
 
 
-async def generate(msg, payload: Dict) -> Tuple[Optional[Image.Image], bool]:
+async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
     try:
         resp = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player',
                                   data=json.dumps(payload),
