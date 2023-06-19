@@ -45,11 +45,12 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
             get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
                                  fmt='json')
             if get_['status'] == 0:
-                await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait")),
+                message = msg.locale.t("arcaea.message.b30.wait")
                 if msg.target.targetFrom not in ['Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
-                    await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
+                    message += '\n' + [Plain(msg.locale.t("arcaea.message.sb616")),
                                            Image(os.path.abspath('./assets/noc.jpg')),
-                                           Image(os.path.abspath('./assets/aof.jpg'))])
+                                           Image(os.path.abspath('./assets/aof.jpg'))]
+                await msg.sendMessage(message)
             elif get_['status'] == -33:
                 await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.cached"))
             elif get_['status'] == -23:

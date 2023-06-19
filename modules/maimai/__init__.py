@@ -177,14 +177,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
-    img, success = await generate(payload)
-    if success == 400:
-        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-    elif success == 403:
-        await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    else:
-        if img:
-            await msg.finish([BImage(img)])
+    img = await generate(msg, payload)
+    await msg.finish([BImage(img)])
 
 
 @mai.handle('rank [<username>] {{maimai.help.rank}}')

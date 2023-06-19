@@ -73,7 +73,6 @@
     "wiki.message.search.prompt": "回覆編號以查詢對應的頁面。",
     "wiki.message.set.default": "沒有設定起始 Wiki，已預設為中文 Minecraft Wiki，使用「${prefix}wiki set」設定自訂起始 Wiki。\n示例：${prefix}wiki set https://minecraft.fandom.com/zh/wiki/",
     "wiki.message.set.success": "成功設定起始 Wiki：${name}",
-    "wiki.message.untrust": "注意：此 Wiki 目前沒有加入機器人的白名單列表中，查詢此 Wiki 時將會對返回內容進行限制。\n若需取消限制，請在此處申請白名單：",
     "wiki.message.utils.banned": "檢測到外來訊息介入，請前往過濾器日誌查看所有訊息。",
     "wiki.message.utils.collapse": "…僅顯示前 5 條內容。",
     "wiki.message.utils.qq.prompt": "Tips：複製並貼上下方的任意訊息到聊天視窗並傳送可取得此次改動詳細訊息的截圖。",
@@ -103,5 +102,6 @@
     "wiki.message.wiki_audit.remove.failed": "失敗，此 Wiki 不存在於${list_name}中：",
     "wiki.message.wiki_audit.remove.failed.other": "失敗，此 Wiki 不存在於白名單中，此 Wiki 的白名單可能來自其他同一域名的 Wiki：",
     "wiki.message.wiki_audit.remove.success": "成功從${list_name}刪除：",
+    "wiki.message.wiki_audit.untrust": "注意：此 Wiki 目前沒有加入機器人的白名單列表中，查詢此 Wiki 時將會對返回內容進行限制。\n若需取消限制，請在此處申請白名單：",
     "wiki.message.wiki_inline.flies": "此頁面含有以下檔案：${file}"
 }
