@@ -14,7 +14,7 @@
     "maimai.help.rank": "查看用户在查分器上的分数排行。",
     "maimai.help.scoreline": "查询歌曲的分数线。",
     "maimai.help.search": "根据歌名（或一部分）搜索歌曲。",
-    "maimai.help.song": "查询 Maimai 歌曲或谱面信息。",
+    "maimai.help.song": "查询 Maimai 歌曲或谱面的信息。",
     "maimai.message.alias": "${title} 的别名：",
     "maimai.message.alias_not_found": "未找到符合要求的别名。",
     "maimai.message.b40.deprecated": "B40 已弃用，即将查询 B50……",
