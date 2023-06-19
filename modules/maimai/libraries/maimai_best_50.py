@@ -1,11 +1,14 @@
+import ujson as json
 import math
 import os
 from typing import Optional, Dict, List, Tuple
 
-import aiohttp
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
+from core.builtins import ErrorMessage
+from core.utils.http import post_url
 from .maimaidx_music import get_cover_len5_id, TotalList
+from .maimaidx_api_data import get_record
 
 total_list = TotalList()
 
@@ -391,21 +394,16 @@ def computeRa(ds: float, achievement: float) -> int:
     return math.floor(ds * (min(100.5, achievement) / 100) * baseRa)
 
 
-async def generate(payload: Dict) -> Tuple[Optional[Image.Image], bool]:
-    async with aiohttp.request("POST", "https://www.diving-fish.com/api/maimaidxprober/query/player",
-                               json=payload) as resp:
-        if resp.status == 400:
-            return None, 400
-        if resp.status == 403:
-            return None, 403
-        sd_best = BestList(35)
-        dx_best = BestList(15)
-        obj = await resp.json()
-        dx: List[Dict] = obj["charts"]["dx"]
-        sd: List[Dict] = obj["charts"]["sd"]
-        for c in sd:
-            sd_best.push(await ChartInfo.from_json(c))
-        for c in dx:
-            dx_best.push(await ChartInfo.from_json(c))
-        pic = DrawBest(sd_best, dx_best, obj["nickname"]).getDir()
-        return pic, 0
+async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
+    resp = get_record(msg, payload)
+    sd_best = BestList(35)
+    dx_best = BestList(15)
+    obj = resp
+    dx: List[Dict] = obj["charts"]["dx"]
+    sd: List[Dict] = obj["charts"]["sd"]
+    for c in sd:
+        sd_best.push(await ChartInfo.from_json(c))
+    for c in dx:
+        dx_best.push(await ChartInfo.from_json(c))
+    pic = DrawBest(sd_best, dx_best, obj["nickname"]).getDir()
+    return pic

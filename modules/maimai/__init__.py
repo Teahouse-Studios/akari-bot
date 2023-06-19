@@ -4,8 +4,10 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_rank
+from modules.maimai.libraries.maimaidx_api_data import get_alias
+from modules.maimai.libraries.maimaidx_project import get_rank
 from modules.maimai.libraries.maimaidx_music import *
+from .regex import *
 
 total_list = TotalList()
 
@@ -72,16 +74,16 @@ async def diff_level_q(level):
     return result_set
 
 
-@mai.handle('inner <rating> [<rating_max>] {{maimai.help.inner}}')
+@mai.handle('base <rating> [<rating_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
     if rating_max is not None:
         if rating > rating_max:
             return await msg.finish(msg.locale.t('error.range.invalid'))
-        result_set = await inner_level_q(rating, rating_max)
-        s = msg.locale.t("maimai.message.inner.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
+        result_set = await base_level_q(rating, rating_max)
+        s = msg.locale.t("maimai.message.base.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
     else:
-        result_set = await inner_level_q(rating)
-        s = msg.locale.t("maimai.message.inner", rating=round(rating, 1)) + "\n"
+        result_set = await base_level_q(rating)
+        s = msg.locale.t("maimai.message.base", rating=round(rating, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]} {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
@@ -95,7 +97,7 @@ async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
         await msg.finish([BImage(img)])
 
 
-async def inner_level_q(ds1, ds2=None):
+async def base_level_q(ds1, ds2=None):
     result_set = []
     if ds2 is not None:
         music_data = (await total_list.get()).filter(ds=(ds1, ds2))
@@ -116,8 +118,6 @@ async def inner_level_q(ds1, ds2=None):
 @mai.handle('search <keyword> {{maimai.help.search}}')
 async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
-    if name == "":
-        return
     res = (await total_list.get()).filter(title_search=name)
     if len(res) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -132,6 +132,23 @@ async def _(msg: Bot.MessageSession, keyword: str):
         else:
             img = await msgchain2image([Plain(search_result)])
             await msg.finish([BImage(img)])
+
+
+@mai.handle('alias <sid> {{maimai.help.alias}}')
+async def _(msg: Bot.MessageSession, sid: str):
+    if not sid.isdigit():
+        await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+    music = (await total_list.get()).by_id(sid)
+    if not music:
+        return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+    title = f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    alias = await get_alias(sid)
+    if len(alias) == 0:
+        return await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
+    else:
+        result = msg.locale.t("maimai.message.alias", title=title) + "\n"
+        result += "\n".join(alias)
+        await msg.finish([Plain(result.strip())])
 
 
 @mai.handle('b40 [<username>] {{maimai.help.b40}}')
@@ -161,14 +178,27 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
-    img, success = await generate(payload)
-    if success == 400:
-        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-    elif success == 403:
-        await msg.finish(msg.locale.t("maimai.message.forbidden"))
+    img = await generate(msg, payload)
+    await msg.finish([BImage(img)])    
+
+
+@mai.handle('rank [<username>] {{maimai.help.rank}}')
+async def _(msg: Bot.MessageSession, username: str = None):
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender}
     else:
-        if img:
-            await msg.finish([BImage(img)])
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username}
+
+    result = await get_rank(msg, payload)
+    time, total_rank, average_rating, username, rating, rank, surpassing_rate = result
+    formatted_average_rating = "{:.4f}".format(average_rating)
+    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
+
+    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
+                                  rating=rating, rank=rank, average_rating=formatted_average_rating,
+                                  surpassing_rate=formatted_surpassing_rate))
 
 
 @mai.handle('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
@@ -216,21 +246,36 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
-@mai.handle('song <sid> [<diff>] {{maimai.help.song}}')
-async def _(message: Bot.MessageSession, sid: str, diff: str = None):
-    if not sid.isdigit():
-        await message.finish(message.locale.t('maimai.message.error.non_digital'))
+@mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
+async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
+    if id_or_alias.isdigit():
+        sid = id_or_alias
+    else:
+        sid_list = await get_alias(id_or_alias, get_music=True)
+        if len(sid_list) == 0:
+            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                res += f"{s['id']} {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            await msg.finish(res.strip())
+        else:
+            sid = str(sid_list[0])
+    music = (await total_list.get()).by_id(sid)
+    if music is None:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+
     if diff is not None:
         diff_index = get_diff(diff)
-        music = (await total_list.get()).by_id(sid)
-        if music is None:
-            await message.finish(message.locale.t("maimai.message.chart_not_found"))
+        if len(music['ds']) == 4 and diff_index == 4:
+            await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
         if len(chart['notes']) == 4:
-            msg = message.locale.t(
+            message = msg.locale.t(
                 "maimai.message.song.sd",
                 diff=diff_label[diff_index],
                 level=level,
@@ -241,7 +286,7 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                 brk=chart['notes'][3],
                 charter=chart['charter'])
         else:
-            msg = message.locale.t(
+            message = msg.locale.t(
                 "maimai.message.song.dx",
                 diff=diff_label[diff_index],
                 level=level,
@@ -252,21 +297,18 @@ async def _(message: Bot.MessageSession, sid: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await message.finish(
+        await msg.finish(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"{file}"), Plain(msg)])
+             BImage(f"{file}"), Plain(message)])
     else:
-        music = (await total_list.get()).by_id(sid)
-        if music is None:
-            await message.finish(message.locale.t("maimai.message.music_not_found"))
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
-        await message.finish(
+        await msg.finish(
             [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"),
-             Plain(message.locale.t("maimai.message.song",
+             Plain(msg.locale.t("maimai.message.song",
                                     artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
                                     bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                                    level='/'.join((str(ds) for ds in music['ds']))))])
+                                    level='/'.join((str(ds) for ds in music['ds']))))]) 
 
 
 @mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
@@ -300,22 +342,3 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
                 b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
-
-
-@mai.handle('rank [<username>] {{maimai.help.rank}}')
-async def _(msg: Bot.MessageSession, username: str = None):
-    if username is None and msg.target.senderFrom == "QQ":
-        payload = {'qq': msg.session.sender}
-    else:
-        if username is None:
-            await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username}
-
-    result = await get_rank(msg, payload)
-    username, rating, rank, average_rating, surpassing_rate = result
-    formatted_average_rating = "{:.4f}".format(average_rating)
-    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
-
-    await msg.finish(msg.locale.t('maimai.message.rank', user=username,
-                                  rating=rating, rank=rank, average_rating=formatted_average_rating,
-                                  surpassing_rate=formatted_surpassing_rate))
