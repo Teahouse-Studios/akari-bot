@@ -37,7 +37,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             mod_name += ' ' + version
             ver = False
     if cn_chk(mod_name):
-        return {'msg': '暂不支持中文搜索。', 'success': False}
+        await msg.finish(msg.locale.t("mod_dl.message.unsupport"))
 
     async def search_modrinth(name: str, ver: str):
         url = f'https://api.modrinth.com/v2/search?query={name}&limit=10'

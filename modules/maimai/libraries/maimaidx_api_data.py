@@ -2,10 +2,11 @@ import ujson as json
 
 from core.builtins import ErrorMessage
 from core.utils.http import get_url, post_url
+from datetime import datetime
 
 
 async def get_alias(input, get_music=False):
-    url = f"https://download.fanyu.site/maimai/alias.json"
+    url = "https://download.fanyu.site/maimai/alias.json"
     data = await get_url(url, 200, fmt='json')
 
     result = []
