@@ -138,7 +138,7 @@ async def _(msg: Bot.MessageSession, sid: str):
     if not sid.isdigit():
         await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
     music = (await total_list.get()).by_id(sid)
-    if len(music) == 0:
+    if not music:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     title = f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
     alias = await get_alias(sid)
