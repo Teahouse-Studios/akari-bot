@@ -1,4 +1,4 @@
-from core.builtins import Bot, Plain, Image as BImage
+﻿from core.builtins import Bot, Plain, Image as BImage
 from core.builtins import command_prefix
 from core.component import module
 from core.logger import Logger
@@ -18,7 +18,7 @@ diff_label_zht = ['綠', '黃', '紅']
 
 
 def song_txt(music: Music):
-    return [Plain(f"{music.id} {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+    return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png", ),
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
@@ -49,7 +49,7 @@ async def _(msg: Bot.MessageSession, level: str):
     result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
-        s += f"{elem[0]} {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) <= 10:
@@ -85,7 +85,7 @@ async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
         result_set = await base_level_q(rating)
         s = msg.locale.t("maimai.message.base", rating=round(rating, 1)) + "\n"
     for elem in result_set:
-        s += f"{elem[0]} {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     if len(result_set) > 200:
@@ -126,7 +126,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     else:
         search_result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
         for music in sorted(res, key=lambda i: int(i['id'])):
-            search_result += f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"
+            search_result += f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"
         if len(res) <= 10:
             await msg.finish([Plain(search_result.strip())])
         else:
@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession, sid: str):
     music = (await total_list.get()).by_id(sid)
     if not music:
         return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    title = f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
     alias = await get_alias(sid)
     if len(alias) == 0:
         return await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
@@ -175,7 +175,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
@@ -195,7 +195,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
     await msg.finish(
-        [Plain(f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+        [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"), Plain(output)])
 
 
@@ -276,7 +276,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
@@ -316,12 +316,12 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 brk=chart['notes'][4],
                 charter=chart['charter'])
         await msg.finish(
-            [Plain(f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"), Plain(message)])
     else:
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
         await msg.finish(
-            [Plain(f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"),
              Plain(msg.locale.t("maimai.message.song",
                                     artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],

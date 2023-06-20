@@ -103,26 +103,20 @@ async def get_rank(msg, payload):
 
 
 async def get_player_score(msg, payload, input_id):
-    
-    music = (await total_list.get()).by_id(input_id)
-
-    
-    payload['version'] = list(music["basic_info"]["from"])
+    payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(msg, payload)
     verlist = res["verlist"]
-    level_scores = {level: [] for level in range(len(music["ds"]))}
+    music = (await total_list.get()).by_id(input_id)
+    level_scores = {level: [] for level in range(len(music['level']))}
 
-    
     for entry in verlist:
         sid = entry["id"]
-        
-        if str(sid) == input_id:
-            
-            achievements = entry["achievements"]
-            fc = entry["fc"]
-            fs = entry["fs"]
-            level_index = entry["level_index"]
+        achievements = entry["achievements"]
+        fc = entry["fc"]
+        fs = entry["fs"]
+        level_index = entry["level_index"]
 
+        if str(sid) == input_id:
             score_rank = next(
                 rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
             )
@@ -134,17 +128,19 @@ async def get_player_score(msg, payload, input_id):
 
     output_lines = []
     for level, scores in level_scores.items():
-        
-        level_label = f"{level_conversion[level]} {scores['level']}({music['ds'][level]})"
-        output_lines.append(level_label)
-        
         if scores:
+            output_lines.append(f"{level_conversion[level]} {music['level'][level]}")
             for score in scores:
                 level, achievements, score_rank, combo_rank, sync_rank = score
-                entry_output = " ".join([f"{achievements:.4f}%", score_rank, combo_rank, sync_rank].remove(""))
+                entry_output = f"{achievements} {score_rank}"
+                if combo_rank and sync_rank:
+                    entry_output += f" {combo_rank} {sync_rank}"
+                elif combo_rank or sync_rank:
+                    entry_output += f" {sync_rank}{sync_rank}"
                 output_lines.append(entry_output)
         else:
-            output_lines.append(msg.locale.t("maimai.message.info.no_record"))
+            level_name = level_conversion.get(level, None)
+            output_lines.append(f"{level_name} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
 
     output_lines = [line for line in output_lines if not line.startswith("None")]
 
