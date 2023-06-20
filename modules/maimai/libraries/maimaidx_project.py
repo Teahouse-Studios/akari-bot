@@ -106,7 +106,7 @@ async def get_player_score(msg, payload, input_id):
     payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(msg, payload)
     verlist = res["verlist"]
-    level_scores = {level: [] for level in range(len(music['level'])}
+    level_scores = {level: [] for level in range(len(music['level']))}
 
     music = (await total_list.get()).by_id(input_id)
     for entry in verlist:
