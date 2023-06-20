@@ -163,7 +163,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])    
 
 
-@mai.handle('info <id_or_alias> [<username>] {{maimai.help.scoreline}}')
+@mai.handle('info <id_or_alias> [<username>] {{maimai.help.info}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias.isdigit():
         sid = id_or_alias

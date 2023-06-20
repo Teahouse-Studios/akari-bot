@@ -4,6 +4,7 @@
     "maimai.help.b50": "查询 B50 信息。（仅限大陆版 Maimai）",
     "maimai.help.base": "根据定数或定数范围搜索歌曲。",
     "maimai.help.desc": "查询 Maimai 相关内容。",
+    "maimai.help.info": "查询 Maimai 歌曲的谱面成绩。",
     "maimai.help.level": "根据等级搜索歌曲。",
     "maimai.help.maimai_regex.desc": "更方便地使用 Maimai 相关命令。",
     "maimai.help.maimai_regex.random": "Maimai什么 随机一首歌曲",
