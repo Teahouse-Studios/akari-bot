@@ -67,7 +67,7 @@ async def _(msg: Bot.MessageSession):
 
 
 def parse_markdown(md: str):
-    regex = r'(```[\s\S]*?\n```|\$[\s\S]*?\$|[^\n]+)(?:\n|$)'
+    regex = r'(```[\s\S]*?\n```|\$[\s\S]*?\$|[^\n]+)'
 
     blocks = []
     for match in re.finditer(regex, md):
@@ -82,7 +82,7 @@ def parse_markdown(md: str):
             content = {'language': language, 'code': code}
         elif content.startswith('$'):
             block = 'latex'
-            content = content[2:-2].strip()
+            content = content[1:-1].strip()
         else:
             block = 'text'
         blocks.append({'type': block, 'content': content})
