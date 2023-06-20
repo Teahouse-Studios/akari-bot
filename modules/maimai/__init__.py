@@ -191,7 +191,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    output = get_player_score(msg, payload, sid)
+    output = await get_player_score(msg, payload, sid)
 
     file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
     await msg.finish(
