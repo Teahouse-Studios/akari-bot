@@ -13,12 +13,12 @@ files = [
 
 [[package]]
 name = "aiocqhttp"
-version = "1.4.3"
+version = "1.4.4"
 description = "A Python SDK with async I/O for OneBot (CQHTTP)."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "aiocqhttp-1.4.3.tar.gz", hash = "sha256:197de394f97b798515d643814660a41d5ec470bd0b0608682d1e4b553e486768"},
+    {file = "aiocqhttp-1.4.4.tar.gz", hash = "sha256:eb2b6996753cacee45bf615aba5db4625b495e7a184a2fd27d2e5408f472c03d"},
 ]
 
 [package.dependencies]
