@@ -121,7 +121,7 @@ async def get_player_score(msg, payload, input_id):
         fs = entry["fs"]
         level_index = entry["level_index"]
 
-        if sid == input_id:
+        if str(sid) == input_id:
             score_rank = next(
                 rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
             )
