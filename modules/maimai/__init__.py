@@ -1,4 +1,4 @@
-那就fxunfrom core.builtins import Bot, Plain, Image as BImage
+fxunfrom core.builtins import Bot, Plain, Image as BImage
 from core.builtins import command_prefix
 from core.component import module
 from core.logger import Logger
