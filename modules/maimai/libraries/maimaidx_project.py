@@ -104,13 +104,15 @@ async def get_rank(msg, payload):
 
 async def get_player_score(msg, payload, input_id):
     payload['version'] = list(set(version for version in plate_to_version.values()))
-    response = await get_plate(msg, payload)
-    verlist = response["verlist"]
+    res = await get_plate(msg, payload)
+    verlist = res["verlist"]
     level_scores = {level: [] for level in range(5)}
 
     music = (await total_list.get()).by_id(input_id)
     if len(music['ds']) == 4:
         level_conversion.pop(4, None)
+    if len(music['ds']) == 5:
+        level_conversion[4] = "Re:MASTER"
 
     for entry in verlist:
         sid = entry["id"]
@@ -132,10 +134,10 @@ async def get_player_score(msg, payload, input_id):
     output_lines = []
     for level, scores in level_scores.items():
         if scores:
-            output_lines.append(f"{level_conversion[level]}: ")
+            output_lines.append(f"{level_conversion[level]}")
             for score in scores:
                 level, achievements, score_rank, combo_rank, sync_rank = score
-                entry_output = f"{achievements:.4f} {score_rank}"
+                entry_output = f"{achievements} {score_rank}"
                 if combo_rank and sync_rank:
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
@@ -143,7 +145,7 @@ async def get_player_score(msg, payload, input_id):
                 output_lines.append(entry_output)
         else:
             level_name = level_conversion.get(level, None)
-            output_lines.append(f'{level_name}: \n{msg.locale.t("maimai.message.info.no_record")}')
+            output_lines.append(f'{level_name}\n{msg.locale.t("maimai.message.info.no_record")}')
 
     output_lines = [line for line in output_lines if not line.startswith("None")]
 
