@@ -21,7 +21,7 @@ async def bugtracker(msg: Bot.MessageSession):
                     await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(pattern=r'\b([A-Za-z]+)-(\d+)\b', mode='M', desc='{bugtracker.help.regex.desc}')
+@bug.regex(pattern=r'\!?\b([A-Za-z]+)-(\d+)\b', mode='M', desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
     if len(matched_msg.group(0)) < 10 and len(matched_msg.group(1)) < 10:
@@ -33,7 +33,8 @@ async def regex_bugtracker(msg: Bot.MessageSession):
                 await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'), mode='A', desc='{bugtracker.help.regex.url}')
+@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
+           mode='A', desc='{bugtracker.help.regex.url}')
 async def _(msg: Bot.MessageSession):
     async def bgtask(msg: Bot.MessageSession):
         for title in msg.matched_msg:
