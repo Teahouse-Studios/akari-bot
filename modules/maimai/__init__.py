@@ -5,7 +5,7 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias
-from modules.maimai.libraries.maimaidx_project import get_rank
+from modules.maimai.libraries.maimaidx_project import get_rank, get_player_score
 from modules.maimai.libraries.maimaidx_music import *
 from .regex import *
 
@@ -151,25 +151,6 @@ async def _(msg: Bot.MessageSession, sid: str):
         await msg.finish([Plain(result.strip())])
 
 
-@mai.handle('b40 [<username>] {{maimai.help.b40}}')
-async def _(msg: Bot.MessageSession, username: str = None):
-    if username is None and msg.target.senderFrom == "QQ":
-        payload = {'qq': msg.session.sender, 'b50': True}
-    else:
-        if username is None:
-            await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username, 'b50': True}
-    await msg.sendMessage(msg.locale.t("maimai.message.b40.deprecated"))
-    img, success = await generate(payload)
-    if success == 400:
-        await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-    elif success == 403:
-        await msg.finish(msg.locale.t("maimai.message.forbidden"))
-    else:
-        if img:
-            await msg.finish([BImage(img)])
-
-
 @mai.handle('b50 [<username>] {{maimai.help.b50}}')
 async def _(msg: Bot.MessageSession, username: str = None):
     if username is None and msg.target.senderFrom == "QQ":
@@ -180,6 +161,43 @@ async def _(msg: Bot.MessageSession, username: str = None):
         payload = {'username': username, 'b50': True}
     img = await generate(msg, payload)
     await msg.finish([BImage(img)])    
+
+
+@mai.handle('info <sid_or_alias> [<username>] {{maimai.help.scoreline}}')
+async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
+    if id_or_alias.isdigit():
+        sid = id_or_alias
+    else:
+        sid_list = await get_alias(id_or_alias, get_music=True)
+        if len(sid_list) == 0:
+            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                res += f"{s['id']} {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            await msg.finish(res.strip())
+        else:
+            sid = str(sid_list[0])
+
+    music = (await total_list.get()).by_id(sid)
+    if music is None:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender}
+    else:
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username}
+
+    output = get_player_score(msg, payload, sid)
+
+    file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+    await msg.finish(
+        [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+         BImage(f"{file}"), Plain(output)])
+
 
 
 @mai.handle('rank [<username>] {{maimai.help.rank}}')

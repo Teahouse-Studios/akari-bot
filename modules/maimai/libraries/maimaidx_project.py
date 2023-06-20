@@ -2,7 +2,9 @@ from datetime import datetime
 
 from core.utils.http import get_url
 from .maimaidx_api_data import get_record, get_plate
+from .maimaidx_music import *
 
+total_list = TotalList()
 
 plate_to_version = {
     '初': 'maimai',
@@ -33,6 +35,45 @@ plate_to_version = {
     'fesp': 'maimai でらっくす FESTiVAL PLUS'
 }
 
+score_to_rank = {
+    (0.0, 50.0): "D",
+    (50.0, 60.0): "C",
+    (60.0, 70.0): "B",
+    (70.0, 75.0): "BB",
+    (75.0, 80.0): "BBB",
+    (80.0, 90.0): "A",
+    (90.0, 94.0): "AA",
+    (94.0, 97.0): "AAA",
+    (97.0, 98.0): "S",
+    (98.0, 99.0): "S+",
+    (99.0, 99.5): "SS",
+    (99.5, 100.0): "SS+",
+    (100.0, 100.5): "SSS",
+    (100.5, float('inf')): "SSS+",
+}
+
+combo_conversion = {
+    "fc": "FC",
+    "fcp": "FC+",
+    "ap": "AP",
+    "app": "AP+",
+}
+
+sync_conversion = {
+    "fs": "FS",
+    "fsp": "FS+",
+    "fsd": "FDX",
+    "fsdp": "FDX+",
+}
+
+level_conversion = {
+    0: "Basic",
+    1: "Advanced",
+    2: "Expert",
+    3: "Master",
+    4: "Re:MASTER",
+}
+
 async def get_rank(msg, payload):
     player_data = await get_record(msg, payload)
 
@@ -59,3 +100,51 @@ async def get_rank(msg, payload):
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     return time, total_rank, average_rating, username, rating, rank, surpassing_rate
+
+
+async def get_player_score(msg, payload, input_id):
+    payload['version'] = list(set(version for version in plate_to_version.values()))
+    response = get_plate(msg, payload)
+    verlist = response["verlist"]
+    level_scores = {level: [] for level in range(5)}
+
+    music = (await total_list.get()).by_id(input_id)
+    if len(music['ds']) == 4:
+        level_conversion.pop(4, None)
+
+    for entry in verlist:
+        sid = entry["id"]
+        achievements = entry["achievements"]
+        fc = entry["fc"]
+        fs = entry["fs"]
+        level_index = entry["level_index"]
+
+        if sid == input_id:
+            score_rank = next(
+                rank for interval, rank in score_to_rank.items() if interval[0] <= achievements < interval[1]
+            )
+
+            combo_rank = combo_conversion.get(fc, "")
+            sync_rank = sync_conversion.get(fs, "")
+
+            level_scores[level_index].append((level_conversion[level_index], achievements, score_rank, combo_rank, sync_rank))
+
+    output_lines = []
+    for level, scores in level_scores.items():
+        if scores:
+            output_lines.append(f"{level_conversion[level]}: ")
+            for score in scores:
+                level, achievements, score_rank, combo_rank, sync_rank = score
+                entry_output = f"{achievements:.4f} {score_rank}"
+                if combo_rank and sync_rank:
+                    entry_output += f" {combo_rank} {sync_rank}"
+                elif combo_rank or sync_rank:
+                    entry_output += f" {sync_rank}{sync_rank}"
+                output_lines.append(entry_output)
+        else:
+            level_name = level_conversion.get(level, None)
+            output_lines.append(f'{level_name}: \n{msg.locale.t("maimai.message.info.no_record")}')
+
+    output_lines = [line for line in output_lines if not line.startswith("None")]
+
+    return '\n'.join(output_lines)
