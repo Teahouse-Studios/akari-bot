@@ -1,4 +1,4 @@
-from core.builtins import Bot, Plain, Image as BImage
+那就fxunfrom core.builtins import Bot, Plain, Image as BImage
 from core.builtins import command_prefix
 from core.component import module
 from core.logger import Logger
@@ -195,7 +195,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
     await msg.finish(
-        [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+        [Plain(f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"), Plain(output)])
 
 
@@ -316,12 +316,12 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 brk=chart['notes'][4],
                 charter=chart['charter'])
         await msg.finish(
-            [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+            [Plain(f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"), Plain(message)])
     else:
         file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
         await msg.finish(
-            [Plain(f"{music['id']} {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+            [Plain(f"{music['id']} {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"),
              Plain(msg.locale.t("maimai.message.song",
                                     artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
