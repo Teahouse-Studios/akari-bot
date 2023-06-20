@@ -1,8 +1,11 @@
 from modules.whois.ip import check_ip
 from .utils import to_json_func, AkariTool
 
-ip_whois_tool = AkariTool(
-    name='IpWhois',
-    func=to_json_func(check_ip),
-    description='A WHOIS tool for IP addresses. Useful for when you need to answer questions about IP addresses. Input should be a valid IP address. Output is a JSON document.'
+
+async def ip_whois(ip: str):
+    return await to_json_func(check_ip)(ip)
+
+ip_whois_tool = AkariTool.from_function(
+    func=ip_whois,
+    description='A WHOIS tool for IP addresses. Useful for when you need to answer questions about IPv4/v6 addresses.'
 )

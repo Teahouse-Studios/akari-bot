@@ -44,8 +44,11 @@ self_knowledge = RetrievalQA.from_chain_type(
         search_kwargs={
             "k": 1}))
 
-self_knowledge_tool = AkariTool(
-    name='SelfKnowledge',
-    func=self_knowledge.arun,
+
+async def self_knowledge_func(query: str):
+    return await self_knowledge.arun(query)
+
+self_knowledge_tool = AkariTool.from_function(
+    func=self_knowledge_func,
     description='Get facts about yourself, Akaribot. Useful for when you need to answer questions about yourself if the user is curious. Input should be a full question in English.'
 )
