@@ -2,7 +2,7 @@ from datetime import datetime
 
 from core.utils.http import get_url
 from .maimaidx_api_data import get_record, get_plate
-from .maimaidx_music import *
+from .maimaidx_music import TotalList
 
 total_list = TotalList()
 
@@ -134,7 +134,7 @@ async def get_player_score(msg, payload, input_id):
     output_lines = []
     for level, scores in level_scores.items():
         if scores:
-            output_lines.append(f"{level_conversion[level]}")
+            output_lines.append(f"{level_conversion[level]} {music['level'][level]}")
             for score in scores:
                 level, achievements, score_rank, combo_rank, sync_rank = score
                 entry_output = f"{achievements} {score_rank}"
@@ -145,7 +145,7 @@ async def get_player_score(msg, payload, input_id):
                 output_lines.append(entry_output)
         else:
             level_name = level_conversion.get(level, None)
-            output_lines.append(f'{level_name}\n{msg.locale.t("maimai.message.info.no_record")}')
+            output_lines.append(f"{level_name} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
 
     output_lines = [line for line in output_lines if not line.startswith("None")]
 
