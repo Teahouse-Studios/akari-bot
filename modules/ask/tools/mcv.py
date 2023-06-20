@@ -11,7 +11,7 @@ async def mcv_all(input: str):
     return '\n---'.join(results)
 
 mcv_tool = AkariTool(
-    name='Minecraft Versions',
+    name='MinecraftVersions',
     func=mcv_all,
     description='A tool for checking current Minecraft: Java/Bedrock/Education Edition or Minecraft Dungeons versions. No input is required.'
 )

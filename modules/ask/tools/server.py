@@ -11,7 +11,7 @@ async def server_all(input: str):
     return f'Java Edition result: {results[0]}\n\nBedrock Edition result: {results[1]}'
 
 server_tool = AkariTool(
-    name='Minecraft Server',
+    name='MinecraftServer',
     func=server_all,
     description='A tool for checking the status of Minecraft: Java/Bedrock Edition servers. Input should be a valid Minecraft server address.'
 )

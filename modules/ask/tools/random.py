@@ -20,19 +20,19 @@ async def random_uuid(input: str):
 
 
 random_number_tool = AkariTool(
-    name='Random Number',
+    name='RandomNumber',
     func=random_number,
     description='Generates a random number based on a max value and a min value. Requires 2 inputs, which are the max and min value.'
 )
 
 random_choice_tool = AkariTool(
-    name='Random Choice',
+    name='RandomChoice',
     func=random_choice,
     description='Randomly chooses a input item. Supports arbitrary amounts of inputs.'
 )
 
 random_uuid_tool = AkariTool(
-    name='Random UUID',
+    name='RandomUUID',
     func=random_uuid,
     description='Generates a random UUID. No input is required.'
 )
