@@ -104,7 +104,7 @@ async def get_rank(msg, payload):
 
 async def get_player_score(msg, payload, input_id):
     payload['version'] = list(set(version for version in plate_to_version.values()))
-    response = get_plate(msg, payload)
+    response = await get_plate(msg, payload)
     verlist = response["verlist"]
     level_scores = {level: [] for level in range(5)}
 
