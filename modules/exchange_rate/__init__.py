@@ -19,10 +19,15 @@ async def _(msg: Bot.MessageSession):
     base = msg.parsed_msg['<base>'].upper()
     target = msg.parsed_msg['<target>'].upper()
 
-    amount = float(base[:-3])
+    amount_str = base[:-3]
     base_currency = base[-3:]
+
     try:
-        amount = float(amount)
+        if amount_str:
+            amount = float(amount_str)
+        else:
+            amount = 1.0
+
         if amount <= 0:
             await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
     except ValueError:
