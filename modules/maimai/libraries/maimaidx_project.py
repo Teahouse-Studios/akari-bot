@@ -147,58 +147,52 @@ async def get_player_score(msg, payload, input_id):
 
 
 async def get_level_process(message, payload, process, goal):
-    plate_versions = list(set(plate_to_version.values()))
-    payload['version'] = plate_versions
+    song_played = []
+    song_remain = []
 
+    payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(message, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()
-    rank_to_score = {v: k for k, v in score_to_rank.items()}
-    combo_to_index = {v: k for k, v in combo_conversion.items()}
-    sync_to_index = {v: k for k, v in sync_conversion.items()}
+    if goal in score_to_rank.values():
+        achievement = achievementList[list(score_to_rank.values()).index(goal) - 1]
+        for song in verlist:
+            if song['level'] == process and song['achievements'] < achievement:
+                song_remain.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
+    elif goal in combo_conversion.values():
+        combo_index = list(combo_conversion.values()).index(goal)
+        for song in verlist:
+            if song['level'] == process and ((song['fc'] and list(combo_conversion.keys()).index(song['fc']) < combo_index) or not song['fc']):
+                song_remain.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
+    elif goal in sync_conversion.values():
+        sync_index = list(sync_conversion.values()).index(goal)
+        for song in verlist:
+            if song['level'] == process and ((song['fs'] and list(sync_conversion.keys()).index(song['fs']) < sync_index) or not song['fs']):
+                song_remain.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
 
-    song_played = []
-    song_remain = []
-
-    for song in verlist:
-        level = song['level']
-        if goal in rank_to_score:
-            achievement = rank_to_score[goal]
-            if song['achievements'] < achievement and level == process:
-                song_remain.append([song['id'], song['level_index']])
-        elif goal in combo_to_index:
-            combo_index = combo_to_index[goal]
-            if ((song['fc'] and combo_to_index[song['fc']] < combo_index) or not song['fc']) and level == process:
-                song_remain.append([song['id'], song['level_index']])
-        elif goal in sync_to_index:
-            sync_index = sync_to_index[goal]
-            if ((song['fs'] and sync_to_index[song['fs']] < sync_index) or not song['fs']) and level == process:
-                song_remain.append([song['id'], song['level_index']])
-        
-        song_played.append([song['id'], song['level_index']])
-    
-    total_list_result = await total_list.get()
-    for music in total_list_result:
+    for music in (await total_list.get()):
         for i, lv in enumerate(music.level[2:]):
             if lv == process and [int(music.id), i + 2] not in song_played:
                 song_remain.append([int(music.id), i + 2])
 
-    song_remain = sorted(song_remain, key=lambda i: (int(i[0]), int(i[1])))
-    songs = [
-        [music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type]
-        for song in song_remain
-        for music in total_list_result
-        if music.id == str(song[0])
-    ]
+    song_remain = sorted(song_remain, key=lambda i: int(i[1]))
+    song_remain = sorted(song_remain, key=lambda i: int(i[0]))
+    songs = []
+
+    for song in song_remain:
+        music = (await total_list.get()).by_id(str(song[0]))
+        songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
 
     msg = ''
-    if song_remain:
+    if len(song_remain) > 0:
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
             msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
-            songs_sorted = sorted(songs, key=lambda i: i[3][0])
-            for s in songs_sorted:
+            for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
                 if [int(s[0]), s[-1]] in song_record:
                     record_index = song_record.index([int(s[0]), s[-1]])
