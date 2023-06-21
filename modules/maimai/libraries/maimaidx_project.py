@@ -154,7 +154,7 @@ async def get_level_process(message, payload, process, goal):
     song_remain = []
 
     payload['version'] = list(set(version for version in plate_to_version.values()))
-    res = await get_plate(msg, payload)
+    res = await get_plate(message, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()
