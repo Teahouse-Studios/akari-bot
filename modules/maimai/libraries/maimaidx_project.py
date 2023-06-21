@@ -210,4 +210,4 @@ async def get_level_process(message, payload, process, goal):
     else:
         msg = f"{message.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
 
-    return msg, len(songs)
+    return msg, songs
