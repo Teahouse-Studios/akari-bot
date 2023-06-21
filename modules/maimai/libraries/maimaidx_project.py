@@ -165,15 +165,15 @@ async def get_level_process(message, payload, process, goal):
         level = song['level']
         if goal in rank_to_score:
             achievement = rank_to_score[goal]
-            if song['achievements'] < achievement and song['level'] == process:
+            if song['achievements'] < achievement and level == process:
                 song_remain.append([song['id'], song['level_index']])
         elif goal in combo_to_index:
             combo_index = combo_to_index[goal]
-            if ((song['fc'] and combo_to_index[song['fc']] < combo_index) or not song['fc']) and song['level'] == process:
+            if ((song['fc'] and combo_to_index[song['fc']] < combo_index) or not song['fc']) and level == process:
                 song_remain.append([song['id'], song['level_index']])
         elif goal in sync_to_index:
             sync_index = sync_to_index[goal]
-            if ((song['fs'] and sync_to_index[song['fs']] < sync_index) or not song['fs']) and song['level'] == process:
+            if ((song['fs'] and sync_to_index[song['fs']] < sync_index) or not song['fs']) and level == process:
                 song_remain.append([song['id'], song['level_index']])
         
         song_played.append([song['id'], song['level_index']])
@@ -197,7 +197,7 @@ async def get_level_process(message, payload, process, goal):
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
             msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
-            songs_sorted = sorted(songs, key=lambda i: i[3])
+            songs_sorted = sorted(songs, key=lambda i: i[3][0])
             for s in songs_sorted:
                 self_record = ''
                 if [int(s[0]), s[-1]] in song_record:
