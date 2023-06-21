@@ -154,7 +154,7 @@ async def get_level_process(message, payload, process, goal):
     song_remain = []
 
     payload['version'] = list(set(version for version in plate_to_version.values()))
-    res = await get_plate(message, payload)
+    res = await get_plate(msg, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()
@@ -182,12 +182,15 @@ async def get_level_process(message, payload, process, goal):
             if lv == process and [int(music.id), i + 2] not in song_played:
                 song_remain.append([int(music.id), i + 2])
 
-    song_remain = sorted(song_remain, key=lambda i: (int(i[0]), int(i[1])))
+    song_remain = sorted(song_remain, key=lambda i: int(i[1]))
+    song_remain = sorted(song_remain, key=lambda i: int(i[0]))
     songs = []
 
     for song in song_remain:
         music = (await total_list.get()).by_id(str(song[0]))
         songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
+
+    songs = sorted(songs, key=lambda s: int(s[0]))
 
     msg = ''
     if len(song_remain) > 0:
@@ -206,7 +209,7 @@ async def get_level_process(message, payload, process, goal):
                     elif goal in sync_conversion.values():
                         if verlist[record_index]['fs']:
                             self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])].upper()
-                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n".strip()
+                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
         else:
             msg = f"{message.locale.t('maimai.message.process.level.last', song_remain=len(song_remain), process=process, goal=goal)}"
     else:
