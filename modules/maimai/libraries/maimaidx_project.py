@@ -139,9 +139,6 @@ async def get_player_score(msg, payload, input_id):
                     entry_output += f" {sync_rank}{sync_rank}"
                 output_lines.append(entry_output)
         else:
-            level_name = level_conversion.get(level, None)
-            output_lines.append(f"{level_name} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
-
-    output_lines = [line for line in output_lines if not line.startswith("None")]
+            output_lines.append(f"{level_conversion[level]} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
 
     return '\n'.join(output_lines)
