@@ -6,8 +6,6 @@ from .maimaidx_music import TotalList
 
 total_list = TotalList()
 
-achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]
-
 plate_to_version = {
     '初': 'maimai',
     '真': 'maimai PLUS',
@@ -76,8 +74,7 @@ diffs = {
     4: "Re:MASTER",
 }
 
-scoreRank = ['d', 'c', 'b', 'bb', 'bbb', 'a', 'aa', 'aaa', 's', 's+', 'ss', 'ss+', 'sss', 'sss+']
-levelList = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+', '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
+achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]
 
 async def get_rank(msg, payload):
     player_data = await get_record(msg, payload)
@@ -209,9 +206,9 @@ async def get_level_process(message, payload, process, goal):
                     elif goal in sync_conversion.values():
                         if verlist[record_index]['fs']:
                             self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])].upper()
-                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n".strip()
         else:
-            msg = f"{message.locale.t('maimai.message.process.level.last', song_remain=len(song_remain), process=process, goal=goal)}"
+            msg = f"{message.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
     else:
         msg = f"{message.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
 
