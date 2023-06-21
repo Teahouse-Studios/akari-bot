@@ -2,7 +2,7 @@ from datetime import datetime
 
 from core.utils.http import get_url
 from .maimaidx_api_data import get_record, get_plate
-from .maimaidx_music import *
+from .maimaidx_music import TotalList
 
 total_list = TotalList()
 
@@ -149,7 +149,7 @@ async def get_player_score(msg, payload, input_id):
     return '\n'.join(output_lines)
 
 
-async def get_level_process(msg, payload, process, goal):
+async def get_level_process(message, payload, process, goal):
     song_played = []
     song_remain = []
 
@@ -182,8 +182,7 @@ async def get_level_process(msg, payload, process, goal):
             if lv == process and [int(music.id), i + 2] not in song_played:
                 song_remain.append([int(music.id), i + 2])
 
-    song_remain = sorted(song_remain, key=lambda i: int(i[1]))
-    song_remain = sorted(song_remain, key=lambda i: int(i[0]))
+    song_remain = sorted(song_remain, key=lambda i: (int(i[0]), int(i[1])))
     songs = []
 
     for song in song_remain:
@@ -194,7 +193,7 @@ async def get_level_process(msg, payload, process, goal):
     if len(song_remain) > 0:
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
-            msg += f"{msg.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
+            msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
                 if [int(s[0]), s[-1]] in song_record:
@@ -209,8 +208,8 @@ async def get_level_process(msg, payload, process, goal):
                             self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])].upper()
                 msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n".strip()
         else:
-            msg = f"{msg.locale.t('maimai.message.process.level.last', song_remain=len(song_remain), process=process, goal=goal)}"
+            msg = f"{message.locale.t('maimai.message.process.level.last', song_remain=len(song_remain), process=process, goal=goal)}"
     else:
-        msg = f"{msg.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
+        msg = f"{message.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
 
     return msg
