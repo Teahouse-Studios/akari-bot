@@ -149,7 +149,7 @@ async def get_player_score(msg, payload, input_id):
     return '\n'.join(output_lines)
 
 
-async def level_process_data(msg, payload, process, goal):
+async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
 
