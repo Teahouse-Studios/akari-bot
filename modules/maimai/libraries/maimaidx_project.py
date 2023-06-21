@@ -176,7 +176,7 @@ async def get_level_process(msg, payload, process, goal):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
 
-    for music in total_list:
+    for music in (await total_list.get()):
         for i, lv in enumerate(music.level[2:]):
             if lv == process and [int(music.id), i + 2] not in song_played:
                 song_remain.append([int(music.id), i + 2])
@@ -187,7 +187,7 @@ async def get_level_process(msg, payload, process, goal):
 
     for song in song_remain:
         music = (await total_list.get()).by_id(str(song[0]))
-        songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1]])
+        songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
 
     msg = ''
     if len(song_remain) > 0:
@@ -206,7 +206,7 @@ async def get_level_process(msg, payload, process, goal):
                     elif goal.lower() in sync_conversion.values():
                         if verlist[record_index]['fs']:
                             self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])].upper()
-                msg += f'No.{i + 1} {s[0]}. {s[1]} {s[2]} {s[3]} {self_record}'.strip() + '\n'
+                msg += f"#{i + 1} {s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
         else:
             msg = f'还有{len(song_remain)}首{process}曲目没有达成{goal.upper()},加油推分捏！'
     else:
