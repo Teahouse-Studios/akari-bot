@@ -157,20 +157,21 @@ async def get_level_process(msg, payload, process, goal):
     res = await get_plate(msg, payload)
     verlist = res["verlist"]
 
-    if goal.lower() in score_to_rank.values():
-        achievement = achievementList[list(score_to_rank.values()).index(goal.lower()) - 1]
+    goal = goal.upper()
+    if goal in score_to_rank.values():
+        achievement = achievementList[list(score_to_rank.values()).index(goal) - 1]
         for song in verlist:
             if song['level'] == process and song['achievements'] < achievement:
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
-    elif goal.lower() in combo_conversion.values():
-        combo_index = list(combo_conversion.values()).index(goal.lower())
+    elif goal in combo_conversion.values():
+        combo_index = list(combo_conversion.values()).index(goal)
         for song in verlist:
             if song['level'] == process and ((song['fc'] and list(combo_conversion.keys()).index(song['fc']) < combo_index) or not song['fc']):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
-    elif goal.lower() in sync_conversion.values():
-        sync_index = list(sync_conversion.values()).index(goal.lower())
+    elif goal in sync_conversion.values():
+        sync_index = list(sync_conversion.values()).index(goal)
         for song in verlist:
             if song['level'] == process and ((song['fs'] and list(sync_conversion.keys()).index(song['fs']) < sync_index) or not song['fs']):
                 song_remain.append([song['id'], song['level_index']])
@@ -193,23 +194,23 @@ async def get_level_process(msg, payload, process, goal):
     if len(song_remain) > 0:
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
-            msg += f'{process}全谱面{goal.upper()}剩余曲目如下：\n'
+            msg += f"{msg.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
                 if [int(s[0]), s[-1]] in song_record:
                     record_index = song_record.index([int(s[0]), s[-1]])
-                    if goal.lower() in score_to_rank.values():
+                    if goal in score_to_rank.values():
                         self_record = str(verlist[record_index]['achievements']) + '%'
-                    elif goal.lower() in combo_conversion.values():
+                    elif goal in combo_conversion.values():
                         if verlist[record_index]['fc']:
                             self_record = list(combo_conversion.values())[list(combo_conversion.keys()).index(verlist[record_index]['fc'])].upper()
-                    elif goal.lower() in sync_conversion.values():
+                    elif goal in sync_conversion.values():
                         if verlist[record_index]['fs']:
                             self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])].upper()
-                msg += f"#{i + 1} {s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n".strip()
         else:
-            msg = f'还有{len(song_remain)}首{process}曲目没有达成{goal.upper()},加油推分捏！'
+            msg = f"{msg.locale.t('maimai.message.process.level.last', song_remain=len(song_remain), process=process, goal=goal)}"
     else:
-        msg = f'恭喜达成{process}全谱面{goal.upper()}！'
+        msg = f"{msg.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
 
     return msg
