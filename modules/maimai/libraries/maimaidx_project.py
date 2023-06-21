@@ -194,15 +194,16 @@ async def get_level_process(message, payload, process, goal):
             msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
-                record_index = song_record.index([int(s[0]), s[-1]])
-                if goal in score_to_rank.values():
-                    self_record = str(verlist[record_index]['achievements']) + '%'
-                elif goal in combo_conversion.values():
-                    if verlist[record_index]['fc']:
-                        self_record = list(combo_conversion.values())[list(combo_conversion.keys()).index(verlist[record_index]['fc'])]
-                elif goal in sync_conversion.values():
-                    if verlist[record_index]['fs']:
-                        self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])]
+                if [int(s[0]), s[-1]] in song_record:
+                    record_index = song_record.index([int(s[0]), s[-1]])
+                    if goal in score_to_rank.values():
+                        self_record = str(verlist[record_index]['achievements']) + '%'
+                    elif goal in combo_conversion.values():
+                        if verlist[record_index]['fc']:
+                            self_record = list(combo_conversion.values())[list(combo_conversion.keys()).index(verlist[record_index]['fc'])]
+                    elif goal in sync_conversion.values():
+                        if verlist[record_index]['fs']:
+                            self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])]
                 msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
         else:
             msg = f"{message.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
