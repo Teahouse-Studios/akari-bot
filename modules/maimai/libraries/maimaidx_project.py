@@ -187,15 +187,13 @@ async def get_level_process(message, payload, process, goal):
         music = (await total_list.get()).by_id(str(song[0]))
         songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
 
-    songs = sorted(songs, key=lambda s: int(s[0]))
-
     msg = ''
     if len(song_remain) > 0:
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
-            msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
+                goals = ''
                 if [int(s[0]), s[-1]] in song_record:
                     record_index = song_record.index([int(s[0]), s[-1]])
                     if goal in score_to_rank.values():
@@ -206,7 +204,8 @@ async def get_level_process(message, payload, process, goal):
                     elif goal in sync_conversion.values():
                         if verlist[record_index]['fs']:
                             self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])].upper()
-                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n".strip()
+                goals += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+            msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n{goals.strip()}"
         else:
             msg = f"{message.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
     else:

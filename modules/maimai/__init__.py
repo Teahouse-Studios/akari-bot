@@ -216,12 +216,12 @@ async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = No
         if 1 <= num < 8:
             await msg.finish(msg.locale.t("maimai.message.process.level.less_than_8"))
         elif num < 1 or num > 15:
-            await msg.finish(msg.locale.t("maimai.message.error.level_invalid"))
+            await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
     else:
-        await msg.finish(msg.locale.t("maimai.message.error.level_invalid"))
+        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
     if goal.upper() not in goal_list:
-        await msg.finish(msg.locale.t("maimai.message.error.goal_invalid"))
+        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
     output = await get_level_process(msg, payload, process, goal)
 
