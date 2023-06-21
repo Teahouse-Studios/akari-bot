@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
             if get_['status'] == 0:
                 await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait"))
                 if msg.target.targetFrom not in ['Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
-                    msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
+                    await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
                                            Image(os.path.abspath('./assets/noc.jpg')),
                                            Image(os.path.abspath('./assets/aof.jpg'))])
             elif get_['status'] == -33:
