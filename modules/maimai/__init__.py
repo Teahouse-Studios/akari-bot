@@ -199,7 +199,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
          BImage(f"{file}"), Plain(output)])
     
 
-@mai.handle('process <process> <goal> [<username>]{{maimai.help.process}}')
+@mai.handle('process <process> <goal> [<username>] {{maimai.help.process}}')
 async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = None):
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
@@ -211,7 +211,6 @@ async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = No
     output = await get_level_process(msg, payload, process, goal)
 
     await msg.finish(output)
-
 
 
 @mai.handle('rank [<username>] {{maimai.help.rank}}')
