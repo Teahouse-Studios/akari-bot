@@ -5,7 +5,7 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias
-from modules.maimai.libraries.maimaidx_project import get_rank, get_player_score
+from modules.maimai.libraries.maimaidx_project import get_rank, get_player_score, get_level_process
 from modules.maimai.libraries.maimaidx_music import *
 from .regex import *
 
@@ -197,6 +197,20 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     await msg.finish(
         [Plain(f"{music['id']}\u200B.{music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"), Plain(output)])
+    
+
+@mai.handle('process <process> <goal> [<username>]{{maimai.help.process}}')
+async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = None):
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender, 'b50': True}
+    else:
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username, 'b50': True}
+
+    output = await get_level_process(msg, payload, process, goal)
+
+    await msg.finish(output)
 
 
 
