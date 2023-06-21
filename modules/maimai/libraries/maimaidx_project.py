@@ -2,7 +2,7 @@ from datetime import datetime
 
 from core.utils.http import get_url
 from .maimaidx_api_data import get_record, get_plate
-from .maimaidx_music import TotalList
+from .maimaidx_music import *
 
 total_list = TotalList()
 
@@ -152,7 +152,7 @@ async def get_player_score(msg, payload, input_id):
 async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
-    
+
     payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(msg, payload)
     verlist = res["verlist"]
