@@ -223,9 +223,14 @@ async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = No
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
-    output = await get_level_process(msg, payload, process, goal)
+    output, songs = await get_level_process(msg, payload, process, goal)
 
-    await msg.finish(output)
+    if len(songs) <= 10:
+        await msg.finish(output.strip())
+    else:
+        img = await msgchain2image([Plain(output)])
+        await msg.finish([BImage(img)])
+    
 
 
 @mai.handle('rank [<username>] {{maimai.help.rank}}')
