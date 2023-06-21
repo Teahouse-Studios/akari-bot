@@ -225,7 +225,7 @@ async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = No
 
     output, songs = await get_level_process(msg, payload, process, goal)
 
-    if len(songs) <= 10:
+    if songs <= 10:
         await msg.finish(output.strip())
     else:
         img = await msgchain2image([Plain(output)])
