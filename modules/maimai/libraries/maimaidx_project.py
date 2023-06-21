@@ -176,7 +176,7 @@ async def get_level_process(msg, payload, process, goal):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
 
-    for music in (await total_list):
+    for music in total_list:
         for i, lv in enumerate(music.level[2:]):
             if lv == process and [int(music.id), i + 2] not in song_played:
                 song_remain.append([int(music.id), i + 2])
