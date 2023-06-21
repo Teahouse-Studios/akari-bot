@@ -14,18 +14,20 @@ excr = module('exchange_rate',
               developers=['DoroWolf'])
 
 
-@excr.command('<base> <target> [<amount>] {{exchange_rate.help}}')
+@excr.command('<base> <target> {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base = msg.parsed_msg['<base>'].upper()
     target = msg.parsed_msg['<target>'].upper()
-    amount = msg.parsed_msg.get('<amount>', '1')
+
+    amount = float(base[:-3])
+    base_currency = base[-3:]
     try:
         amount = float(amount)
         if amount <= 0:
             await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
     except ValueError:
         await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
-    await msg.finish(await exchange(base, target, amount, msg))
+    await msg.finish(await exchange(base_currency, target, amount, msg))
 
 
 async def exchange(base_currency, target_currency, amount: float, msg):

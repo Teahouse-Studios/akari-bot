@@ -15,7 +15,7 @@ diff_label_zht = ['綠', '黃', '紅']
 
 
 def song_txt(music: Music):
-    return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+    return [Plain(f"{music.id}\u200B.{music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png", ),
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession):
 
     file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
     await msg.finish(
-        [Plain(f"{music['id']}\u200B. {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
+        [Plain(f"{music['id']}\u200B.{music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"),
          Plain(msg.locale.t("maimai.message.song",
                             artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
