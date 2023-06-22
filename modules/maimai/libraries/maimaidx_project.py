@@ -199,8 +199,8 @@ async def get_level_process(message, payload, process, goal):
             msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
-                if [int(s[0]), s[-1]] in song_record:
-                    record_index = song_record.index([int(s[0]), s[-3]])
+                if [int(s[0]), s[-2]] in song_record:
+                    record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in scoreRank:
                         self_record = str(verlist[record_index]['achievements']) + '%'
                     elif goal in comboRank:
