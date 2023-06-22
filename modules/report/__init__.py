@@ -1,15 +1,10 @@
 import ujson as json
-import os
 
 from core.builtins import Bot
 from core.component import on_command, on_schedule
 from core.scheduler import CronTrigger
 
 rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
-
-if not os.path.isfile('./modules/report/bugs.json'):
-    open('./modules/report/bugs.json', 'x')
-    json.dump([], open('./modules/report/bugs.json', 'w'))
 
 
 def read():
@@ -18,7 +13,7 @@ def read():
 
 
 def write(data: str, frome: str, serial: int):
-    if read() is None:
+    if not read():
         _data = [{'bug': data, 'from': frome, 'serial': serial}]
     else:
         _data = read().append({'bug': data, 'from': frome, 'serial': serial})
@@ -32,7 +27,7 @@ def delete(bug_id: int):
 
 @rp.handle('open <bug> {汇报一个bug}', required_admin=True)
 async def opn(msg: Bot.MessageSession):
-    if read() is None:
+    if not read():
         serial = 1
     else:
         serial = len(read()) + 1
@@ -56,7 +51,7 @@ async def cls(msg: Bot.MessageSession):
 @rp.handle('list {你有几个bug?}', required_superuser=True)
 async def lst(msg: Bot.MessageSession):
     _msg = []
-    if read() is None:
+    if not read():
         await msg.sendMessage('没有bug!')
     else:
         for i in read():
@@ -77,7 +72,7 @@ on_schedule(
 
 async def post(bot: Bot.FetchTarget):
     _msg = []
-    if read() is None:
+    if not read():
         await bot.post_message('post_bug', '没有bug!')
     else:
         for i in read():
