@@ -383,7 +383,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[4] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > 10:
                 get_img = True
         else:
