@@ -22,7 +22,8 @@ def write(data: str, frome: str, serial: int):
 
 def delete(bug_id: int):
     data = read()
-    json.dump(data.pop(bug_id), open('./modules/report/bugs.json', 'w'))
+    del data[bug_id]
+    json.dump(data, open('./modules/report/bugs.json', 'w'))
 
 
 @rp.handle('open <bug> {汇报一个bug}', required_admin=True)
@@ -39,7 +40,7 @@ async def opn(msg: Bot.MessageSession):
 @rp.handle('close <bug_id> {完成bug修复}', required_superuser=True)
 async def cls(msg: Bot.MessageSession):
     try:
-        _id = int(msg.parsed_msg['<bug_id>'])
+        _id = int(msg.parsed_msg['<bug_id>'])-1
         grpid = read()[_id]['from']
         await Bot.FetchTarget.fetch_target(grpid).sendDirectMessage('已修复#' + str(_id))
         delete(_id)
