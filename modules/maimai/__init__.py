@@ -5,11 +5,13 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias
-from modules.maimai.libraries.maimaidx_project import get_rank, get_player_score, get_level_process
-from modules.maimai.libraries.maimaidx_music import *
+from modules.maimai.libraries.maimaidx_project import get_level_process, get_player_score, get_rank, get_score_list
+from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
 from .regex import *
 
 total_list = TotalList()
+
+level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+', '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
 
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
@@ -44,36 +46,6 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='
              desc='{maimai.help.desc}')
 
 
-@mai.handle('level <level> {{maimai.help.level}}')
-async def _(msg: Bot.MessageSession, level: str):
-    result_set = await diff_level_q(level)
-    s = msg.locale.t("maimai.message.level", level=level) + "\n"
-    for elem in result_set:
-        s += f"{elem[0]}\u200B.{elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
-    if len(result_set) == 0:
-        return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    if len(result_set) <= 10:
-        await msg.finish(s.strip())
-    else:
-        img = await msgchain2image([Plain(s)])
-        await msg.finish([BImage(img)])
-
-
-async def diff_level_q(level):
-    result_set = []
-    music_data = (await total_list.get()).filter(level=level)
-    for music in sorted(music_data, key=lambda i: int(i['id'])):
-        for i in music.diff:
-            result_set.append(
-                (music['id'],
-                 music['title'],
-                 music['ds'][i],
-                 diff_label[i],
-                 music['level'][i],
-                 music['type']))
-    return result_set
-
-
 @mai.handle('base <rating> [<rating_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
     if rating_max is not None:
@@ -103,6 +75,36 @@ async def base_level_q(ds1, ds2=None):
         music_data = (await total_list.get()).filter(ds=(ds1, ds2))
     else:
         music_data = (await total_list.get()).filter(ds=ds1)
+    for music in sorted(music_data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append(
+                (music['id'],
+                 music['title'],
+                 music['ds'][i],
+                 diff_label[i],
+                 music['level'][i],
+                 music['type']))
+    return result_set
+
+
+@mai.handle('level <level> {{maimai.help.level}}')
+async def _(msg: Bot.MessageSession, level: str):
+    result_set = await diff_level_q(level)
+    s = msg.locale.t("maimai.message.level", level=level) + "\n"
+    for elem in result_set:
+        s += f"{elem[0]}\u200B.{elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+    if len(result_set) == 0:
+        return await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+    if len(result_set) <= 10:
+        await msg.finish(s.strip())
+    else:
+        img = await msgchain2image([Plain(s)])
+        await msg.finish([BImage(img)])
+
+
+async def diff_level_q(level):
+    result_set = []
+    music_data = (await total_list.get()).filter(level=level)
     for music in sorted(music_data, key=lambda i: int(i['id'])):
         for i in music.diff:
             result_set.append(
@@ -199,8 +201,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
          BImage(f"{file}"), Plain(output)])
     
 
-@mai.handle('process <process> <goal> [<username>] {{maimai.help.process}}')
-async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = None):
+@mai.handle('process <level> <goal> [<username>] {{maimai.help.process}}')
+async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
     goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
 
     if username is None and msg.target.senderFrom == "QQ":
@@ -210,20 +212,17 @@ async def _(msg: Bot.MessageSession, process: str, goal: str, username: str = No
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
     
-    if process.isdigit() or (process.endswith('+') and process[:-1].isdigit()):
-        num_str = process[:-1] if process.endswith('+') else process
-        num = int(num_str)
-        if 1 <= num < 8:
+    if level in level_list:
+        level_num = int(level.split('+')[0])
+        if level_num < 8:
             await msg.finish(msg.locale.t("maimai.message.process.level.less_than_8"))
-        elif num < 1 or num > 15:
-            await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
     else:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
-    output, songs = await get_level_process(msg, payload, process, goal)
+    output, songs = await get_level_process(msg, payload, level, goal)
 
     if songs <= 10 or songs >= 50:
         await msg.finish(output.strip())
@@ -242,14 +241,26 @@ async def _(msg: Bot.MessageSession, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    result = await get_rank(msg, payload)
-    time, total_rank, average_rating, username, rating, rank, surpassing_rate = result
-    formatted_average_rating = "{:.4f}".format(average_rating)
-    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
+    await get_rank(msg, payload)
 
-    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
-                                  rating=rating, rank=rank, average_rating=formatted_average_rating,
-                                  surpassing_rate=formatted_surpassing_rate))
+
+@mai.handle('scorelist <level> [<username>] {{maimai.help.scorelist}}')
+async def _(msg: Bot.MessageSession, level: str, username: str = None):
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender}
+    else:
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username}
+
+    res, output = await get_score_list(msg, payload, level)
+
+    if output <= 10:
+        await msg.finish([Plain(res.strip())])
+    else:
+        img = await msgchain2image([Plain(res)])
+        await msg.finish([BImage(img)])
+
 
 
 @mai.handle('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
@@ -367,7 +378,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
         diff_index = get_diff(diff)
         music = (await total_list.get()).by_id(sid)
-        chart: Dict[Any] = music['charts'][diff_index]
+        chart = music['charts'][diff_index]
         tap = int(chart['notes'][0])
         slide = int(chart['notes'][2])
         hold = int(chart['notes'][1])

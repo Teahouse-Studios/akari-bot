@@ -101,7 +101,12 @@ async def get_rank(msg, payload):
     surpassing_rate = (total_rank - rank) / total_rank * 100
     time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    return time, total_rank, average_rating, username, rating, rank, surpassing_rate
+    formatted_average_rating = "{:.4f}".format(average_rating)
+    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
+
+    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
+                                  rating=rating, rank=rank, average_rating=formatted_average_rating,
+                                  surpassing_rate=formatted_surpassing_rate))
 
 
 async def get_player_score(msg, payload, input_id):
@@ -146,7 +151,7 @@ async def get_player_score(msg, payload, input_id):
     return '\n'.join(output_lines)
 
 
-async def get_level_process(message, payload, process, goal):
+async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
 
@@ -157,7 +162,7 @@ async def get_level_process(message, payload, process, goal):
     sync_rank = list(sync_conversion.keys())
 
     payload['version'] = list(set(version for version in plate_to_version.values()))
-    res = await get_plate(message, payload)
+    res = await get_plate(msg, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()
@@ -192,11 +197,11 @@ async def get_level_process(message, payload, process, goal):
         music = (await total_list.get()).by_id(str(song[0]))
         songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
 
-    msg = ''
+    output = ''
     if len(song_remain) > 0:
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
-            msg += f"{message.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
+            output += f"{msg.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
                 if [int(s[0]), s[-2]] in song_record:
@@ -205,14 +210,44 @@ async def get_level_process(message, payload, process, goal):
                         self_record = str(verlist[record_index]['achievements']) + '%'
                     elif goal in comboRank:
                         if verlist[record_index]['fc']:
-                            self_record = comboRank[combo_rank.keys().index(verlist[record_index]['fc'])]
+                            self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
                     elif goal in syncRank:
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+                output += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
         else:
-            msg = f"{message.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
+            output = f"{msg.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
     else:
-        msg = f"{message.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
+        output = f"{msg.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
 
-    return msg, len(song_remain)
+    return output, len(song_remain)
+
+
+async def get_score_list(msg, payload, level):
+    song_list = []
+
+    player_data = await get_record(msg, payload)
+    username = player_data['username']
+
+    payload['version'] = list(set(version for version in plate_to_version.values()))
+    res = await get_plate(msg, payload)
+    verlist = res["verlist"]
+    music = (await total_list.get()).by_id(str(s['id']))
+
+    for song in verlist:
+        if song['level'] == level:
+            song_list.append(song)
+    output_lines = []
+    for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):
+        output = f"{music.id}\u200B.{music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']}%"
+        if s["fc"] and s["fs"]:
+            output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
+        elif s["fc"] or s["fs"]:
+            output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
+        output_lines.append(output)
+
+    outputs = '\n'.join(output_lines)
+
+    res = f"{msg.locale.t('maimai.message.scorelist', user=username, level=level)}\n{outputs}"
+
+    return res, len(output_lines)
