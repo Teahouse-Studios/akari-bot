@@ -209,6 +209,8 @@ async def get_level_process(message, payload, process, goal):
                     elif goal in syncRank:
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+                else:
+                    self_record = message.locale.t('maimai.message.process.no_record')
                 msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
         else:
             msg = f"{message.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
