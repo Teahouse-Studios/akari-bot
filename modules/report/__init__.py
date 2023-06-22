@@ -9,6 +9,7 @@ rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
 
 if not os.path.isfile('./modules/report/bugs.json'):
     open('./modules/report/bugs.json', 'x')
+    json.dump([], open('./modules/report/bugs.json', 'w'))
 
 
 def read():
