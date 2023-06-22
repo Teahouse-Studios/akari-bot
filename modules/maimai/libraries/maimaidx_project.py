@@ -238,12 +238,12 @@ async def get_score_list(msg, payload, level):
             song_list.append(song)
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):
-        music = (await total_list.get()).by_id(s['id'])
-        output = f"{music.id}\u200B.{music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']}%"
-        if s["fc"] and s["fs"]:
-            output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
-        elif s["fc"] or s["fs"]:
-            output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
+        music = (await total_list.get()).by_id(str(s[1]['id']))
+        output = f"{music.id}\u200B.{music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
+        if s[1]["fc"] and s[1]["fs"]:
+            output += f" {combo_conversion.get(s[1]['fc'], '')} {sync_conversion.get(s[1]['fs'], '')}"
+        elif s[1]["fc"] or s[1]["fs"]:
+            output += f" {combo_conversion.get(s[1]['fc'], '')}{sync_conversion.get(s[1]['fs'], '')}"
         output_lines.append(output)
 
     outputs = '\n'.join(output_lines)
