@@ -336,7 +336,7 @@ async def get_plate_process(msg, payload, plate):
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
     for music in (await total_list.get()):
-        if music.basic_info.version in payload['version']:
+        if music['basic_info']['from'] in payload['version']:
             if [int(music.id), 0] not in song_played:
                 song_remain_basic.append([int(music.id), 0])
             if [int(music.id), 1] not in song_played:
