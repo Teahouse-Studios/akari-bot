@@ -211,16 +211,16 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
     
-    if plate == '真将':
+    if plate == '真将' or (plate[1] == '者' and plate[0] != '霸'):
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    output, songs_diff, songs = await get_plate_process(msg, payload, plate)
+    output, get_img = await get_plate_process(msg, payload, plate)
 
-    if songs <= 10 or songs >= 50 or songs_diff <= 10 or songs_diff >= 50:
-        await msg.finish(output.strip())
-    else:
+    if get_img:
         img = await msgchain2image([Plain(output)])
         await msg.finish([BImage(img)])
+    else:
+        await msg.finish(output.strip())
 
 
 @mai.handle('process <level> <goal> [<username>] {{maimai.help.process}}')

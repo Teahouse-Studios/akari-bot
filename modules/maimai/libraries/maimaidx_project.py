@@ -383,6 +383,8 @@ async def get_plate_process(msg, payload, plate):
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
                 output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[4] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+            if len(song_remain_difficult) > 10:
+                get_img = True
         else:
             output += msg.locale.t('maimai.message.plate.greater_13p', song_remain=len(song_remain_difficult))
     elif len(song_remain) > 0:
@@ -406,9 +408,11 @@ async def get_plate_process(msg, payload, plate):
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
                 output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
+            if len(song_remain) > 10:
+                get_img = True
         else:
             output += msg.locale.t('maimai.message.plate.greater_13p.complete')
     else:
-        output += msg.locale.t('maimai.message.plate.completed')
+        output += msg.locale.t('maimai.message.plate.completed', plate=plate)
 
-    return output, len(song_remain_difficult), len(song_remain)
+    return output, get_img
