@@ -238,7 +238,7 @@ async def get_score_list(msg, payload, level):
             song_list.append(song)
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):
-        music = (await total_list.get()).by_id(str(s['id']))
+        music = (await total_list.get()).by_id(str(s[1]['id']))
         output = f"{music.id}\u200B.{music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']}%"
         if s["fc"] and s["fs"]:
             output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
