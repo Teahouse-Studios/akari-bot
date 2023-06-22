@@ -1,53 +1,42 @@
-import redis
-
-from config import Config
+import ujson as json
 from core.builtins import Bot
 from core.component import on_command, on_schedule
 from core.scheduler import CronTrigger
-from ast import literal_eval as lev
 
 rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
 
-redis_ = Config('redis').split(':')
-db = redis.StrictRedis(host=redis_[0], port=int(redis_[1]), db=0, decode_responses=True, charset='UTF-8')
-
 
 def read():
-    _data = db.get('bug')
-    return lev(_data)
+    _data = json.load(open('./modules/report/bugs.json', 'r'))
+    return _data
 
 
 def write(data: str, frome: str):
-    _data = read().append({"bug": data, "from": frome})
-    db.set('bug', str(_data))
-
-
-def exist():
-    return db.exists('bug')
+    if read() is None:
+        _data = [{'bug': data, 'from': frome}]
+    else:
+        _data = read().append({'bug': data, 'from': frome})
+    json.dump(_data, open('./modules/report/bugs.json', 'w'))
 
 
 def delete(bug_id: int):
     data = read()
-    db.set('bug', data.pop(bug_id))
-
-
-if not exist():
-    db.set('bug', '[{"bug": "¿", "from": "QQ|2031611695"}]')
+    json.dump(data.pop(bug_id), open('./modules/report/bugs.json', 'w'))
 
 
 @rp.handle('open <bug> {汇报一个bug}', required_admin=True)
 async def opn(msg: Bot.MessageSession):
-    if not exist():
-        db.set('bug', '[{"bug": "¿", "from": "QQ|2031611695"}]')
-    write(f"#{len(read())+1}:\n{msg.parsed_msg['<bug>']}\n——{msg.target.senderName}({msg.target.senderId})",
+    if read() is None:
+        length = 1
+    else:
+        length = len(read())+1
+    write(f"#{length}:\n{msg.parsed_msg['<bug>']}\n——{msg.target.senderName}({msg.target.senderId})",
           msg.target.targetId)
-    await msg.sendMessage('已添加: #' + str(len(read())))
+    await msg.sendMessage('已添加: #' + str(length))
 
 
 @rp.handle('close <bug_id> {完成bug修复}', required_superuser=True)
 async def cls(msg: Bot.MessageSession):
-    if not exist():
-        db.set('bug', '[{"bug": "¿", "from": "QQ|2031611695"}]')
     try:
         _id = int(msg.parsed_msg['<bug_id>'])
         grpid = read()[_id]['from']
@@ -60,12 +49,13 @@ async def cls(msg: Bot.MessageSession):
 
 @rp.handle('list {你有几个bug?}', required_superuser=True)
 async def lst(msg: Bot.MessageSession):
-    if not exist():
-        db.set('bug', '[{"bug": "¿", "from": "QQ|2031611695"}]')
     _msg = []
-    for i in read():
-        _msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
-    await msg.sendMessage('待解决的bug:\n' + ',\n'.join(_msg))
+    if read() is None:
+        await msg.sendMessage('没有bug!')
+    else:
+        for i in read():
+            _msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
+        await msg.sendMessage('待解决的bug:\n' + ',\n'.join(_msg))
 
 
 on_schedule(
@@ -78,9 +68,10 @@ on_schedule(
 
 
 async def post(bot: Bot.FetchTarget):
-    if not exist():
-        db.set('bug', '[{"bug": "¿", "from": "QQ|2031611695"}]')
-    msg = []
-    for i in read():
-        msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
-    await bot.post_message('post_bug', '待解决的bug:\n' + ',\n'.join(msg))
+    _msg = []
+    if read() is None:
+        await bot.post_message('post_bug', '没有bug!')
+    else:
+        for i in read():
+            _msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
+        await bot.post_message('post_bug', '待解决的bug:\n' + ',\n'.join(_msg))
