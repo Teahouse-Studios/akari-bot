@@ -5,7 +5,7 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_player_score, get_rank, get_score_list
+from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, get_score_list
 from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
 from .regex import *
 
@@ -214,7 +214,7 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
     if plate == '真将':
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
-    output, songs_diff, songs = await get_level_process(msg, payload, plate)
+    output, songs_diff, songs = await get_plate_process(msg, payload, plate)
 
     if songs <= 10 or songs >= 50 or songs_diff <= 10 or songs_diff >= 50:
         await msg.finish(output.strip())
