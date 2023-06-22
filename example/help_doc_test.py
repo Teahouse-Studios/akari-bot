@@ -12,5 +12,5 @@ c = CommandParser(('~wiki <PageName> {搜索一个Wiki页面}',
 
 print(c.parse('~wiki iw'))
 # Note：向指定群发送消息
-f = Bot.FetchTarget.fetch_target('QQ|Group|群号')
+f = await Bot.FetchTarget.fetch_target('QQ|Group|群号')
 await f.sendDirectMessage('xxx')
