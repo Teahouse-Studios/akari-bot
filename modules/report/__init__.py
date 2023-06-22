@@ -1,4 +1,5 @@
 import ujson as json
+import traceback
 
 from core.builtins import Bot
 from core.component import on_command, on_schedule
@@ -40,13 +41,15 @@ async def opn(msg: Bot.MessageSession):
 @rp.handle('close <bug_id> {完成bug修复}', required_superuser=True)
 async def cls(msg: Bot.MessageSession):
     try:
-        _id = int(msg.parsed_msg['<bug_id>'])-1
+        _id = int(msg.parsed_msg['<bug_id>']) - 1
         grpid = read()[_id]['from']
-        await Bot.FetchTarget.fetch_target(grpid).sendDirectMessage('已修复#' + str(_id))
+        f = await Bot.FetchTarget.fetch_target(grpid)
+        await f.sendDirectMessage('已修复#' + str(_id))
         delete(_id)
 
     except Exception:
         await msg.sendMessage('不存在的id，请检查输入')
+        traceback.print_exc()
 
 
 @rp.handle('list {你有几个bug?}', required_superuser=True)
