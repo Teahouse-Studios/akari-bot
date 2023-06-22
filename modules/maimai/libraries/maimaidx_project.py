@@ -150,30 +150,35 @@ async def get_level_process(message, payload, process, goal):
     song_played = []
     song_remain = []
 
+    scoreRank = list(score_to_rank.values())
+    comboRank = list(combo_conversion.values())
+    syncRank = list(sync_conversion.values())
+    combo_rank = list(combo_conversion.keys())
+    sync_rank = list(sync_conversion.keys())
+
     payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(message, payload)
     verlist = res["verlist"]
 
     goal = goal.upper()
-    if goal in score_to_rank.values():
-        achievement = achievementList[list(score_to_rank.values()).index(goal) - 1]
+    if goal in scoreRank:
+        achievement = achievementList[scoreRank.index(goal) - 1]
         for song in verlist:
             if song['level'] == process and song['achievements'] < achievement:
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
-    elif goal in combo_conversion.values():
-        combo_index = list(combo_conversion.values()).index(goal)
+    elif goal in comboRank:
+        combo_index = comboRank.index(goal)
         for song in verlist:
-            if song['level'] == process and ((song['fc'] and list(combo_conversion.keys()).index(song['fc']) < combo_index) or not song['fc']):
+            if song['level'] == process and ((song['fc'] and combo_rank.index(song['fc']) < combo_index) or not song['fc']):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
-    elif goal in sync_conversion.values():
-        sync_index = list(sync_conversion.values()).index(goal)
+    elif goal in syncRank:
+        sync_index = syncRank.index(goal)
         for song in verlist:
-            if song['level'] == process and ((song['fs'] and list(sync_conversion.keys()).index(song['fs']) < sync_index) or not song['fs']):
+            if song['level'] == process and ((song['fs'] and sync_rank.index(song['fs']) < sync_index) or not song['fs']):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
-
     for music in (await total_list.get()):
         for i, lv in enumerate(music.level[2:]):
             if lv == process and [int(music.id), i + 2] not in song_played:
@@ -181,8 +186,8 @@ async def get_level_process(message, payload, process, goal):
 
     song_remain = sorted(song_remain, key=lambda i: int(i[1]))
     song_remain = sorted(song_remain, key=lambda i: int(i[0]))
-    songs = []
 
+    songs = []
     for song in song_remain:
         music = (await total_list.get()).by_id(str(song[0]))
         songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
@@ -196,14 +201,14 @@ async def get_level_process(message, payload, process, goal):
                 self_record = ''
                 if [int(s[0]), s[-1]] in song_record:
                     record_index = song_record.index([int(s[0]), s[-1]])
-                    if goal in score_to_rank.values():
+                    if goal in scoreRank:
                         self_record = str(verlist[record_index]['achievements']) + '%'
-                    elif goal in combo_conversion.values():
+                    elif goal in comboRank:
                         if verlist[record_index]['fc']:
-                            self_record = list(combo_conversion.values())[list(combo_conversion.keys()).index(verlist[record_index]['fc'])]
-                    elif goal in sync_conversion.values():
+                            self_record = comboRank[combo_rank.keys().index(verlist[record_index]['fc'])]
+                    elif goal in syncRank:
                         if verlist[record_index]['fs']:
-                            self_record = list(sync_conversion.values())[list(sync_conversion.keys()).index(verlist[record_index]['fs'])]
+                            self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
                 msg += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
         else:
             msg = f"{message.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
