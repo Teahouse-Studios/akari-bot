@@ -269,6 +269,7 @@ async def get_plate_process(msg, payload, plate):
 
     version = plate[0]
     goal = plate[1:]
+    get_img = False
 
     if version in ['霸', '舞']:
         payload['version'] = list(set(version for version in list(plate_to_version.values())[:-9]))
