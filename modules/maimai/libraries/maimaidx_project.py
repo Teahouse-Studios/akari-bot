@@ -232,13 +232,13 @@ async def get_score_list(msg, payload, level):
     payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(msg, payload)
     verlist = res["verlist"]
-    music = (await total_list.get()).by_id(str(s['id']))
 
     for song in verlist:
         if song['level'] == level:
             song_list.append(song)
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):
+        music = (await total_list.get()).by_id(str(s['id']))
         output = f"{music.id}\u200B.{music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']}%"
         if s["fc"] and s["fs"]:
             output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
