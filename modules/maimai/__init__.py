@@ -203,7 +203,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
 @mai.handle('plate <plate> [<username>] {{maimai.help.plate}}')
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
-
+    get_img = False
+    
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender}
     else:
