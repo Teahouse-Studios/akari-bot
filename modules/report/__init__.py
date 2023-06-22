@@ -8,7 +8,7 @@ from core.scheduler import CronTrigger
 rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
 
 if not os.path.isfile('./modules/report/bugs.json'):
-    open('./modules/report/bugs.json', 'c')
+    open('./modules/report/bugs.json', 'x')
 
 
 def read():
