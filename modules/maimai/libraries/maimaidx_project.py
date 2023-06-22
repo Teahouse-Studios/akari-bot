@@ -201,7 +201,7 @@ async def get_level_process(msg, payload, process, goal):
     if len(song_remain) > 0:
         if len(song_remain) < 50:
             song_record = [[s['id'], s['level_index']] for s in verlist]
-            output += f"{msg.locale.t('maimai.message.process.level.last', process=process, goal=goal)}\n"
+            output += f"{msg.locale.t('maimai.message.process.last', process=process, goal=goal)}\n"
             for i, s in enumerate(sorted(songs, key=lambda i: i[3])):
                 self_record = ''
                 if [int(s[0]), s[-2]] in song_record:
@@ -214,11 +214,11 @@ async def get_level_process(msg, payload, process, goal):
                     elif goal in syncRank:
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B.{s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
         else:
-            output = f"{msg.locale.t('maimai.message.process.level', song_remain=len(song_remain), process=process, goal=goal)}"
+            output = f"{msg.locale.t('maimai.message.process', song_remain=len(song_remain), process=process, goal=goal)}"
     else:
-        output = f"{msg.locale.t('maimai.message.process.level.completed', process=process, goal=goal)}"
+        output = f"{msg.locale.t('maimai.message.process.completed', process=process, goal=goal)}"
 
     return output, len(song_remain)
 
@@ -239,7 +239,7 @@ async def get_score_list(msg, payload, level):
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):
         music = (await total_list.get()).by_id(str(s[1]['id']))
-        output = f"{music.id}\u200B.{music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
+        output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
         if s[1]["fc"] and s[1]["fs"]:
             output += f" {combo_conversion.get(s[1]['fc'], '')} {sync_conversion.get(s[1]['fs'], '')}"
         elif s[1]["fc"] or s[1]["fs"]:
@@ -251,3 +251,164 @@ async def get_score_list(msg, payload, level):
     res = f"{msg.locale.t('maimai.message.scorelist', user=username, level=level)}\n{outputs}"
 
     return res, len(output_lines)
+
+
+async def get_plate_process(msg, payload, plate):
+    song_played = []
+    song_remain_basic = []
+    song_remain_advanced = []
+    song_remain_expert = []
+    song_remain_master = []
+    song_remain_remaster = []
+    song_remain_difficult = []
+
+    comboRank = list(combo_conversion.values())
+    syncRank = list(sync_conversion.values())
+    combo_rank = list(combo_conversion.keys())
+    sync_rank = list(sync_conversion.keys())
+
+    version = plate[0]
+    goal = plate[1:]
+
+    if version in ['霸', '舞']:
+        payload['version'] = list(set(version for version in list(plate_to_version.values())[:-9]))
+    elif version in plate_to_version:
+        payload['version'] = [plate_to_version[version]]
+    else:
+        await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
+
+    res = await get_plate(msg, payload)
+    verlist = res["verlist"]
+
+    if goal in ['将', '者']:
+        for song in verlist:
+            if song['level_index'] == 0 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+                song_remain_basic.append([song['id'], song['level_index']])
+            if song['level_index'] == 1 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+                song_remain_advanced.append([song['id'], song['level_index']])
+            if song['level_index'] == 2 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+                song_remain_expert.append([song['id'], song['level_index']])
+            if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+                song_remain_master.append([song['id'], song['level_index']])
+            if version in ['舞', '霸'] and song['level_index'] == 4 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+                song_remain_remaster.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
+    elif goal in ['極', '极']:
+        for song in verlist:
+            if song['level_index'] == 0 and not song['fc']:
+                song_remain_basic.append([song['id'], song['level_index']])
+            if song['level_index'] == 1 and not song['fc']:
+                song_remain_advanced.append([song['id'], song['level_index']])
+            if song['level_index'] == 2 and not song['fc']:
+                song_remain_expert.append([song['id'], song['level_index']])
+            if song['level_index'] == 3 and not song['fc']:
+                song_remain_master.append([song['id'], song['level_index']])
+            if version == '舞' and song['level_index'] == 4 and not song['fc']:
+                song_remain_re_master.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
+    elif goal == '舞舞':
+        for song in verlist:
+            if song['level_index'] == 0 and song['fs'] not in ['fsd', 'fsdp']:
+                song_remain_basic.append([song['id'], song['level_index']])
+            if song['level_index'] == 1 and song['fs'] not in ['fsd', 'fsdp']:
+                song_remain_advanced.append([song['id'], song['level_index']])
+            if song['level_index'] == 2 and song['fs'] not in ['fsd', 'fsdp']:
+                song_remain_expert.append([song['id'], song['level_index']])
+            if song['level_index'] == 3 and song['fs'] not in ['fsd', 'fsdp']:
+                song_remain_master.append([song['id'], song['level_index']])
+            if version == '舞' and song['level_index'] == 4 and song['fs'] not in ['fsd', 'fsdp']:
+                song_remain_re_master.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
+    elif goal == '神':
+        for song in verlist:
+            if song['level_index'] == 0 and song['fc'] not in ['ap', 'app']:
+                song_remain_basic.append([song['id'], song['level_index']])
+            if song['level_index'] == 1 and song['fc'] not in ['ap', 'app']:
+                song_remain_advanced.append([song['id'], song['level_index']])
+            if song['level_index'] == 2 and song['fc'] not in ['ap', 'app']:
+                song_remain_expert.append([song['id'], song['level_index']])
+            if song['level_index'] == 3 and song['fc'] not in ['ap', 'app']:
+                song_remain_master.append([song['id'], song['level_index']])
+            if version == '舞' and song['level_index'] == 4 and song['fc'] not in ['ap', 'app']:
+                song_remain_re_master.append([song['id'], song['level_index']])
+            song_played.append([song['id'], song['level_index']])
+    else:
+        await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
+
+    for music in (await total_list.get()):
+        if music.basic_info.version in payload['version']:
+            if [int(music.id), 0] not in song_played:
+                song_remain_basic.append([int(music.id), 0])
+            if [int(music.id), 1] not in song_played:
+                song_remain_advanced.append([int(music.id), 1])
+            if [int(music.id), 2] not in song_played:
+                song_remain_expert.append([int(music.id), 2])
+            if [int(music.id), 3] not in song_played:
+                song_remain_master.append([int(music.id), 3])
+            if version in ['舞', '霸'] and len(music.level) == 5 and [int(music.id), 4] not in song_played:
+                song_remain_re_master.append([int(music.id), 4])
+    song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))
+    song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))
+    song_remain_expert = sorted(song_remain_expert, key=lambda i: int(i[0]))
+    song_remain_master = sorted(song_remain_master, key=lambda i: int(i[0]))
+    song_remain_re_master = sorted(song_remain_re_master, key=lambda i: int(i[0]))
+    for song in song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_re_master:
+        music = (await total_list.get()).by_id(str(song[0]))
+        if music.ds[song[1]] > 13.6:
+            song_remain_difficult.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
+
+    output = msg.locale.t('maimai.message.plate', plate=plate,
+                          song_remain_basic=len(song_remain_basic),
+                          song_remain_advanced=len(song_remain_advanced),
+                          song_remain_expert=len(song_remain_expert),
+                          song_remain_master=len(song_remain_master)) + '\n'
+
+    song_remain: list[list] = song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_re_master
+    song_record = [[s['id'], s['level_index']] for s in verlist]
+    if version in ['舞', '霸']:
+        output += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_master)) + '\n'
+    if len(song_remain_difficult) > 0:
+        if len(song_remain_difficult) < 50:
+            output += msg.locale.t('maimai.message.plate.greater_13p.last') + '\n'
+            for i, s in enumerate(sorted(song_remain_difficult, key=lambda i: i[3])):
+                self_record = ''
+                if [int(s[0]), s[-2]] in song_record:
+                    record_index = song_record.index([int(s[0]), s[-2]])
+                    if goal in ['将', '者']:
+                        self_record = str(verlist[record_index]['achievements']) + '%'
+                    elif goal in ['極', '极', '神']:
+                        if verlist[record_index]['fc']:
+                            self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
+                    elif goal == '舞舞':
+                        if verlist[record_index]['fs']:
+                            self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[4] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+        else:
+            output += msg.locale.t('maimai.message.plate.greater_13p', song_remain=len(song_remain_difficult))
+    elif len(song_remain) > 0:
+        for i, s in enumerate(song_remain):
+            m = (await total_list.get()).by_id(str(s[0]))
+            ds = m.ds[s[1]]
+            song_remain[i].append(ds)
+        if len(song_remain) < 50:
+            output += msg.locale.t('maimai.message.plate.last') + '\n'
+            for i, s in enumerate(sorted(song_remain, key=lambda i: i[2])):
+                m = (await total_list.get()).by_id(str(s[0]))
+                self_record = ''
+                if [int(s[0]), s[-1]] in song_record:
+                    record_index = song_record.index([int(s[0]), s[-2]])
+                    if goal in ['将', '者']:
+                        self_record = str(verlist[record_index]['achievements']) + '%'
+                    elif goal in ['極', '极', '神']:
+                        if verlist[record_index]['fc']:
+                            self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
+                    elif goal == '舞舞':
+                        if verlist[record_index]['fs']:
+                            self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
+                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
+        else:
+            output += msg.locale.t('maimai.message.plate.greater_13p.complete')
+    else:
+        output += msg.locale.t('maimai.message.plate.completed')
+
+    return output, len(song_remain_difficult), len(song_remain)
