@@ -273,7 +273,7 @@ async def get_plate_process(msg, payload, plate):
     if version in ['霸', '舞']:
         payload['version'] = list(set(version for version in list(plate_to_version.values())[:-9]))
     elif version in plate_to_version:
-        payload['version'] = [plate_to_version['version']]
+        payload['version'] = [plate_to_version[version]]
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
@@ -304,7 +304,7 @@ async def get_plate_process(msg, payload, plate):
             if song['level_index'] == 3 and not song['fc']:
                 song_remain_master.append([song['id'], song['level_index']])
             if version == '舞' and song['level_index'] == 4 and not song['fc']:
-                song_remain_re_master.append([song['id'], song['level_index']])
+                song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal == '舞舞':
         for song in verlist:
@@ -317,7 +317,7 @@ async def get_plate_process(msg, payload, plate):
             if song['level_index'] == 3 and song['fs'] not in ['fsd', 'fsdp']:
                 song_remain_master.append([song['id'], song['level_index']])
             if version == '舞' and song['level_index'] == 4 and song['fs'] not in ['fsd', 'fsdp']:
-                song_remain_re_master.append([song['id'], song['level_index']])
+                song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal == '神':
         for song in verlist:
@@ -330,7 +330,7 @@ async def get_plate_process(msg, payload, plate):
             if song['level_index'] == 3 and song['fc'] not in ['ap', 'app']:
                 song_remain_master.append([song['id'], song['level_index']])
             if version == '舞' and song['level_index'] == 4 and song['fc'] not in ['ap', 'app']:
-                song_remain_re_master.append([song['id'], song['level_index']])
+                song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
@@ -346,13 +346,13 @@ async def get_plate_process(msg, payload, plate):
             if [int(music.id), 3] not in song_played:
                 song_remain_master.append([int(music.id), 3])
             if version in ['舞', '霸'] and len(music.level) == 5 and [int(music.id), 4] not in song_played:
-                song_remain_re_master.append([int(music.id), 4])
+                song_remain_remaster.append([int(music.id), 4])
     song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))
     song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))
     song_remain_expert = sorted(song_remain_expert, key=lambda i: int(i[0]))
     song_remain_master = sorted(song_remain_master, key=lambda i: int(i[0]))
-    song_remain_re_master = sorted(song_remain_re_master, key=lambda i: int(i[0]))
-    for song in song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_re_master:
+    song_remain_remaster = sorted(song_remain_remaster, key=lambda i: int(i[0]))
+    for song in song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster:
         music = (await total_list.get()).by_id(str(song[0]))
         if music.ds[song[1]] > 13.6:
             song_remain_difficult.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
@@ -363,7 +363,7 @@ async def get_plate_process(msg, payload, plate):
                           song_remain_expert=len(song_remain_expert),
                           song_remain_master=len(song_remain_master)) + '\n'
 
-    song_remain: list[list] = song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_re_master
+    song_remain: list[list] = song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster
     song_record = [[s['id'], s['level_index']] for s in verlist]
     if version in ['舞', '霸']:
         output += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_master)) + '\n'
