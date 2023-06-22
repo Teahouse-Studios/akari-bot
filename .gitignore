@@ -31,3 +31,4 @@ assets/mcbeversion.txt
 modules/natural/dataset.jsonl
 go-cqhttp
 modules/trust-post/trust.json
+modules/report/bugs.json

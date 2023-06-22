@@ -1,9 +1,14 @@
 import ujson as json
+import os
+
 from core.builtins import Bot
 from core.component import on_command, on_schedule
 from core.scheduler import CronTrigger
 
 rp = on_command('report', developers='haoye_qwq', desc='汇报bug', base=True)
+
+if not os.path.isfile('./modules/report/bugs.json'):
+    open('./modules/report/bugs.json', 'c')
 
 
 def read():
@@ -11,11 +16,11 @@ def read():
     return _data
 
 
-def write(data: str, frome: str):
+def write(data: str, frome: str, serial: int):
     if read() is None:
-        _data = [{'bug': data, 'from': frome}]
+        _data = [{'bug': data, 'from': frome, 'serial': serial}]
     else:
-        _data = read().append({'bug': data, 'from': frome})
+        _data = read().append({'bug': data, 'from': frome, 'serial': serial})
     json.dump(_data, open('./modules/report/bugs.json', 'w'))
 
 
@@ -27,12 +32,12 @@ def delete(bug_id: int):
 @rp.handle('open <bug> {汇报一个bug}', required_admin=True)
 async def opn(msg: Bot.MessageSession):
     if read() is None:
-        length = 1
+        serial = 1
     else:
-        length = len(read())+1
-    write(f"#{length}:\n{msg.parsed_msg['<bug>']}\n——{msg.target.senderName}({msg.target.senderId})",
-          msg.target.targetId)
-    await msg.sendMessage('已添加: #' + str(length))
+        serial = len(read()) + 1
+    write(f"{msg.parsed_msg['<bug>']}\n——{msg.target.senderName}({msg.target.senderId})",
+          msg.target.targetId, serial)
+    await msg.sendMessage('已添加: #' + str(serial))
 
 
 @rp.handle('close <bug_id> {完成bug修复}', required_superuser=True)
@@ -54,7 +59,7 @@ async def lst(msg: Bot.MessageSession):
         await msg.sendMessage('没有bug!')
     else:
         for i in read():
-            _msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
+            _msg.append(f"来自会话{i['from']}#{i['serial']}: {i['bug']}")
         await msg.sendMessage('待解决的bug:\n' + ',\n'.join(_msg))
 
 
@@ -62,6 +67,8 @@ on_schedule(
     bind_prefix='post_bug',
     trigger=CronTrigger.from_crontab('30 10 * * *'),
     desc='推送bug',
+    alias=None,
+    recommend_modules=None,
     developers='haoye_qwq',
     required_superuser=True
 )
@@ -73,5 +80,5 @@ async def post(bot: Bot.FetchTarget):
         await bot.post_message('post_bug', '没有bug!')
     else:
         for i in read():
-            _msg.append(f"来自会话{i['from']}#{len(read())}:\n{i['bug']}")
+            _msg.append(f"来自会话{i['from']}#{i['serial']}:\n{i['bug']}")
         await bot.post_message('post_bug', '待解决的bug:\n' + ',\n'.join(_msg))
