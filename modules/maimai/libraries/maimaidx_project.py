@@ -273,7 +273,7 @@ async def get_plate_process(msg, payload, plate):
     if version in ['霸', '舞']:
         payload['version'] = list(set(version for version in list(plate_to_version.values())[:-9]))
     elif version in plate_to_version:
-        payload['version'] = [plate_to_version[version]]
+        payload['version'] = [plate_to_version['version']]
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
