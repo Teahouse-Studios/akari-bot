@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession):
 
 @mai_regex.handle(re.compile(r"(.?)([極极将舞神者]舞?)([进進])度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
 async def _(msg: Bot.MessageSession):
-    plate = msg.matched_msg.groups()[:2]
+    plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[3]
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender}
