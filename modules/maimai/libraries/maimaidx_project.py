@@ -367,9 +367,9 @@ async def get_plate_process(msg, payload, plate):
     song_remain: list[list] = song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster
     song_record = [[s['id'], s['level_index']] for s in verlist]
     if version in ['舞', '霸']:
-        prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_master))
+        prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
     await msg.sendMessage(prompt.strip())
-    
+
     output = ''
     if len(song_remain_difficult) > 0:
         if len(song_remain_difficult) < 50:
