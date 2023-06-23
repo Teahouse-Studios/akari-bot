@@ -78,7 +78,7 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))]) 
     
 
-@mai_regex.handle(re.compile(r"(.+)\s?有什(么别称|麼別稱)"), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.handle(re.compile(r"(.+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     if not sid.isdigit():
@@ -192,3 +192,4 @@ async def _(msg: Bot.MessageSession):
     else:
         img = await msgchain2image([Plain(output)])
         await msg.finish([BImage(img)])
+        
