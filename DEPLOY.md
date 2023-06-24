@@ -649,9 +649,9 @@ assets
 
 此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
 
-#### music
+#### ncmusic
 
-music模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
+ncmusic模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
 
 具体配置教程请查看链接所指向的文档。
 
