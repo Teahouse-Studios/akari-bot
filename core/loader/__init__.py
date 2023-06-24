@@ -37,7 +37,7 @@ def load_modules():
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
                 Logger.info(f'Succeeded loaded modules.{fun_file}!')
-        except BaseException:
+        except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
             Logger.error(errmsg)
@@ -63,31 +63,31 @@ class ModulesManager:
     modules_aliases: Dict[str, str] = {}
     modules_origin: Dict[str, str] = {}
 
-    @staticmethod
-    def add_module(module: Module, py_module_name: str):
+    @classmethod
+    def add_module(cls, module: Module, py_module_name: str):
         if module.bind_prefix not in ModulesManager.modules:
-            ModulesManager.modules.update({module.bind_prefix: module})
-            ModulesManager.modules_origin.update({module.bind_prefix: py_module_name})
+            cls.modules.update({module.bind_prefix: module})
+            cls.modules_origin.update({module.bind_prefix: py_module_name})
         else:
             raise ValueError(f'Duplicate bind prefix "{module.bind_prefix}"')
 
-    @staticmethod
-    def remove_modules(modules):
+    @classmethod
+    def remove_modules(cls, modules):
         for module in modules:
-            if module in ModulesManager.modules:
+            if module in cls.modules:
                 Logger.info(f'Removing...{module}')
-                ModulesManager.modules.pop(module)
-                ModulesManager.modules_origin.pop(module)
+                cls.modules.pop(module)
+                cls.modules_origin.pop(module)
             else:
                 raise ValueError(f'Module "{module}" is not exist')
 
-    @staticmethod
-    def search_related_module(module, includeSelf=True):
-        if module in ModulesManager.modules_origin:
+    @classmethod
+    def search_related_module(cls, module, includeSelf=True):
+        if module in cls.modules_origin:
             modules = []
-            py_module = ModulesManager.return_py_module(module)
-            for m in ModulesManager.modules_origin:
-                if ModulesManager.modules_origin[m].startswith(py_module):
+            py_module = cls.return_py_module(module)
+            for m in cls.modules_origin:
+                if cls.modules_origin[m].startswith(py_module):
                     modules.append(m)
             if not includeSelf:
                 modules.remove(module)
@@ -95,50 +95,50 @@ class ModulesManager:
         else:
             raise ValueError(f'Could not find "{module}" in modules_origin dict')
 
-    @staticmethod
-    def return_py_module(module):
-        if module in ModulesManager.modules_origin:
-            return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', ModulesManager.modules_origin[module]).group()
+    @classmethod
+    def return_py_module(cls, module):
+        if module in cls.modules_origin:
+            return re.match(r'^modules(\.[a-zA-Z0-9_]*)?', cls.modules_origin[module]).group()
         else:
             return None
 
-    @staticmethod
-    def bind_to_module(bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta]):
-        if bind_prefix in ModulesManager.modules:
+    @classmethod
+    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta]):
+        if bind_prefix in cls.modules:
             if isinstance(meta, CommandMeta):
-                ModulesManager.modules[bind_prefix].command_list.add(meta)
+                cls.modules[bind_prefix].command_list.add(meta)
             elif isinstance(meta, RegexMeta):
-                ModulesManager.modules[bind_prefix].regex_list.add(meta)
+                cls.modules[bind_prefix].regex_list.add(meta)
             elif isinstance(meta, ScheduleMeta):
-                ModulesManager.modules[bind_prefix].schedule_list.add(meta)
+                cls.modules[bind_prefix].schedule_list.add(meta)
 
-    @staticmethod
-    def return_modules_list(targetFrom: str = None) -> \
+    @classmethod
+    def return_modules_list(cls, targetFrom: str = None) -> \
             Dict[str, Module]:
         if targetFrom is not None:
             returns = {}
-            for m in ModulesManager.modules:
-                if isinstance(ModulesManager.modules[m], Module):
-                    if targetFrom in ModulesManager.modules[m].exclude_from:
+            for m in cls.modules:
+                if isinstance(cls.modules[m], Module):
+                    if targetFrom in cls.modules[m].exclude_from:
                         continue
-                    available = ModulesManager.modules[m].available_for
+                    available = cls.modules[m].available_for
                     if targetFrom in available or '*' in available:
-                        returns.update({m: ModulesManager.modules[m]})
+                        returns.update({m: cls.modules[m]})
             return returns
-        return ModulesManager.modules
+        return cls.modules
 
-    @staticmethod
-    def reload_module(module_name: str):
+    @classmethod
+    def reload_module(cls, module_name: str):
         """
         重载该小可模块（以及该模块所在文件的其它模块）
         """
-        py_module = ModulesManager.return_py_module(module_name)
-        unbind_modules = ModulesManager.search_related_module(module_name)
-        ModulesManager.remove_modules(unbind_modules)
-        return ModulesManager.reload_py_module(py_module)
+        py_module = cls.return_py_module(module_name)
+        unbind_modules = cls.search_related_module(module_name)
+        cls.remove_modules(unbind_modules)
+        return cls.reload_py_module(py_module)
 
-    @staticmethod
-    def reload_py_module(module_name: str):
+    @classmethod
+    def reload_py_module(cls, module_name: str):
         """
         重载该py模块
         """
@@ -149,7 +149,7 @@ class ModulesManager:
             loadedModList = list(sys.modules.keys())
             for mod in loadedModList:
                 if mod.startswith(f'{module_name}.'):
-                    cnt += ModulesManager.reload_py_module(mod)
+                    cnt += cls.reload_py_module(mod)
             importlib.reload(module)
             Logger.info(f'Succeeded reloaded {module_name}')
             return cnt + 1

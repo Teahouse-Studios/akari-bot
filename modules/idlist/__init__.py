@@ -11,8 +11,7 @@ i = module('idlist', support_languages=['zh_cn'])
 
 
 @i.handle('<query> {{idlist.help}}')
-async def _(msg: Bot.MessageSession):
-    query = msg.parsed_msg['<query>']
+async def _(msg: Bot.MessageSession, query: str):
     query_options = {'q': query, 'limit': '6'}
     query_url = api + '?' + urllib.parse.urlencode(query_options)
     resp = await get_url(query_url, 200, fmt='json')

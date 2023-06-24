@@ -16,7 +16,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find('<吃掉了>') != -1 or y.find('<全部吃掉了>') != -1:
-        msg = f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.only_last_5")}\n{msg.locale.t("wiki.message.utils.banned")}'
+        msg = f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.collapse")}\n{msg.locale.t("wiki.message.utils.banned")}'
     else:
-        msg = f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.only_last_5")}'
+        msg = f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.collapse")}'
     return msg

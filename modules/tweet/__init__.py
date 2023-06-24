@@ -1,7 +1,6 @@
 import re
 
 import ujson as json
-from urllib.parse import urlparse
 
 from config import Config
 from core.builtins import Bot
@@ -14,11 +13,16 @@ web_render_local = Config('web_render_local')
 t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', )
 
 
-@t.handle('<tweet> {{tweet.help}}', )
-async def _(msg: Bot.MessageSession):
-    tweet_id = msg.parsed_msg['<tweet>'].split('/')[-1]
-    if not tweet_id.isdigit():
-        await msg.finish(msg.locale.t('tweet.message.error'))
+@t.handle('<tweet> {{tweet.help}}')
+async def _(msg: Bot.MessageSession, tweet: str):
+    if tweet.isdigit():
+        tweet_id = tweet
+    else:
+        match = re.search(r"status/(\d+)", tweet)
+        if match:
+            tweet_id = match.group(1)
+        else:
+            await msg.finish(msg.locale.t('tweet.message.error'))
     failed_request = await get_url('https://static-tweet.vercel.app/1', status_code=404)
     build_id = re.search(r'"buildId"\:"(.*?)"', failed_request).group(1)
     res = await get_url(f'https://static-tweet.vercel.app/_next/data/{build_id}/{tweet_id}.json')

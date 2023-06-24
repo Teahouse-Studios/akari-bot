@@ -8,10 +8,6 @@ from modules.github.utils import time_diff, dirty_check, darkCheck
 async def user(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
-        if 'message' in result and result['message'] == 'Not Found':
-            await msg.finish(msg.locale.t("github.message.user.not_found"))
-        elif 'message' in result and result['message']:
-            await msg.finish(result['message'])
         optional = []
         if 'hireable' in result and result['hireable'] is True:
             optional.append('Hireable')
@@ -45,8 +41,9 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
             message = 'https://wdf.ink/6OUp'
 
         await msg.finish(message)
-    except ValueError:
-        await msg.finish(msg.locale.t("github.message.error"))
-    except Exception as error:
-        await msg.sendMessage(ErrorMessage(str(error)))
+    except ValueError as e:
+        if str(e).startswith('404'):
+            await msg.finish(msg.locale.t("github.message.repo.not_found"))
+        else:
+           await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()

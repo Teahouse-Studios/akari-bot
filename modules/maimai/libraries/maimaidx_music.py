@@ -5,11 +5,11 @@ from typing import Dict, List, Optional, Union, Tuple, Any
 from core.utils.http import get_url
 
 
-def get_cover_len4_id(mid) -> str:
+def get_cover_len5_id(mid) -> str:
     mid = int(mid)
-    if 10001 <= mid:
+    if mid > 10000 and mid <= 11000:
         mid -= 10000
-    return f'{mid:04d}'
+    return f'{mid:05d}'
 
 
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):

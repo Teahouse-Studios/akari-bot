@@ -15,7 +15,7 @@ from .song import get_song_info
 from .utils import get_userinfo
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
-             alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
+             alias=['a', 'arc'])
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 api = Config("botarcapi_url")
@@ -27,31 +27,16 @@ class WithErrCode(Exception):
     pass
 
 
-async def check_friendcode(msg: Bot.MessageSession, friendcode: str):
-    if friendcode.isdigit():
-        if len(friendcode) != 9:
-            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
-    else:
-        await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.format"))
-
-
-async def get_friendcode(msg: Bot.MessageSession):
-    get_friendcode_from_db = ArcBindInfoManager(msg).get_bind_friendcode()
-    if get_friendcode_from_db is not None:
-        return get_friendcode_from_db
-
-
-@arc.command('b30 [<friendcode>] {{arcaea.help.b30}}')
-async def _(msg: Bot.MessageSession):
+@arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
+async def _(msg: Bot.MessageSession, friend_code: int = None):
     if not os.path.exists(assets_path):
         await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
-    query_code = None
-    friendcode: str = msg.parsed_msg.get('<friendcode>', False)
-    if friendcode:
-        await check_friendcode(msg, friendcode)
-        query_code = friendcode
+    if friend_code is not None:
+        if len(str(friend_code)) != 9:
+            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
+        query_code = friend_code
     else:
-        query_code = await get_friendcode(msg)
+        query_code = ArcBindInfoManager(msg).get_bind_friendcode()
     if query_code is not None:
         try:
             if msg.target.senderId in query_tasks:
@@ -60,10 +45,11 @@ async def _(msg: Bot.MessageSession):
             get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
                                  fmt='json')
             if get_['status'] == 0:
-                await msg.sendMessage([Plain(msg.locale.t("arcaea.message.b30.wait")),
-                                       Plain(msg.locale.t("arcaea.message.sb616")),
-                                       Image(os.path.abspath('./assets/noc.jpg')),
-                                       Image(os.path.abspath('./assets/aof.jpg'))])
+                await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait"))
+                if msg.target.targetFrom not in ['Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
+                    await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
+                                           Image(os.path.abspath('./assets/noc.jpg')),
+                                           Image(os.path.abspath('./assets/aof.jpg'))])
             elif get_['status'] == -33:
                 await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.cached"))
             elif get_['status'] == -23:
@@ -86,19 +72,11 @@ async def _(msg: Bot.MessageSession):
                     return False
 
             async def _check(msg: Bot.MessageSession, session, tried):
-                if tried == 0:  # too lazy to make it short :rina:
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
-                    await msg.sleep(15)
-                    if _result := await _get_result(session):
-                        return _result
+                if tried == 0:
+                    for _ in range(4):
+                        await msg.sleep(15)
+                        if _result := await _get_result(session):
+                            return _result
                 elif tried == 1:
                     await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.check"))
                     await msg.sleep(60)
@@ -144,18 +122,17 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('info [<friendcode>] {{arcaea.help.info}}')
-async def _(msg: Bot.MessageSession):
+@arc.command('info [<friend_code>] {{arcaea.help.info}}')
+async def _(msg: Bot.MessageSession, friend_code: int = None):
     if not os.path.exists(assets_path):
         await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
         return
-    query_code = None
-    friendcode = msg.parsed_msg.get('<friendcode>', False)
-    if friendcode:
-        await check_friendcode(msg, friendcode)
-        query_code = friendcode
+    if friend_code is not None:
+        if len(str(friend_code)) != 9:
+            await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
+        query_code = friend_code
     else:
-        query_code = await get_friendcode(msg)
+        query_code = ArcBindInfoManager(msg).get_bind_friendcode()
     if query_code is not None:
         try:
             resp = await get_info(msg, query_code)
@@ -167,28 +144,26 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
 
-@arc.command('song <songname> <prs|pst|ftr|byd> {{arcaea.help.song}}')
+@arc.command('song <songname> [<diff>] {{arcaea.help.song}}')
 async def _(msg: Bot.MessageSession):
-    songname_ = msg.parsed_msg.get('<songname+prs/pst/byd>', False)
-    songname_split = songname_.split(' ')
-    diff = -1
-    for s in songname_split:
-        s_ = s.lower()
-        if s_ == 'pst':
-            diff = 0
-        elif s_ == 'prs':
-            diff = 1
-        elif s_ == 'ftr':
-            diff = 2
-        elif s_ == 'byd':
-            diff = 3
-        if diff != -1:
-            songname_split.remove(s)
-            break
-    if diff == -1:
+    songname = msg.parsed_msg['<songname>']
+    diff_ = msg.parsed_msg.get('<diff>')
+    if not diff_:
+        diff_ = 'FTR'
+
+    s = diff_.upper()
+    if s in ['PST', 'PAST']:
+        diff = 0
+    elif s in ['PRS', 'PRESENT']:
+        diff = 1
+    elif s in ['FTR', 'FUTURE']:
+        diff = 2
+    elif s in ['BYD', 'BEYOND']:
+        diff = 3
+    else:
         await msg.finish(msg.locale.t("arcaea.message.song.invalid.difficulty"))
-    songname = ' '.join(songname_split)
-    usercode = await get_friendcode(msg)
+
+    usercode = ArcBindInfoManager(msg).get_bind_friendcode()
     await msg.finish(Plain(await get_song_info(msg, songname, diff, usercode)))
 
 

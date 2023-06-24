@@ -1,5 +1,5 @@
 name: 报告漏洞
-description: 发现机器人的功能出现问题
+description: 发现机器人的功能出现问题。
 title: "[BUG]: "
 labels: ["bug"]
 assignees:
@@ -17,7 +17,7 @@ body:
       label: 开始之前……
       description: 让我们看看你的登机牌准备好了吗
       options:
-        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法
+        - label: 我已在[漏洞追踪器](https://github.com/Teahouse-Studios/bot/issues)中搜索过我的问题，确定没有人提出过此问题/给出过其他解决方法。
           required: true
   - type: dropdown
     id: platform
@@ -27,8 +27,8 @@ body:
       options:
         - Discord
         - Telegram
-        - QQ群
-        - QQ频道
+        - QQ 群
+        - QQ 频道
         - 开发者控制台
         - 所有平台均有此问题
     validations:
@@ -36,17 +36,17 @@ body:
   - type: input
     id: user-id
     attributes:
-      label: 用户ID
-      description: 您的QQ号/Telegram ID/Discord handle。
-      placeholder: e.g. QQ 10000/TG @Dll233/DC Dianliang233#1230
+      label: 用户 ID
+      description: 您的 QQ 号/Telegram ID/Discord handle。
+      placeholder: e.g. QQ 10000/TG @Example/DC Example#1234
     validations:
       required: true
   - type: input
     id: group-id
     attributes:
-      label: 群组ID
-      description: 您的群组的QQ群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
-      placeholder: e.g. QQ 1000000/TG <https://t.me/fandom_zh>/DC 683236421687050252/DC <https://discord.gg/kK5Ttan>
+      label: 群组 ID
+      description: 您的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
+      placeholder: e.g. QQ 1000000/TG <https://t.me/example>/DC 12345678910111213/DC <https://discord.gg/exAmpl3>
     validations:
       required: true
   - type: textarea
@@ -56,7 +56,7 @@ body:
       description: 请复制粘贴机器人的报错信息（若有）。
       placeholder: |
         发生错误：object bool can't be used in 'await' expression
-        错误汇报地址：https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=bug&template=report_bug.yaml&title=%5BBUG%5D%3A+
+        错误汇报地址：https://s.wd-ljt.com/botreportbug
     validations:
       required: false
   - type: textarea
@@ -81,7 +81,7 @@ body:
     id: expected
     attributes:
       label: 本应发生的结果
-      description: 你认为本应发生的结果
+      description: 你认为本应发生的结果。
       placeholder: 返回 GitHub 上“小可”的搜索结果。
     validations:
       required: true
@@ -96,7 +96,7 @@ body:
     id: other
     attributes:
       label: 备注
-      description: 你还想告诉我们什么？
+      description: 您还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false

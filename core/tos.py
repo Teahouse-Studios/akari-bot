@@ -1,9 +1,9 @@
 from config import Config
-from core.builtins import MessageSession
+from core.builtins import Bot
 from database import BotDBUtil
 
 
-async def warn_target(msg: MessageSession, reason=None):
+async def warn_target(msg: Bot.MessageSession, reason=None):
     current_warns = int(msg.target.senderInfo.query.warns) + 1
     msg.target.senderInfo.edit('warns', current_warns)
     warn_template = [msg.locale.t("tos.warning")]

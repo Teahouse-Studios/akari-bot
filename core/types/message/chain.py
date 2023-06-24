@@ -14,7 +14,7 @@ class MessageChain:
         """
         :param elements: 消息链元素
         """
-        self.elements = elements
+        self.value = elements
 
     @property
     def is_safe(self) -> bool:

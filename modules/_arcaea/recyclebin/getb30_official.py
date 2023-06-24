@@ -6,12 +6,13 @@ import os
 import traceback
 import uuid
 
-from config import Config
-from core.logger import Logger
-from core.utils.http import get_url
 from modules._arcaea.drawb30img import drawb30
 from modules._arcaea.drawsongimg import dsimg
 from modules._arcaea.utils import autofix_b30_song_background
+
+from config import Config
+from core.logger import Logger
+from core.utils.http import get_url
 
 assets_path = os.path.abspath('./assets/arcaea')
 

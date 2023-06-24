@@ -1,6 +1,6 @@
-name: 申请Wiki链接白名单
-description: 提交申请Wiki链接白名单，使QQ侧公共实例使用Wiki模块查询对象Wiki时，直接展示Wiki链接而不是”非官方页面“跳转链接。
-title: "[REQUEST]: Wiki链接白名单申请"
+name: 申请 Wiki 链接白名单
+description: 提交申请 Wiki 链接白名单，使 QQ 侧公共实例使用 Wiki 模块查询对象 Wiki 时，直接展示 Wiki 链接而不是”非官方页面“跳转链接。
+title: "[REQUEST]: Wiki 链接白名单申请"
 labels: ["request"]
 assignees:
   - OasisAkari
@@ -10,13 +10,13 @@ body:
     attributes:
       label: 开始之前……
       options:
-        - label: 我已确定此Wiki中的内容没有任何涉嫌政治、色情、谩骂、暴力等不良内容。
+        - label: 我已确定此 Wiki 中的内容没有任何涉嫌政治、色情、谩骂、暴力等不良内容。
           required: true
   - type: input
     id: user-id
     attributes:
-      label: Wiki链接
-      description: 您需要申请白名单的Wiki的链接。
+      label: Wiki 链接
+      description: 您需要申请白名单的 Wiki 的链接。
       placeholder: e.g. https://minecraft.fandom.com/zh/wiki/Minecraft_Wiki
     validations:
       required: true
@@ -24,7 +24,7 @@ body:
     id: other
     attributes:
       label: 备注
-      description: 你还想告诉我们什么？
+      description: 您还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false

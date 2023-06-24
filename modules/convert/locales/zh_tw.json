@@ -1,4 +1,5 @@
 {
     "convert.help": "单位转换，大小写敏感。",
-    "convert.help.desc": "全能单位转换。"
+    "convert.help.desc": "全能單位轉換。",
+    "convert.message.error": "發生錯誤：無法轉換單位，請檢查輸入。"
 }

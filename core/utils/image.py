@@ -9,9 +9,8 @@ from PIL import Image as PImage
 from aiofile import async_open
 
 from config import Config
-from core.builtins import Plain, Image, Voice, Embed
+from core.builtins import Plain, Image, Voice, Embed, MessageChain
 from core.logger import Logger
-from core.types.message.chain import MessageChain
 from core.utils.cache import random_cache_path
 from core.utils.http import download_to_cache
 
@@ -51,6 +50,33 @@ async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
     html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap" rel="stylesheet">
+    <style>html body {
+        margin-top: 0px !important;
+        font-family: 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ko) {
+        font-family: 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+    }
+
+    :lang(ja) {
+        font-family: 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-TW) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-HK) {
+        font-family: 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+    }
+
+    :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
+        font-family:  'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+    }</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
@@ -62,7 +88,7 @@ async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
 </body>
 </html>"""
 
-    for m in msgchain.elements:
+    for m in msgchain.asSendable(embed=False):
         if isinstance(m, Plain):
             lst.append('<div>' + m.text.replace('\n', '<br>') + '</div>')
         if isinstance(m, Image):

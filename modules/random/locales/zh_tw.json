@@ -2,14 +2,12 @@
     "random.help.choice": "從集合中選擇元素。",
     "random.help.desc": "隨機數產生器（密碼學安全）",
     "random.help.number": "產生區間內的隨機整數。",
-    "random.help.option.string.l": "在随机字符串中使用小写字母。",
-    "random.help.option.string.n": "在随机字符串中使用数字。",
-    "random.help.option.string.s": "在随机字符串中使用特殊符号。",
-    "random.help.option.string.u": "在随机字符串中使用大写字母。",
+    "random.help.option.string.l": "在隨機字串中使用小寫字母。",
+    "random.help.option.string.n": "在隨機字串中使用數字。",
+    "random.help.option.string.s": "在隨機字串中使用特殊符號。",
+    "random.help.option.string.u": "在隨機字串中使用大寫字母。",
     "random.help.shuffle": "打亂集合的順序。",
     "random.help.string": "產生隨機字串，預設為字母或數字組合。",
     "random.help.uuid": "產生隨機 UUID（v4）。",
-    "random.message.number.error.invalid": "發生錯誤：無效的數字區間。",
-    "random.message.number.error.out_of_range": "發生錯誤：最小值大於最大值。",
     "random.message.string.error.invalid": "發生錯誤：長度必須為小於 100 的正整數。"
 }

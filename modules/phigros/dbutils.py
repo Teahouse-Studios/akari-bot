@@ -1,5 +1,3 @@
-from typing import Union
-
 from tenacity import retry, stop_after_attempt
 
 from core.builtins import Bot

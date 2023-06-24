@@ -9,9 +9,9 @@
     "mod_dl.message.invalid.out_of_range": "編號超出範圍。",
     "mod_dl.message.modrinth.not_found": "Modrinth 結果：無",
     "mod_dl.message.modrinth.result": "Modrinth 結果：",
-    "mod_dl.message.not_found": "找不到結果。",
+    "mod_dl.message.not_found": "未找到結果。",
     "mod_dl.message.prompt": "請回覆編號來選擇 Mod。",
     "mod_dl.message.version": "此 Mod 擁有以下版本：",
-    "mod_dl.message.version.not_found": "找不到指定版本。",
+    "mod_dl.message.version.not_found": "未找到指定版本。",
     "mod_dl.message.version.prompt": "請回覆版本號來選擇版本。"
 }

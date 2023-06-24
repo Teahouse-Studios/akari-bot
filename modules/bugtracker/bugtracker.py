@@ -1,5 +1,3 @@
-from core.builtins import Url, ErrorMessage
-from core.utils.http import get_url
 import os
 
 import aiohttp
@@ -7,8 +5,10 @@ import ujson as json
 from PIL import ImageFont
 
 from config import Config
+from core.builtins import Url, ErrorMessage
 from core.logger import Logger
 from core.utils.http import download_to_cache
+from core.utils.http import get_url
 
 web_render = Config('web_render')
 web_render_local = Config('web_render_local')

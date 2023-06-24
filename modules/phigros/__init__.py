@@ -2,15 +2,15 @@ import os.path
 import shutil
 import traceback
 
-from core.utils.cache import random_cache_path
 from core.builtins import Bot
-from core.builtins import Plain, Image
+from core.builtins import Image
 from core.component import module
+from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from .dbutils import PgrBindInfoManager
-from .update import update_assets, p_headers
-from .genb19 import drawb19
 from .game_record import parse_game_record
+from .genb19 import drawb19
+from .update import update_assets, p_headers
 
 phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
              alias={'p': 'phigros', 'pgr': 'phigros', 'phi': 'phigros'})
@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         need_revoke = True
     headers = p_headers.copy()
     headers['X-LC-Session'] = sessiontoken
-    get_user_info = await get_url('https://phigrosserver.pigeongames.cn/1.1/users/me', headers=headers, fmt='json')
+    get_user_info = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/users/me', headers=headers, fmt='json')
     if 'nickname' in get_user_info:
         bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=sessiontoken, username=get_user_info['nickname'])
         if bind:
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession):
         try:
             headers = p_headers.copy()
             headers['X-LC-Session'] = bind[0]
-            get_save_url = await get_url('https://phigrosserver.pigeongames.cn/1.1/classes/_GameSave', headers=headers,
+            get_save_url = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave', headers=headers,
                                          fmt='json')
             save_url = get_save_url['results'][0]['gameFile']['url']
             download = await download_to_cache(save_url)

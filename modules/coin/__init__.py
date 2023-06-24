@@ -1,29 +1,29 @@
 import secrets
 
 from config import Config
-from core.builtins.message import MessageSession
+from core.builtins import Bot
 from core.component import module
 from .zhNum2Int import Zh2Int
 
-MAX_COIN_NUM = Config('coin_limit')
-FACE_UP_RATE = Config('coin_faceup_rate')  # n/10000
-FACE_DOWN_RATE = Config('coin_facedown_rate')
+MAX_COIN_NUM = int(Config('coin_limit'))
+FACE_UP_RATE = int(Config('coin_faceup_rate'))  # n/10000
+FACE_DOWN_RATE = int(Config('coin_facedown_rate'))
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 
 @coin.command('{{coin.help}}')
-async def _(msg: MessageSession):
+async def _(msg: Bot.MessageSession):
     await msg.finish(await flipCoins(1, msg))
 
 
 @coin.command('[<amount>] {{coin.help}}')
-async def _(msg: MessageSession, amount: int = 1):
-    await msg.finish(await flipCoins(int(amount), msg))
+async def _(msg: Bot.MessageSession, amount: int = 1):
+    await msg.finish(await flipCoins(amount, msg))
 
 
 @coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex.desc}')
-async def _(message: MessageSession):
+async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
     if count.isdigit():
@@ -45,7 +45,7 @@ async def flipCoins(count: int, msg):
     if count == 0:
         return msg.locale.t("coin.message.error.nocoin")
     if count < 0:
-        return msg.locale.t("coin.message.error.amount") 
+        return msg.locale.t("coin.message.error.amount")
     if faceup_rate + facedown_rate > 10000 or faceup_rate < 0 or facedown_rate < 0:
         raise OverflowError(msg.locale.t("coin.message.error.rate"))
     faceUp = 0

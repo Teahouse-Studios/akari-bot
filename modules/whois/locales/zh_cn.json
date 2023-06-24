@@ -1,6 +1,7 @@
 {
     "whois.help.desc": "查询 IP 的 WHOIS 信息。",
     "whois.message.ip.asn": "ASN：",
+    "whois.message.ip.error.unknown": "发生错误：无效的 IP 地址。",
     "whois.message.ip.ip_property": "地址",
     "whois.message.ip.ip_property.global": "全局",
     "whois.message.ip.ip_property.ipv4_mapped": "IPv4 映射",

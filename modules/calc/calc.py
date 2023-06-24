@@ -7,13 +7,16 @@ import operator as op
 import statistics
 import sys
 
+from utils import do_something
+
 from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 
 from constant import consts
-import utils
 
 funcs = {}
 named_funcs = {}
+
+do_something()
 
 
 def add_func(module):

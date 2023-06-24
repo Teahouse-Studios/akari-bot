@@ -114,6 +114,9 @@ class MessageChain(MC):
     def remove(self, element):
         self.value.remove(element)
 
+    def insert(self, index, element):
+        self.value.insert(index, element)
+
     def __str__(self):
         return f'[{", ".join([x.__repr__() for x in self.value])}]'
 

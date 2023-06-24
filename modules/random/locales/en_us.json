@@ -9,7 +9,5 @@
     "random.help.shuffle": "Shuffle the order of a given set.",
     "random.help.string": "生成随机字符串，默认为字母和数字组合。",
     "random.help.uuid": "Generate random UUID (v4).",
-    "random.message.number.error.invalid": "发生错误：无效的数字区间。",
-    "random.message.number.error.out_of_range": "发生错误：最小值大于最大值。",
     "random.message.string.error.invalid": "发生错误：长度必须为小于 100 的正整数。"
 }

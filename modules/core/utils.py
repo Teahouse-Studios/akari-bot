@@ -110,26 +110,26 @@ async def config_gu(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t('success'))
 
 
-@admin.handle('ban <UserID> {{core.help.ban.ban}}', 'unban <UserID> {{core.help.ban.unban}}')
+@admin.handle('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.message.ban.invalid', target=msg.target.senderFrom))
+        await msg.finish(msg.locale.t('core.message.admin.ban.invalid', target=msg.target.senderFrom))
     if user == msg.target.senderId:
-        await msg.finish(msg.locale.t("core.message.ban.self"))
+        await msg.finish(msg.locale.t("core.message.admin.ban.self"))
     if 'ban' in msg.parsed_msg:
         if user not in msg.options.get('ban', []):
             msg.data.edit_option('ban', msg.options.get('ban', []) + [user])
             await msg.finish(msg.locale.t('success'))
         else:
-            await msg.finish(msg.locale.t("core.message.ban.already"))
+            await msg.finish(msg.locale.t("core.message.admin.ban.already"))
     if 'unban' in msg.parsed_msg:
         if user in (banlist := msg.options.get('ban', [])):
             banlist.remove(user)
             msg.data.edit_option('ban', banlist)
             await msg.finish(msg.locale.t('success'))
         else:
-            await msg.finish(msg.locale.t("core.message.ban.not_yet"))
+            await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
 locale = module('locale',
@@ -206,8 +206,7 @@ leave = module(
     base=True,
     required_admin=True,
     available_for='QQ|Group',
-    alias={
-        'dismiss': 'leave'},
+    alias='dismiss',
     desc='{core.help.leave}')
 
 
@@ -219,7 +218,7 @@ async def _(msg: Bot.MessageSession):
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
-petal = module('petal', developers=['Dianliang233'], base=True, alias={'petals': 'petal'},
+petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
                desc='{core.help.petal}')
 
 

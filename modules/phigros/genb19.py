@@ -2,7 +2,7 @@ import os
 import traceback
 import uuid
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 assets_path = os.path.abspath('./assets/phigros')
 

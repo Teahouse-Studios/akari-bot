@@ -1,6 +1,6 @@
 import inspect
 import re
-from typing import Union
+from typing import Union, overload
 
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -78,14 +78,35 @@ class Bind:
 
             return decorator
 
-        def on_command(self, *args, **kwargs):
-            return self.command(*args, **kwargs)
+        on_command = command
+        on_regex = regex
+        on_schedule = schedule
 
-        def on_regex(self, *args, **kwargs):
-            return self.regex(*args, **kwargs)
+        @overload
+        def handle(self,
+                   help_doc: Union[str, list, tuple] = None,
+                   *help_docs,
+                   options_desc: dict = None,
+                   required_admin: bool = False,
+                   required_superuser: bool = False,
+                   available_for: Union[str, list, tuple] = '*',
+                   exclude_from: Union[str, list, tuple] = '',
+                   priority: int = 1):
+            ...
 
-        def on_schedule(self, *args, **kwargs):
-            return self.schedule(*args, **kwargs)
+        @overload
+        def handle(self, pattern: Union[str, re.Pattern], mode: str = "M", flags: re.RegexFlag = 0,
+                   desc: str = None,
+                   required_admin: bool = False,
+                   required_superuser: bool = False,
+                   available_for: Union[str, list, tuple] = '*',
+                   exclude_from: Union[str, list, tuple] = '',
+                   show_typing: bool = True, logging: bool = True):
+            ...
+
+        @overload
+        def handle(self, trigger: Union[AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger]):
+            ...
 
         def handle(self, *args, **kwargs):
             first_key = args[0] if args else (kwargs[list(kwargs.keys())[0]] if kwargs else None)

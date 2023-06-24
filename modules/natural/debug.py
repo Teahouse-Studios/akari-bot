@@ -1,7 +1,9 @@
-from config import Config
-import openai
 import sys
 from pathlib import Path
+
+import openai
+
+from config import Config
 
 file = Path(__file__).resolve()
 parent, root = file.parent, file.parents[2]

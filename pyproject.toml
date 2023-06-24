@@ -45,12 +45,13 @@ openai = "^0.27.2"
 cryptography = "^39.0.1"
 pre-commit = "^3.0.4"
 webcolors = "^1.12"
-langchain = "^0.0.152"
+langchain = "^0.0.206"
 wolframalpha = "^5.0.0"
-duckduckgo-search = "^2.8.6"
+duckduckgo-search = "^3.0.0"
 chromadb = "^0.3.21"
 tiktoken = "^0.3.3"
 pycryptodome = "^3.18.0"
+langconv = "^0.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

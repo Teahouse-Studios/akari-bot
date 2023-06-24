@@ -4,9 +4,9 @@ from .mcv import mcv_tool
 from .meme import meme_tool
 from .random import random_choice_tool, random_number_tool, random_uuid_tool
 from .search import search_tool
+from .self_knowledge import self_knowledge_tool
 from .server import server_tool
 from .wolfram import wolfram_tool
-from .self_knowledge import self_knowledge_tool
 
 tools = [
     search_tool,

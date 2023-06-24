@@ -6,50 +6,50 @@ from core.types import MessageSession
 class MessageTaskManager:
     _list = {}
 
-    @staticmethod
-    def add_task(session: MessageSession, flag, all_=False, reply=None):
+    @classmethod
+    def add_task(cls, session: MessageSession, flag, all_=False, reply=None):
         sender = session.target.senderId
         task_type = 'reply' if reply is not None else 'wait'
         if all_:
             sender = 'all'
-        if session.target.targetId in MessageTaskManager._list:
-            if sender in MessageTaskManager._list[session.target.targetId]:
-                if MessageTaskManager._list[session.target.targetId][sender]['active']:
-                    MessageTaskManager._list[session.target.targetId][sender]['active'] = False
-                    MessageTaskManager._list[session.target.targetId][sender]['flag'].set()
+        if session.target.targetId in cls._list:
+            if sender in cls._list[session.target.targetId]:
+                if cls._list[session.target.targetId][sender]['active']:
+                    cls._list[session.target.targetId][sender]['active'] = False
+                    cls._list[session.target.targetId][sender]['flag'].set()
 
-        MessageTaskManager._list.update(
+        cls._list.update(
             {session.target.targetId: {sender: {'flag': flag, 'active': True,
                                                 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp(),
                                                 'original_session': session}}})
 
-    @staticmethod
-    def get_result(session: MessageSession):
-        if 'result' in MessageTaskManager._list[session.target.targetId][session.target.senderId]:
-            return MessageTaskManager._list[session.target.targetId][session.target.senderId]['result']
+    @classmethod
+    def get_result(cls, session: MessageSession):
+        if 'result' in cls._list[session.target.targetId][session.target.senderId]:
+            return cls._list[session.target.targetId][session.target.senderId]['result']
         else:
             return False
 
-    @staticmethod
-    def get():
-        return MessageTaskManager._list
+    @classmethod
+    def get(cls):
+        return cls._list
 
-    @staticmethod
-    def check(session: MessageSession):
-        for target in MessageTaskManager._list:
-            for sender in MessageTaskManager._list[target]:
-                if MessageTaskManager._list[target][sender]['active']:
-                    if datetime.now().timestamp() - MessageTaskManager._list[target][sender]['ts'] > 3600:
-                        MessageTaskManager._list[target][sender]['active'] = False
-                        MessageTaskManager._list[target][sender]['flag'].set()  # no result = cancel
-        if session.target.targetId in MessageTaskManager._list:
+    @classmethod
+    def check(cls, session: MessageSession):
+        for target in cls._list:
+            for sender in cls._list[target]:
+                if cls._list[target][sender]['active']:
+                    if datetime.now().timestamp() - cls._list[target][sender]['ts'] > 3600:
+                        cls._list[target][sender]['active'] = False
+                        cls._list[target][sender]['flag'].set()  # no result = cancel
+        if session.target.targetId in cls._list:
             sender = None
-            if session.target.senderId in MessageTaskManager._list[session.target.targetId]:
+            if session.target.senderId in cls._list[session.target.targetId]:
                 sender = session.target.senderId
-            if 'all' in MessageTaskManager._list[session.target.targetId]:
+            if 'all' in cls._list[session.target.targetId]:
                 sender = 'all'
             if sender is not None:
-                get_ = MessageTaskManager._list[session.target.targetId][sender]
+                get_ = cls._list[session.target.targetId][sender]
                 if get_['type'] == 'wait':
                     get_['result'] = session
                     get_['active'] = False

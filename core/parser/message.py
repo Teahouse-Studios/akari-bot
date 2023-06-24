@@ -1,15 +1,12 @@
+import inspect
 import re
 import traceback
-import inspect
 from datetime import datetime
 
-from aiocqhttp.exceptions import ActionFailed
-
 from config import Config
-from core.types import MessageSession as MessageSession_T
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageSession, MessageTaskManager, Url
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
-    WaitCancelException, NoReportException
+    WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.command import CommandParser
@@ -27,13 +24,13 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 temp_ban_counter = {}  # 临时限制计数
 
 
-async def remove_temp_ban(msg: MessageSession):
+async def remove_temp_ban(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         del temp_ban_counter[msg.target.senderId]
 
 
-async def msg_counter(msg: MessageSession, command: str):
+async def msg_counter(msg: Bot.MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
     if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
         # 检查是否滥用（重复使用同一命令）
@@ -53,7 +50,7 @@ async def msg_counter(msg: MessageSession, command: str):
             raise AbuseWarning(msg.locale.t("tos.reason.abuse"))
 
 
-async def temp_ban_check(msg: MessageSession):
+async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.senderId)
     if is_temp_banned is not None:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
@@ -68,7 +65,7 @@ async def temp_ban_check(msg: MessageSession):
                 raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
 
 
-async def parser(msg: MessageSession, require_enable_modules: bool = True, prefix: list = None,
+async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
                  running_mention: bool = False):
     """
     接收消息必经的预处理器
@@ -84,12 +81,11 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         MessageTaskManager.check(msg)
         modules = ModulesManager.return_modules_list(msg.target.targetFrom)
 
-        display = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
-        if len(display) == 0:
+        msg.trigger_msg = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
+        if len(msg.trigger_msg) == 0:
             return
-        msg.trigger_msg = display
-        msg.target.senderInfo = senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
-        if senderInfo.query.isInBlockList and not senderInfo.query.isInAllowList \
+        msg.target.senderInfo = BotDBUtil.SenderInfo(msg.target.senderId)
+        if msg.target.senderInfo.query.isInBlockList and not msg.target.senderInfo.query.isInAllowList \
                 or msg.target.senderId in msg.options.get('ban', []):
             return
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
@@ -97,7 +93,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         if get_custom_alias is not None:
             get_display_alias = get_custom_alias.get(msg.trigger_msg)
             if get_display_alias is not None:
-                msg.trigger_msg = display = get_display_alias
+                msg.trigger_msg = get_display_alias
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
         if get_custom_prefix is not None:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
@@ -111,25 +107,25 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
         display_prefix = ''
         in_prefix_list = False
         for cp in msg.prefixes:  # 判断是否在命令前缀列表中
-            if display.startswith(cp):
+            if msg.trigger_msg.startswith(cp):
                 display_prefix = cp
                 in_prefix_list = True
                 break
 
         if in_prefix_list or disable_prefix:  # 检查消息前缀
-            if len(display) <= 1 or display[:2] == '~~':  # 排除 ~~xxx~~ 的情况
+            if len(msg.trigger_msg) <= 1 or msg.trigger_msg[:2] == '~~':  # 排除 ~~xxx~~ 的情况
                 return
             if in_prefix_list:  # 如果在命令前缀列表中，则将此命令前缀移动到列表首位
                 msg.prefixes.remove(display_prefix)
                 msg.prefixes.insert(0, display_prefix)
 
             Logger.info(
-                f'{identify_str} -> [Bot]: {display}')
+                f'{identify_str} -> [Bot]: {msg.trigger_msg}')
 
             if disable_prefix and not in_prefix_list:
-                command = display
+                command = msg.trigger_msg
             else:
-                command = display[len(display_prefix):]
+                command = msg.trigger_msg[len(display_prefix):]
 
             if not ExecutionLockList.check(msg):  # 加锁
                 ExecutionLockList.add(msg)
@@ -213,7 +209,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         if func.help_doc:
                             none_doc = False
                     if not none_doc:  # 如果有，送入命令解析
-                        async def execute_submodule(msg: MessageSession, command_first_word, command_split):
+                        async def execute_submodule(msg: Bot.MessageSession, command_first_word, command_split):
                             try:
                                 command_parser = CommandParser(module, msg=msg, bind_prefix=command_first_word,
                                                                command_prefixes=msg.prefixes)
@@ -240,10 +236,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
 
                                     kwargs = {}
                                     func_params = inspect.signature(submodule.function).parameters
-                                    if len(func_params) > 1:
+                                    if len(func_params) > 1 and msg.parsed_msg is not None:
                                         parsed_msg_ = msg.parsed_msg.copy()
                                         for param_name, param_obj in func_params.items():
-                                            if isinstance(param_obj.annotation, MessageSession_T.__class__):
+                                            if param_obj.annotation == Bot.MessageSession:
                                                 kwargs[param_name] = msg
                                             param_name_ = param_name
                                             if (param_name__ := f'<{param_name}>') in parsed_msg_:
@@ -271,7 +267,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     else:
                                         kwargs[func_params[list(func_params.keys())[0]].name] = msg
 
-                                    if not senderInfo.query.disable_typing:
+                                    if not msg.target.senderInfo.query.disable_typing:
                                         async with msg.Typing(msg):
                                             await parsed_msg[0].function(**kwargs)  # 将msg传入下游模块
                                     else:
@@ -304,13 +300,13 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         msg.parsed_msg = None
                         for func in module.command_list.set:
                             if not func.help_doc:
-                                if not senderInfo.query.disable_typing:
+                                if not msg.target.senderInfo.query.disable_typing:
                                     async with msg.Typing(msg):
                                         await func.function(msg)  # 将msg传入下游模块
                                 else:
                                     await func.function(msg)
                                 raise FinishedException(msg.sent)  # if not using msg.finish
-                except ActionFailed:
+                except SendMessageFailed:
                     if msg.target.targetFrom == 'QQ|Group':
                         await msg.call_api('send_group_msg', group_id=msg.session.target,
                                            message=f'[CQ:poke,qq={Config("qq_account")}]')
@@ -320,10 +316,10 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                     time_used = datetime.now() - time_start
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
-                    if msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module' and enable_tos:
+                    if (msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module') and enable_tos:
                         await msg_counter(msg, msg.trigger_msg)
                     else:
-                        Logger.debug(f'Tos is disabled, check the configuration is correct.')
+                        Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
@@ -349,7 +345,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                           str(Url(Config('bug_report_url'))))
             return msg
         if running_mention:
-            if display.find('小可') != -1:
+            if msg.trigger_msg.find('小可') != -1:
                 if ExecutionLockList.check(msg):
                     return await msg.sendMessage(msg.locale.t('parser.command.running.prompt2'))
 
@@ -376,11 +372,11 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             msg.matched_msg = False
                             matched = False
                             if rfunc.mode.upper() in ['M', 'MATCH']:
-                                msg.matched_msg = re.match(rfunc.pattern, display, flags=rfunc.flags)
+                                msg.matched_msg = re.match(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg is not None:
                                     matched = True
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
-                                msg.matched_msg = re.findall(rfunc.pattern, display, flags=rfunc.flags)
+                                msg.matched_msg = re.findall(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
                                 if msg.matched_msg and msg.matched_msg is not None:
                                     matched = True
 
@@ -389,7 +385,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                                  msg.target.targetFrom not in regex_module.available_for)):  # 如果匹配成功
                                 if rfunc.logging:
                                     Logger.info(
-                                        f'{identify_str} -> [Bot]: {display}')
+                                        f'{identify_str} -> [Bot]: {msg.trigger_msg}')
                                 if enable_tos and rfunc.show_typing:
                                     await temp_ban_check(msg)
                                 if rfunc.required_superuser:
@@ -402,7 +398,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                                     ExecutionLockList.add(msg)
                                 else:
                                     return await msg.sendMessage(msg.locale.t("parser.command.running.prompt"))
-                                if rfunc.show_typing and not senderInfo.query.disable_typing:
+                                if rfunc.show_typing and not msg.target.senderInfo.query.disable_typing:
                                     async with msg.Typing(msg):
                                         await rfunc.function(msg)  # 将msg传入下游模块
                                 else:
@@ -421,7 +417,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                             if enable_tos and rfunc.show_typing:
                                 await msg_counter(msg, msg.trigger_msg)
                             else:
-                                Logger.debug(f'Tos is disabled.')
+                                Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
                             continue
                         except NoReportException as e:
@@ -447,7 +443,7 @@ async def parser(msg: MessageSession, require_enable_modules: bool = True, prefi
                         finally:
                             ExecutionLockList.remove(msg)
 
-            except ActionFailed:
+            except SendMessageFailed:
                 if msg.target.targetFrom == 'QQ|Group':
                     await msg.call_api('send_group_msg', group_id=msg.session.target,
                                        message=f'[CQ:poke,qq={Config("qq_account")}]')

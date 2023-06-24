@@ -1,11 +1,14 @@
+import ujson as json
 import math
 import os
 from typing import Optional, Dict, List, Tuple
 
-import aiohttp
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-from .maimaidx_music import get_cover_len4_id, TotalList
+from core.builtins import ErrorMessage
+from core.utils.http import post_url
+from .maimaidx_music import get_cover_len5_id, TotalList
+from .maimaidx_api_data import get_record
 
 total_list = TotalList()
 
@@ -207,9 +210,9 @@ class DrawBest(object):
             i = num // 7
             j = num % 7
             chartInfo = sdBest[num]
-            pngPath = self.cover_dir + f'{get_cover_len4_id(chartInfo.idNum)}.png'
+            pngPath = self.cover_dir + f'{get_cover_len5_id(chartInfo.idNum)}.png'
             if not os.path.exists(pngPath):
-                pngPath = self.cover_dir + '1000.png'
+                pngPath = self.cover_dir + '01000.png'
             temp = Image.open(pngPath).convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
@@ -247,7 +250,7 @@ class DrawBest(object):
         for num in range(len(sdBest), sdBest.size):
             i = num // 7
             j = num % 7
-            temp = Image.open(self.cover_dir + f'1000.png').convert('RGB')
+            temp = Image.open(self.cover_dir + f'01000.png').convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
             temp = temp.filter(ImageFilter.GaussianBlur(1))
@@ -256,9 +259,9 @@ class DrawBest(object):
             i = num // 3
             j = num % 3
             chartInfo = dxBest[num]
-            pngPath = self.cover_dir + f'{get_cover_len4_id(chartInfo.idNum)}.png'
+            pngPath = self.cover_dir + f'{get_cover_len5_id(chartInfo.idNum)}.png'
             if not os.path.exists(pngPath):
-                pngPath = self.cover_dir + '1000.png'
+                pngPath = self.cover_dir + '01000.png'
             temp = Image.open(pngPath).convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
@@ -295,7 +298,7 @@ class DrawBest(object):
         for num in range(len(dxBest), dxBest.size):
             i = num // 3
             j = num % 3
-            temp = Image.open(self.cover_dir + f'1000.png').convert('RGB')
+            temp = Image.open(self.cover_dir + f'01000.png').convert('RGB')
             temp = self._resizePic(temp, itemW / temp.size[0])
             temp = temp.crop((0, (temp.size[1] - itemH) / 2, itemW, (temp.size[1] + itemH) / 2))
             temp = temp.filter(ImageFilter.GaussianBlur(1))
@@ -391,21 +394,28 @@ def computeRa(ds: float, achievement: float) -> int:
     return math.floor(ds * (min(100.5, achievement) / 100) * baseRa)
 
 
-async def generate50(payload: Dict) -> Tuple[Optional[Image.Image], bool]:
-    async with aiohttp.request("POST", "https://www.diving-fish.com/api/maimaidxprober/query/player",
-                               json=payload) as resp:
-        if resp.status == 400:
-            return None, 400
-        if resp.status == 403:
-            return None, 403
-        sd_best = BestList(35)
-        dx_best = BestList(15)
-        obj = await resp.json()
-        dx: List[Dict] = obj["charts"]["dx"]
-        sd: List[Dict] = obj["charts"]["sd"]
-        for c in sd:
-            sd_best.push(await ChartInfo.from_json(c))
-        for c in dx:
-            dx_best.push(await ChartInfo.from_json(c))
-        pic = DrawBest(sd_best, dx_best, obj["nickname"]).getDir()
-        return pic, 0
+async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
+    try:
+        resp = await post_url('https://www.diving-fish.com/api/maimaidxprober/query/player',
+                                  data=json.dumps(payload),
+                                  status_code=200,
+                                  headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
+    except ValueError as e:
+        if str(e).startswith('400'):
+            await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+        if str(e).startswith('403'):
+            await msg.finish(msg.locale.t("maimai.message.forbidden"))
+        else:
+            await msg.finish(ErrorMessage(str(e)))
+
+    sd_best = BestList(35)
+    dx_best = BestList(15)
+    obj = resp
+    dx: List[Dict] = obj["charts"]["dx"]
+    sd: List[Dict] = obj["charts"]["sd"]
+    for c in sd:
+        sd_best.push(await ChartInfo.from_json(c))
+    for c in dx:
+        dx_best.push(await ChartInfo.from_json(c))
+    pic = DrawBest(sd_best, dx_best, obj["nickname"]).getDir()
+    return pic

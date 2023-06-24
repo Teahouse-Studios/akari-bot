@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 from core.builtins import Bot, Image as BotImage
 from core.component import module
 
-c = module('color', alias=['colour'], developers=['Dianliang233',], desc='{color.help.desc}')
+c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}')
 
 font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
 
@@ -25,11 +25,7 @@ css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 @c.handle('[<color>] {{color.help}}')
 @c.handle()
-async def _(msg: Bot.MessageSession):
-    try:
-        color = msg.parsed_msg.get('<color>')
-    except AttributeError:
-        color = None
+async def _(msg: Bot.MessageSession, color: str = None):
     if color is None:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
     elif css_names_to_hex.get(color) is not None:
@@ -93,8 +89,6 @@ async def _(msg: Bot.MessageSession):
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0] is not None:
         material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{material_color_name_raw[0]}'
-
-
 
     draw.multiline_text(
         (250,
