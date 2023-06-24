@@ -31,6 +31,7 @@ def cn_chk(string: str):
 
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
 async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
+    ver = version
     if version is not None:
         match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', version)
         if match_ver is None:

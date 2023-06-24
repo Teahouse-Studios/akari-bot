@@ -43,7 +43,7 @@ def get_diff(diff):
 
 mai_regex = module('maimai_regex',
                      desc='{maimai.help.maimai_regex.desc}', recommend_modules=['maimai'],
-                     alias='mai_regex', developers=['DoroWolf'])
+                     alias='mai_regex', developers=['DoroWolf'], support_languages=['zh_cn', 'zh_tw'])
 
 
 @mai_regex.handle(re.compile(r"(.+)\s?是什([么麼])歌"), desc='{maimai.help.maimai_regex.song}')
