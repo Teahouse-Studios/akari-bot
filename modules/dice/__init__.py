@@ -2,7 +2,8 @@ from core.builtins import Bot
 from core.component import module
 from .dice import GenerateMessage
 
-dice = module('dice', alias={'d4': 'dice d4',
+dice = module('dice', alias={'rd': 'dice',
+                             'd4': 'dice d4',
                              'd6': 'dice d6',
                              'd8': 'dice d8',
                              'd10': 'dice d10',
