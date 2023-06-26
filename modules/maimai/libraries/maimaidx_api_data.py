@@ -1,8 +1,9 @@
 import ujson as json
+import os
 
 from core.builtins import ErrorMessage
 from core.utils.http import get_url, post_url
-
+from .maimaidx_music import get_cover_len5_id
 
 async def get_alias(input, get_music=False):
     url = "https://download.fanyu.site/maimai/alias.json"
@@ -54,3 +55,12 @@ async def get_plate(msg, payload):
             await msg.finish(ErrorMessage(str(e)))
 
     return data
+
+def get_cover(sid):
+    cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png",
+    cover_dir = f"./assets/maimai/static/mai/cover/"
+    cover_path = cover_dir + f'{get_cover_len5_id(sid)}.png'
+    if os.path.exists(cover_path):
+        return os.path.abspath(cover_path)
+    else:
+        return cover_url

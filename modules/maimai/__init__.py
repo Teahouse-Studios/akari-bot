@@ -4,9 +4,9 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_alias
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, get_score_list
-from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
+from modules.maimai.libraries.maimaidx_music import Music, TotalList
 from .regex import *
 
 total_list = TotalList()
@@ -21,7 +21,7 @@ diff_label_zht = ['綠', '黃', '紅']
 
 def song_txt(music: Music):
     return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png", ),
+            BImage(get_cover(music.id), ),
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
@@ -195,7 +195,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     output = await get_player_score(msg, payload, sid)
 
-    file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+    file = get_cover(music['id'])
     await msg.finish(
         [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"), Plain(output)])
@@ -358,7 +358,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
-        file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+        file = get_cover(music['id'])
         if len(chart['notes']) == 4:
             message = msg.locale.t(
                 "maimai.message.song.sd",
@@ -386,7 +386,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"), Plain(message)])
     else:
-        file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+        file = get_cover(music['id'])
         await msg.finish(
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"),

@@ -4,9 +4,9 @@ from core.logger import Logger
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
-from modules.maimai.libraries.maimaidx_api_data import get_alias
-from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, get_score_list
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover
+from modules.maimai.libraries.maimaidx_music import Music, TotalList
+from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process
 
 total_list = TotalList()
 
@@ -20,7 +20,7 @@ diff_label_zht = ['綠', '黃', '紅']
 
 def song_txt(music: Music):
     return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png", ),
+            BImage(get_cover(music.id), ),
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession):
         else:
             music = (await total_list.get()).by_id(str(sid_list[0]))
 
-    file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+    file = get_cover(music['id'])
     await msg.finish(
         [Plain(f"{music['id']}\u200B. {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"),
@@ -95,7 +95,7 @@ async def _(msg: Bot.MessageSession):
         result += "\n".join(alias)
         await msg.finish([Plain(result.strip())])
 
-    file = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"
+    file = get_cover(music['id'])
     await msg.finish(
         [Plain(f"{music['id']}\u200B. {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"),
