@@ -60,14 +60,16 @@ async def main(msg: Bot.MessageSession):
             await msg.finish()
 
 
-@s.handle('revoke <enable|disable> {{server.help.revoke}}')
+@s.handle('revoke {{server.help.revoke}}')
 async def revoke(msg: Bot.MessageSession):
-    if msg.parsed_msg.get('<enable|disable>') == 'enable':
-        msg.data.edit_option('server_revoke', True)
-        await msg.finish(msg.locale.t('server.message.revoke.enable'))
-    elif msg.parsed_msg.get('<enable|disable>') == 'disable':
+    server_revoke_state = msg.data.options.get('server_revoke')
+    
+    if server_revoke_state:
         msg.data.edit_option('server_revoke', False)
-        await msg.finish(msg.locale.t('server.message.revoke.disable'))
+        await msg.finish(msg.locale.t("server.message.revoke.disable"))
+    else:
+        msg.data.edit_option('server_revoke', True)
+        await msg.finish(msg.locale.t("server.message.revoke.enable"))
 
 
 async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
