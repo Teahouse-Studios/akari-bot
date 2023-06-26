@@ -1,7 +1,7 @@
-from typing import Callable
+from typing import Any, Callable
 
 import ujson as json
-from langchain.agents import Tool
+from langchain.tools import StructuredTool
 
 from core.types.message import MessageSession, MsgInfo, Session
 from core.utils.i18n import Locale
@@ -36,9 +36,15 @@ def parse_input(input: str):
     return parsed
 
 
-class AkariTool(Tool):
-    def __init__(self, name: str, func: Callable, description: str = None):
-        super().__init__(name, func, description)
+class AkariTool(StructuredTool):
+    def __init__(
+            self,
+            name: str,
+            func: Callable,
+            args_schema: Any = None,
+            description: str = None,
+            return_direct: bool = False):
+        super().__init__(name=name, args_schema=args_schema, description=description, return_direct=return_direct, func=func)
         self.coroutine = func
 
 

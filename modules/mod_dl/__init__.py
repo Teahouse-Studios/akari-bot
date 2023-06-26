@@ -31,13 +31,14 @@ def cn_chk(string: str):
 
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
 async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
+    ver = version
     if version is not None:
         match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', version)
         if match_ver is None:
             mod_name += ' ' + version
             ver = False
     if cn_chk(mod_name):
-        return {'msg': '暂不支持中文搜索。', 'success': False}
+        await msg.finish(msg.locale.t("mod_dl.message.unsupport"))
 
     async def search_modrinth(name: str, ver: str):
         url = f'https://api.modrinth.com/v2/search?query={name}&limit=10'

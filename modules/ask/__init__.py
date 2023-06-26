@@ -67,7 +67,7 @@ async def _(msg: Bot.MessageSession):
 
 
 def parse_markdown(md: str):
-    regex = r'(```[\s\S]*?\n```|\$\$[\s\S]*?\$\$|[^\n]+)(?:\n|$)'
+    regex = r'(```[\s\S]*?\n```|\$[\s\S]*?\$|[^\n]+)'
 
     blocks = []
     for match in re.finditer(regex, md):
@@ -80,9 +80,9 @@ def parse_markdown(md: str):
             except AttributeError:
                 raise ValueError('Code block is missing language or code')
             content = {'language': language, 'code': code}
-        elif content.startswith('$$'):
+        elif content.startswith('$'):
             block = 'latex'
-            content = content[2:-2].strip()
+            content = content[1:-1].strip()
         else:
             block = 'text'
         blocks.append({'type': block, 'content': content})

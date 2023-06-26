@@ -15,7 +15,7 @@ from .song import get_song_info
 from .utils import get_userinfo
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
-             alias={'b30': 'arcaea b30', 'a': 'arcaea', 'arc': 'arcaea'})
+             alias=['a', 'arc'])
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 api = Config("botarcapi_url")
@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession, friend_code: int = None):
             get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
                                  fmt='json')
             if get_['status'] == 0:
-                await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait")),
+                await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait"))
                 if msg.target.targetFrom not in ['Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
                     await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
                                            Image(os.path.abspath('./assets/noc.jpg')),

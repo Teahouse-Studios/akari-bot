@@ -7,6 +7,7 @@ from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki
 
+enable_urlmanager = Config('qq_enable_urlmanager')
 
 @wiki.handle('set <WikiUrl> {{wiki.help.set}}', required_admin=True)
 async def set_start_wiki(msg: Bot.MessageSession):
@@ -18,8 +19,8 @@ async def set_start_wiki(msg: Bot.MessageSession):
             if result:
                 await msg.finish(
                     msg.locale.t("wiki.message.set.success", name=check.value.name) + ('\n' + check.message if check.message != '' else '') +
-                    (('\n' + msg.locale.t("wiki.message.untrust") + Config("wiki_whitelist_url"))
-                     if not check.value.in_allowlist else ''))
+                    (('\n' + msg.locale.t("wiki.message.wiki_audit.untrust") + Config("wiki_whitelist_url"))
+                     if enable_urlmanager and not check.value.in_allowlist else ''))
         else:
             await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
@@ -39,8 +40,8 @@ async def _(msg: Bot.MessageSession):
             result = target.config_interwikis(iw, check.value.api, let_it=True)
             if result:
                 await msg.finish(msg.locale.t("wiki.message.iw.set.success", iw=iw, name=check.value.name) +
-                                 (('\n' + msg.locale.t("wiki.message.untrust") + Config("wiki_whitelist_url"))
-                                  if not check.value.in_allowlist else ''))
+                                 (('\n' + msg.locale.t("wiki.message.wiki_audit.untrust") + Config("wiki_whitelist_url"))
+                                  if enable_urlmanager and not check.value.in_allowlist else ''))
         else:
             await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
