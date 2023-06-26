@@ -1,7 +1,7 @@
 {
-    "calc.help.calc.option.bin": "转换为二进制：bin(268) -> 0b100001100",
-    "calc.help.calc.option.bool": "转换为布尔值：bool(1) -> True",
-    "calc.help.calc.option.complex": "转换为复数：complex(1) -> (1 + 0j)",
+    "calc.help.calc.bin": "转换为二进制：bin(268) -> 0b100001100",
+    "calc.help.calc.bool": "转换为布尔值：bool(1) -> True",
+    "calc.help.calc.complex": "转换为复数：complex(1) -> (1 + 0j)",
     "calc.help.calc.desc": "安全地计算 Python ast 表达式。",
     "calc.help.calc.option.divide": "商：6 / 3 -> 2",
     "calc.help.calc.option.equal": "等于：1 == 1 -> True",
@@ -26,6 +26,8 @@
     "calc.help.calc.option.str": "转换为字符串：str(1) -> \"1\"",
     "calc.help.calc.option.xor": "按位异或：1 ^ 1 -> 0",
     "calc.message.calc.invalid": "表达式无效：${expr}",
+    "calc.message.factor.prime.error": "发生错误：必须为大于 1 的正整数。",
+    "calc.message.factor.prime.is_prime": "${num} 是质数。",
     "calc.message.running_time": "计算花费时间：${time} ms / 10000 ms。",
     "calc.message.time_out": "计算超时。"
 }

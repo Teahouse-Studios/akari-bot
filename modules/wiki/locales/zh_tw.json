@@ -23,6 +23,7 @@
     "wiki.help.search": "搜尋一個 Wiki 頁面。",
     "wiki.help.set": "設定起始查詢 Wiki。",
     "wiki.help.wiki_inline.desc": "啟用後將自動解析訊息中帶有 [[ ]] 或 {{ }} 的字串並自動查詢 Wiki，例如 [[苦力怕]]。",
+    "wiki.help.wiki_inline.mediawiki": "在 ≺ ≻ 或 ⧼ ⧽ 内输入标题以自动查询 MediaWiki 命名空间的页面",
     "wiki.help.wiki_inline.page": "在 [[ ]] 內輸入標題以自動查詢頁面。",
     "wiki.help.wiki_inline.template": "在 {{ }} 內輸入標題以自動查詢模板。",
     "wiki.help.wiki_inline.url": "傳送 Wiki 頁面的 URL 以生成 infobox 圖片。",

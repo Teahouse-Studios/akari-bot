@@ -362,12 +362,15 @@ async def get_plate_process(msg, payload, plate):
                           song_remain_basic=len(song_remain_basic),
                           song_remain_advanced=len(song_remain_advanced),
                           song_remain_expert=len(song_remain_expert),
-                          song_remain_master=len(song_remain_master)) + '\n'
+                          song_remain_master=len(song_remain_master))
 
     song_remain: list[list] = song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster
     song_record = [[s['id'], s['level_index']] for s in verlist]
+    
     if version in ['舞', '霸']:
-        prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
+        prompt += '\n' + msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
+
+    prompt += msg.locale.t('message.end')
     await msg.sendMessage(prompt.strip())
 
     output = ''
