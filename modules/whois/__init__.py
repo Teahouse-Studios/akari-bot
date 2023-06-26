@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession, domain: str):
 async def get_whois(msg, domain):
     try:
         info = whois.whois(domain)
-    except whois.parser.PywhoisError as e:
+    except whois.parser.PywhoisError:
         await msg.finish("whois.message.error.get_failed")
 
     name_servers = [ns for ns in info['name_servers'] if ns.islower()]

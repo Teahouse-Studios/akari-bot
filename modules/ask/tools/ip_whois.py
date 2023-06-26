@@ -1,4 +1,4 @@
-from modules.whois.ip import check_ip
+from modules.ip import check_ip
 from .utils import to_json_func, AkariTool
 
 
