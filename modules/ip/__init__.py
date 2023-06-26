@@ -7,8 +7,8 @@ from core.utils.http import get_url
 from core.component import module
 from typing import Any, Dict
 
-ip = module('ip', desc='{ip.help.desc}',
-           developers=['Dianliang233'])
+ip = module('whois', desc='{ip.help.desc}',
+           alias='ip', developers=['Dianliang233'])
 
 
 @ip.handle('<ip>')
