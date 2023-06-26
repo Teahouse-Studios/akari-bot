@@ -25,10 +25,7 @@
     "calc.help.calc.randint": "小于 x 的随机整数：randint(6) -> 5",
     "calc.help.calc.str": "轉換為字串：str(1) -> \"1\"",
     "calc.help.calc.xor": "按位异或：1 ^ 1 -> 0",
-    "calc.help.factor.prime": "分解質因數。",
     "calc.message.calc.invalid": "運算式無效：${expr}",
-    "calc.message.factor.prime.error": "發生錯誤：必須為大於 1 的正整數。",
-    "calc.message.factor.prime.is_prime": "${num} 是質數。",
     "calc.message.running_time": "計算耗費時間：${time} ms / 10000 ms。",
     "calc.message.time_out": "計算逾時。"
 }

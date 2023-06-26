@@ -25,7 +25,6 @@
     "calc.help.calc.option.randint": "小于 x 的随机整数：randint(6) -> 5",
     "calc.help.calc.option.str": "转换为字符串：str(1) -> \"1\"",
     "calc.help.calc.option.xor": "按位异或：1 ^ 1 -> 0",
-    "calc.help.func": "绘制函数图像。",
     "calc.message.calc.invalid": "表达式无效：${expr}",
     "calc.message.running_time": "计算花费时间：${time} ms / 10000 ms。",
     "calc.message.time_out": "计算超时。"

@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot
 from core.component import module
 from core.exceptions import NoReportException
 from core.logger import Logger
@@ -54,30 +54,6 @@ async def _(msg: Bot.MessageSession):
             m = f'{(expr)} = {res[7:]}'
         if msg.checkSuperUser():
             m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
-        await msg.finish(m)
-    else:
-        await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
-
-
-func = module('func',
-              developers=['DoroWolf'],
-              recommend_modules=['calc'], required_superuser=True)
-
-
-@func.handle('<math_expression> {{calc.help.func}}')
-async def _(msg: Bot.MessageSession):
-    expr = msg.asDisplay().split(' ', 1)[1]
-    start = time.perf_counter_ns()
-    res = await spawn_subprocess('/func.py', expr, msg)
-    stop = time.perf_counter_ns()
-    delta = (stop - start) / 1000000
-    if res[:6] == 'Result':
-        img = Image(res[7:])
-        if msg.checkSuperUser():
-            txt = Plain(msg.locale.t("calc.message.running_time", time=delta))
-            m = [img, txt]
-        else:
-            m = img
         await msg.finish(m)
     else:
         await msg.finish(msg.locale.t("calc.message.calc.invalid", expr={res[7:]}))
