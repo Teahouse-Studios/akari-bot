@@ -24,6 +24,8 @@
     "example": "你好世界！",
     "i18n.prompt.fallback.failed": "（如果你看到了這條奇怪的字串，說明我們又搞錯了什麼！\n請將問題回報至\n${url}\n以便我們快速解決此問題。）",
     "language": "繁體中文",
+    "message.delimiter": "、",
+    "message.end": "。",
     "message.reply.prompt": "（請使用指定的詞語回覆此訊息）",
     "message.wait.confirm.prompt.type1": "（傳送「是」或符合確認條件的詞語確認）",
     "message.wait.confirm.prompt.type2": "（傳送符合條件的詞語確認）",
