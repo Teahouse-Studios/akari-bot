@@ -1,4 +1,5 @@
-import whois
+from whois import whois
+
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.image import msgchain2image
@@ -18,8 +19,8 @@ async def _(msg: Bot.MessageSession, domain: str):
 
 async def get_whois(msg, domain):
     try:
-        info = whois.whois(domain)
-    except whois.parser.PywhoisError:
+        info = whois(domain)
+    except:
         await msg.finish("whois.message.error.get_failed")
 
     name_servers = [ns for ns in info['name_servers'] if ns.islower()]
