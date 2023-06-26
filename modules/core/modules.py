@@ -265,7 +265,7 @@ async def bot_help(msg: Bot.MessageSession):
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
             if module_.developers is not None:
-                devs = msg.locale.t('delimiter').join(module_.developers)
+                devs = msg.locale.t('message.delimiter').join(module_.developers)
             else:
                 devs = ''
             devs_msg = '\n' + msg.locale.t("core.message.module.help.author.type1") + devs
@@ -343,7 +343,7 @@ async def _(msg: Bot.MessageSession):
                         malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
                 if module_.developers:
-                    appends.append(msg.locale.t('delimiter').join(module_.developers))
+                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 if module_.base:
                     essential.append(appends)
                 if x in target_enabled_list:
@@ -446,7 +446,7 @@ async def modules_help(msg: Bot.MessageSession):
                         malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
                 if module_.developers:
-                    appends.append(msg.locale.t('delimiter').join(module_.developers))
+                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 m.append(appends)
             if m:
                 tables.append(ImageTable(m, [msg.locale.t("core.message.module.help.table.header.external"),

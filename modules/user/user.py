@@ -134,7 +134,7 @@ async def get_user_info(msg, wikiurl, username, pic=False):
             msgs.append(msg.locale.t('user.message.username') + user + (' | ' + msg.locale.t('user.message.edited_count') + data['edited_count']
                                         if 'edited_count' in data and 'created_page_count' not in data else ''))
         if users_groups := data.get('users_groups', False):
-            msgs.append(msg.locale.t('user.message.users_groups') + msg.locale.t('delimiter').join(users_groups))
+            msgs.append(msg.locale.t('user.message.users_groups') + msg.locale.t('message.delimiter').join(users_groups))
         if gender_ := data.get('gender', False):
             msgs.append(msg.locale.t('user.message.gender') + gender_)
         if registration := data.get('registration_time', False):
@@ -172,7 +172,7 @@ async def get_user_info(msg, wikiurl, username, pic=False):
             msgs.append(' | '.join(sub_edit_counts4))
 
         if global_users_groups := data.get('global_users_groups', False):
-            msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('delimiter').join(global_users_groups))
+            msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('message.delimiter').join(global_users_groups))
         if global_edit_count := data.get('global_edit_count', False):
             msgs.append(msg.locale.t('user.message.global_edited_count') + global_edit_count)
         if global_home := data.get('global_home', False):

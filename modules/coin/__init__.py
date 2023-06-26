@@ -84,5 +84,5 @@ async def flipCoins(count: int, msg):
         if stand:
             output += msg.locale.t("coin.message.mix.stand", stand=stand)
         else:
-            output += msg.locale.t("coin.message.mix.end")
+            output += msg.locale.t("message.end")
         return output

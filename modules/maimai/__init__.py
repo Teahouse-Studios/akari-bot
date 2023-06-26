@@ -1,5 +1,4 @@
-﻿from core.builtins import Bot, Plain, Image as BImage
-from core.builtins import command_prefix
+﻿from core.builtins import Bot, command_prefix, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image

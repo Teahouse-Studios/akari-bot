@@ -11,7 +11,6 @@
     "coin.message.error.rate": "An error occurred: Coin probability error.",
     "coin.message.head": "...\n... It is heads!",
     "coin.message.mix": "...",
-    "coin.message.mix.end": ".",
     "coin.message.mix.head": " ${head} is/are heads",
     "coin.message.mix.stand": "... and ${stand} stand(s) up!",
     "coin.message.mix.tail": ", ${tail} is/are tails",
