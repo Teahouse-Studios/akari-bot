@@ -57,7 +57,7 @@ async def get_plate(msg, payload):
     return data
 
 def get_cover(sid):
-    cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png",
+    cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
     cover_dir = f"./assets/maimai/static/mai/cover/"
     cover_path = cover_dir + f'{get_cover_len5_id(sid)}.png'
     if sid == '11364':
