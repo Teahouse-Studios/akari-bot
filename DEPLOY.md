@@ -352,7 +352,7 @@ assets
 
 #### 自定义确认词及命令前缀
 
-你可以通过编辑 `core/elements/others/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix`
+你可以通过编辑 `core/builtins/utils/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix`
 变量来增加（或删除）可使用的命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
