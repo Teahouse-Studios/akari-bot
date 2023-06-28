@@ -20,6 +20,7 @@ version = module('version',
 
 @version.handle()
 async def bot_version(msg: Bot.MessageSession):
+
     ver = os.path.abspath(PrivateAssets.path + '/version')
     tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     open_version = open(ver, 'r')

@@ -28,7 +28,7 @@ class MessageTaskManager:
         if 'result' in cls._list[session.target.targetId][session.target.senderId]:
             return cls._list[session.target.targetId][session.target.senderId]['result']
         else:
-            return False
+            return None
 
     @classmethod
     def get(cls):

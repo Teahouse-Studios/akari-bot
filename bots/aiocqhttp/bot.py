@@ -16,8 +16,8 @@ from core.utils.bot import load_prompt, init_async
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
-Url.disable_mm = not Config('qq_enable_urlmanager')
+EnableDirtyWordCheck.status = True if Config('qq_enable_dirty_check') else False
+Url.disable_mm = False if Config('qq_enable_urlmanager') else True
 qq_account = Config("qq_account")
 enable_listening_self_message = Config("qq_enable_listening_self_message")
 

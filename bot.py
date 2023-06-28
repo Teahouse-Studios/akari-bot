@@ -31,7 +31,7 @@ def enqueue_output(out, queue):
 
 def init_bot():
     base_superuser = Config('base_superuser')
-    if base_superuser:
+    if base_superuser is not None:
         BotDBUtil.SenderInfo(base_superuser).edit('isSuperUser', True)
 
 

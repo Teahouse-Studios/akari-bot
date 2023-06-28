@@ -21,7 +21,7 @@ class CFG:
         if not value:
             value = self.cp.get('cfg', q, fallback=False)
         if not value:
-            return False
+            return None
         if value.upper() == 'TRUE':
             return True
         if value.upper() in ['', 'FALSE']:

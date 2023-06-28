@@ -38,7 +38,7 @@ class MessageSession(MessageSession):
         MessageTaskManager.add_task(self, flag)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
-        if result:
+        if result is not None:
             if msgchain is not None and delete:
                 await send.delete()
             if result.asDisplay(text_only=True) in confirm_command:
@@ -61,7 +61,7 @@ class MessageSession(MessageSession):
         result = MessageTaskManager.get_result(self)
         if delete and sent is not None:
             await sent.delete()
-        if result:
+        if result is not None:
             return result
         else:
             raise WaitCancelException
@@ -76,7 +76,7 @@ class MessageSession(MessageSession):
         MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
-        if result:
+        if result is not None:
             return result
         else:
             raise WaitCancelException
