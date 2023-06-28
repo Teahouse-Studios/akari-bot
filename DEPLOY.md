@@ -318,7 +318,7 @@ assets
 
 #### ncmusic
 
-ncmusic模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
+`ncmusic` 模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
 
 具体配置教程请查看链接所指向的文档。
 
