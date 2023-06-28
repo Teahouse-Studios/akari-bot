@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import List
 
 from core.builtins.message.chain import *
@@ -26,6 +27,7 @@ class MessageSession(MessageSession):
         self.custom_admins = self.data.custom_admins
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
+        self.timestamp = datetime.now()
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
         send = None
