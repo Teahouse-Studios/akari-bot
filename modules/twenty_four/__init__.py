@@ -87,31 +87,48 @@ def contains_all_numbers(expression, numbers):
     return len(used_numbers) == 0
 
 
-async def twenty_four(msg, play_state):
-    if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:
-        if play_state[msg.target.targetId]['game'] == '24':
-            await msg.finish(msg.locale.t('game.message.running'))
-        else:
-            await msg.finish(msg.locale.t('game.message.running.others'))
-    play_state.update({msg.target.targetId: {'game': '24', 'active': True}})
+tf = module('twenty_four', alias=['twentyfour', '24'],
+               desc='{twenty_four.help.desc}', developers=['DoroWolf'])
+play_state = {}
+
+
+@tf.command('{{twenty_four.help}}')
+async def _(msg: Bot.MessageSession):
+    if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']: 
+        await msg.finish(msg.locale.t('twenty_four.message.running'))
+    play_state.update({msg.target.targetId: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
     has_solution_flag = has_solution(numbers)
 
-    answer = await msg.waitNextMessage(msg.locale.t('game.twenty_four.message', numbers=numbers))
+    answer = await msg.waitNextMessage(msg.locale.t('twenty_four.message', numbers=numbers))
     expression = answer.asDisplay(text_only=True)
     if play_state[msg.target.targetId]['active']:
         if expression.lower() in no_solution:
             if has_solution_flag:
-                await answer.sendMessage(msg.locale.t('game.twenty_four.message.incorrect.have_solution'))
+                await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.have_solution'))
             else:
-                await answer.sendMessage(msg.locale.t('game.message.correct'))
+                await answer.sendMessage(msg.locale.t('twenty_four.message.correct'))
         elif is_valid(expression):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
-                await answer.sendMessage(msg.locale.t('game.message.correct'))
+                await answer.sendMessage(msg.locale.t('twenty_four.message.correct'))
             else:
-                await answer.sendMessage(msg.locale.t('game.message.incorrect'))
+                await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect'))
         else:
-            await answer.sendMessage(msg.locale.t('game.twenty_four.message.incorrect.expression_invalid'))
+            await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.error'))
         play_state[msg.target.targetId]['active'] = False
+
+
+
+@tf.command('stop {{twenty_four.stop.help}}')
+async def s(msg: Bot.MessageSession):
+    state = play_state.get(msg.target.targetId, False)
+    if state:
+        if state['active']:
+            play_state[msg.target.targetId]['active'] = False
+            await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
+        else:
+            await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
+    else:
+        await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))

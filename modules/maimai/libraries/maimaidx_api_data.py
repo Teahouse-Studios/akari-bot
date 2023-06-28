@@ -14,6 +14,7 @@ async def get_alias(input, get_music=False):
         if input in data:
             result = data[input]
     else:
+        input = input.replace("_", " ")
         for alias, ids in data.items():
             if input in ids:
                 result.append(alias)
