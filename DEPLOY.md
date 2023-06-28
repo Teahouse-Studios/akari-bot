@@ -259,9 +259,9 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 ### 模块
 
-#### Arcaea
+#### arcaea
 
-Arcaea 模块使用了 BotArcAPI 进行开发。
+`arcaea` 模块使用了 BotArcAPI 进行开发。
 
 `botarcapi_url =` - 填写 BotArcAPI 公用实例地址
 
@@ -270,9 +270,35 @@ Arcaea 模块使用了 BotArcAPI 进行开发。
 填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
 启动后使用 `~arcaea initialize` 来初始化资源文件。
 
+#### coin 
+`coin` 模块需要一些额外的参数才能正常工作。
+
+`coin_limit = 10000` - 一次可投掷的硬币最大个数。
+
+co`in_faceup_rate = 4994` - 硬币正面朝上的概率，按一万分之几计算。
+
+`coin_facedown_rate = 4994` - 硬币反面朝上的概率，按一万分之几计算。
+
+#### dice
+`dice` 模块需要一些额外的参数才能正常工作。
+
+`dice_limit = 10000` - 一次可投掷的骰子最大个数。
+
+`dice_roll_limit = 100` - 投掷骰子的最大次数。
+
+`dice_mod_max = 10000` - 投掷骰子的最大调节值。
+
+`dice_mod_min = -10000` - 投掷骰子的最小调节值。
+
+`dice_output_cnt = 50` - 输出时的最大数据量，超过则无法正常显示。
+
+`dice_detail_cnt= 5` - 多次投掷骰子的总数，超过则不再显示详细信息。
+
+`dice_count_limit = 10` - 多项式最多的项数。
+
 #### maimai
 
-maimai 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
+`maimai` 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
 
 1. 下载 [资源文件](https://www.diving-fish.com/maibot/static.zip) ，并于 `assets` 目录下创建一个 `maimai` 文件夹。
 2. 解压资源文件，形成以下目录结构：
@@ -289,9 +315,6 @@ assets
             │...
 ```
 
-#### secret
-
-此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
 
 #### ncmusic
 
@@ -304,6 +327,10 @@ ncmusic模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](ht
 + `web_render` - Webrender 的地址（IP 或域名）及端口
 + `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
 
+#### secret
+
+此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
+
 ### 其他功能
 
 `qq_msg_logging_to_db = True` - 将 QQ 平台内的命令触发消息记录至 `database/msg.db` 中，有助于判断是否存在违规使用机器人的情况。
@@ -311,13 +338,17 @@ ncmusic模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](ht
 `base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami`
 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
+`qq_enable_dirty_check = True` - 是否启用 QQ 平台的屏蔽词检查。
+
+`qq_enable_urlmanager = True` - 是否启用 QQ 平台的 URL 管理（替换外部链接，提示非官方页面）。若停用此功能将同时停用 `wiki_audit` 命令。
+
 `slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
 `enable_tos = False` - 是否启用内置的违反服务条款的检查。
 
-`qq_enable_dirty_check = True` - 是否启用 QQ 平台的屏蔽词检查。
+`enable_analytics = True` - 是否启用内置的 `analytics` 命令，用于统计命令使用次数。
 
-`qq_enable_urlmanager = True` - 是否启用 QQ 平台的 URL 管理（替换外部链接，提示非官方页面）。
+`enable_eval= True` - 是否启用内置的 `eval` 命令。
 
 #### 自定义确认词及命令前缀
 
