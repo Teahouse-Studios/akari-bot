@@ -112,10 +112,14 @@ class ModulesManager:
             elif isinstance(meta, ScheduleMeta):
                 cls.modules[bind_prefix].schedule_list.add(meta)
 
+    _return_cache = {}
+
     @classmethod
     def return_modules_list(cls, targetFrom: str = None) -> \
             Dict[str, Module]:
         if targetFrom is not None:
+            if targetFrom in cls._return_cache:
+                return cls._return_cache[targetFrom]
             returns = {}
             for m in cls.modules:
                 if isinstance(cls.modules[m], Module):
@@ -124,6 +128,7 @@ class ModulesManager:
                     available = cls.modules[m].available_for
                     if targetFrom in available or '*' in available:
                         returns.update({m: cls.modules[m]})
+            cls._return_cache.update({targetFrom: returns})
             return returns
         return cls.modules
 
