@@ -271,8 +271,9 @@ async def wait_for_restart(msg: Bot.MessageSession):
             get_wait_list = MessageTaskManager.get()
             for x in get_wait_list:
                 for y in get_wait_list[x]:
-                    if get_wait_list[x][y]['active']:
-                        await get_wait_list[x][y]['original_session'].sendMessage(get_wait_list[x][y]['original_session'].locale.t("core.message.restart.prompt"))
+                    for z in get_wait_list[x][y]:
+                        if get_wait_list[x][y][z]['active']:
+                            await z.sendMessage(z.locale.t("core.message.restart.prompt"))
 
     else:
         await msg.sendMessage(msg.locale.t("core.message.restart.timeout"))
