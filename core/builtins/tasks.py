@@ -18,8 +18,8 @@ class MessageTaskManager:
             cls._list[session.target.targetId] = {}
         if sender not in cls._list[session.target.targetId]:
             cls._list[session.target.targetId][sender] = {}
-        cls._list[session.target.targetId][sender][session] = {session: {
-            'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp()}}
+        cls._list[session.target.targetId][sender][session] = {
+            'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp()}
         Logger.debug(cls._list)
 
     @classmethod
