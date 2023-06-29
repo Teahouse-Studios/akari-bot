@@ -46,7 +46,7 @@ class CFG:
         value_s = self.cp.get('secret')
         value_n = self.cp.get('cfg')
         value = value_s.get(q)
-        if not value:
+        if value is None:
             value = value_n.get(q)
         return value
 
