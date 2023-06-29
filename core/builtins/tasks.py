@@ -41,31 +41,32 @@ class MessageTaskManager:
     @classmethod
     async def check(cls, session: MessageSession):
         if session.target.targetId in cls._list:
-            sender = None
+            senders = []
             if session.target.senderId in cls._list[session.target.targetId]:
-                sender = session.target.senderId
+                senders.append(session.target.senderId)
             if 'all' in cls._list[session.target.targetId]:
-                sender = 'all'
-            if sender is not None:
-                for s in cls._list[session.target.targetId][sender]:
-                    get_ = cls._list[session.target.targetId][sender][s]
-                    if get_['type'] == 'wait':
-                        get_['result'] = session
-                        get_['active'] = False
-                        get_['flag'].set()
-                    elif get_['type'] == 'reply':
-                        if isinstance(get_['reply'], list):
-                            for reply in get_['reply']:
-                                if reply == s.target.replyId:
+                senders.append('all')
+            if senders is not None:
+                for sender in senders:
+                    for s in cls._list[session.target.targetId][sender]:
+                        get_ = cls._list[session.target.targetId][sender][s]
+                        if get_['type'] == 'wait':
+                            get_['result'] = session
+                            get_['active'] = False
+                            get_['flag'].set()
+                        elif get_['type'] == 'reply':
+                            if isinstance(get_['reply'], list):
+                                for reply in get_['reply']:
+                                    if reply == s.target.replyId:
+                                        get_['result'] = session
+                                        get_['active'] = False
+                                        get_['flag'].set()
+                                        break
+                            else:
+                                if get_['reply'] == s.target.replyId:
                                     get_['result'] = session
                                     get_['active'] = False
                                     get_['flag'].set()
-                                    break
-                        else:
-                            if get_['reply'] == s.target.replyId:
-                                get_['result'] = session
-                                get_['active'] = False
-                                get_['flag'].set()
 
 
 __all__ = ['MessageTaskManager']
