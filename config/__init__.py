@@ -1,34 +1,54 @@
-from configparser import ConfigParser
+import os
+
+import toml
 from os.path import abspath
 
 from core.exceptions import ConfigFileNotFound
 
-config_filename = 'config.cfg'
+config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)
+
+old_cfg_file_path = abspath('./config/config.cfg')
+
+
+def convert_cfg_to_toml():
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(old_cfg_file_path)
+    config_dict = {}
+    for section in config.sections():
+        config_dict[section] = dict(config[section])
+
+    for x in config_dict:
+        for y in config_dict[x]:
+            if config_dict[x][y] == "True":
+                config_dict[x][y] = True
+            elif config_dict[x][y] == "False":
+                config_dict[x][y] = False
+            elif config_dict[x][y].isdigit():
+                config_dict[x][y] = int(config_dict[x][y])
+
+    with open(config_path, 'w') as f:
+        f.write(toml.dumps(config_dict))
+    os.remove(old_cfg_file_path)
 
 
 class CFG:
     def __init__(self):
-        self.cp = ConfigParser()
-        self.cp.read(config_path)
+        if not os.path.exists(config_path):
+            if os.path.exists(old_cfg_file_path):
+                convert_cfg_to_toml()
+            else:
+                raise ConfigFileNotFound(config_path) from None
+        self.cp = toml.loads(open(config_path, 'r', encoding='utf-8').read())
 
     def config(self, q):
-        section = self.cp.sections()
-
-        if len(section) == 0:
-            raise ConfigFileNotFound(config_path) from None
-        value = self.cp.get('secret', q, fallback=False)
+        value_s = self.cp.get('secret')
+        value_n = self.cp.get('cfg')
+        value = value_s.get(q)
         if not value:
-            value = self.cp.get('cfg', q, fallback=False)
-        if not value:
-            return None
-        if value.upper() == 'TRUE':
-            return True
-        if value.upper() in ['', 'FALSE']:
-            return False
+            value = value_n.get(q)
         return value
 
 
 Config = CFG().config
-CachePath = Config('cache_path')
-DBPath = Config('db_path')

@@ -13,6 +13,7 @@
 ## 下载源代码
 
 1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然。你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+（注意：master分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的DEPLOY.md继续查看部署教程）
 2. 解压源代码，然后打开终端，进入文件夹。
 
 ## 安装依赖
@@ -82,11 +83,11 @@ $ pip install -r requirements.txt
 
 ## 配置
 
-进入 `config` 文件夹，将 `config.cfg.example` 重命名为 `config.cfg`，然后开始配置你所需要的内容。
+进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
 对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
 
-`db_path = mysql+pymysql://`
+`db_path = "mysql+pymysql://"`
 
 机器人需要一个数据库以用于存储用户数据。
 
@@ -113,7 +114,7 @@ $ pip install -r requirements.txt
 
 **格式**
 
-`db_path = sqlite:///<相对路径>/<数据库文件名>.db`
+`db_path = "sqlite:///<相对路径>/<数据库文件名>.db"`
 
 **实际示例**
 
@@ -145,9 +146,9 @@ $ pip install -r requirements.txt
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-`qq_host = 127.0.0.1:11451` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
+`qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
 
-`qq_account = 2314163511` - 填写机器人的 QQ 号。
+`qq_account = "2314163511"` - 填写机器人的 QQ 号。
 
 填写好后，请配置 `go-cqhttp` 的 `config.yml` 文件中的对应的连接方式。
 
@@ -205,7 +206,7 @@ servers:
 
 由于小可有着许多的功能，部分功能需要进一步的配置才能使用。
 
-部分字段可能并未预设于 `config.yml.example` 中，手动添加即可。
+部分字段可能并未预设于 `config.toml.example` 中，手动添加即可。
 
 ### 屏蔽词
 
@@ -255,7 +256,7 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 **示例**
 
-`web_render = http://127.0.0.1:15551/`
+`web_render = "http://127.0.0.1:15551/"`
 
 ### 模块
 
@@ -270,12 +271,14 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
 启动后使用 `~arcaea initialize` 来初始化资源文件。
 
+如果不需要本模块的功能，将api字段删除即可。
+
 #### coin 
 `coin` 模块需要一些额外的参数才能正常工作。
 
 `coin_limit = 10000` - 一次可投掷的硬币最大个数。
 
-co`in_faceup_rate = 4994` - 硬币正面朝上的概率，按一万分之几计算。
+`coin_faceup_rate = 4994` - 硬币正面朝上的概率，按一万分之几计算。
 
 `coin_facedown_rate = 4994` - 硬币反面朝上的概率，按一万分之几计算。
 
@@ -322,10 +325,12 @@ assets
 
 具体配置教程请查看链接所指向的文档。
 
-配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.cfg` 文件中填写以下字段：
+配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.toml` 文件中填写以下字段：
 
 + `web_render` - Webrender 的地址（IP 或域名）及端口
 + `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
+
+如果不需要本模块的功能，将api字段删除即可。
 
 #### secret
 
@@ -333,22 +338,28 @@ assets
 
 ### 其他功能
 
-`qq_msg_logging_to_db = True` - 将 QQ 平台内的命令触发消息记录至 `database/msg.db` 中，有助于判断是否存在违规使用机器人的情况。
-
 `base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami`
 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
-`qq_enable_dirty_check = True` - 是否启用 QQ 平台的屏蔽词检查。
+`qq_disable_temp_session = true` - 是否禁用 QQ 平台的临时会话功能。
 
-`qq_enable_urlmanager = True` - 是否启用 QQ 平台的 URL 管理（替换外部链接，提示非官方页面）。若停用此功能将同时停用 `wiki_audit` 命令。
+`qq_enable_dirty_check = true` - 是否启用 QQ 平台的屏蔽词检查。
 
-`slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
+`qq_enable_urlmanager = true` - 是否启用 QQ 平台的 URL 管理（替换外部链接，提示非官方页面）。若停用此功能将同时停用 `wiki_audit` 命令。
 
-`enable_tos = False` - 是否启用内置的违反服务条款的检查。
+`slower_schedule = false` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
-`enable_analytics = True` - 是否启用内置的 `analytics` 命令，用于统计命令使用次数。
+`enable_tos = false` - 是否启用内置的违反服务条款的检查。
 
-`enable_eval= True` - 是否启用内置的 `eval` 命令。
+`enable_analytics = true` - 是否启用内置的 `analytics` 命令，用于统计命令使用次数。
+
+`enable_eval= true` - 是否启用内置的 `eval` 命令。
+
+`qq_enable_listening_self_message = false` - 是否启用 QQ 平台的自我消息处理（可能有助于多设备下使用，但也可能会导致误触发导致消息陷入死循环状态）。
+
+`allow_request_private_ip = true` - 是否允许机器人请求私有 IP 地址。
+
+
 
 #### 自定义确认词及命令前缀
 

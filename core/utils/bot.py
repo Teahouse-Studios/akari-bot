@@ -2,10 +2,11 @@ import asyncio
 import logging
 import os
 import traceback
-from configparser import ConfigParser
 from os.path import abspath
 
 import ujson as json
+
+from config import CFG
 
 from core.builtins import PrivateAssets, Secret
 from core.exceptions import ConfigFileNotFound
@@ -32,18 +33,10 @@ async def init_async() -> None:
 
 
 async def load_secret():
-    config_filename = 'config.cfg'
-    config_path = abspath('./config/' + config_filename)
-    cp = ConfigParser()
-    cp.read(config_path)
-    section = cp.sections()
-    if len(section) == 0:
-        raise ConfigFileNotFound(config_path) from None
-    options = cp.options('secret')
-    for option in options:
-        value = cp.get('secret', option)
-        if value.upper() not in ['', 'TRUE', 'FALSE']:
-            Secret.add(value.upper())
+    for x in CFG().cp:
+        if x == 'secret':
+            for y in CFG().cp[x]:
+                Secret.add(str(CFG().cp[x][y]).upper())
 
     async def append_ip():
         try:

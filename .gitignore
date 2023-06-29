@@ -1,6 +1,7 @@
 *.env
 __pycache__/
 config/*.cfg
+config/*.toml
 .idea
 .vscode
 assets/mcversion.txt
