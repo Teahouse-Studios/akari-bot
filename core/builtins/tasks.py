@@ -14,10 +14,13 @@ class MessageTaskManager:
         if all_:
             sender = 'all'
 
-        cls._list.update(
-            {session.target.targetId: {sender: {session: {'flag': flag, 'active': True, 'type': task_type,
-                                                          'reply': reply, 'ts': datetime.now().timestamp()}}}})
-        Logger.info(cls._list)
+        if session.target.targetId not in cls._list:
+            cls._list[session.target.targetId] = {}
+        if sender not in cls._list[session.target.targetId]:
+            cls._list[session.target.targetId][sender] = {}
+        cls._list[session.target.targetId][sender][session] = {session: {
+            'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp()}}
+        Logger.debug(cls._list)
 
     @classmethod
     def get_result(cls, session: MessageSession):
