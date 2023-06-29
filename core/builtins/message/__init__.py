@@ -92,11 +92,11 @@ class MessageSession(MessageSession):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True)
         await flag.wait()
-        result = MessageTaskManager.get()[self.target.targetId]['all']
+        result = MessageTaskManager.get()[self.target.targetId]['all'][self]
         if 'result' in result:
             if send is not None and delete:
                 await send.delete()
-            return MessageTaskManager.get()[self.target.targetId]['all']['result']
+            return MessageTaskManager.get()[self.target.targetId]['all'][self]['result']
         else:
             raise WaitCancelException
 
