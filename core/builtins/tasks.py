@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from core.logger import Logger
 from core.types import MessageSession
 
 
@@ -16,6 +17,7 @@ class MessageTaskManager:
         cls._list.update(
             {session.target.targetId: {sender: {session: {'flag': flag, 'active': True, 'type': task_type,
                                                           'reply': reply, 'ts': datetime.now().timestamp()}}}})
+        Logger.info(cls._list)
 
     @classmethod
     def get_result(cls, session: MessageSession):
