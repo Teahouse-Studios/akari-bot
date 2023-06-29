@@ -140,6 +140,7 @@ class ModulesManager:
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
+        cls._return_cache.clear()
         return cls.reload_py_module(py_module)
 
     @classmethod
