@@ -43,6 +43,7 @@ class CFG:
         self.cp = toml.loads(open(config_path, 'r', encoding='utf-8').read())
 
     def config(self, q):
+        q = q.lower()
         value_s = self.cp.get('secret')
         value_n = self.cp.get('cfg')
         value = value_s.get(q)

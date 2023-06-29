@@ -214,9 +214,9 @@ servers:
 
 如有需求，请前往阿里云进行开通并获取 accessKeyId 及 accessKeySecret。未填写字段将不会使用屏蔽词服务。
 
-`Check_accessKeyId =` - 填写获取的 `accessKeyId`
+`check_accessKeyId =` - 填写获取的 `accessKeyId`
 
-`Check_accessKeySecret =` - 填写获取的 `accessKeySecret`
+`check_accessKeySecret =` - 填写获取的 `accessKeySecret`
 
 ### QQ频道消息处理（beta）
 
