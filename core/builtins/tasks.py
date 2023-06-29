@@ -39,7 +39,7 @@ class MessageTaskManager:
                             cls._list[target][sender][session]['flag'].set()  # no result = cancel
 
     @classmethod
-    def check(cls, session: MessageSession):
+    async def check(cls, session: MessageSession):
         if session.target.targetId in cls._list:
             sender = None
             if session.target.senderId in cls._list[session.target.targetId]:

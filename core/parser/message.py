@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import re
 import traceback
@@ -78,7 +79,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
     identify_str = f'[{msg.target.senderId}{f" ({msg.target.targetId})" if msg.target.targetFrom != msg.target.senderFrom else ""}]'
     # Logger.info(f'{identify_str} -> [Bot]: {display}')
     try:
-        MessageTaskManager.check(msg)
+        asyncio.create_task(MessageTaskManager.check(msg))
         modules = ModulesManager.return_modules_list(msg.target.targetFrom)
 
         msg.trigger_msg = removeDuplicateSpace(msg.asDisplay())  # 将消息转换为一般显示形式
