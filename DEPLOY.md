@@ -147,7 +147,7 @@ $ pip install -r requirements.txt
 
 `qq_host = 127.0.0.1:11451` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
 
-`qq_account = 2052142661` - 填写机器人的 QQ 号。
+`qq_account = 2314163511` - 填写机器人的 QQ 号。
 
 填写好后，请配置 `go-cqhttp` 的 `config.yml` 文件中的对应的连接方式。
 
