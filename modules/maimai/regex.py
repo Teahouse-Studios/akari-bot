@@ -134,7 +134,7 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai_regex.handle(re.compile(r".*\s?(M|m)ai(mai)?\s?.*(什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
+@mai_regex.handle(re.compile(r".*\s?(M|m)aimai?\s?.*(什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
