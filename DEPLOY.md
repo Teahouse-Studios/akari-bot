@@ -185,6 +185,12 @@ servers:
 
 `tg_token =` - 填写你获取到的机器人 Token。
 
+### Kook
+
+你需要于 [Kook 开发者平台](https://developer.kookapp.cn/) 创建一个机器人并获取 Token。
+
+`kook_token =` - 填写你获取到的机器人 Token。
+
 ## 运行平台机器人
 
 ### Windows

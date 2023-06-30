@@ -168,13 +168,7 @@ class FetchedSession(FS):
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
-    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
-        """
-        用于向获取对象发送消息。
-        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :param disable_secret_check: 是否禁用消息检查（默认为False）
-        :return: 被发送的消息链
-        """
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         try:
             getChannel = await client.fetch_channel(self.session.target)
         except Exception:
