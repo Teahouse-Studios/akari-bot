@@ -32,6 +32,7 @@ class Plain(P):
 class Url(U):
     mm = False
     disable_mm = False
+    md_format = False
 
     def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
         self.url = url
@@ -43,6 +44,8 @@ class Url(U):
             self.url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
     def __str__(self):
+        if Url.md_format:
+            return f'[{self.url}]({self.url})'
         return self.url
 
     def __repr__(self):

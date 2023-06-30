@@ -2,7 +2,9 @@ import os
 
 from bots.kook.client import bot
 from khl import Message, MessageTypes
-from core.builtins import PrivateAssets, Url
+
+from config import Config
+from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
@@ -10,6 +12,9 @@ from core.utils.bot import load_prompt, init_async
 from bots.kook.message import MessageSession, FetchTarget
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
+EnableDirtyWordCheck.status = True if Config('qq_enable_dirty_check') else False
+Url.disable_mm = False if Config('qq_enable_urlmanager') else True
+Url.md_format = True
 
 
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))

@@ -20,6 +20,7 @@
 -   QQ
 -   Discord
 -   Telegram
+-   Kook
 
 ## 运行
 
@@ -42,6 +43,10 @@
 此外，你也可以加入我们的测试 QQ 群来测试命令：738829671
 
 QQ 频道的测试版支持也请在上方链接申请。我们正在进行 QQ 频道官方机器人入驻，未来可能会成为官方认证的机器人。
+
+#### Kook
+
+邀请链接：<https://www.kookapp.cn/app/oauth2/authorize?id=19512&permissions=948224&client_id=xiDWoVygvPsP6bov&redirect_uri=&scope=bot>
 
 ### 自搭建
 
