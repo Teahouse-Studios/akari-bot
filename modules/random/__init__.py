@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
                         '-n': '{random.help.option.password.n}',
                         '-s': '{random.help.option.password.s}'})
 async def _(msg: Bot.MessageSession, length: int):
-    if lemgth < 1 or length > 100:
+    if length < 1 or length > 100:
         return await msg.finish(msg.locale.t('random.message.password.error.invalid'))
     characters = ""
     if msg.parsed_msg.get('-u', False):
