@@ -14,7 +14,10 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
 async def msg_handler(message: Message):
-    targetId = f'Kook|{message.channel_type.name}|{message.target_id}'
+    if message.channel_type.name == "GROUP":
+        targetId = f'Kook|{message.channel_type.name}|{message.target_id}'
+    else:
+        targetId = f'Kook|{message.channel_type.name}|{message.author_id}'
     replyId = None
     if 'quote' in message.extra:
         replyId = message.extra['quote']['rong_id']

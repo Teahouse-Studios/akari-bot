@@ -48,10 +48,11 @@ class FinishedSession(FinS):
         """
         try:
             for x in self.result:
-                if x['type'] == 'PERSON':
-                    await direct_msg_delete(x)
-                else:
-                    await channel_msg_delete(x)
+                for y in self.result[x]:
+                    if x == 'PERSON':
+                        await direct_msg_delete(y['msg_id'])
+                    else:
+                        await channel_msg_delete(y['msg_id'])
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -100,8 +101,8 @@ class MessageSession(MS):
 
         msgIds = []
         for x in send:
-            msgIds.append({x['msg_id']: self.session.message.channel_type.name})
-        return FinishedSession(self, msgIds, send)
+            msgIds.append(x['msg_id'])
+        return FinishedSession(self, msgIds, {self.session.message.channel_type.name: send})
 
     async def checkPermission(self):
         self.session.message: Message
@@ -173,9 +174,38 @@ class FetchedSession(FS):
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
+        if self.target.targetFrom == 'Kook|GROUP':
+            get_channel = await bot.client.fetch_public_channel(self.session.target)
+            if not get_channel:
+                return False
+        elif self.target.targetFrom == 'Kook|PERSON':
+            get_channel = await bot.client.fetch_user(self.session.target)
+            Logger.debug(f'get_channel: {get_channel}')
+            if not get_channel:
+                return False
+        else:
+            return False
+
+        msgchain = MessageChain(msgchain)
+
+        for x in msgchain.asSendable(embed=False):
+            if isinstance(x, Plain):
+                await get_channel.send(x.text)
+
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
+            elif isinstance(x, Image):
+                url = await bot.create_asset(open(await x.get(), 'rb'))
+                await get_channel.send(url, type=MessageTypes.IMG)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
+            elif isinstance(x, Voice):
+                url = await bot.create_asset(open(x.path), 'rb')
+                await get_channel.send(url, type=MessageTypes.AUDIO)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
+
 
 class FetchTarget(FT):
-    name = 'Telegram'
+    name = 'Kook'
 
     @staticmethod
     async def fetch_target(targetId) -> Union[FetchedSession, bool]:
@@ -215,7 +245,7 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Telegram")
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Kook")
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
