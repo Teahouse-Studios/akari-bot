@@ -54,6 +54,10 @@ if api:
                                                Image(os.path.abspath('./assets/aof.jpg'))])
                 elif get_['status'] == -33:
                     await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait.cached"))
+                    if msg.target.targetFrom not in ['Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
+                        await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
+                                               Image(os.path.abspath('./assets/noc.jpg')),
+                                               Image(os.path.abspath('./assets/aof.jpg'))])
                 elif get_['status'] == -23:
                     await msg.finish(msg.locale.t("arcaea.message.b30.low_potential"))
                 else:
