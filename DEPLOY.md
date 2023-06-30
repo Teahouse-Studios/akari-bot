@@ -12,8 +12,8 @@
 
 ## 下载源代码
 
-1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然。你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
-（注意：master分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的DEPLOY.md继续查看部署教程）
+1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然，你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+（注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程）
 2. 解压源代码，然后打开终端，进入文件夹。
 
 ## 安装依赖
@@ -118,7 +118,7 @@ $ pip install -r requirements.txt
 
 **实际示例**
 
-`db_path = sqlite:///database/save.db`
+`db_path = "sqlite:///database/save.db"`
 
 此示例将会在 `database` 文件夹内创建 `save.db` 来存储用户数据。
 
@@ -187,7 +187,7 @@ servers:
 
 ### Kook
 
-你需要于 [Kook 开发者平台](https://developer.kookapp.cn/) 创建一个机器人并获取 Token。
+你需要在 [Kook 开发者平台](https://developer.kookapp.cn/) 创建一个机器人并获取 Token。
 
 `kook_token =` - 填写你获取到的机器人 Token。
 
@@ -216,23 +216,23 @@ servers:
 
 ### 屏蔽词
 
-小可内置了 [阿里云内容安全服务](https://www.aliyun.com/product/lvwang) 对接，可用于 QQ 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
+小可内置了 [阿里云内容安全服务](https://www.aliyun.com/product/lvwang) 对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
 
-如有需求，请前往阿里云进行开通并获取 accessKeyId 及 accessKeySecret。未填写字段将不会使用屏蔽词服务。
+如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
-`check_accessKeyId =` - 填写获取的 `accessKeyId`
+`check_accessKeyId =` - 填写获取的 AccessKeyID
 
-`check_accessKeySecret =` - 填写获取的 `accessKeySecret`
+`check_accessKeySecret =` - 填写获取的 AccessKeySecret
 
 ### QQ频道消息处理（beta）
 
-通过上文的[aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能
+通过上文的[aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能。
 
-根据go-cqhttp的文档，iPad/Android Pad/Android Phone协议支持处理QQ频道消息，可以在其生成的`device.json`中寻找`"protocol":6,`字段，将本处的数值修改为1（Android Phone）或5（iPad）或6（Android Pad）任意一个均可调用本功能
+根据 go-cqhttp 的文档，iPad/Android Pad/Android Phone 协议支持处理QQ频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-> 注意：QQ频道消息的处理仍然处于测试阶段，由于go-cqhttp对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次gocqhttp）。
+> 注意：QQ频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
-> 关于go-cqhttp选用以上方式登录时出现的的Code45或其他登录问题，请根据go-cqhttp官方[issue](https://github.com/Mrs4s/go-cqhttp)对照解决，或选用除以上协议外的其他协议
+> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 ### Webrender
 
@@ -256,9 +256,9 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 #### 字段填写
 
-`web_render =` - Webrender 的地址（IP 或域名）及端口
+`web_render =` - Webrender 的地址（IP 或域名）及端口。
 
-`web_render_local =` - 本地 Webrender 的地址（可与上一字段同一参数）
+`web_render_local =` - 本地 Webrender 的地址。（可与上一字段同一参数）
 
 **示例**
 
@@ -277,7 +277,7 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
 启动后使用 `~arcaea initialize` 来初始化资源文件。
 
-如果不需要本模块的功能，将api字段删除即可。
+如果不需要本模块的功能，将 API 字段删除即可。
 
 #### coin 
 `coin` 模块需要一些额外的参数才能正常工作。
@@ -336,7 +336,7 @@ assets
 + `web_render` - Webrender 的地址（IP 或域名）及端口
 + `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
 
-如果不需要本模块的功能，将api字段删除即可。
+如果不需要本模块的功能，将 API 字段删除即可。
 
 #### secret
 
@@ -344,7 +344,7 @@ assets
 
 ### 其他功能
 
-`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami`
+`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`、`Kook|<ClientID>`，可在机器人开启后使用 `~whoami`
 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
 `qq_disable_temp_session = true` - 是否禁用 QQ 平台的临时会话功能。
@@ -359,13 +359,11 @@ assets
 
 `enable_analytics = true` - 是否启用内置的 `analytics` 命令，用于统计命令使用次数。
 
-`enable_eval= true` - 是否启用内置的 `eval` 命令。
+`enable_eval = true` - 是否启用内置的 `eval` 命令。
 
 `qq_enable_listening_self_message = false` - 是否启用 QQ 平台的自我消息处理（可能有助于多设备下使用，但也可能会导致误触发导致消息陷入死循环状态）。
 
 `allow_request_private_ip = true` - 是否允许机器人请求私有 IP 地址。
-
-
 
 #### 自定义确认词及命令前缀
 
