@@ -46,7 +46,7 @@ QQ 频道的测试版支持也请在上方链接申请。我们正在进行 QQ �
 
 #### Kook
 
-邀请链接：<https://www.kookapp.cn/app/oauth2/authorize?id=19512&permissions=948224&client_id=xiDWoVygvPsP6bov&redirect_uri=&scope=bot>
+邀请链接：<https://www.kookapp.cn/app/oauth2/authorize?id=19512&permissions=949248&client_id=xiDWoVygvPsP6bov&redirect_uri=&scope=bot>
 
 ### 自搭建
 
