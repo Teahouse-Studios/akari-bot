@@ -35,14 +35,14 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(', '.join(x))
 
 
-@r.handle('string <count> [-u] [-l] [-n] [-s] {{random.help.string}}',
-          options_desc={'-u': '{random.help.option.string.u}',
-                        '-l': '{random.help.option.string.l}',
-                        '-n': '{random.help.option.string.n}',
-                        '-s': '{random.help.option.string.s}'})
-async def _(msg: Bot.MessageSession, count: int):
-    if count < 1 or count > 100:
-        return await msg.finish(msg.locale.t('random.message.string.error.invalid'))
+@r.handle('password <length> [-u] [-l] [-n] [-s] {{random.help.password}}',
+          options_desc={'-u': '{random.help.option.password.u}',
+                        '-l': '{random.help.option.password.l}',
+                        '-n': '{random.help.option.password.n}',
+                        '-s': '{random.help.option.password.s}'})
+async def _(msg: Bot.MessageSession, length: int):
+    if lemgth < 1 or length > 100:
+        return await msg.finish(msg.locale.t('random.message.password.error.invalid'))
     characters = ""
     if msg.parsed_msg.get('-u', False):
         characters += string.ascii_uppercase
@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession, count: int):
     if not characters:
         characters = string.ascii_letters + string.digits
 
-    random = ''.join(secrets.choice(characters) for _ in range(count))
+    random = ''.join(secrets.choice(characters) for _ in range(length))
     await msg.finish(random)
 
 
