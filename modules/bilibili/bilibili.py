@@ -25,7 +25,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     time = timeobject.strftime('%Y-%m-%d %H:%M:%S')
 
     if len(view['pages']) > 1:
-        pages = f" ({len(view['pages'])} P)"
+        pages = f" ({len(view['pages'])}P)"
     else:
         pages = ''
 
