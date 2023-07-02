@@ -11,7 +11,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
         if res['code'] == -404:
             await msg.finish(msg.locale.t("bilibili.message.not_found"))
         else:
-            await msg.finish(ErrorMessage(str(abs(res['code']))))
+            raise ValueError(str(abs(res['code'])))
     view = res['data']['View']
     stat = view['stat']
     
