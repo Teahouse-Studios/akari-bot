@@ -49,7 +49,7 @@ async def _(msg: Bot.MessageSession, get_detail=False):
 async def _(msg: Bot.MessageSession, get_detail=False):
     res = msg.matched_msg
     if res:
-        video = res.groups()[1]
+        video = res.groups()[0]
         if video[:2] == "BV":
             url = f"{api_url}?bvid={video}"
         elif video[:2] == "av":
