@@ -15,6 +15,7 @@ bili = module('bilibili', alias='bili', developers=['DoroWolf'],
 @bili.command('<video> [-i] {{bilibili.help}}',
           options_desc={'-i': '{bilibili.help.option.i}'})
 async def _(msg: Bot.MessageSession, video: str):
+    get_detail = False
     if msg.parsed_msg.get('-i', False):
         get_detail = True
     if video[:2].upper() == "BV":
