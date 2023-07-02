@@ -40,5 +40,5 @@ async def _(msg: Bot.MessageSession, get_detail=False):
 async def _(msg: Bot.MessageSession, get_detail=False):
     res = msg.matched_msg
     if res:
-        url = f"{api_url}?bvid={res.groups()}"
+        url = f"{api_url}?bvid={res.group()}"
     await get_info(msg, url, get_detail=False)
