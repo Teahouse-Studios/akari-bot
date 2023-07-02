@@ -12,7 +12,7 @@ async def get_info(message: Bot.MessageSession, url, get_detail=False):
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("bilibili.message.error"))
         else:
-           await msg.sendMessage(ErrorMessage(str(e)))
+           await msg.finish(ErrorMessage(str(e)))
         
 
     view = data['data']['View']
@@ -53,7 +53,7 @@ async def get_info(message: Bot.MessageSession, url, get_detail=False):
     await msg.finish([Image(pic), Plain(msg)])
 
 
-async def format_num(number):
+def format_num(number):
     if number >= 1000000000:
         return f'{number/1000000000:.1f}B'
     elif number >= 1000000:
