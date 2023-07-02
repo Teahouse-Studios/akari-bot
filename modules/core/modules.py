@@ -166,11 +166,11 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules):
                 reloadCnt = ModulesManager.reload_module(module)
                 if reloadCnt > 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", modules=module)}' + ' '.join(
-                        extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
+                    return f'{msg.locale.t("core.message.module.reload.success", modules=module)}' + ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", modules=module)}' + \
-                        ' '.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
+                    return f'{msg.locale.t("core.message.module.reload.success", modules=module)}' + ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.message.module.reload.failed")}'
 
