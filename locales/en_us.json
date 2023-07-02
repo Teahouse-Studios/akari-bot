@@ -16,7 +16,6 @@
     "error.module.helpdoc.invalid": "\"${module}\" module provided an invalid help message. Please get in touch with the developers to solve this issue.",
     "error.module.unbound": "\"${module}\" module isn't bound with any commands and doesn't have a description. Please get in touch with the developers to solve this issue.",
     "error.range.notnumber": "发生错误：无效的数字区间。",
-    "error.range.invalid": "发生错误：最小值不能大于最大值。",
     "error.prompt": "An error occurred: ${error_msg}\nReport this issue: ",
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "error.prompt.report": "执行命令时发生错误，请报告机器人开发者：\n${err_msg}\n错误汇报地址：",
