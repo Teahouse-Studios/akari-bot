@@ -5,9 +5,9 @@ from core.builtins import Image, Plain, ErrorMessage
 from core.utils.http import get_url
 
 
-async def get_info(message: Bot.MessageSession, url, get_detail=False):
+async def get_info(msg: Bot.MessageSession, url, get_detail=False):
     try:
-        data = await get_url(url, 200, fmt='json')
+        res = await get_url(url, 200, fmt='json')
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("bilibili.message.error"))
@@ -15,7 +15,7 @@ async def get_info(message: Bot.MessageSession, url, get_detail=False):
            await msg.finish(ErrorMessage(str(e)))
         
 
-    view = data['data']['View']
+    view = res['data']['View']
     stat = view['stat']
     
     pic = view['pic']
@@ -41,16 +41,16 @@ async def get_info(message: Bot.MessageSession, url, get_detail=False):
     stat_like = format_num(stat['like'])
 
     owner = view['owner']['name']
-    fans = format_num(data['data']['Card']['card']['fans'])
+    fans = format_num(res['data']['Card']['card']['fans'])
 
     if get_detail:
-        msg = video_url + message.locale.t('bilibili.message', title=title, tname=tname, owner=owner, time=time)
+        output = video_url + msg.locale.t('bilibili.message', title=title, tname=tname, owner=owner, time=time)
     else:
-        msg = video_url + message.locale.t('bilibili.message.detail', title=title, pages=pages, tname=tname,
+        output = video_url + msg.locale.t('bilibili.message.detail', title=title, pages=pages, tname=tname,
                                                             owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku, reply=stat_reply,
                                                             like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share)
         
-    await msg.finish([Image(pic), Plain(msg)])
+    await msg.finish([Image(pic), Plain(output)])
 
 
 def format_num(number):
