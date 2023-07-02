@@ -16,7 +16,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     stat = view['stat']
     
     pic = view['pic']
-    video_url = f"https://www.bilibili.com/video/{view['bvid']}"
+    video_url = f"https://www.bilibili.com/video/{view['bvid']}\n"
     title = view['title']
     tname = view['tname']
 
