@@ -31,7 +31,7 @@ def private_ip_check(url: str):
     :param url: 需要检查的url。'''
     hostname = urllib.parse.urlparse(url).hostname
     addr_info = socket.getaddrinfo(hostname, 80)
-    
+
     addr = addr_info[0][4][0]
     if _matcher_private_ips.match(addr):
         raise ValueError(
@@ -39,7 +39,7 @@ def private_ip_check(url: str):
 
 
 async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20, attempt=3,
-                  request_private_ip=False, logging_err_resp=True):
+                  request_private_ip=False, logging_err_resp=True, **kwargs):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -65,7 +65,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                                          connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
-                                       proxy=proxy, params=params) as req:
+                                       proxy=proxy, params=params, **kwargs) as req:
                     Logger.debug(f'[{req.status}] {url}')
                     if logging_resp:
                         Logger.debug(await req.read())
@@ -89,7 +89,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
 
 
 async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt=None, timeout=20,
-                   attempt=3, request_private_ip=False, logging_err_resp=True):
+                   attempt=3, request_private_ip=False, logging_err_resp=True, **kwargs):
     '''发送POST请求。
     :param url: 需要发送的url。
     :param data: 需要发送的数据。
@@ -113,7 +113,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
             try:
                 async with session.post(url, data=data, headers=headers,
                                         timeout=aiohttp.ClientTimeout(total=timeout),
-                                        proxy=proxy) as req:
+                                        proxy=proxy, **kwargs) as req:
                     Logger.debug(f'[{req.status}] {url}')
                     if logging_resp:
                         Logger.debug(await req.read())
@@ -141,7 +141,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
 
 async def download_to_cache(url: str, filename=None, status_code: int = False, method="GET", post_data=None,
                             headers: dict = None, timeout=20, attempt=3, request_private_ip=False,
-                            logging_err_resp=True) -> Union[str, bool]:
+                            logging_err_resp=True, **kwargs) -> Union[str, bool]:
     '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
 
     :param url: 需要获取的url。
@@ -168,11 +168,11 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
 
         if method.upper() == 'GET':
             data = await get_url(url, status_code=status_code, headers=headers, fmt='read', timeout=timeout, attempt=1,
-                                 request_private_ip=request_private_ip, logging_err_resp=logging_err_resp)
+                                 request_private_ip=request_private_ip, logging_err_resp=logging_err_resp, kwargs=kwargs)
         if method.upper() == 'POST':
             data = await post_url(url, data=post_data, status_code=status_code, headers=headers, fmt='read',
                                   timeout=timeout, attempt=1, request_private_ip=request_private_ip,
-                                  logging_err_resp=logging_err_resp)
+                                  logging_err_resp=logging_err_resp, kwargs=kwargs)
 
         if data is not None:
             if filename is None:
