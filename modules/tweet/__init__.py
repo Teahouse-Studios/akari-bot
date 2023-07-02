@@ -10,7 +10,7 @@ from core.dirty_check import check_bool
 from core.utils.http import download_to_cache, get_url
 
 web_render_local = Config('web_render_local')
-t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', )
+t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}')
 
 
 @t.handle('<tweet> {{tweet.help}}')
