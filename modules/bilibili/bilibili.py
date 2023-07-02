@@ -1,47 +1,43 @@
 from datetime import datetime
 
 from core.builtins import Bot
-from core.builtins import Image, Plain, ErrorMessage
+from core.builtins import Image, Plain
 from core.utils.http import get_url
 
 
-async def get_info(msg: Bot.MessageSession, url, get_detail=False):
-    try:
-        res = await get_url(url, 200, fmt='json')
-    except ValueError as e:
-        if str(e).startswith('404'):
-            await msg.finish(msg.locale.t("bilibili.message.error"))
-        else:
-           await msg.finish(ErrorMessage(str(e)))
-        
-
-    view = res["data"]["View"]
-    stat = view["stat"]
+async def get_info(msg: Bot.MessageSession, url, get_detail):
+    res = await get_url(url, 200, fmt='json')
+    if res['code'] == -404:
+        await msg.finish(msg.locale.t("bilibili.message.not_found"))
+    msg.finish(res)
+'''
+    view = res['data']['View']
+    stat = view['stat']
     
-    pic = view["pic"]
-    video_url = f'https://www.bilibili.com/video/{view["bvid"]}'
-    title = view["title"]
-    tname = view["tname"]
+    pic = view['pic']
+    video_url = f"https://www.bilibili.com/video/{view['bvid']}"
+    title = view['title']
+    tname = view['tname']
 
-    timestamp = view["ctime"]
-    dt_object = datetime.fromtimestamp(timestamp)
-    time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = view['ctime']
+    timeobject = datetime.fromtimestamp(timestamp)
+    time = timeobject.strftime('%Y-%m-%d %H:%M:%S')
 
-    if len(view["pages"]) > 1:
-        pages = f' ({len(view["pages"])} P)'
+    if len(view['pages']) > 1:
+        pages = f" ({len(view['pages'])} P)"
     else:
         pages = ''
 
-    stat_view = format_num(stat["view"])
-    stat_danmaku = format_num(stat["danmaku"])
-    stat_reply = format_num(stat["reply"])
-    stat_favorite = format_num(stat["favorite"])
-    stat_coin = format_num(stat["coin"])
-    stat_share = format_num(stat["share"])
-    stat_like = format_num(stat["like"])
+    stat_view = format_num(stat['view'])
+    stat_danmaku = format_num(stat['danmaku'])
+    stat_reply = format_num(stat['reply'])
+    stat_favorite = format_num(stat['favorite'])
+    stat_coin = format_num(stat['coin'])
+    stat_share = format_num(stat['share'])
+    stat_like = format_num(stat['like'])
 
-    owner = view["owner"]["name"]
-    fans = format_num(res["data"]["Card"]["card"]["fans"])
+    owner = view['owner']['name']
+    fans = format_num(res['data']['Card']['card']['fans'])
 
     if get_detail:
         output = video_url + msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
@@ -62,7 +58,4 @@ def format_num(number):
         return f'{number/1000:.1f}k'
     else:
         return str(number)
-
-
-
-    
+'''
