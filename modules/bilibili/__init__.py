@@ -35,10 +35,26 @@ async def _(msg: Bot.MessageSession, get_detail=False):
     await get_info(msg, url, get_detail)
 
 
-@bili.handle(re.compile(r"(BV1[a-zA-Z0-9]{9})"),
+@bili.handle(re.compile(r"(BV[a-zA-Z0-9]{10})"),
             desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession, get_detail=False):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?bvid={res.group()}"
+    await get_info(msg, url, get_detail)
+
+
+@bili.handle(re.compile(r"b23\.tv/(av\d{1,9}|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
+            desc="{bilibili.help.regex.url}")
+async def _(msg: Bot.MessageSession, get_detail=False):
+    res = msg.matched_msg
+    if res:
+        video = res.groups()[1]
+        if video[:2] == "BV":
+            url = f"{api_url}?bvid={video}"
+        elif video[:2] == "av":
+            url = f"{api_url}?aid={video[2:]}"
+        else:
+            ...
+            
     await get_info(msg, url, get_detail)
