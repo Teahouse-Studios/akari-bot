@@ -101,7 +101,7 @@
     "core.message.module.reload.failed": "重载模块失败。",
     "core.message.module.reload.no_more": "，未发现已加载的其余文件。",
     "core.message.module.reload.permission.denied": "失败：你没有重载模块的权限。",
-    "core.message.module.reload.success": "成功：重载模块：“${module}”",
+    "core.message.module.reload.success": "成功：重载模块：${modules}",
     "core.message.module.reload.unbound": "失败：“${module}”模块尚未绑定。",
     "core.message.module.reload.with": "，以及该模块下的 ${reloadCnt} 个文件。",
     "core.message.module.unsupported_language": "提示：“${module}”模块不支持当前语言，此模块可能不会正确展示当前语言下的内容。",

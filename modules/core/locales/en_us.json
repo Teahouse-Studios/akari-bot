@@ -101,7 +101,7 @@
     "core.message.module.reload.failed": "Failed to reload module.",
     "core.message.module.reload.no_more": ", no remaining files were found.",
     "core.message.module.reload.permission.denied": "Failed: You don't have permission to reload modules.",
-    "core.message.module.reload.success": "Success: Reload module: \"${module}\"",
+    "core.message.module.reload.success": "Success: Reload module: ${modules}",
     "core.message.module.reload.unbound": "Failed: Module \"${module}\" does not bound.",
     "core.message.module.reload.with": ", and ${reloadCnt} files in this module.",
     "core.message.module.unsupported_language": "Note: Module\"${module}\" does not support the current language. This module may not display content under the current language correctly.",

@@ -165,12 +165,13 @@ async def config_modules(msg: Bot.MessageSession):
         if msg.checkSuperUser():
             def module_reload(module, extra_modules):
                 reloadCnt = ModulesManager.reload_module(module)
+                modules = msg.locale.t('message.delimiter').join([module] + extra_modules)
                 if reloadCnt > 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + ' '.join(
-                        extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
+                    return f'{msg.locale.t("core.message.module.reload.success", modules=modules)}' + \
+                        msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + \
-                        ' '.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
+                    return f'{msg.locale.t("core.message.module.reload.success", modules=modules)}' + \
+                        msg.locale.t("core.message.module.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.message.module.reload.failed")}'
 
