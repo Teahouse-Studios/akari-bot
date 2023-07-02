@@ -32,7 +32,7 @@ async def _(msg: Bot.MessageSession, get_detail=False):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?aid={res.groups()[1]}"
-    await get_info(msg, url, get_detail=False)
+    await get_info(msg, url, get_detail)
 
 
 @bili.handle(re.compile(r"(BV1[a-zA-Z0-9]{9})"),
@@ -41,4 +41,4 @@ async def _(msg: Bot.MessageSession, get_detail=False):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?bvid={res.group()}"
-    await get_info(msg, url, get_detail=False)
+    await get_info(msg, url, get_detail)

@@ -11,7 +11,10 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
         if res['code'] == -404:
             await msg.finish(msg.locale.t("bilibili.message.not_found"))
         else:
-            raise ValueError(str(abs(res['code'])))
+            errcode = str(abs(res['code']))
+            raise ValueError([Plain(ErrorMessage(errcode)),
+                              Image(f'https://http.cat/{errcode}.jpg')])
+        
     view = res['data']['View']
     stat = view['stat']
     
