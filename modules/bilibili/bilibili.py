@@ -1,16 +1,17 @@
 from datetime import datetime
 
 from core.builtins import Bot
-from core.builtins import Image, Plain
+from core.builtins import Image, Plain, ErrorMessage
 from core.utils.http import get_url
 
 
 async def get_info(msg: Bot.MessageSession, url, get_detail):
     res = await get_url(url, 200, fmt='json')
-    if res['code'] == -404:
-        await msg.finish(msg.locale.t("bilibili.message.not_found"))
-    msg.finish(res)
-'''
+    if res['code'] != 0:
+        if res['code'] == -404:
+            await msg.finish(msg.locale.t("bilibili.message.not_found"))
+        else:
+            await msg.finish(ErrorMessage(str(abs(res['code']))))
     view = res['data']['View']
     stat = view['stat']
     
@@ -58,4 +59,3 @@ def format_num(number):
         return f'{number/1000:.1f}k'
     else:
         return str(number)
-'''
