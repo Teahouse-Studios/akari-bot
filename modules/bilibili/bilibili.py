@@ -40,12 +40,12 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     owner = view['owner']['name']
     fans = format_num(res['data']['Card']['card']['fans'])
 
-    if get_detail:
+    if not get_detail:
         output = video_url + msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
     else:
         output = video_url + msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
                                                             owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku, reply=stat_reply,
-                                                            like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share)
+                                                            like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share, time=time)
         
     await msg.finish([Image(pic), Plain(output)])
 

@@ -14,8 +14,7 @@ bili = module('bilibili', alias='bili', developers=['DoroWolf'],
 
 @bili.command('<video> [-i] {{bilibili.help}}',
           options_desc={'-i': '{bilibili.help.option.i}'})
-async def _(msg: Bot.MessageSession, video: str):
-    get_detail = False
+async def _(msg: Bot.MessageSession, video: str, get_detail=False):
     if msg.parsed_msg.get('-i', False):
         get_detail = True
     if video[:2].upper() == "BV":
@@ -33,7 +32,7 @@ async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?aid={res.groups()[1]}"
-    await get_info(msg, url)
+    await get_info(msg, url, get_detail=False)
 
 
 @bili.handle(re.compile(r"(BV1[a-zA-Z0-9]{9})"),
@@ -42,4 +41,4 @@ async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?bvid={res}"
-    await get_info(msg, url)
+    await get_info(msg, url, get_detail=False)
