@@ -52,10 +52,8 @@ async def _(msg: Bot.MessageSession):
         video = res.groups()[2]
         if video[:2] == "BV":
             url = f"{api_url}?bvid={video}"
-        elif video[:2] == "av":
-            url = f"{api_url}?aid={video[2:]}"
         else:
-            ...
+            url = f"{api_url}?aid={video[2:]}"
             
     await get_info(msg, url, get_detail=False)
 
