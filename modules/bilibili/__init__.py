@@ -4,7 +4,7 @@ import re
 from core.builtins import Bot
 from core.component import module
 from .bilibili import get_info
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse
 
 api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
 
@@ -56,31 +56,27 @@ async def _(msg: Bot.MessageSession):
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"(https?://b23\.tv/)(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:\?.*?|)$"), mode="M",
+@bili.handle(re.compile(r"https?://b23\.tv/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:\?.*?|)$"), mode="M",
              desc="{bilibili.help.regex.shorturl}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
-        video = res.groups()[1]
+        video = res.groups()[0]
         if video[:2] == "BV":
             url = f"{api_url}?bvid={video}"
         elif video[:2] == "av":
             url = f"{api_url}?aid={video[2:]}"
         else:
-            url = await parse_shorturl(''.join(res.groups()))
+            url = await parse_shorturl(f"https://b23.tv/{video}")
 
     await get_info(msg, url, get_detail=False)
 
 
 async def parse_shorturl(shorturl):
     async with aiohttp.ClientSession() as session:
-        async with session.get(shorturl, allow_redirects=False) as response:
-            if response.status >= 300 and response.status < 400:
-                location = response.headers.get('Location')
-                parsed_url = urlparse(location)
-                query_params = parse_qs(parsed_url.query)
-                video = query_params.get('BV', [''])[0]
-                url = f"{api_url}?bvid={video}"
-                return url
-            else:
-                return None
+        async with session.get(shorturl, allow_redirects=True) as response:
+            target_url = str(response.url)
+            parsed_url = urlparse(target_url)
+            video = parsed_url.path.split("/")[-2]
+            url = f"{api_url}?bvid={video}"
+            return url
