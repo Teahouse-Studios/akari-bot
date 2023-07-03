@@ -4,7 +4,6 @@ from core.builtins import Bot
 from core.component import module
 from .bilibili import get_info
 
-
 api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
 
 
