@@ -6,13 +6,12 @@ from .bilibili import get_info
 
 api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
 
-
 bili = module('bilibili', alias='bili', developers=['DoroWolf'],
               desc='{bilibili.help.desc}', support_languages=['zh_cn'])
 
 
 @bili.command('<video> [-i] {{bilibili.help}}',
-          options_desc={'-i': '{bilibili.help.option.i}'})
+              options_desc={'-i': '{bilibili.help.option.i}'})
 async def _(msg: Bot.MessageSession, video: str, get_detail=False):
     if msg.parsed_msg.get('-i', False):
         get_detail = True
@@ -26,7 +25,7 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
 
 
 @bili.handle(re.compile(r"\b([aA][vV])(\d+)\b"),
-            desc="{bilibili.help.regex.av}")
+             desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -35,7 +34,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @bili.handle(re.compile(r"\bBV[a-zA-Z0-9]{10}\b"),
-            desc="{bilibili.help.regex.bv}")
+             desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -43,22 +42,20 @@ async def _(msg: Bot.MessageSession):
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"https?://(www|m).bilibili\.com/(av\d+|BV[A-Za-z0-9]{10}"),
-            desc="{bilibili.help.regex.url}")
+@bili.handle(re.compile(r"https?://(?:www|m).bilibili\.com(?:/video|)/(av\d+|BV[A-Za-z0-9]{10})(?:\?.*?$|$)"), mode="M",
+             desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
-    res = msg.matched_msg
-    if res:
-        video = res.groups()[2]
-        if video[:2] == "BV":
-            url = f"{api_url}?bvid={video}"
-        else:
-            url = f"{api_url}?aid={video[2:]}"
-            
+    video = msg.matched_msg.group(1)
+    if video[:2] == "BV":
+        url = f"{api_url}?bvid={video}"
+    else:
+        url = f"{api_url}?aid={video[2:]}"
+
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"https?://b23\.tv/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
-            desc="{bilibili.help.regex.shorturl}")
+@bili.handle(re.compile(r"https?://b23\.tv/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:\?.*?$|$)"), mode="M",
+             desc="{bilibili.help.regex.shorturl}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -69,5 +66,5 @@ async def _(msg: Bot.MessageSession):
             url = f"{api_url}?aid={video[2:]}"
         else:
             ...
-            
+
     await get_info(msg, url, get_detail=False)
