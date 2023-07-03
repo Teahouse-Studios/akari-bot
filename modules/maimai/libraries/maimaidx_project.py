@@ -371,6 +371,12 @@ async def get_plate_process(msg, payload, plate):
         prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
 
     prompt += msg.locale.t('message.end')
+
+    # 华代、煌代和星代在 API 中存在问题，故在此用于通知。   
+    # https://github.com/Diving-Fish/maimaidx-prober/issues/90
+    if version in ['华', '華', '煌', '星']:
+        prompt += msg.locale.t('maimai.message.plate.api_prompt')
+
     await msg.sendMessage(prompt.strip())
 
     output = ''
@@ -421,5 +427,9 @@ async def get_plate_process(msg, payload, plate):
             output += msg.locale.t('maimai.message.plate.greater_13p.complete')
     else:
         output += msg.locale.t('maimai.message.plate.completed', plate=plate)
+
+    # 华代、煌代和星代在 API 中存在问题，故在此用于通知。   
+    if version in ['华', '華', '煌', '星']:
+        output += msg.locale.t('maimai.message.plate.api_prompt')
 
     return output, get_img

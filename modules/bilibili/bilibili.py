@@ -12,7 +12,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
             await msg.finish(msg.locale.t("bilibili.message.not_found"))
         else:
             errcode = str(abs(res['code']))
-            await msg.finish(f"{msg.locale.t('error')}\n[Plain(ErrorMessage({errcode})), Image(f'https://http.cat/{errcode}.jpg')]")
+            await msg.finish(f"{msg.locale.t('error')}\n{[Plain(ErrorMessage(errcode)), Image(f'https://http.cat/errcode.jpg')]}")
         
     view = res['data']['View']
     stat = view['stat']

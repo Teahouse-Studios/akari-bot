@@ -17,7 +17,7 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
         get_detail = True
     if video[:2].upper() == "BV":
         url = f"{api_url}?bvid={video}"
-    elif video[:2].lower() == "av":
+    elif video[:2].upper() == "AV":
         url = f"{api_url}?aid={video[2:]}"
     else:
         await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
