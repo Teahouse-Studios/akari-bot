@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
         for title in msg.matched_msg:
             for t in title:
                 if t != '':
-                    get_ = await bugtracker_get(msg, t.split('?')[1], nolink=True)
+                    get_ = await bugtracker_get(msg, t.split('?')[0], nolink=True)
                     await msg.sendMessage(get_[0])
                     if get_[1] is not None:
                         screenshot = await make_screenshot(get_[1])
