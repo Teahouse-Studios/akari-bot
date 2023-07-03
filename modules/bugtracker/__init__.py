@@ -33,7 +33,7 @@ async def regex_bugtracker(msg: Bot.MessageSession):
                 await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(re.compile(r'bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
+@bug.regex(re.compile(r'(http[s]://)bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
            mode='A', desc='{bugtracker.help.regex.url}')
 async def _(msg: Bot.MessageSession):
     async def bgtask(msg: Bot.MessageSession):

@@ -44,12 +44,28 @@ async def _(msg: Bot.MessageSession):
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"b23\.tv/(av\d{1,9}|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
+@bili.handle(re.compile(r"(http[s]://)(www|m).bilibili\.com/(av\d{1,9}|BV[A-Za-z0-9]{10}"),
             desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
-        video = res.groups()[0]
+        video = res.groups()[2]
+        if video[:2] == "BV":
+            url = f"{api_url}?bvid={video}"
+        elif video[:2] == "av":
+            url = f"{api_url}?aid={video[2:]}"
+        else:
+            ...
+            
+    await get_info(msg, url, get_detail=False)
+
+
+@bili.handle(re.compile(r"(http[s]://)b23\.tv/(av\d{1,9}|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
+            desc="{bilibili.help.regex.shorturl}")
+async def _(msg: Bot.MessageSession):
+    res = msg.matched_msg
+    if res:
+        video = res.groups()[1]
         if video[:2] == "BV":
             url = f"{api_url}?bvid={video}"
         elif video[:2] == "av":
