@@ -98,7 +98,7 @@ async def config_gu(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.list.none"))
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.message.superuser.invalid', prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.senderFrom))
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
@@ -115,7 +115,7 @@ async def config_gu(msg: Bot.MessageSession):
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.message.admin.ban.invalid', target=msg.target.senderFrom))
+        await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.senderFrom))
     if user == msg.target.senderId:
         await msg.finish(msg.locale.t("core.message.admin.ban.self"))
     if 'ban' in msg.parsed_msg:
