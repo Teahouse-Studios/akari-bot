@@ -4,6 +4,7 @@ import re
 from core.builtins import Bot
 from core.component import module
 from .bilibili import get_info
+from urllib.parse import urlparse, parse_qs
 
 api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
 
@@ -76,7 +77,9 @@ async def parse_shorturl(shorturl):
         async with session.get(shorturl, allow_redirects=False) as response:
             if response.status >= 300 and response.status < 400:
                 location = response.headers.get('Location')
-                video = location.split('/')[-1]
+                parsed_url = urlparse(location)
+                query_params = parse_qs(parsed_url.query)
+                video = query_params.get('BV', [''])[0]
                 url = f"{api_url}?bvid={video}"
                 return url
             else:
