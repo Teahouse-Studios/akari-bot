@@ -33,17 +33,17 @@ async def regex_bugtracker(msg: Bot.MessageSession):
                 await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(re.compile(r'(http[s]://)bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
+@bug.regex(re.compile(r'(http[s]://)?bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
            mode='A', desc='{bugtracker.help.regex.url}')
 async def _(msg: Bot.MessageSession):
     async def bgtask(msg: Bot.MessageSession):
         for title in msg.matched_msg:
             for t in title:
                 if t != '':
-                    get_ = await bugtracker_get(msg, t.split('?')[0], nolink=True)
-                    await msg.sendMessage(get_[0])
-                    if get_[1] is not None:
-                        screenshot = await make_screenshot(get_[1])
+                    get_ = await bugtracker_get(msg, t.split('?')[1], nolink=True)
+                    await msg.sendMessage(get_[1])
+                    if get_[2] is not None:
+                        screenshot = await make_screenshot(get_[2])
                         if screenshot:
                             await msg.sendMessage(Image(screenshot))
 

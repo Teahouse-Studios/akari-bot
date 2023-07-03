@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"(http[s]://)(www|m).bilibili\.com/(av\d{1,9}|BV[A-Za-z0-9]{10}"),
+@bili.handle(re.compile(r"(http[s]://)?(www|m).bilibili\.com/(av\d+|BV[A-Za-z0-9]{10}"),
             desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
@@ -58,7 +58,7 @@ async def _(msg: Bot.MessageSession):
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"(http[s]://)b23\.tv/(av\d{1,9}|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
+@bili.handle(re.compile(r"(http[s]://)?b23\.tv/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
             desc="{bilibili.help.regex.shorturl}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
