@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession):
         elif video[:2] == "av":
             url = f"{api_url}?aid={video[2:]}"
         else:
-            url = parse_shorturl(''.join(res.groups()))
+            url = await parse_shorturl(''.join(res.groups()))
 
     await get_info(msg, url, get_detail=False)
 
