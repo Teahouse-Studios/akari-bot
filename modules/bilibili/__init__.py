@@ -26,19 +26,49 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
     await get_info(msg, url, get_detail)
 
 
-@bili.handle(re.compile(r"([aA][vV])(\d+)"),
+@bili.handle(re.compile(r"\b([aA][vV])(\d+)\b"),
             desc="{bilibili.help.regex.av}")
-async def _(msg: Bot.MessageSession, get_detail=False):
+async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?aid={res.groups()[1]}"
-    await get_info(msg, url, get_detail)
+    await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"(BV1[a-zA-Z0-9]{9})"),
+@bili.handle(re.compile(r"\bBV[a-zA-Z0-9]{10}\b"),
             desc="{bilibili.help.regex.bv}")
-async def _(msg: Bot.MessageSession, get_detail=False):
+async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         url = f"{api_url}?bvid={res.group()}"
-    await get_info(msg, url, get_detail)
+    await get_info(msg, url, get_detail=False)
+
+
+@bili.handle(re.compile(r"(http[s]://)?(www|m).bilibili\.com/(av\d+|BV[A-Za-z0-9]{10}"),
+            desc="{bilibili.help.regex.url}")
+async def _(msg: Bot.MessageSession):
+    res = msg.matched_msg
+    if res:
+        video = res.groups()[2]
+        if video[:2] == "BV":
+            url = f"{api_url}?bvid={video}"
+        else:
+            url = f"{api_url}?aid={video[2:]}"
+            
+    await get_info(msg, url, get_detail=False)
+
+
+@bili.handle(re.compile(r"(http[s]://)?b23\.tv/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})"),
+            desc="{bilibili.help.regex.shorturl}")
+async def _(msg: Bot.MessageSession):
+    res = msg.matched_msg
+    if res:
+        video = res.groups()[1]
+        if video[:2] == "BV":
+            url = f"{api_url}?bvid={video}"
+        elif video[:2] == "av":
+            url = f"{api_url}?aid={video[2:]}"
+        else:
+            ...
+            
+    await get_info(msg, url, get_detail=False)
