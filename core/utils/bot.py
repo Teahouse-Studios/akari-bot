@@ -36,7 +36,8 @@ async def load_secret():
     for x in CFG().cp:
         if x == 'secret':
             for y in CFG().cp[x]:
-                Secret.add(str(CFG().cp[x][y]).upper())
+                if CFG().cp[x][y] is not None:
+                    Secret.add(str(CFG().cp[x][y]).upper())
 
     async def append_ip():
         try:
