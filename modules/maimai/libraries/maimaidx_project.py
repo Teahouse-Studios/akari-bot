@@ -25,14 +25,13 @@ plate_to_version = {
     '輝': 'maimai FiNALE',
     '辉': 'maimai FiNALE',
     '熊': 'maimai でらっくす',
-    '華': 'maimai でらっくす PLUS',
-    '华': 'maimai でらっくす PLUS',
+    '華': 'maimai でらっくす',
+    '华': 'maimai でらっくす',
     '爽': 'maimai でらっくす Splash',
-    '煌': 'maimai でらっくす Splash PLUS',
+    '煌': 'maimai でらっくす Splash',
     '宙': 'maimai でらっくす UNiVERSE',
-    '星': 'maimai でらっくす UNiVERSE PLUS',
-    '祭': 'maimai でらっくす FESTiVAL',
-    'fesp': 'maimai でらっくす FESTiVAL PLUS'
+    '星': 'maimai でらっくす UNiVERSE',
+    '祭': 'maimai でらっくす FESTiVAL'
 }
 
 score_to_rank = {
@@ -371,6 +370,7 @@ async def get_plate_process(msg, payload, plate):
         prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
 
     prompt += msg.locale.t('message.end')
+
     await msg.sendMessage(prompt.strip())
 
     output = ''
