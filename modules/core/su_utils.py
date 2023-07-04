@@ -21,9 +21,9 @@ from core.utils.storedata import get_stored_list, update_stored_list
 su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
 
-@su.handle('add <user>')
+@su.handle('add <UserID>')
 async def add_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<user>']
+    user = message.parsed_msg['<UserID>']
     if not user.startswith(f'{message.target.senderFrom}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
@@ -31,9 +31,9 @@ async def add_su(message: Bot.MessageSession):
             await message.finish(message.locale.t("core.message.superuser.add.success", user=user))
 
 
-@su.handle('del <user>')
+@su.handle('del <UserID>')
 async def del_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<user>']
+    user = message.parsed_msg['<UserID>']
     if not user.startswith(f'{message.target.senderFrom}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
