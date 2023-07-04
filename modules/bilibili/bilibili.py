@@ -8,7 +8,7 @@ from core.utils.http import get_url
 async def get_info(msg: Bot.MessageSession, url, get_detail):
     res = await get_url(url, 200, fmt='json')
     if res['code'] != 0:
-        if res['code'] == -404:
+        if res['code'] in [404, 62002]:
             await msg.finish(msg.locale.t("bilibili.message.not_found"))
         elif res['code'] == -400:
             await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
