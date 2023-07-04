@@ -33,7 +33,6 @@
     "maimai.message.music_not_found": "未找到符合要求的歌曲。",
     "maimai.message.no_username": "请提供用户名！",
     "maimai.message.plate": "您的${plate}剩余进度如下：\nBasic 剩余 ${song_remain_basic} 首，\nAdvanced 剩余 ${song_remain_advanced} 首，\nExpert 剩余 ${song_remain_expert} 首，\nMaster 剩余 ${song_remain_master} 首",
-    "maimai.message.plate.api_prompt": "\n\n提示：您查询的版本目标可能无法正常显示。",
     "maimai.message.plate.completed": "您已完成${plate}的所有进度。",
     "maimai.message.plate.greater_13p": "您还有 ${song_remain} 首等级大于 13+ 的曲目。",
     "maimai.message.plate.greater_13p.complete": "您已完成所有等级大于 13+ 的曲目。",
