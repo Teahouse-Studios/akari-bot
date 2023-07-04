@@ -18,11 +18,8 @@ exchange_rate_api_key =
 base_superuser = "QQ|2596322644"
 debug = false
 cache_path = "./cache/"
-command_prefix = ['~', '～']
-confirm_command = ["是", "对", '确定', '是吧', '大概是', '也许', '可能', '对的', '是的', '是呢', '对呢', '嗯', '嗯呢', '对啊',
-    '是啊', '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该', '是呢', '是哦', '没错',"對", '確定', '對的', '對啊', '對呢', '對唄',
-    '資瓷', '是唄', '也許', '也許吧', '應該', '沒錯', 'yes', 'y', 'yeah', 'yep', 'ok', 'okay', 'YES', 'Y', 'OK', 'Yes',
-    'Yeah', 'Yep', 'Okay', '⭐', '√']
+command_prefix = ["~", "～"]
+confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
 bug_report_url = "https://s.wd-ljt.com/botreportbug"
 donate_url = "https://afdian.net/@teahouse"
 help_url = "https://bot.teahouse.team"
