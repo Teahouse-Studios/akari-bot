@@ -12,17 +12,16 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 @s.handle('<ServerIP:Port> [-r] [-p] {{server.help}}',
           options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
 async def main(msg: Bot.MessageSession):
-    enabled_addon = msg.options.get('server_revoke')
-    if enabled_addon is None:
-        enabled_addon = True
     gather_list = []
     matchObj = re.match(r'(.*)[\s:](.*)', msg.parsed_msg["<ServerIP:Port>"], re.M | re.I)
     is_local_ip = False
     server_address = msg.parsed_msg["<ServerIP:Port>"]
     if matchObj:
         server_address = matchObj.group(1)
+
     if server_address == 'localhost':
         is_local_ip = True
+
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
     if matchserip:
         if matchserip.group(1) == '192':
@@ -41,48 +40,24 @@ async def main(msg: Bot.MessageSession):
                 if matchserip.group(3) == '0':
                     is_local_ip = True
     if is_local_ip:
-        return await msg.sendMessage(msg.locale.t('server.message.error.local_ip'))
+        await msg.finish(msg.locale.t('server.message.error.local_ip'))
+    
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
             msg, f'{msg.parsed_msg["<ServerIP:Port>"]}', msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False
-                                                                                                             ), x,
-            enabled_addon)))
+                                                                                                             ), x)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        msg_ = msg.locale.t('server.message.not_found')
-        if msg.Feature.delete and enabled_addon:
-            msg_ += '\n' + msg.locale.t('server.message.revoke')
-        send = await msg.sendMessage(msg_)
-        if msg.Feature.delete and enabled_addon:
-            await msg.sleep(90)
-            await send.delete()
-            await msg.finish()
+        message = msg.locale.t('server.message.not_found')
+        await msg.finish(message)
 
 
-@s.handle('revoke {{server.help.revoke}}')
-async def revoke(msg: Bot.MessageSession):
-    server_revoke_state = msg.data.options.get('server_revoke')
-    
-    if server_revoke_state:
-        msg.data.edit_option('server_revoke', False)
-        await msg.finish(msg.locale.t("server.message.revoke.disable"))
-    else:
-        msg.data.edit_option('server_revoke', True)
-        await msg.finish(msg.locale.t("server.message.revoke.enable"))
-
-
-async def s(msg: Bot.MessageSession, address, raw, showplayer, mode, enabled_addon):
+async def s(msg: Bot.MessageSession, address, raw, showplayer, mode):
     sendmsg = await server(msg, address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
         for x in sendmsg:
             m = x['content']
-            if msg.Feature.delete and enabled_addon:
-                m += '\n' + msg.locale.t('server.message.revoke')
-            send = await msg.sendMessage(m)
-            if msg.Feature.delete and enabled_addon:
-                await msg.sleep(90)
-                await send.delete()
-                await msg.finish()
+            await msg.finish(m)
     return sendmsg

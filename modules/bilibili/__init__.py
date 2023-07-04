@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
     await get_info(msg, url, get_detail)
 
 
-@bili.handle(re.compile(r"\b([aA][vV])(\d+)\b"),
+@bili.handle(re.compile(r"([aA][vV])(\d+)", flags=re.I), mode='A',
              desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession):
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"\bBV[a-zA-Z0-9]{10}\b"),
+@bili.handle(re.compile(r"BV[a-zA-Z0-9]{10}", flags=re.I), mode='A',
              desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
