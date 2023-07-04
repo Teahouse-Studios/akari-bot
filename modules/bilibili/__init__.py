@@ -29,7 +29,7 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
 @bili.handle(re.compile(r"([aA][vV])(\d+)", flags=re.I), mode='A',
              desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
-    res = msg.matched_msg
+    res = msg.matched_msg[0]
     if res:
         url = f"{api_url}?aid={res.groups()[1]}"
     await get_info(msg, url, get_detail=False)
@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
 @bili.handle(re.compile(r"BV[a-zA-Z0-9]{10}", flags=re.I), mode='A',
              desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
-    res = msg.matched_msg
+    res = msg.matched_msg[0]
     if res:
         url = f"{api_url}?bvid={res.group()}"
     await get_info(msg, url, get_detail=False)

@@ -23,7 +23,7 @@ async def bugtracker(msg: Bot.MessageSession):
 
 @bug.regex(re.compile(r'\!?\b([A-Z]+)-(\d+)', flags=re.I), mode='A', desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
-    matched_msg = msg.matched_msg
+    matched_msg = msg.matched_msg[0]
     if len(matched_msg.group(0)) < 10 and len(matched_msg.group(1)) < 10:
         result = await bugtracker_get(msg, matched_msg.group(1) + '-' + matched_msg.group(2))
         await msg.sendMessage(result[0])
@@ -34,7 +34,7 @@ async def regex_bugtracker(msg: Bot.MessageSession):
 
 
 @bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
-           mode='M', desc='{bugtracker.help.regex.url}')
+           mode='A', desc='{bugtracker.help.regex.url}')
 async def _(msg: Bot.MessageSession):
     async def bgtask(msg: Bot.MessageSession):
         for title in msg.matched_msg:
