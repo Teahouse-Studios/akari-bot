@@ -21,9 +21,9 @@ async def bugtracker(msg: Bot.MessageSession):
                     await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(re.compile(r'\!?\b([A-Z]+)-(\d+)', flags=re.I), mode='A', desc='{bugtracker.help.regex.desc}')
+@bug.regex(pattern=r'\!?\b([A-Z]+)-(\d+)\b', mode='M', desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
-    matched_msg = msg.matched_msg[0]
+    matched_msg = msg.matched_msg
     if len(matched_msg.group(0)) < 10 and len(matched_msg.group(1)) < 10:
         result = await bugtracker_get(msg, matched_msg.group(1) + '-' + matched_msg.group(2))
         await msg.sendMessage(result[0])
