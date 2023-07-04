@@ -61,6 +61,8 @@ class MessageChain(MC):
                         return False
             elif isinstance(v, Embed):
                 for secret in Secret.list:
+                    if secret in ["", None, True, False]:
+                        continue
                     if v.title is not None:
                         if v.title.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.title', secret, v.title))
