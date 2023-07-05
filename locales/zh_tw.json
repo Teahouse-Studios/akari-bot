@@ -40,6 +40,7 @@
     "parser.sudo.permission.denied": "你不是本機器人的超級使用者，無法使用 sudo 指令。",
     "parser.superuser.permission.denied": "你沒有使用此指令的權限。",
     "success": "成功。",
+    "failed": "失败。",
     "tos.reason": "原因：",
     "tos.reason.abuse": "一段時間內使用指令的次數過多。",
     "tos.reason.bypass": "无视临时封禁警告。",
