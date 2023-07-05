@@ -1,6 +1,6 @@
 '''利用阿里云API检查字符串是否合规。
 
-在使用前，应该在配置中填写"Check_accessKeyId"和"Check_accessKeySecret"以便进行鉴权。
+在使用前，应该在配置中填写"check_accessKeyId"和"check_accessKeySecret"以便进行鉴权。
 '''
 import base64
 import datetime
@@ -53,8 +53,8 @@ async def check(*text) -> list:
     :param text: 字符串（List/Union）。
     :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'，结构为[{'审核后的字符串': 处理结果（True/False，默认为True）}]
     '''
-    accessKeyId = Config("Check_accessKeyId")
-    accessKeySecret = Config("Check_accessKeySecret")
+    accessKeyId = Config("check_accessKeyId")
+    accessKeySecret = Config("check_accessKeySecret")
     text = list(text)
     if not accessKeyId or not accessKeySecret or not EnableDirtyWordCheck.status:
         Logger.warn('Dirty words filter was disabled, skip.')
