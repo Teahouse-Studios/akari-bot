@@ -112,6 +112,8 @@
     "core.message.ping.failed": "無法取得。",
     "core.message.prefix.add.already": "此指令前綴已存在於自訂前綴列表。",
     "core.message.prefix.add.success": "已新增自訂指令前綴：${prefix}",
+    "core.message.prefix.list": "自定义命令别名前缀：${prefixes}",
+    "core.message.prefix.list.none": "自定义命令别名前缀为空。",
     "core.message.prefix.remove.not_found": "此指令前綴不存在於自訂前綴列表。",
     "core.message.prefix.remove.success": "已移除自訂指令前綴：",
     "core.message.prefix.reset": "已重設自訂指令前綴列表。",
