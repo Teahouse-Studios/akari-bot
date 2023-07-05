@@ -40,6 +40,7 @@
     "parser.sudo.permission.denied": "You are not a superuser and cannot use the sudo command.",
     "parser.superuser.permission.denied": "You do not have permission to use this command.",
     "success": "Success.",
+    "failed": "失败。",
     "tos.reason": "Reason: ",
     "tos.reason.abuse": "Too many command usages within a period of time.",
     "tos.reason.bypass": "Ignoring temporary ban warning.",
