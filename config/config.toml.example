@@ -1,7 +1,7 @@
 [secret]
 db_path = "mysql+pymysql://"
-Check_accessKeyId =
-Check_accessKeySecret =
+check_accessKeyId =
+check_accessKeySecret =
 web_render =
 netease_cloud_music_api_url =
 botarcapi_url =
