@@ -34,22 +34,73 @@ def convert_cfg_to_toml():
 
 
 class CFG:
-    def __init__(self):
+    value = None
+    _ts = None
+
+    @classmethod
+    def load(cls):
         if not os.path.exists(config_path):
             if os.path.exists(old_cfg_file_path):
                 convert_cfg_to_toml()
             else:
                 raise ConfigFileNotFound(config_path) from None
-        self.cp = toml.loads(open(config_path, 'r', encoding='utf-8').read())
+        cls.value = toml.loads(open(config_path, 'r', encoding='utf-8').read())
+        cls._ts = os.path.getmtime(config_path)
 
-    def config(self, q):
+    @classmethod
+    def get(cls, q):
         q = q.lower()
-        value_s = self.cp.get('secret')
-        value_n = self.cp.get('cfg')
+        if os.path.getmtime(config_path) != cls._ts:
+            cls.load()
+        value_s = cls.value.get('secret')
+        value_n = cls.value.get('cfg')
         value = value_s.get(q)
         if value is None:
             value = value_n.get(q)
         return value
 
+    @classmethod
+    def write(cls, q, value, secret=False):
+        q = q.lower()
+        if os.path.getmtime(config_path) != cls._ts:
+            cls.load()
+        value_s = cls.value.get('secret')
+        value_n = cls.value.get('cfg')
+        if q in value_s:
+            value_s[q] = value
+        elif q in value_n:
+            value_n[q] = value
+        else:
+            if secret:
+                value_s[q] = value
+            else:
+                value_n[q] = value
+        cls.value['secret'] = value_s
+        cls.value['cfg'] = value_n
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(toml.dumps(cls.value))
+        cls.load()
 
-Config = CFG().config
+    @classmethod
+    def delete(cls, q):
+        q = q.lower()
+        if os.path.getmtime(config_path) != cls._ts:
+            cls.load()
+        value_s = cls.value.get('secret')
+        value_n = cls.value.get('cfg')
+        if q in value_s:
+            del value_s[q]
+        elif q in value_n:
+            del value_n[q]
+        else:
+            return False
+        cls.value['secret'] = value_s
+        cls.value['cfg'] = value_n
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(toml.dumps(cls.value))
+        cls.load()
+        return True
+
+
+CFG.load()
+Config = CFG.get

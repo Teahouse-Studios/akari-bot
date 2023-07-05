@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import ujson as json
 
-from config import Config
+from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.loader import ModulesManager
@@ -408,3 +408,20 @@ if Config('enable_eval'):
     @_eval.handle('<display_msg>')
     async def _(msg: Bot.MessageSession):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
+
+
+_config = module('config', developers=['OasisAkari'], required_superuser=True)
+
+
+@_config.handle('write <k> <v> [-s]')
+async def _(msg: Bot.MessageSession):
+    CFG.write(msg.parsed_msg['<k>'], msg.parsed_msg['<v>'], msg.parsed_msg['-s'])
+    await msg.finish(msg.locale.t("success"))
+
+
+@_config.handle('delete <k>')
+async def _(msg: Bot.MessageSession):
+    if CFG.delete(msg.parsed_msg['<k>']):
+        await msg.finish(msg.locale.t("success"))
+    else:
+        await msg.finish(msg.locale.t("failed"))
