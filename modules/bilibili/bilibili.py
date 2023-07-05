@@ -55,7 +55,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
 
 def format_num(number):
     if number >= 1000000000:
-        return f'{number/1000000000:.1f}B'
+        return f'{number/1000000000:.1f}G'
     elif number >= 1000000:
         return f'{number/1000000:.1f}M'
     elif number >= 1000:
