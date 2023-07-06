@@ -46,13 +46,14 @@ mai_regex = module('maimai_regex',
                      alias='mai_regex', developers=['DoroWolf'], support_languages=['zh_cn', 'zh_tw'])
 
 
-@mai_regex.handle(re.compile(r"(.+)\s?是什([么麼])歌"), desc='{maimai.help.maimai_regex.song}')
+@mai_regex.handle(re.compile(r"(.+)\s?是什([么麼])歌", flags=re.I), desc='{maimai.help.maimai_regex.song}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name == "":
         return
     elif name[:2] == "id":
-        music = (await total_list.get()).by_id(name)
+        sid = name[2:]
+        music = (await total_list.get()).by_id(sid)
         if music is None:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
