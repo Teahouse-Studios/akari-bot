@@ -166,7 +166,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 @mai.handle('info <id_or_alias> [<username>] {{maimai.help.info}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
-    if id_or_alias.isdigit():
+    if id_or_alias.isdigit() and len(id_or_alias) <=5:
         sid = id_or_alias
     else:
         sid_list = await get_alias(id_or_alias, get_music=True)
@@ -332,7 +332,7 @@ async def _(msg: Bot.MessageSession):
 
 @mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
-    if id_or_alias.isdigit():
+    if id_or_alias.isdigit() and len(id_or_alias) <=5:
         sid = id_or_alias
     else:
         sid_list = await get_alias(id_or_alias, get_music=True)

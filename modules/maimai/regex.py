@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']} {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             music = (await total_list.get()).by_id(str(sid_list[0]))
@@ -78,11 +78,9 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))]) 
     
 
-@mai_regex.handle(re.compile(r"(.+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.handle(re.compile(r"(\d+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
-    if not sid.isdigit():
-        return
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
