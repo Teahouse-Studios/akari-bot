@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name == "":
         return
-    elif name.isdigit():
+    elif name[:2] == "id":
         music = (await total_list.get()).by_id(name)
         if music is None:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
