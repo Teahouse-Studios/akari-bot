@@ -14,6 +14,7 @@ from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMet
 from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
+current_unloaded_modules = []
 
 
 def load_modules():
@@ -39,6 +40,7 @@ def load_modules():
                 Logger.info(f'Loading modules.{fun_file}...')
                 if fun_file in unloaded_modules:
                     Logger.info(f'Skipped modules.{fun_file}!')
+                    current_unloaded_modules.append(fun_file)
                     continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
@@ -148,6 +150,35 @@ class ModulesManager:
         cls.remove_modules(unbind_modules)
         cls._return_cache.clear()
         return cls.reload_py_module(py_module)
+
+    @classmethod
+    def load_module(cls, module_name: str):
+        """
+        加载该小可模块（以及该模块所在文件的其它模块）
+        """
+        if module_name not in current_unloaded_modules:
+            return False
+        modules = 'modules.' + module_name
+        if modules in sys.modules:
+            cls.return_py_module(module_name)
+        else:
+            importlib.import_module(modules)
+            Logger.info(f'Succeeded loaded modules.{module_name}!')
+        cls._return_cache.clear()
+        current_unloaded_modules.remove(module_name)
+        return True
+
+    @classmethod
+    def unload_module(cls, module_name: str):
+        """
+        卸载该小可模块（以及该模块所在文件的其它模块）
+        """
+        origin_module = cls.modules_origin[module_name]
+        unbind_modules = cls.search_related_module(module_name)
+        cls.remove_modules(unbind_modules)
+        cls._return_cache.clear()
+        current_unloaded_modules.append(origin_module)
+        return True
 
     @classmethod
     def reload_py_module(cls, module_name: str):
