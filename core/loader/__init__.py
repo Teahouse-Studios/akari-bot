@@ -5,6 +5,8 @@ import sys
 import traceback
 from typing import Dict, Union
 
+from config import Config
+
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
@@ -15,6 +17,7 @@ load_dir_path = os.path.abspath('./modules/')
 
 
 def load_modules():
+    unloaded_modules = Config('unloaded_modules')
     err_prompt = []
     locale_err = load_locale_file()
     if locale_err:
@@ -34,6 +37,9 @@ def load_modules():
                     fun_file = file_name[:-3]
             if fun_file is not None:
                 Logger.info(f'Loading modules.{fun_file}...')
+                if fun_file in unloaded_modules:
+                    Logger.info(f'Skipped modules.{fun_file}!')
+                    continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
                 Logger.info(f'Succeeded loaded modules.{fun_file}!')
