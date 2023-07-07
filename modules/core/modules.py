@@ -81,8 +81,7 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(msg.locale.t("core.message.module.enable.not_found", module=module_))
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(msg.locale.t("core.message.module.enable.perimission.denied",
-                                                    module=module_))
+                        msglist.append(msg.locale.t("cparser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.enable.base", module=module_))
                     else:
@@ -145,8 +144,7 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(msg.locale.t("core.message.module.disable.not_found", module=module_))
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(msg.locale.t("core.message.module.disable.permission.denied",
-                                                    module=module_))
+                        msglist.append(msg.locale.t("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.disable.base", module=module_))
                     else:
@@ -196,22 +194,22 @@ async def config_modules(msg: Bot.MessageSession):
                                 continue
                         msglist.append(module_reload(module_, extra_reload_modules))
         else:
-            msglist.append(msg.locale.t("core.message.module.reload.permission.denied"))
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
         if msg.checkSuperUser():
 
             for module_ in wait_config_list:
                 if module_ not in current_unloaded_modules:
-                    msglist.append("发生错误：该模块已经加载或不存在。")
+                    msglist.append(msg.locale.t("core.message.module.load.error"))
                     continue
                 if ModulesManager.load_module(module_):
-                    msglist.append("成功加载模块。")
+                    msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
                     unloaded_list = CFG.get('unloaded_modules')
                     if module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                 else:
-                    msglist.append("发生错误：模块加载失败，请检查后台日志。")
+                    msglist.append(msg.locale.t("core.message.module.load.failed"))
 
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
@@ -222,19 +220,19 @@ async def config_modules(msg: Bot.MessageSession):
             for module_ in wait_config_list:
                 if module_ not in modules_:
                     if module_ in err_modules:
-                        if await msg.waitConfirm("此模块已经由于加载错误而无法加载，此操作将会在下一次重启后彻底禁用此模块，是否继续？"):
+                        if await msg.waitConfirm(msg.locale.t("core.message.module.unload.unavailable.confirm")):
                             unloaded_list = CFG.get('unloaded_modules')
                             if not unloaded_list:
                                 unloaded_list = []
                             unloaded_list.append(module_)
                             CFG.write('unloaded_modules', unloaded_list)
-                            msglist.append("成功卸载模块。")
+                            msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
                     else:
-                        msglist.append("发生错误：该模块不存在。")
+                        msglist.append(msg.locale.t("core.message.module.unload.error"))
                     continue
-                if await msg.waitConfirm("此操作将会卸载与其相关的所有模块，并在下一次重启后彻底禁用（不包含互相引用的模块），是否继续？"):
+                if await msg.waitConfirm(msg.locale.t("core.message.module.unload.confirm")):
                     if ModulesManager.unload_module(module_):
-                        msglist.append("成功卸载模块。")
+                        msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
                         unloaded_list = CFG.get('unloaded_modules')
                         if not unloaded_list:
                             unloaded_list = []
