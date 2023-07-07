@@ -349,9 +349,9 @@ assets
 
 `qq_disable_temp_session = true` - 是否禁用 QQ 平台的临时会话功能。
 
-`qq_enable_dirty_check = true` - 是否启用 QQ 平台的屏蔽词检查。
+`enable_dirty_check = true` - 是否启用屏蔽词检查。
 
-`qq_enable_urlmanager = true` - 是否启用 QQ 平台的 URL 管理（替换外部链接，提示非官方页面）。若停用此功能将同时停用 `wiki_audit` 命令。
+`enable_urlmanager = true` - 是否启用 URL 管理（替换外部链接，提示非官方页面）。若停用此功能将同时停用 `wiki_audit` 命令。
 
 `slower_schedule = false` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
 
