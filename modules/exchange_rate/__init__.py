@@ -3,7 +3,6 @@ import datetime
 from config import Config
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import NoReportException
 from core.utils.http import get_url
 
 api_key = Config('exchange_rate_api_key')
@@ -54,7 +53,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         if unsupported_currencies:
             await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
     else:
-        raise NoReportException(data['error-type'])
+        raise Exception(data['error-type'])
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     data = await get_url(url, 200, fmt='json')
@@ -65,7 +64,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
             msg.locale.t('exchange_rate.message', amount=amount, base=base_currency, exchange_rate=exchange_rate,
                          target=target_currency, time=current_time))
     else:
-        raise NoReportException(data['error-type'])
+        raise Exception(data['error-type'])
 
 
 @excr.regex(r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑|换|兌|換]\s?([a-zA-Z]{3})", desc='{exchange_rate.help.regex.desc}')
