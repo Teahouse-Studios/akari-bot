@@ -1,5 +1,6 @@
 import datetime
 
+from config import Config
 from core import dirty_check as dirty
 
 
@@ -18,10 +19,13 @@ def darkCheck(msg: str):
         'zhao',
         'programthink'
     ]
-    for i in blacklist:
-        if msg.find(i) > -1:
-            return True
-    return False
+    if Config('qq_enable_dirty_check'):
+        for i in blacklist:
+            if msg.find(i) > -1:
+                return True
+        return False
+    else:
+        return False
 
 
 def time_diff(time: str):
