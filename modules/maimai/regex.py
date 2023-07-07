@@ -49,12 +49,10 @@ mai_regex = module('maimai_regex',
 @mai_regex.handle(re.compile(r"(.+)\s?是什([么麼])歌"), desc='{maimai.help.maimai_regex.song}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
-    if name == "":
-        return
-    elif name[:2].lower() == "id":
+    if name[:2].lower() == "id":
         sid = name[2:]
         music = (await total_list.get()).by_id(sid)
-        if music is None:
+        if not music:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
         sid_list = await get_alias(name, get_music=True)
@@ -68,6 +66,8 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(res.strip())
         else:
             music = (await total_list.get()).by_id(str(sid_list[0]))
+            if not music:
+                await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     file = get_cover(music['id'])
     await msg.finish(

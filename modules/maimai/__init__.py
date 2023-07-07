@@ -182,7 +182,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
             sid = str(sid_list[0])
 
     music = (await total_list.get()).by_id(sid)
-    if music is None:
+    if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if username is None and msg.target.senderFrom == "QQ":
@@ -347,7 +347,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         else:
             sid = str(sid_list[0])
     music = (await total_list.get()).by_id(sid)
-    if music is None:
+    if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if diff is not None:
