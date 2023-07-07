@@ -13,7 +13,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
         elif res['code'] == -400:
             await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
         else:
-            await msg.finish(ErrorMessage(str(abs(res['code']))))
+            raise ValueError(abs(res['code']))
         
     view = res['data']['View']
     stat = view['stat']
