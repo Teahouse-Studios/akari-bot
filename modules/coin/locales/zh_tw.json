@@ -8,7 +8,7 @@
     "coin.message.error.amount": "發生錯誤：無效的硬幣數量。",
     "coin.message.error.nocoin": "發生錯誤：你拋了 0 枚硬幣，什麼也沒有發生…",
     "coin.message.error.out_of_range": "發生錯誤：你最多只能拋 ${max} 枚硬幣。",
-    "coin.message.error.rate": "發生錯誤：硬幣概率錯誤。",
+    "coin.message.error.rate": "硬幣概率錯誤，請檢查配置文件。",
     "coin.message.head": "…\n…是正面！",
     "coin.message.mix": "，其中…\n",
     "coin.message.mix.head": "…有 ${head} 枚是正面",
