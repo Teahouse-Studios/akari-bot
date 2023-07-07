@@ -99,11 +99,11 @@ $ pip install -r requirements.txt
 
 **格式**
 
-`mysql+pymysql://<数据库用户名>:<数据库用户密码>@<数据库地址>`
+`db_path = "mysql+pymysql://<数据库用户名>:<数据库用户密码>@<数据库地址>"`
 
 **实际示例**
 
-`mysql+pymysql://bot:123456@example.com/bot_prod`
+`db_path = "mysql+pymysql://bot:123456@example.com/bot_prod"`
 
 ### SQLite
 
@@ -344,10 +344,12 @@ assets
 
 ### 其他功能
 
-`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`、`Kook|<ClientID>`，可在机器人开启后使用 `~whoami`
+`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|Client|<ClientID>`、`Telegram|Client|<ClientID>`、`Kook|User|<UserID>`，可在机器人开启后使用 `~whoami`
 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
 `qq_disable_temp_session = true` - 是否禁用 QQ 平台的临时会话功能。
+
+`qq_enable_listening_self_message = false` - 是否启用 QQ 平台的自我消息处理（可能有助于多设备下使用，但也可能会导致误触发导致消息陷入死循环状态）。
 
 `enable_dirty_check = true` - 是否启用屏蔽词检查。
 
@@ -361,13 +363,11 @@ assets
 
 `enable_eval = true` - 是否启用内置的 `eval` 命令。
 
-`qq_enable_listening_self_message = false` - 是否启用 QQ 平台的自我消息处理（可能有助于多设备下使用，但也可能会导致误触发导致消息陷入死循环状态）。
-
 `allow_request_private_ip = true` - 是否允许机器人请求私有 IP 地址。
 
 #### 自定义确认词及命令前缀
 
-你可以通过编辑 `core/builtins/utils/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix`
-变量来增加（或删除）可使用的命令前缀。
+你可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix`
+来增加（或删除）可使用的默认命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
