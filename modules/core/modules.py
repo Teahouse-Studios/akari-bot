@@ -14,7 +14,9 @@ m = module('module',
            base=True,
            alias={'enable': 'module enable',
                   'disable': 'module disable',
-                  'reload': 'module reload'},
+                  'load': 'module load',
+                  'reload': 'module reload',
+                  'unload': 'module unload'},
            developers=['OasisAkari', 'Light-Beacon'],
            required_admin=True
            )
@@ -41,7 +43,7 @@ async def _(msg: Bot.MessageSession):
             'reload <module> ... {{core.help.module.reload}}',
             'load <module> ... {{core.help.module.load}}',
             'unload <module> ... {{core.help.module.unload}}',
-            'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.tion.tion.tion.tion.module.g}'},
+            'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -168,10 +170,10 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules):
                 reloadCnt = ModulesManager.reload_module(module)
                 if reloadCnt > 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", modules=module)}' + ('\n' if len(extra_modules) != 0 else '') + \
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + ('\n' if len(extra_modules) != 0 else '') + \
                         '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", modules=module)}' + (
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
                         '\n' if len(extra_modules) != 0 else '') + '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.message.module.reload.failed")}'
