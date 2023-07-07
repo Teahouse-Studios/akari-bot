@@ -8,6 +8,6 @@
     "phigros.message.unbind.success": "解除綁定成功。",
     "phigros.message.update.failed": "更新失敗。",
     "phigros.message.update.success": "更新成功。",
-    "phigros.message.user_unbound": "未綁定使用者，請使用「${prefix}phigros bind」綁定一個使用者。",
+    "phigros.message.user_unbound": "未绑定用户，请使用“${prefix}phigros bind”绑定一个用户。",
     "phigros.message.b19.get_failed": "取得失敗，請嘗試重新綁定 SessionToken 或回報開發人員：\n${err}"
 }
