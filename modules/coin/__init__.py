@@ -78,7 +78,7 @@ async def flipCoins(count: int, msg):
         if faceUp:
             output += msg.locale.t("coin.message.mix.head", head=faceUp)
         elif faceDown:
-            output += msg.locale.t("coin.message.mix.tail2", head=faceDown)
+            output += msg.locale.t("coin.message.mix.tail2", tail=faceDown)
         if faceUp and faceDown:
             output += msg.locale.t("coin.message.mix.tail", tail=faceDown)
         if stand:
