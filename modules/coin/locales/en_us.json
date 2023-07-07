@@ -8,7 +8,7 @@
     "coin.message.error.amount": "An error occurred: Invalid number of coins: ",
     "coin.message.error.nocoin": "An error occurred: You toss no coin, and nothing happened...",
     "coin.message.error.out_of_range": "An error occurred: You can only toss up to ${max} coins.",
-    "coin.message.error.rate": "An error occurred: Coin probability error.",
+    "coin.message.error.rate": "Coin probability error, please check your config.",
     "coin.message.head": "...\n... It is heads!",
     "coin.message.mix": "...",
     "coin.message.mix.head": " ${head} is/are heads",
