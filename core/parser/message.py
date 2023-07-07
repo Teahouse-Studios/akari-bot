@@ -8,7 +8,7 @@ from config import Config
 from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
-from core.loader import ModulesManager
+from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.logger import Logger
 from core.parser.command import CommandParser
 from core.tos import warn_target
@@ -344,6 +344,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     Logger.error(traceback.format_exc())
                     await msg.sendMessage(msg.locale.t('error.prompt.report', err_msg=str(e)) +
                                           str(Url(Config('bug_report_url'))))
+            if command_first_word in current_unloaded_modules and msg.checkSuperUser():
+                await msg.sendMessage(f"{command_first_word} 当前未加载，使用 {msg.prefixes[0]}module load {command_first_word} 命令重新加载。")
+            elif command_first_word in err_modules:
+                await msg.sendMessage(f"{command_first_word} 模块加载失败，请联系开发者解决问题。")
+
             return msg
         if running_mention:
             if msg.trigger_msg.find('小可') != -1:

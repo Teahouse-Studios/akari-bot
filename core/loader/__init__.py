@@ -5,6 +5,8 @@ import sys
 import traceback
 from typing import Dict, Union
 
+from config import Config
+
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
@@ -12,9 +14,15 @@ from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMet
 from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
+all_modules = []
+current_unloaded_modules = []
+err_modules = []
 
 
 def load_modules():
+    unloaded_modules = Config('unloaded_modules')
+    if not unloaded_modules:
+        unloaded_modules = []
     err_prompt = []
     locale_err = load_locale_file()
     if locale_err:
@@ -34,6 +42,11 @@ def load_modules():
                     fun_file = file_name[:-3]
             if fun_file is not None:
                 Logger.info(f'Loading modules.{fun_file}...')
+                all_modules.append(fun_file)
+                if fun_file in unloaded_modules:
+                    Logger.warn(f'Skipped modules.{fun_file}!')
+                    current_unloaded_modules.append(fun_file)
+                    continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
                 Logger.info(f'Succeeded loaded modules.{fun_file}!')
@@ -42,6 +55,7 @@ def load_modules():
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
             Logger.error(errmsg)
             err_prompt.append(errmsg)
+            err_modules.append(fun_file)
     loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
     openloadercache = open(loadercache, 'w')
     if err_prompt:
@@ -144,6 +158,46 @@ class ModulesManager:
         return cls.reload_py_module(py_module)
 
     @classmethod
+    def load_module(cls, module_name: str):
+        """
+        加载该小可模块（以及该模块所在文件的其它模块）
+        """
+        if module_name not in current_unloaded_modules:
+            return False
+        modules = 'modules.' + module_name
+        if modules in sys.modules:
+            cls.reload_py_module(modules)
+            current_unloaded_modules.remove(module_name)
+        else:
+            try:
+                importlib.import_module(modules)
+                Logger.info(f'Succeeded loaded modules.{module_name}!')
+                if module_name in err_modules:
+                    err_modules.remove(module_name)
+                current_unloaded_modules.remove(module_name)
+            except Exception:
+                tb = traceback.format_exc()
+                errmsg = f'Failed to load modules.{module_name}: \n{tb}'
+                Logger.error(errmsg)
+                if module_name not in err_modules:
+                    err_modules.append(module_name)
+                return False
+        cls._return_cache.clear()
+        return True
+
+    @classmethod
+    def unload_module(cls, module_name: str):
+        """
+        卸载该小可模块（以及该模块所在文件的其它模块）
+        """
+        origin_module = cls.modules_origin[module_name]
+        unbind_modules = cls.search_related_module(module_name)
+        cls.remove_modules(unbind_modules)
+        cls._return_cache.clear()
+        current_unloaded_modules.append(module_name)
+        return True
+
+    @classmethod
     def reload_py_module(cls, module_name: str):
         """
         重载该py模块
@@ -158,9 +212,13 @@ class ModulesManager:
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)
             Logger.info(f'Succeeded reloaded {module_name}')
+            if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) in err_modules:
+                err_modules.remove(m.group(1))
             return cnt + 1
         except BaseException:
             tb = traceback.format_exc()
             errmsg = f'Failed to reload {module_name}: \n{tb}'
             Logger.error(errmsg)
+            if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) not in err_modules:
+                err_modules.append(m.group(1))
             return -999
