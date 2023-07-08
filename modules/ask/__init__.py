@@ -19,15 +19,15 @@ BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo： $0.002 / 1K tokens
 THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
-# Assuming 1 USD = 7 CNY, 100 petal = 1 CNY
-USD_TO_CNY = 7
+# Assuming 1 USD = 7.3 CNY, 100 petal = 1 CNY
+USD_TO_CNY = Decimal('7.3')
 CNY_TO_PETAL = 100
 
-a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}', required_superuser=True)
+a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
 
 @a.command('<question> {{ask.help}}')
-@a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$')
+@a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$', desc='{ask.help}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.checkSuperUser()
     if not is_superuser and msg.data.petal < 100:  # refuse
@@ -41,14 +41,10 @@ async def _(msg: Bot.MessageSession):
     with get_openai_callback() as cb:
         res = await agent_executor.arun(question)
         tokens = cb.total_tokens
-    # TODO: REMEMBER TO UNCOMMENT THIS BEFORE LAUNCH!!!!
-    # if not is_superuser:
-    #     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
-    #     petal = price * USD_TO_CNY * CNY_TO_PETAL
-    #     await msg.data.modify_petal(-petal)
-    price = tokens / ONE_K * PRICE_PER_1K_TOKEN
-    petal = price * USD_TO_CNY * CNY_TO_PETAL
-    msg.data.modify_petal(-int(petal))
+    if not is_superuser:
+        price = tokens / ONE_K * PRICE_PER_1K_TOKEN
+        petal = price * USD_TO_CNY * CNY_TO_PETAL
+        msg.data.modify_petal(-petal)
 
     blocks = parse_markdown(res)
 
