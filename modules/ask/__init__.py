@@ -30,7 +30,7 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 @a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$', desc='{ask.help}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.checkSuperUser()
-    if not is_superuser and msg.data.petal < 100:  # refuse
+    if not is_superuser and msg.data.petal < 0:  # refuse
         raise NoReportException(msg.locale.t('petal_'))
     if hasattr(msg, 'parsed_msg'):
         question = msg.parsed_msg['<question>']
