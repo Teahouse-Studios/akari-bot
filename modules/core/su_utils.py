@@ -365,7 +365,7 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.sendMessage(msg.locale.t("core.message.resume.nothing"))
 
-    @resume.handle('clean')
+    @resume.handle('clear')
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
@@ -410,7 +410,7 @@ if Config('enable_eval'):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
 
 
-_config = module('config', developers=['OasisAkari'], required_superuser=True)
+_config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg')
 
 
 @_config.handle('write <k> <v> [-s]')

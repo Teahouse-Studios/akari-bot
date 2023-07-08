@@ -39,19 +39,19 @@ async def _(msg: Bot.MessageSession, color: str = None):
         if len(color) == 4:
             color = '#' + color[1] * 2 + color[2] * 2 + color[3] * 2
         color = webcolors.html5_parse_simple_color(color)
-    elif re.match(r'^rgb\(\d{1,3}, ?\d{1,3}, ?\d{1,3}\)$', color):
+    elif re.match(r'^rgb\(\d{1,3},\s?\d{1,3},\s?\d{1,3}\)$', color):
         color = color[4:-1].split(',')
         color = webcolors.HTML5SimpleColor(*(int(x.strip()) for x in color))
-    elif re.match(r'^rgb\(\d{1,3}%, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+    elif re.match(r'^rgb\(\d{1,3}%,\s?\d{1,3}%,\s?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
         color = webcolors.HTML5SimpleColor(*(int(x.strip()[:-1]) * 255 / 100 for x in color))
-    elif re.match(r'^hsl\(\d{1,3}, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+    elif re.match(r'^hsl\(\d{1,3},\s?\d{1,3}%,\s?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
         color = colorsys.hls_to_rgb(int(color[0].strip()) / 360,
                                     int(color[2].strip()[:-1]) / 100,
                                     int(color[1].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
-    elif re.match(r'^hsl\(\d{1,3}deg, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+    elif re.match(r'^hsl\(\d{1,3}deg,\s?\d{1,3}%,\s?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
         color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360,
                                     int(color[2].strip()[:-1]) / 100,

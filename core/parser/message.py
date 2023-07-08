@@ -345,9 +345,9 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     await msg.sendMessage(msg.locale.t('error.prompt.report', err_msg=str(e)) +
                                           str(Url(Config('bug_report_url'))))
             if command_first_word in current_unloaded_modules and msg.checkSuperUser():
-                await msg.sendMessage(f"{command_first_word} 当前未加载，使用 {msg.prefixes[0]}module load {command_first_word} 命令重新加载。")
+                await msg.sendMessage(msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
             elif command_first_word in err_modules:
-                await msg.sendMessage(f"{command_first_word} 模块加载失败，请联系开发者解决问题。")
+                await msg.sendMessage(msg.locale.t('error.module.unloaded', module=command_first_word))
 
             return msg
         if running_mention:
