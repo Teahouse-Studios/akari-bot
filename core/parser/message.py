@@ -31,7 +31,7 @@ async def remove_temp_ban(msg: Bot.MessageSession):
         del temp_ban_counter[msg.target.senderId]
 
 
-async def msg_counter(msg: Bot.MessageSession, command: str):
+async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     same = counter_same.get(msg.target.senderId)
     if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
         # 检查是否滥用（重复使用同一命令）
@@ -137,6 +137,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             for moduleName in modules:
                 if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
                     no_alias = True
+            if not no_alias:
+                for um in current_unloaded_modules:
+                    if command.startswith(um):
+                        no_alias = True
+            if not no_alias:
+                for em in err_modules:
+                    if command.startswith(em):
+                        no_alias = True
             if not no_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                 alias_list = []
                 for alias in ModulesManager.modules_aliases:
@@ -318,7 +326,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
                     if (msg.target.targetFrom != 'QQ|Guild' or command_first_word != 'module') and enable_tos:
-                        await msg_counter(msg, msg.trigger_msg)
+                        await tos_msg_counter(msg, msg.trigger_msg)
                     else:
                         Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
@@ -421,7 +429,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, 'regex')
 
                             if enable_tos and rfunc.show_typing:
-                                await msg_counter(msg, msg.trigger_msg)
+                                await tos_msg_counter(msg, msg.trigger_msg)
                             else:
                                 Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 

@@ -62,13 +62,13 @@ class MessageTaskManager:
                         elif get_['type'] == 'reply':
                             if isinstance(get_['reply'], list):
                                 for reply in get_['reply']:
-                                    if reply == s.target.replyId:
+                                    if reply == session.target.replyId:
                                         get_['result'] = session
                                         get_['active'] = False
                                         get_['flag'].set()
                                         break
                             else:
-                                if get_['reply'] == s.target.replyId:
+                                if get_['reply'] == session.target.replyId:
                                     get_['result'] = session
                                     get_['active'] = False
                                     get_['flag'].set()

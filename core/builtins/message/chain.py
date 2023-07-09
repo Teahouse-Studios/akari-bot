@@ -56,6 +56,8 @@ class MessageChain(MC):
         for v in self.value:
             if isinstance(v, Plain):
                 for secret in Secret.list:
+                    if secret in ["", None, True, False]:
+                        continue
                     if v.text.upper().find(secret.upper()) != -1:
                         Logger.warn(unsafeprompt('Plain', secret, v.text))
                         return False

@@ -194,6 +194,10 @@ async def config_modules(msg: Bot.MessageSession):
                                                                          modules='\n'.join(extra_reload_modules)))
                             if not confirm:
                                 continue
+                        unloaded_list = CFG.get('unloaded_modules')
+                        if module_ in unloaded_list:
+                            unloaded_list.remove(module_)
+                            CFG.write('unloaded_modules', unloaded_list)
                         msglist.append(module_reload(module_, extra_reload_modules))
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
@@ -226,8 +230,9 @@ async def config_modules(msg: Bot.MessageSession):
                             unloaded_list = CFG.get('unloaded_modules')
                             if not unloaded_list:
                                 unloaded_list = []
-                            unloaded_list.append(module_)
-                            CFG.write('unloaded_modules', unloaded_list)
+                            if module_ not in unloaded_list:
+                                unloaded_list.append(module_)
+                                CFG.write('unloaded_modules', unloaded_list)
                             msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
                     else:
                         msglist.append(msg.locale.t("core.message.module.unload.error"))
