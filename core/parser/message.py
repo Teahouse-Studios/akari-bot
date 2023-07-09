@@ -137,6 +137,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             for moduleName in modules:
                 if command.startswith(moduleName):  # 判断此命令是否匹配一个实际的模块
                     no_alias = True
+            if not no_alias:
+                for um in current_unloaded_modules:
+                    if command.startswith(um):
+                        no_alias = True
+            if not no_alias:
+                for em in err_modules:
+                    if command.startswith(em):
+                        no_alias = True
             if not no_alias:  # 如果没有匹配到模块，则判断是否匹配命令别名
                 alias_list = []
                 for alias in ModulesManager.modules_aliases:
