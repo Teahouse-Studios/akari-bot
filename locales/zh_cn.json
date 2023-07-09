@@ -53,5 +53,6 @@
     "tos.warning.appeal": "如果你有任何异议，请至 ${issue_url} 发起问题。",
     "tos.warning.count": "这是对你的第 ${current_warns} 次警告。如超过 5 次警告，我们将会把你的账户加入黑名单。",
     "tos.warning.last": "这是对你的最后一次警告。",
+    "unknown": "未知",
     "yes": "是"
 }
