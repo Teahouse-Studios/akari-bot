@@ -53,5 +53,6 @@
     "tos.warning.appeal": "For objections, go to ${issue_url} and create an issue.",
     "tos.warning.count": "You have received ${current_warns} warnings. Your account will be blacklisted if you receive more than 5 warnings.",
     "tos.warning.last": "This is your last warning.",
+    "unknown": "未知",
     "yes": "Yes"
 }
