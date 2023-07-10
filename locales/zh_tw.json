@@ -22,7 +22,7 @@
     "error.range.notnumber": "發生錯誤：無效的數字區間。",
     "error.request.api.timeout": "請求 API 逾時。",
     "example": "你好世界！",
-    "failed": "失败。",
+    "failed": "失敗。",
     "i18n.prompt.fallback.failed": "（如果你看到了這條奇怪的字串，說明我們又搞錯了什麼！\n請將問題回報至\n${url}\n以便我們快速解決此問題。）",
     "language": "繁體中文",
     "message.delimiter": "、",
