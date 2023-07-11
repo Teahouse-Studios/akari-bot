@@ -25,10 +25,7 @@ class FinishedSession(FinS):
         """
         try:
             for x in self.messageId:
-                x = str(x).split('|', 2)
-                room_id = x[0]
-                event_id = x[1]
-                await bot.room_redact(room_id, event_id)
+                await bot.room_redact(str(self.result), x)
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -141,10 +138,7 @@ class MessageSession(MS):
             resp: nio.RoomSendResponse = await bot.room_send(self.session.target, 'm.room.message', content)
             send.append(resp)
 
-        msgIds = []
-        for resp in send:
-            msgIds.append(f'{resp.room_id}|{resp.event_id}')
-        return FinishedSession(self, msgIds, msgIds)
+        return FinishedSession(self, [resp.event_id for resp in send], self.session.target)
 
     async def checkPermission(self):
         if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
