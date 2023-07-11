@@ -12,7 +12,7 @@ i = module('convert', alias=['conv', 'unit'], desc='{convert.help.desc}',
            developers=['Dianliang233'], support_languages=['en_us'])
 
 
-@i.command('<from_val> <to_unit> {convert.help}')
+@i.command('<from_val> <to_unit> {{convert.help}}')
 async def _(msg: Bot.MessageSession, from_val: str, to_unit: str):
     try:
         ori = ureg.parse_expression(from_val)
