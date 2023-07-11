@@ -8,6 +8,7 @@
     "coin.message.error.amount": "发生错误：无效的硬币数量。",
     "coin.message.error.nocoin": "发生错误：你抛了个空气，什么也没发生…",
     "coin.message.error.out_of_range": "发生错误：你最多只能抛 ${max} 枚硬币。",
+    "coin.message.error.rate": "硬币概率错误，请检查配置文件。",
     "coin.message.head": "…\n…是正面！",
     "coin.message.mix": "，其中…\n",
     "coin.message.mix.head": "…有 ${head} 枚是正面",
@@ -16,6 +17,5 @@
     "coin.message.mix.tail2": "…有 ${tail} 枚是反面",
     "coin.message.prompt": "你抛了 ${count} 枚硬币",
     "coin.message.stand": "…\n…它立起来了！",
-    "coin.message.tail": "…\n…是反面！",
-    "coin.message.error.config": "硬币配置发生错误，请检查配置文件。"
+    "coin.message.tail": "…\n…是反面！"
 }
