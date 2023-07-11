@@ -136,7 +136,10 @@ class MessageSession(MS):
                 }
             # todo https://github.com/poljar/matrix-nio/pull/417
             resp: nio.RoomSendResponse = await bot.room_send(self.session.target, 'm.room.message', content)
-            send.append(resp)
+            if resp is nio.RoomSendError:
+                Logger.error(f"Error in sending message: {resp}")
+            else:
+                send.append(resp)
 
         return FinishedSession(self, [resp.event_id for resp in send], self.session.target)
 
