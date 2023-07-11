@@ -13,6 +13,7 @@
     "ip.message.ip_property.site_local": "站点本地",
     "ip.message.ip_property.sixtofour": "6to4 ",
     "ip.message.ip_property.teredo": "Teredo ",
+    "ip.message.ip_property.unknown": "未知",
     "ip.message.ip_property.unspecified": "未指定",
     "ip.message.location": "位置：",
     "ip.message.organization": "组织：",
