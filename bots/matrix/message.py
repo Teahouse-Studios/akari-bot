@@ -107,10 +107,10 @@ class MessageSession(MS):
         return False
 
     def asDisplay(self, text_only=False):
-        if self.session.message['msgtype'] == 'm.text':
-            return str(self.session.message['body'])
-        if not text_only and 'format' in self.session.message:
-            return str(self.session.message['formatted_body'])
+        if self.session.message['content']['msgtype'] == 'm.text':
+            return str(self.session.message['content']['body'])
+        if not text_only and 'format' in self.session.message['content']:
+            return str(self.session.message['content']['formatted_body'])
         return ''
 
     async def toMessageChain(self):
@@ -126,8 +126,7 @@ class MessageSession(MS):
 
     async def delete(self):
         try:
-            for x in self.session.message:
-                await x.delete()
+            await bot.room_redact(self.session.target, self.session.message['event_id'])
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -136,7 +135,6 @@ class MessageSession(MS):
             self.msg = msg
 
         async def __aenter__(self):
-            # await bot.answer_chat_action(self.msg.session.target, 'typing')
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):

@@ -44,7 +44,8 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
                                  clientName='Matrix',
                                  messageId=event.event_id,
                                  replyId=replyId),
-                         Session(message=event.source['content'], target=targetId, sender=event.sender))
+                         Session(message=event.source, target=room.room_id, sender=event.sender))
+    await msg.delete()
     await parser(msg)
 
 
