@@ -109,8 +109,10 @@ class MessageSession(MS):
         return False
 
     def asDisplay(self, text_only=False):
-        if self.session.message.text:
-            return self.session.message.text
+        if self.session.message['msgtype'] == 'm.text':
+            return str(self.session.message['body'])
+        if not text_only and 'format' in self.session.message:
+            return str(self.session.message['formatted_body'])
         return ''
 
     async def toMessageChain(self):
@@ -150,7 +152,7 @@ class FetchedSession(FS):
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
                               senderName='',
-                              clientName='Matrix', messageId=0, replyId=None)
+                              clientName='Matrix', messageId='', replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
@@ -160,7 +162,7 @@ class FetchTarget(FT):
 
     @staticmethod
     async def fetch_target(targetId) -> Union[FetchedSession, bool]:
-        matchChannel = re.match(r'^(Matrix\|.*?)\|(.*)', targetId)
+        matchChannel = re.match(r'^(Matrix)\|(.*)', targetId)
         if matchChannel:
             return FetchedSession(matchChannel.group(1), matchChannel.group(2))
         else:

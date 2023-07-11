@@ -6,8 +6,7 @@ from bots.matrix import client
 from bots.matrix.client import bot
 import nio
 
-from config import Config
-from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
+from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
@@ -30,29 +29,23 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 
 async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
-    Logger.info(f"fmt: {event.format}, body: {event.body}, fmt body: {event.formatted_body}, sender: {event.sender}")
-    # if message.channel_type.name == "GROUP":
-    #    targetId = f"Kook|{message.channel_type.name}|{message.target_id}"
-    # else:
-    #    targetId = f"Kook|{message.channel_type.name}|{message.author_id}"
-    # replyId = None
-    # if "quote" in message.extra:
-    #    replyId = message.extra["quote"]["rong_id"]
+    isRoom = room.member_count != 2
+    targetId = room.room_id if isRoom else event.sender
+    replyId = None
+    if 'm.relates_to' in event.source['content'] and 'm.in_reply_to' in event.source['content']['m.relates_to']:
+        replyId = event.source['content']['m.relates_to']['m.in_reply_to']['event_id']
+    senderName = (await bot.get_displayname(event.sender)).displayname
 
-    # msg = MessageSession(
-    #    MsgInfo(
-    #        targetId=targetId,
-    #        senderId=f"Kook|User|{message.author_id}",
-    #        targetFrom=f"Kook|{message.channel_type.name}",
-    #        senderFrom="Kook|User",
-    #        senderName=message.author.nickname,
-    #        clientName="Kook",
-    #        messageId=message.id,
-    #        replyId=replyId,
-    #    ),
-    #    Session(message=message, target=message.target_id, sender=message.author_id),
-    # )
-    # await parser(msg)
+    msg = MessageSession(MsgInfo(targetId=f'Matrix|{targetId}',
+                                 senderId=f'Matrix|{event.sender}',
+                                 targetFrom=f'Matrix',
+                                 senderFrom='Matrix',
+                                 senderName=senderName,
+                                 clientName='Matrix',
+                                 messageId=event.event_id,
+                                 replyId=replyId),
+                         Session(message=event.source['content'], target=targetId, sender=event.sender))
+    await parser(msg)
 
 
 async def start():
