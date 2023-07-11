@@ -1,5 +1,5 @@
 {
-    "dice.help": "投掷指定骰子,可指定投骰次数与 dc 判断判定。",
+    "dice.help": "投掷指定骰子，可指定投骰次数与 dc 判断判定。",
     "dice.help.desc": "随机骰子。",
     "dice.help.option.dc": "在每一次投掷输出结果时进行判定，若结果大于 dc 则判定为成功，否则判定失败。",
     "dice.help.option.klx": "表示输出其最小的 x 个骰子点数之和。",
@@ -37,5 +37,6 @@
     "dice.message.error.value.too_long": "骰子多项式项数超过限制。",
     "dice.message.output": "你掷得的结果是：",
     "dice.message.output.too_long": "数量过大，已省略 ${length} 个数据。",
-    "dice.message.too_long": "输出过长……"
+    "dice.message.too_long": "输出过长……",
+    "dice.message.error.config": "骰子配置发生错误，请检查配置文件。"
 }
