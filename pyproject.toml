@@ -54,6 +54,7 @@ pycryptodome = "^3.18.0"
 langconv = "^0.2.0"
 toml = "^0.10.2"
 khl-py = "^0.3.16"
+matrix-nio = "^0.20.2"
 
 
 [tool.poetry.group.dev.dependencies]
