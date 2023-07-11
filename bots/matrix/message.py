@@ -92,19 +92,17 @@ class MessageSession(MS):
         return FinishedSession(self, msgIds, send)
 
     async def checkPermission(self):
-        if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
+        if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
             return True
-        admins = [member.user.id for member in await bot.get_chat_administrators(self.session.message.chat.id)]
-        if self.session.sender in admins:
-            return True
-        return False
+        return await self.checkNativePermission()
 
     async def checkNativePermission(self):
-        if self.session.message.chat.type == 'private':
+        if self.session.target.startswith('@'):
             return True
-        admins = [member.user.id for member in await bot.get_chat_administrators(self.session.message.chat.id)]
-        if self.session.sender in admins:
+        # https://spec.matrix.org/v1.7/client-server-api/#permissions
+        powerLevels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
+        level = powerLevels['users'][self.session.sender]
+        if level is not None and level >= 50:
             return True
         return False
 

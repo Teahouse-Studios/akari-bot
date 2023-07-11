@@ -70,8 +70,6 @@ async def start():
 
     Logger.info(f"starting sync loop")
     await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
-    Logger.error("? matrix-nio sync loop returned?")
-    exit(1)
 
 if bot:
     asyncio.run(start())
