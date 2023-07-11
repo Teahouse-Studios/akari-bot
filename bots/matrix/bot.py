@@ -29,6 +29,9 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 
 async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
+    if event.source['content']['msgtype'] == 'm.notice':
+        # https://spec.matrix.org/v1.7/client-server-api/#mnotice
+        return
     isRoom = room.member_count != 2
     targetId = room.room_id if isRoom else event.sender
     replyId = None
@@ -45,7 +48,6 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
                                  messageId=event.event_id,
                                  replyId=replyId),
                          Session(message=event.source, target=room.room_id, sender=event.sender))
-    await msg.delete()
     await parser(msg)
 
 
