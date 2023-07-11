@@ -3,7 +3,7 @@
     "ncmusic.help.info": "获取音乐详细信息。",
     "ncmusic.message.character": "（${value}）",
     "ncmusic.message.search.collapse": "仅显示前 10 条内容……",
-    "ncmusic.message.search.result": "搜索结果：",
+    "ncmusic.message.search.result": "搜尋結果：",
     "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}",
     "ncmusic.message.info.name": "歌名：",
     "ncmusic.message.info.album": "专辑名：",
