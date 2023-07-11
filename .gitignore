@@ -33,3 +33,4 @@ assets/mcbeversion.txt
 modules/natural/dataset.jsonl
 .chroma
 modules/ask/tools/self_knowledge/data
+matrix_store

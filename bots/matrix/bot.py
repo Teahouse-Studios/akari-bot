@@ -24,7 +24,7 @@ async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
 
 
 async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
-    print(event.format, event.body, event.formatted_body, event.sender)
+    Logger.info(f"fmt: {event.format}, body: {event.body}, fmt body: {event.formatted_body}, sender: {event.sender}")
     # if message.channel_type.name == "GROUP":
     #    targetId = f"Kook|{message.channel_type.name}|{message.target_id}"
     # else:
@@ -50,17 +50,20 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 
 
 async def start():
-    bot.add_event_callback(on_invite, nio.InviteEvent)
-    bot.add_event_callback(on_message, nio.RoomMessageFormatted)
-    await init_async()
-    await load_prompt(FetchTarget)
     Logger.info(f"trying first sync")
     sync = await bot.sync()
-    Logger.info(f"first sync finished in {sync.elapsed}ms")
+    Logger.info(f"first sync finished in {sync.elapsed}ms, dropped older messages")
     if sync is nio.SyncError:
         Logger.error(f"failed in first sync: {sync.status_code} - {sync.message}")
+
+    await init_async()
+    await load_prompt(FetchTarget)
+    bot.add_event_callback(on_invite, nio.InviteEvent)
+    bot.add_event_callback(on_message, nio.RoomMessageFormatted)
     Logger.info(f"starting sync loop")
-    await bot.sync_forever(timeout=30000)
+    await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
+    Logger.error("? matrix-nio sync loop returned?")
+    exit(1)
 
 if bot:
     asyncio.run(start())
