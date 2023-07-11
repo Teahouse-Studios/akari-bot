@@ -32,7 +32,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if event.source['content']['msgtype'] == 'm.notice':
         # https://spec.matrix.org/v1.7/client-server-api/#mnotice
         return
-    isRoom = room.member_count != 2
+    isRoom = room.member_count != 2 or room.join_rule != 'invite'
     targetId = room.room_id if isRoom else event.sender
     replyId = None
     if 'm.relates_to' in event.source['content'] and 'm.in_reply_to' in event.source['content']['m.relates_to']:
