@@ -16,6 +16,8 @@ store_path_nio = os.path.join(store_path, 'nio')
 if not os.path.exists(store_path_nio):
     os.mkdir(store_path_nio)
 
+store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
+
 
 if homeserver and user and token:
     if homeserver.endswith('/'):

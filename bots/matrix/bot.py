@@ -1,6 +1,7 @@
 import asyncio
 import os
 from tracemalloc import start
+from bots.matrix import client
 
 from bots.matrix.client import bot
 import nio
@@ -15,6 +16,11 @@ from bots.matrix.message import MessageSession, FetchTarget
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + "/assets"))
 Url.disable_mm = True
+
+
+async def on_sync(resp: nio.SyncResponse):
+    with open(client.store_path_next_batch, 'w') as fp:
+        fp.write(resp.next_batch)
 
 
 async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
@@ -50,16 +56,25 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 
 
 async def start():
-    Logger.info(f"trying first sync")
-    sync = await bot.sync()
-    Logger.info(f"first sync finished in {sync.elapsed}ms, dropped older messages")
-    if sync is nio.SyncError:
-        Logger.error(f"failed in first sync: {sync.status_code} - {sync.message}")
+    # Logger.info(f"trying first sync")
+    # sync = await bot.sync()
+    # Logger.info(f"first sync finished in {sync.elapsed}ms, dropped older messages")
+    # if sync is nio.SyncError:
+    #     Logger.error(f"failed in first sync: {sync.status_code} - {sync.message}")
+    try:
+        with open(client.store_path_next_batch, 'r') as fp:
+            bot.next_batch = fp.read()
+            Logger.info(f"loaded next sync batch from storage: {bot.next_batch}")
+    except FileNotFoundError:
+        bot.next_batch = 0
+
+    bot.add_response_callback(on_sync, nio.SyncResponse)
+    bot.add_event_callback(on_invite, nio.InviteEvent)
+    bot.add_event_callback(on_message, nio.RoomMessageFormatted)
 
     await init_async()
     await load_prompt(FetchTarget)
-    bot.add_event_callback(on_invite, nio.InviteEvent)
-    bot.add_event_callback(on_message, nio.RoomMessageFormatted)
+
     Logger.info(f"starting sync loop")
     await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
     Logger.error("? matrix-nio sync loop returned?")
