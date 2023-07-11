@@ -31,7 +31,7 @@ class FinishedSession(FinS):
 class MessageSession(MS):
     class Feature:
         image = True
-        voice = True
+        voice = False
         embed = False
         forward = False
         delete = True
@@ -107,22 +107,29 @@ class MessageSession(MS):
         return False
 
     def asDisplay(self, text_only=False):
-        if self.session.message['content']['msgtype'] == 'm.text':
+        if not text_only or self.session.message['content']['msgtype'] == 'm.text':
             return str(self.session.message['content']['body'])
         if not text_only and 'format' in self.session.message['content']:
             return str(self.session.message['content']['formatted_body'])
         return ''
 
     async def toMessageChain(self):
-        lst = []
-        if self.session.message.photo:
-            file = await bot.get_file(self.session.message.photo[-1]['file_id'])
-            lst.append(Image(nio.Api.mxc_to_http(file)))
-        if self.session.message.caption:
-            lst.append(Plain(self.session.message.caption))
-        if self.session.message.text:
-            lst.append(Plain(self.session.message.text))
-        return MessageChain(lst)
+        content = self.session.message['content']
+        msgtype = content['msgtype']
+        match msgtype:
+            case 'm.text':
+                text = str(content['body'])
+                if self.target.replyId is not None:
+                    # redact the fallback line for rich reply
+                    # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                    text = ''.join(text.splitlines(keepends=True)[2:])
+                    pass
+                return MessageChain(Plain(text.strip()))
+            case 'm.image':
+                url = str(content['url'])
+                return MessageChain(Image(await bot.mxc_to_http(url)))
+        Logger.error(f"Got unknown msgtype: {msgtype}")
+        return MessageChain([])
 
     async def delete(self):
         try:
