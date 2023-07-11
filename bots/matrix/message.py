@@ -72,16 +72,32 @@ class MessageSession(MS):
                 for xs in split:
                     path = await xs.get()
                     with open(path, 'rb') as image:
+                        filename = os.path.basename(path)
+                        filesize = os.path.getsize(path)
                         (contentType, contentEncoding) = mimetypes.guess_type(path)
                         if contentType is None or contentEncoding is None:
                             contentType = 'image'
                             contentEncoding = 'png'
-                        bot.upload(
+                        mimetype = f"{contentType}/{contentEncoding}"
+
+                        (upload, upload_encryption) = await bot.upload(
                             image,
-                            content_type=f"{contentType}/{contentEncoding}",
-                            filename=os.path.basename(path),
+                            content_type=mimetype,
+                            filename=filename,
                             encrypt=False,
-                            filesize=os.path.getsize(path))
+                            filesize=filesize)
+                        Logger.info(
+                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}")
+                        # todo: provide more image info
+                        content = {
+                            'msgtype': 'm.image',
+                            'url': upload.content_uri,
+                            'body': filename,
+                            'info': {
+                                'size': filesize,
+                                'mimetype': mimetype,
+                            }
+                        }
                         Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(xs.__dict__)}')
             elif isinstance(x, Voice):
                 # todo voice support
