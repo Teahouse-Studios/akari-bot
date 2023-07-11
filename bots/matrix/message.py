@@ -36,7 +36,7 @@ class FinishedSession(FinS):
 class MessageSession(MS):
     class Feature:
         image = True
-        voice = False
+        voice = True
         embed = False
         forward = False
         delete = True
@@ -100,8 +100,35 @@ class MessageSession(MS):
                         }
                         Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(xs.__dict__)}')
             elif isinstance(x, Voice):
-                # todo voice support
-                pass
+                path = x.path
+                filename = os.path.basename(path)
+                filesize = os.path.getsize(path)
+                (contentType, contentEncoding) = mimetypes.guess_type(path)
+                if contentType is None or contentEncoding is None:
+                    contentType = 'audio'
+                    contentEncoding = 'ogg'
+                mimetype = f"{contentType}/{contentEncoding}"
+
+                with open(path, 'rb') as audio:
+                    (upload, upload_encryption) = await bot.upload(
+                        audio,
+                        content_type=mimetype,
+                        filename=filename,
+                        encrypt=False,
+                        filesize=filesize)
+                Logger.info(
+                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}")
+                # todo: provide audio duration info
+                content = {
+                    'msgtype': 'm.audio',
+                    'url': upload.content_uri,
+                    'body': filename,
+                    'info': {
+                        'size': filesize,
+                        'mimetype': mimetype,
+                    }
+                }
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
 
             if replyTo:
                 # rich reply
