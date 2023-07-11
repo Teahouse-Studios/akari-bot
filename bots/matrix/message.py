@@ -183,6 +183,9 @@ class MessageSession(MS):
             case 'm.image':
                 url = str(content['url'])
                 return MessageChain(Image(await bot.mxc_to_http(url)))
+            case 'm.audio':
+                url = str(content['url'])
+                return MessageChain(Voice(await bot.mxc_to_http(url)))
         Logger.error(f"Got unknown msgtype: {msgtype}")
         return MessageChain([])
 
