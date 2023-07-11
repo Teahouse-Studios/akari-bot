@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession, dices, dc='0'):
     await msg.finish(await GenerateMessage(msg, dices, int(times), int(dc)))
 
 
-@dice.regex(r"[扔|投|掷|丢]([0-9]*)?个([0-9]*面)?骰子?([0-9]*次)?", desc="{dice.help.regex.desc}")
+@dice.regex(r"[扔投掷擲丢]([0-9]*)?个([0-9]*面)?骰子?([0-9]*次)?", desc="{dice.help.regex.desc}")
 async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     diceType = groups[1][:-1] if groups[1] else '6'
