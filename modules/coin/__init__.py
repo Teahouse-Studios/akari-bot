@@ -6,8 +6,8 @@ from core.component import module
 from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = int(Config('coin_limit'))
-FACE_UP_RATE = float(Config('coin_faceup_rate'))  # n/100
-FACE_DOWN_RATE = float(Config('coin_facedown_rate'))
+FACE_UP_RATE = int(Config('coin_faceup_rate'))  # n/10000
+FACE_DOWN_RATE = int(Config('coin_facedown_rate'))
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
@@ -37,7 +37,7 @@ async def _(message: Bot.MessageSession):
 
 
 async def flipCoins(count: int, msg):
-    if FACE_UP_RATE + FACE_DOWN_RATE > 100 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
+    if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
         raise OverflowError(msg.locale.t("coin.message.error.config"))
     if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.out_of_range", max=count_max)
