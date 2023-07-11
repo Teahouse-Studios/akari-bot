@@ -108,7 +108,7 @@ class MessageSession(MS):
             return True
         # https://spec.matrix.org/v1.7/client-server-api/#permissions
         powerLevels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
-        level = powerLevels['users'][self.session.sender]
+        level = powerLevels.content['users'][self.session.sender]
         if level is not None and level >= 50:
             return True
         return False
