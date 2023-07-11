@@ -96,7 +96,7 @@ class MessageSession(MS):
         msgIds = []
         for resp in send:
             msgIds.append(f'{resp.room_id}|{resp.event_id}')
-        return FinishedSession(self, msgIds, send)
+        return FinishedSession(self, msgIds, msgIds)
 
     async def checkPermission(self):
         if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
