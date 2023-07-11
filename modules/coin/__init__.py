@@ -46,7 +46,7 @@ async def flipCoins(count: int, msg):
         return msg.locale.t("coin.message.error.nocoin")
     if count < 0:
         return msg.locale.t("coin.message.error.amount")
-    if faceup_rate + facedown_rate > 10000 or faceup_rate < 0 or facedown_rate < 0 or coin_limit <= 0:
+    if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
         raise OverflowError(msg.locale.t("coin.message.error.config"))
     faceUp = 0
     faceDown = 0
