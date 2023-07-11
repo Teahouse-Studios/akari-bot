@@ -129,8 +129,8 @@ class MessageSession(MS):
                 if self.target.replyId is not None:
                     # redact the fallback line for rich reply
                     # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
-                    text = ''.join(text.splitlines(keepends=True)[2:])
-                    pass
+                    while text.startswith('> '):
+                        text = ''.join(text.splitlines(keepends=True)[1:])
                 return MessageChain(Plain(text.strip()))
             case 'm.image':
                 url = str(content['url'])
