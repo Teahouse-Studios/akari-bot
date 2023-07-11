@@ -7,7 +7,7 @@
     "random.help.option.password.s": "在随机字符串中使用特殊符号。",
     "random.help.option.password.u": "在随机字符串中使用大写字母。",
     "random.help.shuffle": "Shuffle the order of a given set.",
-    "random.help.string": "生成随机字符串，默认为字母和数字组合。",
+    "random.help.password": "生成随机字符串，默认为字母和数字组合。",
     "random.help.uuid": "Generate random UUID (v4).",
     "random.message.password.error.invalid": "发生错误：长度必须为小于 100 的正整数。"
 }
