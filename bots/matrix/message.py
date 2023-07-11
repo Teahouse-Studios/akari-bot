@@ -1,8 +1,11 @@
+import asyncio
 import mimetypes
 import os
 import re
 import traceback
 from typing import List, Union
+
+from pynvim import ErrorResponse
 
 from bots.matrix.client import bot
 from config import Config
@@ -149,7 +152,7 @@ class MessageSession(MS):
         return await self.checkNativePermission()
 
     async def checkNativePermission(self):
-        if self.session.target.startswith('@'):
+        if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
         # https://spec.matrix.org/v1.7/client-server-api/#permissions
         powerLevels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
@@ -213,7 +216,22 @@ class FetchedSession(FS):
                               senderFrom=targetFrom,
                               senderName='',
                               clientName='Matrix', messageId=None, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
+        roomId: str = targetId
+        if targetId.startswith('@'):
+            # find private messaging room
+            async def findPrivateRoom() -> str:
+                for room in bot.rooms:
+                    room = bot.rooms[room]
+                    if room.join_rule == 'invite' and room.member_count == 2:
+                        resp = await bot.room_get_state_event(room.room_id, 'm.room.member', targetId)
+                        if resp is ErrorResponse:
+                            pass
+                        elif resp.content['membership'] == 'join':
+                            return room.room_id
+                Logger.info(f"Could not find any exist private room for {targetId}, trying to create one")
+                return None
+            roomId = asyncio.run(findPrivateRoom())
+        self.session = Session(message=False, target=roomId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
 
