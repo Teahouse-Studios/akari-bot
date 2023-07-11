@@ -40,4 +40,4 @@ async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     diceType = groups[1][:-1] if groups[1] else '6'
     rollTime = groups[2][:-1] if groups[2] else '1'
-    await message.finish(await GenerateMessage(message, f'{groups[0]}D{diceType}', rollTime, 0))
+    await message.finish(await GenerateMessage(message, f'{groups[0]}D{diceType}', int(rollTime), 0))
