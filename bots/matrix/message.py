@@ -1,3 +1,4 @@
+import os
 import re
 import traceback
 from typing import List, Union
@@ -22,8 +23,11 @@ class FinishedSession(FinS):
         用于删除这条消息。
         """
         try:
-            for x in self.result:
-                await x.delete()
+            for x in self.messageId:
+                x = str(x).split('|', 2)
+                room_id = x[0]
+                event_id = x[1]
+                await bot.room_redact(room_id, event_id)
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -44,51 +48,54 @@ class MessageSession(MS):
         if not msgchain.is_safe and not disable_secret_check:
             return await self.sendMessage(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(msgchain)
-        count = 0
-        send = []
+        send: list[nio.RoomSendResponse] = []
         for x in msgchain.asSendable(embed=False):
+            replyTo = None
+            if quote and len(send) == 0:
+                replyTo = self.target.messageId
+
             if isinstance(x, Plain):
-                send_ = await bot.send_message(self.session.target, x.text,
-                                               reply_to_message_id=self.session.message.message_id if quote
-                                               and count == 0 and self.session.message else None)
+                content = {
+                    'msgtype': 'm.notice',
+                    'body': x.text
+                }
+                if replyTo:
+                    # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                    # todo: standardize fallback for m.emote, m.image, m.video, m.audio, and m.file
+                    content['body'] = f"> <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
-                send.append(send_)
-                count += 1
             elif isinstance(x, Image):
+                split = [x]
                 if allow_split_image:
                     split = await image_split(x)
-                    for xs in split:
-                        with open(await xs.get(), 'rb') as image:
-                            send_ = await bot.send_photo(self.session.target, image,
-                                                         reply_to_message_id=self.session.message.message_id
-                                                         if quote
-                                                         and count == 0
-                                                         and self.session.message else None)
-                            Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(xs.__dict__)}')
-                            send.append(send_)
-                            count += 1
-                else:
-                    with open(await x.get(), 'rb') as image:
-                        send_ = await bot.send_photo(self.session.target, image,
-                                                     reply_to_message_id=self.session.message.message_id
-                                                     if quote
-                                                     and count == 0
-                                                     and self.session.message else None)
-                        Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
-                        send.append(send_)
-                        count += 1
+                for xs in split:
+                    path = await xs.get()
+                    with open(path, 'rb') as image:
+                        bot.upload(
+                            image,
+                            content_type="image/png",
+                            filename=os.path.basename(path),
+                            encrypt=False,
+                            filesize=os.path.getsize(path))
+                        Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(xs.__dict__)}')
             elif isinstance(x, Voice):
-                with open(x.path, 'rb') as voice:
-                    send_ = await bot.send_audio(self.session.target, voice,
-                                                 reply_to_message_id=self.session.message.message_id if quote
-                                                 and count == 0 and self.session.message else None)
-                    Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
-                    send.append(send_)
-                    count += 1
+                # todo voice support
+                pass
+
+            if replyTo:
+                # rich reply
+                content['m.relates_to'] = {
+                    'm.in_reply_to': {
+                        'event_id': replyTo
+                    }
+                }
+            # todo https://github.com/poljar/matrix-nio/pull/417
+            resp: nio.RoomSendResponse = await bot.room_send(self.session.target, 'm.room.message', content)
+            send.append(resp)
 
         msgIds = []
-        for x in send:
-            msgIds.append(x.message_id)
+        for resp in send:
+            msgIds.append(f'{resp.room_id}|{resp.event_id}')
         return FinishedSession(self, msgIds, send)
 
     async def checkPermission(self):
@@ -155,7 +162,7 @@ class FetchedSession(FS):
                               targetFrom=targetFrom,
                               senderFrom=targetFrom,
                               senderName='',
-                              clientName='Matrix', messageId='', replyId=None)
+                              clientName='Matrix', messageId=None, replyId=None)
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
