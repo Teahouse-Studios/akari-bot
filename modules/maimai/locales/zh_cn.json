@@ -38,9 +38,11 @@
     "maimai.message.plate.greater_13p.complete": "您已完成所有等级大于 13+ 的曲目。",
     "maimai.message.plate.greater_13p.last": "剩余等级大于 13+ 的曲目：",
     "maimai.message.plate.last": "剩余曲目：",
+    "maimai.message.plate.plate_not_found": "名牌板不存在，请检查输入。",
     "maimai.message.plate.remaster": "，\nRe:MASTER 剩余 ${song_remain_remaster} 首",
     "maimai.message.process": "您还有 ${song_remain} 首 ${process} 级曲目没有达成 ${goal}。",
     "maimai.message.process.completed": "您已达成 ${process} 级曲目全谱面 ${goal}。",
+    "maimai.message.process.error.goal_invalid": "发生错误：无效的目标评级，请检查输入。",
     "maimai.message.process.error.level_invalid": "发生错误：无效的等级，请检查输入。",
     "maimai.message.process.last": "您的 ${process} 级歌曲全谱面 ${goal} 剩余曲目如下：",
     "maimai.message.process.less_than_8": "歌曲等级必须大于 8 级。",
@@ -55,7 +57,5 @@
     "maimai.message.song.prompt": "以下是可能的结果：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n谱师：${charter}",
     "maimai.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
-    "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。",
-    "maimai.message.plate.not_found": "名牌板不存在，请检查输入。",
-    "maimai.message.process.error.goal_invalid": "发生错误：无效的目标评级，请检查输入。"
+    "maimai.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。"
 }
