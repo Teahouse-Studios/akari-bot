@@ -228,7 +228,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
 
 
-@petal.handle('modify <petal>')
+@petal.handle('modify <petal>', required_admin=True)
 async def _(msg: Bot.MessageSession):
     petal = msg.parsed_msg['<petal>']
     msg.data.modify_petal(int(petal))

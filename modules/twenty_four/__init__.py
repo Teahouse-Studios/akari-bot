@@ -51,7 +51,7 @@ def is_valid(expression):
     return True
 
 
-def has_solution(numbers):
+async def has_solution(numbers):
     permutations = list(itertools.permutations(numbers))
     operators = ['+', '-', '*', '/']
     expressions = list(itertools.product(operators, repeat=3))
@@ -99,7 +99,7 @@ async def _(msg: Bot.MessageSession):
     play_state.update({msg.target.targetId: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
-    has_solution_flag = has_solution(numbers)
+    has_solution_flag = await has_solution(numbers)
 
     answer = await msg.waitNextMessage(msg.locale.t('twenty_four.message', numbers=numbers))
     expression = answer.asDisplay(text_only=True)
