@@ -1,3 +1,4 @@
+import mimetypes
 import os
 import re
 import traceback
@@ -71,9 +72,13 @@ class MessageSession(MS):
                 for xs in split:
                     path = await xs.get()
                     with open(path, 'rb') as image:
+                        (contentType, contentEncoding) = mimetypes.guess_type(path)
+                        if contentType is None or contentEncoding is None:
+                            contentType = 'image'
+                            contentEncoding = 'png'
                         bot.upload(
                             image,
-                            content_type="image/png",
+                            content_type=f"{contentType}/{contentEncoding}",
                             filename=os.path.basename(path),
                             encrypt=False,
                             filesize=os.path.getsize(path))
