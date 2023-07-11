@@ -5,8 +5,6 @@ import re
 import traceback
 from typing import List, Union
 
-from pynvim import ErrorResponse
-
 from bots.matrix.client import bot
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
@@ -224,7 +222,7 @@ class FetchedSession(FS):
                     room = bot.rooms[room]
                     if room.join_rule == 'invite' and room.member_count == 2:
                         resp = await bot.room_get_state_event(room.room_id, 'm.room.member', targetId)
-                        if resp is ErrorResponse:
+                        if resp is nio.ErrorResponse:
                             pass
                         elif resp.content['membership'] == 'join':
                             return room.room_id
