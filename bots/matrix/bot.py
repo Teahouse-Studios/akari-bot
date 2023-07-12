@@ -66,7 +66,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
                                  messageId=event.event_id,
                                  replyId=replyId),
                          Session(message=event.source, target=room.room_id, sender=event.sender))
-    await parser(msg)
+    asyncio.create_task(parser(msg))
 
 
 async def start():
