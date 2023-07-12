@@ -245,6 +245,8 @@ async def config_modules(msg: Bot.MessageSession):
                             unloaded_list = []
                         unloaded_list.append(module_)
                         CFG.write('unloaded_modules', unloaded_list)
+                else:
+                    await msg.finish()
 
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
