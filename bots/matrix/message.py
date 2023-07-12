@@ -172,6 +172,8 @@ class MessageSession(MS):
     async def toMessageChain(self):
         content = self.session.message['content']
         msgtype = content['msgtype']
+        if msgtype == 'm.emote':
+            msgtype = 'm.text'
         match msgtype:
             case 'm.text':
                 text = str(content['body'])
