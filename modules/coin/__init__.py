@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flipCoins(amount, msg))
 
 
-@coin.regex(r"[丢|抛]([^个|個|枚]*)?[个|個|枚]?硬[币|幣]", desc='{coin.help.regex.desc}')
+@coin.regex(r"[丢抛]([^个|個|枚]*)?[个個枚]?硬[币幣]", desc='{coin.help.regex.desc}')
 async def _(message: Bot.MessageSession):
     groups = message.matched_msg.groups()
     count = groups[0] if groups[0] else '1'
@@ -37,25 +37,22 @@ async def _(message: Bot.MessageSession):
 
 
 async def flipCoins(count: int, msg):
-    count_max = int(MAX_COIN_NUM)
-    faceup_rate = int(FACE_UP_RATE)
-    facedown_rate = int(FACE_DOWN_RATE)
-    if count > count_max:
+    if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
+        raise OverflowError(msg.locale.t("coin.message.error.config"))
+    if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.out_of_range", max=count_max)
     if count == 0:
         return msg.locale.t("coin.message.error.nocoin")
     if count < 0:
         return msg.locale.t("coin.message.error.amount")
-    if faceup_rate + facedown_rate > 10000 or faceup_rate < 0 or facedown_rate < 0:
-        raise OverflowError(msg.locale.t("coin.message.error.rate"))
     faceUp = 0
     faceDown = 0
     stand = 0
     for i in range(count):
         randnum = secrets.randbelow(10000)
-        if randnum < faceup_rate:
+        if randnum < FACE_UP_RATE:
             faceUp += 1
-        elif randnum < faceup_rate + facedown_rate:
+        elif randnum < FACE_UP_RATE + FACE_DOWN_RATE:
             faceDown += 1
         else:
             stand += 1

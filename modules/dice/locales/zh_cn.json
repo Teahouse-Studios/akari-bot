@@ -1,5 +1,5 @@
 {
-    "dice.help": "投掷指定骰子,可指定投骰次数与 dc 判断判定。",
+    "dice.help": "投掷指定骰子，可指定投骰次数与 dc 判断判定。",
     "dice.help.desc": "随机骰子。",
     "dice.help.option.dc": "在每一次投掷输出结果时进行判定，若结果大于 dc 则判定为成功，否则判定失败。",
     "dice.help.option.klx": "表示输出其最小的 x 个骰子点数之和。",
@@ -10,7 +10,7 @@
     "dice.help.option.polynomial": "格式为“[<N>#][<m>]d<n>[k(l)<x>][±<y>]...”，如“10d4-2d20”会输出 10 个 4 面骰所有点数之和减去 2 个 20 面骰点数之和。",
     "dice.help.option.polynomial.title": "多项式",
     "dice.help.option.y": "多项式中可以是整数（即调节值），如“d20+5”会输出 1 个 20 面骰的点数加上 5 的结果。",
-    "dice.help.regex.desc": "(扔|投|掷|丢)<m>个[<n>面]骰子 随机骰子",
+    "dice.help.regex.desc": "(扔|投|掷|丢)<m>个[<n>面]骰子[<N>次] 投掷指定骰子",
     "dice.message.count.too_long": "数量过大，已省略 ${count} 个数据。",
     "dice.message.dc.check": "▷ 判定成功数量：${success}  判定失败数量：${failed}",
     "dice.message.dc.failed": "，判定失败！",
@@ -37,5 +37,6 @@
     "dice.message.error.value.too_long": "骰子多项式项数超过限制。",
     "dice.message.output": "你掷得的结果是：",
     "dice.message.output.too_long": "数量过大，已省略 ${length} 个数据。",
-    "dice.message.too_long": "输出过长……"
+    "dice.message.too_long": "输出过长……",
+    "dice.message.error.config": "骰子配置发生错误，请检查配置文件。"
 }
