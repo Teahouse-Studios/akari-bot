@@ -38,7 +38,7 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
         if 'prev_content' in resp.__dict__ and 'is_direct' in resp.__dict__[
                 'prev_content'] and resp.__dict__['prev_content']['is_direct']:
             isDirect = True
-    if isDirect and room.member_count == 1:
+    if isDirect and room.member_count == 1 and event.membership == 'leave':
         resp = await bot.room_leave(room.room_id)
         if resp is nio.ErrorResponse:
             Logger.error(f"Error leaving empty room {room.room_id}: {str(resp)}")
