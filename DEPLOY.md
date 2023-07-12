@@ -191,6 +191,28 @@ servers:
 
 `kook_token =` - 填写你获取到的机器人 Token。
 
+### Matrix
+
+你需要自行完成账号注册与登陆。
+
+`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）
+
+`matrix_user =` - 填写机器人的[用户ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）
+
+`matrix_token =` - 填写机器人任意设备的 Access Token
+
+对于 Element 及其分支（如 SchindiChat），Access Token 可以从“所有设置”->“帮助及关于”->“高级”->“访问令牌”中获取。
+
+对于 Cinny，Access Token 可以从浏览器的的 localStorage 中提取（参考 [cinnyapp/cinny#938](https://github.com/cinnyapp/cinny/issues/938)）.
+
+对于没有合适的客户端的用户（？），您也可以使用以下命令进行密码登陆（但仍需手动完成后续的[设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification)、[交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing)和[服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups)恢复等流程）：
+
+```bash
+curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
+```
+
+目前，由于libolm在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
+
 ## 运行平台机器人
 
 ### Windows
