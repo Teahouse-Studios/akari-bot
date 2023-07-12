@@ -231,11 +231,12 @@ class FetchedSession(FS):
             # find private messaging room
             for room in bot.rooms:
                 room = bot.rooms[room]
-                if room.join_rule == 'invite' and room.member_count == 2:
+                if room.join_rule == 'invite' and ((room.member_count == 2 and targetId in room.users)
+                                                   or (room.member_count == 1 and targetId in room.invited_users)):
                     resp = await bot.room_get_state_event(room.room_id, 'm.room.member', targetId)
                     if resp is nio.ErrorResponse:
                         pass
-                    elif resp.content['membership'] == 'join':
+                    elif resp.content['membership'] == 'join' or resp.content['membership'] == 'leave':
                         self.session.target = room.room_id
                         return
             Logger.info(f"Could not find any exist private room for {targetId}, trying to create one")
