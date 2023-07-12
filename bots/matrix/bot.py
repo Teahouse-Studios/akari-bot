@@ -23,9 +23,27 @@ async def on_sync(resp: nio.SyncResponse):
 
 
 async def on_invite(room: nio.MatrixRoom, event: nio.InviteEvent):
-    Logger.info(f"Received Matrix room invitation for {room.room_id} ({room.name}) from {event.sender}")
+    Logger.info(f"Received room invitation for {room.room_id} ({room.name}) from {event.sender}")
     await bot.join(room.room_id)
-    Logger.info(f"Joined Matrix room {room.room_id}")
+    Logger.info(f"Joined room {room.room_id}")
+
+
+async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
+    Logger.info(f"Received m.room.member, {event.sender} : {event.prev_membership} -> {event.membership}")
+    if event.sender == client.user:
+        pass
+    isDirect = (room.member_count == 1 or room.member_count == 2) and room.join_rule == 'invite'
+    if not isDirect:
+        resp = await bot.room_get_state_event(room.room_id, 'm.room.member', client.user)
+        if 'prev_content' in resp.__dict__ and 'is_direct' in resp.__dict__[
+                'prev_content'] and resp.__dict__['prev_content']['is_direct']:
+            isDirect = True
+    if isDirect and room.member_count == 1:
+        resp = await bot.room_leave(room.room_id)
+        if resp is nio.ErrorResponse:
+            Logger.error(f"Error leaving empty room {room.room_id}: {str(resp)}")
+        else:
+            Logger.info(f"Left empty room {room.room_id}")
 
 
 async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
@@ -66,6 +84,7 @@ async def start():
 
     bot.add_response_callback(on_sync, nio.SyncResponse)
     bot.add_event_callback(on_invite, nio.InviteEvent)
+    bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     bot.add_event_callback(on_message, nio.RoomMessageFormatted)
 
     await init_async()
