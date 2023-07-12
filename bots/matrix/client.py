@@ -1,5 +1,6 @@
 import os
 from nio import AsyncClient, AsyncClientConfig
+import urllib3
 
 from config import Config
 from core.logger import Logger
@@ -22,6 +23,7 @@ store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
 if homeserver and user and token:
     if homeserver.endswith('/'):
         Logger.warn(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error")
+    homeserver_host = urllib3.util.parse_url(homeserver).host
     bot: AsyncClient = AsyncClient(homeserver,
                                    user,
                                    device_id='AkariBot',
