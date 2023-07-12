@@ -83,6 +83,7 @@ async def get_rank(msg, payload):
     rank_data = await get_url(url, 200, fmt='json')
     sorted_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)
 
+    rating = None
     rank = None
     total_rating = 0
     total_rank = len(sorted_data)
@@ -93,7 +94,7 @@ async def get_rank(msg, payload):
             rating = scoreboard['ra']
         total_rating += scoreboard['ra']
 
-    if rank is None:
+    if not rank:
         rank = total_rank
 
     average_rating = total_rating / total_rank
@@ -103,9 +104,13 @@ async def get_rank(msg, payload):
     formatted_average_rating = "{:.4f}".format(average_rating)
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
-    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
+    if rating:
+        await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
                                   rating=rating, rank=rank, average_rating=formatted_average_rating,
                                   surpassing_rate=formatted_surpassing_rate))
+    else:
+        await msg.finish(msg.locale.t('maimai.message.rank.not_found', time=time, total_rank=total_rank, user=username,
+                                  average_rating=formatted_average_rating))
 
 
 async def get_player_score(msg, payload, input_id):
