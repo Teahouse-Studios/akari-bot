@@ -220,31 +220,32 @@ class FetchedSession(FS):
                               senderFrom=targetFrom,
                               senderName='',
                               clientName='Matrix', messageId=None, replyId=None)
-        roomId: str = targetId
+        self.session = Session(message=False, target=targetId, sender=targetId)
+        self.parent = MessageSession(self.target, self.session)
+
+    async def _resolve_matrix_room_(self):
+        targetId: str = self.session.target
         if targetId.startswith('@'):
             # find private messaging room
-            async def findPrivateRoom() -> str:
-                for room in bot.rooms:
-                    room = bot.rooms[room]
-                    if room.join_rule == 'invite' and room.member_count == 2:
-                        resp = await bot.room_get_state_event(room.room_id, 'm.room.member', targetId)
-                        if resp is nio.ErrorResponse:
-                            pass
-                        elif resp.content['membership'] == 'join':
-                            return room.room_id
-                Logger.info(f"Could not find any exist private room for {targetId}, trying to create one")
-                resp = await bot.room_create(visibility=nio.RoomVisibility.private,
-                                             is_direct=True,
-                                             preset=nio.RoomPreset.trusted_private_chat,
-                                             invite=[targetId],)
-                if resp is nio.ErrorResponse:
-                    pass
-                room = resp.room_id
-                Logger.info(f"Created private messaging room for {targetId}: {room}")
-                return room
-            roomId = asyncio.run(findPrivateRoom())
-        self.session = Session(message=False, target=roomId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
+            for room in bot.rooms:
+                room = bot.rooms[room]
+                if room.join_rule == 'invite' and room.member_count == 2:
+                    resp = await bot.room_get_state_event(room.room_id, 'm.room.member', targetId)
+                    if resp is nio.ErrorResponse:
+                        pass
+                    elif resp.content['membership'] == 'join':
+                        self.session.target = room.room_id
+                        return
+            Logger.info(f"Could not find any exist private room for {targetId}, trying to create one")
+            resp = await bot.room_create(visibility=nio.RoomVisibility.private,
+                                         is_direct=True,
+                                         preset=nio.RoomPreset.trusted_private_chat,
+                                         invite=[targetId],)
+            if resp is nio.ErrorResponse:
+                pass
+            room = resp.room_id
+            Logger.info(f"Created private messaging room for {targetId}: {room}")
+            self.session.target = room
 
 
 class FetchTarget(FT):
@@ -254,7 +255,9 @@ class FetchTarget(FT):
     async def fetch_target(targetId) -> Union[FetchedSession, bool]:
         matchChannel = re.match(r'^(Matrix)\|(.*)', targetId)
         if matchChannel:
-            return FetchedSession(matchChannel.group(1), matchChannel.group(2))
+            session = FetchedSession(matchChannel.group(1), matchChannel.group(2))
+            await session._resolve_matrix_room_()
+            return session
         else:
             return False
 
