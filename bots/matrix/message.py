@@ -195,14 +195,17 @@ class MessageSession(MS):
         except Exception:
             Logger.error(traceback.format_exc())
 
+    # https://spec.matrix.org/v1.7/client-server-api/#typing-notifications
     class Typing:
         def __init__(self, msg: MS):
             self.msg = msg
 
         async def __aenter__(self):
+            await bot.room_typing(self.msg.session.target, True)
             pass
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
+            await bot.room_typing(self.msg.session.target, False)
             pass
 
 
