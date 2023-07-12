@@ -40,6 +40,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     senderName = (await bot.get_displayname(event.sender)).displayname
     if event.source['content']['body'] == '~posttest':
         await FetchTarget.post_message('mcv_rss', 'Test batch send')
+        await FetchTarget.post_message(None, 'Test batch send PM', user_list=await FetchTarget.fetch_target_list(['Matrix|@xtexchooser:sakura.ci']))
 
     msg = MessageSession(MsgInfo(targetId=f'Matrix|{targetId}',
                                  senderId=f'Matrix|{event.sender}',
