@@ -38,6 +38,8 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     if 'm.relates_to' in event.source['content'] and 'm.in_reply_to' in event.source['content']['m.relates_to']:
         replyId = event.source['content']['m.relates_to']['m.in_reply_to']['event_id']
     senderName = (await bot.get_displayname(event.sender)).displayname
+    if event.source['content']['body'] == '~posttest':
+        await FetchTarget.post_message('mcv_rss', 'Test batch send')
 
     msg = MessageSession(MsgInfo(targetId=f'Matrix|{targetId}',
                                  senderId=f'Matrix|{event.sender}',
