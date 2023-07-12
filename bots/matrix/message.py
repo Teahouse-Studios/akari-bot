@@ -1,12 +1,11 @@
 import asyncio
-from http import client
 import mimetypes
 import os
 import re
 import traceback
 from typing import List, Union
 
-from bots.matrix.client import bot
+from bots.matrix.client import bot, homeserver_host
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
@@ -64,7 +63,7 @@ class MessageSession(MS):
                     # todo: standardize fallback for m.emote, m.image, m.video, m.audio, and m.file
                     content['body'] = f"> <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
                     content['format'] = 'org.matrix.custom.html'
-                    content['formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={client.homeserver_host}\">In reply to</a> <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br>{self.session.message['content']['body']}</blockquote></mx-reply>"
+                    content['formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={homeserver_host}\">In reply to</a> <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br>{self.session.message['content']['body']}</blockquote></mx-reply>"
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 split = [x]
