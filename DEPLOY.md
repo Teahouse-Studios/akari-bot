@@ -201,6 +201,8 @@ servers:
 
 `matrix_token =` - 填写机器人任意设备的 Access Token
 
+**获取完 Access Token 后，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。**
+
 对于 Element 及其分支（如 SchindiChat），Access Token 可以从“所有设置”->“帮助及关于”->“高级”->“访问令牌”中获取。
 
 对于 Cinny，Access Token 可以从浏览器的的 localStorage 中提取（参考 [cinnyapp/cinny#938](https://github.com/cinnyapp/cinny/issues/938)）.
