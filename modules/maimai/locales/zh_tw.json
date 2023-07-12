@@ -38,7 +38,7 @@
     "maimai.message.plate.greater_13p.complete": "您已完成所有等級大於 13+ 的曲目。",
     "maimai.message.plate.greater_13p.last": "剩餘等級大於 13+ 的曲目：",
     "maimai.message.plate.last": "剩餘曲目：",
-    "maimai.message.plate.plate_not_found": "名牌板不存在，请检查输入。",
+    "maimai.message.plate.plate_not_found": "名牌板不存在，請校對輸入。",
     "maimai.message.plate.remaster": "，Re:MASTER 剩餘 ${song_remain_remaster} 首",
     "maimai.message.process": "您還有 ${song_remain} 首 ${process} 級曲目沒有達成 ${goal}。",
     "maimai.message.process.completed": "您已達成 ${process} 級曲目全譜面 ${goal}。",
