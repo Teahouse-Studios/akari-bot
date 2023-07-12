@@ -227,7 +227,15 @@ class FetchedSession(FS):
                         elif resp.content['membership'] == 'join':
                             return room.room_id
                 Logger.info(f"Could not find any exist private room for {targetId}, trying to create one")
-                return None
+                resp = await bot.room_create(visibility=nio.RoomVisibility.private,
+                                             is_direct=True,
+                                             preset=nio.RoomPreset.trusted_private_chat,
+                                             invite=[targetId],)
+                if resp is nio.ErrorResponse:
+                    pass
+                room = resp.room_id
+                Logger.info(f"Created private messaging room for {targetId}: {room}")
+                return room
             roomId = asyncio.run(findPrivateRoom())
         self.session = Session(message=False, target=roomId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
