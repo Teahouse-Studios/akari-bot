@@ -92,6 +92,7 @@ async def start():
 
     Logger.info(f"starting sync loop")
     await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
+    Logger.error(f"sync loop stopped")
 
 if bot:
     asyncio.run(start())
