@@ -5,6 +5,8 @@
     "core.help.none": "（此模組沒有說明資訊）",
     "core.help.options": "參數：",
     "error": "發生錯誤：",
+    "error.config": "配置参数无效或未找到，请检查配置文件。",
+    "error.config.secret": "未找到 API 密钥，请检查配置文件。",
     "error.loader.load.failed": "載入模組中發生了以下錯誤，對應模組未載入：${err_msg}",
     "error.loader.load.success": "所有模組已正常載入。",
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
