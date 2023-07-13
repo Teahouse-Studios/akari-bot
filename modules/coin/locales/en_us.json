@@ -16,6 +16,5 @@
     "coin.message.mix.tail2": " ${tail} is/are tails",
     "coin.message.prompt": "You toss ${count} coin(s)",
     "coin.message.stand": "...\n...It is standing up!",
-    "coin.message.tail": "...\n... It is tails!",
-    "coin.message.error.config": "Coin probability error, please check your config."
+    "coin.message.tail": "...\n... It is tails!"
 }
