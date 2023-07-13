@@ -1,21 +1,17 @@
 import os
 import platform
-import time
-from datetime import datetime
-
 import psutil
-from cpuinfo import get_cpu_info
+import time
 
+from config import Config
 from core.builtins import Bot, PrivateAssets
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale
+from cpuinfo import get_cpu_info
 from database import BotDBUtil
+from datetime import datetime
 
-version = module('version',
-                 base=True,
-                 desc='{core.help.version}',
-                 developers=['OasisAkari', 'Dianliang233']
-                 )
+version = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
 
 @version.handle()
