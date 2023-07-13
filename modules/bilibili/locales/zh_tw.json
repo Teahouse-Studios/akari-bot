@@ -9,5 +9,5 @@
     "bilibili.message": "標題：${title}\n類型：${tname}\nUP 主：${owner}\n日期：${time}",
     "bilibili.message.detail": "標題：${title}${pages} | 類型：${tname}\nUP 主：${owner} | 追隨者：${fans}\n觀看：${view} | 彈幕：${danmaku} | 留言：${reply}\n喜歡：${like} | 投幣：${coin} | 收藏：${favorite} | 分享：${share}\n日期：${time}",
     "bilibili.message.error.invalid": "發生錯誤：影片編號無效，請校對輸入。",
-    "bilibili.message.not_found": "找不到對應的影片。"
+    "bilibili.message.not_found": "未找到對應的影片。"
 }

@@ -8,5 +8,5 @@
     "github.message.search.none": "搜尋成功，未找到結果。",
     "github.message.search.more_information": "另有 ${more_result} 條結果未顯示。",
     "github.message.search.not_found": "未找到儲存庫，請校對輸入。",
-    "github.message.user.not_found": "找不到使用者，請校對輸入。"
+    "github.message.user.not_found": "未找到使用者，請校對輸入。"
 }

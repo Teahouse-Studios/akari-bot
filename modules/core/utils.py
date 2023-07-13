@@ -30,11 +30,7 @@ async def bot_version(msg: Bot.MessageSession):
     await msg.finish(msgs, msgs)
 
 
-ping = module('ping',
-              base=True,
-              desc='{core.help.ping}',
-              developers=['OasisAkari']
-              )
+ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'] )
 
 started_time = datetime.now()
 
@@ -201,14 +197,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t('core.message.mute.enable') if msg.data.switch_mute() else msg.locale.t('core.message.mute.disable'))
 
 
-leave = module(
-    'leave',
-    developers=['OasisAkari'],
-    base=True,
-    required_admin=True,
-    available_for='QQ|Group',
-    alias='dismiss',
-    desc='{core.help.leave}')
+leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias='dismiss', desc='{core.help.leave}')
 
 
 @leave.handle()
@@ -218,18 +207,18 @@ async def _(msg: Bot.MessageSession):
         await msg.sendMessage(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
-
-petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
-               desc='{core.help.petal}')
-
-
-@petal.handle()
-async def _(msg: Bot.MessageSession):
-    await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
+if Config('openai_api_key'):
+    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
+                   desc='{core.help.petal}')
 
 
-@petal.handle('modify <petal>', required_admin=True)
-async def _(msg: Bot.MessageSession):
-    petal = msg.parsed_msg['<petal>']
-    msg.data.modify_petal(int(petal))
-    await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
+    @petal.handle()
+    async def _(msg: Bot.MessageSession):
+        await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
+
+
+    @petal.handle('modify <petal>', required_admin=True)
+    async def _(msg: Bot.MessageSession):
+        petal = msg.parsed_msg['<petal>']
+        msg.data.modify_petal(int(petal))
+        await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))

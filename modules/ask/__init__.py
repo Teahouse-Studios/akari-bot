@@ -5,6 +5,7 @@ from decimal import Decimal
 from PIL import Image as PILImage
 from langchain.callbacks import get_openai_callback
 
+from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool
@@ -30,6 +31,8 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 @a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$', desc='{ask.help}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.checkSuperUser()
+    if not Config('openai_api_key'):
+        raise Exception(msg.locale.t('error.config.secret'))
     if not is_superuser and msg.data.petal < 0:  # refuse
         raise NoReportException(msg.locale.t('petal_'))
     if hasattr(msg, 'parsed_msg'):
