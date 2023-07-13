@@ -5,6 +5,8 @@
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
     "error": "An error occurred: ",
+    "error.config": "配置参数无效或未找到，请检查配置文件。",
+    "error.config.secret": "未找到 API 密钥，请检查配置文件。",
     "error.loader.load.failed": "The following error(s) occurred during module loading and module(s) with error was/were not loaded: ${err_msg}",
     "error.loader.load.success": "Loaded all modules successfully.",
     "error.message.chain.empty": "The bot attempted to send an empty message chain. Please get in touch with the developers to solve this issue.",
