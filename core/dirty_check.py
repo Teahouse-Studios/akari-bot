@@ -38,10 +38,10 @@ def parse_data(result: dict):
             for itemDetail in itemResult['details']:
                 if 'contexts' in itemDetail:
                     for itemContext in itemDetail["contexts"]:
-                        content = re.sub(itemContext['context'], "<吃掉了>", content, flags=re.I)
+                        content = re.sub(itemContext['context'], Bot.MessageSession.locale.t("check.redacted"), content, flags=re.I)
                         status = False
                 else:
-                    content = "<全部吃掉了>"
+                    content = Bot.MessageSession.locale.t("check.redacted.all")
                     status = False
     return {'content': content, 'status': status, 'original': original_content}
 
@@ -160,6 +160,6 @@ async def check_bool(*text):
 
 async def rickroll():
     if Config("enable_rickroll"):
-        return Config("rickroll_url")
+        return Bot.MessageSession.locale.t("check.redacted.all")
     else:
-        return "<全部吃掉了>"
+        return Config("rickroll_url")

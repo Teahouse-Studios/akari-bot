@@ -15,6 +15,6 @@ async def newbie(msg: Bot.MessageSession, wiki_url):
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     g = f'{pageurl}\n{y}\n{msg.locale.t("wiki.message.utils.collapse")}'
-    if g.find("<吃掉了>") != -1 or g.find("<全部吃掉了>") != -1:
+    if g.find(msg.locale.t("check.redacted")) != -1 or g.find(msg.locale.t("check.redacted.all")) != -1:
         g += f'\n{msg.locale.t("wiki.message.utils.banned")}'
     return g
