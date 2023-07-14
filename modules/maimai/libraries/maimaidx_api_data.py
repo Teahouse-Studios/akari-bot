@@ -25,7 +25,7 @@ async def get_alias(msg, input, get_music=False):
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
-        msg.finish(msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0]))
     with open(file_path, 'r') as file:
         data = json.load(file)
 
