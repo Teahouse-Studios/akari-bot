@@ -1,5 +1,5 @@
 # https://toml.io/en/v1.0.0
-# Warning: TOML is not like Python. Do not use python syntax here.
+# Warning: TOML is not like Python. Do not use Python syntax here.
 # Example: Boolean values in TOML must be lowercase.
 
 [secret]
