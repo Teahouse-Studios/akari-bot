@@ -16,6 +16,5 @@
     "coin.message.mix.tail2": "…有 ${tail} 枚是反面",
     "coin.message.prompt": "你拋了 ${count} 枚硬幣",
     "coin.message.stand": "…\n…它立起來了！",
-    "coin.message.tail": "…\n…是反面！",
-    "coin.message.error.config": "硬幣配置發生錯誤，請檢查配置文件。"
+    "coin.message.tail": "…\n…是反面！"
 }

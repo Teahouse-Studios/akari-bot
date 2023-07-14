@@ -1,21 +1,17 @@
 import os
 import platform
-import time
-from datetime import datetime
-
 import psutil
-from cpuinfo import get_cpu_info
+import time
 
+from config import Config
 from core.builtins import Bot, PrivateAssets
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale
+from cpuinfo import get_cpu_info
 from database import BotDBUtil
+from datetime import datetime
 
-version = module('version',
-                 base=True,
-                 desc='{core.help.version}',
-                 developers=['OasisAkari', 'Dianliang233']
-                 )
+version = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
 
 @version.handle()
@@ -30,11 +26,7 @@ async def bot_version(msg: Bot.MessageSession):
     await msg.finish(msgs, msgs)
 
 
-ping = module('ping',
-              base=True,
-              desc='{core.help.ping}',
-              developers=['OasisAkari']
-              )
+ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'] )
 
 started_time = datetime.now()
 
@@ -201,14 +193,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t('core.message.mute.enable') if msg.data.switch_mute() else msg.locale.t('core.message.mute.disable'))
 
 
-leave = module(
-    'leave',
-    developers=['OasisAkari'],
-    base=True,
-    required_admin=True,
-    available_for='QQ|Group',
-    alias='dismiss',
-    desc='{core.help.leave}')
+leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias='dismiss', desc='{core.help.leave}')
 
 
 @leave.handle()
@@ -218,18 +203,18 @@ async def _(msg: Bot.MessageSession):
         await msg.sendMessage(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
-
-petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
-               desc='{core.help.petal}')
-
-
-@petal.handle()
-async def _(msg: Bot.MessageSession):
-    await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
+if Config('openai_api_key'):
+    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
+                   desc='{core.help.petal}')
 
 
-@petal.handle('modify <petal>', required_admin=True)
-async def _(msg: Bot.MessageSession):
-    petal = msg.parsed_msg['<petal>']
-    msg.data.modify_petal(int(petal))
-    await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
+    @petal.handle()
+    async def _(msg: Bot.MessageSession):
+        await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
+
+
+    @petal.handle('modify <petal>', required_admin=True)
+    async def _(msg: Bot.MessageSession):
+        petal = msg.parsed_msg['<petal>']
+        msg.data.modify_petal(int(petal))
+        await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))

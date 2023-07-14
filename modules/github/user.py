@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Url, ErrorMessage, Bot
 from core.utils.http import get_url
+from core.dirty_check import rickroll
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -38,7 +39,7 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
 
         is_dirty = await dirty_check(message, result['login']) or darkCheck(message)
         if is_dirty:
-            message = 'https://wdf.ink/6OUp'
+            message = await rickroll()
 
         await msg.finish(message)
     except ValueError as e:

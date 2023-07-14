@@ -46,7 +46,7 @@ mai_regex = module('maimai_regex',
                      alias='mai_regex', developers=['DoroWolf'], support_languages=['zh_cn', 'zh_tw'])
 
 
-@mai_regex.handle(re.compile(r"(.+)\s?是什([么麼])歌"), desc='{maimai.help.maimai_regex.song}')
+@mai_regex.handle(re.compile(r"(.+)\s?是什[么麼]歌"), desc='{maimai.help.maimai_regex.song}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name[:2].lower() == "id":
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
         if not music:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
-        sid_list = await get_alias(name, get_music=True)
+        sid_list = await get_alias(msg, name, get_music=True)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -79,16 +79,16 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))]) 
     
 
-@mai_regex.handle(re.compile(r"(\d+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
-    alias = await get_alias(sid)
+    alias = await get_alias(msg, sid)
     if len(alias) == 0:
-        await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
+        await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
     else:
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
@@ -133,15 +133,15 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai_regex.handle(re.compile(r".*\s?(M|m)aimai?\s?.*(什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
+@mai_regex.handle(re.compile(r".*\s?[Mm]aimai?\s?.*(什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
-@mai_regex.handle(re.compile(r"(.?)([極极将舞神者]舞?)([进進])度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
+@mai_regex.handle(re.compile(r"(.?)([極极将舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[3]
+    username = msg.matched_msg.groups()[2]
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender}
     else:
@@ -161,12 +161,12 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output.strip())
 
 
-@mai_regex.handle(re.compile(r"([0-9]+\+?)\s?(.+)([进進])度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
+@mai_regex.handle(re.compile(r"([0-9]+\+?)\s?(.+)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
 async def _(msg: Bot.MessageSession):
     goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[3]
+    username = msg.matched_msg.groups()[2]
     if username is None and msg.target.senderFrom == "QQ":
         payload = {'qq': msg.session.sender}
     else:

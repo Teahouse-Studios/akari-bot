@@ -3,7 +3,7 @@ from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover
+from modules.maimai.libraries.maimaidx_api_data import update_alias, get_alias, get_cover
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, get_score_list
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
 from .regex import *
@@ -138,14 +138,17 @@ async def _(msg: Bot.MessageSession, keyword: str):
 @mai.handle('alias <sid> {{maimai.help.alias}}')
 async def _(msg: Bot.MessageSession, sid: str):
     if not sid.isdigit():
-        await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+        if sid[:2].lower() == "id":
+            sid = id_or_alias[2:]
+        else:
+            await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
-    alias = await get_alias(sid)
+    alias = await get_alias(msg, sid)
     if len(alias) == 0:
-        await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
+        await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
     else:
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
@@ -169,7 +172,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = await get_alias(id_or_alias, get_music=True)
+        sid_list = await get_alias(msg, id_or_alias, get_music=True)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -335,7 +338,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = await get_alias(id_or_alias, get_music=True)
+        sid_list = await get_alias(msg, id_or_alias, get_music=True)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -398,6 +401,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
 @mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
 async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
+        if not sid.isdigit():
+            if sid[:2].lower() == "id":
+                sid = id_or_alias[2:]
+            else:
+                await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
         diff_index = get_diff(diff)
         music = (await total_list.get()).by_id(sid)
         chart = music['charts'][diff_index]
@@ -426,3 +434,11 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
                 b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
+
+
+@mai.command('update', required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    if await update_alias():
+        await msg.finish(msg.locale.t("phigros.message.update.success"))
+    else:
+        await msg.finish(msg.locale.t("phigros.message.update.failed"))
