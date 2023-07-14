@@ -8,7 +8,7 @@ from langchain.callbacks import get_openai_callback
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.dirty_check import check_bool
+from core.dirty_check import check_bool, rickroll
 from core.exceptions import NoReportException
 from .agent import agent_executor
 from .formatting import generate_latex, generate_code_snippet
@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
     else:
         question = msg.matched_msg[0]
     if await check_bool(question):
-        raise NoReportException('https://wdf.ink/6OUp')
+        raise NoReportException(await rickroll())
     with get_openai_callback() as cb:
         res = await agent_executor.arun(question)
         tokens = cb.total_tokens
@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession):
             chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
 
     if await check_bool(res):
-        raise NoReportException('https://wdf.ink/6OUp')
+        raise NoReportException(await rickroll())
     await msg.finish(chain)
 
 

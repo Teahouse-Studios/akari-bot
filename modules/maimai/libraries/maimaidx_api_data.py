@@ -1,7 +1,6 @@
 import ujson as json
 import os
 
-from core.builtins import ErrorMessage
 from core.utils.http import get_url, post_url
 from .maimaidx_music import get_cover_len5_id
 
