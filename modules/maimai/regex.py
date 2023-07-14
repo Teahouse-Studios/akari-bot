@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
         if not music:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
-        sid_list = await get_alias(name, get_music=True)
+        sid_list = await get_alias(msg, name, get_music=True)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -86,9 +86,9 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
-    alias = await get_alias(sid)
+    alias = await get_alias(msg, sid)
     if len(alias) == 0:
-        await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
+        await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
     else:
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)

@@ -143,9 +143,9 @@ async def _(msg: Bot.MessageSession, sid: str):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
-    alias = await get_alias(sid)
+    alias = await get_alias(msg, sid)
     if len(alias) == 0:
-        await msg.finish(msg.locale.t("maimai.message.alias_not_found"))
+        await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
     else:
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
@@ -169,7 +169,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = await get_alias(id_or_alias, get_music=True)
+        sid_list = await get_alias(msg, id_or_alias, get_music=True)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -335,7 +335,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = await get_alias(id_or_alias, get_music=True)
+        sid_list = await get_alias(msg, id_or_alias, get_music=True)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -426,3 +426,11 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
                 b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
+
+
+@mai.command('update', required_superuser=True)
+async def _(msg: Bot.MessageSession):
+    if await update_alias():
+        await msg.finish(msg.locale.t("phigros.message.update.success"))
+    else:
+        await msg.finish(msg.locale.t("phigros.message.update.failed"))

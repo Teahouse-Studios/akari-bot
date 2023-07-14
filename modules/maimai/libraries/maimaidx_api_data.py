@@ -5,9 +5,29 @@ from core.builtins import ErrorMessage
 from core.utils.http import get_url, post_url
 from .maimaidx_music import get_cover_len5_id
 
-async def get_alias(input, get_music=False):
-    url = "https://download.fanyu.site/maimai/alias.json"
-    data = await get_url(url, 200, fmt='json')
+assets_path = os.path.abspath('./assets/maimai')
+
+async def update_alias():
+    try:
+        url = "https://download.fanyu.site/maimai/alias_uc.json"
+        data = await get_url(url, 200, fmt='json')
+    except:
+        return False
+
+    file_path = os.path.join(assets_path, "mai_alias.json")
+    with open(file_path, 'w') as file:
+        json.dump(data, file)
+
+    return True
+
+
+async def get_alias(msg, input, get_music=False):
+    file_path = os.path.join(assets_path, "mai_alias.json")
+
+    if not os.path.exists(file_path):
+        msg.finish(msg.locale.t("maimai.message.alias.file_not_found", prefix=msg.prefixes[0]))
+    with open(file_path, 'r') as file:
+        data = json.load(file)
 
     result = []
     if get_music:
