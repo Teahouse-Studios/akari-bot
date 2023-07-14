@@ -138,7 +138,10 @@ async def _(msg: Bot.MessageSession, keyword: str):
 @mai.handle('alias <sid> {{maimai.help.alias}}')
 async def _(msg: Bot.MessageSession, sid: str):
     if not sid.isdigit():
-        await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+        if sid[:2].lower() == "id":
+            sid = id_or_alias[2:]
+        else:
+            await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -398,6 +401,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
 @mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
 async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
+        if not sid.isdigit():
+            if sid[:2].lower() == "id":
+                sid = id_or_alias[2:]
+            else:
+                await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
         diff_index = get_diff(diff)
         music = (await total_list.get()).by_id(sid)
         chart = music['charts'][diff_index]
