@@ -46,7 +46,7 @@ mai_regex = module('maimai_regex',
                      alias='mai_regex', developers=['DoroWolf'], support_languages=['zh_cn', 'zh_tw'])
 
 
-@mai_regex.handle(re.compile(r"(.+)\s?是什[么麼])"), desc='{maimai.help.maimai_regex.song}')
+@mai_regex.handle(re.compile(r"(.+)\s?是什[么麼]歌"), desc='{maimai.help.maimai_regex.song}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name[:2].lower() == "id":
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))]) 
     
 
-@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
@@ -104,23 +104,23 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))]) 
 
 
-@mai_regex.handle(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
+@mai_regex.handle(re.compile(r"(随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
             desc="{maimai.help.maimai_regex.random.filter}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         try:
-            if res.groups()[0] in ["dx", "DX"]:
+            if res.groups()[1] in ["dx", "DX"]:
                 tp = ["DX"]
-            elif res.groups()[0] in ["sd", "SD"] or res.groups()[0] in ["标准", "標準"]:
+            elif res.groups()[1] in ["sd", "SD"] or res.groups()[1] in ["标准", "標準"]:
                 tp = ["SD"]
             else:
                 tp = ["SD", "DX"]
-            level = res.groups()[2]
-            if res.groups()[1] == "":
+            level = res.groups()[3]
+            if res.groups()[2] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[1])],
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[2])],
                                                              type=tp)
             if len(music_data) == 0:
                 rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -133,7 +133,7 @@ async def _(msg: Bot.MessageSession):
 
 
 
-@mai_regex.handle(re.compile(r".*\s?[Mm]aimai?\s?.*(?:什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
+@mai_regex.handle(re.compile(r".*\s?[Mm]aimai?\s?.*(什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
