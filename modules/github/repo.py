@@ -4,6 +4,7 @@ import traceback
 from core.builtins import Bot
 from core.builtins import Image, Plain, Url, ErrorMessage
 from core.utils.http import get_url, download_to_cache
+from core.dirty_check import rickroll
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -53,7 +54,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
         is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
         if is_dirty:
-            message = 'https://wdf.ink/6OUp'
+            message = await rickroll()
             await msg.finish([Plain(message)])
         else:
             await msg.sendMessage([Plain(message)])

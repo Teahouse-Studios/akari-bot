@@ -22,7 +22,7 @@
     "maimai.help.search": "依據歌名（或一部分）搜尋歌曲。",
     "maimai.help.song": "查詢 Maimai 歌曲或譜面的訊息。",
     "maimai.message.alias": "${title} 的別名：",
-    "maimai.message.alias_not_found": "未找到符合要求的別名。",
+    "maimai.message.alias.alias_not_found": "未找到符合要求的別名。",
     "maimai.message.base": "以下為定數 ${rating} 的曲目列表：",
     "maimai.message.base.range": "以下為定數 ${rating}-${rating_max} 的曲目列表：",
     "maimai.message.chart_not_found": "未找到符合要求的譜面。",

@@ -37,6 +37,5 @@
     "dice.message.error.value.too_long": "骰子多項式項數超過限制。",
     "dice.message.output": "你掷得的結果是：",
     "dice.message.output.too_long": "數量過大，已省略 ${length} 個資料。",
-    "dice.message.too_long": "輸出過長……",
-    "dice.message.error.config": "骰子配置發生錯誤，請檢查配置文件。"
+    "dice.message.too_long": "輸出過長……"
 }

@@ -6,7 +6,7 @@ from config import Config
 from core.builtins import Bot
 from core.builtins.message import Image
 from core.component import module
-from core.dirty_check import check_bool
+from core.dirty_check import check_bool, rickroll
 from core.utils.http import download_to_cache, get_url
 
 web_render_local = Config('web_render_local')
@@ -31,7 +31,8 @@ async def _(msg: Bot.MessageSession, tweet: str):
         await msg.finish(msg.locale.t('tweet.message.not_found'))
     else:
         if await check_bool(res_json['pageProps']['tweet']['text'], res_json['pageProps']['tweet']['user']['name'], res_json['pageProps']['tweet']['user']['screen_name']):
-            await msg.finish('https://wdf.ink/6OUp')
+            message = await rickroll()
+            await msg.finish(message)
         else:
             css = '''
                 main {

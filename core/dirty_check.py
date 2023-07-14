@@ -14,7 +14,7 @@ import aiohttp
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
-from core.builtins import EnableDirtyWordCheck
+from core.builtins import Bot, EnableDirtyWordCheck
 from core.logger import Logger
 from database.local import DirtyWordCache
 
@@ -38,7 +38,7 @@ def parse_data(result: dict):
             for itemDetail in itemResult['details']:
                 if 'contexts' in itemDetail:
                     for itemContext in itemDetail["contexts"]:
-                        content = re.sub(itemContext['context'], '<吃掉了>', content, flags=re.I)
+                        content = re.sub(itemContext['context'], "<吃掉了>", content, flags=re.I)
                         status = False
                 else:
                     content = "<全部吃掉了>"
@@ -156,3 +156,10 @@ async def check_bool(*text):
         if not x['status']:
             return True
     return False
+
+
+async def rickroll():
+    if Config("enable_rickroll"):
+        return Config("rickroll_url")
+    else:
+        return "<全部吃掉了>"

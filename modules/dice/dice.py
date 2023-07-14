@@ -183,7 +183,7 @@ class Dice(DiceItemBase):
 
 async def GenerateMessage(msg, dices: str, times: int, dc: int):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0, MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
-        raise OverflowError(msg.locale.t("dice.message.error.config"))
+        raise OverflowError(msg.locale.t("error.config"))
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
         return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
