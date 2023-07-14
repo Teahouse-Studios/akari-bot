@@ -139,7 +139,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
 async def _(msg: Bot.MessageSession, sid: str):
     if not sid.isdigit():
         if sid[:2].lower() == "id":
-            sid = id_or_alias[2:]
+            sid = sid[2:]
         else:
             await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
     music = (await total_list.get()).by_id(sid)
@@ -336,7 +336,7 @@ async def _(msg: Bot.MessageSession):
 @mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
-        sid = id_or_alias[2:]
+        sid = sid[2:]
     else:
         sid_list = await get_alias(msg, id_or_alias, get_music=True)
         if len(sid_list) == 0:
@@ -403,7 +403,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
         if not sid.isdigit():
             if sid[:2].lower() == "id":
-                sid = id_or_alias[2:]
+                sid = sid[2:]
             else:
                 await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
         diff_index = get_diff(diff)
