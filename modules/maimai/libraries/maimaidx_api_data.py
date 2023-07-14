@@ -10,12 +10,12 @@ async def update_alias():
     try:
         url = "https://download.fanyu.site/maimai/alias_uc.json"
         data = await get_url(url, 200, fmt='json')
+
+        file_path = os.path.join(assets_path, "mai_alias.json")
+        with open(file_path, 'w') as file:
+            json.dump(data, file)
     except:
         return False
-
-    file_path = os.path.join(assets_path, "mai_alias.json")
-    with open(file_path, 'w') as file:
-        json.dump(data, file)
 
     return True
 
