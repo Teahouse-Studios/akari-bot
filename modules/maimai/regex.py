@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))]) 
     
 
-@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名"), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
