@@ -16,7 +16,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
                                   filter_name=x['filter'], result=x['result']))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
-    if y.find(msg.locale.t("check.redacted")) != -1 or y.find(msg.locale.t("check.redacted.all")) != -1:
+    if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:
         return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("wiki.message.utils.collapse")}\n{msg.locale.t("wiki.message.utils.banned")}'
     else:
         return f'{str(Url(pageurl))}\n{y}\n' + msg.locale.t("wiki.message.utils.collapse")
