@@ -425,9 +425,9 @@ _config = module('config', developers=['OasisAkari'], required_superuser=True, a
 @_config.handle('write <k> <v> [-s]')
 async def _(msg: Bot.MessageSession):
     value = msg.parsed_msg['<v>']
-    if value == 'True':
+    if value.lower() == 'true':
         value = True
-    elif value == 'False':
+    elif value.lower() == 'false':
         value = False
     elif value.isdigit():
         value = int(value)
