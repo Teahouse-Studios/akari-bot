@@ -13,6 +13,7 @@ coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 
 @coin.command('[<amount>] {{coin.help}}')
+@coin.handle()
 async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flipCoins(amount, msg))
 
