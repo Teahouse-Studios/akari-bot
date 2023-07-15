@@ -235,12 +235,20 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
         outputLine = remove_prefix(outputLine, '+')  # 移除多项式首个+
         outputLine += ' = ' + str(result)
         if dc != 0:
-            if result > dc:
-                outputLine += msg.locale.t('dice.message.dc.success')
-                successNum += 1
+            if msg.data.options.get('dice_dc_reversed'):
+                if result <= dc:
+                    outputLine += msg.locale.t('dice.message.dc.success')
+                    successNum += 1
+                else:
+                    outputLine += msg.locale.t('dice.message.dc.failed')
+                    failNum += 1
             else:
-                outputLine += msg.locale.t('dice.message.dc.failed')
-                failNum += 1
+                if result >= dc:
+                    outputLine += msg.locale.t('dice.message.dc.success')
+                    successNum += 1
+                else:
+                    outputLine += msg.locale.t('dice.message.dc.failed')
+                    failNum += 1
         output += f'\n{dices} = {outputLine}'
     if dc != 0 and times > 1:
         output += '\n' + msg.locale.t('dice.message.dc.check', success=str(successNum), failed=str(failNum))
