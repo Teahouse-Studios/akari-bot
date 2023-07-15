@@ -2,11 +2,11 @@ from langchain.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
 from .utils import to_async_func, AkariTool
 
-search = DuckDuckGoSearchAPIWrapper()
+ddg = DuckDuckGoSearchAPIWrapper()
 
 
 async def search(query: str):
-    return to_async_func(search.run)(query)
+    return await to_async_func(ddg.run)(query)
 
 search_tool = AkariTool.from_function(
     func=search,
