@@ -177,7 +177,7 @@ class Dice(DiceItemBase):
             result = diceResults[0]
         if len(output) > MAX_OUTPUT_LEN:
             output = session.locale.t("dice.message.too_long")
-        self.detail = output + f" {result} "
+        self.detail = output + f"{result} "
         self.result = result
 
 
