@@ -45,4 +45,4 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("dice.message.rule.disable"))
     else:
         msg.data.edit_option('dice_dc_reversed', True)
-        await msg.finish(msg.locale.t("wiki.message.rule.enable"))
+        await msg.finish(msg.locale.t("dice.message.rule.enable"))
