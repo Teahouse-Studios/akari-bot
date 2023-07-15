@@ -2,14 +2,7 @@ from core.builtins import Bot
 from core.component import module
 from .dice import GenerateMessage
 
-dice = module('dice', alias={'rd': 'dice',
-                             'd4': 'dice d4',
-                             'd6': 'dice d6',
-                             'd8': 'dice d8',
-                             'd10': 'dice d10',
-                             'd12': 'dice d12',
-                             'd20': 'dice d20',
-                             'd100': 'dice d100'}, developers=['Light-Beacon'], desc='{dice.help.desc}',)
+dice = module('dice', alias='rd', developers=['Light-Beacon'], desc='{dice.help.desc}',)
 
 
 @dice.command('<dices> [<dc>] {{dice.help}}',
@@ -41,3 +34,15 @@ async def _(message: Bot.MessageSession):
     diceType = groups[1][:-1] if groups[1] else '6'
     rollTime = groups[2][:-1] if groups[2] else '1'
     await message.finish(await GenerateMessage(message, f'{groups[0]}D{diceType}', int(rollTime), 0))
+
+
+@dice.handle('rule {{dice.help.rule}}', required_admin=True)
+async def _(msg: Bot.MessageSession):
+    dc_rule = msg.data.options.get('dice_dc_reversed')
+    
+    if dc_rule:
+        msg.data.edit_option('dice_dc_reversed', False)
+        await msg.finish(msg.locale.t("dice.message.rule.disable"))
+    else:
+        msg.data.edit_option('dice_dc_reversed', True)
+        await msg.finish(msg.locale.t("dice.message.rule.enable"))
