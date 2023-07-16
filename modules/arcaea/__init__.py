@@ -30,11 +30,11 @@ class WithErrCode(Exception):
 if api:
 
     @arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
-    async def _(msg: Bot.MessageSession, friend_code: int = None):
+    async def _(msg: Bot.MessageSession, friend_code: str = None):
         if not os.path.exists(assets_path):
             await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
         if friend_code is not None:
-            if len(str(friend_code)) != 9:
+            if len(friend_code) != 9:
                 await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
             query_code = friend_code
         else:
