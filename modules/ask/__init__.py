@@ -28,7 +28,7 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
 
 @a.command('<question> {{ask.help}}')
-@a.regex(r'^(?:ask|问)[\:：]? ?(.+?)[?？]$', desc='{ask.help}')
+@a.regex(r'^(?:ask|Ask|问|問)[\:：]\s?(.+?)[?？]$', desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.checkSuperUser()
     if not Config('openai_api_key'):

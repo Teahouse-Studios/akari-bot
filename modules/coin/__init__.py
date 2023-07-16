@@ -12,12 +12,8 @@ FACE_DOWN_RATE = int(Config('coin_facedown_rate'))
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 
-@coin.command('{{coin.help}}')
-async def _(msg: Bot.MessageSession):
-    await msg.finish(await flipCoins(1, msg))
-
-
 @coin.command('[<amount>] {{coin.help}}')
+@coin.handle()
 async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flipCoins(amount, msg))
 
