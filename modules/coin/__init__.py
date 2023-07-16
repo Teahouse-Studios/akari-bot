@@ -36,7 +36,7 @@ async def flipCoins(count: int, msg):
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
         raise OverflowError(msg.locale.t("error.config"))
     if count > MAX_COIN_NUM:
-        return msg.locale.t("coin.message.error.out_of_range", max=count_max)
+        return msg.locale.t("coin.message.error.out_of_range", max=MAX_COIN_NUM)
     if count == 0:
         return msg.locale.t("coin.message.error.nocoin")
     if count < 0:
@@ -53,6 +53,13 @@ async def flipCoins(count: int, msg):
         else:
             stand += 1
     head = msg.locale.t("coin.message.prompt", count=count)
+    if count == 1:
+        node = msg.locale.get_locale_node("coin.message.drop_places")
+        if node != None:
+            places = msg.locale.get_locale_node("coin.message.drop_places").childen
+            if len(places) > 0:
+                randindex = secrets.randbelow(len(places))
+                head += places.items[randindex].value
     if count == 1:
         if faceUp:
             return head + msg.locale.t("coin.message.head")

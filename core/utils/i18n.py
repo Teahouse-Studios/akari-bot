@@ -16,7 +16,7 @@ from .text import remove_suffix
 class LocaleNode():
     '''本地化树节点'''
     value: str
-    childen: Dict
+    childen: dict
     def __init__(self,v:str = None):
         self.value = v
         self.childen = {}
