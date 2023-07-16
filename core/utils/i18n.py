@@ -8,6 +8,8 @@ import ujson as json
 from config import Config
 from .text import remove_suffix
 
+from core.logger import Logger
+
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
@@ -22,28 +24,31 @@ class LocaleNode():
         self.childen = {}
     def qurey_node(self,path:str):
         '''查询本地化树节点'''
-        return self.qurey_node_by_list(path.split('.'))
+        return self._qurey_node(path.split('.'))
     def _qurey_node(self,path:list):
         '''通过路径队列查询本地化树节点'''
+        Logger.debug(f'qurey {path}')
+        for k in self.childen.keys():
+            Logger.debug(f'- {k}')
         if len(path) == 0:
-            return self.value
+            return self
         nxt_node = path[0]
-        if nxt_node in self.childen:
-            return self.childen[nxt_node]._qurey_node(list[1:])
+        if nxt_node in self.childen.keys():
+            return self.childen[nxt_node]._qurey_node(path[1:])
         else:
             return None
     def update_node(self,path:str,write_value:str):
         '''更新本地化树节点'''
-        return self._update_node(path,write_value)
-    def _update_node(self,path:str,write_value:str):
+        return self._update_node(path.split('.'),write_value)
+    def _update_node(self,path:list,write_value:str):
         '''通过路径队列更新本地化树节点'''
         if len(path) == 0:
             self.value = write_value
             return
         nxt_node = path[0]
-        if nxt_node not in self.childen:
-            self.childen.update(nxt_node,LocaleNode())
-        self.childen[nxt_node]._update_node(list[1:],write_value)
+        if nxt_node not in self.childen.keys():
+            self.childen[nxt_node] = LocaleNode()
+        self.childen[nxt_node]._update_node(path[1:],write_value)
 
 locale_root = LocaleNode()
 
@@ -83,8 +88,10 @@ def load_locale_file():
                             locale_dict[remove_suffix(lm, '.json')] = flatten(json.load(f))
                     except Exception as e:
                         err_prompt.append(f'Failed to load {ml}: {e}')
-    for k in locale_dict.keys:
-        locale_root.update_node(k,locale_dict)
+    for lang in locale_dict.keys():
+        Logger.debug(f'write {lang}')
+        for k in locale_dict[lang].keys():
+            locale_root.update_node(f'{lang}.{k}',locale_dict[lang][k])
     return err_prompt
 
 class Locale:
@@ -112,9 +119,10 @@ class Locale:
         return self.data.qurey_node(path)
 
     def get_string_with_fallback(self, key: str, fallback_failed_prompt) -> str:
-        value = self.data.qurey_node(key).value
-        if value is not None:
-            return value  # 1. 如果本地化字符串存在，直接返回
+        Logger.debug(f'qurey {self.locale}.{key}')
+        node = self.data.qurey_node(key)
+        if node is not None:
+            return node.value  # 1. 如果本地化字符串存在，直接返回
         fallback_lng = list(self.fallback_lng)
         fallback_lng.insert(0, self.locale)
         for lng in fallback_lng:
