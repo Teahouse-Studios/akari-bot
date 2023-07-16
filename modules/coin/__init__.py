@@ -54,9 +54,9 @@ async def flipCoins(count: int, msg):
             stand += 1
     head = msg.locale.t("coin.message.prompt", count=count)
     if count == 1:
-        node = msg.locale.get_locale_node("coin.message.drop_places")
+        node = msg.locale.get_locale_node("coin.message.fall_places")
         if node != None:
-            places = msg.locale.get_locale_node("coin.message.drop_places").childen
+            places = node.childen
             if len(places) > 0:
                 randindex = secrets.randbelow(len(places))
                 head += list(places.items())[randindex][1].value
