@@ -8,8 +8,6 @@ import ujson as json
 from config import Config
 from .text import remove_suffix
 
-from core.logger import Logger
-
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
@@ -27,9 +25,6 @@ class LocaleNode():
         return self._qurey_node(path.split('.'))
     def _qurey_node(self,path:list):
         '''通过路径队列查询本地化树节点'''
-        Logger.debug(f'qurey {path}')
-        for k in self.childen.keys():
-            Logger.debug(f'- {k}')
         if len(path) == 0:
             return self
         nxt_node = path[0]
@@ -89,7 +84,6 @@ def load_locale_file():
                     except Exception as e:
                         err_prompt.append(f'Failed to load {ml}: {e}')
     for lang in locale_dict.keys():
-        Logger.debug(f'write {lang}')
         for k in locale_dict[lang].keys():
             locale_root.update_node(f'{lang}.{k}',locale_dict[lang][k])
     return err_prompt
@@ -119,7 +113,6 @@ class Locale:
         return self.data.qurey_node(path)
 
     def get_string_with_fallback(self, key: str, fallback_failed_prompt) -> str:
-        Logger.debug(f'qurey {self.locale}.{key}')
         node = self.data.qurey_node(key)
         if node is not None:
             return node.value  # 1. 如果本地化字符串存在，直接返回

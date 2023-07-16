@@ -145,11 +145,11 @@ async def reload_locale(msg: Bot.MessageSession):
     if msg.checkSuperUser():
         err = load_locale_file()
         if len(err) == 0:
-            msg.finish(msg.locale.t("success"))
+            await msg.finish(msg.locale.t("success"))
         else:
-            msg.finish(msg.locale.t("core.message.locale.reload.failed",detail='\n'.join(err)))
+            await msg.finish(msg.locale.t("core.message.locale.reload.failed",detail='\n'.join(err)))
     else:
-        msg.finish(msg.locale.t("parser.superuser.permission.denied"))
+        await msg.finish(msg.locale.t("parser.superuser.permission.denied"))
         
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
