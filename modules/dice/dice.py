@@ -177,13 +177,13 @@ class Dice(DiceItemBase):
             result = diceResults[0]
         if len(output) > MAX_OUTPUT_LEN:
             output = session.locale.t("dice.message.too_long")
-        self.detail = output + f" {result} "
+        self.detail = output + f"{result} "
         self.result = result
 
 
 async def GenerateMessage(msg, dices: str, times: int, dc: int):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0, MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
-        raise OverflowError(msg.locale.t("dice.message.error.config"))
+        raise OverflowError(msg.locale.t("error.config"))
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
         return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
@@ -235,12 +235,20 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
         outputLine = remove_prefix(outputLine, '+')  # 移除多项式首个+
         outputLine += ' = ' + str(result)
         if dc != 0:
-            if result > dc:
-                outputLine += msg.locale.t('dice.message.dc.success')
-                successNum += 1
+            if msg.data.options.get('dice_dc_reversed'):
+                if result <= dc:
+                    outputLine += msg.locale.t('dice.message.dc.success')
+                    successNum += 1
+                else:
+                    outputLine += msg.locale.t('dice.message.dc.failed')
+                    failNum += 1
             else:
-                outputLine += msg.locale.t('dice.message.dc.failed')
-                failNum += 1
+                if result >= dc:
+                    outputLine += msg.locale.t('dice.message.dc.success')
+                    successNum += 1
+                else:
+                    outputLine += msg.locale.t('dice.message.dc.failed')
+                    failNum += 1
         output += f'\n{dices} = {outputLine}'
     if dc != 0 and times > 1:
         output += '\n' + msg.locale.t('dice.message.dc.check', success=str(successNum), failed=str(failNum))

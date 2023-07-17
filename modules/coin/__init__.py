@@ -12,12 +12,8 @@ FACE_DOWN_RATE = int(Config('coin_facedown_rate'))
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
 
-@coin.command('{{coin.help}}')
-async def _(msg: Bot.MessageSession):
-    await msg.finish(await flipCoins(1, msg))
-
-
 @coin.command('[<amount>] {{coin.help}}')
+@coin.handle()
 async def _(msg: Bot.MessageSession, amount: int = 1):
     await msg.finish(await flipCoins(amount, msg))
 
@@ -38,7 +34,7 @@ async def _(message: Bot.MessageSession):
 
 async def flipCoins(count: int, msg):
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
-        raise OverflowError(msg.locale.t("coin.message.error.config"))
+        raise OverflowError(msg.locale.t("error.config"))
     if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.out_of_range", max=count_max)
     if count == 0:

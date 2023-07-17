@@ -21,10 +21,11 @@ async def bugtracker(msg: Bot.MessageSession):
                     await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(pattern=r'\!?\b([A-Z]+)-(\d+)\b', mode='M', desc='{bugtracker.help.regex.desc}')
+@bug.regex(pattern=r'\!?(BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-(\d+)\b', mode='M', flags=re.I,
+           desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
-    if len(matched_msg.group(0)) < 10 and len(matched_msg.group(1)) < 10:
+    if len(matched_msg.group(1)) < 10:
         result = await bugtracker_get(msg, matched_msg.group(1) + '-' + matched_msg.group(2))
         await msg.sendMessage(result[0])
         if result[1] is not None:
@@ -33,7 +34,8 @@ async def regex_bugtracker(msg: Bot.MessageSession):
                 await msg.sendMessage(Image(screenshot))
 
 
-@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/(.*?-\d*)|projects/.*?/issues/(.*?-\d*))'),
+@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)'
+                      r'|projects/.*?/issues/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*))', flags=re.I),
            mode='A', desc='{bugtracker.help.regex.url}')
 async def _(msg: Bot.MessageSession):
     async def bgtask(msg: Bot.MessageSession):

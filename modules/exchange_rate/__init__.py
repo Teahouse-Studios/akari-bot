@@ -21,6 +21,9 @@ async def _(msg: Bot.MessageSession):
     amount_str = base[:-3]
     base_currency = base[-3:]
 
+    if not api_key:
+        raise Exception(msg.locale.t('error.config.secret'))
+
     try:
         if amount_str:
             amount = float(amount_str)

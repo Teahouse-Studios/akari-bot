@@ -3,8 +3,6 @@ from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.http import get_url
 
-api_address = Config('netease_cloud_music_api_url')
-
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
                  support_languages=['zh_cn'])
@@ -14,7 +12,7 @@ ncmusic = module('ncmusic',
 async def search(msg: Bot.MessageSession, keyword: str):
     if not api_address:
         await msg.finish(msg.locale.t('ncmusic.message.api_unconfigured'))
-    url = f"{api_address}search?keywords={keyword}"
+    url = f"https://autumnfish.cn/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
 
     if result['result']['songCount'] == 0:
@@ -41,9 +39,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession, sid: str):
-    if not api_address:
-        await msg.finish(msg.locale.t('ncmusic.message.api_unconfigured'))
-    url = f"{api_address}song/detail?ids={sid}"
+    url = f"https://autumnfish.cn/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt='json')
 
     info = result['songs'][0]

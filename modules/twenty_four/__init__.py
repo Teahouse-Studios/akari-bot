@@ -57,7 +57,7 @@ async def has_solution(numbers):
     expressions = list(itertools.product(operators, repeat=3))
     
     for perm in permutations:
-        for expr in expressions:
+        for expr in expressions: # 穷举就完事了
             exp = '((( {} {} {} ) {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return True
