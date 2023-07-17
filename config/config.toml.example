@@ -1,6 +1,7 @@
 # https://toml.io/en/v1.0.0
 # REMEMBER: TOML is not like Python. Do not use Python syntax here.
 # Example: Boolean values in TOML must be lowercase.
+# If you don't need some functions, please delete the corresponding keys.
 
 [secret]
 db_path = "mysql+pymysql://"
