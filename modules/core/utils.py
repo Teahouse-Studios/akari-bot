@@ -125,14 +125,10 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale',
-                base=True,
-                required_admin=True,
-                developers=['Dianliang233','Light-Beacon']
-                )
+locale = module('locale', base=True, developers=['Dianliang233','Light-Beacon'])
 
 
-@locale.handle(['set <lang> {{core.help.locale.set}}'])
+@locale.handle('set <lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in ['zh_cn', 'zh_tw', 'en_us']:
@@ -140,7 +136,7 @@ async def config_gu(msg: Bot.MessageSession):
             await msg.finish(Locale(lang).t('success'))
     else:
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", lang='、'.join(get_available_locales())))
-@locale.handle(['reload {{core.help.locale.reload}}'])
+@locale.handle('reload {{core.help.locale.reload}}', required_superuser = True)
 async def reload_locale(msg: Bot.MessageSession):
     if msg.checkSuperUser():
         err = load_locale_file()
