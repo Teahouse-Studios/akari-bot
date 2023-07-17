@@ -1,4 +1,4 @@
-{
+﻿{
     "coin.help": "抛任意枚硬币。",
     "coin.help.desc": "抛硬币。",
     "coin.help.regex.desc": "(丢|抛)[<count>(个|枚)]硬币",
@@ -14,7 +14,7 @@
     "coin.message.mix.stand": "……还有 ${stand} 枚立起来了！",
     "coin.message.mix.tail": "，${tail} 枚是反面",
     "coin.message.mix.tail2": "…有 ${tail} 枚是反面",
-    "coin.message.prompt": "你抛了 ${count} 枚硬币",
+    "coin.message.prompt": "你抛了 ${count} 枚硬币…",
     "coin.message.stand": "…\n…它立起来了！",
     "coin.message.tail": "…\n…是反面！"
 }
