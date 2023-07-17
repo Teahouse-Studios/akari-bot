@@ -588,9 +588,9 @@ cryptography==39.0.2 ; python_full_version >= "3.8.1" and python_full_version < 
 cycler==0.11.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3 \
     --hash=sha256:9c87405839a19696e837b3b818fed3f5f69f16f1eec1a1ad77e043dcea9c772f
-dataclasses-json==0.5.7 ; python_full_version >= "3.8.1" and python_version < "4.0" \
-    --hash=sha256:bc285b5f892094c3a53d558858a88553dd6a61a11ab1a8128a0e554385dcc5dd \
-    --hash=sha256:c2c11bc8214fbf709ffc369d11446ff6945254a7f09128154a7620613d8fda90
+dataclasses-json==0.5.12; python_full_version >= "3.8.1" and python_version < "4.0" \
+    --hash=sha256:70e28da52e36f4be6b724e1f1e77fbcd19e0e0a6bf9a4c4c6e5abf713d4dab5a \
+    --hash=sha256:ece0f002af8d7b19c757c62b82ffb414e4bf49e856471f4070ba06590150c345
 distlib==0.3.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46 \
     --hash=sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e
