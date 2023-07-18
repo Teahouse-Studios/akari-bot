@@ -354,6 +354,9 @@ if Bot.FetchTarget.name == 'QQ':
 
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
+        if not Temp.data['waiting_for_send_group_message']:
+            await msg.finish(msg.locale.t("core.message.resume.nothing"))
+            
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
