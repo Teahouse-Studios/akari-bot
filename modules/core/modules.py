@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
             'reload <module> ... {{core.help.module.reload}}',
             'load <module> ... {{core.help.module.load}}',
             'unload <module> ... {{core.help.module.unload}}',
-            'list {{core.help.module.list}},
+            'list {{core.help.module.list}}',
             'list legacy {{core.help.module.list.legacy}}'], options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
