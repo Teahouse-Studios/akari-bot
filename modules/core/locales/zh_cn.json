@@ -90,7 +90,6 @@
     "core.message.module.help.not_found": "此模块可能不存在，请检查输入。",
     "core.message.module.help.regex.detail": "（${msg}）",
     "core.message.module.help.regex.no_information": "无描述",
-    "core.message.module.help.revoke.legacy": "[本消息将在一分钟后撤回]",
     "core.message.module.help.support_regex": "此模块支持正则表达式，消息发送时将会匹配以下内容：",
     "core.message.module.help.table.header.alias": "命令别名",
     "core.message.module.help.table.header.base": "基础模块列表",

@@ -29,10 +29,13 @@ m = module('module',
             'reload <module> ... {{core.help.module.reload}}',
             'load <module> ... {{core.help.module.load}}',
             'unload <module> ... {{core.help.module.unload}}',
-            'list {{core.help.module.list}}'], exclude_from=['QQ|Guild'])
+            'list {{core.help.module.list}}',
+            'list legacy {{core.help.module.list.legacy}}'], exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
-        await modules_help(msg)
+        if msg.parsed_msg.get('legacy', False):
+            legacy_help = True
+        await modules_help(msg, legacy_help)
     await config_modules(msg)
 
 
@@ -43,11 +46,14 @@ async def _(msg: Bot.MessageSession):
             'reload <module> ... {{core.help.module.reload}}',
             'load <module> ... {{core.help.module.load}}',
             'unload <module> ... {{core.help.module.unload}}',
-            'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.module.g}'},
+            'list {{core.help.module.list}},
+            'list legacy {{core.help.module.list.legacy}}'], options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
-        await modules_help(msg)
+        if msg.parsed_msg.get('legacy', False):
+            legacy_help = True
+        await modules_help(msg, legacy_help)
     await config_modules(msg)
 
 
@@ -349,13 +355,36 @@ async def bot_help(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.module.help.not_found"))
 
 
-@hlp.command('{{core.help.module.help}}')
+@hlp.command(['{{core.help.module.help}}',
+               legacy {{core.help.module.help.legacy}}'])
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         targetFrom=msg.target.targetFrom)
     target_enabled_list = msg.enabled_modules
-    legacy_help = True
-    if msg.Feature.image:
+    legacy_help = False
+    if 'legacy' in msg.parsed_msg or msg.Feature.image:
+        legacy_help = True
+
+    if legacy_help:
+        help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
+        essential = []
+        for x in module_list:
+            if module_list[x].base:
+                essential.append(module_list[x].bind_prefix)
+        help_msg.append(' | '.join(essential))
+        help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
+        module_ = []
+        for x in module_list:
+            if x in target_enabled_list:
+                module_.append(x)
+        help_msg.append(' | '.join(module_))
+        help_msg.append(
+            msg.locale.t(
+                "core.message.module.help.legacy.more_information",
+                prefix=msg.prefixes[0],
+                help_url=Config('help_url')))
+        await msg.finish('\n'.join(help_msg))
+    elif msg.Feature.image:
         try:
             tables = []
             essential = []
@@ -421,42 +450,33 @@ async def _(msg: Bot.MessageSession):
             if tables:
                 render = await image_table_render(tables)
                 if render:
-                    legacy_help = False
                     await msg.finish([Image(render),
                                       Plain(msg.locale.t("core.message.module.help.more_information",
                                                          prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
         except Exception:
             traceback.print_exc()
+
+
+async def modules_help(msg: Bot.MessageSession, legacy_help=False):
+    module_list = ModulesManager.return_modules_list(
+        targetFrom=msg.target.targetFrom)
     if legacy_help:
-        help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
-        essential = []
-        for x in module_list:
-            if module_list[x].base:
-                essential.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(essential))
-        help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
+        help_msg = [msg.locale.t("core.message.module.help.legacy.availables")]
         module_ = []
         for x in module_list:
-            if x in target_enabled_list:
-                module_.append(x)
+            if x[0] == '_':
+                continue
+            if module_list[x].base or module_list[x].required_superuser:
+                continue
+            module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
-
-
-async def modules_help(msg: Bot.MessageSession):
-    module_list = ModulesManager.return_modules_list(
-        targetFrom=msg.target.targetFrom)
-    legacy_help = True
-    if msg.Feature.image:
+        await msg.finish('\n'.join(help_msg))
+    elif msg.Feature.image:
         try:
             tables = []
             m = []
@@ -515,27 +535,6 @@ async def modules_help(msg: Bot.MessageSession):
             if tables:
                 render = await image_table_render(tables)
                 if render:
-                    legacy_help = False
                     await msg.finish([Image(render)])
         except Exception:
             traceback.print_exc()
-    if legacy_help:
-        help_msg = [msg.locale.t("core.message.module.help.legacy.availables")]
-        module_ = []
-        for x in module_list:
-            if x[0] == '_':
-                continue
-            if module_list[x].base or module_list[x].required_superuser:
-                continue
-            module_.append(module_list[x].bind_prefix)
-        help_msg.append(' | '.join(module_))
-        help_msg.append(
-            msg.locale.t(
-                "core.message.module.help.legacy.more_information",
-                prefix=msg.prefixes[0],
-                help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()

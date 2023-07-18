@@ -88,7 +88,6 @@
     "core.message.module.help.not_found": "This module may not exist, please check your input.",
     "core.message.module.help.regex.detail": "(${msg})",
     "core.message.module.help.regex.no_information": "No description",
-    "core.message.module.help.revoke.legacy": "[This message will be recalled after 1 minute]",
     "core.message.module.help.support_regex": "This module supports regular expressions, the message will match with the following: ",
     "core.message.module.help.table.header.alias": "Command Aliases",
     "core.message.module.help.table.header.base": "Base Module List",
