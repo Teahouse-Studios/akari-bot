@@ -33,6 +33,7 @@ m = module('module',
             'list legacy {{core.help.module.list.legacy}}'], exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
+        legacy_help=False
         if msg.parsed_msg.get('legacy', False):
             legacy_help = True
         await modules_help(msg, legacy_help)
@@ -51,6 +52,7 @@ async def _(msg: Bot.MessageSession):
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
+        legacy_help=False
         if msg.parsed_msg.get('legacy', False):
             legacy_help = True
         await modules_help(msg, legacy_help)
@@ -454,10 +456,11 @@ async def _(msg: Bot.MessageSession):
                                       Plain(msg.locale.t("core.message.module.help.more_information",
                                                          prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
         except Exception:
+            await msg.sendMessage(msg.locale.t("core.message.module.help.error.render_failed"))
             traceback.print_exc()
 
 
-async def modules_help(msg: Bot.MessageSession, legacy_help=False):
+async def modules_help(msg: Bot.MessageSession, legacy_help):
     module_list = ModulesManager.return_modules_list(
         targetFrom=msg.target.targetFrom)
     if legacy_help:
@@ -537,4 +540,5 @@ async def modules_help(msg: Bot.MessageSession, legacy_help=False):
                 if render:
                     await msg.finish([Image(render)])
         except Exception:
+            await msg.sendMessage(msg.locale.t("core.message.module.help.error.render_failed"))
             traceback.print_exc()
