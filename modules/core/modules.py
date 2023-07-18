@@ -356,7 +356,7 @@ async def bot_help(msg: Bot.MessageSession):
 
 
 @hlp.command(['{{core.help.module.help}}',
-               legacy {{core.help.module.help.legacy}}'])
+              'legacy {{core.help.module.help.legacy}}'])
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         targetFrom=msg.target.targetFrom)
