@@ -30,11 +30,11 @@ class WithErrCode(Exception):
 if api:
 
     @arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
-    async def _(msg: Bot.MessageSession, friend_code: int = None):
+    async def _(msg: Bot.MessageSession, friend_code: str = None):
         if not os.path.exists(assets_path):
             await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
         if friend_code is not None:
-            if len(str(friend_code)) != 9:
+            if not friend_code.isdigit() or len(friend_code) != 9:
                 await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
             query_code = friend_code
         else:
@@ -128,12 +128,12 @@ if api:
             await msg.finish(msg.locale.t("arcaea.message.user_unbound", prefix=msg.prefixes[0]))
 
     @arc.command('info [<friend_code>] {{arcaea.help.info}}')
-    async def _(msg: Bot.MessageSession, friend_code: int = None):
+    async def _(msg: Bot.MessageSession, friend_code: str = None):
         if not os.path.exists(assets_path):
             await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
             return
         if friend_code is not None:
-            if len(str(friend_code)) != 9:
+            if not friend_code.isdigit() or len(friend_code) != 9:
                 await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
             query_code = friend_code
         else:

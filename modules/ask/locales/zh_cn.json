@@ -1,4 +1,5 @@
 {
-    "ask.help": "搜索网络或使用 WolframAlpha，通过 ChatGPT 回答你的问题。",
+    "ask.help": "通过 ChatGPT 回答问题。",
+    "ask.help.regex": "问：<question> 通过 ChatGPT 回答问题",
     "ask.help.desc": "有事为什么不问问小可呢？"
 }

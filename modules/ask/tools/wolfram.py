@@ -7,7 +7,7 @@ wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=Config('wolfram_alpha_appid
 
 
 async def wolfram_alpha(query: str):
-    return to_async_func(wolfram.run)(query)
+    return await to_async_func(wolfram.run)(query)
 
 wolfram_tool = AkariTool.from_function(
     func=wolfram_alpha,

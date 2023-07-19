@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import sys
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -353,6 +354,9 @@ if Bot.FetchTarget.name == 'QQ':
 
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
+        if not Temp.data['waiting_for_send_group_message']:
+            await msg.finish(msg.locale.t("core.message.resume.nothing"))
+            
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
@@ -410,12 +414,32 @@ if Config('enable_eval'):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
 
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
 _config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg')
 
 
 @_config.handle('write <k> <v> [-s]')
 async def _(msg: Bot.MessageSession):
-    CFG.write(msg.parsed_msg['<k>'], msg.parsed_msg['<v>'], msg.parsed_msg['-s'])
+    value = msg.parsed_msg['<v>']
+    if value.lower() == 'true':
+        value = True
+    elif value.lower() == 'false':
+        value = False
+    elif value.isdigit():
+        value = int(value)
+    elif isfloat(value):
+        value = float(value)
+    elif re.match('^(?:{.*}|[.*])$', value):
+        value = json.loads(value)
+
+    CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("success"))
 
 

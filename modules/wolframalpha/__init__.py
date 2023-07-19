@@ -5,7 +5,7 @@ import wolframalpha
 from config import Config
 from core.builtins import Bot, Image
 from core.component import module
-from core.dirty_check import check_bool
+from core.dirty_check import check_bool, rickroll
 
 client = wolframalpha.Client(Config('wolfram_alpha_appid'))
 
@@ -34,6 +34,7 @@ async def _(msg: Bot.MessageSession):
             images.append(pod.subpod['img']['@src'])
     bot_images = [Image(image) for image in images]
     if await check_bool(' '.join(answer)):
-        await msg.finish('https://wdf.ink/6OUp')
+        message = await rickroll()
+        await msg.finish(message)
     else:
         await msg.finish(['\n'.join(answer), *bot_images])

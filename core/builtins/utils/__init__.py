@@ -2,12 +2,7 @@ import os
 from config import Config
 
 if not (confirm_command := Config('confirm_command')):
-    confirm_command = ["是", "对", '确定', '是吧', '大概是',
-                       '也许', '可能', '对的', '是的', '是呢', '对呢', '嗯', '嗯呢', '对啊', '是啊',
-                       '吼啊', '资瓷', '是呗', '也许吧', '对呗', '应该', '是呢', '是哦', '没错',
-                       "對", '確定', '對的', '對啊', '對呢', '對唄', '資瓷', '是唄', '也許', '也許吧', '應該', '沒錯',
-                       'yes', 'y', 'yeah', 'yep', 'ok', 'okay', 'YES', 'Y', 'OK', 'Yes', 'Yeah', 'Yep', 'Okay',
-                       '⭐', '√']
+    confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
 
 if not (command_prefix := Config('command_prefix')):
     command_prefix = ['~', '～']  # 消息前缀

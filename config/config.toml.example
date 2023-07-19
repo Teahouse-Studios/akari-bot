@@ -1,3 +1,8 @@
+# https://toml.io/en/v1.0.0
+# REMEMBER: TOML is not like Python. Do not use Python syntax here.
+# Example: Boolean values in TOML must be lowercase.
+# If you don't need some functions, please delete the corresponding keys.
+
 [secret]
 db_path = "mysql+pymysql://"
 check_accessKeyId =
@@ -15,7 +20,6 @@ openai_api_key =
 nl2c_model =
 curseforge_api_key =
 exchange_rate_api_key =
-netease_cloud_music_api_url =
 
 [cfg]
 base_superuser = "QQ|2596322644"
@@ -28,18 +32,20 @@ donate_url = "https://afdian.net/@teahouse"
 help_url = "https://bot.teahouse.team"
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
 wiki_whitelist_url = "https://s.wd-ljt.com/botwhitelist"
+rickroll_url = "https://wdf.ink/6OUp"
+web_render_local =
 qq_account = 2314163511
 qq_host = "127.0.0.1:11451"
 qq_disable_temp_session = false
 qq_enable_listening_self_message = false
-web_render_local =
+allow_request_private_ip = false
 slower_schedule = false
 enable_dirty_check = true
 enable_urlmanager = true
 enable_tos = false
 enable_analytics = true
-allow_request_private_ip = false
 enable_eval = true
+enable_rickroll = true
 coin_limit = 10000
 coin_faceup_rate = 4994
 coin_facedown_rate = 4994
@@ -51,3 +57,4 @@ dice_output_cnt = 50
 dice_output_len = 200
 dice_detail_cnt = 5
 dice_count_limit = 10
+unloaded_modules =

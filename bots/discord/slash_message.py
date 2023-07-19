@@ -6,7 +6,8 @@ from bots.discord.message import convert_embed
 from config import Config
 from core.builtins import Plain, Image, MessageSession as MS
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed
+from core.builtins.message.internal import Embed, ErrorMessage
+from core.dirty_check import rickroll
 from core.logger import Logger
 from core.types import FinishedSession as FinS
 
@@ -41,7 +42,7 @@ class MessageSession(MS):
                           ) -> FinishedSession:
         msgchain = MessageChain(msgchain)
         if not msgchain.is_safe and not disable_secret_check:
-            return await self.sendMessage('https://wdf.ink/6Oup')
+            return await self.sendMessage(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(msgchain)
         count = 0
         send = []
