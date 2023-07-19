@@ -88,7 +88,6 @@
     "core.message.module.help.not_found": "此模組可能不存在，請校對輸入。",
     "core.message.module.help.regex.detail": "（${msg}）",
     "core.message.module.help.regex.no_information": "無描述",
-    "core.message.module.help.revoke.legacy": "[此訊息將在一分鐘後撤回]",
     "core.message.module.help.support_regex": "此模組支援正規表示式，訊息傳送時將會尋找相符的以下內容：",
     "core.message.module.help.table.header.alias": "指令別名",
     "core.message.module.help.table.header.base": "基礎模組列表",
