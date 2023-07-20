@@ -18,6 +18,7 @@ from database import BotDBUtil
 
 enable_tos = Config('enable_tos')
 enable_analytics = Config('enable_analytics')
+bug_report_targets = Config('bug_report_targets')
 
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
@@ -349,9 +350,14 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
 
                 except Exception as e:
-                    Logger.error(traceback.format_exc())
+                    tb = traceback.format_exc()
+                    Logger.error(tb)
                     await msg.sendMessage(msg.locale.t('error.prompt.report', err_msg=str(e)) +
                                           str(Url(Config('bug_report_url'))))
+                    if bug_report_targets:
+                        for target in bug_report_targets:
+                            if f := await Bot.FetchTarget.fetch_target(target):
+                                await f.sendDirectMessage(f'执行{command_first_word}时发生了以下错误，请及时处理：\n' + tb)
             if command_first_word in current_unloaded_modules and msg.checkSuperUser():
                 await msg.sendMessage(msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
             elif command_first_word in err_modules:
