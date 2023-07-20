@@ -1,7 +1,7 @@
-from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.http import get_url
+
 
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
@@ -10,8 +10,6 @@ ncmusic = module('ncmusic',
 
 @ncmusic.handle('search <keyword> {{ncmusic.help.search}}')
 async def search(msg: Bot.MessageSession, keyword: str):
-    if not api_address:
-        await msg.finish(msg.locale.t('ncmusic.message.api_unconfigured'))
     url = f"https://autumnfish.cn/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
 
