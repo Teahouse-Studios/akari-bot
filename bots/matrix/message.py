@@ -187,9 +187,8 @@ class MessageSession(MS):
                 url = str(content['url'])
                 return MessageChain(Image(await bot.mxc_to_http(url)))
             case 'm.audio':
-                # url = str(content['url'])
-                # return MessageChain(Voice(await bot.mxc_to_http(url)))
-                # todo: receive audio messages
+                url = str(content['url'])
+                return MessageChain(Voice(await bot.mxc_to_http(url)))
                 pass
         Logger.error(f"Got unknown msgtype: {msgtype}")
         return MessageChain([])
