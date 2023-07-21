@@ -1153,12 +1153,12 @@ sgmllib3k = "*"
 
 [[package]]
 name = "ffmpy"
-version = "0.3.0"
+version = "0.3.1"
 description = "A simple Python wrapper for ffmpeg"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ffmpy-0.3.0.tar.gz", hash = "sha256:757591581eee25b4a50ac9ffb9b58035a2794533db47e0512f53fb2d7b6f9adc"},
+    {file = "ffmpy-0.3.1.tar.gz", hash = "sha256:a173b8f42c7c669ff722df7fb31e1e870067713697f745224fa6e621b82f0004"},
 ]
 
 [[package]]
