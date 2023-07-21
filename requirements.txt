@@ -651,8 +651,8 @@ fastapi==0.95.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.
 feedparser==6.0.10 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:27da485f4637ce7163cdeab13a80312b93b7d0c1b775bef4a47629a3110bca51 \
     --hash=sha256:79c257d526d13b944e965f6095700587f27388e50ea16fd245babe4dfae7024f
-ffmpy==0.3.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:757591581eee25b4a50ac9ffb9b58035a2794533db47e0512f53fb2d7b6f9adc
+ffmpy==0.3.1; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:a173b8f42c7c669ff722df7fb31e1e870067713697f745224fa6e621b82f0004
 filelock==3.12.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:ad98852315c2ab702aeb628412cbf7e95b7ce8c3bf9565670b4eaecf1db370a9 \
     --hash=sha256:fc03ae43288c013d2ea83c8597001b1129db351aad9c57fe2409327916b8e718
