@@ -138,8 +138,8 @@ class MessageSession(MS):
                         'event_id': replyTo
                     }
                 }
-            # todo https://github.com/poljar/matrix-nio/pull/417
-            resp: nio.RoomSendResponse = await bot.room_send(self.session.target, 'm.room.message', content)
+
+            resp = await bot.room_send(self.session.target, 'm.room.message', content)
             if 'status_code' in resp.__dict__:
                 Logger.error(f"Error in sending message: {str(resp)}")
             else:

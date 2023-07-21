@@ -1005,16 +1005,6 @@ langconv==0.2.0 ; python_full_version >= "3.8.1" and python_version < "4.0" \
 langsmith==0.0.5 ; python_full_version >= "3.8.1" and python_version < "4.0" \
     --hash=sha256:c9ce19cf7a45d4b9ef74b3133ace4d0583bc992383296d03c05065e8f871e01f \
     --hash=sha256:ffad2fc638cfee8c9d27c9eae2fa3c3f9ec423bf443b1dc44cc8184fa34cd6b2
-logbook==1.5.3 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:0cf2cdbfb65a03b5987d19109dacad13417809dcf697f66e1a7084fb21744ea9 \
-    --hash=sha256:2dc85f1510533fddb481e97677bb7bca913560862734c0b3b289bfed04f78c92 \
-    --hash=sha256:56ee54c11df3377314cedcd6507638f015b4b88c0238c2e01b5eb44fd3a6ad1b \
-    --hash=sha256:66f454ada0f56eae43066f604a222b09893f98c1adc18df169710761b8f32fe8 \
-    --hash=sha256:7c533eb728b3d220b1b5414ba4635292d149d79f74f6973b4aa744c850ca944a \
-    --hash=sha256:8f76a2e7b1f72595f753228732f81ce342caf03babc3fed6bbdcf366f2f20f18 \
-    --hash=sha256:94e2e11ff3c2304b0d09a36c6208e5ae756eb948b210e5cbd63cd8d27f911542 \
-    --hash=sha256:97fee1bd9605f76335b169430ed65e15e457a844b2121bd1d90a08cf7e30aba0 \
-    --hash=sha256:e18f7422214b1cf0240c56f884fd9c9b4ff9d0da2eabca9abccba56df7222f66
 loguru==0.6.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:066bd06758d0a513e9836fd9c6b5a75bfb3fd36841f4b996bc60b547a309d41c \
     --hash=sha256:4e2414d534a2ab57573365b3e6d0234dfb1d84b68b7f3b948e6fb743860a77c3
@@ -1249,9 +1239,9 @@ matplotlib==3.7.2 ; python_full_version >= "3.8.1" and python_full_version < "4.
     --hash=sha256:f081c03f413f59390a80b3e351cc2b2ea0205839714dbc364519bcf51f4b56ca \
     --hash=sha256:fdbb46fad4fb47443b5b8ac76904b2e7a66556844f33370861b4788db0f8816a \
     --hash=sha256:fdcd28360dbb6203fb5219b1a5658df226ac9bebc2542a9e8f457de959d713d0
-matrix-nio==0.20.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:b50dbe83c4878a58df7c95b7458fbcefb1ced11419a5fce8e60f63985f781c84 \
-    --hash=sha256:d2b4c4670cb0d693bf521202947c1b410cf72aef78b37b8642c8d1a9d7caafbd
+matrix-nio==0.21.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:414301fc25662af3e3436de5b955980474c03b0f3001f1b041c49743ede73232 \
+    --hash=sha256:95bec84dd0d4eca4f0ce252d2f630d435edbc41bb405448d88916a3783479237
 monotonic==1.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:3a55207bcfed53ddd5c5bae174524062935efed17792e9de2ad0205ce9ad63f7 \
     --hash=sha256:68687e19a14f11f26d140dd5c86f3dba4bf5df58003000ed467e0e2a69bca96c

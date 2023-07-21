@@ -1998,35 +1998,6 @@ pydantic = ">=1,<2"
 requests = ">=2,<3"
 
 [[package]]
-name = "logbook"
-version = "1.5.3"
-description = "A logging replacement for Python"
-optional = false
-python-versions = "*"
-files = [
-    {file = "Logbook-1.5.3-cp27-cp27m-win32.whl", hash = "sha256:56ee54c11df3377314cedcd6507638f015b4b88c0238c2e01b5eb44fd3a6ad1b"},
-    {file = "Logbook-1.5.3-cp27-cp27m-win_amd64.whl", hash = "sha256:2dc85f1510533fddb481e97677bb7bca913560862734c0b3b289bfed04f78c92"},
-    {file = "Logbook-1.5.3-cp35-cp35m-win32.whl", hash = "sha256:94e2e11ff3c2304b0d09a36c6208e5ae756eb948b210e5cbd63cd8d27f911542"},
-    {file = "Logbook-1.5.3-cp35-cp35m-win_amd64.whl", hash = "sha256:97fee1bd9605f76335b169430ed65e15e457a844b2121bd1d90a08cf7e30aba0"},
-    {file = "Logbook-1.5.3-cp36-cp36m-win32.whl", hash = "sha256:7c533eb728b3d220b1b5414ba4635292d149d79f74f6973b4aa744c850ca944a"},
-    {file = "Logbook-1.5.3-cp36-cp36m-win_amd64.whl", hash = "sha256:e18f7422214b1cf0240c56f884fd9c9b4ff9d0da2eabca9abccba56df7222f66"},
-    {file = "Logbook-1.5.3-cp37-cp37m-win32.whl", hash = "sha256:8f76a2e7b1f72595f753228732f81ce342caf03babc3fed6bbdcf366f2f20f18"},
-    {file = "Logbook-1.5.3-cp37-cp37m-win_amd64.whl", hash = "sha256:0cf2cdbfb65a03b5987d19109dacad13417809dcf697f66e1a7084fb21744ea9"},
-    {file = "Logbook-1.5.3.tar.gz", hash = "sha256:66f454ada0f56eae43066f604a222b09893f98c1adc18df169710761b8f32fe8"},
-]
-
-[package.extras]
-all = ["Jinja2", "brotli", "cython", "execnet (>=1.0.9)", "mock", "pytest", "pytest-cov (<2.6)", "pyzmq", "redis", "sqlalchemy"]
-compression = ["brotli"]
-dev = ["cython", "mock", "pytest", "pytest-cov (<2.6)"]
-execnet = ["execnet (>=1.0.9)"]
-jinja = ["Jinja2"]
-redis = ["redis"]
-sqlalchemy = ["sqlalchemy"]
-test = ["mock", "pytest", "pytest-cov (<2.6)"]
-zmq = ["pyzmq"]
-
-[[package]]
 name = "loguru"
 version = "0.6.0"
 description = "Python logging made (stupidly) simple"
@@ -2368,13 +2339,13 @@ python-dateutil = ">=2.7"
 
 [[package]]
 name = "matrix-nio"
-version = "0.20.2"
+version = "0.21.2"
 description = "A Python Matrix client library, designed according to sans I/O principles."
 optional = false
-python-versions = ">=3.7.0,<4.0.0"
+python-versions = ">=3.8.0,<4.0.0"
 files = [
-    {file = "matrix_nio-0.20.2-py3-none-any.whl", hash = "sha256:d2b4c4670cb0d693bf521202947c1b410cf72aef78b37b8642c8d1a9d7caafbd"},
-    {file = "matrix_nio-0.20.2.tar.gz", hash = "sha256:b50dbe83c4878a58df7c95b7458fbcefb1ced11419a5fce8e60f63985f781c84"},
+    {file = "matrix_nio-0.21.2-py3-none-any.whl", hash = "sha256:95bec84dd0d4eca4f0ce252d2f630d435edbc41bb405448d88916a3783479237"},
+    {file = "matrix_nio-0.21.2.tar.gz", hash = "sha256:414301fc25662af3e3436de5b955980474c03b0f3001f1b041c49743ede73232"},
 ]
 
 [package.dependencies]
@@ -2385,7 +2356,6 @@ future = ">=0.18.2,<0.19.0"
 h11 = ">=0.14.0,<0.15.0"
 h2 = ">=4.0.0,<5.0.0"
 jsonschema = ">=4.4.0,<5.0.0"
-logbook = ">=1.5.3,<2.0.0"
 pycryptodome = ">=3.10.1,<4.0.0"
 unpaddedbase64 = ">=2.1.0,<3.0.0"
 
@@ -4643,4 +4613,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "c8edc6d29b19782a530895a0ac0b905c8ffd50b3eb824d263fc263809819b3b2"
+content-hash = "164144385f408bb31d3a2755fca12e870d52f7dd58aaf75d26f4afcfabb8c0ed"
