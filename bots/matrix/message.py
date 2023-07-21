@@ -60,11 +60,12 @@ class MessageSession(MS):
                 }
                 if replyTo:
                     # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
-                    # todo: standardize fallback for m.emote, m.image, m.video, m.audio, and m.file
-                    content['body'] = f"> <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
+                    # todo: standardize fallback for m.image, m.video, m.audio, and m.file
+                    replyToType = self.session.message['content']['msgtype']
+                    content['body'] = f">{' *' if replyToType == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
                     content['format'] = 'org.matrix.custom.html'
                     htmlText = x.text.replace('\n', '<br />')
-                    content['formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={homeserver_host}\">In reply to</a> <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{htmlText}"
+                    content['formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={homeserver_host}\">In reply to</a>{' *' if replyToType == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{htmlText}"
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 split = [x]
