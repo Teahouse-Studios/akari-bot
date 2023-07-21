@@ -878,9 +878,9 @@ httpx[brotli,http2,socks]==0.24.1 ; python_full_version >= "3.8.1" and python_fu
 humanfriendly==10.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477 \
     --hash=sha256:6b0b831ce8f15f7300721aa49829fc4e83921a9a301cc7f606be6686a2288ddc
-hypercorn==0.14.3 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:4a87a0b7bbe9dc75fab06dbe4b301b9b90416e9866c23a377df21a969d6ab8dd \
-    --hash=sha256:7c491d5184f28ee960dcdc14ab45d14633ca79d72ddd13cf4fcb4cb854d679ab
+hypercorn==0.14.4; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:3fa504efc46a271640023c9b88c3184fd64993f47a282e8ae1a13ccb285c2f67 \
+    --hash=sha256:f956200dbf8677684e6e976219ffa6691d6cf795281184b41dbb0b135ab37b8d
 hyperframe==6.0.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:0ec6bafd80d8ad2195c4f03aacba3a8265e57bc4cff261e802bf39970ed02a15 \
     --hash=sha256:ae510046231dc8e9ecb1a6586f63d2347bf4c8905914aa84ba585ae85f28a914
