@@ -373,7 +373,7 @@ if Bot.FetchTarget.name == 'QQ':
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
+        await msg.sendMessage(msg.locale.t("core.message.resume.clear"))
 
     forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
 
