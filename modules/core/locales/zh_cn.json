@@ -129,7 +129,7 @@
     "core.message.restart.restarting": "重启中……",
     "core.message.restart.timeout": "等待已超时，强制重启中……",
     "core.message.restart.wait": "有 ${count} 个命令正在执行中，将于执行完毕后重启。",
-    "core.message.resume.clean": "已清理全部消息。",
+    "core.message.resume.clear": "已清理全部消息。",
     "core.message.resume.done": "重发完成。",
     "core.message.resume.nothing": "没有需要重发的消息。",
     "core.message.resume.processing": "正在重发 ${counts} 条消息…",

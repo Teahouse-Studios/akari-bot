@@ -117,7 +117,7 @@ async def _(event: Event):
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
         return {'approve': True}
-    if Config('invite_join_group_notice'):
+    if Config('qq_invite_join_group_notice'):
         await bot.send_private_msg(user_id=event.user_id,
                                    message='你好！本机器人暂时不主动同意入群请求。\n'
                                            '请至https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+申请入群。')
