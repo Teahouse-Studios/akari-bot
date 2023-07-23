@@ -5,7 +5,6 @@
 
 [secret]
 db_path = "mysql+pymysql://"
-proxy =
 check_accessKeyId =
 check_accessKeySecret =
 web_render =
