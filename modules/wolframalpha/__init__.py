@@ -1,4 +1,5 @@
 import asyncio
+import urllib.parse
 
 from config import Config
 from core.builtins import Bot, Image
