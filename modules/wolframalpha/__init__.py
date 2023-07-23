@@ -1,10 +1,12 @@
+import os
 import urllib.parse
 
 from config import Config
-from core.builtins import Bot, Image
+from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.utils.http import download_to_cache, get_url
 from core.dirty_check import check_bool, rickroll
+from PIL import Image
 
 appid = Config('wolfram_alpha_appid')
 
@@ -28,9 +30,13 @@ async def _(msg: Bot.MessageSession):
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
-        img = await download_to_cache(url, status_code=200)
+        img_path = await download_to_cache(url, status_code=200)
         if img:
-            await msg.finish([Image(img)])
+            img = Image.open(img_path)
+            output = os.path.splitext(img_path)[0] + ".png"
+            img.save(output, "PNG")
+            os.remove(img_path)
+            await msg.finish([BImage(output)])
     except ValueError as e:
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
