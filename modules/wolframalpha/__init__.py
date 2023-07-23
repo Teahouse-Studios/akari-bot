@@ -19,22 +19,29 @@ w = module(
 @w.handle('<query> {{wolframalpha.help}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
-    url_query = urllib.parse.quote(query.replace(' ', '+'))
+    url_query = urllib.parse.quote(query)
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
-    
-    img = await get_url(url, 200)
-    await msg.finish([Image(img)])
+
+    try:
+        img = await get_url(url, 200)
+        await msg.finish([Image(img)])
+    except ValueError as e:
+        if str(e).startswith('501'):
+            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<question>']
-    url_query = urllib.parse.quote(query.replace(' ', '+'))
+    url_query = urllib.parse.quote(query)
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
-    
-    data = await get_url(url, 200)
-    await msg.finish(data)
+    try:
+        data = await get_url(url, 200)
+        await msg.finish(data)
+    except ValueError as e:
+        if str(e).startswith('501'):
+            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
