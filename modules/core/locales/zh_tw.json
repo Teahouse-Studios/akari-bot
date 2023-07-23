@@ -129,7 +129,7 @@
     "core.message.restart.restarting": "重新啟動中……",
     "core.message.restart.timeout": "等待逾時，強制重新啟動中……",
     "core.message.restart.wait": "有 ${count} 個指令正在執行中，將在執行完成後重新啟動。",
-    "core.message.resume.clean": "已清理全部訊息。",
+    "core.message.resume.clear": "已清理全部訊息。",
     "core.message.resume.done": "重傳完成。",
     "core.message.resume.nothing": "沒有需要重傳的訊息。",
     "core.message.resume.processing": "正在重傳 ${counts} 條訊息...",
