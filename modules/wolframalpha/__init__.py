@@ -1,4 +1,3 @@
-import asyncio
 import urllib.parse
 
 from config import Config
@@ -27,3 +26,15 @@ async def _(msg: Bot.MessageSession):
     
     img = await get_url(url, 200)
     await msg.finish([Image(img)])
+
+
+@w.handle('ask <question> {{wolframalpha.help.ask}}')
+async def _(msg: Bot.MessageSession):
+    query = msg.parsed_msg['<question>']
+    url_query = urllib.parse.quote(query.replace(' ', '+'))
+    if not appid:
+        raise Exception(msg.locale.t('error.config.secret'))
+    url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
+    
+    data = await get_url(url, 200)
+    await msg.finish(data)
