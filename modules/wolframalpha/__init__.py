@@ -12,7 +12,7 @@ appid = Config('wolfram_alpha_appid')
 w = module(
     'wolframalpha',
     alias='wolfram',
-    developers=['Dianliang233'],
+    developers=['DoroWolf'],
     desc='{wolframalpha.help.desc}',
     support_languages=['en_us'])
 
@@ -23,7 +23,7 @@ async def _(msg: Bot.MessageSession):
     url_query = urllib.parse.quote(query.replace(' ', '+'))
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
-    url = "http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
+    url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
     
     img = await get_url(url, 200)
     await msg.finish([Image(img)])
