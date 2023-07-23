@@ -12,12 +12,14 @@ async def update_alias():
         input_data = await get_url(url, 200, fmt='json')
 
         output_data = {}
-        for key, value in input_data.items():
-            for v in value:
-                if v in output_data:
-                    output_data[v].append(key)
-                else:
-                    output_data[v] = [key]
+        for key, values in input_data.items():
+            for value in values:
+                if value == "未找到":
+                    continue
+                if value not in output_data:
+                    output_data[value] = []
+                output_data[value].append(key)
+        output_data = {k: output_data[k] for k in sorted(output_data)}
 
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:

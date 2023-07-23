@@ -426,7 +426,6 @@ async def _(msg: Bot.MessageSession):
                                       Plain(msg.locale.t("core.message.module.help.more_information",
                                                          prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
         except Exception:
-            await msg.sendMessage(msg.locale.t("core.message.module.help.error.render_failed"))
             traceback.print_exc()
     if legacy_help:
         help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
@@ -446,7 +445,11 @@ async def _(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        await msg.finish('\n'.join(help_msg))
+        if msg.Feature.delete:
+            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
+        send = await msg.sendMessage('\n'.join(help_msg))
+        await msg.sleep(60)
+        await send.delete()
 
 
 async def modules_help(msg: Bot.MessageSession):
@@ -531,4 +534,8 @@ async def modules_help(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        await msg.finish('\n'.join(help_msg))
+        if msg.Feature.delete:
+            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
+        send = await msg.sendMessage('\n'.join(help_msg))
+        await msg.sleep(60)
+        await send.delete()

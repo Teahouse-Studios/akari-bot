@@ -357,7 +357,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     if bug_report_targets:
                         for target in bug_report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
-                                await f.sendDirectMessage(f'执行{msg.trigger_msg}时发生了以下错误，请及时处理：\n' + tb)
+                                await f.sendDirectMessage(msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
             if command_first_word in current_unloaded_modules and msg.checkSuperUser():
                 await msg.sendMessage(msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
             elif command_first_word in err_modules:
@@ -464,8 +464,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             if bug_report_targets:
                                 for target in bug_report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
-                                        await f.sendDirectMessage(
-                                            f'执行{msg.trigger_msg}时发生了以下错误，请及时处理：\n' + tb)
+                                        await f.sendDirectMessage(msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
                         finally:
                             ExecutionLockList.remove(msg)
 

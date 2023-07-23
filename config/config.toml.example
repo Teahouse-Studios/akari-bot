@@ -5,6 +5,7 @@
 
 [secret]
 db_path = "mysql+pymysql://"
+proxy =
 check_accessKeyId =
 check_accessKeySecret =
 web_render =
@@ -17,6 +18,7 @@ openai_api_key =
 nl2c_model =
 curseforge_api_key =
 exchange_rate_api_key =
+wolfram_alpha_appid =
 
 [cfg]
 base_superuser = "QQ|2596322644"
@@ -25,6 +27,7 @@ cache_path = "./cache/"
 command_prefix = ["~", "～"]
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"]
 bug_report_url = "https://s.wd-ljt.com/botreportbug"
+bug_report_targets =
 donate_url = "https://afdian.net/@teahouse"
 help_url = "https://bot.teahouse.team"
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
@@ -33,6 +36,7 @@ rickroll_url = "https://wdf.ink/6OUp"
 web_render_local =
 qq_account = 2314163511
 qq_host = "127.0.0.1:11451"
+qq_invite_join_group_notice = true
 qq_disable_temp_session = false
 qq_enable_listening_self_message = false
 allow_request_private_ip = false
@@ -54,4 +58,3 @@ dice_output_cnt = 50
 dice_output_len = 200
 dice_detail_cnt = 5
 dice_count_limit = 10
-unloaded_modules =
