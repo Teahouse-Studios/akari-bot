@@ -1,13 +1,12 @@
 import asyncio
 
-import wolframalpha
-
 from config import Config
 from core.builtins import Bot, Image
 from core.component import module
+from core.utils.http import get_url
 from core.dirty_check import check_bool, rickroll
 
-client = wolframalpha.Client(Config('wolfram_alpha_appid'))
+appid = wolframalpha.Client(Config('wolfram_alpha_appid'))
 
 w = module(
     'wolframalpha',
@@ -20,21 +19,10 @@ w = module(
 @w.handle('<query> {{wolframalpha.help}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
-    res = await asyncio.get_event_loop().run_in_executor(None, client.query, query)
-    details = res.details
-    answer = []
-    images = []
-    for title, detail in details.items():
-        if title == 'Plot':
-            continue
-        answer.append(f'{title}: {detail}')
-    # Parse out all images that don't have a plaintext counterpart
-    for pod in res.pods:
-        if pod.text is None and 'img' in pod.subpod:
-            images.append(pod.subpod['img']['@src'])
-    bot_images = [Image(image) for image in images]
-    if await check_bool(' '.join(answer)):
-        message = await rickroll()
-        await msg.finish(message)
-    else:
-        await msg.finish(['\n'.join(answer), *bot_images])
+    url_query = urllib.parse.quote(query.replace(' ', '+'))
+    if not appid:
+        raise Exception(msg.locale.t('error.config.secret'))
+    url = "http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
+    
+    img = await get_url(url, 200)
+    await msg.finish([Image(img)])
