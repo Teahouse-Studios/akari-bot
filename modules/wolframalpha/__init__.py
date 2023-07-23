@@ -6,7 +6,7 @@ from core.component import module
 from core.utils.http import get_url
 from core.dirty_check import check_bool, rickroll
 
-appid = wolframalpha.Client(Config('wolfram_alpha_appid'))
+appid = Config('wolfram_alpha_appid')
 
 w = module(
     'wolframalpha',
