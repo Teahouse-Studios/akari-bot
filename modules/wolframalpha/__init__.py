@@ -3,7 +3,7 @@ import urllib.parse
 from config import Config
 from core.builtins import Bot, Image
 from core.component import module
-from core.utils.http import get_url
+from core.utils.http import download_to_cache, get_url
 from core.dirty_check import check_bool, rickroll
 
 appid = Config('wolfram_alpha_appid')
@@ -19,14 +19,18 @@ w = module(
 @w.handle('<query> {{wolframalpha.help}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
+    if await check_bool(query):
+        query = await rickroll()
+        await msg.finish(query)
     url_query = urllib.parse.quote(query)
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
-        img = await get_url(url, 200)
-        await msg.finish([Image(img)])
+        img = await download_to_cache(url, status_code=200)
+        if img:
+            await msg.finish([Image(img)])
     except ValueError as e:
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
@@ -35,12 +39,17 @@ async def _(msg: Bot.MessageSession):
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<question>']
+    if await check_bool(query):
+        query = await rickroll()
+        await msg.finish(query)
     url_query = urllib.parse.quote(query)
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)
+        if await check_bool(data):
+            data = await rickroll()
         await msg.finish(data)
     except ValueError as e:
         if str(e).startswith('501'):
