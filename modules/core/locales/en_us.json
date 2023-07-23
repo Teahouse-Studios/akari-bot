@@ -129,7 +129,7 @@
     "core.message.restart.restarting": "Restarting...",
     "core.message.restart.timeout": "Wait timeout, force restarting...",
     "core.message.restart.wait": "There are ${count} command(s) being executed, the bot will reboot after the execution.",
-    "core.message.resume.clean": "All messages cleared.",
+    "core.message.resume.clear": "All messages cleared.",
     "core.message.resume.done": "Resume complete.",
     "core.message.resume.nothing": "No messages to be resumed.",
     "core.message.resume.processing": "Resuming ${counts} messages...",
