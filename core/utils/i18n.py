@@ -120,9 +120,9 @@ class Locale:
         fallback_lng.insert(0, self.locale)
         for lng in fallback_lng:
             if lng in locale_root.childen:
-                string = locale_root.qurey_node(lng).qurey_node(key).value
-                if string is not None:
-                    return string  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
+                node = locale_root.qurey_node(lng).qurey_node(key)
+                if node is not None:
+                    return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
             return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
                                          fallback_failed_prompt=False)
