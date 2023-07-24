@@ -39,7 +39,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(output)])
     except ValueError as e:
         if str(e).startswith('501'):
-            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
+            await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
@@ -59,4 +59,4 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(data)
     except ValueError as e:
         if str(e).startswith('501'):
-            await msg.finish(msg.locale.t("wolframalpha.message.incomprehensible"))
+            await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
