@@ -98,7 +98,6 @@
     "core.message.module.load.success": "成功加载模块：${module}",
     "core.message.module.module.help": "Help information for module ${module}: ",
     "core.message.module.recommends": "It is recommended to enable the following module(s) at the same time: \n${msgs}\nProceed?",
-    "core.message.module.reload.base": "Failed: \"${module}\" is a base module, thus cannot be reloaded.",
     "core.message.module.reload.confirm": "This action will reload the following modules at the same time: \n${modules}\nContinue?",
     "core.message.module.reload.failed": "Failed to reload module.",
     "core.message.module.reload.no_more": "\nNo remaining files were found.",
