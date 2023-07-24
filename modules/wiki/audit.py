@@ -6,8 +6,7 @@ from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
 if Config('qq_enable_urlmanager'):
-    aud = module('wiki_audit', alias='wa',
-                 developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
+    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
 
     @aud.handle(['trust <apiLink>', 'block <apiLink>'])
