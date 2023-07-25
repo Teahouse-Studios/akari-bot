@@ -132,8 +132,7 @@ locale = module('locale', base=True, developers=['Dianliang233','Light-Beacon'])
 @locale.handle('<lang> {{core.help.locale}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
-    support_lang = ['zh_cn', 'zh_tw', 'en_us']
-    if lang in support_lang:
+    if lang in get_available_locales():
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             await msg.finish(Locale(lang).t('success'))
     else:
