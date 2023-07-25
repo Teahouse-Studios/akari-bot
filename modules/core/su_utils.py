@@ -356,7 +356,7 @@ if Bot.FetchTarget.name == 'QQ':
     async def resume_sending_group_message(msg: Bot.MessageSession):
         if not Temp.data['waiting_for_send_group_message']:
             await msg.finish(msg.locale.t("core.message.resume.nothing"))
-            
+
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
@@ -373,7 +373,7 @@ if Bot.FetchTarget.name == 'QQ':
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
+        await msg.sendMessage(msg.locale.t("core.message.resume.clear"))
 
     forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
 
@@ -449,3 +449,11 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))
+
+
+rse = module('raise', developers=['OasisAkari'], required_superuser=True)
+
+
+@rse.handle()
+async def _(msg: Bot.MessageSession):
+    raise Exception("Test Exception")

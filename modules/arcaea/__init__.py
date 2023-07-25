@@ -34,7 +34,7 @@ if api:
         if not os.path.exists(assets_path):
             await msg.finish(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
         if friend_code is not None:
-            if friend_code.isdigit() or len(friend_code) != 9:
+            if not friend_code.isdigit() or len(friend_code) != 9:
                 await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
             query_code = friend_code
         else:
@@ -133,7 +133,7 @@ if api:
             await msg.sendMessage(msg.locale.t("arcaea.message.assets.not_found", prefix=msg.prefixes[0]))
             return
         if friend_code is not None:
-            if friend_code.isdigit() or len(friend_code) != 9:
+            if not friend_code.isdigit() or len(friend_code) != 9:
                 await msg.finish(msg.locale.t("arcaea.message.invalid.friendcode.non_digital"))
             query_code = friend_code
         else:

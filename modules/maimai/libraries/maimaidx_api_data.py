@@ -9,11 +9,21 @@ assets_path = os.path.abspath('./assets/maimai')
 async def update_alias():
     try:
         url = "https://download.fanyu.site/maimai/alias_uc.json"
-        data = await get_url(url, 200, fmt='json')
+        input_data = await get_url(url, 200, fmt='json')
+
+        output_data = {}
+        for key, values in input_data.items():
+            for value in values:
+                if value == "未找到":
+                    continue
+                if value not in output_data:
+                    output_data[value] = []
+                output_data[value].append(key)
+        output_data = {k: output_data[k] for k in sorted(output_data)}
 
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
-            json.dump(data, file)
+            json.dump(output_data, file)
     except:
         return False
 
@@ -30,13 +40,13 @@ async def get_alias(msg, input, get_music=False):
 
     result = []
     if get_music:
-        input = input.replace("_", " ")
-        if input in data:
-            result = data[input]
-    else:
         for alias, ids in data.items():
             if input in ids:
                 result.append(alias)
+    else:
+        input = input.replace("_", " ")
+        if input in data:
+            result = data[input]
 
     return result
 

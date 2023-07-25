@@ -33,6 +33,5 @@ async def search(msg: Bot.MessageSession):
             message = await rickroll()
 
         await msg.finish(message)
-    except ValueError as e:
-        await msg.sendMessage(ErrorMessage(str(e)))
+    except:
         traceback.print_exc()

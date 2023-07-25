@@ -28,13 +28,13 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
 
 @a.command('<question> {{ask.help}}')
-@a.regex(r'^(?:ask|Ask|问|問)[\:：]\s?(.+?)[?？]$', desc='{ask.help.regex}')
+@a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.checkSuperUser()
     if not Config('openai_api_key'):
         raise Exception(msg.locale.t('error.config.secret'))
     if not is_superuser and msg.data.petal < 0:  # refuse
-        raise NoReportException(msg.locale.t('petal_'))
+        raise NoReportException(msg.locale.t('core.message.petal.no_petals'))
     if hasattr(msg, 'parsed_msg'):
         question = msg.parsed_msg['<question>']
     else:

@@ -45,6 +45,4 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        else:
-           await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()

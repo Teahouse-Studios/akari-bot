@@ -1,4 +1,4 @@
-import secrets
+﻿import secrets
 
 from config import Config
 from core.builtins import Bot
@@ -36,7 +36,7 @@ async def flipCoins(count: int, msg):
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
         raise OverflowError(msg.locale.t("error.config"))
     if count > MAX_COIN_NUM:
-        return msg.locale.t("coin.message.error.out_of_range", max=count_max)
+        return msg.locale.t("coin.message.error.out_of_range", max=MAX_COIN_NUM)
     if count == 0:
         return msg.locale.t("coin.message.error.nocoin")
     if count < 0:
