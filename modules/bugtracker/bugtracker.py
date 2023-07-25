@@ -57,7 +57,11 @@ async def make_screenshot(page_link, use_local=True):
 async def bugtracker_get(session, mojiraId: str, nolink=False):
     data = {}
     id_ = mojiraId.upper()
-    json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
+    try:
+        json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
+    except ValueError as e:
+        if str(e).startswith('401'):
+            await msg.finish(msg.locale.t("bugtracker.message.error.get_failed"))
     get_json = await get_url(json_url, 200)
     if mojiraId not in spx_cache:
         get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
