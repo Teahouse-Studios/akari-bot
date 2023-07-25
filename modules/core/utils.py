@@ -11,6 +11,7 @@ from cpuinfo import get_cpu_info
 from database import BotDBUtil
 from datetime import datetime
 
+
 version = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
 
@@ -131,7 +132,8 @@ locale = module('locale', base=True, developers=['Dianliang233','Light-Beacon'])
 @locale.handle('<lang> {{core.help.locale}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
-    if lang in get_available_locales():
+    support_lang = ['zh_cn', 'zh_tw', 'en_us']
+    if lang in support_lang:
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             await msg.finish(Locale(lang).t('success'))
     else:
