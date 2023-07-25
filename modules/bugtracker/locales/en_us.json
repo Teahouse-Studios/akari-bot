@@ -1,6 +1,6 @@
 {
-    "bugtracker.help": "Query the corresponding ticket on Mojira.",
+    "bugtracker.help": "Query the corresponding report on Mojira.",
     "bugtracker.help.regex.desc": "Directly send the Mojira bug id for bug info.",
     "bugtracker.help.regex.url": "Send the Mojira URL for bug info.",
-    "bugtracker.message.error": "An error occurred: Failed to fetch json."
+    "bugtracker.message.error.get_failed": "发生错误：获取内容失败，漏洞可能不存在或被设置为隐私。"
 }
