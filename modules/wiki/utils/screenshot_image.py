@@ -19,7 +19,7 @@ web_render_local = Config('web_render_local')
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 assets_path = os.path.abspath('./assets/')
-font = ImageFont.truetype(f'{assets_path}/LXGWWenKaiMono-Regular.ttf', 15)
+font = ImageFont.truetype('assets/LXGWWenKaiMono-Regular.ttf', 15)
 
 
 async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True):
