@@ -115,8 +115,6 @@ async def bugtracker_get(session, mojiraId: str, nolink=False):
                     if data["status"] == 'Resolved':
                         if fields['fixVersions']:
                             data["fixversion"] = fields['fixVersions'][0]['name']
-    else:
-        return ErrorMessage(session.locale.t('bugtracker.message.error'))
     issue_link = None
     msglist = []
     if errmsg != '':

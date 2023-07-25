@@ -442,11 +442,7 @@ async def _(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
+        await msg.finish('\n'.join(help_msg))
 
 
 async def modules_help(msg: Bot.MessageSession):
@@ -531,8 +527,4 @@ async def modules_help(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
+        await msg.finish('\n'.join(help_msg))
