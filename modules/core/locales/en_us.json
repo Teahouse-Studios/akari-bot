@@ -16,7 +16,7 @@
     "core.help.alias.remove": "Remove custom command alias.",
     "core.help.alias.reset": "Reset custom command alias.",
     "core.help.leave": "Let the robot leave the group.",
-    "core.help.locale.reload": "重载机器人语言文件。",
+    "core.help.locale.reload": "重载机器人语言文件",
     "core.help.locale.set": "设置机器人运行语言。",
     "core.help.module.disable": "Disable single/multiple modules.",
     "core.help.module.disable_all": "Disable all modules.",
