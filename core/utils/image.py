@@ -55,27 +55,27 @@ async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK&family=Noto+Sans+JP&family=Noto+Sans+KR&family=Noto+Sans+SC&family=Noto+Sans+TC&display=swap" rel="stylesheet">
     <style>html body {
         margin-top: 0px !important;
-        font-family: 'LXGWWenKai' 'LXGWWenKaiMono' 'Noto Sans SC', sans-serif;
+        font-family: 'LXGW WenKai' 'LXGW WenKai Mono' 'Noto Sans SC', sans-serif;
     }
 
     :lang(ko) {
-        font-family: 'LXGWWenKai' 'LXGWWenKaiMono' 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
+        font-family: 'LXGW WenKai' 'LXGW WenKai Mono' 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', sans-serif;
     }
 
     :lang(ja) {
-        font-family: 'LXGWWenKai' 'LXGWWenKaiMono' 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        font-family: 'LXGW WenKai' 'LXGW WenKai Mono' 'Noto Sans JP', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
 
     :lang(zh-TW) {
-        font-family: 'LXGWWenKai' 'LXGWWenKaiMono' 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        font-family: 'LXGW WenKai' 'LXGW WenKai Mono' 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
 
     :lang(zh-HK) {
-        font-family: 'LXGWWenKai' 'LXGWWenKaiMono' 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
+        font-family: 'LXGW WenKai' 'LXGW WenKai Mono' 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans SC', 'Noto Sans KR', sans-serif;
     }
 
     :lang(zh-Hans), :lang(zh-CN), :lang(zh) {
-        font-family:  'LXGWWenKai' 'LXGWWenKaiMono' 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+        font-family:  'LXGW WenKai' 'LXGW WenKai Mono' 'Noto Sans SC', 'Noto Sans HK', 'Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', sans-serif;
     }</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
