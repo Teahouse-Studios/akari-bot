@@ -62,7 +62,7 @@ async def bugtracker_get(session, mojiraId: str, nolink=False):
         get_json = await get_url(json_url, 200)
     except ValueError as e:
         if str(e).startswith('401'):
-            await msg.finish(msg.locale.t("bugtracker.message.error.get_failed"))
+            await session.finish(session.locale.t("bugtracker.message.error.get_failed"))
     if mojiraId not in spx_cache:
         get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
         if get_spx:
