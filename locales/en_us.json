@@ -28,7 +28,7 @@
     "failed": "Failed.",
     "i18n.prompt.fallback.failed": "(If you can see this, we've messed something up!\nPlease send the problem back to\n${url}\nso it can be fixed in time.)",
     "language": "English",
-    "message.delimiter": " , ",
+    "message.delimiter": ", ",
     "message.end": ".",
     "message.reply.prompt": "(Please reply to this message using the specified words)",
     "message.wait.confirm.prompt.type1": "(send \"Yes\" or other matching words to confirm)",

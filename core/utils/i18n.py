@@ -131,6 +131,6 @@ class Locale:
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
 def get_available_locales():
-    return list(locale_root.keys())
+    return list(locale_root.childen.keys())
 
 __all__ = ['Locale', 'load_locale_file', 'get_available_locales']
