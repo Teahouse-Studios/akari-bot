@@ -163,4 +163,4 @@ def rickroll(msg):
     if Config("enable_rickroll"):
         raise NoReportException(Config("rickroll_url"))
     else:
-        await msg.finish(msg.locale.t("check.redacted.all"))
+        raise NoReportException(msg.locale.t("error.message.chain.unsafe"))
