@@ -85,6 +85,8 @@ $ pip install -r requirements.txt
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
+由于我们使用的是 `toml` 配置文件，与 `cfg` 配置文件不同的是，请在填写好必要的字段后，**删除**所有配置文件中留空的内容，否则程序无法正确读取。
+
 对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
 
 `db_path = "mysql+pymysql://"`
@@ -243,7 +245,7 @@ servers:
 1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，你需要安装好 [Node.js](https://nodejs.org/)
    环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
 2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
-3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
+3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段（请在填写完毕后**删除**注释的内容）：
 
 ```
 CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
