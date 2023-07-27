@@ -158,7 +158,7 @@ async def check_bool(*text):
     return False
 
 
-async def rickroll():
+def rickroll():
     if Config("enable_rickroll"):
         return Config("rickroll_url")
     else:

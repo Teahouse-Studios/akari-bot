@@ -63,6 +63,6 @@ async def _(msg: Bot.MessageSession):
     output = completion['choices'][0]['message']['content']
     await wait_msg.delete()
     if await check_bool(output):
-        message = await rickroll()
+        message = rickroll()
         await msg.finish(message)
     await msg.finish(output, disable_secret_check=True)

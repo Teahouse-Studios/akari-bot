@@ -25,5 +25,5 @@ async def _(msg: Bot.MessageSession, language: str, content: str):
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if await check_bool(res):
-        raise NoReportException(await rickroll())
+        raise NoReportException(rickroll())
     await msg.finish(res + '\n' + msg.locale.t('langconv.message.running_time', time=delta))
