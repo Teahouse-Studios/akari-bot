@@ -14,29 +14,32 @@ class MessageChain:
         """
         :param elements: 消息链元素
         """
-        self.elements = elements
+        self.value = elements
 
     @property
     def is_safe(self) -> bool:
         """
         检查消息链是否安全。
         """
-        return True
+        raise NotImplementedError
 
     def asSendable(self, embed=True) -> list:
         """
         将消息链转换为可发送的格式。
         """
+        raise NotImplementedError
 
     def append(self, element):
         """
         添加一个消息链元素到末尾。
         """
+        raise NotImplementedError
 
     def remove(self, element):
         """
         删除一个消息链元素。
         """
+        raise NotImplementedError
 
 
 __all__ = ["MessageChain"]

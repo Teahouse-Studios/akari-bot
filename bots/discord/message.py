@@ -10,7 +10,7 @@ from bots.discord.client import client
 from config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MS
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import Embed, ErrorMessage
+from core.builtins.message.internal import Embed, ErrorMessage, Voice
 from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
@@ -62,7 +62,7 @@ class FinishedSession(FinS):
 class MessageSession(MS):
     class Feature:
         image = True
-        voice = False
+        voice = True
         embed = True
         forward = False
         delete = True
@@ -88,6 +88,12 @@ class MessageSession(MS):
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
+            elif isinstance(x, Voice):
+                send_ = await self.session.target.send(file=discord.File(x.path),
+                                                       reference=self.session.message if quote and count == 0
+                                                       and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
+
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
                 send_ = await self.session.target.send(embed=embeds,
@@ -162,13 +168,7 @@ class FetchedSession(FS):
         self.session = Session(message=False, target=targetId, sender=targetId)
         self.parent = MessageSession(self.target, self.session)
 
-    async def sendDirectMessage(self, msgchain, disable_secret_check=False):
-        """
-        用于向获取对象发送消息。
-        :param msgchain: 消息链，若传入str则自动创建一条带有Plain元素的消息链
-        :param disable_secret_check: 是否禁用消息检查（默认为False）
-        :return: 被发送的消息链
-        """
+    async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         try:
             getChannel = await client.fetch_channel(self.session.target)
         except Exception:

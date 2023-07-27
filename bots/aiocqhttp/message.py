@@ -20,8 +20,10 @@ from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import MsgInfo, Session, FetchTarget as FT, \
     FetchedSession as FS, FinishedSession as FinS
+from core.utils.image import msgchain2image
 from database import BotDBUtil
 from core.utils.storedata import get_stored_list
+from core.exceptions import SendMessageFailed
 
 enable_analytics = Config('enable_analytics')
 base_superuser = Config('base_superuser')
@@ -80,9 +82,12 @@ class MessageSession(MS):
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
             except aiocqhttp.exceptions.ActionFailed:
-                anti_autofilter_word_list = ['（ffk）', '（阻止风向控制）', '（房蜂控）']
-                msg = msg + MessageSegment.text(random.choice(anti_autofilter_word_list))
-                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+                msgchain.insert(0, Plain('消息被风控，尝试使用图片发送。'))
+                msg2img = MessageSegment.image(Path(await msgchain2image(msgchain)).as_uri())
+                try:
+                    send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
+                except aiocqhttp.exceptions.ActionFailed as e:
+                    raise SendMessageFailed(e.result['wording'])
         elif self.target.targetFrom == 'QQ|Guild':
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
@@ -272,7 +277,8 @@ class FetchTarget(FT):
             nonlocal blocked
             try:
                 if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
-                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                    Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
+                                                                        'i18n': i18n})
                 else:
                     if i18n:
                         if isinstance(message, dict):
@@ -290,8 +296,8 @@ class FetchTarget(FT):
                 if enable_analytics:
                     BotDBUtil.Analytics(fetch_).add('', module_name, 'schedule')
                 await asyncio.sleep(0.5)
-            except aiocqhttp.ActionFailed as e:
-                if e.result['wording'] == 'send group message failed: blocked by server':
+            except SendMessageFailed as e:
+                if e.args[0] == 'send group message failed: blocked by server':
                     if len(_tsk) >= 3:
                         blocked = True
                     if not blocked:
@@ -305,7 +311,7 @@ class FetchTarget(FT):
                             _tsk = []
                         fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
                         if fetch_base_superuser:
-                            await fetch_base_superuser.\
+                            await fetch_base_superuser. \
                                 sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused",
                                                                                        prefix=command_prefix[0]))
             except Exception:

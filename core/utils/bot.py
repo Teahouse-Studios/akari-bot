@@ -2,10 +2,11 @@ import asyncio
 import logging
 import os
 import traceback
-from configparser import ConfigParser
 from os.path import abspath
 
 import ujson as json
+
+from config import CFG
 
 from core.builtins import PrivateAssets, Secret
 from core.exceptions import ConfigFileNotFound
@@ -15,25 +16,9 @@ from core.scheduler import Scheduler
 from core.utils.http import get_url
 from core.utils.ip import IP
 
-bot_version = 'v4.0.11'
-
 
 async def init_async() -> None:
     load_modules()
-    version = os.path.abspath(PrivateAssets.path + '/version')
-    with open(version, 'w') as write_version:
-        try:
-            write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
-        except Exception as e:
-            write_version.write(bot_version)
-    
-    tag = os.path.abspath(PrivateAssets.path + '/version_tag')
-    with open(tag, 'w') as write_tag:
-        try:
-            write_tag.write(os.popen('git tag -l', 'r').read().split('\n')[-2])
-        except Exception as e:
-            write_tag.write(bot_version)
-
     gather_list = []
     Modules = ModulesManager.return_modules_list()
     for x in Modules:
@@ -48,18 +33,11 @@ async def init_async() -> None:
 
 
 async def load_secret():
-    config_filename = 'config.cfg'
-    config_path = abspath('./config/' + config_filename)
-    cp = ConfigParser()
-    cp.read(config_path)
-    section = cp.sections()
-    if len(section) == 0:
-        raise ConfigFileNotFound(config_path) from None
-    options = cp.options('secret')
-    for option in options:
-        value = cp.get('secret', option)
-        if value.upper() not in ['', 'TRUE', 'FALSE']:
-            Secret.add(value.upper())
+    for x in CFG.value:
+        if x == 'secret':
+            for y in CFG().value[x]:
+                if CFG().value[x][y] is not None:
+                    Secret.add(str(CFG().value[x][y]).upper())
 
     async def append_ip():
         try:

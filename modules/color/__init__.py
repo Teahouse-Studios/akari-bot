@@ -25,11 +25,7 @@ css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 @c.handle('[<color>] {{color.help}}')
 @c.handle()
-async def _(msg: Bot.MessageSession):
-    try:
-        color = msg.parsed_msg.get('<color>')
-    except AttributeError:
-        color = None
+async def _(msg: Bot.MessageSession, color: str = None):
     if color is None:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
     elif css_names_to_hex.get(color) is not None:
@@ -43,19 +39,19 @@ async def _(msg: Bot.MessageSession):
         if len(color) == 4:
             color = '#' + color[1] * 2 + color[2] * 2 + color[3] * 2
         color = webcolors.html5_parse_simple_color(color)
-    elif re.match(r'^rgb\(\d{1,3}, ?\d{1,3}, ?\d{1,3}\)$', color):
+    elif re.match(r'^rgb\(\d{1,3},\s?\d{1,3},\s?\d{1,3}\)$', color):
         color = color[4:-1].split(',')
         color = webcolors.HTML5SimpleColor(*(int(x.strip()) for x in color))
-    elif re.match(r'^rgb\(\d{1,3}%, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+    elif re.match(r'^rgb\(\d{1,3}%,\s?\d{1,3}%,\s?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
         color = webcolors.HTML5SimpleColor(*(int(x.strip()[:-1]) * 255 / 100 for x in color))
-    elif re.match(r'^hsl\(\d{1,3}, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+    elif re.match(r'^hsl\(\d{1,3},\s?\d{1,3}%,\s?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
         color = colorsys.hls_to_rgb(int(color[0].strip()) / 360,
                                     int(color[2].strip()[:-1]) / 100,
                                     int(color[1].strip()[:-1]) / 100)
         color = webcolors.HTML5SimpleColor(*(int(x * 255) for x in color))
-    elif re.match(r'^hsl\(\d{1,3}deg, ?\d{1,3}%, ?\d{1,3}%\)$', color):
+    elif re.match(r'^hsl\(\d{1,3}deg,\s?\d{1,3}%,\s?\d{1,3}%\)$', color):
         color = color[4:-1].split(',')
         color = colorsys.hls_to_rgb(int(color[0].strip()[:-3]) / 360,
                                     int(color[2].strip()[:-1]) / 100,
@@ -93,8 +89,6 @@ async def _(msg: Bot.MessageSession):
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0] is not None:
         material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{material_color_name_raw[0]}'
-
-
 
     draw.multiline_text(
         (250,

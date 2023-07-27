@@ -31,11 +31,14 @@ def enqueue_output(out, queue):
 
 def init_bot():
     base_superuser = Config('base_superuser')
-    if base_superuser:
+    if base_superuser is not None:
         BotDBUtil.SenderInfo(base_superuser).edit('isSuperUser', True)
 
 
 pidlst = []
+
+if not (disabled_bots := Config('disabled_bots')):
+    disabled_bots = []
 
 
 def run_bot():
@@ -64,8 +67,10 @@ def run_bot():
     botdir = './bots/'
     lst = os.listdir(botdir)
     runlst = []
-    for x in lst:
-        bot = os.path.abspath(f'{botdir}{x}/bot.py')
+    for bl in lst:
+        if bl in disabled_bots:
+            continue
+        bot = os.path.abspath(f'{botdir}{bl}/bot.py')
         if os.path.exists(bot):
             p = subprocess.Popen([sys.executable, bot], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  cwd=os.path.abspath('.'), env=envs)
@@ -106,15 +111,16 @@ def run_bot():
                         else:
                             logger.error(f'Cannot decode string from {e}, no more attempts.')
 
-        # break when all processes are done.
-        if all(p.poll() is not None for p in runlst):
-            break
-
         for p in runlst:
             if p.poll() == 233:
                 logger.warning(f'{p.pid} exited with code 233, restart all bots.')
                 pidlst.remove(p.pid)
                 raise RestartBot
+
+        # break when all processes are done.
+        if all(p.poll() is not None for p in runlst):
+            break
+
         sleep(0.0001)
 
 

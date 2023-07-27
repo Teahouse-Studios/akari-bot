@@ -1,11 +1,11 @@
 import re
 import traceback
 
-from config import Config
+from config import Config, CFG
 from core.builtins import Image, Plain, Bot
 from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
-from core.loader import ModulesManager
+from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
@@ -14,7 +14,9 @@ m = module('module',
            base=True,
            alias={'enable': 'module enable',
                   'disable': 'module disable',
-                  'reload': 'module reload'},
+                  'load': 'module load',
+                  'reload': 'module reload',
+                  'unload': 'module unload'},
            developers=['OasisAkari', 'Light-Beacon'],
            required_admin=True
            )
@@ -25,6 +27,8 @@ m = module('module',
             'disable <module>... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
             'reload <module> ... {{core.help.module.reload}}',
+            'load <module> ... {{core.help.module.load}}',
+            'unload <module> ... {{core.help.module.unload}}',
             'list {{core.help.module.list}}'], exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -32,12 +36,14 @@ async def _(msg: Bot.MessageSession):
     await config_modules(msg)
 
 
-@m.command(['enable <module>... {{core.help.module.enable}}',
+@m.command(['enable <module> ... {{core.help.module.enable}}',
             'enable all {{core.help.module.enable_all}}',
-            'disable <module>... {{core.help.module.disable}}',
+            'disable <module> ... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
             'reload <module> ... {{core.help.module.reload}}',
-            'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.tion.tion.tion.tion.module.g}'},
+            'load <module> ... {{core.help.module.load}}',
+            'unload <module> ... {{core.help.module.unload}}',
+            'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -77,8 +83,7 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(msg.locale.t("core.message.module.enable.not_found", module=module_))
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(msg.locale.t("core.message.module.enable.perimission.denied",
-                                                    module=module_))
+                        msglist.append(msg.locale.t("cparser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.enable.base", module=module_))
                     else:
@@ -141,8 +146,7 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(msg.locale.t("core.message.module.disable.not_found", module=module_))
                 else:
                     if modules_[module_].required_superuser and not msg.checkSuperUser():
-                        msglist.append(msg.locale.t("core.message.module.disable.permission.denied",
-                                                    module=module_))
+                        msglist.append(msg.locale.t("parser.superuser.permission.denied"))
                     elif modules_[module_].base:
                         msglist.append(msg.locale.t("core.message.module.disable.base", module=module_))
                     else:
@@ -166,32 +170,84 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules):
                 reloadCnt = ModulesManager.reload_module(module)
                 if reloadCnt > 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + ' '.join(
-                        extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + \
-                        ' '.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
+                        '\n' if len(extra_modules) != 0 else '') + '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.message.module.reload.failed")}'
 
-            if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
-                msglist.append(module_reload(module_))
-            elif module_ not in modules_:
-                msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
-            else:
-                if modules_[module_].base:
-                    msglist.append(msg.locale.t("core.message.module.reload.base", module=module_))
+            for module_ in wait_config_list:
+
+                if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
+                    msglist.append(module_reload(module_, []))
+                elif module_ not in modules_:
+                    msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if len(extra_reload_modules):
                         confirm = await msg.waitConfirm(msg.locale.t("core.message.module.reload.confirm",
                                                                      modules='\n'.join(extra_reload_modules)))
                         if not confirm:
-                            await msg.finish()
-                            return
+                            continue
+                    unloaded_list = CFG.get('unloaded_modules')
+                    if module_ in unloaded_list:
+                        unloaded_list.remove(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
                     msglist.append(module_reload(module_, extra_reload_modules))
         else:
-            msglist.append(msg.locale.t("core.message.module.reload.permission.denied"))
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+    elif msg.parsed_msg.get('load', False):
+        if msg.checkSuperUser():
+
+            for module_ in wait_config_list:
+                if module_ not in current_unloaded_modules:
+                    msglist.append(msg.locale.t("core.message.module.load.error"))
+                    continue
+                if ModulesManager.load_module(module_):
+                    msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
+                    unloaded_list = CFG.get('unloaded_modules')
+                    if module_ in unloaded_list:
+                        unloaded_list.remove(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                else:
+                    msglist.append(msg.locale.t("core.message.module.load.failed"))
+
+        else:
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+
+    elif msg.parsed_msg.get('unload', False):
+        if msg.checkSuperUser():
+
+            for module_ in wait_config_list:
+                if module_ not in modules_:
+                    if module_ in err_modules:
+                        if await msg.waitConfirm(msg.locale.t("core.message.module.unload.unavailable.confirm")):
+                            unloaded_list = CFG.get('unloaded_modules')
+                            if not unloaded_list:
+                                unloaded_list = []
+                            if module_ not in unloaded_list:
+                                unloaded_list.append(module_)
+                                CFG.write('unloaded_modules', unloaded_list)
+                            msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                    else:
+                        msglist.append(msg.locale.t("core.message.module.unload.error"))
+                    continue
+                if await msg.waitConfirm(msg.locale.t("core.message.module.unload.confirm")):
+                    if ModulesManager.unload_module(module_):
+                        msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                        unloaded_list = CFG.get('unloaded_modules')
+                        if not unloaded_list:
+                            unloaded_list = []
+                        unloaded_list.append(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                else:
+                    await msg.finish()
+
+        else:
+            msglist.append(msg.locale.t("parser.superuser.permission.denied"))
+
     if msglist is not None:
         if not recommend_modules_help_doc_list:
             await msg.finish('\n'.join(msglist))
@@ -265,7 +321,7 @@ async def bot_help(msg: Bot.MessageSession):
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
             if module_.developers is not None:
-                devs = '、'.join(module_.developers)
+                devs = msg.locale.t('message.delimiter').join(module_.developers)
             else:
                 devs = ''
             devs_msg = '\n' + msg.locale.t("core.message.module.help.author.type1") + devs
@@ -343,7 +399,7 @@ async def _(msg: Bot.MessageSession):
                         malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
                 if module_.developers:
-                    appends.append('、'.join(module_.developers))
+                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 if module_.base:
                     essential.append(appends)
                 if x in target_enabled_list:
@@ -386,11 +442,7 @@ async def _(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
+        await msg.finish('\n'.join(help_msg))
 
 
 async def modules_help(msg: Bot.MessageSession):
@@ -446,7 +498,7 @@ async def modules_help(msg: Bot.MessageSession):
                         malias.append(f'{a} -> {module_alias[a]}')
                 appends.append('\n'.join(malias) if malias else '')
                 if module_.developers:
-                    appends.append('、'.join(module_.developers))
+                    appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 m.append(appends)
             if m:
                 tables.append(ImageTable(m, [msg.locale.t("core.message.module.help.table.header.external"),
@@ -475,8 +527,4 @@ async def modules_help(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
+        await msg.finish('\n'.join(help_msg))

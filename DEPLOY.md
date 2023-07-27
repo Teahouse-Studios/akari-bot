@@ -12,7 +12,8 @@
 
 ## 下载源代码
 
-1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然。你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然，你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+（注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程）
 2. 解压源代码，然后打开终端，进入文件夹。
 
 ## 安装依赖
@@ -82,11 +83,13 @@ $ pip install -r requirements.txt
 
 ## 配置
 
-进入 `config` 文件夹，将 `config.cfg.example` 重命名为 `config.cfg`，然后开始配置你所需要的内容。
+进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
+
+由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你您拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
 
 对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
 
-`db_path = mysql+pymysql://`
+`db_path = "mysql+pymysql://"`
 
 机器人需要一个数据库以用于存储用户数据。
 
@@ -98,11 +101,11 @@ $ pip install -r requirements.txt
 
 **格式**
 
-`mysql+pymysql://<数据库用户名>:<数据库用户密码>@<数据库地址>`
+`db_path = "mysql+pymysql://<数据库用户名>:<数据库用户密码>@<数据库地址>"`
 
 **实际示例**
 
-`mysql+pymysql://bot:123456@example.com/bot_prod`
+`db_path = "mysql+pymysql://bot:123456@example.com/bot_prod"`
 
 ### SQLite
 
@@ -113,11 +116,11 @@ $ pip install -r requirements.txt
 
 **格式**
 
-`db_path = sqlite:///<相对路径>/<数据库文件名>.db`
+`db_path = "sqlite:///<相对路径>/<数据库文件名>.db"`
 
 **实际示例**
 
-`db_path = sqlite:///database/save.db`
+`db_path = "sqlite:///database/save.db"`
 
 此示例将会在 `database` 文件夹内创建 `save.db` 来存储用户数据。
 
@@ -145,9 +148,9 @@ $ pip install -r requirements.txt
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-`qq_host = 127.0.0.1:11451` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
+`qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 websocket 服务器，用于 go-cqhttp 反向连接。
 
-`qq_account = 2052142661` - 填写机器人的 QQ 号。
+`qq_account = "2314163511"` - 填写机器人的 QQ 号。
 
 填写好后，请配置 `go-cqhttp` 的 `config.yml` 文件中的对应的连接方式。
 
@@ -184,6 +187,12 @@ servers:
 
 `tg_token =` - 填写你获取到的机器人 Token。
 
+### Kook
+
+你需要在 [Kook 开发者平台](https://developer.kookapp.cn/) 创建一个机器人并获取 Token。
+
+`kook_token =` - 填写你获取到的机器人 Token。
+
 ## 运行平台机器人
 
 ### Windows
@@ -205,27 +214,27 @@ servers:
 
 由于小可有着许多的功能，部分功能需要进一步的配置才能使用。
 
-部分字段可能并未预设于 `config.yml.example` 中，手动添加即可。
+部分字段可能并未预设于 `config.toml.example` 中，手动添加即可。
 
 ### 屏蔽词
 
-小可内置了 [阿里云内容安全服务](https://www.aliyun.com/product/lvwang) 对接，可用于 QQ 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
+小可内置了 [阿里云内容安全服务](https://www.aliyun.com/product/lvwang) 对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
 
-如有需求，请前往阿里云进行开通并获取 accessKeyId 及 accessKeySecret。未填写字段将不会使用屏蔽词服务。
+如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
-`Check_accessKeyId =` - 填写获取的 `accessKeyId`
+`check_accessKeyId =` - 填写获取的 AccessKeyID
 
-`Check_accessKeySecret =` - 填写获取的 `accessKeySecret`
+`check_accessKeySecret =` - 填写获取的 AccessKeySecret
 
 ### QQ频道消息处理（beta）
 
-通过上文的[aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能
+通过上文的[aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能。
 
-根据go-cqhttp的文档，iPad/Android Pad/Android Phone协议支持处理QQ频道消息，可以在其生成的`device.json`中寻找`"protocol":6,`字段，将本处的数值修改为1（Android Phone）或5（iPad）或6（Android Pad）任意一个均可调用本功能
+根据 go-cqhttp 的文档，iPad/Android Pad/Android Phone 协议支持处理QQ频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-> 注意：QQ频道消息的处理仍然处于测试阶段，由于go-cqhttp对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次gocqhttp）。
+> 注意：QQ频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
-> 关于go-cqhttp选用以上方式登录时出现的的Code45或其他登录问题，请根据go-cqhttp官方[issue](https://github.com/Mrs4s/go-cqhttp)对照解决，或选用除以上协议外的其他协议
+> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 ### Webrender
 
@@ -249,19 +258,19 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 #### 字段填写
 
-`web_render =` - Webrender 的地址（IP 或域名）及端口
+`web_render =` - Webrender 的地址（IP 或域名）及端口。
 
-`web_render_local =` - 本地 Webrender 的地址（可与上一字段同一参数）
+`web_render_local =` - 本地 Webrender 的地址。（可与上一字段同一参数）
 
 **示例**
 
-`web_render = http://127.0.0.1:15551/`
+`web_render = "http://127.0.0.1:15551/"`
 
 ### 模块
 
-#### Arcaea
+#### arcaea
 
-Arcaea 模块使用了 BotArcAPI 进行开发。
+`arcaea` 模块使用了 BotArcAPI 进行开发。
 
 `botarcapi_url =` - 填写 BotArcAPI 公用实例地址
 
@@ -270,9 +279,37 @@ Arcaea 模块使用了 BotArcAPI 进行开发。
 填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
 启动后使用 `~arcaea initialize` 来初始化资源文件。
 
+如果不需要本模块的功能，将 API 字段删除即可。
+
+#### coin 
+`coin` 模块需要一些额外的参数才能正常工作。
+
+`coin_limit = 10000` - 一次可投掷的硬币最大个数。
+
+`coin_faceup_rate = 4994` - 硬币正面朝上的概率，按一万分之几计算。
+
+`coin_facedown_rate = 4994` - 硬币反面朝上的概率，按一万分之几计算。
+
+#### dice
+`dice` 模块需要一些额外的参数才能正常工作。
+
+`dice_limit = 10000` - 一次可投掷的骰子最大个数。
+
+`dice_roll_limit = 100` - 投掷骰子的最大次数。
+
+`dice_mod_max = 10000` - 投掷骰子的最大调节值。
+
+`dice_mod_min = -10000` - 投掷骰子的最小调节值。
+
+`dice_output_cnt = 50` - 输出时的最大数据量，超过则无法正常显示。
+
+`dice_detail_cnt= 5` - 多次投掷骰子的总数，超过则不再显示详细信息。
+
+`dice_count_limit = 10` - 多项式最多的项数。
+
 #### maimai
 
-maimai 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
+`maimai` 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
 
 1. 下载 [资源文件](https://www.diving-fish.com/maibot/static.zip) ，并于 `assets` 目录下创建一个 `maimai` 文件夹。
 2. 解压资源文件，形成以下目录结构：
@@ -289,39 +326,50 @@ assets
             │...
 ```
 
-#### secret
 
-此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
+#### ncmusic
 
-#### music
-
-music模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
+`ncmusic` 模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
 
 具体配置教程请查看链接所指向的文档。
 
-配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.cfg` 文件中填写以下字段：
+配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.toml` 文件中填写以下字段：
 
 + `web_render` - Webrender 的地址（IP 或域名）及端口
 + `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
 
+如果不需要本模块的功能，将 API 字段删除即可。
+
+#### secret
+
+此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
+
 ### 其他功能
 
-`qq_msg_logging_to_db = True` - 将 QQ 平台内的命令触发消息记录至 `database/msg.db` 中，有助于判断是否存在违规使用机器人的情况。
-
-`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|<ClientID>`、`Telegram|<ClientID>`，可在机器人开启后使用 `~whoami`
+`base_superuser =` - 设置机器人主超级用户。可用格式为 `QQ|<QQ号>`、`Discord|Client|<ClientID>`、`Telegram|Client|<ClientID>`、`Kook|User|<UserID>`，可在机器人开启后使用 `~whoami`
 命令来查看自身的 ID，机器人启动后将自动标记对象为超级用户。
 
-`slower_schedule = False` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
+`qq_disable_temp_session = true` - 是否禁用 QQ 平台的临时会话功能。
 
-`enable_tos = False` - 是否启用内置的违反服务条款的检查。
+`qq_enable_listening_self_message = false` - 是否启用 QQ 平台的自我消息处理（可能有助于多设备下使用，但也可能会导致误触发导致消息陷入死循环状态）。
 
-`qq_enable_dirty_check = True` - 是否启用 QQ 平台的屏蔽词检查。
+`enable_dirty_check = true` - 是否启用屏蔽词检查。
 
-`qq_enable_urlmanager = True` - 是否启用 QQ 平台的 URL 管理（替换外部链接，提示非官方页面）。
+`enable_urlmanager = true` - 是否启用 URL 管理（替换外部链接，提示非官方页面）。若停用此功能将同时停用 `wiki_audit` 命令。
+
+`slower_schedule = false` - 部分计划任务模块使用更长的时间间隔执行，可能有助于网络较差环境的优化。
+
+`enable_tos = false` - 是否启用内置的违反服务条款的检查。
+
+`enable_analytics = true` - 是否启用内置的 `analytics` 命令，用于统计命令使用次数。
+
+`enable_eval = true` - 是否启用内置的 `eval` 命令。
+
+`allow_request_private_ip = true` - 是否允许机器人请求私有 IP 地址。
 
 #### 自定义确认词及命令前缀
 
-你可以通过编辑 `core/elements/others/__init__.py` 里面的 `confirm_command` 变量来添加（或删除）机器人在部分场景下询问用户是否继续的词语，通过编辑 `command_prefix`
-变量来增加（或删除）可使用的命令前缀。
+你可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix`
+来增加（或删除）可使用的默认命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。

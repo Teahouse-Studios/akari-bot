@@ -25,10 +25,11 @@ body:
       label: 聊天平台
       description: 小可在哪个平台出错了？
       options:
-        - Discord
-        - Telegram
         - QQ 群
         - QQ 频道
+        - Kook
+        - Discord
+        - Telegram
         - 开发者控制台
         - 所有平台均有此问题
     validations:

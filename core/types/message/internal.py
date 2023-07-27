@@ -12,9 +12,7 @@ class Plain:
         """
         :param text: 文本内容
         """
-        self.text = str(text)
-        for t in texts:
-            self.text += str(t)
+        raise NotImplementedError
 
 
 class Url:
@@ -31,9 +29,7 @@ class Url:
         :param use_mm: 是否使用跳转链接，覆盖全局设置
         :param disable_mm: 是否禁用跳转链接，覆盖全局设置
         """
-        self.url = url
-        self.mm = use_mm
-        self.disable_mm = disable_mm
+        raise NotImplementedError
 
 
 class ErrorMessage:
@@ -45,7 +41,7 @@ class ErrorMessage:
         """
         :param error_message: 错误信息文本
         """
-        self.error_message = error_message
+        raise NotImplementedError
 
 
 class Image:
@@ -59,19 +55,19 @@ class Image:
         :param path: 图片路径或PIL.Image对象
         :param headers: 获取图片时的请求头
         """
-        self.need_get = False
-        self.path = path
-        self.headers = headers
+        raise NotImplementedError
 
     async def get(self):
         """
         获取图片。
         """
+        raise NotImplementedError
 
     async def get_image(self):
         """
         从网络下载图片。
         """
+        raise NotImplementedError
 
 
 class Voice:
@@ -84,7 +80,7 @@ class Voice:
         """
         :param path: 语音文件路径。
         """
-        self.path = path
+        raise NotImplementedError
 
 
 class EmbedField:
@@ -101,9 +97,7 @@ class EmbedField:
         :param value: 字段值
         :param inline: 是否为行内字段
         """
-        self.name = name
-        self.value = value
-        self.inline = inline
+        raise NotImplementedError
 
 
 class Embed:
@@ -134,21 +128,13 @@ class Embed:
         :param footer: 页脚
         :param fields: 字段
         """
-        self.title = title
-        self.description = description
-        self.url = url
-        self.timestamp = timestamp
-        self.color = color
-        self.image = image
-        self.thumbnail = thumbnail
-        self.author = author
-        self.footer = footer
-        self.fields = fields
+        raise NotImplementedError
 
     def to_msgchain(self):
         """
         将Embed转换为消息链。
         """
+        raise NotImplementedError
 
 
 __all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage"]

@@ -13,21 +13,21 @@ from modules.wiki.utils.wikilib import WikiLib
 from .tpg import tpg
 
 
-async def get_user_info(wikiurl, username, pic=False):
+async def get_user_info(msg, wikiurl, username, pic=False):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
-        return [Plain(f'{wikiurl}不可用。')]
+        return [Plain(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))]
     await wiki.fixup_wiki_info()
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
-            return await get_user_info(wiki.wiki_info.interwiki[match_interwiki.group(1)], match_interwiki.group(2),
+            return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)], match_interwiki.group(2),
                                        pic)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
     if 'missing' in base_user_info:
-        return [Plain('没有找到此用户。')]
+        return [Plain(msg.locale.t('user.message.not_found'))]
     data['username'] = base_user_info['name']
     data['url'] = re.sub(r'\$1', urllib.parse.quote('User:' + username), wiki.wiki_info.articlepath)
     groups = {}
@@ -51,15 +51,15 @@ async def get_user_info(wikiurl, username, pic=False):
             data['global_users_groups'].append(groups[g] if g in groups else g)
     data['registration_time'] = base_user_info['registration']
     data['registration_time'] = UTC8(data['registration_time'], 'full') if data[
-        'registration_time'] is not None else '未知'
+        'registration_time'] is not None else msg.locale.t('unknown')
     data['edited_count'] = str(base_user_info['editcount'])
     data['gender'] = base_user_info['gender']
     if data['gender'] == 'female':
-        data['gender'] = '女'
+        data['gender'] = msg.locale.t('user.message.gender.female')
     elif data['gender'] == 'male':
-        data['gender'] = '男'
+        data['gender'] = msg.locale.t('user.message.gender.male')
     elif data['gender'] == 'unknown':
-        data['gender'] = '未知'
+        data['gender'] = msg.locale.t('unknown')
     # if one day LGBTers...
 
     try:
@@ -81,11 +81,11 @@ async def get_user_info(wikiurl, username, pic=False):
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
-        data['blocked_time'] = UTC8(data['blocked_time'], 'full') if data['blocked_time'] is not None else '未知'
+        data['blocked_time'] = UTC8(data['blocked_time'], 'full') if data['blocked_time'] is not None else msg.locale.t('unknown')
         data['blocked_expires'] = base_user_info['blockedexpiry']
-        data['blocked_expires'] = UTC8(data['blocked_expires'], 'full') if data['blocked_expires'] is not None else '未知'
+        data['blocked_expires'] = UTC8(data['blocked_expires'], 'full') if data['blocked_expires'] is not None else msg.locale.t('unknown')
         data['blocked_reason'] = base_user_info['blockedreason']
-        data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] is not None else '未知'
+        data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] is not None else msg.locale.t('unknown')
 
     if pic:
         assets_path = os.path.abspath('./assets/')
@@ -107,7 +107,7 @@ async def get_user_info(wikiurl, username, pic=False):
             bantype = 'YN'
         elif blocked_by and blocked_reason:
             bantype = 'Y'
-        image = tpg(
+        image = tpg(msg,
             favicon=os.path.join(site_icon, 'Wiki.png'),
             wikiname=wiki.wiki_info.name,
             username=data['username'] if 'username' in data else '?',
@@ -131,37 +131,37 @@ async def get_user_info(wikiurl, username, pic=False):
     else:
         msgs = []
         if user := data.get('username', False):
-            msgs.append('用户：' + user + (' | 编辑数：' + data['edited_count']
+            msgs.append(msg.locale.t('user.message.username') + user + (' | ' + msg.locale.t('user.message.edited_count') + data['edited_count']
                                         if 'edited_count' in data and 'created_page_count' not in data else ''))
         if users_groups := data.get('users_groups', False):
-            msgs.append('用户组：' + '、'.join(users_groups))
+            msgs.append(msg.locale.t('user.message.users_groups') + msg.locale.t('message.delimiter').join(users_groups))
         if gender_ := data.get('gender', False):
-            msgs.append('性别：' + gender_)
+            msgs.append(msg.locale.t('user.message.gender') + gender_)
         if registration := data.get('registration_time', False):
-            msgs.append('注册时间：' + registration)
+            msgs.append(msg.locale.t('user.message.registration_time') + registration)
         if edited_wiki_count := data.get('edited_wiki_count', False):
-            msgs.append('编辑过的Wiki：' + edited_wiki_count)
+            msgs.append(msg.locale.t('user.message.edited_wiki_count') + edited_wiki_count)
 
         sub_edit_counts1 = []
         if created_page_count := data.get('created_page_count', False):
-            sub_edit_counts1.append('创建数：' + created_page_count)
+            sub_edit_counts1.append(msg.locale.t('user.message.created_page_count') + created_page_count)
         if edited_count := data.get('edited_count', False) and created_page_count:
-            sub_edit_counts1.append('编辑数：' + edited_count)
+            sub_edit_counts1.append(msg.locale.t('user.message.edited_count') + edited_count)
         sub_edit_counts2 = []
         if deleted_count := data.get('deleted_count', False):
-            sub_edit_counts2.append('删除数：' + deleted_count)
+            sub_edit_counts2.append(msg.locale.t('user.message.deleted_count') + deleted_count)
         if patrolled_count := data.get('patrolled_count', False):
-            sub_edit_counts2.append('巡查数：' + patrolled_count)
+            sub_edit_counts2.append(msg.locale.t('user.message.patrolled_count') + patrolled_count)
         sub_edit_counts3 = []
         if site_rank := data.get('site_rank', False):
-            sub_edit_counts3.append('本站排名：' + site_rank)
+            sub_edit_counts3.append(msg.locale.t('user.message.site_rank') + site_rank)
         if global_rank := data.get('global_rank', False):
-            sub_edit_counts3.append('全站排名：' + global_rank)
+            sub_edit_counts3.append(msg.locale.t('user.message.global_rank') + global_rank)
         sub_edit_counts4 = []
         if friends_count := data.get('friends_count', False):
-            sub_edit_counts4.append('好友数：' + friends_count)
+            sub_edit_counts4.append(msg.locale.t('user.message.friends_count') + friends_count)
         if wikipoints := data.get('wikipoints', False):
-            sub_edit_counts4.append('Wikipoints：' + wikipoints)
+            sub_edit_counts4.append(msg.locale.t('user.message.wikipoints') + wikipoints)
         if sub_edit_counts1:
             msgs.append(' | '.join(sub_edit_counts1))
         if sub_edit_counts2:
@@ -172,18 +172,18 @@ async def get_user_info(wikiurl, username, pic=False):
             msgs.append(' | '.join(sub_edit_counts4))
 
         if global_users_groups := data.get('global_users_groups', False):
-            msgs.append('全域用户组：' + '、'.join(global_users_groups))
+            msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('message.delimiter').join(global_users_groups))
         if global_edit_count := data.get('global_edit_count', False):
-            msgs.append('全域编辑数：' + global_edit_count)
+            msgs.append(msg.locale.t('user.message.global_edited_count') + global_edit_count)
         if global_home := data.get('global_home', False):
-            msgs.append('注册Wiki：' + global_home)
+            msgs.append(msg.locale.t('user.message.global_home') + global_home)
 
         if blocked_by := data.get('blocked_by', False):
-            msgs.append(data['user'] + '正在被封禁中！')
+            msgs.append(data['user'] + msg.locale.t('user.message.user.blocked'))
             msgs.append(
-                '被' + blocked_by + '封禁，' + ('时间从' + data['blocked_time'] if 'blocked_time' in data else '')
-                + ('到' + data['blocked_expires'] if 'blocked_expires' in data else '')
-                + ('，理由：' + data['blocked_reason'] if 'blocked_reason' in data else ''))
+                msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=blocked_by) + (msg.locale.t('user.message.user.blocked.blocked_time') + data['blocked_time'] if 'blocked_time' in data else '')
+                + (msg.locale.t('user.message.user.blocked.blocked_expires') + data['blocked_expires'] if 'blocked_expires' in data else '')
+                + (msg.locale.t('user.message.user.blocked.blocked_reason') + data['blocked_reason'] if 'blocked_reason' in data else ''))
 
         if url := data.get('url', False):
             msgs.append(url)

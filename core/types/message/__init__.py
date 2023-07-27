@@ -79,7 +79,7 @@ class MessageSession:
     """
     __slots__ = (
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
-        "enabled_modules", "muted", "custom_admins", "data", "locale")
+        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp")
 
     parsed_msg: Dict[str, str]
 
@@ -93,6 +93,7 @@ class MessageSession:
         self.options: dict = {}
         self.enabled_modules: List[str] = []
         self.muted: bool = False
+        self.timestamp: float = 0
 
     async def sendMessage(self,
                           msgchain,
@@ -107,7 +108,7 @@ class MessageSession:
         :param allow_split_image: 是否允许拆分图片发送（此参数作接口兼容用，仅telegram平台使用了切割）
         :return: 被发送的消息链
         """
-        ...
+        raise NotImplementedError
 
     async def finish(self,
                      msgchain=None,
@@ -148,6 +149,7 @@ class MessageSession:
         :param delete: 是否在触发后删除消息
         :return: 若对象发送confirm_command中的其一文本时返回True，反之则返回False
         """
+        raise NotImplementedError
 
     async def waitNextMessage(self, msgchain=None, quote=True, delete=False, append_instruction=True):
         """
@@ -157,6 +159,7 @@ class MessageSession:
         :param delete: 是否在触发后删除消息
         :return: 下一条消息的MessageChain对象
         """
+        raise NotImplementedError
 
     async def waitReply(self, msgchain, quote=True, all_=False, append_instruction=True):
         """
@@ -166,6 +169,7 @@ class MessageSession:
         :param all_: 是否设置触发对象为对象内的所有人（默认为False）
         :return: 回复消息的MessageChain对象
         """
+        raise NotImplementedError
 
     async def waitAnyone(self, msgchain=None, delete=False):
         """
@@ -174,45 +178,50 @@ class MessageSession:
         :param delete: 是否在触发后删除消息
         :return: 任意人的MessageChain对象
         """
+        raise NotImplementedError
 
     def asDisplay(self, text_only=False) -> str:
         """
         用于将消息转换为一般文本格式。
         :param text_only: 是否只保留纯文本（默认为False）
         """
+        raise NotImplementedError
 
     async def toMessageChain(self) -> MessageChain:
         """
         用于将session.message中的消息文本转换为MessageChain。
         """
+        raise NotImplementedError
 
     async def delete(self):
         """
         用于删除这条消息。
         """
-        ...
+        raise NotImplementedError
 
     async def checkPermission(self):
         """
         用于检查消息发送者在对象内的权限。
         """
-        ...
+        raise NotImplementedError
 
     async def checkNativePermission(self):
         """
         用于检查消息发送者原本在聊天平台中是否具有管理员权限。
         """
-        ...
+        raise NotImplementedError
 
     async def fake_forward_msg(self, nodelist):
         """
         用于发送假转发消息（QQ）。
         """
+        raise NotImplementedError
 
     async def get_text_channel_list(self):
         """
         用于获取子文字频道列表（QQ）。
         """
+        raise NotImplementedError
 
     class Typing:
         def __init__(self, msg):
@@ -230,12 +239,13 @@ class MessageSession:
         """
         用于检查消息发送者是否为超级用户。
         """
+        raise NotImplementedError
 
     async def sleep(self, s):
         await asyncio.sleep(s)
 
     async def call_api(self, action, **params):
-        ...
+        raise NotImplementedError
 
     class Feature:
         """
@@ -282,12 +292,14 @@ class FetchTarget:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
+        raise NotImplementedError
 
     @staticmethod
     async def fetch_target_list(targetList: list) -> List[FetchedSession]:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
+        raise NotImplementedError
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
@@ -298,6 +310,7 @@ class FetchTarget:
         :param user_list: 用户列表
         :param i18n: 是否使用i18n，若为True则message为i18n的key（或为指定语言的dict映射表（k=语言，v=文本））
         """
+        raise NotImplementedError
 
 
 __all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession"]

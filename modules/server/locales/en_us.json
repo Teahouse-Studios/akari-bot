@@ -4,14 +4,11 @@
     "server.help.option.r": "Show Raw Info",
     "server.help.revoke": "Whether to enable automatic revoke (default enable).",
     "server.message.error": "An error occurred while querying for the API.",
-    "server.message.error.local_ip": "An error occurred: Invalid IP address.",
+    "server.message.error.local_ip": "An error occurred: Invalid domain name or IP address.",
     "server.message.gamemode": "Game mode: ",
     "server.message.not_found": "Does not find any type of Minecraft server.",
     "server.message.player": "Online player: ",
     "server.message.player.current": "Current online player: \n",
     "server.message.player.current.none": "Current online player: \nNone",
-    "server.message.revoke": "[This message will be revoked after 90 seconds]",
-    "server.message.revoke.disable": "Automatic revoke has been disabled.",
-    "server.message.revoke.enable": "Automatic revoke has been enabled.",
     "server.message.version": "Game version: "
 }

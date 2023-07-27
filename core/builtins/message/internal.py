@@ -9,7 +9,7 @@ import filetype
 from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
-from config import CachePath, Config
+from config import Config
 from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
     Url as U, ErrorMessage as EMsg
 from core.utils.i18n import Locale
@@ -32,6 +32,7 @@ class Plain(P):
 class Url(U):
     mm = False
     disable_mm = False
+    md_format = False
 
     def __init__(self, url: str, use_mm: bool = False, disable_mm: bool = False):
         self.url = url
@@ -43,6 +44,8 @@ class Url(U):
             self.url = mm_url % parse.quote(parse.unquote(url).translate(rot13))
 
     def __str__(self):
+        if Url.md_format:
+            return f'[{self.url}]({self.url})'
         return self.url
 
     def __repr__(self):
@@ -74,7 +77,7 @@ class Image(I):
         self.path = path
         self.headers = headers
         if isinstance(path, PImage.Image):
-            save = f'{CachePath}{str(uuid.uuid4())}.png'
+            save = f'{Config("cache_path")}{str(uuid.uuid4())}.png'
             path.convert('RGBA').save(save)
             self.path = save
         elif re.match('^https?://.*', path):
@@ -92,7 +95,7 @@ class Image(I):
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as req:
                 raw = await req.read()
                 ft = filetype.match(raw).extension
-                img_path = f'{CachePath}{str(uuid.uuid4())}.{ft}'
+                img_path = f'{Config("cache_path")}{str(uuid.uuid4())}.{ft}'
                 with open(img_path, 'wb+') as image_cache:
                     image_cache.write(raw)
                 return img_path

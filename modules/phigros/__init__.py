@@ -20,7 +20,7 @@ phi = module('phigros', developers=['OasisAkari'], desc='{phigros.help.desc}',
 async def _(msg: Bot.MessageSession, sessiontoken: str):
     need_revoke = False
     send_msg = []
-    if msg.target.targetFrom in ['QQ|Group', 'QQ|Guild', 'Discord|Channel', 'Telegram|group', 'Telegram|supergroup']:
+    if msg.target.targetFrom in ['QQ|Group', 'QQ|Guild', 'Discord|Channel', 'Telegram|group', 'Telegram|supergroup', 'Kook|GROUP']:
         send_msg.append(await msg.sendMessage(msg.locale.t("phigros.message.bind.warning")))
         need_revoke = True
     headers = p_headers.copy()

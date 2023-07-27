@@ -22,6 +22,10 @@ class WaitCancelException(BaseException):
     pass
 
 
+class SendMessageFailed(BaseException):
+    pass
+
+
 class InvalidTemplatePattern(Exception):
     pass
 

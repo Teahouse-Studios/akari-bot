@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Bot, Url, ErrorMessage
 from core.utils.http import get_url
+from core.dirty_check import rickroll
 from modules.github.utils import dirty_check, darkCheck
 
 
@@ -29,9 +30,8 @@ async def search(msg: Bot.MessageSession):
 
         is_dirty = await dirty_check(message) or darkCheck(message)
         if is_dirty:
-            message = 'https://wdf.ink/6OUp'
+            message = rickroll()
 
         await msg.finish(message)
-    except ValueError as e:
-        await msg.sendMessage(ErrorMessage(str(e)))
+    except:
         traceback.print_exc()

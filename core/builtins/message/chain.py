@@ -56,11 +56,15 @@ class MessageChain(MC):
         for v in self.value:
             if isinstance(v, Plain):
                 for secret in Secret.list:
+                    if secret in ["", None, True, False]:
+                        continue
                     if v.text.upper().find(secret.upper()) != -1:
                         Logger.warn(unsafeprompt('Plain', secret, v.text))
                         return False
             elif isinstance(v, Embed):
                 for secret in Secret.list:
+                    if secret in ["", None, True, False]:
+                        continue
                     if v.title is not None:
                         if v.title.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.title', secret, v.title))
@@ -113,6 +117,9 @@ class MessageChain(MC):
 
     def remove(self, element):
         self.value.remove(element)
+
+    def insert(self, index, element):
+        self.value.insert(index, element)
 
     def __str__(self):
         return f'[{", ".join([x.__repr__() for x in self.value])}]'

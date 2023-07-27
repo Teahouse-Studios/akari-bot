@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import List
 
 from core.builtins.message.chain import *
@@ -26,6 +27,7 @@ class MessageSession(MessageSession):
         self.custom_admins = self.data.custom_admins
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
+        self.timestamp = datetime.now()
 
     async def waitConfirm(self, msgchain=None, quote=True, delete=True) -> bool:
         send = None
@@ -38,7 +40,7 @@ class MessageSession(MessageSession):
         MessageTaskManager.add_task(self, flag)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
-        if result:
+        if result is not None:
             if msgchain is not None and delete:
                 await send.delete()
             if result.asDisplay(text_only=True) in confirm_command:
@@ -61,7 +63,7 @@ class MessageSession(MessageSession):
         result = MessageTaskManager.get_result(self)
         if delete and sent is not None:
             await sent.delete()
-        if result:
+        if result is not None:
             return result
         else:
             raise WaitCancelException
@@ -76,7 +78,7 @@ class MessageSession(MessageSession):
         MessageTaskManager.add_task(self, flag, reply=send.messageId, all_=all_)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
-        if result:
+        if result is not None:
             return result
         else:
             raise WaitCancelException
@@ -90,11 +92,11 @@ class MessageSession(MessageSession):
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True)
         await flag.wait()
-        result = MessageTaskManager.get()[self.target.targetId]['all']
+        result = MessageTaskManager.get()[self.target.targetId]['all'][self]
         if 'result' in result:
             if send is not None and delete:
                 await send.delete()
-            return MessageTaskManager.get()[self.target.targetId]['all']['result']
+            return MessageTaskManager.get()[self.target.targetId]['all'][self]['result']
         else:
             raise WaitCancelException
 

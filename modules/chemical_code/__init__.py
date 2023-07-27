@@ -36,7 +36,7 @@ element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
                  'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf',
                  'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn', 'Nh',
                  'Fl', 'Mc', 'Lv', 'Ts', 'Og', 'C', 'H', 'B', 'K', 'N',
-                 'O', 'F', 'P', 'S', 'V', 'I', 'U', 'Y', 'W']
+                 'O', 'F', 'P', 'S', 'V', 'I', 'U', 'Y', 'W']  # 元素列表，用于解析化学式（请不要手动修改当前的排序）
 
 
 def parse_elements(formula: str) -> dict:
@@ -113,13 +113,13 @@ async def s(msg: Bot.MessageSession):
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.targetId]['active'] = False  # 标记为非活跃状态
-            await msg.sendMessage(
+            await msg.finish(
                 msg.locale.t('chemical_code.stop.message', answer=play_state[msg.target.targetId]["answer"]),
                 quote=False)  # 发送存储于 play_state 中的答案
         else:
-            await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
+            await msg.finish(msg.locale.t('chemical_code.stop.message.none'))
     else:
-        await msg.sendMessage(msg.locale.t('chemical_code.stop.message.none'))
+        await msg.finish(msg.locale.t('chemical_code.stop.message.none'))
 
 
 @ccode.command('<csid> {{chemical_code.help.csid}}')
@@ -133,8 +133,8 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
 
 async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
-    if msg.target.targetId in play_state and play_state[msg.target.targetId][
-            'active']:  # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
+    # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
+    if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']:
         await msg.finish(msg.locale.t('chemical_code.message.running'))
     play_state.update({msg.target.targetId: {'active': True}})  # 若无，则创建一个新的记录并标记为活跃状态
     try:

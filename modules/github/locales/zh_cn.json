@@ -7,6 +7,6 @@
     "github.message.search": "搜索成功，共 ${result} 条结果：",
     "github.message.search.none": "搜索成功，未找到结果。",
     "github.message.search.more_information": "另有 ${more_result} 条结果未显示。",
-    "github.message.search.not_found": "找不到存储库，请检查输入。",
+    "github.message.search.not_found": "未找到存储库，请检查输入。",
     "github.message.user.not_found": "查无此人，请检查输入。"
 }

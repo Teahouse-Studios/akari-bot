@@ -21,8 +21,8 @@ async def user(msg: Bot.MessageSession):
             interwikis = target.get_interwikis()
             if match_interwiki.group(1) in interwikis:
                 return await msg.finish(
-                    await get_user_info(interwikis[match_interwiki.group(1)], match_interwiki.group(2),
+                    await get_user_info(msg, interwikis[match_interwiki.group(1)], match_interwiki.group(2),
                                         pic=msg.parsed_msg['-p']))
-        await msg.finish(await get_user_info(metaurl, username, pic=msg.parsed_msg['-p']))
+        await msg.finish(await get_user_info(msg, metaurl, username, pic=msg.parsed_msg['-p']))
     else:
         await msg.finish(msg.locale.t('wiki.message.not_set'))

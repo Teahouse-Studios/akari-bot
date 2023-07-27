@@ -727,7 +727,8 @@ class WikiLib:
             page_info.status = False
             page_info.title = page_info.before_title = None
             page_info.id = -1
-            page_info.desc = str(Url(page_info.link, use_mm=True))
+            if page_info.link is not None:
+                page_info.desc = str(Url(page_info.link, use_mm=True))
             page_info.link = None
         return page_info
 

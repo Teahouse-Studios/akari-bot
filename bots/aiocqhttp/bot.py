@@ -1,8 +1,6 @@
 import logging
 import os
 import re
-import traceback
-from typing import Dict, Any
 
 from aiocqhttp import Event, Error
 
@@ -16,9 +14,9 @@ from core.utils.bot import load_prompt, init_async
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
-EnableDirtyWordCheck.status = Config('qq_enable_dirty_check')
-Url.disable_mm = not Config('qq_enable_urlmanager')
-qq_account = Config("qq_account")
+EnableDirtyWordCheck.status = True if Config('enable_dirty_check') else False
+Url.disable_mm = False if Config('enable_urlmanager') else True
+qq_account = str(Config("qq_account"))
 enable_listening_self_message = Config("qq_enable_listening_self_message")
 
 
@@ -119,7 +117,7 @@ async def _(event: Event):
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
         return {'approve': True}
-    if Config('invite_join_group_notice'):
+    if Config('qq_invite_join_group_notice'):
         await bot.send_private_msg(user_id=event.user_id,
                                    message='你好！本机器人暂时不主动同意入群请求。\n'
                                            '请至https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+申请入群。')

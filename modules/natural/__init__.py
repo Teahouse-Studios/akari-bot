@@ -12,8 +12,7 @@ model = Config('nl2c_model')
 
 
 @n.handle('<text> {{natural.help}}')
-async def _(msg: Bot.MessageSession):
-    i = msg.parsed_msg['<text>']
+async def _(msg: Bot.MessageSession, text: str):
     response = openai.Completion.create(
-        model=model, prompt=f'{i}\n\n###\n\n', temperature=0, max_tokens=256, stop=['\n'])
+        model=model, prompt=f'{text}\n\n###\n\n', temperature=0, max_tokens=256, stop=['\n'])
     await msg.finish(response['choices'][0]['text'])

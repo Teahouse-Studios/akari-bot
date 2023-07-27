@@ -1,34 +1,106 @@
-from configparser import ConfigParser
+import os
+
+import toml
 from os.path import abspath
 
 from core.exceptions import ConfigFileNotFound
 
-config_filename = 'config.cfg'
+config_filename = 'config.toml'
 config_path = abspath('./config/' + config_filename)
+
+old_cfg_file_path = abspath('./config/config.cfg')
+
+
+def convert_cfg_to_toml():
+    import configparser
+    config = configparser.ConfigParser()
+    config.read(old_cfg_file_path)
+    config_dict = {}
+    for section in config.sections():
+        config_dict[section] = dict(config[section])
+
+    for x in config_dict:
+        for y in config_dict[x]:
+            if config_dict[x][y] == "True":
+                config_dict[x][y] = True
+            elif config_dict[x][y] == "False":
+                config_dict[x][y] = False
+            elif config_dict[x][y].isdigit():
+                config_dict[x][y] = int(config_dict[x][y])
+
+    with open(config_path, 'w') as f:
+        f.write(toml.dumps(config_dict))
+    os.remove(old_cfg_file_path)
 
 
 class CFG:
-    def __init__(self):
-        self.cp = ConfigParser()
-        self.cp.read(config_path)
+    value = None
+    _ts = None
 
-    def config(self, q):
-        section = self.cp.sections()
+    @classmethod
+    def load(cls):
+        if not os.path.exists(config_path):
+            if os.path.exists(old_cfg_file_path):
+                convert_cfg_to_toml()
+            else:
+                raise ConfigFileNotFound(config_path) from None
+        cls.value = toml.loads(open(config_path, 'r', encoding='utf-8').read())
+        cls._ts = os.path.getmtime(config_path)
 
-        if len(section) == 0:
-            raise ConfigFileNotFound(config_path) from None
-        value = self.cp.get('secret', q, fallback=False)
-        if not value:
-            value = self.cp.get('cfg', q, fallback=False)
-        if not value:
-            return False
-        if value.upper() == 'TRUE':
-            return True
-        if value.upper() in ['', 'FALSE']:
-            return False
+    @classmethod
+    def get(cls, q):
+        q = q.lower()
+        if os.path.getmtime(config_path) != cls._ts:
+            cls.load()
+        value_s = cls.value.get('secret')
+        value_n = cls.value.get('cfg')
+        value = value_s.get(q)
+        if value is None:
+            value = value_n.get(q)
         return value
 
+    @classmethod
+    def write(cls, q, value, secret=False):
+        q = q.lower()
+        if os.path.getmtime(config_path) != cls._ts:
+            cls.load()
+        value_s = cls.value.get('secret')
+        value_n = cls.value.get('cfg')
+        if q in value_s:
+            value_s[q] = value
+        elif q in value_n:
+            value_n[q] = value
+        else:
+            if secret:
+                value_s[q] = value
+            else:
+                value_n[q] = value
+        cls.value['secret'] = value_s
+        cls.value['cfg'] = value_n
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(toml.dumps(cls.value))
+        cls.load()
 
-Config = CFG().config
-CachePath = Config('cache_path')
-DBPath = Config('db_path')
+    @classmethod
+    def delete(cls, q):
+        q = q.lower()
+        if os.path.getmtime(config_path) != cls._ts:
+            cls.load()
+        value_s = cls.value.get('secret')
+        value_n = cls.value.get('cfg')
+        if q in value_s:
+            del value_s[q]
+        elif q in value_n:
+            del value_n[q]
+        else:
+            return False
+        cls.value['secret'] = value_s
+        cls.value['cfg'] = value_n
+        with open(config_path, 'w', encoding='utf-8') as f:
+            f.write(toml.dumps(cls.value))
+        cls.load()
+        return True
+
+
+CFG.load()
+Config = CFG.get

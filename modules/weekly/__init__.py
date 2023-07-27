@@ -2,6 +2,7 @@ import re
 
 import ujson as json
 
+from html import unescape
 from core.builtins import Bot
 from core.builtins import Plain, Image, Url
 from core.component import module
@@ -24,6 +25,7 @@ async def get_weekly(with_img=False, zh_tw=False):
     text = re.sub(r'<(.*?)>', '', text, flags=re.DOTALL)  # 移除所有 HTML 标签
     text = re.sub(r'\n\n\n', '\n\n', text)  # 移除不必要的空行
     text = re.sub(r'\n*$', '', text)
+    text = unescape(text)
     img = result['parse']['images']
     page = re.findall(r'(?<=<b><a href=").*?(?=")', html)
     msg_list = [Plain(locale.t("weekly.message.error.expired") if page[

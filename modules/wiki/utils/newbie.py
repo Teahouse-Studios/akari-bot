@@ -14,7 +14,7 @@ async def newbie(msg: Bot.MessageSession, wiki_url):
             d.append(x['title'])
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
-    g = f'{pageurl}\n{y}\n{msg.locale.t("wiki.message.utils.only_last_5")}'
-    if g.find('<吃掉了>') != -1 or g.find('<全部吃掉了>') != -1:
+    g = f'{pageurl}\n{y}\n{msg.locale.t("wiki.message.utils.collapse")}'
+    if g.find("<吃掉了>") != -1 or g.find("<全部吃掉了>") != -1:
         g += f'\n{msg.locale.t("wiki.message.utils.banned")}'
     return g

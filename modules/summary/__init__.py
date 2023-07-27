@@ -5,7 +5,7 @@ import openai
 from config import Config
 from core.builtins import Bot
 from core.component import module
-from core.dirty_check import check_bool
+from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 
 openai.api_key = Config('openai_api_key')
@@ -63,5 +63,6 @@ async def _(msg: Bot.MessageSession):
     output = completion['choices'][0]['message']['content']
     await wait_msg.delete()
     if await check_bool(output):
-        await msg.finish('https://wdf.ink/6OUp')
+        message = rickroll()
+        await msg.finish(message)
     await msg.finish(output, disable_secret_check=True)

@@ -4,6 +4,7 @@ import traceback
 from core.builtins import Bot
 from core.builtins import Image, Plain, Url, ErrorMessage
 from core.utils.http import get_url, download_to_cache
+from core.dirty_check import rickroll
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -53,7 +54,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
         is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
         if is_dirty:
-            message = 'https://wdf.ink/6OUp'
+            message = rickroll()
             await msg.finish([Plain(message)])
         else:
             await msg.sendMessage([Plain(message)])
@@ -69,6 +70,4 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        else:
-           await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()

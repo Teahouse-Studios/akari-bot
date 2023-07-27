@@ -4,8 +4,8 @@ import sys
 
 from config import Config
 
-if not Config('db_path'):
-    raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path"\n'
+if Config('db_path') is None:
+    raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path" field\n'
                          'Example: \ndb_path = sqlite:///database/save.db\n'
                          '(Also you can fill in the above example directly,'
                          ' bot will automatically create a SQLite database in the "./database/save.db")')

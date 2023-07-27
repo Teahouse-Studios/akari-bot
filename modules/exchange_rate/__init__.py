@@ -3,30 +3,38 @@ import datetime
 from config import Config
 from core.builtins import Bot
 from core.component import module
-from core.exceptions import NoReportException
 from core.utils.http import get_url
 
 api_key = Config('exchange_rate_api_key')
 
 excr = module('exchange_rate',
-                       desc='{exchange_rate.help.desc}',
-                       alias=['exchangerate', 'excr'],
-                       developers=['DoroWolf'])
+              desc='{exchange_rate.help.desc}',
+              alias=['exchangerate', 'excr'],
+              developers=['DoroWolf'])
 
 
-@excr.command('<base> <target> [<amount>] {{exchange_rate.help}}')
+@excr.command('<base> <target> {{exchange_rate.help}}')
 async def _(msg: Bot.MessageSession):
     base = msg.parsed_msg['<base>'].upper()
     target = msg.parsed_msg['<target>'].upper()
-    amount = msg.parsed_msg.get('<amount>', '1')
+
+    amount_str = base[:-3]
+    base_currency = base[-3:]
+
+    if not api_key:
+        raise Exception(msg.locale.t('error.config.secret'))
+
     try:
-        amount = float(amount)
+        if amount_str:
+            amount = float(amount_str)
+        else:
+            amount = 1.0
+
         if amount <= 0:
             await msg.finish(msg.locale.t('exchange_rate.message.error.non_positive'))
     except ValueError:
         await msg.finish(msg.locale.t('exchange_rate.message.error.non_digital'))
-    await msg.finish(await exchange(base, target, amount, msg))
-
+    await msg.finish(await exchange(base_currency, target, amount, msg))
 
 
 async def exchange(base_currency, target_currency, amount: float, msg):
@@ -48,8 +56,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         if unsupported_currencies:
             await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
     else:
-        error_type = data['error-type']
-        raise NoReportException(f"{error_type}")
+        raise Exception(data['error-type'])
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     data = await get_url(url, 200, fmt='json')
@@ -60,15 +67,14 @@ async def exchange(base_currency, target_currency, amount: float, msg):
             msg.locale.t('exchange_rate.message', amount=amount, base=base_currency, exchange_rate=exchange_rate,
                          target=target_currency, time=current_time))
     else:
-        error_type = data['error-type']
-        raise NoReportException(f"{error_type}")
+        raise Exception(data['error-type'])
 
 
-
-@excr.regex(r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})[兑|换|兌|換]([a-zA-Z]{3})", desc='{exchange_rate.help.regex.desc}')
+@excr.regex(r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑|换|兌|換]\s?([a-zA-Z]{3})", desc='{exchange_rate.help.regex.desc}')
 async def _(msg: Bot.MessageSession):
     groups = msg.matched_msg.groups()
     amount = groups[0] if groups[0] else '1'
     base = groups[2].upper()
     target = groups[3].upper()
-    await msg.finish(await exchange(base, target, amount, msg))
+    if base != target:
+        await msg.finish(await exchange(base, target, amount, msg))

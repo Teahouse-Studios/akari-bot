@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import sys
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import ujson as json
 
-from config import Config
+from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.loader import ModulesManager
@@ -21,9 +22,9 @@ from core.utils.storedata import get_stored_list, update_stored_list
 su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
 
-@su.handle('add <user>')
+@su.handle('add <UserID>')
 async def add_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<user>']
+    user = message.parsed_msg['<UserID>']
     if not user.startswith(f'{message.target.senderFrom}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
@@ -31,9 +32,9 @@ async def add_su(message: Bot.MessageSession):
             await message.finish(message.locale.t("core.message.superuser.add.success", user=user))
 
 
-@su.handle('del <user>')
+@su.handle('del <UserID>')
 async def del_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<user>']
+    user = message.parsed_msg['<UserID>']
     if not user.startswith(f'{message.target.senderFrom}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
@@ -66,7 +67,7 @@ async def _(msg: Bot.MessageSession):
             result = msg.locale.t("core.analytics.message.days.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.analytics.message.days", module=module_,
-                             first_record=first_record.timestamp)
+                                  first_record=first_record.timestamp)
         data_ = {}
         for d in range(30):
             new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1) - timedelta(days=30 - d - 1)
@@ -91,7 +92,7 @@ async def _(msg: Bot.MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish([Plain(result), Image(path)])
-        
+
 
 @ana.handle('years [<name>]')
 async def _(msg: Bot.MessageSession):
@@ -104,11 +105,13 @@ async def _(msg: Bot.MessageSession):
             result = msg.locale.t("core.analytics.message.years.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.analytics.message.years", module=module_,
-                             first_record=first_record.timestamp)
+                                  first_record=first_record.timestamp)
         data_ = {}
         for d in range(12):
-            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d - 1)
-            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + relativedelta(years=1) - relativedelta(months=12 - d)
+            new = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
+                relativedelta(years=1) - relativedelta(months=12 - d - 1)
+            old = datetime.now().replace(month=1, day=1, hour=0, minute=0, second=0) + \
+                relativedelta(years=1) - relativedelta(months=12 - d)
             get_ = BotDBUtil.Analytics.get_count_by_times(new, old, module_)
             data_[old.month] = get_
         data_x = []
@@ -129,7 +132,6 @@ async def _(msg: Bot.MessageSession):
         plt.savefig(path)
         plt.close()
         await msg.finish([Plain(result), Image(path)])
-
 
 
 set_ = module('set', required_superuser=True)
@@ -170,7 +172,7 @@ async def _(msg: Bot.MessageSession):
     elif v.upper() == 'FALSE':
         v = False
     target_data.edit_option(k, v)
-    await msg.finish(msg.locale.t("core.message.set.help.option.tion.tion.tion.tion.tion.success", k=k, v=v))
+    await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
 
 ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True)
@@ -270,8 +272,9 @@ async def wait_for_restart(msg: Bot.MessageSession):
             get_wait_list = MessageTaskManager.get()
             for x in get_wait_list:
                 for y in get_wait_list[x]:
-                    if get_wait_list[x][y]['active']:
-                        await get_wait_list[x][y]['original_session'].sendMessage(get_wait_list[x][y]['original_session'].locale.t("core.message.restart.prompt"))
+                    for z in get_wait_list[x][y]:
+                        if get_wait_list[x][y][z]['active']:
+                            await z.sendMessage(z.locale.t("core.message.restart.prompt"))
 
     else:
         await msg.sendMessage(msg.locale.t("core.message.restart.timeout"))
@@ -314,7 +317,7 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.sendMessage(update_dependencies())
 
 
-upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias={'u&r': 'update&restart'})
+upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r')
 
 
 @upds.handle()
@@ -339,7 +342,10 @@ if Bot.FetchTarget.name == 'QQ':
         if targets := Temp.data['waiting_for_send_group_message']:
             await msg.sendMessage(msg.locale.t("core.message.resume.processing", counts=len(targets)))
             for x in targets:
-                await x['fetch'].sendDirectMessage(x['message'])
+                if x['i18n']:
+                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message']))
+                else:
+                    await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
             await msg.sendMessage(msg.locale.t("core.message.resume.done"))
@@ -348,6 +354,9 @@ if Bot.FetchTarget.name == 'QQ':
 
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
+        if not Temp.data['waiting_for_send_group_message']:
+            await msg.finish(msg.locale.t("core.message.resume.nothing"))
+
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
@@ -360,11 +369,11 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.sendMessage(msg.locale.t("core.message.resume.nothing"))
 
-    @resume.handle('clean')
+    @resume.handle('clear')
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.sendMessage(msg.locale.t("core.message.resume.clean"))
+        await msg.sendMessage(msg.locale.t("core.message.resume.clear"))
 
     forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
 
@@ -376,9 +385,9 @@ if Bot.FetchTarget.name == 'QQ':
         alist['status'] = not alist['status']
         update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
         if alist['status']:
-            await msg.sendMessage('已开启转发消息')
+            await msg.sendMessage(msg.locale.t('core.message.forward_msg.enable'))
         else:
-            await msg.sendMessage('已关闭转发消息')
+            await msg.sendMessage(msg.locale.t('core.message.forward_msg.disable'))
 
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
@@ -403,3 +412,48 @@ if Config('enable_eval'):
     @_eval.handle('<display_msg>')
     async def _(msg: Bot.MessageSession):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
+
+
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
+_config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg')
+
+
+@_config.handle('write <k> <v> [-s]')
+async def _(msg: Bot.MessageSession):
+    value = msg.parsed_msg['<v>']
+    if value.lower() == 'true':
+        value = True
+    elif value.lower() == 'false':
+        value = False
+    elif value.isdigit():
+        value = int(value)
+    elif isfloat(value):
+        value = float(value)
+    elif re.match('^(?:{.*}|[.*])$', value):
+        value = json.loads(value)
+
+    CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
+    await msg.finish(msg.locale.t("success"))
+
+
+@_config.handle('delete <k>')
+async def _(msg: Bot.MessageSession):
+    if CFG.delete(msg.parsed_msg['<k>']):
+        await msg.finish(msg.locale.t("success"))
+    else:
+        await msg.finish(msg.locale.t("failed"))
+
+
+rse = module('raise', developers=['OasisAkari'], required_superuser=True)
+
+
+@rse.handle()
+async def _(msg: Bot.MessageSession):
+    raise Exception("Test Exception")
