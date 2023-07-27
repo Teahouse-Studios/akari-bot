@@ -3,6 +3,11 @@
 # Example: Boolean values in TOML must be lowercase.
 # If you don't need some functions, please delete the corresponding keys.
 
+# https://toml.io/cn/v1.0.0
+# 注意: TOML 并不是 Python. 不要在这里使用 Python 语法.
+# 例: TOML 中的布尔值必须小写.
+# 如果您不需要某些功能，请删除相应的字段.
+
 [secret]
 db_path = "mysql+pymysql://"
 check_accessKeyId =
