@@ -1,0 +1,15 @@
+{
+    "cave.help.desc":"回声洞",
+    "cave.msg.add":"请在你发出的下一条消息中，发送你想要添加的回声洞，回声洞内容只能添加图片或者文字。",
+    "cave.help.add":"投稿回声洞",
+    "cave.msg.no_content":"你发出的消息中并未含有文字或者图片信息，无法添加至回声洞。",
+    "cave.msg.done":"你的投稿已添加至回声洞 #${id}。",
+    "cave.help.delete":"删除回声洞",
+    "cave.help.list":"查看当前存在的回声洞编号",
+    "cave.msg.list":"当前存在的回声洞编号有：${id_list}",
+    "cave.msg.delete":"已删除回声洞 #${id}。",
+    "cave.help.get":"获取回声洞",
+    "cave.msg.name":"回声洞",
+    "cave.msg.recall":"[该消息将在90秒后撤回]",
+    "cave.msg.unknown":"该回声洞不存在或当前无回声洞！"
+}
