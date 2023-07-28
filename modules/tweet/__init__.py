@@ -29,8 +29,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
         await msg.finish(msg.locale.t('tweet.message.not_found'))
     else:
         if await check_bool(res_json['data']['text'], res_json['data']['user']['name'], res_json['data']['user']['screen_name']):
-            message = rickroll()
-            await msg.finish(message)
+            rickroll(msg)
         else:
             css = '''
                 main {
