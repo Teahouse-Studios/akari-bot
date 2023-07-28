@@ -7,7 +7,6 @@ from config import Config
 from core.builtins import Plain, Image, MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage
-from core.dirty_check import rickroll
 from core.logger import Logger
 from core.types import FinishedSession as FinS
 

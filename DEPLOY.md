@@ -85,6 +85,8 @@ $ pip install -r requirements.txt
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
+由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你您拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
+
 对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
 
 `db_path = "mysql+pymysql://"`

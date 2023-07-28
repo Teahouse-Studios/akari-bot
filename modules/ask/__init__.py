@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
     else:
         question = msg.matched_msg[0]
     if await check_bool(question):
-        raise NoReportException(await rickroll())
+        rickroll(msg)
     with get_openai_callback() as cb:
         res = await agent_executor.arun(question)
         tokens = cb.total_tokens
@@ -61,7 +61,7 @@ async def _(msg: Bot.MessageSession):
             chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
 
     if await check_bool(res):
-        raise NoReportException(await rickroll())
+        rickroll(msg)
     await msg.finish(chain)
 
 

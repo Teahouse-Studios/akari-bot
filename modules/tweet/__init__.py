@@ -10,7 +10,7 @@ from core.dirty_check import check_bool, rickroll
 from core.utils.http import download_to_cache, get_url
 
 web_render_local = Config('web_render_local')
-t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}')
+t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', alias=['x'])
 
 
 @t.handle('<tweet> {{tweet.help}}')
@@ -23,16 +23,13 @@ async def _(msg: Bot.MessageSession, tweet: str):
             tweet_id = match.group(1)
         else:
             await msg.finish(msg.locale.t('tweet.message.error'))
-    failed_request = await get_url('https://static-tweet.vercel.app/1', status_code=404)
-    build_id = re.search(r'"buildId"\:"(.*?)"', failed_request).group(1)
-    res = await get_url(f'https://static-tweet.vercel.app/_next/data/{build_id}/{tweet_id}.json')
+    res = await get_url(f'https://react-tweet.vercel.app/api/tweet/{tweet_id}')
     res_json = json.loads(res)
-    if 'notFound' in res_json:
+    if not res_json['data']:
         await msg.finish(msg.locale.t('tweet.message.not_found'))
     else:
-        if await check_bool(res_json['pageProps']['tweet']['text'], res_json['pageProps']['tweet']['user']['name'], res_json['pageProps']['tweet']['user']['screen_name']):
-            message = await rickroll()
-            await msg.finish(message)
+        if await check_bool(res_json['data']['text'], res_json['data']['user']['name'], res_json['data']['user']['screen_name']):
+            rickroll(msg)
         else:
             css = '''
                 main {
@@ -68,5 +65,5 @@ async def _(msg: Bot.MessageSession, tweet: str):
             '''
             pic = await download_to_cache(web_render_local + 'element_screenshot', method='POST', headers={
                 'Content-Type': 'application/json',
-            }, post_data=json.dumps({'url': f'https://static-tweet.vercel.app/{tweet_id}', 'css': css, 'mw': False, 'element': 'article'}), request_private_ip=True)
-            await msg.finish([Image(pic), f"https://twitter.com/{res_json['pageProps']['tweet']['user']['screen_name']}/status/{tweet_id}"])
+            }, post_data=json.dumps({'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False, 'element': 'article'}), request_private_ip=True)
+            await msg.finish([Image(pic), f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"])

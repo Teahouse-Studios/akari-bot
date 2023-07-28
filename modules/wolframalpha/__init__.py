@@ -22,8 +22,7 @@ w = module(
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<query>']
     if await check_bool(query):
-        query = await rickroll()
-        await msg.finish(query)
+        rickroll(msg)
     url_query = urllib.parse.quote(query)
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
@@ -46,8 +45,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     query = msg.parsed_msg['<question>']
     if await check_bool(query):
-        query = await rickroll()
-        await msg.finish(query)
+        rickroll(msg)
     url_query = urllib.parse.quote(query)
     if not appid:
         raise Exception(msg.locale.t('error.config.secret'))
@@ -55,7 +53,7 @@ async def _(msg: Bot.MessageSession):
     try:
         data = await get_url(url, 200)
         if await check_bool(data):
-            data = await rickroll()
+            rickroll(msg)
         await msg.finish(data)
     except ValueError as e:
         if str(e).startswith('501'):
