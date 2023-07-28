@@ -30,7 +30,7 @@
     "dice.message.error.value.M.invalid": "无效的调节值项",
     "dice.message.error.value.m.invalid": "无效的骰子数量。",
     "dice.message.error.value.M.out_of_range": "调节值不得小于 ${min} 或大于 ${max}。",
-    "dice.message.error.value.n.d1": "1…1 面的骰子？",
+    "dice.message.error.value.n.d1": "1 …… 1 面的骰子？",
     "dice.message.error.value.n.invalid": "无效的骰子面数。",
     "dice.message.error.value.n.less2": "骰子面数不得小于 2。",
     "dice.message.error.value.n.out_of_range": "骰子数量不得小于 1 或大于 ${max}。",
