@@ -31,9 +31,9 @@ async def _(msg: Bot.MessageSession):
     try:
         img_path = await download_to_cache(url, status_code=200)
         if img_path:
-            img = Image.open(img_path)
-            output = os.path.splitext(img_path)[0] + ".png"
-            img.save(output, "PNG")
+            with Image.open(img_path) as img:
+                output = os.path.splitext(img_path)[0] + ".png"
+                img.save(output, "PNG")
             os.remove(img_path)
             await msg.finish([BImage(output)])
     except ValueError as e:
