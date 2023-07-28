@@ -54,8 +54,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
         is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
         if is_dirty:
-            message = await rickroll()
-            await msg.finish([Plain(message)])
+            rickroll(msg)
         else:
             await msg.sendMessage([Plain(message)])
 
@@ -70,6 +69,4 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        else:
-           await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()

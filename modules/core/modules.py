@@ -185,20 +185,17 @@ async def config_modules(msg: Bot.MessageSession):
                 elif module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
                 else:
-                    if modules_[module_].base:
-                        msglist.append(msg.locale.t("core.message.module.reload.base", module=module_))
-                    else:
-                        extra_reload_modules = ModulesManager.search_related_module(module_, False)
-                        if len(extra_reload_modules):
-                            confirm = await msg.waitConfirm(msg.locale.t("core.message.module.reload.confirm",
-                                                                         modules='\n'.join(extra_reload_modules)))
-                            if not confirm:
-                                continue
-                        unloaded_list = CFG.get('unloaded_modules')
-                        if module_ in unloaded_list:
-                            unloaded_list.remove(module_)
-                            CFG.write('unloaded_modules', unloaded_list)
-                        msglist.append(module_reload(module_, extra_reload_modules))
+                    extra_reload_modules = ModulesManager.search_related_module(module_, False)
+                    if len(extra_reload_modules):
+                        confirm = await msg.waitConfirm(msg.locale.t("core.message.module.reload.confirm",
+                                                                     modules='\n'.join(extra_reload_modules)))
+                        if not confirm:
+                            continue
+                    unloaded_list = CFG.get('unloaded_modules')
+                    if module_ in unloaded_list:
+                        unloaded_list.remove(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                    msglist.append(module_reload(module_, extra_reload_modules))
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
@@ -445,11 +442,7 @@ async def _(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
+        await msg.finish('\n'.join(help_msg))
 
 
 async def modules_help(msg: Bot.MessageSession):
@@ -534,8 +527,4 @@ async def modules_help(msg: Bot.MessageSession):
                 "core.message.module.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
-        if msg.Feature.delete:
-            help_msg.append(msg.locale.t("core.message.module.help.revoke.legacy"))
-        send = await msg.sendMessage('\n'.join(help_msg))
-        await msg.sleep(60)
-        await send.delete()
+        await msg.finish('\n'.join(help_msg))

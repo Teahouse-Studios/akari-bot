@@ -6,10 +6,11 @@ import time
 from config import Config
 from core.builtins import Bot, PrivateAssets
 from core.component import module
-from core.utils.i18n import get_available_locales, Locale
+from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from cpuinfo import get_cpu_info
 from database import BotDBUtil
 from datetime import datetime
+
 
 version = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
@@ -125,23 +126,28 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale',
-                base=True,
-                required_admin=True,
-                developers=['Dianliang233']
-                )
+locale = module('locale', base=True, developers=['Dianliang233','Light-Beacon'])
 
 
-@locale.handle(['<lang> {{core.help.locale}}'])
+@locale.handle('<lang> {{core.help.locale}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
-    if lang in ['zh_cn', 'zh_tw', 'en_us']:
+    if lang in get_available_locales():
         if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
             await msg.finish(Locale(lang).t('success'))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.invalid", lang='、'.join(get_available_locales())))
+        avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
+        await msg.finish(msg.locale.t("core.message.locale.set.invalid", lang=avaliable_lang))
 
 
+@locale.handle('reload {{core.help.locale.reload}}', required_superuser=True)
+async def reload_locale(msg: Bot.MessageSession):
+    err = load_locale_file()
+    if len(err) == 0:
+        await msg.finish(msg.locale.t("success"))
+    else:
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed",detail='\n'.join(err)))
+        
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
 
@@ -176,12 +182,12 @@ async def _(msg: Bot.MessageSession):
 @tog.handle('check {{core.help.toggle.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
-    if state is None:
-        state = False
+    if state:
+        msg.data.edit_option('typo_check', False)
+        await msg.finish(msg.locale.t('core.message.toggle.check.enable'))
     else:
-        state = not state
-    msg.data.edit_option('typo_check', state)
-    await msg.finish(msg.locale.t('core.message.toggle.check.enable') if state else msg.locale.t('core.message.toggle.check.disable'))
+        msg.data.edit_option('typo_check', True)
+        await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
 
 
 mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
@@ -190,7 +196,11 @@ mute = module('mute', developers=['Dianliang233'], base=True, required_admin=Tru
 
 @mute.handle()
 async def _(msg: Bot.MessageSession):
-    await msg.finish(msg.locale.t('core.message.mute.enable') if msg.data.switch_mute() else msg.locale.t('core.message.mute.disable'))
+    state = msg.data.switch_mute()
+    if state:
+        await msg.finish(msg.locale.t('core.message.mute.enable'))
+    else:
+        await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
 leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias='dismiss', desc='{core.help.leave}')
@@ -203,6 +213,7 @@ async def _(msg: Bot.MessageSession):
         await msg.sendMessage(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
+
 if Config('openai_api_key'):
     petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
                    desc='{core.help.petal}')
@@ -213,7 +224,7 @@ if Config('openai_api_key'):
         await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
 
 
-    @petal.handle('modify <petal>', required_admin=True)
+    @petal.handle('modify <petal>', required_superuser=True)
     async def _(msg: Bot.MessageSession):
         petal = msg.parsed_msg['<petal>']
         msg.data.modify_petal(int(petal))
