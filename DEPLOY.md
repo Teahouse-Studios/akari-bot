@@ -10,6 +10,37 @@
 
 # 基础部分部署
 
+1. 在你的机器上安装 Docker
+
+2. 输入下面的指令拉取镜像。
+（注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64）
+
+```sh
+docker pull bakabaka9/akari-bot:latest
+```
+
+3. 从仓库中下载 config 文件夹，并放到你喜欢的目录下。
+
+4. 转到本文的 [配置](#配置) 部分并根据自己的需求配置。
+（注意: 配置文件中的 `qq_host` 中后面的地址必须改为 `0.0.0.0:端口号`，否则 go-cqhttp 连接时会提示连接被重置）
+
+5. 配置完成后，使用 `docker run`` 开启小可。示例：
+
+```sh
+docker run \ 
+> -d \ 
+> -v /path/to/akari-bot/config/config.toml:/akari-bot/config/config.toml \ # 请将路径修改成对应的位置。
+> -p 11451:11451  \ # WebSocket 服务器的端口，请根据你的配置文件更改。
+> -p 3306:3306  \ # 用于对接 mysql 数据库。（可选）
+> --name=akari-bot  \ # 指定容器名称。
+> bakabaka9/akari-bot
+```
+如果终端中返回了 long_tag 类型的容器ID, 证明容器已创建完毕
+
+这时我们可以执行 `docker logs xiaoke` 查看小可的日志。
+
+如果没有任何报错，恭喜您！您的小可机器人已经搭建成功，接下来请移步至 [配置平台机器人](#配置平台机器人) 部分。
+
 ## 下载源代码
 
 1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然，你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
