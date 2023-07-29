@@ -8,6 +8,7 @@ db_path = "mysql+pymysql://"
 check_accessKeyId =
 check_accessKeySecret =
 web_render =
+proxy =
 botarcapi_url =
 botarcapi_agent =
 dc_token =
@@ -18,7 +19,6 @@ nl2c_model =
 curseforge_api_key =
 exchange_rate_api_key =
 wolfram_alpha_appid =
-proxy = 
 
 [cfg]
 base_superuser = "QQ|2596322644"
