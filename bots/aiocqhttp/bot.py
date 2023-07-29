@@ -117,7 +117,7 @@ async def _(event: Event):
 async def _(event: Event):
     if BotDBUtil.SenderInfo('QQ|' + str(event.user_id)).query.isSuperUser:
         return {'approve': True}
-    if not Config('allow_bot_auto_agree_group_invite'):
+    if not Config('allow_bot_auto_approve_group_invite'):
         await bot.send_private_msg(user_id=event.user_id,
                                    message='你好！本机器人暂时不主动同意入群请求。\n'
                                            f'请至{Config("qq_join_group_application_link")}申请入群。')
