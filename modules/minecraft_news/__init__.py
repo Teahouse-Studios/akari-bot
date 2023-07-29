@@ -56,7 +56,7 @@ async def start_check_news():
     if not webrender:
         return
     try:
-        get = webrender + 'source?url=' + url
+        get = webrender + '/source?url=' + url
         getpage = await get_url(get, 200, attempt=1, logging_err_resp=False)
         if getpage:
             alist = get_stored_list(bot, 'mcnews')

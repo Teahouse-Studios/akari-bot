@@ -12,7 +12,7 @@ async def news(msg):
     api = 'https://www.mcbbs.net/forum-news-1.html'
     webrender = Config('web_render')
     if webrender:
-        api = webrender + 'source?url=' + api
+        api = webrender + '/source?url=' + api
     html = await get_url(api, 200)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')

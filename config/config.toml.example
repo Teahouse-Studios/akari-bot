@@ -18,6 +18,7 @@ nl2c_model =
 curseforge_api_key =
 exchange_rate_api_key =
 wolfram_alpha_appid =
+proxy = 
 
 [cfg]
 base_superuser = "QQ|2596322644"
