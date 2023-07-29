@@ -231,6 +231,8 @@ async def config_modules(msg: Bot.MessageSession):
                                 unloaded_list.append(module_)
                                 CFG.write('unloaded_modules', unloaded_list)
                             msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                            err_modules.remove(module_)
+                            current_unloaded_modules.append(module_)
                     else:
                         msglist.append(msg.locale.t("core.message.module.unload.error"))
                     continue
