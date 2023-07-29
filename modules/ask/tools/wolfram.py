@@ -15,3 +15,5 @@ if appid:
         func=wolfram_alpha,
         description='A wrapper around Wolfram Alpha. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Also useful for generating SHA or MD5 hashes. Input should be a search query in English.'
     )
+else:
+    wolfram_tool = None
