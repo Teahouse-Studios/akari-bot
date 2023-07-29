@@ -18,7 +18,7 @@ arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
-api = Config("botarcapi_url")
+api_url = Config("botarcapi_url")
 headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 query_tasks = set()
 
@@ -27,7 +27,7 @@ class WithErrCode(Exception):
     pass
 
 
-if api:
+if api_url:
 
     @arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
     async def _(msg: Bot.MessageSession, friend_code: str = None):
@@ -44,7 +44,7 @@ if api:
                 if msg.target.senderId in query_tasks:
                     await msg.finish(msg.locale.t("arcaea.message.b30.wait.already"))
                 query_tasks.add(msg.target.senderId)
-                get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
+                get_ = await get_url(f'{api_url}/user/bests/session?user_name={query_code}', headers=headers,
                                      fmt='json')
                 if get_['status'] == 0:
                     await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait"))
@@ -66,7 +66,7 @@ if api:
 
                 async def _get_result(session):
                     try:
-                        get_ = await get_url(api + f'user/bests/result?session_info={session}&with_song_info=true',
+                        get_ = await get_url(f'{api_url}/user/bests/result?session_info={session}&with_song_info=true',
                                              headers=headers,
                                              fmt='json')
                         if get_['status'] in [-31, -32]:
