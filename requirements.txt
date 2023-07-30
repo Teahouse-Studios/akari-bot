@@ -283,9 +283,9 @@ caio==0.9.12 ; python_full_version >= "3.8.1" and python_version < "4" \
     --hash=sha256:d2be553738dd793f8a01a60316f2c5284fbf152219241c0c67ca05f650a37a37 \
     --hash=sha256:df395e7e1c2025b3f32dbeff20a8b6491959fac8fbd5a9c2d452bf1f5c0ca2bf \
     --hash=sha256:f366c595eda130a184f372d458d647b0ac879a46e872757648d4e29b6cea12ad
-certifi==2023.5.7 ; python_full_version >= "3.8.1" and python_version < "4.0" \
-    --hash=sha256:0f0d56dc5a6ad56fd4ba36484d6cc34451e1c6548c61daad8c320169f91eddc7 \
-    --hash=sha256:c6c2e98f5c7869efca1f8916fed228dd91539f9f1b444c314c06eef02980c716
+certifi==2023.7.22; python_full_version >= "3.8.1" and python_version < "4.0" \
+    --hash=sha256:539cc1d13202e33ca466e88b2807e29f4c13049d6d87031a3c110744495cb082 \
+    --hash=sha256:92d6037539857d8206b8f6ae472e8b77db8058fec5937a1ef3f54304089edbb9
 cffi==1.15.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" or python_full_version >= "3.8.1" and python_version < "4.0" and platform_python_implementation == "PyPy" \
     --hash=sha256:00a9ed42e88df81ffae7a8ab6d9356b371399b91dbdf0c3cb1e84c03a13aceb5 \
     --hash=sha256:03425bdae262c76aad70202debd780501fabeaca237cdfddc008987c0e0f59ef \
