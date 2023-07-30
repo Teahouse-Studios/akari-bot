@@ -1,6 +1,8 @@
+import html
 import logging
 import os
 import re
+import ujson as json
 
 from aiocqhttp import Event, Error
 
@@ -36,9 +38,17 @@ async def message_handler(event: Event):
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session'):
                 return await bot.send(event, '请先添加好友后再进行命令交互。')
-    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?].*?|.*?<\?xml.*?>.*?', event.message)
+    filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
     if filter_msg:
-        return
+        match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)
+        if match_json:
+            load_json = json.loads(html.unescape(match_json.group(1)))
+            if load_json['app'] == 'com.tencent.multimsg':
+                event.message = f'[CQ:forward,id={load_json["meta"]["detail"]["resid"]}]'
+            else:
+                return
+        else:
+            return
     replyId = None
     match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
     if match_reply:
