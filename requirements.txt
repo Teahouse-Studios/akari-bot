@@ -1,6 +1,6 @@
-aioconsole==0.6.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:520313bc5d7ed6bea3baf072ce7e622479afd67c01b3fdcc076bc528da354f6f \
-    --hash=sha256:79da3a0a092e1fde87ee3a68d44f36d7286f3f0d7029dfa05d95c4b80ce566fd
+aioconsole==0.6.2; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:1968021eb03b88fcdf5f5398154b21585e941a7b98c9fcef51c4bb0158156619 \
+    --hash=sha256:bac11286f1062613d2523ceee1ba81c676cd269812b865b66b907448a7b5f63e
 aiocqhttp==1.4.4 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:eb2b6996753cacee45bf615aba5db4625b495e7a184a2fd27d2e5408f472c03d
 aiofile==3.8.7 ; python_full_version >= "3.8.1" and python_version < "4" \
