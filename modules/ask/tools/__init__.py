@@ -10,7 +10,6 @@ from .wolfram import wolfram_tool
 
 tools = [
     search_tool,
-    wolfram_tool,
     ip_whois_tool,
     mcv_tool,
     server_tool,
@@ -21,6 +20,9 @@ tools = [
     bugtracker_tool,
     self_knowledge_tool
 ]
+
+if wolfram_tool:
+    tools.append(wolfram_tool)
 
 tool_names = [tool.name for tool in tools]
 
