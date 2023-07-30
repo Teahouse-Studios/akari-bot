@@ -17,32 +17,30 @@ Url.disable_mm = False if Config('enable_urlmanager') else True
 Url.md_format = True
 
 
-@bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
-async def msg_handler(message: Message):
-    if message.channel_type.name == "GROUP":
-        targetId = f'Kook|{message.channel_type.name}|{message.target_id}'
-    else:
-        targetId = f'Kook|{message.channel_type.name}|{message.author_id}'
-    replyId = None
-    if 'quote' in message.extra:
-        replyId = message.extra['quote']['rong_id']
-
-    msg = MessageSession(MsgInfo(targetId=targetId,
-                                 senderId=f'Kook|User|{message.author_id}',
-                                 targetFrom=f'Kook|{message.channel_type.name}',
-                                 senderFrom='Kook|User', senderName=message.author.nickname,
-                                 clientName='Kook',
-                                 messageId=message.id,
-                                 replyId=replyId),
-                         Session(message=message, target=message.target_id, sender=message.author_id))
-    await parser(msg)
-
-
-@bot.on_startup
-async def _(b: bot):
-    await init_async()
-    await load_prompt(FetchTarget)
-
-
 if bot:
+    @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
+    async def msg_handler(message: Message):
+        if message.channel_type.name == "GROUP":
+            targetId = f'Kook|{message.channel_type.name}|{message.target_id}'
+        else:
+            targetId = f'Kook|{message.channel_type.name}|{message.author_id}'
+        replyId = None
+        if 'quote' in message.extra:
+            replyId = message.extra['quote']['rong_id']
+
+        msg = MessageSession(MsgInfo(targetId=targetId,
+                                     senderId=f'Kook|User|{message.author_id}',
+                                     targetFrom=f'Kook|{message.channel_type.name}',
+                                     senderFrom='Kook|User', senderName=message.author.nickname,
+                                     clientName='Kook',
+                                     messageId=message.id,
+                                     replyId=replyId),
+                             Session(message=message, target=message.target_id, sender=message.author_id))
+        await parser(msg)
+
+    @bot.on_startup
+    async def _(b: bot):
+        await init_async()
+        await load_prompt(FetchTarget)
+
     bot.run()

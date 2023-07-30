@@ -30,9 +30,8 @@ async def search(msg: Bot.MessageSession):
 
         is_dirty = await dirty_check(message) or darkCheck(message)
         if is_dirty:
-            message = await rickroll()
+            rickroll(msg)
 
         await msg.finish(message)
-    except ValueError as e:
-        await msg.sendMessage(ErrorMessage(str(e)))
+    except:
         traceback.print_exc()

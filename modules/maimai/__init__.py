@@ -336,7 +336,7 @@ async def _(msg: Bot.MessageSession):
 @mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
-        sid = sid[2:]
+        sid = id_or_alias[2:]
     else:
         sid_list = await get_alias(msg, id_or_alias, get_music=True)
         if len(sid_list) == 0:

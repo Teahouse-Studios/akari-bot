@@ -19,7 +19,7 @@ async def urban(term: str, locale: Locale):
         webrender = Config('web_render')
         if not webrender:
             return ''
-        url = webrender + 'source?url=' + url
+        url = webrender + '/source?url=' + url
         text = await get_url(url, 200, headers={'accept': '*/*',
                                                 'accept-encoding': 'gzip, deflate',
                                                 'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',

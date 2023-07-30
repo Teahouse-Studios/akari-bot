@@ -1,6 +1,6 @@
 {
     "bugtracker.help": "Query the corresponding ticket on Mojira.",
-    "bugtracker.help.regex.desc": "直接发送 Mojira 的漏洞编号以查询漏洞内容",
-    "bugtracker.help.regex.url": "发送 Mojira 的 URL 以查询漏洞内容",
-    "bugtracker.message.error": "An error occurred: Failed to fetch json."
+    "bugtracker.help.regex.desc": "Directly send the Mojira ticket ID to query info",
+    "bugtracker.help.regex.url": "Send the Mojira URL to query info.",
+    "bugtracker.message.error.get_failed": "An error occurred: Failed to get info, the ticket may not exist or set to private."
 }

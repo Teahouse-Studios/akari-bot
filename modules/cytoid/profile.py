@@ -13,13 +13,13 @@ async def cytoid_profile(msg: Bot.MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            return await msg.sendMessage(msg.locale.t('cytoid.message.user.unbound'))
+            await msg.finish(msg.locale.t('cytoid.message.user.unbound', prefix=msg.prefixes[0]))
     profile_url = 'http://services.cytoid.io/profile/' + query_id
     try:
         profile = json.loads(await get_url(profile_url, status_code=200))
     except ValueError as e:
         if str(e).startswith('404'):
-            return await msg.sendMessage(msg.locale.t('cytoid.message.user.not_found'))
+            await msg.finish(msg.locale.t('cytoid.message.user.not_found'))
         raise e
     uid = profile['user']['uid']
     nick = profile['user']['name']

@@ -5,7 +5,6 @@ from langconv.language.zh import zh_cn, zh_hk, zh_tw
 from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.exceptions import NoReportException
 
 l = module('langconv', developers=['Dianliang233'], alias={'lc': 'langconv'}, desc='{langconv.help}')
 
@@ -25,5 +24,5 @@ async def _(msg: Bot.MessageSession, language: str, content: str):
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if await check_bool(res):
-        raise NoReportException(await rickroll())
+        rickroll(msg)
     await msg.finish(res + '\n' + msg.locale.t('langconv.message.running_time', time=delta))

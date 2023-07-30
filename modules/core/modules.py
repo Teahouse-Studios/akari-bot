@@ -185,20 +185,17 @@ async def config_modules(msg: Bot.MessageSession):
                 elif module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
                 else:
-                    if modules_[module_].base:
-                        msglist.append(msg.locale.t("core.message.module.reload.base", module=module_))
-                    else:
-                        extra_reload_modules = ModulesManager.search_related_module(module_, False)
-                        if len(extra_reload_modules):
-                            confirm = await msg.waitConfirm(msg.locale.t("core.message.module.reload.confirm",
-                                                                         modules='\n'.join(extra_reload_modules)))
-                            if not confirm:
-                                continue
-                        unloaded_list = CFG.get('unloaded_modules')
-                        if module_ in unloaded_list:
-                            unloaded_list.remove(module_)
-                            CFG.write('unloaded_modules', unloaded_list)
-                        msglist.append(module_reload(module_, extra_reload_modules))
+                    extra_reload_modules = ModulesManager.search_related_module(module_, False)
+                    if len(extra_reload_modules):
+                        confirm = await msg.waitConfirm(msg.locale.t("core.message.module.reload.confirm",
+                                                                     modules='\n'.join(extra_reload_modules)))
+                        if not confirm:
+                            continue
+                    unloaded_list = CFG.get('unloaded_modules')
+                    if unloaded_list and module_ in unloaded_list:
+                        unloaded_list.remove(module_)
+                        CFG.write('unloaded_modules', unloaded_list)
+                    msglist.append(module_reload(module_, extra_reload_modules))
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
@@ -211,7 +208,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if ModulesManager.load_module(module_):
                     msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
                     unloaded_list = CFG.get('unloaded_modules')
-                    if module_ in unloaded_list:
+                    if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                 else:
@@ -234,6 +231,8 @@ async def config_modules(msg: Bot.MessageSession):
                                 unloaded_list.append(module_)
                                 CFG.write('unloaded_modules', unloaded_list)
                             msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                            err_modules.remove(module_)
+                            current_unloaded_modules.append(module_)
                     else:
                         msglist.append(msg.locale.t("core.message.module.unload.error"))
                     continue
@@ -426,7 +425,6 @@ async def _(msg: Bot.MessageSession):
                                       Plain(msg.locale.t("core.message.module.help.more_information",
                                                          prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
         except Exception:
-            await msg.sendMessage(msg.locale.t("core.message.module.help.error.render_failed"))
             traceback.print_exc()
     if legacy_help:
         help_msg = [msg.locale.t("core.message.module.help.legacy.base")]

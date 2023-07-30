@@ -18,7 +18,7 @@ arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
 webrender = Config('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
-api = Config("botarcapi_url")
+api_url = Config("botarcapi_url")
 headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 query_tasks = set()
 
@@ -27,7 +27,7 @@ class WithErrCode(Exception):
     pass
 
 
-if api:
+if api_url:
 
     @arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
     async def _(msg: Bot.MessageSession, friend_code: str = None):
@@ -44,7 +44,7 @@ if api:
                 if msg.target.senderId in query_tasks:
                     await msg.finish(msg.locale.t("arcaea.message.b30.wait.already"))
                 query_tasks.add(msg.target.senderId)
-                get_ = await get_url(api + f'user/bests/session?user_name={query_code}', headers=headers,
+                get_ = await get_url(f'{api_url}/user/bests/session?user_name={query_code}', headers=headers,
                                      fmt='json')
                 if get_['status'] == 0:
                     await msg.sendMessage(msg.locale.t("arcaea.message.b30.wait"))
@@ -66,7 +66,7 @@ if api:
 
                 async def _get_result(session):
                     try:
-                        get_ = await get_url(api + f'user/bests/result?session_info={session}&with_song_info=true',
+                        get_ = await get_url(f'{api_url}/user/bests/result?session_info={session}&with_song_info=true',
                                              headers=headers,
                                              fmt='json')
                         if get_['status'] in [-31, -32]:
@@ -207,7 +207,7 @@ if api:
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
-    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
+    resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
                          fmt='json')
     if resp:
         await msg.finish([Plain(msg.locale.t("arcaea.message.download.success", version=resp["value"]["version"],
@@ -218,7 +218,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
-    resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
+    resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
     if resp:
         value = resp["value"][0]
         image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
@@ -233,9 +233,9 @@ async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
     if msg.parsed_msg.get('free', False):
-        resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
+        resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
     else:
-        resp = await get_url(webrender + 'source?url=https://webapi.lowiro.com/webapi/song/rank/paid/', 200, fmt='json')
+        resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/rank/paid/', 200, fmt='json')
     if resp:
         r = []
         rank = 0

@@ -55,6 +55,7 @@ langconv = "^0.2.0"
 toml = "^0.10.2"
 khl-py = "^0.3.16"
 matrix-nio = "^0.21.2"
+attrs = "^23.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

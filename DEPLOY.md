@@ -85,6 +85,8 @@ $ pip install -r requirements.txt
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
+由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你您拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
+
 对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
 
 `db_path = "mysql+pymysql://"`
@@ -286,7 +288,7 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 **示例**
 
-`web_render = "http://127.0.0.1:15551/"`
+`web_render = "http://127.0.0.1:15551"`
 
 ### 模块
 
@@ -348,19 +350,6 @@ assets
             │...
 ```
 
-
-#### ncmusic
-
-`ncmusic` 模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
-
-具体配置教程请查看链接所指向的文档。
-
-配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.toml` 文件中填写以下字段：
-
-+ `web_render` - Webrender 的地址（IP 或域名）及端口
-+ `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
-
-如果不需要本模块的功能，将 API 字段删除即可。
 
 #### secret
 

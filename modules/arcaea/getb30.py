@@ -9,7 +9,7 @@ from .drawsongimg import dsimg
 from .utils import autofix_b30_song_background
 
 assets_path = os.path.abspath('./assets/arcaea')
-api = Config("botarcapi_url")
+api_url = Config("botarcapi_url")
 headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 
 

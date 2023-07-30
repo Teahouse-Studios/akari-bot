@@ -116,7 +116,7 @@ async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
         fi.write(d['content'])
 
     try:
-        pic = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
+        pic = await download_to_cache((web_render_local if use_local else web_render) + '/element_screenshot',
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",

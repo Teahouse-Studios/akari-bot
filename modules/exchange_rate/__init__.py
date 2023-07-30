@@ -70,7 +70,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         raise Exception(data['error-type'])
 
 
-@excr.regex(r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑|换|兌|換]\s?([a-zA-Z]{3})", desc='{exchange_rate.help.regex.desc}')
+@excr.regex(r"(\d+(\.\d+)?)?\s?([a-zA-Z]{3})\s?[兑换兌換]\s?([a-zA-Z]{3})", desc='{exchange_rate.help.regex.desc}')
 async def _(msg: Bot.MessageSession):
     groups = msg.matched_msg.groups()
     amount = groups[0] if groups[0] else '1'

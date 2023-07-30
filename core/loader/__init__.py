@@ -65,11 +65,7 @@ def load_modules():
         openloadercache.write('')
     openloadercache.close()
 
-    modules = ModulesManager.modules
-    for m in modules:
-        module = modules[m]
-        if module.alias:
-            ModulesManager.modules_aliases.update(module.alias)
+    ModulesManager.refresh_modules_aliases()
 
 
 class ModulesManager:
@@ -94,6 +90,14 @@ class ModulesManager:
                 cls.modules_origin.pop(module)
             else:
                 raise ValueError(f'Module "{module}" is not exist')
+
+    @classmethod
+    def refresh_modules_aliases(cls):
+        cls.modules_aliases.clear()
+        for m in cls.modules:
+            module = cls.modules[m]
+            if module.alias:
+                cls.modules_aliases.update(module.alias)
 
     @classmethod
     def search_related_module(cls, module, includeSelf=True):
@@ -155,6 +159,7 @@ class ModulesManager:
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
         cls._return_cache.clear()
+        cls.refresh_modules_aliases()
         return cls.reload_py_module(py_module)
 
     @classmethod
@@ -183,6 +188,7 @@ class ModulesManager:
                     err_modules.append(module_name)
                 return False
         cls._return_cache.clear()
+        cls.refresh_modules_aliases()
         return True
 
     @classmethod
@@ -194,6 +200,7 @@ class ModulesManager:
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
         cls._return_cache.clear()
+        cls.refresh_modules_aliases()
         current_unloaded_modules.append(module_name)
         return True
 

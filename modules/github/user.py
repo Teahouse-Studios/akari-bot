@@ -39,12 +39,10 @@ Account Created {time_diff(result['created_at'])} ago | Latest activity {time_di
 
         is_dirty = await dirty_check(message, result['login']) or darkCheck(message)
         if is_dirty:
-            message = await rickroll()
+            rickroll(msg)
 
         await msg.finish(message)
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        else:
-           await msg.sendMessage(ErrorMessage(str(e)))
         traceback.print_exc()
