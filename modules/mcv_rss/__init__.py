@@ -42,7 +42,7 @@ async def get_article(version):
     webrender = Config('web_render')
     if not webrender:
         return
-    get = webrender + 'source?url=' + quote(link)
+    get = webrender + '/source?url=' + quote(link)
 
     try:
         html = await get_url(get, attempt=1)

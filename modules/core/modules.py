@@ -192,7 +192,7 @@ async def config_modules(msg: Bot.MessageSession):
                         if not confirm:
                             continue
                     unloaded_list = CFG.get('unloaded_modules')
-                    if module_ in unloaded_list:
+                    if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                     msglist.append(module_reload(module_, extra_reload_modules))
@@ -208,7 +208,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if ModulesManager.load_module(module_):
                     msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
                     unloaded_list = CFG.get('unloaded_modules')
-                    if module_ in unloaded_list:
+                    if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                 else:
@@ -231,6 +231,8 @@ async def config_modules(msg: Bot.MessageSession):
                                 unloaded_list.append(module_)
                                 CFG.write('unloaded_modules', unloaded_list)
                             msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
+                            err_modules.remove(module_)
+                            current_unloaded_modules.append(module_)
                     else:
                         msglist.append(msg.locale.t("core.message.module.unload.error"))
                     continue

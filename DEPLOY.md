@@ -264,7 +264,7 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 **示例**
 
-`web_render = "http://127.0.0.1:15551/"`
+`web_render = "http://127.0.0.1:15551"`
 
 ### 模块
 
@@ -326,19 +326,6 @@ assets
             │...
 ```
 
-
-#### ncmusic
-
-`ncmusic` 模块需要使用 [Web Render](#webrender) 和 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 来生成图片以及获取歌曲信息，
-
-具体配置教程请查看链接所指向的文档。
-
-配置好上述所需要用到的服务后，请确保在 `config` 目录下的 `config.toml` 文件中填写以下字段：
-
-+ `web_render` - Webrender 的地址（IP 或域名）及端口
-+ `netease_cloud_music_api` - NeteaseCloudMusicApi 的地址（IP 或域名）及端口
-
-如果不需要本模块的功能，将 API 字段删除即可。
 
 #### secret
 

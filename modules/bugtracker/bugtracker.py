@@ -28,7 +28,7 @@ async def make_screenshot(page_link, use_local=True):
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
-        img = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
+        img = await download_to_cache((web_render_local if use_local else web_render) + '/element_screenshot',
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",

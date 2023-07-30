@@ -16,7 +16,7 @@ headers = {"Authorization": f'Bearer {Config("botarcapi_token")}'}
 
 async def get_info(msg, usercode):
     try:
-        get_ = await get_url(api_url + f"user/info?user_code={usercode}&recent=1&with_song_info=True",
+        get_ = await get_url(f"{api_url}/user/info?user_code={usercode}&recent=1&with_song_info=True",
                              status_code=200,
                              headers=headers,
                              fmt='json')

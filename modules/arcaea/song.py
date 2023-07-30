@@ -14,7 +14,7 @@ api_url = Config("botarcapi_url")
 async def get_song_info(msgsession, sid, diff: int, usercode=None):
     headers = {"User-Agent": Config('botarcapi_agent')}
     try:
-        song_info = await get_url(f'{api_url}song/info?songname={sid}', headers=headers, status_code=200,
+        song_info = await get_url(f'{api_url}/song/info?songname={sid}', headers=headers, status_code=200,
                                   fmt='json')
     except ValueError as e:
         Logger.info(f'[{sid}] {e}')
