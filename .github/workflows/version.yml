@@ -28,6 +28,7 @@ jobs:
       run: |
         git config user.name "SilianZ"
         git config user.email "silian_zheng@outlook.com"
+        git config --global user.password "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"
         git add -f ./bots/aiocqhttp/assets/version
         git commit -m "Update version in ./bots/aiocqhttp/assets/version"
         git push
