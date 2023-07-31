@@ -25,5 +25,5 @@ jobs:
       run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
       
     - name: Commit & Push
-      uses: Minionguyjpro/Push-Action@1.0.0
+      uses: ludeeus/action-push@0.0.1
 
