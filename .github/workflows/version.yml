@@ -37,8 +37,8 @@ jobs:
         echo "$version" > ./bots/matrix/assets/version_tag
         echo "$commit_hash" > ./bots/matrix/assets/version
 
-        echo "$version" > ./bots/assets/version_tag
-        echo "$commit_hash" > ./bots/assets/version
+        echo "$version" > ./assets/version_tag
+        echo "$commit_hash" > ./assets/version
       
     - name: Commit files
       run: |
