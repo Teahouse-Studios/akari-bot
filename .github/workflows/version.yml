@@ -26,4 +26,4 @@ jobs:
       with: 
         path: ./bots/aiocqhttp/assets/version
         contents: "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}"
-        write-mod: 'overwrite'
+        write-mode: 'overwrite'
