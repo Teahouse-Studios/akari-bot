@@ -22,8 +22,13 @@ jobs:
       run: echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
     
     - name: Write File
-      uses: DamianReeves/write-file-action@v1.2
-      with: 
-        path: ${{ env.home }}/bots/aiocqhttp/assets/version
-        contents: "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}"
-        write-mode: 'overwrite'
+      run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
+      
+    - name: Commit & Push
+      uses: Andro999b/push@v1.3
+      with:
+        github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        branch: main
+        force: true
+        message: 'Overwritten by Github Actions - ${date}'
+
