@@ -31,6 +31,6 @@ jobs:
         ACTION_NAME: "SilianZ"
         ACTION_BRANCH: "master"
         ACTION_MESSAGE: "Update version file"
-        secrets: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+      secrets: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
       
 
