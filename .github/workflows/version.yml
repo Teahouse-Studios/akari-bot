@@ -42,6 +42,7 @@ jobs:
       
     - name: Commit files
       run: |
+        git config --local user.name "Akari-bot"
         git commit -a -m "Add changes"
         git push
 
