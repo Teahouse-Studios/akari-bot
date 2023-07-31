@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          ref: master
+
       - uses: rui-costa/action-automatic-semver-releases@1
         with:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
