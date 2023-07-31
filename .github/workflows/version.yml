@@ -25,10 +25,5 @@ jobs:
       run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
       
     - name: Commit & Push
-      uses: Andro999b/push@v1.3
-      with:
-        github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        branch: main
-        force: true
-        message: 'Overwritten by Github Actions - ${date}'
+      uses: Minionguyjpro/Push-Action@1.0.0
 
