@@ -1,0 +1,33 @@
+name: Update Version
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update_version_job:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v2
+
+    - name: Get current version
+      id: get_version
+      run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
+
+    - name: Get commit hash
+      id: get_commit_hash
+      run: echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
+
+    - name: Write version to file
+      run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
+
+    - name: Commit and push updated version file
+      run: |
+        git config user.name "SilianZ"
+        git config user.email "silian_zheng@outlook.com"
+        git add ./bots/aiocqhttp/assets/version
+        git commit -m "Update version in ./bots/aiocqhttp/assets/version"
+        git push
