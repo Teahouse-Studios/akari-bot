@@ -35,4 +35,5 @@ jobs:
       with:
         force: true
         tags: true
+        github_token: ${{ github.token }}
 
