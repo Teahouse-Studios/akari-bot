@@ -18,7 +18,7 @@ jobs:
       run: echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
     
     - name: Write File
-      run: echo "Akari_bot-v4.0.11+${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
+      run: echo "Akari-bot-v4.0.11+${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
       
     - name: Commit files
       run: |
