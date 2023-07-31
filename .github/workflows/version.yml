@@ -27,6 +27,6 @@ jobs:
     - name: Commit & Push
       uses: ad-m/github-push-action@master
       with:
-        github_token: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+        github_token: "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"
         force: true
 
