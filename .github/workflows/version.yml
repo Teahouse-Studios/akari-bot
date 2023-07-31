@@ -13,16 +13,12 @@ jobs:
     - name: Check out the repository
       uses: actions/checkout@v2
 
-    - name: Get current version
-      id: get_version
-      run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
-
     - name: Get commit hash
       id: get_commit_hash
       run: echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
     
     - name: Write File
-      run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
+      run: echo "Akari_bot-v4.0.11+${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
       
     - name: Commit files
       run: |
