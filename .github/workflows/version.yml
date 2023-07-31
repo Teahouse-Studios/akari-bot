@@ -26,8 +26,8 @@ jobs:
       
     - name: Commit files
       run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --local user.email "silian_zheng@outlook.com"
+        git config --local user.name "SilianZ"
         git commit -a -m "Add changes"
         
     - name: Push changes
@@ -35,5 +35,5 @@ jobs:
       with:
         force: true
         tags: true
-        github_token: ${{ github.token }}
+        github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
