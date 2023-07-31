@@ -42,8 +42,6 @@ jobs:
       
     - name: Commit files
       run: |
-        git config --local user.name "Akari-bot"
-        git config --local user.password "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
         git commit -a -m "Add changes"
         git push
 
