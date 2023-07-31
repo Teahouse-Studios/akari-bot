@@ -28,7 +28,6 @@ jobs:
       run: |
         git config user.name "SilianZ"
         git config user.email "silian_zheng@outlook.com"
-        git add -f bots/aiocqhttp/assets
-        git add ./bots/aiocqhttp/assets/version
+        git add -f ./bots/aiocqhttp/assets/version
         git commit -m "Update version in ./bots/aiocqhttp/assets/version"
         git push
