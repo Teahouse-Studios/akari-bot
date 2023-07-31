@@ -22,20 +22,23 @@ jobs:
         version="Akari-bot-${{ github.ref }}"
         commit_hash="${{ steps.get_commit_hash.outputs.commit_hash }}"
 
-        echo "$version" > ./bots/aiocqhttp/assets/version
-        echo "$commit_hash" > ./bots/aiocqhttp/assets/version_tag
+        echo "$version" > ./bots/aiocqhttp/assets/version_tag
+        echo "$commit_hash" > ./bots/aiocqhttp/assets/version
 
-        echo "$version" > ./bots/aiogram/assets/version
-        echo "$commit_hash" > ./bots/aiogram/assets/version_tag
+        echo "$version" > ./bots/aiogram/assets/version_tag
+        echo "$commit_hash" > ./bots/aiogram/assets/version
 
-        echo "$version" > ./bots/discord/assets/version
-        echo "$commit_hash" > ./bots/discord/assets/version_tag
+        echo "$version" > ./bots/discord/assets/version_tag
+        echo "$commit_hash" > ./bots/discord/assets/version
 
-        echo "$version" > ./bots/kook/assets/version
-        echo "$commit_hash" > ./bots/kook/assets/version_tag
+        echo "$version" > ./bots/kook/assets/version_tag
+        echo "$commit_hash" > ./bots/kook/assets/version
 
-        echo "$version" > ./bots/matrix/assets/version
-        echo "$commit_hash" > ./bots/matrix/assets/version_tag
+        echo "$version" > ./bots/matrix/assets/version_tag
+        echo "$commit_hash" > ./bots/matrix/assets/version
+
+        echo "$version" > ./bots/assets/version_tag
+        echo "$commit_hash" > ./bots/assets/version
       
     - name: Commit files
       run: |
