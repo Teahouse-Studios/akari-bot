@@ -1002,9 +1002,9 @@ langchain==0.0.232 ; python_full_version >= "3.8.1" and python_version < "4.0" \
 langconv==0.2.0 ; python_full_version >= "3.8.1" and python_version < "4.0" \
     --hash=sha256:8d6e86f88de3e08d4c5341eb45d3c1df359169a101f680c68a22f4f4f86bd7f5 \
     --hash=sha256:aa4dce595a8933ba5ff53e3e71df62775eb4a5f96f022af8fef61005c25ea572
-langsmith==0.0.5 ; python_full_version >= "3.8.1" and python_version < "4.0" \
-    --hash=sha256:c9ce19cf7a45d4b9ef74b3133ace4d0583bc992383296d03c05065e8f871e01f \
-    --hash=sha256:ffad2fc638cfee8c9d27c9eae2fa3c3f9ec423bf443b1dc44cc8184fa34cd6b2
+langsmith==0.0.15; python_full_version >= "3.8.1" and python_version < "4.0" \
+    --hash=sha256:8382de23d469bb8062a5eb8b7fc9971068981c92233db63a3c25ccf4f85aaf23 \
+    --hash=sha256:c5e3d2cc50a2f6f5c4aaf3f8998a25f85dd94b3cd016bc4999be51000c933b3f
 loguru==0.6.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:066bd06758d0a513e9836fd9c6b5a75bfb3fd36841f4b996bc60b547a309d41c \
     --hash=sha256:4e2414d534a2ab57573365b3e6d0234dfb1d84b68b7f3b948e6fb743860a77c3
