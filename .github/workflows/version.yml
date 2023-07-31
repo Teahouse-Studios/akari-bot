@@ -1,4 +1,4 @@
-name: Update Version File
+name: Update Version
 
 on:
   push:
