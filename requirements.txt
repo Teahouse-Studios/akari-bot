@@ -2216,9 +2216,9 @@ unpaddedbase64==2.1.0 ; python_full_version >= "3.8.1" and python_version < "4.0
 urllib3==2.0.3 ; python_full_version >= "3.8.1" and python_version < "4.0" \
     --hash=sha256:48e7fafa40319d358848e1bc6809b208340fafe2096f1725d05d67443d0483d1 \
     --hash=sha256:bee28b5e56addb8226c96f7f13ac28cb4c301dd5ea8a6ca179c0b9835e032825
-uvicorn[standard]==0.23.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:1d55d46b83ee4ce82b4e82f621f2050adb3eb7b5481c13f9af1744951cae2f1f \
-    --hash=sha256:da9b0c8443b2d7ee9db00a345f1eee6db7317432c9d4400f5049cc8d358383be
+uvicorn[standard]==0.23.2; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:1f9be6558f01239d4fdf22ef8126c39cb1ad0addf76c40e760549d2c2f43ab53 \
+    --hash=sha256:4d3cc12d7727ba72b64d12d3cc7743124074c0a69f7b201512fc50c3e3f1569a
 uvloop==0.17.0 ; sys_platform != "win32" and sys_platform != "cygwin" and platform_python_implementation != "PyPy" and python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:0949caf774b9fcefc7c5756bacbbbd3fc4c05a6b7eebc7c7ad6f825b23998d6d \
     --hash=sha256:0ddf6baf9cf11a1a22c71487f39f15b2cf78eb5bde7e5b45fbb99e8a9d91b9e1 \
