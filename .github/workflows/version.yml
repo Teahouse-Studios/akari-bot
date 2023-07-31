@@ -1,4 +1,4 @@
-name: Update Version
+name: Update Version Files
 
 on:
   push:
@@ -43,6 +43,6 @@ jobs:
     - name: Commit files
       run: |
         git config --local user.name "Akari-bot"
-        git commit -a -m "Add changes"
+        git commit -a -m "Updated version files."
         git push
 
