@@ -28,7 +28,7 @@ jobs:
       run: |
         git config --global user.name "SilianZ"
         git config --global user.email "silian_zheng@outlook.com"
-        git config --global user.password "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+        run: git config --global --add http.extraheader "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}"
         
     - name: Commit and push updated version file
       run: |
