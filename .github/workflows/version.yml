@@ -20,17 +20,10 @@ jobs:
     - name: Get commit hash
       id: get_commit_hash
       run: echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
-
-    - name: Write version to file
-      run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
-
-    - name: Configure Git
-      run: |
-        git config --global user.email "silian_zheng@outlook.com"
-        git config --global user.name "SilianZ"
-        
-    - name: Commit and push updated version file
-      run: |
-        git add -f ./bots/aiocqhttp/assets/version
-        git commit -m "Update version in ./bots/aiocqhttp/assets/version"
-        git push
+    
+    - name: Write File
+      uses: DamianReeves/write-file-action@v1.2
+      with: 
+        path: ./bots/aiocqhttp/assets/version
+        contents: "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}"
+        write-mod: 'overwrite'
