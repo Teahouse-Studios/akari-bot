@@ -26,4 +26,11 @@ jobs:
       
     - name: Commit & Push
       uses: ludeeus/action-push@0.0.1
+      env:
+        ACTION_MAIL: "silian_zheng@outlook.com"
+        ACTION_NAME: "SilianZ"
+        ACTION_BRANCH: "master"
+        ACTION_MESSAGE: "Update version file"
+        secrets: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+      
 
