@@ -24,9 +24,15 @@ jobs:
     - name: Write File
       run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
       
-    - name: Commit & Push
+    - name: Commit files
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git commit -a -m "Add changes"
+    
+    - name: Push files
       uses: ad-m/github-push-action@master
       with:
-        github_token: "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"
-        force: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
 
