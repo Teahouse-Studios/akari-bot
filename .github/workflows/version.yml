@@ -28,6 +28,7 @@ jobs:
       run: |
         git config --global user.name "SilianZ"
         git config --global user.password "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+        git config --global user.email "silian_zheng@outlook.com"
         
     - name: Commit and push updated version file
       run: |
