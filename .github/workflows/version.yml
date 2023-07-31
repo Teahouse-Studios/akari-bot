@@ -13,14 +13,10 @@ jobs:
     - name: Check out the repository
       uses: actions/checkout@v2
 
-    - name: Get commit hash
-      id: get_commit_hash
-      run: echo "::set-output name=commit_hash::$(git rev-parse --short HEAD)"
-    
     - name: Write File
       run: |
-        version="Akari-bot-${{ env.GITHUB_REF }}"
-        commit_hash="${{ env.GITHUB_SHA }}"
+        version="Akari-bot-${{ github.ref#refs/heads/ }}"
+        commit_hash="${{ github.commit_hash }}"
 
         echo "$version" > ./bots/aiocqhttp/assets/version_tag
         echo "$commit_hash" > ./bots/aiocqhttp/assets/version
