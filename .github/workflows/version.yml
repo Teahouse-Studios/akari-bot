@@ -15,7 +15,7 @@ jobs:
 
     - name: Write File
       run: |
-        version="Akari-bot-${{ GITHUB_REF#refs/heads/ }}"
+        version="Akari-bot-${{ github.ref #refs/heads/ }}"
         commit_hash="${{ github.commit_hash }}"
 
         echo "$version" > ./bots/aiocqhttp/assets/version_tag
