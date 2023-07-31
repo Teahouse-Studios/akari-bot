@@ -25,12 +25,12 @@ jobs:
       run: echo "${{ steps.get_version.outputs.version }}-${{ steps.get_commit_hash.outputs.commit_hash }}" > ./bots/aiocqhttp/assets/version
       
     - name: Commit & Push
-      uses: ludeeus/action-push@0.0.1
-      env:
-        ACTION_MAIL: "silian_zheng@outlook.com"
-        ACTION_NAME: "SilianZ"
-        ACTION_BRANCH: "master"
-        ACTION_MESSAGE: "Update version file"
-      secrets: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git tag -d $GITHUB_REF_NAME
+        git tag $GITHUB_REF_NAME
+        git commit -a -m "Add changes"
+        git push
       
 
