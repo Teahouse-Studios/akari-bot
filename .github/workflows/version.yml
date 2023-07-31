@@ -28,9 +28,8 @@ jobs:
       run: |
         git config --global user.name "SilianZ"
         git config --global user.email "silian_zheng@outlook.com"
-        if ! git config --get http.https://github.com/.extraheader | grep -q "Authorization"; then
-          git config --global --add http.https://github.com/.extraheader "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}"
-        fi
+        git config --global --unset http.https://github.com/.extraheader
+        git config --global --add http.https://github.com/.extraheader "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}"
         
     - name: Commit and push updated version file
       run: |
