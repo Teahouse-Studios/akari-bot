@@ -1,0 +1,22 @@
+name: "Weekly Release"
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+jobs:
+  weekly-release:
+    name: Weekly Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: master
+
+      - uses: rui-costa/action-automatic-semver-releases@v1
+        with:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEMVER: PATCH
