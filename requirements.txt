@@ -144,9 +144,9 @@ backports-zoneinfo==0.2.1 ; python_full_version >= "3.8.1" and python_version < 
 beautifulsoup4==4.12.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da \
     --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a
-blinker==1.5 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:1eb563df6fdbc39eeddc177d953203f99f097e9bf0e2b8f9f3cf18b6ca425e36 \
-    --hash=sha256:923e5e2f69c155f2cc42dafbbd70e16e3fde24d2d4aa2ab72fbe386238892462
+blinker==1.6.2; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:4afd3de66ef3a9f8067559fb7a1cbe555c17dcbe15971b05d1b625c3e7abe213 \
+    --hash=sha256:c3d739772abb7bc2860abf5f2ec284223d9ad5c76da018234f6f50d6f31ab1f0
 brotli==1.0.9 ; platform_python_implementation == "CPython" and python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:02177603aaca36e1fd21b091cb742bb3b305a569e2402f1ca38af471777fb019 \
     --hash=sha256:11d3283d89af7033236fa4e73ec2cbe743d4f6a81d41bd234f24bf63dde979df \
