@@ -304,7 +304,8 @@ class FetchTarget(FT):
                         _tsk.append({'fetch': fetch_, 'message': message})
                     else:
                         Temp.data['is_group_message_blocked'] = True
-                        Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                        Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
+                                                                            'i18n': i18n})
                         if _tsk:
                             for t in _tsk:
                                 Temp.data['waiting_for_send_group_message'].append(t)
