@@ -5,7 +5,7 @@ import traceback
 from datetime import datetime
 
 from config import Config
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, base_superuser_list
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -198,7 +198,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                                                             module=command_first_word)))
                         return
 
-                    if module.required_superuser:
+                    if module.required_base_superuser:
+                        if msg.target.senderId not in base_superuser_list:
+                            await msg.sendMessage(msg.locale.t("parser.superuser.permission.denied"))
+                            return
+                    elif module.required_superuser:
                         if not msg.checkSuperUser():
                             await msg.sendMessage(msg.locale.t("parser.superuser.permission.denied"))
                             return
@@ -229,7 +233,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                     msg.parsed_msg = parsed_msg[1]  # 使用命令模板解析后的消息
                                     Logger.debug(msg.parsed_msg)
 
-                                    if submodule.required_superuser:
+                                    if submodule.required_base_superuser:
+                                        if msg.target.senderId not in base_superuser_list:
+                                            await msg.sendMessage(msg.locale.t("parser.superuser.permission.denied"))
+                                            return
+                                    elif submodule.required_superuser:
                                         if not msg.checkSuperUser():
                                             await msg.sendMessage(msg.locale.t("parser.superuser.permission.denied"))
                                             return
@@ -374,7 +382,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 if m in msg.enabled_modules and modules[m].regex_list.set:  # 如果模块已启用
                     regex_module = modules[m]
 
-                    if regex_module.required_superuser:
+                    if regex_module.required_base_superuser:
+                        if msg.target.senderId not in base_superuser_list:
+                            continue
+                    elif regex_module.required_superuser:
                         if not msg.checkSuperUser():
                             continue
                     elif regex_module.required_admin:

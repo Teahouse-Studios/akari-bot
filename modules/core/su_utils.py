@@ -334,7 +334,7 @@ async def update_and_restart_bot(msg: Bot.MessageSession):
 
 
 if Bot.FetchTarget.name == 'QQ':
-    resume = module('resume', developers=['OasisAkari'], required_superuser=True)
+    resume = module('resume', developers=['OasisAkari'], required_base_superuser=True)
 
     @resume.handle()
     async def resume_sending_group_message(msg: Bot.MessageSession):
@@ -362,7 +362,10 @@ if Bot.FetchTarget.name == 'QQ':
         if targets := Temp.data['waiting_for_send_group_message']:
             await msg.sendMessage(msg.locale.t("core.message.resume.skip", counts=len(targets)))
             for x in targets:
-                await x['fetch'].sendDirectMessage(x['message'])
+                if x['i18n']:
+                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message']))
+                else:
+                    await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
             await msg.sendMessage(msg.locale.t("core.message.resume.done"))
