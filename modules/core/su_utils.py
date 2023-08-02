@@ -471,7 +471,8 @@ if Config('openai_api_key'):
     async def _(msg: Bot.MessageSession):
         petal = msg.parsed_msg['<petal>']
         if '<target>' in msg.parsed_msg:
-            target = BotDBUtil.TargetInfo(msg.parsed_msg['<target>'])
+            group = msg.parsed_msg['<target>']
+            target = BotDBUtil.TargetInfo(group)
         else:
             target = msg.data
         target.modify_petal(int(petal))
