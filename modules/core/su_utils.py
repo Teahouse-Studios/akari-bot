@@ -470,7 +470,7 @@ if Config('openai_api_key'):
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
         
-    @petal.handle('<target>', required_superuser=True)
+    @petal.handle('[<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):
         group = msg.parsed_msg['<target>']
         target = BotDBUtil.TargetInfo(group)
