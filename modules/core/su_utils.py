@@ -474,8 +474,8 @@ if Config('openai_api_key'):
             group = msg.parsed_msg['<target>']
             target = BotDBUtil.TargetInfo(group)
             target.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify.self', group=group, add_petal=petal, petal=msg.data.petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=msg.data.petal))
         else:
             target = msg.data
             target.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify', add_petal=petal, petal=msg.data.petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=msg.data.petal))
