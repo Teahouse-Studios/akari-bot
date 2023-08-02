@@ -463,6 +463,7 @@ if Config('openai_api_key'):
     petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
                    desc='{core.help.petal}')
 
+    @petal.handle()
     @petal.handle('[<target>]')
     async def _(msg: Bot.MessageSession):
         if '<target>' in msg.parsed_msg:
