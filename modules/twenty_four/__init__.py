@@ -67,6 +67,9 @@ async def has_solution(numbers):
             exp = '( {} {} ( {} {} ( {} {} {} )))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return True
+            exp = '( {} {} ( {} {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            if calc(exp) == 24:
+                return True
     return False
 
 

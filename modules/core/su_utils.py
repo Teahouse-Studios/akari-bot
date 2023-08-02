@@ -457,3 +457,25 @@ rse = module('raise', developers=['OasisAkari'], required_superuser=True)
 @rse.handle()
 async def _(msg: Bot.MessageSession):
     raise Exception("Test Exception")
+
+
+if Config('openai_api_key'):
+    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
+                   desc='{core.help.petal}')
+
+    @petal.handle()
+    async def _(msg: Bot.MessageSession):
+        await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
+
+    @petal.handle('modify <petal> [<target>]', required_superuser=True)
+    async def _(msg: Bot.MessageSession):
+        petal = msg.parsed_msg['<petal>']
+        if '<target>' in msg.parsed_msg:
+            group = msg.parsed_msg['<target>']
+            target = BotDBUtil.TargetInfo(group)
+            target.modify_petal(int(petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
+        else:
+            target = msg.data
+            target.modify_petal(int(petal))
+            await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
