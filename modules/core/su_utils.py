@@ -467,8 +467,18 @@ if Config('openai_api_key'):
                    desc='{core.help.petal}')
 
     @petal.handle()
+    @petal.handle('[<target>]')
     async def _(msg: Bot.MessageSession):
-        await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
+        if '<target>' in msg.parsed_msg:
+            if msg.checkSuperUser():
+                group = msg.parsed_msg['<target>']
+                target = BotDBUtil.TargetInfo(group)
+                await msg.finish(msg.locale.t('core.message.petal', group=group, petal=target.petal))
+            else:
+                await msg.finish(msg.locale.t("parser.superuser.permission.denied"))
+        else:
+            await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
+            
 
     @petal.handle('modify <petal> [<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):
