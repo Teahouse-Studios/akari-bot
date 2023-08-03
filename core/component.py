@@ -24,6 +24,7 @@ class Bind:
                     options_desc: dict = None,
                     required_admin: bool = False,
                     required_superuser: bool = False,
+                    required_base_superuser: bool = False,
                     available_for: Union[str, list, tuple] = '*',
                     exclude_from: Union[str, list, tuple] = '',
                     priority: int = 1):
@@ -36,14 +37,18 @@ class Bind:
                 if help_doc is None:
                     help_doc = []
 
-                ModulesManager.bind_to_module(self.bind_prefix, CommandMeta(function=function,
-                                                                            help_doc=parse_template(help_doc),
-                                                                            options_desc=options_desc,
-                                                                            required_admin=required_admin,
-                                                                            required_superuser=required_superuser,
-                                                                            available_for=available_for,
-                                                                            exclude_from=exclude_from,
-                                                                            priority=priority))
+                ModulesManager.bind_to_module(
+                    self.bind_prefix,
+                    CommandMeta(
+                        function=function,
+                        help_doc=parse_template(help_doc),
+                        options_desc=options_desc,
+                        required_admin=required_admin,
+                        required_superuser=required_superuser,
+                        required_base_superuser=required_base_superuser,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        priority=priority))
                 return function
 
             return decorator
@@ -52,21 +57,26 @@ class Bind:
                   desc: str = None,
                   required_admin: bool = False,
                   required_superuser: bool = False,
+                  required_base_superuser: bool = False,
                   available_for: Union[str, list, tuple] = '*',
                   exclude_from: Union[str, list, tuple] = '',
                   show_typing: bool = True, logging: bool = True):
             def decorator(function):
-                ModulesManager.bind_to_module(self.bind_prefix, RegexMeta(function=function,
-                                                                          pattern=pattern,
-                                                                          mode=mode,
-                                                                          flags=flags,
-                                                                          desc=desc,
-                                                                          required_admin=required_admin,
-                                                                          required_superuser=required_superuser,
-                                                                          available_for=available_for,
-                                                                          exclude_from=exclude_from,
-                                                                          show_typing=show_typing,
-                                                                          logging=logging))
+                ModulesManager.bind_to_module(
+                    self.bind_prefix,
+                    RegexMeta(
+                        function=function,
+                        pattern=pattern,
+                        mode=mode,
+                        flags=flags,
+                        desc=desc,
+                        required_admin=required_admin,
+                        required_superuser=required_superuser,
+                        required_base_superuser=required_base_superuser,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        show_typing=show_typing,
+                        logging=logging))
                 return function
 
             return decorator
@@ -89,6 +99,7 @@ class Bind:
                    options_desc: dict = None,
                    required_admin: bool = False,
                    required_superuser: bool = False,
+                   required_base_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
                    exclude_from: Union[str, list, tuple] = '',
                    priority: int = 1):
@@ -99,6 +110,7 @@ class Bind:
                    desc: str = None,
                    required_admin: bool = False,
                    required_superuser: bool = False,
+                   required_base_superuser: bool = False,
                    available_for: Union[str, list, tuple] = '*',
                    exclude_from: Union[str, list, tuple] = '',
                    show_typing: bool = True, logging: bool = True):
@@ -126,6 +138,7 @@ def module(
     required_admin: bool = False,
     base: bool = False,
     required_superuser: bool = False,
+    required_base_superuser: bool = False,
     available_for: Union[str, list, tuple] = '*',
     exclude_from: Union[str, list, tuple] = '',
     support_languages: Union[str, list, tuple] = None
@@ -141,6 +154,7 @@ def module(
     :param required_admin: 此命令是否需要群组管理员权限。
     :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。
     :param required_superuser: 将此命令设为机器人的超级管理员才可执行。
+    :param required_base_superuser: 将此命令设为机器人的基础超级管理员才可执行。
     :param available_for: 此命令支持的平台列表。
     :param exclude_from: 此命令排除的平台列表。
     :return: 此类型的模块。
@@ -153,6 +167,7 @@ def module(
                     base=base,
                     required_admin=required_admin,
                     required_superuser=required_superuser,
+                    required_base_superuser=required_base_superuser,
                     available_for=available_for,
                     exclude_from=exclude_from,
                     support_languages=support_languages)
