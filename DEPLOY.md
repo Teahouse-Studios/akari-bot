@@ -292,19 +292,6 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 
 ### 模块
 
-#### arcaea
-
-`arcaea` 模块使用了 BotArcAPI 进行开发。
-
-`botarcapi_url =` - 填写 BotArcAPI 公用实例地址
-
-`botarcapi_token =` - 填写 BotArcAPI 公用实例申请到token
-
-填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
-启动后使用 `~arcaea initialize` 来初始化资源文件。
-
-如果不需要本模块的功能，将 API 字段删除即可。
-
 #### coin 
 `coin` 模块需要一些额外的参数才能正常工作。
 
