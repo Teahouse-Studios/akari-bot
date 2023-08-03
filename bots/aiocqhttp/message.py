@@ -54,7 +54,7 @@ async def resending_group_message():
             for x in targets:
                 try:
                     if x['i18n']:
-                        await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message']))
+                        await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message'], **x['kwargs']))
                     else:
                         await x['fetch'].sendDirectMessage(x['message'])
                     Temp.data['waiting_for_send_group_message'].remove(x)
@@ -310,7 +310,7 @@ class FetchTarget(FT):
             try:
                 if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
-                                                                        'i18n': i18n})
+                                                                        'i18n': i18n, 'kwargs': kwargs})
                 else:
                     if i18n:
                         if isinstance(message, dict):
@@ -333,11 +333,11 @@ class FetchTarget(FT):
                     if len(_tsk) >= 3:
                         blocked = True
                     if not blocked:
-                        _tsk.append({'fetch': fetch_, 'message': message, 'i18n': i18n})
+                        _tsk.append({'fetch': fetch_, 'message': message, 'i18n': i18n, 'kwargs': kwargs})
                     else:
                         Temp.data['is_group_message_blocked'] = True
                         Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
-                                                                            'i18n': i18n})
+                                                                            'i18n': i18n, 'kwargs': kwargs})
                         if _tsk:
                             for t in _tsk:
                                 Temp.data['waiting_for_send_group_message'].append(t)
