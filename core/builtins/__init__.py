@@ -1,5 +1,6 @@
 from typing import Union, List
 
+from config import Config
 from core.types.message import FetchTarget, FetchedSession
 from database import BotDBUtil
 from .message import *
@@ -39,3 +40,9 @@ class Bot:
             if isinstance(x, FetchedSession):
                 fetched.append(x)
         return fetched
+
+
+base_superuser_list = Config("base_superuser")
+
+if isinstance(base_superuser_list, str):
+    base_superuser_list = [base_superuser_list]

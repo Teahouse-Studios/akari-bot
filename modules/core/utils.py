@@ -27,7 +27,7 @@ async def bot_version(msg: Bot.MessageSession):
     await msg.finish(msgs, msgs)
 
 
-ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'] )
+ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'])
 
 started_time = datetime.now()
 
@@ -126,7 +126,7 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale', base=True, developers=['Dianliang233','Light-Beacon'])
+locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
 
 
 @locale.handle('<lang> {{core.help.locale}}', required_admin=True)
@@ -146,8 +146,8 @@ async def reload_locale(msg: Bot.MessageSession):
     if len(err) == 0:
         await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.reload.failed",detail='\n'.join(err)))
-        
+        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
+
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
 
@@ -203,7 +203,14 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', developers=['OasisAkari'], base=True, required_admin=True, available_for='QQ|Group', alias='dismiss', desc='{core.help.leave}')
+leave = module(
+    'leave',
+    developers=['OasisAkari'],
+    base=True,
+    required_admin=True,
+    available_for='QQ|Group',
+    alias='dismiss',
+    desc='{core.help.leave}')
 
 
 @leave.handle()
@@ -212,20 +219,3 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         await msg.sendMessage(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
-
-
-if Config('openai_api_key'):
-    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
-                   desc='{core.help.petal}')
-
-
-    @petal.handle()
-    async def _(msg: Bot.MessageSession):
-        await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))
-
-
-    @petal.handle('modify <petal>', required_superuser=True)
-    async def _(msg: Bot.MessageSession):
-        petal = msg.parsed_msg['<petal>']
-        msg.data.modify_petal(int(petal))
-        await msg.finish(msg.locale.t('core.message.petal', petal=msg.data.petal))

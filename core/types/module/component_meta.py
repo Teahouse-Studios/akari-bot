@@ -21,6 +21,7 @@ class CommandMeta:
                  options_desc: dict = None,
                  required_admin: bool = False,
                  required_superuser: bool = False,
+                 required_base_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
                  exclude_from: Union[str, list, tuple] = '',
                  priority: int = 1
@@ -34,6 +35,7 @@ class CommandMeta:
         self.options_desc = options_desc
         self.required_admin = required_admin
         self.required_superuser = required_superuser
+        self.required_base_superuser = required_base_superuser
         if isinstance(available_for, str):
             available_for = [available_for]
         elif isinstance(available_for, tuple):
@@ -55,6 +57,7 @@ class RegexMeta:
                  desc: str = None,
                  required_admin: bool = False,
                  required_superuser: bool = False,
+                 required_base_superuser: bool = False,
                  available_for: Union[str, list, tuple] = '*',
                  exclude_from: Union[str, list, tuple] = '',
                  flags: re.RegexFlag = 0,
@@ -68,6 +71,7 @@ class RegexMeta:
         self.desc = desc
         self.required_admin = required_admin
         self.required_superuser = required_superuser
+        self.required_base_superuser = required_base_superuser
         if isinstance(available_for, str):
             available_for = [available_for]
         elif isinstance(available_for, tuple):

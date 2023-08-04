@@ -13,7 +13,7 @@ from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
 from config import Config
-from core.builtins import Bot, ErrorMessage
+from core.builtins import Bot, ErrorMessage, base_superuser_list
 from core.builtins import Plain, Image, Voice, Temp, command_prefix
 from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
@@ -26,7 +26,6 @@ from core.utils.storedata import get_stored_list
 from core.exceptions import SendMessageFailed
 
 enable_analytics = Config('enable_analytics')
-base_superuser = Config('base_superuser')
 
 
 class FinishedSession(FinS):
@@ -46,6 +45,35 @@ class FinishedSession(FinS):
 last_send_typing_time = {}
 Temp.data['is_group_message_blocked'] = False
 Temp.data['waiting_for_send_group_message'] = []
+
+
+async def resending_group_message():
+    falied_list = []
+    try:
+        if targets := Temp.data['waiting_for_send_group_message']:
+            for x in targets:
+                try:
+                    if x['i18n']:
+                        await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message'], **x['kwargs']))
+                    else:
+                        await x['fetch'].sendDirectMessage(x['message'])
+                    Temp.data['waiting_for_send_group_message'].remove(x)
+                    await asyncio.sleep(30)
+                except SendMessageFailed:
+                    Logger.error(traceback.format_exc())
+                    falied_list.append(x)
+                    if len(falied_list) > 3:
+                        raise SendMessageFailed
+        Temp.data['is_group_message_blocked'] = False
+    except SendMessageFailed:
+        Logger.error(traceback.format_exc())
+        Temp.data['is_group_message_blocked'] = True
+        for bu in base_superuser_list:
+            fetch_base_superuser = await FetchTarget.fetch_target(bu)
+            if fetch_base_superuser:
+                await fetch_base_superuser. \
+                    sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused",
+                                                                           prefix=command_prefix[0]))
 
 
 class MessageSession(MS):
@@ -88,6 +116,10 @@ class MessageSession(MS):
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:
                     raise SendMessageFailed(e.result['wording'])
+
+            if Temp.data['is_group_message_blocked']:
+                asyncio.create_task(resending_group_message())
+
         elif self.target.targetFrom == 'QQ|Guild':
             match_guild = re.match(r'(.*)\|(.*)', self.session.target)
             send = await bot.call_action('send_guild_channel_msg', guild_id=int(match_guild.group(1)),
@@ -278,7 +310,7 @@ class FetchTarget(FT):
             try:
                 if Temp.data['is_group_message_blocked'] and fetch_.target.targetFrom == 'QQ|Group':
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
-                                                                        'i18n': i18n})
+                                                                        'i18n': i18n, 'kwargs': kwargs})
                 else:
                     if i18n:
                         if isinstance(message, dict):
@@ -301,19 +333,21 @@ class FetchTarget(FT):
                     if len(_tsk) >= 3:
                         blocked = True
                     if not blocked:
-                        _tsk.append({'fetch': fetch_, 'message': message})
+                        _tsk.append({'fetch': fetch_, 'message': message, 'i18n': i18n, 'kwargs': kwargs})
                     else:
                         Temp.data['is_group_message_blocked'] = True
-                        Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message})
+                        Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
+                                                                            'i18n': i18n, 'kwargs': kwargs})
                         if _tsk:
                             for t in _tsk:
                                 Temp.data['waiting_for_send_group_message'].append(t)
                             _tsk = []
-                        fetch_base_superuser = await FetchTarget.fetch_target(base_superuser)
-                        if fetch_base_superuser:
-                            await fetch_base_superuser. \
-                                sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused",
-                                                                                       prefix=command_prefix[0]))
+                        for bu in base_superuser_list:
+                            fetch_base_superuser = await FetchTarget.fetch_target(bu)
+                            if fetch_base_superuser:
+                                await fetch_base_superuser. \
+                                    sendDirectMessage(fetch_base_superuser.parent.locale.t("error.message.paused",
+                                                                                           prefix=command_prefix[0]))
             except Exception:
                 Logger.error(traceback.format_exc())
 

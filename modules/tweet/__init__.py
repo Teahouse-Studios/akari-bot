@@ -63,7 +63,7 @@ async def _(msg: Bot.MessageSession, tweet: str):
                     display: none;
                 }
             '''
-            pic = await download_to_cache(web_render_local + 'element_screenshot', method='POST', headers={
+            pic = await download_to_cache(web_render_local + '/element_screenshot', method='POST', headers={
                 'Content-Type': 'application/json',
             }, post_data=json.dumps({'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False, 'element': 'article'}), request_private_ip=True)
             await msg.finish([Image(pic), f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"])

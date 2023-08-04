@@ -21,6 +21,7 @@
 -   Discord
 -   Telegram
 -   Kook
+-   Matrix
 
 ## 运行
 
