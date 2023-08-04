@@ -640,9 +640,9 @@ duckduckgo-search==3.8.4 ; python_full_version >= "3.8.1" and python_full_versio
 exceptiongroup==1.1.2 ; python_full_version >= "3.8.1" and python_version < "3.11" \
     --hash=sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5 \
     --hash=sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f
-fastapi==0.100.1; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:522700d7a469e4a973d92321ab93312448fbe20fca9c8da97effc7e7bc56df23 \
-    --hash=sha256:ec6dd52bfc4eff3063cfcd0713b43c87640fefb2687bbbe3d8a08d94049cdf32
+fastapi==0.101.0; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:494eb3494d89e8079c20859d7ca695f66eaccc40f46fe8c75ab6186d15f05ffd \
+    --hash=sha256:ca2ae65fe42f6a34b5cf6c994337149154b1b400c39809d7b2dccdceb5ae77af
 feedparser==6.0.10 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:27da485f4637ce7163cdeab13a80312b93b7d0c1b775bef4a47629a3110bca51 \
     --hash=sha256:79c257d526d13b944e965f6095700587f27388e50ea16fd245babe4dfae7024f
