@@ -343,7 +343,7 @@ if Bot.FetchTarget.name == 'QQ':
             await msg.sendMessage(msg.locale.t("core.message.resume.processing", counts=len(targets)))
             for x in targets:
                 if x['i18n']:
-                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message']))
+                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message'], **x['kwargs']))
                 else:
                     await x['fetch'].sendDirectMessage(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
@@ -469,13 +469,12 @@ if Config('openai_api_key'):
     @petal.handle()
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
-        
+
     @petal.handle('[<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):
         group = msg.parsed_msg['<target>']
         target = BotDBUtil.TargetInfo(group)
         await msg.finish(msg.locale.t('core.message.petal', group=group, petal=target.petal))
-        
 
     @petal.handle('modify <petal> [<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):

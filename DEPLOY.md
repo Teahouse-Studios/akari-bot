@@ -10,6 +10,39 @@
 
 # 基础部分部署
 
+# 使用Docker镜像部署
+
+1. 在你的机器上安装 Docker
+
+2. 输入下面的指令拉取镜像。
+（注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64）
+
+```sh
+docker pull bakabaka9/akari-bot:latest
+```
+
+3. 从仓库中下载 config 文件夹，并放到你喜欢的目录下。
+
+4. 转到本文的 [配置](#配置) 部分并根据自己的需求配置。
+（注意: 配置文件中的 `qq_host` 中后面的地址必须改为 `0.0.0.0:端口号`，否则 go-cqhttp 连接时会提示连接被重置）
+
+5. 配置完成后，使用 `docker run`` 开启小可。示例：
+
+```sh
+docker run \ 
+> -d \ 
+> -v /path/to/akari-bot/config/config.toml:/akari-bot/config/config.toml \ # 请将路径修改成对应的位置。
+> -p 11451:11451  \ # WebSocket 服务器的端口，请根据你的配置文件更改。
+> -p 3306:3306  \ # 用于对接 mysql 数据库。（可选）
+> --name=akari-bot  \ # 指定容器名称。
+> bakabaka9/akari-bot
+```
+如果终端中返回了 long_tag 类型的容器ID, 证明容器已创建完毕
+
+这时我们可以执行 `docker logs xiaoke` 查看小可的日志。
+
+如果没有任何报错，恭喜您！您的小可机器人已经搭建成功，接下来请移步至 [配置平台机器人](#配置平台机器人) 部分。
+
 ## 下载源代码
 
 1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 部分中下载 Source code（源代码）。当然，你也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
@@ -291,19 +324,6 @@ FC_SERVER_PORT=15551 # 填写服务运行的端口
 `web_render = "http://127.0.0.1:15551"`
 
 ### 模块
-
-#### arcaea
-
-`arcaea` 模块使用了 BotArcAPI 进行开发。
-
-`botarcapi_url =` - 填写 BotArcAPI 公用实例地址
-
-`botarcapi_token =` - 填写 BotArcAPI 公用实例申请到token
-
-填写完后，你还需要从下载 [Arcaea](https://arcaea.lowiro.com/) 的 Apk 文件，将其放置于 `assets` 文件夹并重命名为 `arc.apk`，并在 Bot
-启动后使用 `~arcaea initialize` 来初始化资源文件。
-
-如果不需要本模块的功能，将 API 字段删除即可。
 
 #### coin 
 `coin` 模块需要一些额外的参数才能正常工作。
