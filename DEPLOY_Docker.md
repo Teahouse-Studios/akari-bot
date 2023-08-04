@@ -2,150 +2,31 @@
 
 # 简介
 
-本文将会教您如何搭建自己的小可机器人。
+本文将会教您如何使用 Docker 搭建自己的小可机器人。
 
-# 正常部署
+# 使用 Docker 镜像部署
 
-若想使用 Docker 部署，请转到 [使用 Docker 部署](./DEPLOY_Docker_cn.md)。
+若不想使用 Docker 部署，请转到 [正常部署](./DEPLOY_cn.md)
 
 ## 一、准备
 
-1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
-2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
-3. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
+在您的设备上安装好 [Docker](https://www.docker.com/)。
 
-## 二、下载源代码
+请善用搜索引擎来获取详细安装教程。
 
-#### Windows
+## 二、拉取镜像
 
-##### 方式一：使用 [Git](https://git-scm.com/) 克隆
+输入下面的指令拉取镜像。
 
-1. 请在要放置小可的文件夹中右键打开 Git Bash，并输入以下指令：
+> 注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64
 
-    ```sh
-    git clone https://github.com/Teahouse-studios/akari-bot.git
-    ```
-
-    直连GitHub的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
-
-    ```sh
-    git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
-    ```
-
-	镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原GitHub地址。
-
-2. 按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端。
-
-##### 方式二：直接下载代码
-
-1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 板块中下载 Source code（源代码）。当然，您也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
-   
-   > 注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程
-2. 解压源代码，按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端，进入文件夹。
-
-#### Linux
-
-1. 安装 [Git](https://git-scm.com/)：
-
-2. 进入文件夹并执行以下指令：
-
-   ```sh
-   git clone https://github.com/Teahouse-studios/akari-bot.git
-   ```
-
-   直连GitHub的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
-
-   ```sh
-   git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
-   ```
-
-   镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原GitHub地址。
-
-## 三、安装依赖
-
-#### Windows
-
-##### 方式一：使用 [Poetry](https://python-poetry.org/)
-
-如果您已经安装了 Poetry，您可以跳过以下安装步骤。
-
-1. 打开 Powershell，并执行以下指令来安装 Poetry：
-
-   ```powershell
-   (Invoke-WebRequest -Uri "https://install.python-poetry.org" -UseBasicParsing).Content | py -
-   ```
-
-   > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
-
-	> 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径） 并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
-
-2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
-
-   ```
-   %APPDATA%\Python\Scripts
-   ```
-
-    请善用搜索引擎寻找更改 PATH 的方法。
-
-    在添加到 PATH 之后，您通常需要重启终端，甚至整个电脑才能使其生效。
-
-    您可以通过 `poetry --version` 确认安装是否有效。
-
-3. 在安装完 Poetry 后，请执行以下指令：
-
-   ```powershell
-   poetry install
-   ```
-
-##### 方式二：使用 pip
-
-如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
-
-```powershell
-pip install -r requirements.txt
+```sh
+docker pull bakabaka9/akari-bot:latest
 ```
 
-#### Linux
+## 三、配置
 
-##### 方式一：使用 [Poetry](https://python-poetry.org/)
-
-如果您已经安装了 Poetry，您可以跳过以下安装步骤。
-
-1. 打开终端，并执行以下指令来安装 Poetry*：
-
-   ```sh
-   curl -sSL "https://install.python-poetry.org" | python3 -
-   ```
-
-   > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python可执行路径） 并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
-
-2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
-
-   ```
-   $HOME/.local/bin
-   ```
-
-    请善用搜索引擎寻找更改 PATH 的方法。
-
-    在添加到 PATH 之后，您通常需要重启终端，甚至整个电脑才能使其生效。
-
-    您可以通过 `poetry --version` 确认安装是否有效。
-
-3. 在安装完 Poetry 后，请执行以下指令：
-
-   ```sh
-   poetry install
-   ```
-
-##### 方式二：使用 pip
-
-如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
-
-```powershell
-pip install -r requirements.txt
-```
-
-## 四、配置
+从小可的 GitHub 仓库中下载 `config` 文件夹，并放到事先准备好的目录下。
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
 
@@ -201,74 +82,59 @@ pip install -r requirements.txt
    | arm64 Windows  | `go-cqhttp_windows_arm64.exe` | `go-cqhttp_windows_arm64.zip`   |
    | armv7 Windows  | `go-cqhttp_windows_armv7.exe` | `go-cqhttp_windows_armv7.zip`   |
 
-2. 解压下载好的文件到一个已经预先准备好的文件夹中：
+2. 执行 `tar -xzvf [文件名]` 将下载好的文件解压到一个已经预先准备好的文件夹中。
 
-   **Windows** - 请使用自己熟悉的解压软件自行解压；
+3. 输入 `./go-cqhttp`, `Enter`运行
 
-   **Linux** - 请在命令行中输入 `tar -xzvf [文件名]` 。
+4. 此时将提示
 
-3. 运行 go-cqhttp：
-
-   **Windows**
-
-   1. 双击`go-cqhttp_*.exe`，根据提示生成运行脚本
-   2. 双击运行脚本
-
-   **Linux**
-
-   1. 通过 SSH 连接到服务器
-   2. `cd`到解压目录
-   3. 输入 `./go-cqhttp`, `Enter`运行
-
-4. 此时将提示：
-
-	```
+   ```
     [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在
     [INFO]: 默认配置文件已生成,请编辑 config.yml 后重启程序.
    ```
 
-	程序将会自动在存放 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 文件夹的目录下生成一个默认配置文件 `config.yml`。
-	
-	接下来，请配置 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的 `config.yml` 文件中的对应的连接方式和签名服务器。
+   程序将会自动在存放 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 文件夹的目录下生成一个默认配置文件 `config.yml`。
 
-    ```
-    account:
-      ...
-      # 数据包的签名服务器
-      # 兼容 https://github.com/fuqiuluo/unidbg-fetch-qsign
-      # 暂不支持最新版qsign服务，可用版本：v1.1.0-
-      # 如果遇到 登录 45 错误, 或者发送信息风控的话需要填入一个服务器
-      # 示例:
-      # sign-server: 'http://127.0.0.1:8080' # 本地签名服务器
-      # sign-server: 'https://signserver.example.com' # 线上签名服务器
-      # 服务器可使用docker在本地搭建或者使用他人开放的服务
-      # 不建议使用公共服务器, 有封号风险
-      sign-server: '-'
-    ...
-    # 连接服务列表
-    servers:
-	   # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
-      #- http: # http 通信
-	   #- ws:   # 正向 Websocket
-	   #- ws-reverse: # 反向 Websocket
-      #- pprof: #性能分析服务器
-	   - ws-reverse:
-          universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
-	       reconnect-interval: 3000
-	       middlewares:
-	         <<: *default # 引用默认中间件
-	       ...
-	 ```
-	
-	 请在小可机器人的配置文件 `config.toml` 填写以下字段：
-	
-	`qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
-	
-	`qq_account = "2314163511"` - 填写机器人的 QQ 号。
-	
-	> 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
-	
-	>  若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
+   接下来，请配置 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的 `config.yml` 文件中的对应的连接方式和签名服务器。
+
+   ```
+   account:
+     ...
+     # 数据包的签名服务器
+     # 兼容 https://github.com/fuqiuluo/unidbg-fetch-qsign
+     # 暂不支持最新版qsign服务，可用版本：v1.1.0-
+     # 如果遇到 登录 45 错误, 或者发送信息风控的话需要填入一个服务器
+     # 示例:
+     # sign-server: 'http://127.0.0.1:8080' # 本地签名服务器
+     # sign-server: 'https://signserver.example.com' # 线上签名服务器
+     # 服务器可使用docker在本地搭建或者使用他人开放的服务
+     # 不建议使用公共服务器, 有封号风险
+     sign-server: '-'
+   ...
+   # 连接服务列表
+   servers:
+     # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
+     #- http: # http 通信
+     #- ws:   # 正向 Websocket
+     #- ws-reverse: # 反向 Websocket
+     #- pprof: #性能分析服务器
+     - ws-reverse:
+         universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
+         reconnect-interval: 3000
+         middlewares:
+           <<: *default # 引用默认中间件
+         ...
+   ```
+   
+    请在小可机器人的配置文件 `config.toml` 填写以下字段：
+   
+   `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+   
+   `qq_account = "2314163511"` - 填写机器人的 QQ 号。
+   
+   > 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
+   
+   >  若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)
 
 #### Discord
 
@@ -316,7 +182,7 @@ pip install -r requirements.txt
 
 > 注意：QQ频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
-> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
+> 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 #### Webrender
 
@@ -326,17 +192,17 @@ pip install -r requirements.txt
 
 1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/)
    环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
-   
+
 2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
 
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
 
-    ```
-    CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
-    FC_SERVER_PORT=15551 # 填写服务运行的端口
-    ```
+   ```
+   CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
+   FC_SERVER_PORT=15551 # 填写服务运行的端口
+   ```
 
-    > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置
+   > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 
@@ -400,19 +266,20 @@ pip install -r requirements.txt
 `maimai` 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
 
 1. 下载 [资源文件](https://www.diving-fish.com/maibot/static.zip) ，并于 `assets` 目录下创建一个 `maimai` 文件夹。
+
 2. 解压资源文件，形成以下目录结构：
 
-    ```angular2html
-    assets
-    └─maimai
-        └─static
-            │  adobe_simhei.otf
-            │  aliases.csv
-            │  msyh.ttc
-            │
-            └─mai
-                │...
-    ```
+   ```angular2html
+   assets
+   └─maimai
+       └─static
+           │  adobe_simhei.otf
+           │  aliases.csv
+           │  msyh.ttc
+           │
+           └─mai
+               │...
+   ```
 
 ##### ncmusic
 
@@ -458,47 +325,27 @@ pip install -r requirements.txt
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
-## 五、运行机器人
+## 四、运行机器人
 
-小可机器人主要由平台机器人构成，为了让开发者更好地测试模块，我们还提供了测试控制台，接下来我们将逐步讲解如何运行机器人。
+配置完成后，使用 `docker run` 开启小可：
 
-### 运行平台机器人
+```sh
+docker run \ 
+> -d \ 
+> -v /path/to/akari-bot/config/config.toml:/akari-bot/config/config.toml \ # 请将路径修改成对应的位置。
+> -p 11451:11451  \ # WebSocket 服务器的端口，请根据你的配置文件更改。
+> -p 3306:3306  \ # 用于对接 mysql 数据库。（可选）
+> --name=akari-bot  \ # 指定容器名称。
+> bakabaka9/akari-bot
+```
 
-#### Windows
+如果终端中返回了 `long_tag` 类型的容器 `ID`, 证明容器已创建完毕
 
-我们不推荐双击运行 `start.bat` 来启动程序。
+这时我们可以执行 `docker logs xiaoke` 查看小可的日志。
 
-建议在启动机器人之前，先打开终端（cmd 或 Powershell）再运行 `start.bat`。
+如果没有任何报错，恭喜您！您的小可机器人已经搭建成功！
 
-1. 于 `start.bat` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
-3. 于终端内输入 `.\start.bat` （Powershell） 或 `start.bat` （cmd）来启动机器人。
-
-#### Linux
-
-1. 于终端内，设置 `start` 脚本的执行权限：`chmod +x start`
-2. 启动脚本：`./start`
-
-### 运行测试控制台
-
-测试控制台包括一个基础的运行环境，您可以在测试控制台内使用命令进行基础的机器人交互。
-
-测试控制台仅支持回复文本消息和图片，其它消息元素将被忽略或转换为文本或图片来显示。
-
-您可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
-
-#### Windows
-
-1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
-3. 于终端内输入 `python console.py` 来启动测试控制台。
-
-#### Linux
-
-1. 于 `console.py` 所在目录，打开终端。
-2. 于终端内输入 `python console.py` 来启动测试控制台
-
-## 六、获取帮助
+## 五、获取帮助
 
 到此，恭喜您成功部署了属于您的小可机器人！
 
