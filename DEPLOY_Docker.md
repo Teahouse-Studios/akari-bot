@@ -90,9 +90,9 @@ docker pull bakabaka9/akari-bot:latest
    | arm64 Windows  | `go-cqhttp_windows_arm64.exe` | `go-cqhttp_windows_arm64.zip`   |
    | armv7 Windows  | `go-cqhttp_windows_armv7.exe` | `go-cqhttp_windows_armv7.zip`   |
 
-2. 执行 `tar -xzvf [文件名]` 将下载好的文件解压到一个已经预先准备好的文件夹中。
+2. 将下载好的文件解压到一个已经预先准备好的文件夹中。
 
-3. 输入 `./go-cqhttp`, `Enter`运行
+3. 运行程序。
 
 4. 此时将提示
 
@@ -142,7 +142,7 @@ docker pull bakabaka9/akari-bot:latest
    
    > 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
    
-   >  若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)
+   >  若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
 
 #### Discord
 
@@ -202,9 +202,9 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
-`check_accessKeyId =` - 填写获取的 AccessKeyID
+`check_accessKeyId =` - 填写获取的 AccessKeyID。
 
-`check_accessKeySecret =` - 填写获取的 AccessKeySecret
+`check_accessKeySecret =` - 填写获取的 AccessKeySecret。
 
 #### QQ频道消息处理（beta）
 
@@ -222,9 +222,8 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 ##### 部署
 
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/)
-   环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
-
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
+   
 2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
 
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
@@ -234,7 +233,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
    FC_SERVER_PORT=15551 # 填写服务运行的端口
    ```
 
-   > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置
+   > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 

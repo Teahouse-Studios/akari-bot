@@ -25,7 +25,7 @@
 
 ## 二、下载源代码
 
-#### Windows
+**Windows**
 
 ##### 方式一：使用 [Git](https://git-scm.com/) 克隆
 
@@ -52,7 +52,7 @@
    > 注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程
 2. 解压源代码，按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端，进入文件夹。
 
-#### Linux
+**Linux**
 
 1. 安装 [Git](https://git-scm.com/)：
 
@@ -72,9 +72,9 @@
 
 ## 三、安装依赖
 
-#### Windows
+**Windows**
 
-##### 方式一：使用 [Poetry](https://python-poetry.org/)
+**方式一：使用 [Poetry](https://python-poetry.org/)**
 
 如果您已经安装了 Poetry，您可以跳过以下安装步骤。
 
@@ -106,7 +106,7 @@
    poetry install
    ```
 
-##### 方式二：使用 pip
+**方式二：使用 pip**
 
 如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
 
@@ -114,9 +114,9 @@
 pip install -r requirements.txt
 ```
 
-#### Linux
+**Linux**
 
-##### 方式一：使用 [Poetry](https://python-poetry.org/)
+**方式一：使用 [Poetry](https://python-poetry.org/)**
 
 如果您已经安装了 Poetry，您可以跳过以下安装步骤。
 
@@ -146,7 +146,7 @@ pip install -r requirements.txt
    poetry install
    ```
 
-##### 方式二：使用 pip
+**方式二：使用 pip**
 
 如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
 
@@ -337,9 +337,9 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
-`check_accessKeyId =` - 填写获取的 AccessKeyID
+`check_accessKeyId =` - 填写获取的 AccessKeyID。
 
-`check_accessKeySecret =` - 填写获取的 AccessKeySecret
+`check_accessKeySecret =` - 填写获取的 AccessKeySecret。
 
 #### QQ频道消息处理（beta）
 
@@ -357,8 +357,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 ##### 部署
 
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/)
-   环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
    
 2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
 
@@ -369,7 +368,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
     FC_SERVER_PORT=15551 # 填写服务运行的端口
     ```
 
-    > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置
+    > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 
