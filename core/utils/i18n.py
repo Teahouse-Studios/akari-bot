@@ -1,7 +1,7 @@
 import os
 from collections.abc import MutableMapping
 from string import Template
-from typing import TypedDict, Dict, Any
+from typing import TypedDict, Dict, Any, Union
 
 import ujson as json
 
@@ -115,8 +115,16 @@ class Locale:
     def __contains__(self, key: str):
         return key in self.data
 
-    def t(self, key: str, fallback_failed_prompt=True, *args, **kwargs) -> str:
+    def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
         '''获取本地化字符串'''
+        if isinstance(key, dict):
+            if ft := key.get(self.locale) is not None:
+                return ft
+            elif 'fallback' in key:
+                return key['fallback']
+            else:
+                return str(key) + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
+                                         fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(*args, **kwargs)
 
