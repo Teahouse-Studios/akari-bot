@@ -71,7 +71,7 @@
     "core.message.locale.reload.failed": "以下字串重新加載失敗：${detail}。",
     "core.message.locale.set.invalid": "語言代碼無效，已支援的語言代碼：${lang}。",
     "core.message.locale": "目前使用的語言：",
-    "core.message.locale.set.prompt": "可使用「${prefix}locale <語言代碼>」設定語言。",
+    "core.message.locale.set.prompt": "可使用「${prefix}locale <語言代碼>」設定語言。\n已支援的語言代碼：${langlist}",
     "core.message.module.disable.already": "失敗：「${module}」模組已停用。",
     "core.message.module.disable.base": "失敗：「${module}」為基礎模組，無法停用。",
     "core.message.module.disable.not_found": "失敗：「${module}」模組不存在。",
