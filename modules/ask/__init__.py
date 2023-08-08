@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession):
             rickroll(msg)
         await msg.finish(chain)
 
-        if msg.target.targetFrom != 'TEST|Console' or is_superuser:
+        if msg.target.targetFrom != 'TEST|Console' or not is_superuser:
             qc.reset()
     else:
         await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
