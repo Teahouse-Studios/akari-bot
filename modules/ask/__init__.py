@@ -1,9 +1,9 @@
 import io
 import re
-from decimal import Decimal
 
-from PIL import Image as PILImage
+from decimal import Decimal
 from langchain.callbacks import get_openai_callback
+from PIL import Image as PILImage
 
 from config import Config
 from core.builtins import Bot, Plain, Image
@@ -37,12 +37,10 @@ async def _(msg: Bot.MessageSession):
     if not is_superuser and msg.data.petal < 0:  # refuse
         raise NoReportException(msg.locale.t('core.message.petal.no_petals'))
 
-    if msg.target.targetFrom == 'TEST|Console' or is_superuser:
-        c = 0
-    else:
-        qc = BotDBUtil.CoolDown(msg, 'call_openai')
-        c = qc.check(60)
-    if c == 0:
+    
+    qc = BotDBUtil.CoolDown(msg, 'call_openai')
+    c = qc.check(60)
+    if c == 0 or msg.target.targetFrom == 'TEST|Console' or is_superuser:
         if hasattr(msg, 'parsed_msg'):
             question = msg.parsed_msg['<question>']
         else:
