@@ -7,7 +7,6 @@ import ujson as json
 
 from config import Config
 from .text import remove_suffix
-from ..logger import Logger
 
 
 # Load all locale files into memory
