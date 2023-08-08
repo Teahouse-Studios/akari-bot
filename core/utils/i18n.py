@@ -26,7 +26,6 @@ class LocaleNode():
 
     def query_node(self, path: str):
         '''查询本地化树节点'''
-        Logger.warn('Quering locale node: ' + path)
         return self._query_node(path.split('.'))
 
     def _query_node(self, path: list):
