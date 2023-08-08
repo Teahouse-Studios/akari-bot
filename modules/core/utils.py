@@ -4,7 +4,7 @@ import psutil
 import time
 
 from config import Config
-from core.builtins import Bot, PrivateAssets
+from core.builtins import Bot, command_prefix, PrivateAssets
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from cpuinfo import get_cpu_info
@@ -129,7 +129,14 @@ async def config_ban(msg: Bot.MessageSession):
 locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
 
 
-@locale.handle('<lang> {{core.help.locale}}', required_admin=True)
+@locale.handle('{{core.help.locale}}')
+async def _(msg: Bot.MessageSession):
+    lang = msg.locale.t("language")
+    avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
+    await msg.finish(msg.locale.t("core.message.locale", lang=lang, langlist=avaliable_lang, prefix=command_prefix[0]))
+
+
+@locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales():
@@ -137,7 +144,7 @@ async def config_gu(msg: Bot.MessageSession):
             await msg.finish(Locale(lang).t('success'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-        await msg.finish(msg.locale.t("core.message.locale.set.invalid", lang=avaliable_lang))
+        await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
 
 
 @locale.handle('reload {{core.help.locale.reload}}', required_superuser=True)
@@ -147,6 +154,7 @@ async def reload_locale(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
+
 
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
