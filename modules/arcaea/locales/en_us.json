@@ -52,7 +52,7 @@
     "arcaea.message.invalid.friendcode.format": "Please enter the correct friend ID!",
     "arcaea.message.invalid.friendcode.non_digital": "Friend ID must be 9 digits!",
     "arcaea.message.no_webrender": "No webrender configured, this command cannot be used.",
-    "arcaea.message.sb616": "P.S. Men are mortal. Unfortunately, Guy's mom has passed away and can no longer answer you. She shall be always remembered.\n",
+    "arcaea.message.sb616": "According to Arcaea TOS 3.2.6, this command cannot be used.\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/en/terms_of_service",
     "arcaea.message.song.artist": "Composition: ",
     "arcaea.message.song.best": "Best score: ",
     "arcaea.message.song.bpm": "BPM: ",
