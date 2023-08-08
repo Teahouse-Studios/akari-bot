@@ -10,6 +10,7 @@ from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.exceptions import NoReportException
+from database import BotDBUtil
 from .agent import agent_executor
 from .formatting import generate_latex, generate_code_snippet
 
