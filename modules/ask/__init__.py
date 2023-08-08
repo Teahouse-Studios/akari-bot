@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         c = 0
     else:
         qc = BotDBUtil.CoolDown(msg, 'call_openai')
-        c = qc.check(150)
+        c = qc.check(60)
     if c == 0:
         if hasattr(msg, 'parsed_msg'):
             question = msg.parsed_msg['<question>']
@@ -71,6 +71,9 @@ async def _(msg: Bot.MessageSession):
         if await check_bool(res):
             rickroll(msg)
         await msg.finish(chain)
+
+        if msg.target.targetFrom != 'TEST|Console' or is_superuser:
+            qc.reset()
     else:
         await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
 
