@@ -11,5 +11,5 @@ MAINTAINER Teahouse Studios <admin@teahou.se>
 WORKDIR /akari-bot
 ADD . .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --no-deps
 CMD ["python", "./bot.py"]
