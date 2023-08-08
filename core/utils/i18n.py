@@ -24,18 +24,18 @@ class LocaleNode():
         self.value = v
         self.childen = {}
 
-    def qurey_node(self, path: str):
+    def query_node(self, path: str):
         '''查询本地化树节点'''
         Logger.warn('Quering locale node: ' + path)
-        return self._qurey_node(path.split('.'))
+        return self._query_node(path.split('.'))
 
-    def _qurey_node(self, path: list):
+    def _query_node(self, path: list):
         '''通过路径队列查询本地化树节点'''
         if len(path) == 0:
             return self
         nxt_node = path[0]
         if nxt_node in self.childen.keys():
-            return self.childen[nxt_node]._qurey_node(path[1:])
+            return self.childen[nxt_node]._query_node(path[1:])
         else:
             return None
 
@@ -106,7 +106,7 @@ class Locale:
         if fallback_lng is None:
             fallback_lng = ['zh_cn', 'zh_tw', 'en_us']
         self.locale = locale
-        self.data: LocaleNode = locale_root.qurey_node(locale)
+        self.data: LocaleNode = locale_root.query_node(locale)
         self.fallback_lng = fallback_lng
 
     def __getitem__(self, key: str):
@@ -130,17 +130,17 @@ class Locale:
 
     def get_locale_node(self, path: str):
         '''获取本地化节点'''
-        return self.data.qurey_node(path)
+        return self.data.query_node(path)
 
     def get_string_with_fallback(self, key: str, fallback_failed_prompt) -> str:
-        node = self.data.qurey_node(key)
+        node = self.data.query_node(key)
         if node is not None:
             return node.value  # 1. 如果本地化字符串存在，直接返回
         fallback_lng = list(self.fallback_lng)
         fallback_lng.insert(0, self.locale)
         for lng in fallback_lng:
             if lng in locale_root.childen:
-                node = locale_root.qurey_node(lng).qurey_node(key)
+                node = locale_root.query_node(lng).query_node(key)
                 if node is not None:
                     return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
