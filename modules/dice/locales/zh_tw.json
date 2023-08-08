@@ -11,7 +11,7 @@
     "dice.help.option.polynomial": "格式為「[<N>#][<m>]d<n>[k(l)<x>][±<y>]...」，如「10d4-2d20」會輸出 10 個 4 面骰所有點數之和減去 2 個 20 面骰點數之和。",
     "dice.help.option.polynomial.title": "多項式",
     "dice.help.option.y": "多項式中可以是整數（即調整值），如「d20+5」會輸出 1 個 20 面骰的點數加上 5 的結果。",
-    "dice.help.regex.desc": "(扔|投|擲|丟)<m>個[<n>面]骰子[<N>次] 投擲指定骰子。",
+    "dice.help.regex.desc": "(扔|投|擲|丟)<m>個[<n>面]骰子[<N>次] 投擲指定骰子",
     "dice.message.count.too_long": "數量過大，已省略 ${count} 個資料。",
     "dice.message.dc.check": "▷ 判定成功數量：${success}  判定失敗數量：${failed}",
     "dice.message.dc.failed": "，判定失敗！",
