@@ -70,7 +70,7 @@ async def _(msg: Bot.MessageSession):
 
         if await check_bool(res):
             rickroll(msg)
-        await msg.finish(chain)
+        await msg.sendMessage(chain)
 
         if msg.target.targetFrom != 'TEST|Console' and not is_superuser:
             qc.reset()
