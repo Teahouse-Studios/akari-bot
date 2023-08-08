@@ -52,7 +52,7 @@
     "arcaea.message.invalid.friendcode.format": "請輸入正確的好友 ID！",
     "arcaea.message.invalid.friendcode.non_digital": "好友 ID 必須為 9 位數字！",
     "arcaea.message.no_webrender": "未配置 Webrender，無法使用此指令。",
-    "arcaea.message.sb616": "P.S. 人生自古誰無死？不幸地，Guy 的母親已經逝世，因此無法繼續與您互動，讓我們永遠緬懷她。",
+    "arcaea.message.sb616": "依據 Arcaea TOS 3.2.6 規定，無法使用此指令。\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/zh/terms_of_service",
     "arcaea.message.song.artist": "作曲：",
     "arcaea.message.song.best": "最佳成績：",
     "arcaea.message.song.bpm": "BPM：",
