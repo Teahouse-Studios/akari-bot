@@ -48,7 +48,7 @@ async def _(msg: Bot.MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            await msg.sendMessage(msg.locale.t('cytoid.message.b30.cooldown', time=int(c)))
+            await msg.finish(msg.locale.t('cytoid.message.b30.cooldown', time=int(c)))
 
 
 @cytoid.handle('bind <username> {{cytoid.help.bind}}')

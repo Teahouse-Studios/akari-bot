@@ -459,7 +459,7 @@ async def modules_help(msg: Bot.MessageSession):
                 module_ = module_list[x]
                 if x[0] == '_':
                     continue
-                if module_.base or module_.required_superuser:
+                if module_.base or module_.required_superuser or module_.required_base_superuser:
                     continue
                 appends = [module_.bind_prefix]
                 doc_ = []
@@ -520,7 +520,7 @@ async def modules_help(msg: Bot.MessageSession):
         for x in module_list:
             if x[0] == '_':
                 continue
-            if module_list[x].base or module_list[x].required_superuser:
+            if module_list[x].base or module_list[x].required_superuser or module_list[x].required_base_superuser:
                 continue
             module_.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(module_))

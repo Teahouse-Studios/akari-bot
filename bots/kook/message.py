@@ -230,13 +230,7 @@ class FetchTarget(FT):
             for x in user_list:
                 try:
                     if i18n:
-                        if isinstance(message, dict):
-                            if (gm := message.get(x.parent.locale.locale)) is not None:
-                                await x.sendDirectMessage(gm)
-                            else:
-                                await x.sendDirectMessage(message.get('fallback'))
-                        else:
-                            await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
+                        await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
 
                     else:
                         await x.sendDirectMessage(message)
@@ -251,13 +245,7 @@ class FetchTarget(FT):
                 if fetch:
                     try:
                         if i18n:
-                            if isinstance(message, dict):
-                                if (gm := message.get(fetch.parent.locale.locale)) is not None:
-                                    await fetch.sendDirectMessage(gm)
-                                else:
-                                    await fetch.sendDirectMessage(message.get('fallback'))
-                            else:
-                                await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
+                            await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
 
                         else:
                             await fetch.sendDirectMessage(message)

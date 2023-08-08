@@ -1,5 +1,6 @@
 {
     "ask.help": "透過 ChatGPT 回答問題。",
     "ask.help.regex": "問：<question> 透過 ChatGPT 回答問題",
-    "ask.help.desc": "有問題為什麽不問小可呢？"
+    "ask.help.desc": "有問題為什麽不問小可呢？",
+    "ask.message.cooldown": "距上次執行已過去 ${time} 秒，此指令的冷卻時間為 60 秒。"
 }

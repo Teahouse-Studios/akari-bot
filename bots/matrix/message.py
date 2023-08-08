@@ -62,10 +62,12 @@ class MessageSession(MS):
                     # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
                     # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                     replyToType = self.session.message['content']['msgtype']
-                    content['body'] = f">{' *' if replyToType == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
+                    content[
+                        'body'] = f">{' *' if replyToType == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
                     content['format'] = 'org.matrix.custom.html'
                     htmlText = x.text.replace('\n', '<br />')
-                    content['formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={homeserver_host}\">In reply to</a>{' *' if replyToType == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{htmlText}"
+                    content[
+                        'formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={homeserver_host}\">In reply to</a>{' *' if replyToType == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{htmlText}"
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
             elif isinstance(x, Image):
                 split = [x]
@@ -175,22 +177,21 @@ class MessageSession(MS):
         msgtype = content['msgtype']
         if msgtype == 'm.emote':
             msgtype = 'm.text'
-        match msgtype:
-            case 'm.text':
-                text = str(content['body'])
-                if self.target.replyId is not None:
-                    # redact the fallback line for rich reply
-                    # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
-                    while text.startswith('> '):
-                        text = ''.join(text.splitlines(keepends=True)[1:])
-                return MessageChain(Plain(text.strip()))
-            case 'm.image':
-                url = str(content['url'])
-                return MessageChain(Image(await bot.mxc_to_http(url)))
-            case 'm.audio':
-                url = str(content['url'])
-                return MessageChain(Voice(await bot.mxc_to_http(url)))
-                pass
+        if msgtype == 'm.text':  # compatible with py38
+            text = str(content['body'])
+            if self.target.replyId is not None:
+                # redact the fallback line for rich reply
+                # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                while text.startswith('> '):
+                    text = ''.join(text.splitlines(keepends=True)[1:])
+            return MessageChain(Plain(text.strip()))
+        elif msgtype == 'm.image':
+            url = str(content['url'])
+            return MessageChain(Image(await bot.mxc_to_http(url)))
+        elif msgtype == 'm.audio':
+            url = str(content['url'])
+            return MessageChain(Voice(await bot.mxc_to_http(url)))
+            pass
         Logger.error(f"Got unknown msgtype: {msgtype}")
         return MessageChain([])
 
@@ -243,7 +244,7 @@ class FetchedSession(FS):
             resp = await bot.room_create(visibility=nio.RoomVisibility.private,
                                          is_direct=True,
                                          preset=nio.RoomPreset.trusted_private_chat,
-                                         invite=[targetId],)
+                                         invite=[targetId], )
             if resp is nio.ErrorResponse:
                 pass
             room = resp.room_id
@@ -279,13 +280,7 @@ class FetchTarget(FT):
             for x in user_list:
                 try:
                     if i18n:
-                        if isinstance(message, dict):
-                            if (gm := message.get(x.parent.locale.locale)) is not None:
-                                await x.sendDirectMessage(gm)
-                            else:
-                                await x.sendDirectMessage(message.get('fallback'))
-                        else:
-                            await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
+                        await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
 
                     else:
                         await x.sendDirectMessage(message)
@@ -300,14 +295,7 @@ class FetchTarget(FT):
                 if fetch:
                     try:
                         if i18n:
-                            if isinstance(message, dict):
-                                if (gm := message.get(fetch.parent.locale.locale)) is not None:
-                                    await fetch.sendDirectMessage(gm)
-                                else:
-                                    await fetch.sendDirectMessage(message.get('fallback'))
-                            else:
-                                await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
-
+                            await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
                         else:
                             await fetch.sendDirectMessage(message)
                         if enable_analytics:

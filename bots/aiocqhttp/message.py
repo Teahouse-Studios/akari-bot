@@ -313,13 +313,7 @@ class FetchTarget(FT):
                                                                         'i18n': i18n, 'kwargs': kwargs})
                 else:
                     if i18n:
-                        if isinstance(message, dict):
-                            if (gm := message.get(fetch.parent.locale.locale)) is not None:
-                                await fetch_.sendDirectMessage(gm)
-                            else:
-                                await fetch_.sendDirectMessage(message.get('fallback'))
-                        else:
-                            await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
+                        await fetch_.sendDirectMessage(fetch_.parent.locale.t(message, **kwargs))
 
                     else:
                         await fetch_.sendDirectMessage(message)

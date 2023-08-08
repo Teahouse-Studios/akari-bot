@@ -52,7 +52,7 @@
     "arcaea.message.invalid.friendcode.format": "请输入正确的好友 ID！",
     "arcaea.message.invalid.friendcode.non_digital": "好友 ID 必须为 9 位数字！",
     "arcaea.message.no_webrender": "未配置 Webrender，无法使用此命令。",
-    "arcaea.message.sb616": "根据Arcaea TOS 3.2.6规定，你无权使用该命令。\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/zh/terms_of_service",
+    "arcaea.message.sb616": "根据 Arcaea TOS 3.2.6 规定，无法使用该命令。\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/zh/terms_of_service",
     "arcaea.message.song.artist": "作曲：",
     "arcaea.message.song.best": "最佳成绩：",
     "arcaea.message.song.bpm": "BPM：",

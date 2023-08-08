@@ -163,4 +163,4 @@ def rickroll(msg):
     if Config("enable_rickroll"):
         raise NoReportException(Config("rickroll_url"))
     else:
-        raise NoReportException(msg.locale.t("error.message.chain.unsafe.noreport"))
+        raise NoReportException(msg.locale.t("error.message.chain.unsafe"))

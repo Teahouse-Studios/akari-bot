@@ -348,7 +348,7 @@ docker run \
 
 如果终端中返回了 `long_tag` 类型的容器 `ID`, 证明容器已创建完毕
 
-这时我们可以执行 `docker logs xiaoke` 查看小可的日志。
+这时我们可以执行 `docker logs akari-bot` 查看小可的日志。
 
 如果没有任何报错，恭喜您！您的小可机器人已经搭建成功！
 
