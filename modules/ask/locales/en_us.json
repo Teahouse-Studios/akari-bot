@@ -1,5 +1,6 @@
 {
     "ask.help": "Search the Web or use WolframAlpha and answer your question about the meaning of life via ChatGPT.",
     "ask.help.regex": "问：<question> 通过 ChatGPT 回答问题",
-    "ask.help.desc": "Ask AkariBot anything!"
+    "ask.help.desc": "Ask AkariBot anything!",
+    "ask.message.cooldown": "距离上次执行已过去 ${time} 秒，本命令的冷却时间为 60 秒。"
 }
