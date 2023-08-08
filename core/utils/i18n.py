@@ -82,16 +82,16 @@ def load_locale_file():
     for m in os.listdir(modules_path):
         if os.path.isdir(f'{modules_path}/{m}/locales'):
             locales_m = os.listdir(f'{modules_path}/{m}/locales')
-            for lm in locales_m:
-                ml = f'{modules_path}/{m}/locales/{lm}'
-                with open(ml, 'r', encoding='utf-8') as f:
+            for lang_file in locales_m:
+                lang_file_path = f'{modules_path}/{m}/locales/{lang_file}'
+                with open(lang_file_path, 'r', encoding='utf-8') as f:
                     try:
-                        if remove_suffix(lm, '.json') in locale_dict:
-                            locale_dict[remove_suffix(lm, '.json')].update(flatten(json.load(f)))
+                        if remove_suffix(lang_file, '.json') in locale_dict:
+                            locale_dict[remove_suffix(lang_file, '.json')].update(flatten(json.load(f)))
                         else:
-                            locale_dict[remove_suffix(lm, '.json')] = flatten(json.load(f))
+                            locale_dict[remove_suffix(lang_file, '.json')] = flatten(json.load(f))
                     except Exception as e:
-                        err_prompt.append(f'Failed to load {ml}: {e}')
+                        err_prompt.append(f'Failed to load {lang_file_path}: {e}')
     for lang in locale_dict.keys():
         for k in locale_dict[lang].keys():
             locale_root.update_node(f'{lang}.{k}', locale_dict[lang][k])
