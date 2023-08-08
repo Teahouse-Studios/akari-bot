@@ -133,7 +133,7 @@ locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon']
 async def _(msg: Bot.MessageSession):
     lang = msg.locale.t("language")
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    await msg.finish(msg.locale.t("core.message.locale", lang=lang, langlist=avaliable_lang, prefix=command_prefix[0]))
+    await msg.finish(f"{msg.locale.t("core.message.locale")}{msg.locale.t("language")}\n{msg.locale.t("core.message.locale.set.prompt", langlist=avaliable_lang, prefix=command_prefix[0])}")
 
 
 @locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
