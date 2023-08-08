@@ -12,7 +12,7 @@
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.invalid": "機器人嘗試傳送無效訊息鏈，請聯絡機器人開發人員解決問題。",
     "error.message.chain.plain.empty": "機器人嘗試傳送空白文字訊息，請聯絡機器人開發人員解決問題。",
-    "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。請向機器人開發人員回報問題。",
+    "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。",
     "error.message.report": "執行「${module}」時發生了以下錯誤，請及時處理：",
     "error.message.limited": "訊息傳送失敗，可能被風控，請稍後再試。",
     "error.message.paused": "群訊息傳送被伺服器攔截，已暫停群訊息傳送，使用「${prefix}resume」恢復傳送。",
