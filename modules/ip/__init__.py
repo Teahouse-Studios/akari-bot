@@ -8,7 +8,7 @@ from core.component import module
 from typing import Any, Dict
 
 ip = module('ip', desc='{ip.help.desc}',
-           alias='whois', developers=['Dianliang233'])
+           developers=['Dianliang233'])
 
 
 @ip.handle('<ip>')
