@@ -1778,13 +1778,13 @@ files = [
 
 [[package]]
 name = "langchain"
-version = "0.0.258"
+version = "0.0.259"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "langchain-0.0.258-py3-none-any.whl", hash = "sha256:a18ed9dc5055845375ac9f57aa598964cdf44dc3fb8751deac9a1fffbf236d19"},
-    {file = "langchain-0.0.258.tar.gz", hash = "sha256:2ec967ca90b607eba16d29051f526d441487ab5d52a573125cc93a59ce16806c"},
+    {file = "langchain-0.0.259-py3-none-any.whl", hash = "sha256:803c64d2fdc33c15f18cd469f5b042ede80219cbb473dd5d771caa391e0efb7e"},
+    {file = "langchain-0.0.259.tar.gz", hash = "sha256:d4411907cd85172193686e4946fd04358c706230405b83d6da9dae9e299cdda3"},
 ]
 
 [package.dependencies]
@@ -1813,6 +1813,7 @@ javascript = ["esprima (>=4.0.1,<5.0.0)"]
 llms = ["anthropic (>=0.3,<0.4)", "clarifai (>=9.1.0)", "cohere (>=4,<5)", "huggingface_hub (>=0,<1)", "manifest-ml (>=0.0.1,<0.0.2)", "nlpcloud (>=1,<2)", "openai (>=0,<1)", "openllm (>=0.1.19)", "openlm (>=0.0.5,<0.0.6)", "torch (>=1,<3)", "transformers (>=4,<5)", "xinference (>=0.0.6,<0.0.7)"]
 openai = ["openai (>=0,<1)", "tiktoken (>=0.3.2,<0.4.0)"]
 qdrant = ["qdrant-client (>=1.3.1,<2.0.0)"]
+scheduled-testing = ["openai (>=0,<1)"]
 text-helpers = ["chardet (>=5.1.0,<6.0.0)"]
 
 [[package]]
@@ -4297,4 +4298,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "603854764002d60e2063184e8db92791ce6e9df80a528237bfe71599742b113b"
+content-hash = "deba767db5bbe2c8104232e93bb6edb0d6d011e80299f7eaeac4e1f156c299cd"

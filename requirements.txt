@@ -996,9 +996,9 @@ kiwisolver==1.4.4 ; python_full_version >= "3.8.1" and python_full_version < "4.
     --hash=sha256:f6cb459eea32a4e2cf18ba5fcece2dbdf496384413bc1bae15583f19e567f3b2 \
     --hash=sha256:f8ad8285b01b0d4695102546b342b493b3ccc6781fc28c8c6a1bb63e95d22f09 \
     --hash=sha256:f9f39e2f049db33a908319cf46624a569b36983c7c78318e9726a4cb8923b26c
-langchain==0.0.258; python_full_version >= "3.8.1" and python_version < "4.0" \
-    --hash=sha256:2ec967ca90b607eba16d29051f526d441487ab5d52a573125cc93a59ce16806c \
-    --hash=sha256:a18ed9dc5055845375ac9f57aa598964cdf44dc3fb8751deac9a1fffbf236d19
+langchain==0.0.259; python_full_version >= "3.8.1" and python_version < "4.0" \
+    --hash=sha256:803c64d2fdc33c15f18cd469f5b042ede80219cbb473dd5d771caa391e0efb7e \
+    --hash=sha256:d4411907cd85172193686e4946fd04358c706230405b83d6da9dae9e299cdda3
 langconv==0.2.0 ; python_full_version >= "3.8.1" and python_version < "4.0" \
     --hash=sha256:8d6e86f88de3e08d4c5341eb45d3c1df359169a101f680c68a22f4f4f86bd7f5 \
     --hash=sha256:aa4dce595a8933ba5ff53e3e71df62775eb4a5f96f022af8fef61005c25ea572
