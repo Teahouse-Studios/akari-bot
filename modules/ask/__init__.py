@@ -34,7 +34,7 @@ async def _(msg: Bot.MessageSession):
     is_superuser = msg.checkSuperUser()
     if not Config('openai_api_key'):
         raise Exception(msg.locale.t('error.config.secret'))
-    if not is_superuser and msg.data.petal < 0:  # refuse
+    if not is_superuser and msg.data.petal <= 0:  # refuse
         raise NoReportException(msg.locale.t('core.message.petal.no_petals'))
 
     
