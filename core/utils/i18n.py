@@ -1,4 +1,5 @@
 import os
+import re
 from collections.abc import MutableMapping
 from string import Template
 from typing import TypedDict, Dict, Any, Union
@@ -148,9 +149,21 @@ class Locale:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key
 
+    tl = t
+
+    def tl_str(self, text: str, fallback_failed_prompt=False) -> str:
+        return tl_str(self, text, fallback_failed_prompt=fallback_failed_prompt)
+
 
 def get_available_locales():
     return list(locale_root.childen.keys())
 
 
-__all__ = ['Locale', 'load_locale_file', 'get_available_locales']
+def tl_str(locale: Locale, text: str, fallback_failed_prompt=False) -> str:
+    if locale_str := re.findall(r'\{(.*)}', text):
+        for l in locale_str:
+            text = text.replace(f'{{{l}}}', locale.t(l, fallback_failed_prompt=fallback_failed_prompt))
+    return text
+
+
+__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'tl_str']
