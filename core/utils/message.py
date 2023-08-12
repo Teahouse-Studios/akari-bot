@@ -44,11 +44,12 @@ def removeDuplicateSpace(text: str) -> str:
     :param text: 字符串。
     :returns: 净化后的字符串。'''
     strip_display_space = text.split(' ')
-    display_list = []  # 清除指令中间多余的空格
-    for x in strip_display_space:
-        if x != '':
-            display_list.append(x)
-    text = ' '.join(display_list)
+    for _ in strip_display_space:
+        if '' in strip_display_space:
+            strip_display_space.remove('')
+        else:
+            break
+    text = ' '.join(strip_display_space)
     return text
 
 
