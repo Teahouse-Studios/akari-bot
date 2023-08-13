@@ -22,7 +22,7 @@
     "error.prompt": "An error occurred: ${error_msg}\nReport this issue: ",
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}\nReport this issue: ",
-    "error.range.invalid": "发生错误：无效的数字区间。",
+    "error.range.invalid": "An error occurred: Invalid number range.",
     "error.request.api.timeout": "API request timeout.",
     "example": "Hello world!",
     "failed": "Failed.",
