@@ -232,14 +232,14 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                 await timer(start)  # 重新调用计时器函数
 
     if not captcha_mode:
-        await msg.sendMessage([Image(newpath),
+        await msg.sendMessage([Plain(msg.locale.t('chemical_code.message.showid', id=answer_id)), Image(newpath),
                                Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
-        result = await msg.waitNextMessage(
-            [Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha', times=set_timeout))])
+        result = await msg.waitNextMessage([Plain(msg.locale.t('chemical_code.message.showid', id=answer_id)), 
+            Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha', times=set_timeout))])
         if play_state[msg.target.targetId]['active']:  # 检查对象是否为活跃状态
             if result.asDisplay(text_only=True) == csr['name']:
                 await result.sendMessage(msg.locale.t('chemical_code.message.correct'))
