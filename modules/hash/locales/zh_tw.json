@@ -1,7 +1,0 @@
-{
-    "hash.help": "產生字串的雜湊值。",
-    "hash.help.list": "返回支援的雜湊演算法。",
-    "hash.message.algorithms_list": "支援的演算法：${algorithms}",
-    "hash.message.output": "上述字串的 ${algorithm} 雜湊值為：${digest}",
-    "hash.message.unsupported_algorithm": "不支援此演算法：${algorithm}"
-}

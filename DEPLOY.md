@@ -2,11 +2,11 @@
 
   * [简介](#简介)
   * [正常部署](#正常部署)
-	* [一、准备](#一、准备)
-	* [二、下载源代码](#二、下载源代码)
-	* [三、安装依赖](#三、安装依赖)
-	* [四、配置](#四、配置)
-	* [五、运行机器人](#五、运行机器人)
+	* [准备](#准备)
+	* [下载源代码](#下载源代码)
+	* [安装依赖](#安装依赖)
+	* [配置](#配置)
+	* [运行机器人](#运行机器人)
 * [获取帮助](#获取帮助)
 
 # 简介
@@ -15,15 +15,15 @@
 
 # 正常部署
 
-若想使用 Docker 部署，请转到 [使用 Docker 部署](./DEPLOY_Docker.md)。
+若想使用 Docker 部署，请转到[使用 Docker 部署](./DEPLOY_Docker.md)。
 
-## 一、准备
+## 准备
 
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
 3. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
 
-## 二、下载源代码
+## 下载源代码
 
 **Windows**
 
@@ -70,7 +70,7 @@
 
    镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原GitHub地址。
 
-## 三、安装依赖
+## 安装依赖
 
 **Windows**
 
@@ -154,7 +154,7 @@ pip install -r requirements.txt
 pip install -r requirements.txt
 ```
 
-## 四、配置
+## 配置
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
 
@@ -303,7 +303,7 @@ pip install -r requirements.txt
 
 #### Matrix
 
-您需要自行完成账号注册与登陆。
+您需要自行完成账号注册与登录。
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
@@ -466,7 +466,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
-## 五、运行机器人
+## 运行机器人
 
 小可机器人主要由平台机器人构成，为了让开发者更好地测试模块，我们还提供了测试控制台，接下来我们将逐步讲解如何运行机器人。
 
@@ -479,7 +479,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 建议在启动机器人之前，先打开终端（cmd 或 Powershell）再运行 `start.bat`。
 
 1. 于 `start.bat` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`。
 3. 于终端内输入 `.\start.bat` （Powershell） 或 `start.bat` （cmd）来启动机器人。
 
 #### Linux
@@ -498,13 +498,13 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 #### Windows
 
 1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`。
 3. 于终端内输入 `python console.py` 来启动测试控制台。
 
 #### Linux
 
 1. 于 `console.py` 所在目录，打开终端。
-2. 于终端内输入 `python console.py` 来启动测试控制台
+2. 于终端内输入 `python console.py` 来启动测试控制台。
 
 # 获取帮助
 
@@ -513,4 +513,4 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 如果您在部署的过程中还有其他疑问，您可以向我们发送 Issue 来请求帮助。
 
 > 请注意，您应该具备基本的提问技巧。
-> 有关如何提问，请阅读 [《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
+> 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。

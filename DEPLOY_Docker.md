@@ -2,10 +2,10 @@
 
   * [简介](#简介)
   * [正常部署](#正常部署)
-    * [一、准备](#一、准备)
-    * [二、拉取镜像](#二、拉取镜像)
-    * [三、配置](#三、配置)
-    * [四、运行机器人](#四、运行机器人)
+    * [准备](#准备)
+    * [拉取镜像](#拉取镜像)
+    * [配置](#配置)
+    * [运行机器人](#运行机器人)
 * [获取帮助](#获取帮助)
 
 # 简介
@@ -14,15 +14,15 @@
 
 # 使用 Docker 镜像部署
 
-若不想使用 Docker 部署，请转到 [正常部署](./DEPLOY.md)。
+若不想使用 Docker 部署，请转到[正常部署](./DEPLOY.md)。
 
-## 一、准备
+## 准备
 
 在您的设备上安装好 [Docker](https://www.docker.com/)。
 
 请善用搜索引擎来获取详细安装教程。
 
-## 二、拉取镜像
+## 拉取镜像
 
 输入下面的指令拉取镜像。
 
@@ -32,7 +32,7 @@
 docker pull bakabaka9/akari-bot:latest
 ```
 
-## 三、配置
+## 配置
 
 从小可的 GitHub 仓库中下载 `config` 文件夹，并放到事先准备好的目录下。
 
@@ -42,7 +42,7 @@ docker pull bakabaka9/akari-bot:latest
 
 ### 配置数据库
 
-机器人需要一个数据库以用于存储用户数据，对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
+机器人需要一个数据库以用于存储用户数据，对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空。
 
 此字段需要填写一个可被 `sqlalchemy` 支持的数据库链接，以下为推荐方案，请任选一个：
 
@@ -56,8 +56,7 @@ docker pull bakabaka9/akari-bot:latest
 
 #### SQLite
 
-如果您不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话
-，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
+如果您不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
 如果您选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
@@ -168,7 +167,7 @@ docker pull bakabaka9/akari-bot:latest
 
 #### Matrix
 
-您需要自行完成账号注册与登陆。
+您需要自行完成账号注册与登录。
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
@@ -188,7 +187,7 @@ docker pull bakabaka9/akari-bot:latest
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
-目前，由于libolm在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
+目前，由于 libolm 在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
 
 ### 配置其他功能
 
@@ -206,13 +205,13 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 `check_accessKeySecret =` - 填写获取的 AccessKeySecret。
 
-#### QQ频道消息处理（beta）
+#### QQ 频道消息处理（beta）
 
 通过上文的 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能。
 
 根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理QQ频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-> 注意：QQ频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
+> 注意：QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
 > 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
@@ -222,9 +221,9 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 ##### 部署
 
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/)。
    
-2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
+2. 下载[源代码文件](https://github.com/Teahouse-Studios/oa-web-render)，并在终端内使用 `npm install` 安装依赖。
 
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
 
@@ -332,7 +331,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
-## 四、运行机器人
+## 运行机器人
 
 配置完成后，使用 `docker run` 开启小可：
 
@@ -346,9 +345,7 @@ docker run \
 > bakabaka9/akari-bot
 ```
 
-如果终端中返回了 `long_tag` 类型的容器 `ID`, 证明容器已创建完毕
-
-这时我们可以执行 `docker logs akari-bot` 查看小可的日志。
+如果终端中返回了 `long_tag` 类型的容器 `ID`, 证明容器已创建完毕，这时我们可以执行 `docker logs akari-bot` 查看小可的日志。
 
 如果没有任何报错，恭喜您！您的小可机器人已经搭建成功！
 
@@ -359,4 +356,4 @@ docker run \
 如果您在部署的过程中还有其他疑问，您可以向我们发送 Issue 来请求帮助。
 
 > 请注意，您应该具备基本的提问技巧。
-> 有关如何提问，请阅读 [《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
+> 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。
