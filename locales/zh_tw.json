@@ -57,5 +57,6 @@
     "yes": "是",
     "error.config.invalid": "設定參數無效或未找到，請檢查設定檔。",
     "error.config.secret.not_found": "未找到 API 金鑰，請檢查設定檔。",
-    "error.webrender.unconfigured": "未設定 webrender，無法使用此指令。"
+    "error.webrender.unconfigured": "未設定 webrender，無法使用此指令。",
+    "\"error\"": "發生錯誤："
 }
