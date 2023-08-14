@@ -171,7 +171,7 @@ docker pull bakabaka9/akari-bot:latest
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的 [用户ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[用户ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 

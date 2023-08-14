@@ -1,5 +1,5 @@
 {
-    "ip.help.desc": "Query the information of IP.",
+    "ip.help": "Query the information of IP.",
     "ip.message.asn": "ASN: ",
     "ip.message.error.unknown": "发生错误：无效的 IP 地址，请检查输入。",
     "ip.message.ip_property": " Address",
