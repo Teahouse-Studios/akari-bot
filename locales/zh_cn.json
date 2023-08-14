@@ -57,6 +57,5 @@
     "yes": "是",
     "error.config.invalid": "配置参数无效或未找到，请检查配置文件。",
     "error.config.secret.not_found": "未找到 API 密钥，请检查配置文件。",
-    "error.webrender.unconfigured": "未配置 Webrender，无法使用此命令。",
-    "\"error\"": "发生错误："
+    "error.webrender.unconfigured": "未配置 Webrender，无法使用此命令。"
 }
