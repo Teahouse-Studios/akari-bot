@@ -12,9 +12,10 @@ r = module('random', alias=['rand', 'rng'],
 @r.handle('number <min> <max> {{random.help.number}}', )
 async def _(msg: Bot.MessageSession, min: int, max: int):
     if min > max:
-        return await msg.finish(msg.locale.t('error.range.invalid'))
+        random = secrets.randbelow(min - max + 1) + max
+    else:
+        random = secrets.randbelow(max - min + 1) + min
 
-    random = secrets.randbelow(max - min + 1) + min
     await msg.finish('' + str(random))
 
 
