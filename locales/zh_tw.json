@@ -4,9 +4,6 @@
     "core.help.alias": "指令別名：",
     "core.help.none": "（此模組沒有說明資訊）",
     "core.help.options": "參數：",
-    "error": "發生錯誤：",
-    "error.config": "設定參數無效或未找到，請檢查設定檔。",
-    "error.config.secret": "未找到 API 金鑰，請檢查設定檔。",
     "error.loader.load.failed": "載入模組中發生了以下錯誤，對應模組未載入：${err_msg}",
     "error.loader.load.success": "所有模組已正常載入。",
     "error.message.chain.empty": "機器人嘗試傳送空白訊息鏈，請聯絡機器人開發人員解決問題。",
@@ -57,5 +54,8 @@
     "tos.warning.count": "這是第 ${current_warns} 次警告。如超過 5 次警告，我們將會把你的帳戶加入黑名單。",
     "tos.warning.last": "這是最後警告。",
     "unknown": "未知",
-    "yes": "是"
+    "yes": "是",
+    "error.config.invalid": "設定參數無效或未找到，請檢查設定檔。",
+    "error.config.secret.not_found": "未找到 API 金鑰，請檢查設定檔。",
+    "error.webrender.unconfigured": "未設定 webrender，無法使用此指令。"
 }
