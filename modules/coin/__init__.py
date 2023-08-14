@@ -34,7 +34,7 @@ async def _(message: Bot.MessageSession):
 
 async def flipCoins(count: int, msg):
     if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
-        raise OverflowError(msg.locale.t("error.config"))
+        raise OverflowError(msg.locale.t("error.config.not_found"))
     if count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.out_of_range", max=MAX_COIN_NUM)
     if count == 0:

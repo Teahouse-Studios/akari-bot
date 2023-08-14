@@ -59,7 +59,5 @@
     "maimai.message.song.prompt": "以下是可能的結果：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n譜師：${charter}",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
-    "maimai.message.update.failed": "更新失败。",
-    "maimai.message.update.success": "更新成功。",
     "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。"
 }
