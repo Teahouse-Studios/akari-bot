@@ -1,5 +1,4 @@
 {
-    "ip.help.desc": "查询 IP 信息。",
     "ip.message.asn": "ASN：",
     "ip.message.error.unknown": "发生错误：无效的 IP 地址，请检查输入。",
     "ip.message.ip_property": "地址",
@@ -21,5 +20,6 @@
     "ip.message.real_ip": "实际 IP：",
     "ip.message.reverse": "反向解析：",
     "ip.message.type": "类型：",
-    "ip.message.utc": "时区："
+    "ip.message.utc": "时区：",
+    "ip.help": "查询 IP 信息。"
 }
