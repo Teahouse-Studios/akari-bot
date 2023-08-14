@@ -634,9 +634,9 @@ duckdb==0.8.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0"
     --hash=sha256:fad486c65ae944eae2de0d590a0a4fb91a9893df98411d66cab03359f9cba39b \
     --hash=sha256:fad7ed0d4415f633d955ac24717fa13a500012b600751d4edb050b75fb940c25 \
     --hash=sha256:fcbe3742d77eb5add2d617d487266d825e663270ef90253366137a47eaab9448
-duckduckgo-search==3.8.4 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:8c42ad9da9517ca6d233878c7e8cc202b50a11b79474b4d34732937a023fc3f0 \
-    --hash=sha256:ab38f77c8d45881b9fb8e0de27206e5e6249f85066a2bc003c17cc99a90cf5b3
+duckduckgo-search==3.8.5; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:584ea097fa0475cebc278ee464ccd54ba78019dec15a0243723923dc40bc3939 \
+    --hash=sha256:9c85190c439f29e95d0cc9509a77d63dbcdbda49a4f9bdf8ff4b567f4a10a44d
 exceptiongroup==1.1.2 ; python_full_version >= "3.8.1" and python_version < "3.11" \
     --hash=sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5 \
     --hash=sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f
