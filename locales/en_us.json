@@ -4,8 +4,11 @@
     "core.help.alias": "Alias: ",
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
+    "error": "发生错误：",
     "error.loader.load.failed": "The following error(s) occurred during module loading and module(s) with error was/were not loaded: ${err_msg}",
     "error.loader.load.success": "Loaded all modules successfully.",
+    "error.config.invalid": "The configuration is invalid or not found, please check the configuration file.",
+    "error.config.secret.not_found": "API key not found. Please check the configuration file.",
     "error.message.chain.empty": "The bot attempted to send an empty message chain. Please contact the developers to resolve this issue.",
     "error.message.chain.invalid": "The bot attempted to send an invalid message chain. Please contact the developers to resolve this issue.",
     "error.message.chain.plain.empty": "The bot attempted to send an empty text message. Please contact the developers to resolve this issue.",
@@ -21,6 +24,7 @@
     "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}\nReport this issue: ",
     "error.range.invalid": "An error occurred: Invalid number range.",
     "error.request.api.timeout": "API request timeout.",
+    "error.webrender.unconfigured": "No webrender configured, this command cannot be used.",
     "example": "Hello world!",
     "failed": "Failed.",
     "i18n.prompt.fallback.failed": "(If you're seeing this strange string, it means something we got wrong again!\nPlease send the problem to\n${url}\nso that we can fix it in time.)",
@@ -54,9 +58,5 @@
     "tos.warning.count": "You have received ${current_warns} warnings. Your account will be blacklisted if you receive more than 5 warnings.",
     "tos.warning.last": "This is your last warning.",
     "unknown": "Unknown",
-    "yes": "Yes",
-    "error.config.invalid": "The configuration is invalid or not found, please check the configuration file.",
-    "error.config.secret.not_found": "API key not found. Please check the configuration file.",
-    "error.webrender.unconfigured": "No webrender configured, this command cannot be used.",
-    "\"error\"": "An error occurred: "
+    "yes": "Yes"
 }
