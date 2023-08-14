@@ -10,7 +10,7 @@ from typing import Any, Dict
 ip = module('ip', developers=['Dianliang233'])
 
 
-@ip.handle('<ip>', desc='{ip.help}')
+@ip.handle('<ip> {{ip.help}}')
 async def _(msg: Bot.MessageSession, ip: str):
     try:
         ipaddress.ip_address(ip)
