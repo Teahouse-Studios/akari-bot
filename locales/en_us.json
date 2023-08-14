@@ -57,5 +57,6 @@
     "yes": "Yes",
     "error.config.invalid": "The configuration is invalid or not found, please check the configuration file.",
     "error.config.secret.not_found": "API key not found. Please check the configuration file.",
-    "error.webrender.unconfigured": "No webrender configured, this command cannot be used."
+    "error.webrender.unconfigured": "No webrender configured, this command cannot be used.",
+    "\"error\"": "An error occurred: "
 }
