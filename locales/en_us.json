@@ -4,9 +4,6 @@
     "core.help.alias": "Alias: ",
     "core.help.none": "(This module has no help information)",
     "core.help.options": "Options: ",
-    "error": "An error occurred: ",
-    "error.config": "The configuration is invalid or not found, please check the configuration file.",
-    "error.config.secret": "API key not found. Please check the configuration file.",
     "error.loader.load.failed": "The following error(s) occurred during module loading and module(s) with error was/were not loaded: ${err_msg}",
     "error.loader.load.success": "Loaded all modules successfully.",
     "error.message.chain.empty": "The bot attempted to send an empty message chain. Please contact the developers to resolve this issue.",
@@ -57,5 +54,8 @@
     "tos.warning.count": "You have received ${current_warns} warnings. Your account will be blacklisted if you receive more than 5 warnings.",
     "tos.warning.last": "This is your last warning.",
     "unknown": "Unknown",
-    "yes": "Yes"
+    "yes": "Yes",
+    "error.config.invalid": "The configuration is invalid or not found, please check the configuration file.",
+    "error.config.secret.not_found": "API key not found. Please check the configuration file.",
+    "error.webrender.unconfigured": "未配置 Webrender，无法使用此命令。"
 }
