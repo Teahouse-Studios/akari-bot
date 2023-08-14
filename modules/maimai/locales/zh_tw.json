@@ -23,7 +23,7 @@
     "maimai.help.song": "查詢 Maimai 歌曲或譜面訊息，ID 需要加入前綴「id」。",
     "maimai.message.alias": "${title} 的別名：",
     "maimai.message.alias.alias_not_found": "未找到符合要求的別名。",
-    "maimai.message.alias.file_not_found": "未找到别名文件，请使用“${prefix}maimai update”初始化文件。",
+    "maimai.message.alias.file_not_found": "未找到別名檔案，請使用「${prefix}maimai update」初始化檔案。",
     "maimai.message.base": "以下為定數 ${rating} 的曲目列表：",
     "maimai.message.base.range": "以下為定數 ${rating}-${rating_max} 的曲目列表：",
     "maimai.message.chart_not_found": "未找到符合要求的譜面。",
