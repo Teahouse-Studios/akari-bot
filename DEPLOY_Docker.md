@@ -26,7 +26,7 @@
 
 输入下面的指令拉取镜像。
 
-> 注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64
+> 注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64。
 
 ```sh
 docker pull bakabaka9/akari-bot:latest
@@ -38,7 +38,7 @@ docker pull bakabaka9/akari-bot:latest
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
 
-> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若您您拥有旧版 `cfg` 文件，机器人会自动帮您转换为 `toml` 格式。
+> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若您拥有旧版 `cfg` 文件，机器人会自动帮您转换为 `toml` 格式。
 
 ### 配置数据库
 
@@ -72,9 +72,9 @@ docker pull bakabaka9/akari-bot:latest
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-如果您想使用 Docker 部署 go-cqhttp，请转到 [使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)
+如果您想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
 
-1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest) 。
+1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest)。
 
 	| 系统类型       | 可执行文件                    | 压缩文件                        |
    | -------------- | ----------------------------- | ------------------------------- |
@@ -137,11 +137,11 @@ docker pull bakabaka9/akari-bot:latest
    
    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
    
-   `qq_account = "2314163511"` - 填写机器人的 QQ 号。
+   `qq_account = 2314163511` - 填写机器人的 QQ 号。
    
    > 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
    
-   >  若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
+   > 若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
 
 #### Discord
 
@@ -161,7 +161,7 @@ docker pull bakabaka9/akari-bot:latest
 
 #### Kook
 
-您需要在 [Kook 开发者平台](https://developer.kookapp.cn/) 创建一个机器人并获取 Token。
+您需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
 
 `kook_token =` - 填写您获取到的机器人 Token。
 
@@ -171,7 +171,7 @@ docker pull bakabaka9/akari-bot:latest
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的[用户ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
@@ -181,7 +181,7 @@ docker pull bakabaka9/akari-bot:latest
 
 对于 Cinny，Access Token 可以从浏览器的的 localStorage 中提取（参考 [cinnyapp/cinny#938](https://github.com/cinnyapp/cinny/issues/938)）。
 
-对于没有合适的客户端的用户（？），您也可以使用以下命令进行密码登陆（但仍需手动完成后续的 [设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification) 、 [交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing) 和 [服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups) 恢复等流程）：
+对于没有合适的客户端的用户（？），您也可以使用以下命令进行密码登陆（但仍需手动完成后续的[设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification)、[交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing)和[服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups)恢复等流程）：
 
 ```
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
@@ -191,13 +191,13 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 ### 配置其他功能
 
-由于小可有着许多的功能，部分功能需要进一步的配置才能使用。
+由于小可有较多功能，部分功能需要进一步的配置才能使用。
 
 部分字段可能并未预设于 `config.toml.example` 中，手动添加即可。
 
 #### 屏蔽词
 
-小可内置了 [阿里云内容安全服务](https://www.aliyun.com/product/lvwang) 对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
+小可内置了[阿里云内容安全服务](https://www.aliyun.com/product/lvwang)对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
@@ -207,9 +207,9 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 #### QQ 频道消息处理（beta）
 
-通过上文的 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能。
+通过上文的 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用 QQ 频道消息处理功能。
 
-根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理QQ频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
+根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理 QQ 频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
 > 注意：QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
@@ -282,7 +282,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 `maimai` 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
 
-1. 下载 [资源文件](https://www.diving-fish.com/maibot/static.zip) ，并于 `assets` 目录下创建一个 `maimai` 文件夹。
+1. 下载[资源文件](https://www.diving-fish.com/maibot/static.zip)，并于 `assets` 目录下创建一个 `maimai` 文件夹。
 
 2. 解压资源文件，形成以下目录结构：
 
@@ -326,8 +326,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 #### 自定义确认词及命令前缀
 
-您可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix`
-来增加（或删除）可使用的默认命令前缀。
+您可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix` 来增加（或删除）可使用的默认命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
