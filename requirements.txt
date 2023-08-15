@@ -430,9 +430,9 @@ charset-normalizer==3.2.0 ; python_full_version >= "3.8.1" and python_version < 
     --hash=sha256:f7560358a6811e52e9c4d142d497f1a6e10103d3a6881f18d04dbce3729c0e2c \
     --hash=sha256:f779d3ad205f108d14e99bb3859aa7dd8e9c68874617c72354d7ecaec2a054ac \
     --hash=sha256:f87f746ee241d30d6ed93969de31e5ffd09a2961a051e60ae6bddde9ec3583aa
-chromadb==0.4.5; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:c75e739bfec167dff45ad67a52d6c7bbb00d2515400e31817cc347440bac7e56 \
-    --hash=sha256:ec87e700c604934558e6c066c701c577069415157e0fedd1b19bc7a3964ff70b
+chromadb==0.4.6; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:551c8731c9db9816f9a66d0c252ebe9064f7d07fea57d52bfc54ee3fa5561e55 \
+    --hash=sha256:817f8bb7915741703916e527556184ab2132f3caa8411307e2015cad7d1c7b03
 click==8.1.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:48ee849951919527a045bfe3bf7baa8a959c423134e1a5b98c05c20ba75a1cbd \
     --hash=sha256:fa244bb30b3b5ee2cae3da8f55c9e5e0c0e86093306301fb418eb9dc40fbded5
