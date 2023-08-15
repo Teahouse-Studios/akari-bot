@@ -209,8 +209,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                                         break
 
                                 if incorrect_list:
+                                    incorrect_elements = wait.locale.t('message.delimiter').join(incorrect_list)
                                     await wait.sendMessage(wait.locale.t('chemical_code.message.incorrect.remind2',
-                                                                         elements=', '.join(incorrect_list)))
+                                                                         elements=incorrect_elements))
 
                     except ValueError:
                         traceback.print_exc()
