@@ -159,7 +159,6 @@ class ModulesManager:
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
         cls._return_cache.clear()
-        cls.refresh_modules_aliases()
         return cls.reload_py_module(py_module)
 
     @classmethod
@@ -229,3 +228,5 @@ class ModulesManager:
             if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) not in err_modules:
                 err_modules.append(m.group(1))
             return -999
+        finally:
+            cls.refresh_modules_aliases()
