@@ -1528,9 +1528,9 @@ pkgutil-resolve-name==1.3.10 ; python_full_version >= "3.8.1" and python_version
 platformdirs==3.10.0; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:b45696dab2d7cc691a3226759c0d3b00c47c8b6e293d96f6436f733303f77f6d \
     --hash=sha256:d7c24979f292f916dc9cbf8648319032f551ea8c49a4c9bf2fb556a02070ec1d
-posthog==3.0.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:57d2791ff5752ce56ba0f9bb8876faf3ca9208f1c2c6ceaeb5a2504c34493767 \
-    --hash=sha256:9c7f92fecc713257d4b2710d05b456569c9156fbdd3e85655ba7ba5ba6c7b3ae
+posthog==3.0.2; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:701fba6e446a4de687c6e861b587e7b7741955ad624bf34fe013c06a0fec6fb3 \
+    --hash=sha256:a8c0af6f2401fbe50f90e68c4143d0824b54e872de036b1c2f23b5abb39d88ce
 pre-commit==3.3.3 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:10badb65d6a38caff29703362271d7dca483d01da88f9d7e05d0b97171c136cb \
     --hash=sha256:a2256f489cd913d575c145132ae196fe335da32d91a8294b7afe6622335dd023
