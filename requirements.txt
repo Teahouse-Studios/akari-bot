@@ -1982,9 +1982,9 @@ rpds-py==0.9.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0
     --hash=sha256:fa2818759aba55df50592ecbc95ebcdc99917fa7b55cc6796235b04193eb3c55 \
     --hash=sha256:fae5cb554b604b3f9e2c608241b5d8d303e410d7dfb6d397c335f983495ce7f6 \
     --hash=sha256:fb39aca7a64ad0c9490adfa719dbeeb87d13be137ca189d2564e596f8ba32c07
-setuptools==68.1.0; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:d59c97e7b774979a5ccb96388efc9eb65518004537e85d52e81eaee89ab6dd91 \
-    --hash=sha256:e13e1b0bc760e9b0127eda042845999b2f913e12437046e663b833aa96d89715
+setuptools==68.1.2; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:3d4dfa6d95f1b101d695a6160a7626e15583af71a5f52176efa5d39a054d475d \
+    --hash=sha256:3d8083eed2d13afc9426f227b24fd1659489ec107c0e86cec2ffdde5c92e790b
 sgmllib3k==1.0.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:7868fb1c8bfa764c1ac563d3cf369c381d1325d36124933a726f29fcdaa812e9
 simpleeval==0.9.13 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
