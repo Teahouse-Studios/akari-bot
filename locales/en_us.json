@@ -23,7 +23,6 @@
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "error.prompt.report": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}\nReport this issue: ",
     "error.range.invalid": "An error occurred: Invalid number range.",
-    "error.request.api.timeout": "API request timeout.",
     "error.webrender.unconfigured": "No webrender configured, this command cannot be used.",
     "example": "Hello world!",
     "failed": "Failed.",
