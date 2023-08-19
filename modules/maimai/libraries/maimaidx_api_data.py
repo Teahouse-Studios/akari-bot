@@ -79,7 +79,10 @@ async def get_plate(msg, payload):
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
     except ValueError as e:
         if str(e).startswith('400'):
-            await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.user_unbound"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         if str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
 
