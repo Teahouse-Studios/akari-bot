@@ -2,10 +2,11 @@ import os
 import sys
 
 
-def do_something():
-    if sys.version_info.minor > 8 or sys.version_info.micro >= 14:  # Added in 3.8.14, 3.7 and below not supported so
+def invoke():
+    if sys.version_info.minor > 8 or (sys.version_info.minor == 8 and sys.version_info.micro >=
+                                      14):  # Added in 3.8.14, 3.7 and below not supported so
         sys.set_int_max_str_digits(0)
-    if os.name == 'posix':
+    if os.name == 'posix' and os.uname().sysname != 'Darwin':
         os.nice(15)
         import resource
 
