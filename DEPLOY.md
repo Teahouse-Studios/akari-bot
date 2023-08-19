@@ -2,11 +2,11 @@
 
   * [简介](#简介)
   * [正常部署](#正常部署)
-	* [一、准备](#一、准备)
-	* [二、下载源代码](#二、下载源代码)
-	* [三、安装依赖](#三、安装依赖)
-	* [四、配置](#四、配置)
-	* [五、运行机器人](#五、运行机器人)
+	* [准备](#准备)
+	* [下载源代码](#下载源代码)
+	* [安装依赖](#安装依赖)
+	* [配置](#配置)
+	* [运行机器人](#运行机器人)
 * [获取帮助](#获取帮助)
 
 # 简介
@@ -15,19 +15,19 @@
 
 # 正常部署
 
-若想使用 Docker 部署，请转到 [使用 Docker 部署](./DEPLOY_Docker.md)。
+若想使用 Docker 部署，请转到[使用 Docker 部署](./DEPLOY_Docker.md)。
 
-## 一、准备
+## 准备
 
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
 3. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
 
-## 二、下载源代码
+## 下载源代码
 
 **Windows**
 
-##### 方式一：使用 [Git](https://git-scm.com/) 克隆
+**方式一：使用 [Git](https://git-scm.com/) 克隆**
 
 1. 请在要放置小可的文件夹中右键打开 Git Bash，并输入以下指令：
 
@@ -41,20 +41,20 @@
     git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
     ```
 
-	镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原GitHub地址。
+	镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
 
-2. 按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端。
+2. 按住 `Shift` + `右键`，选择`在此处打开 Powershell 窗口`或`在此处打开命令窗口`来打开终端。
 
-##### 方式二：直接下载代码
+**方式二：直接下载代码**
 
 1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 板块中下载 Source code（源代码）。当然，您也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
    
-   > 注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程
+   > 注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程。
 2. 解压源代码，按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端，进入文件夹。
 
 **Linux**
 
-1. 安装 [Git](https://git-scm.com/)：
+1. 安装 [Git](https://git-scm.com/)。
 
 2. 进入文件夹并执行以下指令：
 
@@ -68,9 +68,9 @@
    git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
    ```
 
-   镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原GitHub地址。
+   镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
 
-## 三、安装依赖
+## 安装依赖
 
 **Windows**
 
@@ -86,7 +86,7 @@
 
    > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
 
-	> 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径） 并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
+	> 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
 
 2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
 
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 
 如果您已经安装了 Poetry，您可以跳过以下安装步骤。
 
-1. 打开终端，并执行以下指令来安装 Poetry*：
+1. 打开终端，并执行以下指令来安装 Poetry：
 
    ```sh
    curl -sSL "https://install.python-poetry.org" | python3 -
@@ -154,15 +154,15 @@ pip install -r requirements.txt
 pip install -r requirements.txt
 ```
 
-## 四、配置
+## 配置
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
 
-> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若您您拥有旧版 `cfg` 文件，机器人会自动帮您转换为 `toml` 格式。
+> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若您拥有旧版 `cfg` 文件，机器人会自动帮您转换为 `toml` 格式。
 
 ### 配置数据库
 
-机器人需要一个数据库以用于存储用户数据，对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空：
+机器人需要一个数据库以用于存储用户数据，对于第一次的简单部署，我们只需要关注数据库字段即可，其余字段可留空。
 
 此字段需要填写一个可被 `sqlalchemy` 支持的数据库链接，以下为推荐方案，请任选一个：
 
@@ -176,8 +176,7 @@ pip install -r requirements.txt
 
 #### SQLite
 
-如果您不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话
-，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
+如果您不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
 如果您选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
@@ -193,9 +192,9 @@ pip install -r requirements.txt
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-如果您想使用 Docker 部署 go-cqhttp，请转到 [使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
+如果您想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
 
-1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest) 。
+1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest)。
 
 	| 系统类型       | 可执行文件                    | 压缩文件                        |
    | -------------- | ----------------------------- | ------------------------------- |
@@ -212,22 +211,22 @@ pip install -r requirements.txt
 
 2. 解压下载好的文件到一个已经预先准备好的文件夹中：
 
-   **Windows** - 请使用自己熟悉的解压软件自行解压；
+   **Windows** - 请使用自己熟悉的解压软件自行解压。
 
-   **Linux** - 请在命令行中输入 `tar -xzvf [文件名]` 。
+   **Linux** - 请在命令行中输入 `tar -xzvf [文件名]`。
 
 3. 运行 go-cqhttp：
 
    **Windows**
 
-   1. 双击`go-cqhttp_*.exe`，根据提示生成运行脚本
-   2. 双击运行脚本
+   1. 双击`go-cqhttp_*.exe`，根据提示生成运行脚本。
+   2. 双击运行脚本。
 
    **Linux**
 
-   1. 通过 SSH 连接到服务器
-   2. `cd`到解压目录
-   3. 输入 `./go-cqhttp`, `Enter`运行
+   1. 通过 SSH 连接到服务器。
+   2. `cd`到解压目录。
+   3. 输入 `./go-cqhttp`，`Enter` 运行。
 
 4. 此时将提示：
 
@@ -273,17 +272,17 @@ pip install -r requirements.txt
 	
 	`qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
 	
-	`qq_account = "2314163511"` - 填写机器人的 QQ 号。
+	`qq_account = 2314163511` - 填写机器人的 QQ 号。
 	
 	> 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
 	
-	>  若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
+	> 若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
 
 #### Discord
 
 我们在这里使用了 [Pycord](https://github.com/Pycord-Development/pycord) 来调用 Discord API。
 
-为了达到目的，您需要于 [Discord 开发者平台](https://discord.com/developers) 创建一个机器人并获取 Token。
+为了达到目的，您需要于 [Discord 开发者平台](https://discord.com/developers)创建一个机器人并获取 Token。
 
 `dc_token =` - 填写您获取到的机器人 Token。
 
@@ -297,17 +296,17 @@ pip install -r requirements.txt
 
 #### Kook
 
-您需要在 [Kook 开发者平台](https://developer.kookapp.cn/) 创建一个机器人并获取 Token。
+您需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
 
 `kook_token =` - 填写您获取到的机器人 Token。
 
 #### Matrix
 
-您需要自行完成账号注册与登陆。
+您需要自行完成账号注册与登录。
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的 [用户ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
@@ -317,23 +316,23 @@ pip install -r requirements.txt
 
 对于 Cinny，Access Token 可以从浏览器的的 localStorage 中提取（参考 [cinnyapp/cinny#938](https://github.com/cinnyapp/cinny/issues/938)）。
 
-对于没有合适的客户端的用户（？），您也可以使用以下命令进行密码登陆（但仍需手动完成后续的 [设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification) 、 [交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing) 和 [服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups) 恢复等流程）：
+对于没有合适的客户端的用户（？），您也可以使用以下命令进行密码登录（但仍需手动完成后续的[设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification)、[交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing)和[服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups)恢复等流程）：
 
 ```
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
-目前，由于libolm在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
+目前，由于 libolm 在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
 
 ### 配置其他功能
 
-由于小可有着许多的功能，部分功能需要进一步的配置才能使用。
+由于小可有较多功能，部分功能需要进一步的配置才能使用。
 
 部分字段可能并未预设于 `config.toml.example` 中，手动添加即可。
 
 #### 屏蔽词
 
-小可内置了 [阿里云内容安全服务](https://www.aliyun.com/product/lvwang) 对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
+小可内置了[阿里云内容安全服务](https://www.aliyun.com/product/lvwang)对接，可用于 QQ 和 Kook 平台下部分模块检查发送文本是否安全，以达到机器人账户安全的目的。
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
@@ -341,11 +340,11 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 `check_accessKeySecret =` - 填写获取的 AccessKeySecret。
 
-#### QQ频道消息处理（beta）
+#### QQ 频道消息处理（beta）
 
-通过上文的 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用QQ频道消息处理功能。
+通过上文的 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用 QQ 频道消息处理功能。
 
-根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理QQ频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
+根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理 QQ 频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
 > 注意：QQ频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
@@ -461,28 +460,27 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 #### 自定义确认词及命令前缀
 
-您可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix`
-来增加（或删除）可使用的默认命令前缀。
+您可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix` 来增加（或删除）可使用的默认命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
-## 五、运行机器人
+## 运行机器人
 
 小可机器人主要由平台机器人构成，为了让开发者更好地测试模块，我们还提供了测试控制台，接下来我们将逐步讲解如何运行机器人。
 
 ### 运行平台机器人
 
-#### Windows
+**Windows**
 
 我们不推荐双击运行 `start.bat` 来启动程序。
 
 建议在启动机器人之前，先打开终端（cmd 或 Powershell）再运行 `start.bat`。
 
 1. 于 `start.bat` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`。
 3. 于终端内输入 `.\start.bat` （Powershell） 或 `start.bat` （cmd）来启动机器人。
 
-#### Linux
+**Linux**
 
 1. 于终端内，设置 `start` 脚本的执行权限：`chmod +x start`
 2. 启动脚本：`./start`
@@ -495,16 +493,16 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 您可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
 
-#### Windows
+**Windows**
 
 1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`。
 3. 于终端内输入 `python console.py` 来启动测试控制台。
 
-#### Linux
+**Linux**
 
 1. 于 `console.py` 所在目录，打开终端。
-2. 于终端内输入 `python console.py` 来启动测试控制台
+2. 于终端内输入 `python console.py` 来启动测试控制台。
 
 # 获取帮助
 
@@ -513,4 +511,4 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 如果您在部署的过程中还有其他疑问，您可以向我们发送 Issue 来请求帮助。
 
 > 请注意，您应该具备基本的提问技巧。
-> 有关如何提问，请阅读 [《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)
+> 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。

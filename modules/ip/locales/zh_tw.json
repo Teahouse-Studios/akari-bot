@@ -1,5 +1,4 @@
 {
-    "ip.help.desc": "查詢 IP 訊息。",
     "ip.message.asn": "ASN：",
     "ip.message.error.unknown": "發生錯誤：無效的 IP 位址，請校對輸入。",
     "ip.message.ip_property": "位址",
@@ -21,5 +20,6 @@
     "ip.message.real_ip": "實際 IP：",
     "ip.message.reverse": "反向解析：",
     "ip.message.type": "類型：",
-    "ip.message.utc": "時區："
+    "ip.message.utc": "時區：",
+    "ip.help": "查詢 IP 訊息。"
 }

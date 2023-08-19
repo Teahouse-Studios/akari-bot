@@ -340,6 +340,9 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
                 async with session.post(web_render_local, headers={
                     'Content-Type': 'application/json',
                 }, data=json.dumps(html)) as resp:
+                    if resp.status != 200:
+                        Logger.info(f'Failed to render: {await resp.text()}')
+                        return False
                     with open(picname, 'wb+') as jpg:
                         jpg.write(await resp.read())
         except aiohttp.ClientConnectorError:
@@ -347,6 +350,9 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
                 async with session.post(web_render, headers={
                     'Content-Type': 'application/json',
                 }, data=json.dumps(html)) as resp:
+                    if resp.status != 200:
+                        Logger.info(f'Failed to render: {await resp.text()}')
+                        return False
                     with open(picname, 'wb+') as jpg:
                         jpg.write(await resp.read())
         return picname

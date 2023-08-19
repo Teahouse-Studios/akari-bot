@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession):
         rickroll(msg)
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise Exception(msg.locale.t('error.config.secret'))
+        raise Exception(msg.locale.t('error.config.secret.not_found'))
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish([BImage(output)])
     except ValueError as e:
         if str(e).startswith('501'):
-            await msg.finish(msg.locale.t(' wolframalpha.message.incomprehensible'))
+            await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
@@ -48,7 +48,7 @@ async def _(msg: Bot.MessageSession):
         rickroll(msg)
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise Exception(msg.locale.t('error.config.secret'))
+        raise Exception(msg.locale.t('error.config.secret.not_found'))
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)

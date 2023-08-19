@@ -439,6 +439,6 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_alias():
-        await msg.finish(msg.locale.t("phigros.message.update.success"))
+        await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("phigros.message.update.failed"))
+        await msg.finish(msg.locale.t("failed"))

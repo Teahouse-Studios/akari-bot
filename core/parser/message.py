@@ -183,11 +183,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     module: Module = modules[command_first_word]
                     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
                         if module.desc is not None:
-                            desc_ = module.desc
-                            if locale_str := re.findall(r'\{(.*)}', desc_):
-                                for l in locale_str:
-                                    desc_ = desc_.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
-                            desc = msg.locale.t("parser.module.desc", desc=desc_)
+                            desc = msg.locale.t("parser.module.desc", desc=msg.locale.tl_str(module.desc))
 
                             if command_first_word not in msg.enabled_modules:
                                 desc += '\n' + msg.locale.t("parser.module.disabled.prompt", module=command_first_word,
@@ -351,10 +347,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
-                    err_msg = str(e)
-                    if locale_str := re.findall(r'\{(.*)}', err_msg):
-                        for l in locale_str:
-                            err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
+                    err_msg = msg.locale.tl_str(str(e))
                     await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
 
                 except Exception as e:
@@ -453,10 +446,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             continue
                         except NoReportException as e:
                             Logger.error(traceback.format_exc())
-                            err_msg = str(e)
-                            if locale_str := re.findall(r'\{(.*)}', err_msg):
-                                for l in locale_str:
-                                    err_msg = err_msg.replace(f'{{{l}}}', msg.locale.t(l, fallback_failed_prompt=False))
+                            err_msg = msg.locale.tl_str(str(e))
                             await msg.sendMessage(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
 
                         except AbuseWarning as e:

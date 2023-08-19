@@ -18,11 +18,8 @@ class WithErrCode(Exception):
     pass
 
 
-@arc.command('b30 [<friend_code>] {{arcaea.help.b30}}')
-@arc.command('info [<friend_code>] {{arcaea.help.info}}')
-@arc.command('song <songname> [<diff>] {{arcaea.help.song}}')
-@arc.command('bind <friendcode|username> {{arcaea.help.bind}}')
-@arc.command('unbind {{arcaea.help.unbind}}')
+@arc.command()
+@arc.command('<sb616>')
 async def _(msg: Bot.MessageSession):
     await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
                            Image(os.path.abspath('./assets/noc.jpg'))])
@@ -31,18 +28,20 @@ async def _(msg: Bot.MessageSession):
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
+        await msg.finish([msg.locale.t("error.webrender.unconfigured")])
     resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
                          fmt='json')
     if resp:
-        await msg.finish([Plain(msg.locale.t("arcaea.message.download.success", version=resp["value"]["version"],
+        await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
                                              url=resp['value']['url']))])
+    else:
+        msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
 @arc.command('random {{arcaea.help.random}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
+        await msg.finish(msg.locale.t("error.webrender.unconfigured"))
     resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
     if resp:
         value = resp["value"][0]
@@ -51,12 +50,14 @@ async def _(msg: Bot.MessageSession):
         if os.path.exists(image):
             result.append(Image(path=image))
         await msg.finish(result)
+    else:
+        msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
 @arc.command('rank free {{arcaea.help.rank.free}}', 'rank paid {{arcaea.help.rank.paid}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
-        await msg.finish([msg.locale.t("arcaea.message.no_webrender")])
+        await msg.finish(msg.locale.t("error.webrender.unconfigured"))
     if msg.parsed_msg.get('free', False):
         resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
     else:
@@ -68,3 +69,5 @@ async def _(msg: Bot.MessageSession):
             rank += 1
             r.append(f'{rank}. {x["title"]["en"]} ({x["status"]})')
         await msg.finish('\n'.join(r))
+    else:
+        msg.finish(msg.locale.t("arcaea.message.get_failed"))

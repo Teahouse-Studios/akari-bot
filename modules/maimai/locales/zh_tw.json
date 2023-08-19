@@ -23,7 +23,7 @@
     "maimai.help.song": "查詢 Maimai 歌曲或譜面訊息，ID 需要加入前綴「id」。",
     "maimai.message.alias": "${title} 的別名：",
     "maimai.message.alias.alias_not_found": "未找到符合要求的別名。",
-    "maimai.message.alias.file_not_found": "未找到别名文件，请使用“${prefix}maimai update”初始化文件。",
+    "maimai.message.alias.file_not_found": "未找到別名檔案，請使用「${prefix}maimai update」初始化檔案。",
     "maimai.message.base": "以下為定數 ${rating} 的曲目列表：",
     "maimai.message.base.range": "以下為定數 ${rating}-${rating_max} 的曲目列表：",
     "maimai.message.chart_not_found": "未找到符合要求的譜面。",
@@ -59,7 +59,5 @@
     "maimai.message.song.prompt": "以下是可能的結果：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n譜師：${charter}",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
-    "maimai.message.update.failed": "更新失败。",
-    "maimai.message.update.success": "更新成功。",
     "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。"
 }

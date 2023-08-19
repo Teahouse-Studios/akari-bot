@@ -76,6 +76,6 @@ async def _(msg: Bot.MessageSession):
 @phi.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_assets():
-        await msg.finish(msg.locale.t("phigros.message.update.success"))
+        await msg.finish(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("phigros.message.update.failed"))
+        await msg.finish(msg.locale.t("failed"))
