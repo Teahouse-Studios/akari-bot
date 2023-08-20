@@ -45,10 +45,11 @@ body:
       label: 聊天平台
       description: 您的账号所在平台。
       options:
-        - Discord
-        - Telegram
         - QQ 群
         - QQ 频道
+        - Kook
+        - Discord
+        - Telegram
   - type: input
     id: user-id
     attributes:
