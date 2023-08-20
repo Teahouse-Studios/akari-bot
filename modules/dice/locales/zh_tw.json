@@ -1,7 +1,7 @@
 {
     "dice.help": "投擲指定骰子，可指定投骰次數與 dc 判斷判定。",
     "dice.help.desc": "隨機骰子。",
-    "dice.help.rule": "修改 dc 的判定规则。",
+    "dice.help.rule": "修改 dc 的判定規則。",
     "dice.help.option.dc": "在每一次投擲輸出結果時進行判定，若結果大於 dc 則判定成功，否則判定失敗。",
     "dice.help.option.klx": "表示輸出其最小之 x 個骰子點數之和",
     "dice.help.option.kx": "表示輸出其最大之 x 個骰子點數之和",
@@ -38,7 +38,7 @@
     "dice.message.error.value.too_long": "骰子多項式項數超過限制。",
     "dice.message.output": "你掷得的結果是：",
     "dice.message.output.too_long": "數量過大，已省略 ${length} 個資料。",
-    "dice.message.rule.disable": "判定规则已更改为：DnD。",
-    "dice.message.rule.enable": "判定规则已更改为：CoC。",
+    "dice.message.rule.disable": "判定規則已更改為：DnD。",
+    "dice.message.rule.enable": "判定規則已更改為：CoC。",
     "dice.message.too_long": "輸出過長……"
 }
