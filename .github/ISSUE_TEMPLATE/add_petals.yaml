@@ -1,0 +1,57 @@
+name: 添加花瓣
+description: 为你的群组添加一定数量花瓣。
+title: "[REQUEST]: 申请添加花瓣"
+labels: ["request"]
+assignees:
+  - Teahouse-Studios/akaribot-admin
+body:
+  - type: markdown
+    attributes:
+      value: |
+        为防止 ask 模块被滥用导致无法持续提供服务，故采用花瓣分配制。请填写以下表单以请求花瓣。
+
+        请注意，在申请成功后的 30 天内，若无特殊原因请勿再次申请，否则您的申请可能会被拒绝。
+
+        提示：使用 ask 一次请求约消耗 3 个花瓣，请详细考虑再决定您申请的数量。
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 开始之前……
+      description: 
+      options:
+        - label: 我已阅读并同意小可 [服务条款](https://bot.teahouse.team/wiki/tos) 和 Teahouse Studios [隐私政策](https://teahouse.team/privacy)。
+          required: true
+        - label: 我是群组的管理员。
+          required: true
+  - type: input
+    id: qq-id
+    attributes:
+      label: QQ号
+      description: 您的QQ号。
+      placeholder: e.g. 10000
+    validations:
+      required: true
+  - type: input
+    id: group-id
+    attributes:
+      label: QQ群
+      description: 您想要添加花瓣的群的群号。
+      placeholder: e.g. 1000000
+    validations:
+      required: true
+  - type: input
+    id: request-petals
+    attributes:
+      label: 花瓣数量
+      description: 您估计想为群组申请的花瓣数量。（若申请数量过多，则请求可能会被削减或拒绝）
+      value: 300
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: 备注
+      description: 您还想告诉我们什么？
+      placeholder: 什么都可以哦，没有就算了吧。
+    validations:
+      required: false
