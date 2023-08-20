@@ -124,7 +124,7 @@
     "core.message.petal.no_petals": "花瓣不足，请联系开发者补充。",
     "core.message.petal.self": "当前本群组的花瓣数为：${petal}。",
     "core.message.ping.detail": "System startup time: ${system_boot_time}\nRobot is running: ${bot_running_time}\nPython version: ${python_version}\nProcessor model: ${cpu_brand}\nCurrent processor usage: ${cpu_usage}%\nPhysical memory: ${ram}M Utilized: ${ram_percent}%\nSwap memory: ${swap}M Utilized: ${swap_percent}%\nDisk capacity: ${disk_space}G/${disk_space_total}G",
-    "core.message.ping.failed": "Unable to fetch.",
+    "core.message.ping.failed": "Failed to fetch.",
     "core.message.prefix.add.already": "This command already exists in the custom prefix list.",
     "core.message.prefix.add.success": "Custom command prefix has been added: ${prefix}\nHelp documents will be displayed by default using this prefix.",
     "core.message.prefix.list": "Custom command prefix: ${prefixes}",
