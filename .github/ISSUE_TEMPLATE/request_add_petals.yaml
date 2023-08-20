@@ -8,11 +8,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        为防止 ask 模块被滥用导致无法持续提供服务，故采用花瓣分配制。请填写以下表单以请求花瓣。
+        为防止 `ask` 模块被滥用导致无法持续提供服务，故采用花瓣分配制。请填写以下表单以添加花瓣。
 
         请注意，在申请成功后的 30 天内，若无特殊原因请勿再次申请，否则您的申请可能会被拒绝。
 
-        提示：使用 ask 一次请求约消耗 3 个花瓣，请详细考虑再决定您申请的数量。
+        提示：使用 `ask` 命令一次请求约消耗 3 个花瓣，请详细考虑再决定您申请的数量。
   - type: checkboxes
     id: preflight
     attributes:
@@ -46,8 +46,8 @@ body:
     id: group-id
     attributes:
       label: 群组 ID
-      description: 您的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
-      placeholder: e.g. QQ 1000000/TG <https://t.me/example>/DC 12345678910111213/DC <https://discord.gg/exAmpl3>
+      description: 您的群组 ID，可使用 `whoami` 命令查看。
+      placeholder: e.g. QQ|Group|738829671
     validations:
       required: true
   - type: input
