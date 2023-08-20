@@ -24,28 +24,30 @@ body:
         - label: 我是群组的管理员。
           required: true
   - type: dropdown
-    id: group-type
+    id: platform
     attributes:
-      label: 类型
+      label: 聊天平台
+      description: 您的账号所在平台。
       options:
         - QQ 群
-        - QQ
-    validations:
-      required: true
+        - QQ 频道
+        - Kook
+        - Discord
+        - Telegram
   - type: input
-    id: qq-id
+    id: user-id
     attributes:
-      label: QQ 号
-      description: 您的 QQ 号。
-      placeholder: e.g. 10000
+      label: 用户 ID
+      description: 您的 QQ 号/Telegram ID/Discord handle。
+      placeholder: e.g. QQ 10000/TG @Example/DC Example#1234
     validations:
       required: true
   - type: input
     id: group-id
     attributes:
-      label: QQ 群
-      description: 您想要添加花瓣的群的群号。
-      placeholder: e.g. 1000000
+      label: 群组 ID
+      description: 您的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
+      placeholder: e.g. QQ 1000000/TG <https://t.me/example>/DC 12345678910111213/DC <https://discord.gg/exAmpl3>
     validations:
       required: true
   - type: input
