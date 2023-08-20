@@ -46,8 +46,8 @@ body:
     id: group-id
     attributes:
       label: 群组 ID
-      description: 您的群组 ID，可使用 `whoami` 命令查看。
-      placeholder: e.g. QQ|Group|738829671
+      description: 您的对话 ID，可使用 `whoami` 命令查看。
+      placeholder: e.g. QQ|Group|1000000
     validations:
       required: true
   - type: input
