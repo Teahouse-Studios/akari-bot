@@ -23,18 +23,27 @@ body:
           required: true
         - label: 我是群组的管理员。
           required: true
+  - type: dropdown
+    id: group-type
+    attributes:
+      label: 类型
+      options:
+        - QQ 群
+        - QQ
+    validations:
+      required: true
   - type: input
     id: qq-id
     attributes:
-      label: QQ号
-      description: 您的QQ号。
+      label: QQ 号
+      description: 您的 QQ 号。
       placeholder: e.g. 10000
     validations:
       required: true
   - type: input
     id: group-id
     attributes:
-      label: QQ群
+      label: QQ 群
       description: 您想要添加花瓣的群的群号。
       placeholder: e.g. 1000000
     validations:
