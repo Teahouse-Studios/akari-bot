@@ -44,7 +44,7 @@ body:
     attributes:
       label: 花瓣数量
       description: 您估计想为群组申请的花瓣数量。（若申请数量过多，则请求可能会被削减或拒绝）
-      value: 300
+      placeholder: 300
     validations:
       required: true
   - type: textarea
