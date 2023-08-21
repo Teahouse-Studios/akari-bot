@@ -21,6 +21,7 @@ async def generate_code_snippet(code: str, language: str):
             'settings': {
                 'language': language,
                 'theme': 'night-owl',
+                'fontFamily': 'DejaVu Sans Mono',
             }
         }), headers={'content-type': 'application/json'}) as req:
             return await req.read()
