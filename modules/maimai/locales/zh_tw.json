@@ -59,5 +59,6 @@
     "maimai.message.song.prompt": "以下是可能的結果：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n譜師：${charter}",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
-    "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。"
+    "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。",
+    "maimai.message.user_unbound": "未绑定用户，请前往查分器并绑定你的 QQ 号。\n查分器地址：https://www.diving-fish.com/maimaidx/prober"
 }
