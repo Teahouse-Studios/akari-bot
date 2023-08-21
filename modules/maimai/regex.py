@@ -130,12 +130,7 @@ async def _(msg: Bot.MessageSession):
         except Exception as e:
             Logger.error(e)
             await msg.finish(msg.locale.t("maimai.message.random.error"))
-
-
-
-@mai_regex.handle(re.compile(r".*\s?[Mm]aimai?\s?.*(什么|什麼)"), desc='{maimai.help.maimai_regex.random}')
-async def _(msg: Bot.MessageSession):
-    await msg.finish(song_txt((await total_list.get()).random()))
+            
 
 
 @mai_regex.handle(re.compile(r"(.?)([極极将舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
