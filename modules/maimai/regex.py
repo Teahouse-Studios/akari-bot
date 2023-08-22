@@ -6,7 +6,7 @@ from core.component import module
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process
+from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score
 
 total_list = TotalList()
 
