@@ -1409,9 +1409,9 @@ onnxruntime==1.15.1 ; python_full_version >= "3.8.1" and python_full_version < "
     --hash=sha256:ed5cdd9ee748149a57f4cdfa67187a0d68f75240645a3c688299dcd08742cc98 \
     --hash=sha256:f0980969689cb956c22bd1318b271e1be260060b37f3ddd82c7d63bd7f2d9a79 \
     --hash=sha256:f68b47fdf1a0406c0292f81ac993e2a2ae3e8b166b436d590eb221f64e8e187a
-openai==0.27.8 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:2483095c7db1eee274cebac79e315a986c4e55207bb4fa7b82d185b3a2ed9536 \
-    --hash=sha256:e0a7c2f7da26bdbe5354b03c6d4b82a2f34bd4458c7a17ae1a7092c3e397e03c
+openai==0.27.9; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:6a3cf8e276d1a6262b50562fbc0cba7967cfebb78ed827d375986b48fdad6475 \
+    --hash=sha256:b687761c82f5ebb6f61efc791b2083d2d068277b94802d4d1369efe39851813d
 openapi-schema-pydantic==1.2.4 ; python_full_version >= "3.8.1" and python_version < "4.0" \
     --hash=sha256:3e22cf58b74a69f752cc7e5f1537f6e44164282db2700cbbcd3bb99ddd065196 \
     --hash=sha256:a932ecc5dcbb308950282088956e94dea069c9823c84e507d64f6b622222098c
