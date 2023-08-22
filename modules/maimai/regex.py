@@ -76,7 +76,42 @@ async def _(msg: Bot.MessageSession):
          Plain(msg.locale.t("maimai.message.song",
                             artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
                             bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                            level='/'.join((str(ds) for ds in music['ds']))))]) 
+                            level='/'.join((str(ds) for ds in music['ds']))))])
+
+
+
+@mai_regex.handle(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
+async def _(msg: Bot.MessageSession):
+    name = msg.matched_msg.groups()[0]
+    username = msg.matched_msg.groups()[1]
+    if name[:2].lower() == "id":
+        sid = name[2:]
+    else:
+        sid_list = await get_alias(msg, name, get_music=True)
+        if len(sid_list) == 0:
+            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            await msg.finish(res.strip())
+        else:
+            sid = str(sid_list[0])
+
+    music = (await total_list.get()).by_id(sid)
+    if not music:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+
+    if username is None and msg.target.senderFrom == "QQ":
+        payload = {'qq': msg.session.sender}
+    else:
+        if username is None:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username}
+
+    output = await get_player_score(msg, payload, sid)
+
     
 
 @mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
