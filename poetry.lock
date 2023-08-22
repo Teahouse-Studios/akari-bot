@@ -30,13 +30,13 @@ all = ["ujson"]
 
 [[package]]
 name = "aiofile"
-version = "3.8.7"
+version = "3.8.8"
 description = "Asynchronous file operations."
 optional = false
 python-versions = ">=3.7, <4"
 files = [
-    {file = "aiofile-3.8.7-py3-none-any.whl", hash = "sha256:4c38991b1227e221296fa05bbc95bffba9c203fef1ce09ad3076cfe7b61842c7"},
-    {file = "aiofile-3.8.7.tar.gz", hash = "sha256:a8f9dec17282b3583337c4ef2d1a67f33072ab80dd03608041ed9e71b88dc521"},
+    {file = "aiofile-3.8.8-py3-none-any.whl", hash = "sha256:41e8845cce055779cd77713d949a339deb012eab605b857765e8f8e52a5ed811"},
+    {file = "aiofile-3.8.8.tar.gz", hash = "sha256:41f3dc40bd730459d58610476e82e5efb2f84ae6e9fa088a9545385d838b8a43"},
 ]
 
 [package.dependencies]
