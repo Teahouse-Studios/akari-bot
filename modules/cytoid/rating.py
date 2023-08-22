@@ -29,7 +29,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         Profile_json = json.loads(await get_url(Profile_url, 200))
         if 'statusCode' in Profile_json:
             if Profile_json['statusCode'] == 404:
-                return {'status': False, 'text': msg.locale.t('cytoid.message.error.user_not_found')}
+                return {'status': False, 'text': msg.locale.t('cytoid.message.user_not_found')}
         ProfileId = Profile_json['user']['id']
         ProfileRating = Profile_json['rating']
         ProfileLevel = Profile_json['exp']['currentLevel']
@@ -210,7 +210,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
             return {'status': True, 'path': savefilename}
     except Exception as e:
         traceback.print_exc()
-        return {'status': False, 'text': '发生错误：' + str(e)}
+        return {'status': False, 'text': msg.locale.t("error") + str(e)}
 
 
 async def download_cover_thumb(uid):

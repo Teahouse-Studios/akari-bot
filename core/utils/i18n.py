@@ -117,7 +117,7 @@ class Locale:
     def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
         '''获取本地化字符串'''
         if isinstance(key, dict):
-            if ft := key.get(self.locale) is not None:
+            if (ft := key.get(self.locale)) is not None:
                 return ft
             elif 'fallback' in key:
                 return key['fallback']

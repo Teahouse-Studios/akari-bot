@@ -60,7 +60,10 @@ async def get_record(msg, payload):
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
     except ValueError as e:
         if str(e).startswith('400'):
-            await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.user_unbound"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         if str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
 
@@ -76,7 +79,10 @@ async def get_plate(msg, payload):
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
     except ValueError as e:
         if str(e).startswith('400'):
-            await msg.finish(msg.locale.t("maimai.message.user_not_found"))
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.user_unbound"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         if str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
 
@@ -86,7 +92,7 @@ def get_cover(sid):
     cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
     cover_dir = f"./assets/maimai/static/mai/cover/"
     cover_path = cover_dir + f'{get_cover_len5_id(sid)}.png'
-    if sid == '11364': #8-EM 的封面需要改动
+    if sid == '11364': #8-EM 的封面需要本地调用
         return os.path.abspath(cover_path)
     else:
         return cover_url

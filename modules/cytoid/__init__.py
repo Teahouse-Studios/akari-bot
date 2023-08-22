@@ -31,7 +31,7 @@ async def _(msg: Bot.MessageSession):
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if query_id is None:
-            await msg.finish(msg.locale.t('cytoid.message.user.unbound', prefix=msg.prefixes[0]))
+            await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     if query:
         if msg.target.targetFrom == 'TEST|Console':
             c = 0
