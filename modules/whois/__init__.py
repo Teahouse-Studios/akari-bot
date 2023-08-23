@@ -7,11 +7,11 @@ from core.utils.image import msgchain2image
 
 
 def process(input):
-        if isinstance(input, list) and len(input) > 0 and isinstance(input[0], tuple):
+        if isinstance(input, list) and len(input) > 0:
             return input[0]
         else:
             return input
-            
+
 
 w = module('whois', desc='{whois.help.desc}',
            developers=['DoroWolf'])
