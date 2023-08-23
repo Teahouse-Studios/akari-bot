@@ -6,6 +6,13 @@ from core.component import module
 from core.utils.image import msgchain2image
 
 
+def process(input):
+        if isinstance(input, list) and len(input) > 0 and isinstance(input[0], tuple):
+            return input[0]
+        else:
+            return input
+            
+
 w = module('whois', desc='{whois.help.desc}',
            developers=['DoroWolf'])
 
@@ -24,12 +31,6 @@ async def get_whois(msg, domain):
         info = whois(domain)
     except:
         await msg.finish("whois.message.error.get_failed")
-
-    def process(input):
-        if isinstance(input, list) and len(input) > 0 and isinstance(input[0], tuple):
-            return input[0]
-        else:
-            return input
 
     
     if info['name_servers']:

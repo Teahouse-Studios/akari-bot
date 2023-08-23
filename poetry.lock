@@ -3047,6 +3047,22 @@ curio = ["curio (>=1.4)"]
 trio = ["trio (>=0.16.0)"]
 
 [[package]]
+name = "python-whois"
+version = "0.8.0"
+description = "Whois querying and parsing of domain registration information."
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-whois-0.8.0.tar.gz", hash = "sha256:dd336d3517eace2a7689406db7bb96ada3c5e74327423151aeee3e64225f6220"},
+]
+
+[package.dependencies]
+future = "*"
+
+[package.extras]
+"better date conversion" = ["python-dateutil"]
+
+[[package]]
 name = "pytz"
 version = "2023.3"
 description = "World timezone definitions, modern and historical"
