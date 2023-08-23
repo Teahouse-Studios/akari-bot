@@ -29,14 +29,13 @@ async def _(msg: Bot.MessageSession, domain: str):
 async def get_whois(msg, domain):
     try:
         info = whois(domain)
+        if not info['domain_name']:
+            await msg.finish("whois.message.error.get_failed")
     except:
         await msg.finish("whois.message.error.get_failed")
 
     
-    if info['name_servers']:
-        name_servers = [ns for ns in info['name_servers'] if ns.islower()]
-    else:
-        name_servers = None
+    name_servers = [ns for ns in info['name_servers'] if ns.islower()]
 
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{info['domain_name'][1]}{f"""
