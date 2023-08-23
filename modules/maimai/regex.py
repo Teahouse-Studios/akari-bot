@@ -112,7 +112,12 @@ async def _(msg: Bot.MessageSession):
 
     output = await get_player_score(msg, payload, sid)
 
+    file = get_cover(music['id'])
+    await msg.finish(
+        [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+         BImage(f"{file}"), Plain(output)])
     
+
 
 @mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
