@@ -30,9 +30,9 @@ async def get_whois(msg, domain):
     try:
         info = whois(domain)
         if not info['domain_name']:
-            await msg.finish("whois.message.error.get_failed")
+            await msg.finish(msg.locale.t("whois.message.error.get_failed"))
     except:
-        await msg.finish("whois.message.error.get_failed")
+        await msg.finish(msg.locale.t("whois.message.error.get_failed"))
 
     
     name_servers = [ns for ns in info['name_servers'] if ns.islower()]
