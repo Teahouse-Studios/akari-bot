@@ -34,7 +34,7 @@ async def get_whois(msg, domain):
     except:
         await msg.finish(msg.locale.t("whois.message.error.get_failed"))
 
-    name_servers = list(set([i.lower() for i in info['name_servers']))
+    name_servers = list(set([i.lower() for i in info['name_servers']]))
 
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{info['domain_name'][1]}{f"""
