@@ -105,7 +105,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai_regex.handle(re.compile(r"(随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
-            desc="{maimai.help.maimai_regex.random.filter}")
+            desc="{maimai.help.maimai_regex.random}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
