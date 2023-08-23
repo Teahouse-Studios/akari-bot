@@ -1,3 +1,4 @@
+import datetime
 from whois import whois
 
 from core.builtins import Bot, Plain, Image
@@ -30,8 +31,8 @@ async def get_whois(msg, domain):
 {msg.locale.t('whois.message.registrar')}{info['registrar']}""" if info['registrar'] is not None else ''}{f"""
 {msg.locale.t('whois.message.whois_server')}{info['whois_server']}""" if info['whois_server'] is not None else ''}{f"""
 {msg.locale.t('whois.message.updated_date')}{str(info['updated_date'])}""" if info['updated_date'] is not None else ''}{f"""
-{msg.locale.t('whois.message.creation_date')}{str(info['creation_date'][0])}""" if info['creation_date'] is not None else ''}{f"""
-{msg.locale.t('whois.message.expiration_date')}{str(info['expiration_date'][0])}""" if info['expiration_date'] is not None else ''}{f"""
+{msg.locale.t('whois.message.creation_date')}{str(info['creation_date'])}""" if info['creation_date'] is not None else ''}{f"""
+{msg.locale.t('whois.message.expiration_date')}{str(info['expiration_date'])}""" if info['expiration_date'] is not None else ''}{f"""
 {msg.locale.t('whois.message.name_servers')}{', '.join(name_servers)}""" if info['name_servers'] is not None else ''}{f"""
 {msg.locale.t('whois.message.dnssec')}{info['dnssec']}""" if info['dnssec'] is not None else ''}{f"""
 {msg.locale.t('whois.message.name')}{info['name']}""" if info['name'] is not None else ''}{f"""
