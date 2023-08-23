@@ -45,7 +45,7 @@ async def get_whois(msg, domain):
 {msg.locale.t('whois.message.creation_date')}{str(process(info['creation_date']))}""" if info['creation_date'] else ''}{f"""
 {msg.locale.t('whois.message.expiration_date')}{str(process(info['expiration_date']))}""" if info['expiration_date'] else ''}{f"""
 {msg.locale.t('whois.message.name_servers')}{', '.join(name_servers)}""" if info['name_servers'] else ''}{f"""
-{msg.locale.t('whois.message.dnssec')}{info['dnssec']}""" if info['dnssec'] else ''}{f"""
+{msg.locale.t('whois.message.dnssec')}{process(info['dnssec'])}""" if info['dnssec'] else ''}{f"""
 {msg.locale.t('whois.message.name')}{process(info['name'])}""" if info['name'] else ''}{f"""
 {msg.locale.t('whois.message.organization')}{process(info['org'])}""" if info['org'] else ''}{f"""
 {msg.locale.t('ip.message.location')}{f"{process(info['address'])}, " if info['address'] else ''}{f"{process(info['city'])}, " if info['city'] else ''}{f"{process(info['state'])}, " if info['state'] else ''}{process(info['country'])}""" if info['country'] else ''}{f"""
