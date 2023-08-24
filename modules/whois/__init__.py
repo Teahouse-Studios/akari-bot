@@ -45,7 +45,7 @@ async def get_whois(msg, domain):
     creation_date = get_value(info, 'creation_date')
     expiration_date = get_value(info, 'expiration_date')
     name_servers = get_value(info, 'name_servers')
-    name_servers_list = list(set([i.lower() for i in info['name_servers']]))
+    name_servers_list = list(set([i.lower() for i in name_servers]))
     dnssec = get_value(info, 'dnssec')
     name = get_value(info, 'name')
     org = get_value(info, 'org')
@@ -56,7 +56,7 @@ async def get_whois(msg, domain):
     registrant_postal_code = get_value(info, 'registrant_postal_code')
 
     return f'''\
-{msg.locale.t('whois.message.domain_name')}{domain_name[1]}{f"""
+{msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""
 {msg.locale.t('whois.message.registrar')}{registrar}""" if registrar else ''}{f"""
 {msg.locale.t('whois.message.whois_server')}{whois_server}""" if whois_server else ''}{f"""
 {msg.locale.t('whois.message.updated_date')}{str(process(updated_date))}""" if updated_date else ''}{f"""
