@@ -57,6 +57,9 @@ async def get_whois(msg, domain):
     if not domain_name:
         await msg.finish(msg.locale.t("whois.message.get_failed"))
 
+    if whois_server:
+        whois_server = whois_server.lower()
+        
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))
     else:
