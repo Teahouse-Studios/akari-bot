@@ -431,9 +431,9 @@ chroma-hnswlib==0.7.2 ; python_full_version >= "3.8.1" and python_full_version <
 chromadb==0.4.7; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:7282aab8fd7cf81f0bf55f5a056bdc3aca15bf56a37b711ec53fab1440b5e6f7 \
     --hash=sha256:e928406410efdd1e5550cb456a3f4c40774aec1efcd95011389483fa0ae3c472
-click==8.1.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:48ee849951919527a045bfe3bf7baa8a959c423134e1a5b98c05c20ba75a1cbd \
-    --hash=sha256:fa244bb30b3b5ee2cae3da8f55c9e5e0c0e86093306301fb418eb9dc40fbded5
+click==8.1.7; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28 \
+    --hash=sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de
 colorama==0.4.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" and sys_platform == "win32" or python_full_version >= "3.8.1" and python_full_version < "4.0.0" and platform_system == "Windows" \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
