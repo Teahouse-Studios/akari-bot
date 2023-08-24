@@ -45,7 +45,6 @@ async def get_whois(msg, domain):
     creation_date = get_value(info, 'creation_date')
     expiration_date = get_value(info, 'expiration_date')
     name_servers = get_value(info, 'name_servers')
-    name_servers_list = list(set([i.lower() for i in name_servers]))
     dnssec = get_value(info, 'dnssec')
     name = get_value(info, 'name')
     org = get_value(info, 'org')
@@ -54,6 +53,11 @@ async def get_whois(msg, domain):
     state = get_value(info, 'state')
     country = get_value(info, 'country')
     registrant_postal_code = get_value(info, 'registrant_postal_code')
+
+    if name_servers:
+        name_servers_list = list(set([i.lower() for i in name_servers]))
+    else:
+        name_servers_list = []
 
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""
