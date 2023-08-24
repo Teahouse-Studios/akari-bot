@@ -58,7 +58,7 @@ async def get_whois(msg, domain):
     return f'''\
 {msg.locale.t('whois.message.domain_name')}{domain_name[1]}{f"""
 {msg.locale.t('whois.message.registrar')}{registrar}""" if registrar else ''}{f"""
-{msg.locale.t('whois.message.whois_server')}{whois_server""" if whois_server else ''}{f"""
+{msg.locale.t('whois.message.whois_server')}{whois_server}""" if whois_server else ''}{f"""
 {msg.locale.t('whois.message.updated_date')}{str(process(updated_date))}""" if updated_date else ''}{f"""
 {msg.locale.t('whois.message.creation_date')}{str(process(creation_date))}""" if creation_date else ''}{f"""
 {msg.locale.t('whois.message.expiration_date')}{str(process(expiration_date))}""" if expiration_date else ''}{f"""
