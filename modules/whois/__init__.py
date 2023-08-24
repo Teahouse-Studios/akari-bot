@@ -36,7 +36,7 @@ async def get_whois(msg, domain):
     try:
         info = whois(domain)
     except:
-        await msg.finish(msg.locale.t("whois.message.error.get_failed"))
+        await msg.finish(msg.locale.t("whois.message.get_failed"))
 
     domain_name = get_value(info, 'domain_name')
     registrar = get_value(info, 'registrar')
@@ -53,6 +53,9 @@ async def get_whois(msg, domain):
     state = get_value(info, 'state')
     country = get_value(info, 'country')
     registrant_postal_code = get_value(info, 'registrant_postal_code')
+
+    if not domain_name:
+        await msg.finish(msg.locale.t("whois.message.get_failed"))
 
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))
