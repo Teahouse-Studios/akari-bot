@@ -112,7 +112,12 @@ async def _(msg: Bot.MessageSession):
 
     output = await get_player_score(msg, payload, sid)
 
+    file = get_cover(music['id'])
+    await msg.finish(
+        [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+         BImage(f"{file}"), Plain(output)])
     
+
 
 @mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
@@ -140,7 +145,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai_regex.handle(re.compile(r"(随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
-            desc="{maimai.help.maimai_regex.random.filter}")
+            desc="{maimai.help.maimai_regex.random}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:

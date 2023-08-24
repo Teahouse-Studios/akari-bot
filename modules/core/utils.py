@@ -1,5 +1,6 @@
 import os
 import platform
+import jwt
 import psutil
 import time
 
@@ -9,8 +10,9 @@ from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from cpuinfo import get_cpu_info
 from database import BotDBUtil
-from datetime import datetime
+from datetime import datetime, timedelta
 
+jwt_secret = Config('jwt_secret')
 
 version = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
@@ -227,3 +229,15 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         await msg.sendMessage(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
+
+
+token = module('token', base=True, desc='{core.help.token}', developers=['Dianliang233'])
+
+
+@token.handle()
+async def _(msg: Bot.MessageSession):
+    await msg.finish(jwt.encode({
+        'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days
+        'iat': datetime.utcnow(),
+        'senderId': msg.target.senderId,
+    }, jwt_secret, algorithm='HS256'))
