@@ -76,5 +76,5 @@ async def get_whois(msg, domain):
 {msg.locale.t('whois.message.dnssec')}{process(dnssec)}""" if dnssec else ''}{f"""
 {msg.locale.t('whois.message.name')}{process(name)}""" if name else ''}{f"""
 {msg.locale.t('whois.message.organization')}{process(org)}""" if org else ''}{f"""
-{msg.locale.t('ip.message.location')}{f"{process(address)}, " if address else ''}{f"{process(city)}, " if city else ''}{f"{process(state)}, " if state else ''}{process(country)}""" if country else ''}{f"""
+{msg.locale.t('whois.message.location')}{f"{process(address)}, " if address else ''}{f"{process(city)}, " if city else ''}{f"{process(state)}, " if state else ''}{process(country)}""" if country else ''}{f"""
 {msg.locale.t('whois.message.postal_code')}{process(registrant_postal_code)}""" if registrant_postal_code else ''}'''
