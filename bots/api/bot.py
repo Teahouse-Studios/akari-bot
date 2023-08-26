@@ -1,4 +1,4 @@
-import datetime
+
 import os
 import sys
 from fastapi.responses import JSONResponse
@@ -8,12 +8,20 @@ import jwt
 
 sys.path.append(os.getcwd())
 
+from core.loader import ModulesManager  # noqa: E402
+from core.utils.i18n import Locale  # noqa: E402
+from core.utils.bot import init_async, load_prompt  # noqa: E402
 from config import Config  # noqa: E402
 from database import BotDBUtil  # noqa: E402
 from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
 
 app = FastAPI()
 jwt_secret = Config('jwt_secret')
+
+
+@app.on_event("startup")
+async def startup_event():
+    await init_async()
 
 
 @app.get("/")
@@ -97,6 +105,37 @@ async def get_sender(sender_id: str):
         'disableTyping': disable_typing
     }
 
+
+@app.get('/module/{target_id}')
+async def get_module_list(target_id: str):
+    target_from = '|'.join(target_id.split('|')[:-2])
+    return ModulesManager.return_modules_list(
+        targetFrom=target_from)
+
+
+@app.post('/module/{target_id}/{module_name}')
+async def set_module(target_id: str, module_name: str, enable: bool):
+    target_from = '|'.join(target_id.split('|')[:-2])
+    return ModulesManager.set_module(
+        targetFrom=target_from,
+        moduleName=module_name,
+        enable=enable)
+
+
+@app.get('/locale/{locale}/{string}')
+async def get_translation(locale: str, string: str):
+    try:
+        return {
+            'locale': locale,
+            'string': string,
+            'translation': Locale(locale).t(string, False),
+        }
+    except TypeError:
+        return JSONResponse(status_code=404, content={
+            'locale': locale,
+            'string': string,
+            'notFound': True,
+        })
 
 if __name__ == "__main__":
     uvicorn.run("bot:app", port=Config('api_port') or 5000, log_level="info", reload=True)
