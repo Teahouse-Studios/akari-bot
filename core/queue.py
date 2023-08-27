@@ -25,8 +25,8 @@ class JobQueue:
 
     @classmethod
     async def validate_permission(cls, target_client: str, target_id: str, sender_id: str):
-        return await cls.add_job(target_client, 'validate_permission',
-                                 {'target_id': target_id, 'sender_id': sender_id})
+        return (await cls.add_job(target_client, 'validate_permission',
+                                  {'target_id': target_id, 'sender_id': sender_id}))['value']
 
 
 async def check_job_queue():
@@ -39,6 +39,8 @@ async def check_job_queue():
     get_all = BotDBUtil.JobQueue.get_all(target_client=Bot.FetchTarget.name)
     for tsk in get_all:
         if tsk.action == 'validate_permission':
-            ...
+            fetch = await Bot.FetchTarget.fetch_target(tsk.args['target_id'], tsk.args['sender_id'])
+            if fetch:
+                BotDBUtil.JobQueue.return_val(tsk, json.dumps({'value': True}))
 
     return await check_job_queue()
