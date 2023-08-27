@@ -6,12 +6,12 @@ from typing import List, Union
 import aiohttp
 from khl import MessageTypes, Message
 
-from bots.kook.client import bot
+from bots.kook.client import bot, client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, FetchedSession as FS, \
+from core.types import MsgInfo, Session, FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
@@ -163,16 +163,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='',
-                              clientName='Kook', messageId=0, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
+class FetchedSession(Bot.FetchedSession):
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         if self.target.targetFrom == 'Kook|GROUP':
@@ -204,19 +195,29 @@ class FetchedSession(FS):
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
 
 
+Bot.FetchedSession = FetchedSession
+
+
 class FetchTarget(FT):
-    name = 'Kook'
+    name = client_name
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
         matchChannel = re.match(r'^(Kook\|.*?)\|(.*)', targetId)
         if matchChannel:
-            return FetchedSession(matchChannel.group(1), matchChannel.group(2))
-        else:
-            return False
+            targetFrom = senderFrom = matchChannel.group(1)
+            if senderId:
+                matchSender = re.match(r'^(Kook\|User)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                targetId = senderId = matchChannel.group(2)
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
+    async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
         lst = []
         for x in targetList:
             fet = await FetchTarget.fetch_target(x)
@@ -225,7 +226,7 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
         if user_list is not None:
             for x in user_list:
                 try:

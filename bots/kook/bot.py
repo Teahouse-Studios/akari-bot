@@ -1,6 +1,6 @@
 import os
 
-from bots.kook.client import bot
+from bots.kook.client import bot, client_name
 from khl import Message, MessageTypes
 
 from config import Config
@@ -32,7 +32,7 @@ if bot:
                                      senderId=f'Kook|User|{message.author_id}',
                                      targetFrom=f'Kook|{message.channel_type.name}',
                                      senderFrom='Kook|User', senderName=message.author.nickname,
-                                     clientName='Kook',
+                                     clientName=client_name,
                                      messageId=message.id,
                                      replyId=replyId),
                              Session(message=message, target=message.target_id, sender=message.author_id))

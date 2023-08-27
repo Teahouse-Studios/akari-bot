@@ -5,7 +5,7 @@ import traceback
 
 import discord
 
-from bots.discord.client import client
+from bots.discord.client import client, client_name
 from bots.discord.message import MessageSession, FetchTarget
 from config import Config
 from core.builtins import PrivateAssets, Url
@@ -82,7 +82,7 @@ if dc_token:
                 senderName=message.author.name,
                 targetFrom=target,
                 senderFrom="Discord|Client",
-                clientName='Discord',
+                clientName=client_name,
                 messageId=message.id,
                 replyId=replyId),
             session=Session(

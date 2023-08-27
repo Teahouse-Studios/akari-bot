@@ -5,6 +5,8 @@ import urllib3
 from config import Config
 from core.logger import Logger
 
+client_name = 'Matrix'
+
 homeserver: str = Config('matrix_homeserver')
 user: str = Config('matrix_user')
 token: str = Config('matrix_token')

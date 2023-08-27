@@ -79,8 +79,8 @@ class UnfriendlyActionsTable(Base):
 
 
 class JobQueueTable(Base):
-    __tablename__ = "job_queue"
-    taskid = Column(String(512))
+    __tablename__ = "job_queues"
+    taskid = Column(String(512), primary_key=True)
     targetClient = Column(String(512))
     hasDone = Column(Boolean, default=False)
     action = Column(String(512))

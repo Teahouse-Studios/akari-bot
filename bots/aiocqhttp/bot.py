@@ -6,7 +6,7 @@ import ujson as json
 
 from aiocqhttp import Event, Error
 
-from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.client import bot, client_name
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from config import Config
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
@@ -67,7 +67,7 @@ async def message_handler(event: Event):
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|{str(event.user_id)}',
                                  targetFrom='QQ|Group' if event.detail_type == 'group' else 'QQ',
-                                 senderFrom='QQ', senderName=event.sender['nickname'], clientName='QQ',
+                                 senderFrom='QQ', senderName=event.sender['nickname'], clientName=client_name,
                                  messageId=event.message_id,
                                  replyId=replyId),
                          Session(message=event,
@@ -107,7 +107,7 @@ async def _(event):
     msg = MessageSession(MsgInfo(targetId=targetId,
                                  senderId=f'QQ|Tiny|{str(event.user_id)}',
                                  targetFrom='QQ|Guild',
-                                 senderFrom='QQ|Tiny', senderName=event.sender['nickname'], clientName='QQ',
+                                 senderFrom='QQ|Tiny', senderName=event.sender['nickname'], clientName=client_name,
                                  messageId=event.message_id,
                                  replyId=replyId),
                          Session(message=event,

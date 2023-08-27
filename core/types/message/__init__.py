@@ -264,13 +264,17 @@ class MessageSession:
 
 
 class FetchedSession:
-    def __init__(self, targetFrom, targetId):
+    def __init__(self, targetFrom, targetId, senderFrom=None, senderId=None):
+        if senderFrom is None:
+            senderFrom = targetFrom
+        if senderId is None:
+            senderId = targetId
         self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
+                              senderId=f'{targetFrom}|{senderId}',
                               targetFrom=targetFrom,
-                              senderFrom=targetFrom,
+                              senderFrom=senderFrom,
                               senderName='', clientName='', replyId=None, messageId=0)
-        self.session = Session(message=False, target=targetId, sender=targetId)
+        self.session = Session(message=False, target=targetId, sender=senderId)
         self.parent = MessageSession(self.target, self.session)
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):

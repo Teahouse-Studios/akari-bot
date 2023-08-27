@@ -50,3 +50,4 @@ class CQHttpModded(CQHttp):
 
 
 bot = CQHttpModded()
+client_name = 'QQ'

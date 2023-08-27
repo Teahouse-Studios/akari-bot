@@ -6,14 +6,13 @@ from typing import List, Union
 import discord
 import filetype
 
-from bots.discord.client import client
+from bots.discord.client import client, client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage, Voice
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
+from core.types import MsgInfo, Session, FetchTarget as FT, FinishedSession as FinS
 from core.utils.http import download_to_cache
 from database import BotDBUtil
 
@@ -158,15 +157,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='', clientName='Discord', messageId=0, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
+class FetchedSession(Bot.FetchedSession):
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         try:
@@ -178,19 +169,29 @@ class FetchedSession(FS):
         return await self.parent.sendDirectMessage(msgchain, disable_secret_check=disable_secret_check)
 
 
+Bot.FetchedSession = FetchedSession
+
+
 class FetchTarget(FT):
-    name = 'Discord'
+    name = client_name
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
         matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)
         if matchChannel:
-            return FetchedSession(matchChannel.group(1), matchChannel.group(2))
-        else:
-            return False
+            targetFrom = senderFrom = matchChannel.group(1)
+            if senderId:
+                matchSender = re.match(r'^(Discord\|Client)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                targetId = senderId = matchChannel.group(2)
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
+    async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
         lst = []
         for x in targetList:
             fet = await FetchTarget.fetch_target(x)
@@ -199,7 +200,7 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
         if user_list is not None:
             for x in user_list:
                 try:
