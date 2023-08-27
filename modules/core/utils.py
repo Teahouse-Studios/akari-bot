@@ -234,10 +234,11 @@ async def _(msg: Bot.MessageSession):
 token = module('token', base=True, desc='{core.help.token}', developers=['Dianliang233'])
 
 
-@token.handle()
+@token.handle('<code>')
 async def _(msg: Bot.MessageSession):
     await msg.finish(jwt.encode({
         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days
         'iat': datetime.utcnow(),
         'senderId': msg.target.senderId,
-    }, jwt_secret, algorithm='HS256'))
+        'code': msg.parsed_msg['<code>']
+    }, bytes(jwt_secret, 'utf-8'), algorithm='HS256'))
