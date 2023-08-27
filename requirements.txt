@@ -6,9 +6,9 @@ aiocqhttp==1.4.4 ; python_full_version >= "3.8.1" and python_full_version < "4.0
 aiofile==3.8.8; python_full_version >= "3.8.1" and python_version < "4" \
     --hash=sha256:41e8845cce055779cd77713d949a339deb012eab605b857765e8f8e52a5ed811 \
     --hash=sha256:41f3dc40bd730459d58610476e82e5efb2f84ae6e9fa088a9545385d838b8a43
-aiofiles==23.1.0 ; python_full_version >= "3.8.1" and python_version < "4.0" \
-    --hash=sha256:9312414ae06472eb6f1d163f555e466a23aed1c8f60c30cccf7121dba2e53eb2 \
-    --hash=sha256:edd247df9a19e0db16534d4baaf536d6609a43e1de5401d7a4c1c148753a1635
+aiofiles==23.2.1; python_full_version >= "3.8.1" and python_version < "4.0" \
+    --hash=sha256:19297512c647d4b27a2cf7c34caa7e405c0d60b5560618a29a9fe027b18b0107 \
+    --hash=sha256:84ec2218d8419404abcb9f0c02df3f34c6e0a68ed41072acfb1cef5cbc29051a
 aiogram==2.25.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:59ad78fc0ebbef1fd471c15778a4594b60117e0d7373bc2ce7bcd192074d527d \
     --hash=sha256:7bb770cd0459f1dbaea00578bf13fb2e6a1812f22adf94a988c11a7c0d5f33e1
