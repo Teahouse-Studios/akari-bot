@@ -2,12 +2,11 @@ from typing import List, Union
 
 from PIL import Image
 
-from core.builtins import Plain, Image as BImage, confirm_command, Bot
+from core.builtins import Plain, Image as BImage, confirm_command, Bot, FetchTarget as FT, FetchedSession as FS
 from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import Session, MsgInfo, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS, AutoSession as AS, AutoSession
+from core.types import Session, MsgInfo, FinishedSession as FinS, AutoSession as AS, AutoSession
 
 
 class FinishedSession(FinS):
@@ -132,14 +131,6 @@ class Template(MS):
 
 
 class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='', clientName='TEST', messageId=0, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = Template(self.target, self.session)
 
     async def sendMessage(self, msgchain, disable_secret_check=False):
         """
@@ -155,8 +146,8 @@ class FetchTarget(FT):
     name = 'TEST'
 
     @staticmethod
-    async def fetch_target(targetId) -> FetchedSession:
-        return FetchedSession('TEST|Console', targetId)
+    async def fetch_target(targetId, senderId=None) -> FetchedSession:
+        return FetchedSession('TEST|Console', '0', 'TEST', '0')
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):

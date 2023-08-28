@@ -292,7 +292,7 @@ class FetchTarget:
     name = ''
 
     @staticmethod
-    async def fetch_target(targetId) -> FetchedSession:
+    async def fetch_target(targetId, senderId=None) -> FetchedSession:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """

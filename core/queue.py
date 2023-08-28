@@ -1,6 +1,7 @@
 import asyncio
 import ujson as json
 
+from core.logger import Logger
 from core.scheduler import Scheduler, IntervalTrigger
 from core.builtins import Bot
 from database import BotDBUtil
@@ -38,9 +39,11 @@ async def check_job_queue():
             _queue_tasks[tskid]['flag'].set()
     get_all = BotDBUtil.JobQueue.get_all(target_client=Bot.FetchTarget.name)
     for tsk in get_all:
+        Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
+        args = json.loads(tsk.args)
         if tsk.action == 'validate_permission':
-            fetch = await Bot.FetchTarget.fetch_target(tsk.args['target_id'], tsk.args['sender_id'])
+            fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
             if fetch:
-                BotDBUtil.JobQueue.return_val(tsk, json.dumps({'value': True}))
+                BotDBUtil.JobQueue.return_val(tsk, json.dumps({'value': await fetch.parent.checkPermission()}))
 
     return await check_job_queue()

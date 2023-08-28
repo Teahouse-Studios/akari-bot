@@ -15,6 +15,7 @@ from core.logger import Logger
 from core.scheduler import Scheduler
 from core.utils.http import get_url
 from core.utils.ip import IP
+from core.queue import check_job_queue
 
 
 async def init_async() -> None:
@@ -29,6 +30,7 @@ async def init_async() -> None:
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
+    await asyncio.create_task(check_job_queue())
     await load_secret()
 
 

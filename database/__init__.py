@@ -404,6 +404,11 @@ class BotDBUtil:
 
         @staticmethod
         @retry(stop=stop_after_attempt(3))
+        def get_first(target_client: str) -> JobQueueTable:
+            return session.query(JobQueueTable).filter_by(targetClient=target_client, hasDone=False).first()
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
         def get_all(target_client: str) -> List[JobQueueTable]:
             return session.query(JobQueueTable).filter_by(targetClient=target_client, hasDone=False).all()
 
@@ -411,7 +416,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def return_val(query: JobQueueTable, value):
-            query.value = json.dumps(value)
+            query.returnVal = json.dumps(value)
             query.hasDone = True
             session.commit()
             session.expire_all()
