@@ -133,13 +133,6 @@ class MessageSession(MS):
                     raise e
         return FinishedSession(self, send['message_id'], [send])
 
-    async def checkPermission(self):
-        if self.target.targetFrom == 'QQ' \
-                or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
-            return True
-        return await self.checkNativePermission()
-
     async def checkNativePermission(self):
         if self.target.targetFrom == 'QQ':
             return True
@@ -249,13 +242,14 @@ class FetchTarget(FT):
         matchTarget = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', targetId)
         if matchTarget:
             targetFrom = senderFrom = matchTarget.group(1)
+            targetId = matchTarget.group(2)
             if senderId:
                 matchSender = re.match(r'^(QQ\|Tiny|QQ)\|(.*)', senderId)
                 if matchSender:
                     senderFrom = matchSender.group(1)
                     senderId = matchSender.group(2)
             else:
-                targetId = senderId = matchTarget.group(2)
+                senderId = targetId
 
             return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 

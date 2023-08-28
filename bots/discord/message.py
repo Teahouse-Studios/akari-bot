@@ -111,18 +111,19 @@ class MessageSession(MS):
 
         return FinishedSession(self, msgIds, send)
 
-    async def checkPermission(self):
-        if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel) \
-                or self.target.senderInfo.query.isSuperUser \
-                or self.target.senderId in self.custom_admins:
-            return True
-        return False
-
     async def checkNativePermission(self):
-        if self.session.message.channel.permissions_for(self.session.message.author).administrator \
-                or isinstance(self.session.message.channel, discord.DMChannel):
-            return True
+        if not self.session.message:
+            channel = await client.fetch_channel(self.session.target)
+            author = await channel.guild.fetch_member(self.session.sender)
+        else:
+            channel = self.session.message.channel
+            author = self.session.message.author
+        try:
+            if channel.permissions_for(author).administrator \
+                    or isinstance(channel, discord.DMChannel):
+                return True
+        except Exception:
+            Logger.error(traceback.format_exc())
         return False
 
     async def toMessageChain(self):
@@ -180,13 +181,14 @@ class FetchTarget(FT):
         matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)
         if matchChannel:
             targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
             if senderId:
                 matchSender = re.match(r'^(Discord\|Client)\|(.*)', senderId)
                 if matchSender:
                     senderFrom = matchSender.group(1)
                     senderId = matchSender.group(2)
             else:
-                targetId = senderId = matchChannel.group(2)
+                senderId = targetId
 
             return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 

@@ -30,7 +30,6 @@ async def init_async() -> None:
     await asyncio.gather(*gather_list)
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
-    await asyncio.create_task(check_job_queue())
     await load_secret()
 
 

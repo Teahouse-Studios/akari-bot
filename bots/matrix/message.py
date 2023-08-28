@@ -150,11 +150,6 @@ class MessageSession(MS):
 
         return FinishedSession(self, [resp.event_id for resp in send], self.session.target)
 
-    async def checkPermission(self):
-        if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
-            return True
-        return await self.checkNativePermission()
-
     async def checkNativePermission(self):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
@@ -254,13 +249,14 @@ class FetchTarget(FT):
         matchChannel = re.match(r'^(Matrix)\|(.*)', targetId)
         if matchChannel:
             targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
             if senderId:
                 matchSender = re.match(r'^(Matrix)\|(.*)', senderId)
                 if matchSender:
                     senderFrom = matchSender.group(1)
                     senderId = matchSender.group(2)
             else:
-                targetId = senderId = matchChannel.group(2)
+                senderId = targetId
             session = Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
             await session._resolve_matrix_room_()
             return session

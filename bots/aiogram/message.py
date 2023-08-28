@@ -7,7 +7,7 @@ from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT,\
+from core.types import MsgInfo, Session, FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
@@ -90,19 +90,14 @@ class MessageSession(MS):
             msgIds.append(x.message_id)
         return FinishedSession(self, msgIds, send)
 
-    async def checkPermission(self):
-        if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
-            return True
-        admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
-        if self.session.sender in admins:
-            return True
-        return False
-
     async def checkNativePermission(self):
-        if self.session.message.chat.type == 'private':
+        if not self.session.message:
+            chat = await dp.bot.get_chat(self.session.target)
+        else:
+            chat = self.session.message.chat
+        if chat.type == 'private':
             return True
-        admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
+        admins = [member.user.id for member in await dp.bot.get_chat_administrators(chat.id)]
         if self.session.sender in admins:
             return True
         return False
@@ -151,13 +146,14 @@ class FetchTarget(FT):
 
         if matchChannel:
             targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
             if senderId:
                 matchSender = re.match(r'^(Telegram\|User)\|(.*)', senderId)
                 if matchSender:
                     senderFrom = matchSender.group(1)
                     senderId = matchSender.group(2)
             else:
-                targetId = senderId = matchChannel.group(2)
+                senderId = targetId
 
             return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 

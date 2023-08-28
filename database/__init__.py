@@ -267,6 +267,7 @@ class BotDBUtil:
                 session.commit()
             session.add_all([CommandTriggerTime(targetId=self.msg.target.senderId, commandName=self.name)])
             session.commit()
+            session.expire_all()
 
     @staticmethod
     @retry(stop=stop_after_attempt(3))

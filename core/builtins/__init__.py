@@ -51,7 +51,7 @@ class FetchedSession(FS):
         if senderId is None:
             senderId = targetId
         self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{senderId}',
+                              senderId=f'{senderFrom}|{senderId}',
                               targetFrom=targetFrom,
                               senderFrom=senderFrom,
                               senderName='',
@@ -60,6 +60,8 @@ class FetchedSession(FS):
                               replyId=None)
         self.session = Session(message=False, target=targetId, sender=senderId)
         self.parent = Bot.MessageSession(self.target, self.session)
+        if senderId is not None:
+            self.parent.target.senderInfo = BotDBUtil.SenderInfo(f'{senderFrom}|{senderId}')
 
 
 Bot.FetchedSession = FetchedSession

@@ -104,24 +104,23 @@ class MessageSession(MS):
             msgIds.append(x['msg_id'])
         return FinishedSession(self, msgIds, {self.session.message.channel_type.name: send})
 
-    async def checkPermission(self):
-        self.session.message: Message
-        if self.session.message.channel_type.name == 'PERSON' or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
-            return True
-        return await self.checkNativePermission()
-
     async def checkNativePermission(self):
         self.session.message: Message
-        if self.session.message.channel_type.name == 'PERSON':
+        if not self.session.message:
+            channel = await bot.client.fetch_public_channel(self.session.target)
+            author = self.session.sender
+        else:
+            channel = await bot.client.fetch_public_channel(self.session.message.ctx.channel.id)
+            author = self.session.message.author.id
+        if channel.name == 'PERSON':
             return True
-        guild = await bot.client.fetch_guild(self.session.message.ctx.guild.id)
-        user_roles = (await guild.fetch_user(self.session.message.author.id)).roles
+        guild = await bot.client.fetch_guild(channel.guild_id)
+        user_roles = (await guild.fetch_user(author)).roles
         guild_roles = await guild.fetch_roles()
         for i in guild_roles:  # 遍历服务器身分组
             if i.id in user_roles and i.has_permission(0):
                 return True
-        if self.session.message.author.id == guild.master_id:
+        if author == guild.master_id:
             return True
         return False
 
@@ -206,13 +205,14 @@ class FetchTarget(FT):
         matchChannel = re.match(r'^(Kook\|.*?)\|(.*)', targetId)
         if matchChannel:
             targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
             if senderId:
                 matchSender = re.match(r'^(Kook\|User)\|(.*)', senderId)
                 if matchSender:
                     senderFrom = matchSender.group(1)
                     senderId = matchSender.group(2)
             else:
-                targetId = senderId = matchChannel.group(2)
+                senderId = targetId
 
             return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 

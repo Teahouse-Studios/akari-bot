@@ -2,7 +2,6 @@ import asyncio
 import ujson as json
 
 from core.logger import Logger
-from core.scheduler import Scheduler, IntervalTrigger
 from core.builtins import Bot
 from database import BotDBUtil
 
@@ -31,7 +30,6 @@ class JobQueue:
 
 
 async def check_job_queue():
-    await asyncio.sleep(0.5)
     for tskid in _queue_tasks:
         tsk = BotDBUtil.JobQueue.get(tskid)
         if tsk.hasDone:
@@ -45,5 +43,3 @@ async def check_job_queue():
             fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
             if fetch:
                 BotDBUtil.JobQueue.return_val(tsk, json.dumps({'value': await fetch.parent.checkPermission()}))
-
-    return await check_job_queue()
