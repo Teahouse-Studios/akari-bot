@@ -9,9 +9,9 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     res = await get_url(url, 200, fmt='json')
     if res['code'] != 0:
         if res['code'] == -400:
-            await msg.finish(msg.locale.t("bilibili.message.not_found"))
+            await msg.finish(msg.locale.t("bilibili.message.error.invalid"))
         else:
-            await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
+            await msg.finish(msg.locale.t('bilibili.message.not_found'))
         
     view = res['data']['View']
     stat = view['stat']
