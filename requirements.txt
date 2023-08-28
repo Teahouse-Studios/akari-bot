@@ -527,9 +527,9 @@ feedparser==6.0.10 ; python_full_version >= "3.8.1" and python_full_version < "4
     --hash=sha256:79c257d526d13b944e965f6095700587f27388e50ea16fd245babe4dfae7024f
 ffmpy==0.3.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:a173b8f42c7c669ff722df7fb31e1e870067713697f745224fa6e621b82f0004
-filelock==3.12.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:002740518d8aa59a26b0c76e10fb8c6e15eae825d34b6fdf670333fd7b938d81 \
-    --hash=sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec
+filelock==3.12.3; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:0ecc1dd2ec4672a10c8550a8182f1bd0c0a5088470ecd5a125e45f49472fac3d \
+    --hash=sha256:f067e40ccc40f2b48395a80fcbd4728262fab54e232e090a4063ab804179efeb
 filetype==1.2.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:66b56cd6474bf41d8c54660347d37afcc3f7d1970648de365c102ef77548aadb \
     --hash=sha256:7ce71b6880181241cf7ac8697a2f1eb6a8bd9b429f7ad6d27b8db9ba5f1c2d25
