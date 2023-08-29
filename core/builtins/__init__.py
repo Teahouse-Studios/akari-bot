@@ -47,23 +47,26 @@ class Bot:
 
     class Hook:
         @staticmethod
-        async def trigger_by_module_name(module_name: str = None, **kwargs):
-            if module_name is not None:
-                modules = ModulesManager.modules
-                if module_name in modules:
-                    for hook in modules[module_name].hooks_list.set:
-                        await hook.function(Bot.FetchTarget, ModuleHookContext(kwargs))
-                    return
+        async def trigger(module_or_hook_name: str, args):
+            hook_mode = False
+            if '.' in module_or_hook_name:
+                hook_mode = True
+            if not hook_mode:
+                if module_or_hook_name is not None:
+                    modules = ModulesManager.modules
+                    if module_or_hook_name in modules:
+                        for hook in modules[module_or_hook_name].hooks_list.set:
+                            await hook.function(Bot.FetchTarget, ModuleHookContext(args))
+                        return
 
-            raise ValueError("Invalid module name")
-
-        @staticmethod
-        async def trigger_by_hook_name(hook_name: str, **kwargs):
-            if hook_name is not None:
-                if hook_name in ModulesManager.modules_hooks:
-                    await ModulesManager.modules_hooks[hook_name](Bot.FetchTarget, ModuleHookContext(kwargs))
-                    return
-            raise ValueError("Invalid hook name")
+                raise ValueError("Invalid module name")
+            else:
+                if module_or_hook_name is not None:
+                    if module_or_hook_name in ModulesManager.modules_hooks:
+                        await ModulesManager.modules_hooks[module_or_hook_name](Bot.FetchTarget,
+                                                                                ModuleHookContext(args))
+                        return
+                raise ValueError("Invalid hook name")
 
 
 class FetchedSession(FS):
