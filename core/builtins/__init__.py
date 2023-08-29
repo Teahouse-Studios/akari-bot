@@ -1,3 +1,4 @@
+import re
 from typing import Union, List
 
 from config import Config
@@ -71,6 +72,27 @@ class FetchedSession(FS):
         self.parent = Bot.MessageSession(self.target, self.session)
         if senderId is not None:
             self.parent.target.senderInfo = BotDBUtil.SenderInfo(f'{senderFrom}|{senderId}')
+
+
+class FetchTarget(FetchTarget):
+    match_target_regex = re.compile(r'^(.*)\|(.*)')
+    match_sender_regex = re.compile(r'^(.*)\|(.*)')
+
+    @staticmethod
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
+        matchTarget = re.match(FetchTarget.match_target_regex, targetId)
+        if matchTarget:
+            targetFrom = senderFrom = matchTarget.group(1)
+            targetId = matchTarget.group(2)
+            if senderId:
+                matchSender = re.match(FetchTarget.match_sender_regex, senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
 
 Bot.FetchedSession = FetchedSession

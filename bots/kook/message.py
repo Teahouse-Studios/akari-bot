@@ -8,12 +8,10 @@ from khl import MessageTypes, Message
 
 from bots.kook.client import bot, client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage, FetchTarget as FT
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, \
-    FinishedSession as FinS
-from core.utils.image import image_split
+from core.types import FinishedSession as FinS
 from database import BotDBUtil
 
 enable_analytics = Config('enable_analytics')
@@ -199,22 +197,8 @@ Bot.FetchedSession = FetchedSession
 
 class FetchTarget(FT):
     name = client_name
-
-    @staticmethod
-    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
-        matchChannel = re.match(r'^(Kook\|.*?)\|(.*)', targetId)
-        if matchChannel:
-            targetFrom = senderFrom = matchChannel.group(1)
-            targetId = matchChannel.group(2)
-            if senderId:
-                matchSender = re.match(r'^(Kook\|User)\|(.*)', senderId)
-                if matchSender:
-                    senderFrom = matchSender.group(1)
-                    senderId = matchSender.group(2)
-            else:
-                senderId = targetId
-
-            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
+    match_target_regex = re.compile(r'^(Kook\|.*?)\|(.*)')
+    match_sender_regex = re.compile(r'^(Kook\|User)\|(.*)')
 
     @staticmethod
     async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
