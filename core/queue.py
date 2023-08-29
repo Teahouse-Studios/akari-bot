@@ -30,6 +30,11 @@ class JobQueue:
         return (await cls.add_job(target_client, 'validate_permission',
                                   {'target_id': target_id, 'sender_id': sender_id}))['value']
 
+    @classmethod
+    async def trigger_hook(cls, target_client: str, module_or_hook_name: str, args: dict):
+        return await cls.add_job(target_client, 'trigger_hook',
+                                 {'module_or_hook_name': module_or_hook_name, 'args': args}, wait=False)
+
 
 def return_val(tsk, value: dict, status=True):
     value = value.update({'status': status})
@@ -52,7 +57,7 @@ async def check_job_queue():
                 if fetch:
                     return_val(tsk, {'value': await fetch.parent.checkPermission()})
             if tsk.action == 'trigger_hook':
-                await Bot.Hook.trigger(args['module_name'], args['args'])
+                await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
                 return_val(tsk, {})
 
         except Exception as e:
