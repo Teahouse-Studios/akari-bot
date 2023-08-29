@@ -7,10 +7,10 @@ from typing import Dict, Union
 
 from config import Config
 
-from core.builtins import PrivateAssets
+from core.builtins.utils import PrivateAssets
 from core.logger import Logger
 from core.types import Module
-from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, TaskMeta
+from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
 from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
@@ -121,7 +121,7 @@ class ModulesManager:
             return None
 
     @classmethod
-    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta, TaskMeta]):
+    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta]):
         if bind_prefix in cls.modules:
             if isinstance(meta, CommandMeta):
                 cls.modules[bind_prefix].command_list.add(meta)
@@ -129,6 +129,8 @@ class ModulesManager:
                 cls.modules[bind_prefix].regex_list.add(meta)
             elif isinstance(meta, ScheduleMeta):
                 cls.modules[bind_prefix].schedule_list.add(meta)
+            elif isinstance(meta, HookMeta):
+                cls.modules[bind_prefix].hooks_list.add(meta)
 
     _return_cache = {}
 

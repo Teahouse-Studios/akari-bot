@@ -326,4 +326,5 @@ class ModuleHookContext:
         self.args = args
 
 
-__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession"]
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession",
+           "ModuleHookContext"]
