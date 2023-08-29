@@ -5,7 +5,8 @@ import traceback
 
 import discord
 
-from bots.discord.client import client, client_name
+from bots.discord.client import client
+from bots.discord.info import client_name
 from bots.discord.message import MessageSession, FetchTarget
 from config import Config
 from core.builtins import PrivateAssets, Url

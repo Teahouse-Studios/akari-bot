@@ -1,11 +1,11 @@
 import os
 
-from bots.kook.client import bot, client_name
+from bots.kook.client import bot
+from bots.kook.info import client_name
 from khl import Message, MessageTypes
 
 from config import Config
 from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
-from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async

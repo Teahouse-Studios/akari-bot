@@ -280,8 +280,13 @@ class BotDBUtil:
         return False
 
     class Data:
-        def __init__(self, msg: Union[MessageSession, FetchTarget]):
-            self.targetName = msg.target.clientName if isinstance(msg, MessageSession) else msg.name
+        def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
+            if isinstance(msg, MessageSession):
+                self.targetName = msg.target.clientName
+            elif isinstance(msg, FetchTarget):
+                self.targetName = msg.name
+            else:
+                self.targetName = msg
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error

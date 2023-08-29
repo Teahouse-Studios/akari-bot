@@ -6,7 +6,8 @@ from typing import List, Union
 import discord
 import filetype
 
-from bots.discord.client import client, client_name
+from bots.discord.client import client
+from bots.discord.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, MessageSession as MS, FetchTarget as FT
 from core.builtins.message.chain import MessageChain

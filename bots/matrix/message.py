@@ -5,7 +5,8 @@ import re
 import traceback
 from typing import List, Union
 
-from bots.matrix.client import bot, homeserver_host, client_name
+from bots.matrix.client import bot, homeserver_host
+from bots.matrix.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage, FetchTarget as FT
 from core.builtins.message.chain import MessageChain

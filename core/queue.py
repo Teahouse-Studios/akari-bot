@@ -6,6 +6,7 @@ import ujson as json
 from core.logger import Logger
 from core.builtins import Bot
 from database import BotDBUtil
+from core.utils.info import get_all_clients_name
 
 
 _queue_tasks = {}
@@ -31,9 +32,14 @@ class JobQueue:
                                   {'target_id': target_id, 'sender_id': sender_id}))['value']
 
     @classmethod
-    async def trigger_hook(cls, target_client: str, module_or_hook_name: str, args: dict):
+    async def trigger_hook(cls, target_client: str, module_or_hook_name: str, **kwargs):
         return await cls.add_job(target_client, 'trigger_hook',
-                                 {'module_or_hook_name': module_or_hook_name, 'args': args}, wait=False)
+                                 {'module_or_hook_name': module_or_hook_name, 'args': kwargs}, wait=False)
+
+    @classmethod
+    async def trigger_hook_all(cls, module_or_hook_name: str, **kwargs):
+        for target in get_all_clients_name():
+            await cls.trigger_hook(target, module_or_hook_name, **kwargs)
 
 
 def return_val(tsk, value: dict, status=True):

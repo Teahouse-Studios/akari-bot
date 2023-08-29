@@ -3,7 +3,8 @@ import os
 from aiogram import types, executor
 from aiogram.types import ContentType
 
-from bots.aiogram.client import dp, client_name
+from bots.aiogram.client import dp
+from bots.aiogram.info import client_name
 from bots.aiogram.message import MessageSession, FetchTarget
 from core.builtins import PrivateAssets, Url
 from core.parser.message import parser

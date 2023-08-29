@@ -6,7 +6,8 @@ from typing import List, Union
 import aiohttp
 from khl import MessageTypes, Message
 
-from bots.kook.client import bot, client_name
+from bots.kook.client import bot
+from bots.kook.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage, FetchTarget as FT
 from core.builtins.message.chain import MessageChain

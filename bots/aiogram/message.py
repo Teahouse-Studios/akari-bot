@@ -2,7 +2,8 @@ import re
 import traceback
 from typing import List
 
-from bots.aiogram.client import dp, bot, token, client_name
+from bots.aiogram.client import dp, bot, token
+from bots.aiogram.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage, FetchTarget as FT
 from core.builtins.message.chain import MessageChain

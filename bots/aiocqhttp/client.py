@@ -1,7 +1,7 @@
 import traceback
 from typing import Dict, Any, Optional
 
-from aiocqhttp import CQHttp, Error
+from aiocqhttp import CQHttp
 from aiocqhttp.event import Event
 
 
@@ -50,4 +50,3 @@ class CQHttpModded(CQHttp):
 
 
 bot = CQHttpModded()
-client_name = 'QQ'

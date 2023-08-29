@@ -6,7 +6,8 @@ import ujson as json
 
 from aiocqhttp import Event, Error
 
-from bots.aiocqhttp.client import bot, client_name
+from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.info import client_name
 from bots.aiocqhttp.message import MessageSession, FetchTarget
 from config import Config
 from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url

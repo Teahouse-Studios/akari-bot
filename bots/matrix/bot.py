@@ -3,7 +3,8 @@ import os
 from tracemalloc import start
 from bots.matrix import client
 
-from bots.matrix.client import bot, client_name
+from bots.matrix.client import bot
+from bots.matrix.info import client_name
 import nio
 
 from core.builtins import PrivateAssets, Url

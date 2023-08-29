@@ -11,7 +11,8 @@ import aiocqhttp.exceptions
 import ujson as json
 from aiocqhttp import MessageSegment
 
-from bots.aiocqhttp.client import bot, client_name
+from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.info import client_name
 from config import Config
 from core.builtins import Bot, ErrorMessage, base_superuser_list
 from core.builtins import Plain, Image, Voice, Temp, command_prefix
