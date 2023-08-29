@@ -51,5 +51,9 @@ async def check_job_queue():
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
                 if fetch:
                     return_val(tsk, {'value': await fetch.parent.checkPermission()})
+            if tsk.action == 'trigger_hook':
+                await Bot.Hook.trigger(args['module_name'], args['args'])
+                return_val(tsk, {})
+
         except Exception as e:
             return_val(tsk, {'traceback': traceback.format_exc()}, status=False)

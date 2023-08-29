@@ -88,9 +88,17 @@ class Bind:
 
             return decorator
 
+        def hook(self):
+            def decorator(function):
+                ModulesManager.bind_to_module(self.bind_prefix, HookMeta(function=function))
+                return function
+
+            return decorator
+
         on_command = command
         on_regex = regex
         on_schedule = schedule
+        on_hook = hook
 
         @overload
         def handle(self,

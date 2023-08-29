@@ -10,7 +10,7 @@ from config import Config
 from core.builtins import PrivateAssets
 from core.logger import Logger
 from core.types import Module
-from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
+from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, TaskMeta
 from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
@@ -121,7 +121,7 @@ class ModulesManager:
             return None
 
     @classmethod
-    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta]):
+    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta, TaskMeta]):
         if bind_prefix in cls.modules:
             if isinstance(meta, CommandMeta):
                 cls.modules[bind_prefix].command_list.add(meta)

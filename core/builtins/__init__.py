@@ -1,7 +1,8 @@
 from typing import Union, List
 
 from config import Config
-from core.types.message import FetchTarget, FetchedSession as FS, MsgInfo, Session
+from core.types.message import FetchTarget, FetchedSession as FS, MsgInfo, Session, ModuleHookContext
+from core.loader import ModulesManager
 from database import BotDBUtil
 from .message import *
 from .message.chain import *
@@ -42,6 +43,14 @@ class Bot:
             if isinstance(x, FetchedSession):
                 fetched.append(x)
         return fetched
+
+    class Hook:
+        @staticmethod
+        async def trigger(module_name: str, args: dict):
+            modules = ModulesManager.modules
+            if module_name in modules:
+                for hook in modules[module_name].hooks_list.set:
+                    await hook.function(Bot.FetchTarget, ModuleHookContext(args))
 
 
 class FetchedSession(FS):

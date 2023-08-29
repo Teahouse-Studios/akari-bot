@@ -49,6 +49,7 @@ class Module:
         self.command_list = CommandMatches()
         self.regex_list = RegexMatches()
         self.schedule_list = ScheduleMatches()
+        self.hooks_list = HookMatches()
 
 
 __all__ = ["Module", "AndTrigger", "OrTrigger", "DateTrigger",

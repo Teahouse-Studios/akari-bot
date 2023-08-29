@@ -39,4 +39,13 @@ class ScheduleMatches:
         return self.set
 
 
-__all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches"]
+class HookMatches:
+    def __init__(self):
+        self.set: List[HookMeta] = []
+
+    def add(self, meta):
+        self.set.append(meta)
+        return self.set
+
+
+__all__ = ["CommandMatches", "RegexMatches", "ScheduleMatches", "HookMatches"]

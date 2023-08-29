@@ -317,4 +317,13 @@ class FetchTarget:
         raise NotImplementedError
 
 
+class ModuleHookContext:
+    """
+    模块任务上下文。主要用于传递模块任务的参数。
+    """
+
+    def __init__(self, args: dict):
+        self.args = args
+
+
 __all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession"]
