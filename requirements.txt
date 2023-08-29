@@ -428,9 +428,9 @@ charset-normalizer==3.2.0 ; python_full_version >= "3.8.1" and python_version < 
 chroma-hnswlib==0.7.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:3ffbb542cada959771ae4b8394f8cee1ef76bd17950adb592531433e912377db \
     --hash=sha256:87c6a0ced9e52ac7c8ca01ded25bb70c4a7f63f5871181eb18bea9111ce786c4
-chromadb==0.4.7; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:7282aab8fd7cf81f0bf55f5a056bdc3aca15bf56a37b711ec53fab1440b5e6f7 \
-    --hash=sha256:e928406410efdd1e5550cb456a3f4c40774aec1efcd95011389483fa0ae3c472
+chromadb==0.4.8; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:441f53ab474b684075de85e637ddcf691946a1dba06ea7b8859b914ab4cd9ea0 \
+    --hash=sha256:74f9af92e12e22677fe65201acd75e98d8efdd7613ec4084f914868555a3b09f
 click==8.1.7; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28 \
     --hash=sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de
