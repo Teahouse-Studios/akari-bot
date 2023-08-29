@@ -7,7 +7,8 @@
 	* [安装依赖](#安装依赖)
 	* [配置](#配置)
 	* [运行机器人](#运行机器人)
-* [获取帮助](#获取帮助)
+  * [获取帮助](#获取帮助)
+  * [开发](#开发)
 
 # 简介
 
@@ -516,4 +517,4 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 # 开发
 
-如果你想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` git 钩子，它可以在提交 commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 pep8 格式化等。
+如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` git 钩子，它可以在提交 commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 pep8 格式化等。
