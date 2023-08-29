@@ -2,20 +2,17 @@ import asyncio
 import logging
 import os
 import traceback
-from os.path import abspath
 
 import ujson as json
 
 from config import CFG
-
 from core.builtins import PrivateAssets, Secret
-from core.exceptions import ConfigFileNotFound
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger
 from core.scheduler import Scheduler
+from core.background_tasks import init_background_task
 from core.utils.http import get_url
 from core.utils.ip import IP
-from core.queue import check_job_queue
 
 
 async def init_async() -> None:
@@ -28,6 +25,7 @@ async def init_async() -> None:
                 Scheduler.add_job(func=schedule.function, trigger=schedule.trigger, misfire_grace_time=30,
                                   max_instance=1)
     await asyncio.gather(*gather_list)
+    init_background_task()
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()

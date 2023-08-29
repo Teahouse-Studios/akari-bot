@@ -5,20 +5,8 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.builtins import MessageTaskManager
-from core.queue import check_job_queue
 
 Scheduler = AsyncIOScheduler()
-
-
-@Scheduler.scheduled_job(IntervalTrigger(minutes=60))
-async def bg():
-    await MessageTaskManager.bg_check()
-
-
-@Scheduler.scheduled_job(IntervalTrigger(seconds=1))
-async def job():
-    await check_job_queue()
 
 
 __all__ = ["Scheduler", "AndTrigger", "OrTrigger", "CronTrigger", "DateTrigger", "IntervalTrigger"]
