@@ -3,7 +3,7 @@ import os
 import re
 import sys
 import traceback
-from typing import Dict, Union
+from typing import Dict, Union, Callable
 
 from config import Config
 
@@ -67,12 +67,13 @@ def load_modules():
         openloadercache.write('')
     openloadercache.close()
 
-    ModulesManager.refresh_modules_aliases()
+    ModulesManager.refresh()
 
 
 class ModulesManager:
     modules: Dict[str, Module] = {}
     modules_aliases: Dict[str, str] = {}
+    modules_hooks: Dict[str, Callable] = {}
     modules_origin: Dict[str, str] = {}
 
     @classmethod
@@ -100,6 +101,22 @@ class ModulesManager:
             module = cls.modules[m]
             if module.alias:
                 cls.modules_aliases.update(module.alias)
+
+    @classmethod
+    def refresh_modules_hooks(cls):
+        cls.modules_hooks.clear()
+        for m in cls.modules:
+            module = cls.modules[m]
+            if module.hooks_list:
+                for hook in module.hooks_list:
+                    hook_name = module.bind_prefix + (('.' + hook.name) if hook.name else '')
+                    cls.modules_hooks.update({hook_name: hook.function})
+
+    @classmethod
+    def refresh(cls):
+        cls.refresh_modules_aliases()
+        cls.refresh_modules_hooks()
+        cls._return_cache.clear()
 
     @classmethod
     def search_related_module(cls, module, includeSelf=True):
@@ -162,7 +179,7 @@ class ModulesManager:
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
-        cls._return_cache.clear()
+        cls.refresh()
         return cls.reload_py_module(py_module)
 
     @classmethod
@@ -190,8 +207,7 @@ class ModulesManager:
                 if module_name not in err_modules:
                     err_modules.append(module_name)
                 return False
-        cls._return_cache.clear()
-        cls.refresh_modules_aliases()
+        cls.refresh()
         return True
 
     @classmethod
@@ -202,8 +218,7 @@ class ModulesManager:
         origin_module = cls.modules_origin[module_name]
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
-        cls._return_cache.clear()
-        cls.refresh_modules_aliases()
+        cls.refresh()
         current_unloaded_modules.append(module_name)
         return True
 
@@ -233,4 +248,4 @@ class ModulesManager:
                 err_modules.append(m.group(1))
             return -999
         finally:
-            cls.refresh_modules_aliases()
+            cls.refresh()

@@ -88,9 +88,9 @@ class Bind:
 
             return decorator
 
-        def hook(self):
+        def hook(self, name: str = None):
             def decorator(function):
-                ModulesManager.bind_to_module(self.bind_prefix, HookMeta(function=function))
+                ModulesManager.bind_to_module(self.bind_prefix, HookMeta(function=function, name=name))
                 return function
 
             return decorator
