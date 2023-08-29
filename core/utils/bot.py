@@ -8,7 +8,7 @@ import ujson as json
 from config import CFG
 from core.builtins import PrivateAssets, Secret
 from core.loader import load_modules, ModulesManager
-from core.logger import Logger
+from core.logger import Logger, bot_name
 from core.scheduler import Scheduler
 from core.background_tasks import init_background_task
 from core.utils.http import get_url
@@ -29,6 +29,7 @@ async def init_async() -> None:
     Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
+    Logger.info(f'Hello, {bot_name}!')
 
 
 async def load_secret():

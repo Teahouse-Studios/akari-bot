@@ -30,6 +30,8 @@ def load_modules():
         err_prompt.append('\n'.join(locale_err))
     fun_file = None
     dir_list = os.listdir(load_dir_path)
+    Logger.info('Attempting to load modules...')
+
     for file_name in dir_list:
         try:
             file_path = os.path.join(load_dir_path, file_name)
@@ -41,7 +43,7 @@ def load_modules():
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
             if fun_file is not None:
-                Logger.info(f'Loading modules.{fun_file}...')
+                Logger.debug(f'Loading modules.{fun_file}...')
                 all_modules.append(fun_file)
                 if fun_file in unloaded_modules:
                     Logger.warn(f'Skipped modules.{fun_file}!')
@@ -49,13 +51,14 @@ def load_modules():
                     continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
-                Logger.info(f'Succeeded loaded modules.{fun_file}!')
+                Logger.debug(f'Succeeded loaded modules.{fun_file}!')
         except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
             Logger.error(errmsg)
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
+    Logger.info('All modules loaded.')
     loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
     openloadercache = open(loadercache, 'w')
     if err_prompt:
