@@ -15,6 +15,9 @@ from database import BotDBUtil, session, DBVersion
 encode = 'UTF-8'
 
 
+bots_required_configs = {''}
+
+
 class RestartBot(Exception):
     pass
 

@@ -6,11 +6,11 @@ import traceback
 import ujson as json
 
 from config import CFG
-from core.builtins import PrivateAssets, Secret
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger, bot_name
 from core.scheduler import Scheduler
 from core.background_tasks import init_background_task
+from core.types import PrivateAssets, Secret
 from core.utils.http import get_url
 from core.utils.ip import IP
 

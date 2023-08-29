@@ -7,9 +7,8 @@ from typing import Dict, Union
 
 from config import Config
 
-from core.builtins.utils import PrivateAssets
 from core.logger import Logger
-from core.types import Module
+from core.types import Module, PrivateAssets, Secret
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
 from core.utils.i18n import load_locale_file
 
