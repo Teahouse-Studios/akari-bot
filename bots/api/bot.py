@@ -21,7 +21,7 @@ jwt_secret = Config('jwt_secret')
 
 @app.on_event("startup")
 async def startup_event():
-    await init_async()
+    await init_async(start_scheduler=False)
 
 
 @app.get("/")
