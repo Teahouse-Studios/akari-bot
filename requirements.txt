@@ -1370,9 +1370,9 @@ pillow==9.5.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0"
     --hash=sha256:fbd359831c1657d69bb81f0db962905ee05e5e9451913b18b831febfe0519082 \
     --hash=sha256:fe7e1c262d3392afcf5071df9afa574544f28eac825284596ac6db56e6d11062 \
     --hash=sha256:fed1e1cf6a42577953abbe8e6cf2fe2f566daebde7c34724ec8803c4c0cda579
-pint==0.21.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:230ebccc312693117ee925c6492b3631c772ae9f7851a4e86080a15e7be692d8 \
-    --hash=sha256:5d5b6b518d0c5a7ab03a776175db500f1ed1523ee75fb7fafe38af8149431c8d
+Pint==0.22; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:2d139f6abbcf3016cad7d3cec05707fe908ac4f99cf59aedfd6ee667b7a64433 \
+    --hash=sha256:6e2b3c5c2b4d9b516608bc860a417a39d66eb99c958f36540cf931d2c2e9f80f
 pkgutil-resolve-name==1.3.10 ; python_full_version >= "3.8.1" and python_version < "3.9" \
     --hash=sha256:357d6c9e6a755653cfd78893817c0853af365dd51ec97f3d358a819373bbd174 \
     --hash=sha256:ca27cc078d25c5ad71a9de0a7a330146c4e014c2462d9af19c6b828280649c5e
