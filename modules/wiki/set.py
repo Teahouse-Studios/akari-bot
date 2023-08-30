@@ -108,7 +108,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
-    prompt = msg.locale.t("wiki.message.headers.list")
+    prompt = msg.locale.t("wiki.message.headers.list", headers=json.dumps(headers), prefix=msg.prefixes[0])
     await msg.finish(prompt)
 
 
