@@ -431,10 +431,10 @@ class BotDBUtil:
         @staticmethod
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def clear():
+        def clear(time=43200):
             queries = session.query(JobQueueTable).all()
             for q in queries:
-                if q.timestamp.timestamp() - datetime.datetime.now().timestamp() > 86400:
+                if datetime.datetime.now().timestamp() - q.timestamp.timestamp() > time:
                     session.delete(q)
             session.commit()
             session.expire_all()

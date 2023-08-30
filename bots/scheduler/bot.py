@@ -5,9 +5,17 @@ import traceback
 
 from core.logger import Logger
 from core.utils.i18n import load_locale_file
-from core.scheduler import Scheduler
+from core.scheduler import Scheduler, IntervalTrigger
+from database import BotDBUtil
 
 load_dir_path = os.path.abspath('./schedulers/')
+
+
+@Scheduler.scheduled_job(IntervalTrigger(hours=12))
+async def clear_queue():
+    Logger.info('Clearing job queue...')
+    BotDBUtil.JobQueue.clear()
+    Logger.info('Job queue cleared.')
 
 
 def load_modules():
