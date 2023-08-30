@@ -7,7 +7,8 @@
 	* [安装依赖](#安装依赖)
 	* [配置](#配置)
 	* [运行机器人](#运行机器人)
-* [获取帮助](#获取帮助)
+  * [获取帮助](#获取帮助)
+  * [开发](#开发)
 
 # 简介
 
@@ -512,3 +513,8 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 > 请注意，您应该具备基本的提问技巧。
 > 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。
+
+
+# 开发
+
+如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` git 钩子，它可以在提交 commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 pep8 格式化等。

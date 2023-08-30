@@ -45,7 +45,7 @@ openai = "^0.27.8"
 cryptography = "^41.0.2"
 pre-commit = "^3.0.4"
 webcolors = "^1.12"
-langchain = "^0.0.271"
+langchain = "^0.0.276"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^3.0.0"
 chromadb = "^0.4.0"
@@ -58,6 +58,7 @@ matrix-nio = "^0.21.2"
 attrs = "^23.1.0"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
+python-whois = "^0.8.0"
 
 
 [tool.poetry.group.dev.dependencies]

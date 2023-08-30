@@ -17,7 +17,7 @@ from core.utils.http import get_url
 from core.utils.ip import IP
 
 
-async def init_async() -> None:
+async def init_async(start_scheduler=True) -> None:
     load_modules()
     gather_list = []
     Modules = ModulesManager.return_modules_list()
@@ -27,7 +27,8 @@ async def init_async() -> None:
                 Scheduler.add_job(func=schedule.function, trigger=schedule.trigger, misfire_grace_time=30,
                                   max_instance=1)
     await asyncio.gather(*gather_list)
-    Scheduler.start()
+    if start_scheduler:
+        Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
 
