@@ -1,4 +1,3 @@
-
 from core.builtins import Bot
 from core.component import module
 
