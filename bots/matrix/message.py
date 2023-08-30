@@ -6,11 +6,12 @@ import traceback
 from typing import List, Union
 
 from bots.matrix.client import bot, homeserver_host
+from bots.matrix.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, FetchedSession as FS, \
+from core.types import MsgInfo, Session, FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
@@ -150,11 +151,6 @@ class MessageSession(MS):
 
         return FinishedSession(self, [resp.event_id for resp in send], self.session.target)
 
-    async def checkPermission(self):
-        if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
-            return True
-        return await self.checkNativePermission()
-
     async def checkNativePermission(self):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
@@ -215,16 +211,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='',
-                              clientName='Matrix', messageId=None, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
+class FetchedSession(Bot.FetchedSession):
 
     async def _resolve_matrix_room_(self):
         targetId: str = self.session.target
@@ -252,18 +239,28 @@ class FetchedSession(FS):
             self.session.target = room
 
 
+Bot.FetchedSession = FetchedSession
+
+
 class FetchTarget(FT):
-    name = 'Matrix'
+    name = client_name
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
+    async def fetch_target(targetId, senderId=None) -> Union[FetchedSession]:
         matchChannel = re.match(r'^(Matrix)\|(.*)', targetId)
         if matchChannel:
-            session = FetchedSession(matchChannel.group(1), matchChannel.group(2))
+            targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
+            if senderId:
+                matchSender = re.match(r'^(Matrix)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+            session = Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
             await session._resolve_matrix_room_()
             return session
-        else:
-            return False
 
     @staticmethod
     async def fetch_target_list(targetList: list) -> List[FetchedSession]:

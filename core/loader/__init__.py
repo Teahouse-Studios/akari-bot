@@ -3,14 +3,13 @@ import os
 import re
 import sys
 import traceback
-from typing import Dict, Union
+from typing import Dict, Union, Callable
 
 from config import Config
 
-from core.builtins import PrivateAssets
 from core.logger import Logger
-from core.types import Module
-from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta
+from core.types import Module, PrivateAssets, Secret
+from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
 from core.utils.i18n import load_locale_file
 
 load_dir_path = os.path.abspath('./modules/')
@@ -30,6 +29,8 @@ def load_modules():
         err_prompt.append('\n'.join(locale_err))
     fun_file = None
     dir_list = os.listdir(load_dir_path)
+    Logger.info('Attempting to load modules...')
+
     for file_name in dir_list:
         try:
             file_path = os.path.join(load_dir_path, file_name)
@@ -41,7 +42,7 @@ def load_modules():
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
             if fun_file is not None:
-                Logger.info(f'Loading modules.{fun_file}...')
+                Logger.debug(f'Loading modules.{fun_file}...')
                 all_modules.append(fun_file)
                 if fun_file in unloaded_modules:
                     Logger.warn(f'Skipped modules.{fun_file}!')
@@ -49,13 +50,14 @@ def load_modules():
                     continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
-                Logger.info(f'Succeeded loaded modules.{fun_file}!')
+                Logger.debug(f'Succeeded loaded modules.{fun_file}!')
         except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
             Logger.error(errmsg)
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
+    Logger.info('All modules loaded.')
     loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
     openloadercache = open(loadercache, 'w')
     if err_prompt:
@@ -65,12 +67,13 @@ def load_modules():
         openloadercache.write('')
     openloadercache.close()
 
-    ModulesManager.refresh_modules_aliases()
+    ModulesManager.refresh()
 
 
 class ModulesManager:
     modules: Dict[str, Module] = {}
     modules_aliases: Dict[str, str] = {}
+    modules_hooks: Dict[str, Callable] = {}
     modules_origin: Dict[str, str] = {}
 
     @classmethod
@@ -100,6 +103,22 @@ class ModulesManager:
                 cls.modules_aliases.update(module.alias)
 
     @classmethod
+    def refresh_modules_hooks(cls):
+        cls.modules_hooks.clear()
+        for m in cls.modules:
+            module = cls.modules[m]
+            if module.hooks_list:
+                for hook in module.hooks_list.set:
+                    hook_name = module.bind_prefix + (('.' + hook.name) if hook.name else '')
+                    cls.modules_hooks.update({hook_name: hook.function})
+
+    @classmethod
+    def refresh(cls):
+        cls.refresh_modules_aliases()
+        cls.refresh_modules_hooks()
+        cls._return_cache.clear()
+
+    @classmethod
     def search_related_module(cls, module, includeSelf=True):
         if module in cls.modules_origin:
             modules = []
@@ -121,7 +140,7 @@ class ModulesManager:
             return None
 
     @classmethod
-    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta]):
+    def bind_to_module(cls, bind_prefix: str, meta: Union[CommandMeta, RegexMeta, ScheduleMeta, HookMeta]):
         if bind_prefix in cls.modules:
             if isinstance(meta, CommandMeta):
                 cls.modules[bind_prefix].command_list.add(meta)
@@ -129,6 +148,8 @@ class ModulesManager:
                 cls.modules[bind_prefix].regex_list.add(meta)
             elif isinstance(meta, ScheduleMeta):
                 cls.modules[bind_prefix].schedule_list.add(meta)
+            elif isinstance(meta, HookMeta):
+                cls.modules[bind_prefix].hooks_list.add(meta)
 
     _return_cache = {}
 
@@ -158,7 +179,7 @@ class ModulesManager:
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
-        cls._return_cache.clear()
+        cls.refresh()
         return cls.reload_py_module(py_module)
 
     @classmethod
@@ -186,8 +207,7 @@ class ModulesManager:
                 if module_name not in err_modules:
                     err_modules.append(module_name)
                 return False
-        cls._return_cache.clear()
-        cls.refresh_modules_aliases()
+        cls.refresh()
         return True
 
     @classmethod
@@ -198,8 +218,7 @@ class ModulesManager:
         origin_module = cls.modules_origin[module_name]
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
-        cls._return_cache.clear()
-        cls.refresh_modules_aliases()
+        cls.refresh()
         current_unloaded_modules.append(module_name)
         return True
 
@@ -229,4 +248,4 @@ class ModulesManager:
                 err_modules.append(m.group(1))
             return -999
         finally:
-            cls.refresh_modules_aliases()
+            cls.refresh()

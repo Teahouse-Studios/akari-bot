@@ -3,11 +3,12 @@ import traceback
 from typing import List, Union
 
 from bots.aiogram.client import dp, bot, token
+from bots.aiogram.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, FetchedSession as FS, \
+from core.types import MsgInfo, Session, FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
@@ -90,19 +91,14 @@ class MessageSession(MS):
             msgIds.append(x.message_id)
         return FinishedSession(self, msgIds, send)
 
-    async def checkPermission(self):
-        if self.session.message.chat.type == 'private' or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
-            return True
-        admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
-        if self.session.sender in admins:
-            return True
-        return False
-
     async def checkNativePermission(self):
-        if self.session.message.chat.type == 'private':
+        if not self.session.message:
+            chat = await dp.bot.get_chat(self.session.target)
+        else:
+            chat = self.session.message.chat
+        if chat.type == 'private':
             return True
-        admins = [member.user.id for member in await dp.bot.get_chat_administrators(self.session.message.chat.id)]
+        admins = [member.user.id for member in await dp.bot.get_chat_administrators(chat.id)]
         if self.session.sender in admins:
             return True
         return False
@@ -142,31 +138,28 @@ class MessageSession(MS):
             pass
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='',
-                              clientName='Telegram', messageId=0, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
-
-
 class FetchTarget(FT):
-    name = 'Telegram'
+    name = client_name
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
         matchChannel = re.match(r'^(Telegram\|.*?)\|(.*)', targetId)
+
         if matchChannel:
-            return FetchedSession(matchChannel.group(1), matchChannel.group(2))
-        else:
-            return False
+            targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
+            if senderId:
+                matchSender = re.match(r'^(Telegram\|User)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
+    async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
         lst = []
         for x in targetList:
             fet = await FetchTarget.fetch_target(x)
@@ -175,7 +168,7 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
         if user_list is not None:
             for x in user_list:
                 try:
@@ -207,3 +200,4 @@ class FetchTarget(FT):
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
+Bot.client_name = client_name

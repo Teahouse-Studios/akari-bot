@@ -1,20 +1,15 @@
 import asyncio
 import logging
 import os
-import traceback
-from os.path import abspath
 
 import ujson as json
 
 from config import CFG
-
-from core.builtins import PrivateAssets, Secret
-from core.exceptions import ConfigFileNotFound
 from core.loader import load_modules, ModulesManager
-from core.logger import Logger
+from core.logger import Logger, bot_name
 from core.scheduler import Scheduler
-from core.utils.http import get_url
-from core.utils.ip import IP
+from core.background_tasks import init_background_task
+from core.types import PrivateAssets, Secret
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -27,10 +22,12 @@ async def init_async(start_scheduler=True) -> None:
                 Scheduler.add_job(func=schedule.function, trigger=schedule.trigger, misfire_grace_time=30,
                                   max_instance=1)
     await asyncio.gather(*gather_list)
+    init_background_task()
     if start_scheduler:
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
+    Logger.info(f'Hello, {bot_name}!')
 
 
 async def load_secret():
@@ -39,21 +36,6 @@ async def load_secret():
             for y in CFG().value[x]:
                 if CFG().value[x][y] is not None:
                     Secret.add(str(CFG().value[x][y]).upper())
-
-    async def append_ip():
-        try:
-            Logger.info('Fetching IP information...')
-            ip = await get_url('https://api.ip.sb/geoip', timeout=10, fmt='json')
-            if ip:
-                Secret.add(ip['ip'])
-                IP.country = ip['country']
-                IP.address = ip['ip']
-            Logger.info('Successfully fetched IP information.')
-        except Exception:
-            Logger.info('Failed to get IP information.')
-            Logger.error(traceback.format_exc())
-
-    asyncio.create_task(append_ip())
 
 
 async def load_prompt(bot) -> None:

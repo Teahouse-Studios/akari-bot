@@ -1,10 +1,12 @@
+from typing import Union
+
 import ujson as json
 
 from core.types import FetchTarget
 from database import BotDBUtil
 
 
-def get_stored_list(bot: FetchTarget, name: str) -> list:
+def get_stored_list(bot: Union[FetchTarget, str], name: str) -> list:
     get = BotDBUtil.Data(bot).get(name=name)
     if get is None:
         return []
@@ -12,7 +14,7 @@ def get_stored_list(bot: FetchTarget, name: str) -> list:
         return json.loads(get.value)
 
 
-def update_stored_list(bot: FetchTarget, name: str, value: list):
+def update_stored_list(bot: Union[FetchTarget, str], name: str, value: list):
     edit = BotDBUtil.Data(bot).update(name=name, value=json.dumps(value))
     return edit
 

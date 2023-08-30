@@ -1,11 +1,11 @@
 import os
 
 from bots.kook.client import bot
+from bots.kook.info import client_name
 from khl import Message, MessageTypes
 
 from config import Config
 from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
-from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
@@ -32,7 +32,7 @@ if bot:
                                      senderId=f'Kook|User|{message.author_id}',
                                      targetFrom=f'Kook|{message.channel_type.name}',
                                      senderFrom='Kook|User', senderName=message.author.nickname,
-                                     clientName='Kook',
+                                     clientName=client_name,
                                      messageId=message.id,
                                      replyId=replyId),
                              Session(message=message, target=message.target_id, sender=message.author_id))

@@ -7,11 +7,12 @@ import aiohttp
 from khl import MessageTypes, Message
 
 from bots.kook.client import bot
+from bots.kook.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, FetchedSession as FS, \
+from core.types import MsgInfo, Session, FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
@@ -104,24 +105,23 @@ class MessageSession(MS):
             msgIds.append(x['msg_id'])
         return FinishedSession(self, msgIds, {self.session.message.channel_type.name: send})
 
-    async def checkPermission(self):
-        self.session.message: Message
-        if self.session.message.channel_type.name == 'PERSON' or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
-            return True
-        return await self.checkNativePermission()
-
     async def checkNativePermission(self):
         self.session.message: Message
-        if self.session.message.channel_type.name == 'PERSON':
+        if not self.session.message:
+            channel = await bot.client.fetch_public_channel(self.session.target)
+            author = self.session.sender
+        else:
+            channel = await bot.client.fetch_public_channel(self.session.message.ctx.channel.id)
+            author = self.session.message.author.id
+        if channel.name == 'PERSON':
             return True
-        guild = await bot.client.fetch_guild(self.session.message.ctx.guild.id)
-        user_roles = (await guild.fetch_user(self.session.message.author.id)).roles
+        guild = await bot.client.fetch_guild(channel.guild_id)
+        user_roles = (await guild.fetch_user(author)).roles
         guild_roles = await guild.fetch_roles()
         for i in guild_roles:  # 遍历服务器身分组
             if i.id in user_roles and i.has_permission(0):
                 return True
-        if self.session.message.author.id == guild.master_id:
+        if author == guild.master_id:
             return True
         return False
 
@@ -163,16 +163,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='',
-                              clientName='Kook', messageId=0, replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
+class FetchedSession(Bot.FetchedSession):
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
         if self.target.targetFrom == 'Kook|GROUP':
@@ -204,19 +195,30 @@ class FetchedSession(FS):
                 Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
 
 
+Bot.FetchedSession = FetchedSession
+
+
 class FetchTarget(FT):
-    name = 'Kook'
+    name = client_name
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
         matchChannel = re.match(r'^(Kook\|.*?)\|(.*)', targetId)
         if matchChannel:
-            return FetchedSession(matchChannel.group(1), matchChannel.group(2))
-        else:
-            return False
+            targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
+            if senderId:
+                matchSender = re.match(r'^(Kook\|User)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
+    async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
         lst = []
         for x in targetList:
             fet = await FetchTarget.fetch_target(x)
@@ -225,7 +227,7 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
         if user_list is not None:
             for x in user_list:
                 try:

@@ -94,4 +94,10 @@ class ScheduleMeta:
         self.function = function
 
 
-__all__ = ["Meta", "CommandMeta", "RegexMeta", "ScheduleMeta"]
+class HookMeta:
+    def __init__(self, function: Callable, name: str = None):
+        self.function = function
+        self.name = name
+
+
+__all__ = ["Meta", "CommandMeta", "RegexMeta", "ScheduleMeta", "HookMeta"]

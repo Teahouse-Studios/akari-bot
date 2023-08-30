@@ -78,6 +78,19 @@ class UnfriendlyActionsTable(Base):
     timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
 
 
+class JobQueueTable(Base):
+    __tablename__ = "job_queues"
+    taskid = Column(String(512), primary_key=True)
+    targetClient = Column(String(512))
+    hasDone = Column(Boolean, default=False)
+    action = Column(String(512))
+    args = Column(LONGTEXT if is_mysql else Text, default='{}')
+    returnVal = Column(LONGTEXT if is_mysql else Text, default='{}')
+    timestamp = Column(TIMESTAMP, default=text('CURRENT_TIMESTAMP'))
+
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
+
+
 Session.create()
 __all__ = ["SenderInfo", "TargetInfo", "CommandTriggerTime", "GroupAllowList",
-           "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable"]
+           "StoredData", "DBVersion", "AnalyticsData", "UnfriendlyActionsTable", "JobQueueTable"]
