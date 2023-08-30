@@ -7,6 +7,7 @@ from core.logger import Logger
 from core.builtins import Bot
 from database import BotDBUtil
 from core.utils.info import get_all_clients_name
+from core.utils.ip import append_ip, fetch_ip_info
 
 
 _queue_tasks = {}
@@ -41,6 +42,12 @@ class JobQueue:
         for target in get_all_clients_name():
             await cls.trigger_hook(target, module_or_hook_name, **kwargs)
 
+    @classmethod
+    async def secret_append_ip(cls):
+        ip_info = await fetch_ip_info()
+        for target in get_all_clients_name():
+            await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
+
 
 def return_val(tsk, value: dict, status=True):
     value = value.update({'status': status})
@@ -64,6 +71,9 @@ async def check_job_queue():
                     return_val(tsk, {'value': await fetch.parent.checkPermission()})
             if tsk.action == 'trigger_hook':
                 await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
+                return_val(tsk, {})
+            if tsk.action == 'secret_append_ip':
+                append_ip(args)
                 return_val(tsk, {})
 
         except Exception as e:

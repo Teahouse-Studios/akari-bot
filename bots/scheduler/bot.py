@@ -7,6 +7,7 @@ from core.logger import Logger
 from core.utils.i18n import load_locale_file
 from core.scheduler import Scheduler, IntervalTrigger
 from database import BotDBUtil
+from core.queue import JobQueue
 
 load_dir_path = os.path.abspath('./schedulers/')
 
@@ -47,7 +48,13 @@ def load_modules():
     Scheduler.start()
 
 
+async def on_startup():
+    await JobQueue.secret_append_ip()
+
+
 if __name__ == '__main__':
     load_modules()
     Logger.info('Scheduler started.')
-    asyncio.get_event_loop().run_forever()
+    loop = asyncio.get_event_loop()
+    loop.create_task(on_startup())
+    loop.run_forever()

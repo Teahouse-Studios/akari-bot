@@ -39,21 +39,6 @@ async def load_secret():
                 if CFG().value[x][y] is not None:
                     Secret.add(str(CFG().value[x][y]).upper())
 
-    async def append_ip():
-        try:
-            Logger.info('Fetching IP information...')
-            ip = await get_url('https://api.ip.sb/geoip', timeout=10, fmt='json')
-            if ip:
-                Secret.add(ip['ip'])
-                IP.country = ip['country']
-                IP.address = ip['ip']
-            Logger.info('Successfully fetched IP information.')
-        except Exception:
-            Logger.info('Failed to get IP information.')
-            Logger.error(traceback.format_exc())
-
-    asyncio.create_task(append_ip())
-
 
 async def load_prompt(bot) -> None:
     author_cache = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
