@@ -21,10 +21,8 @@ version = module('version', base=True, desc='{core.help.version}', developers=['
 async def bot_version(msg: Bot.MessageSession):
 
     ver = os.path.abspath(PrivateAssets.path + '/version')
-    tag = os.path.abspath(PrivateAssets.path + '/version_tag')
     open_version = open(ver, 'r')
-    open_tag = open(tag, 'r')
-    msgs = msg.locale.t('core.message.version', version_tag=open_tag.read(), commit=open_version.read())
+    msgs = msg.locale.t('core.message.version', commit=open_version.read())
     open_version.close()
     await msg.finish(msgs, msgs)
 

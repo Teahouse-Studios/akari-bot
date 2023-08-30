@@ -48,9 +48,12 @@
 
 **方式二：直接下载代码**
 
-1. 从 [Release 页面](https://github.com/Teahouse-Studios/bot/releases/latest) 的 Assets 板块中下载 Source code（源代码）。当然，您也可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+1. 您可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
    
-   > 注意：master 分支下的部署文档可能会有所不同，请在下载对应版本的源码后打开目录下的 DEPLOY.md 继续查看部署教程。
+   > 由于无法保证 release 版本的稳定性，我们不再提供 release 版本的下载。
+
+   > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
+  
 2. 解压源代码，按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端，进入文件夹。
 
 **Linux**
