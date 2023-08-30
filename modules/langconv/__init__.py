@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession, language: str, content: str):
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if msg.checkSuperUser():
-            m += '\n' + msg.locale.t("langconv.message.running_time", time=delta)
+            res += '\n' + msg.locale.t("langconv.message.running_time", time=delta)
     if await check_bool(res):
         rickroll(msg)
     await msg.finish(res)
