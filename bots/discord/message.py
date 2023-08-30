@@ -217,7 +217,7 @@ class FetchTarget(FT):
                 except Exception:
                     Logger.error(traceback.format_exc())
         else:
-            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Telegram")
+            get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Discord")
             for x in get_target_id:
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
