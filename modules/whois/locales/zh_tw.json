@@ -1,0 +1,17 @@
+{
+    "whois.help.desc": "查詢 WHOIS 資訊。",
+    "whois.message.creation_date": "註冊日期：",
+    "whois.message.dnssec": "DNSSEC：",
+    "whois.message.domain_name": "網域名稱：",
+    "whois.message.expiration_date": "截止日期：",
+    "whois.message.get_failed": "取得 WHOIS 失敗。",
+    "whois.message.location": "位置：",
+    "whois.message.name": "名稱：",
+    "whois.message.name_servers": "DNS 伺服器：",
+    "whois.message.organization": "組織：",
+    "whois.message.postal_code": "郵編：",
+    "whois.message.referral_url": "參照 URL：",
+    "whois.message.registrar": "注册商：",
+    "whois.message.updated_date": "更新日期：",
+    "whois.message.whois_server": "WHOIS 伺服器："
+}

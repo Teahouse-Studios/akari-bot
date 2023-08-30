@@ -463,14 +463,13 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('openai_api_key'):
-    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals',
-                   desc='{core.help.petal}')
+    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals')
 
     @petal.handle()
     async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.petal.self', petal=msg.data.petal))
 
-    @petal.handle('[<target>]', required_superuser=True)
+    @petal.handle('[<target>] {{core.help.petal}}', required_superuser=True)
     async def _(msg: Bot.MessageSession):
         group = msg.parsed_msg['<target>']
         target = BotDBUtil.TargetInfo(group)

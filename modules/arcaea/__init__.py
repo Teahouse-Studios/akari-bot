@@ -18,7 +18,6 @@ class WithErrCode(Exception):
     pass
 
 
-@arc.command()
 @arc.command('<sb616>')
 async def _(msg: Bot.MessageSession):
     await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
