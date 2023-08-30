@@ -380,10 +380,13 @@ class FetchTarget(FT):
                         else:
                             else_.append(post_(fetch))
 
-            if in_whitelist:
-                for x in in_whitelist:
-                    await x
+            async def post_in_whitelist(lst):
+                for l in lst:
+                    await l
                     await asyncio.sleep(random.randint(1, 5))
+
+            if in_whitelist:
+                asyncio.create_task(post_in_whitelist(in_whitelist))
 
             async def post_not_in_whitelist(lst):
                 for f in lst:
