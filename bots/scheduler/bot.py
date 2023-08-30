@@ -19,7 +19,7 @@ async def clear_queue():
     Logger.info('Job queue cleared.')
 
 
-def load_modules():
+def load_schedulers():
     load_locale_file()
     fun_file = None
     dir_list = os.listdir(load_dir_path)
@@ -45,7 +45,6 @@ def load_modules():
             errmsg = f'Failed to load schedulers.{fun_file}: \n{tb}'
             Logger.error(errmsg)
     Logger.info('All schedulers loaded.')
-    Scheduler.start()
 
 
 async def on_startup():
@@ -53,7 +52,8 @@ async def on_startup():
 
 
 if __name__ == '__main__':
-    load_modules()
+    load_schedulers()
+    Scheduler.start()
     Logger.info('Scheduler started.')
     loop = asyncio.get_event_loop()
     loop.create_task(on_startup())
