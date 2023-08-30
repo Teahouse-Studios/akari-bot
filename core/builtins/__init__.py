@@ -1,3 +1,4 @@
+import asyncio
 from typing import Union, List
 
 from config import Config
@@ -56,15 +57,16 @@ class Bot:
                     modules = ModulesManager.modules
                     if module_or_hook_name in modules:
                         for hook in modules[module_or_hook_name].hooks_list.set:
-                            await hook.function(Bot.FetchTarget, ModuleHookContext(args))
+                            await asyncio.create_task(hook.function(Bot.FetchTarget, ModuleHookContext(args)))
                         return
 
                 raise ValueError("Invalid module name")
             else:
                 if module_or_hook_name is not None:
                     if module_or_hook_name in ModulesManager.modules_hooks:
-                        await ModulesManager.modules_hooks[module_or_hook_name](Bot.FetchTarget,
-                                                                                ModuleHookContext(args))
+                        await asyncio.create_task(ModulesManager.modules_hooks[module_or_hook_name](Bot.FetchTarget,
+                                                                                                    ModuleHookContext(
+                                                                                                        args)))
                         return
                 raise ValueError("Invalid hook name")
 
@@ -90,7 +92,6 @@ class FetchedSession(FS):
 
 
 Bot.FetchedSession = FetchedSession
-
 
 base_superuser_list = Config("base_superuser")
 
