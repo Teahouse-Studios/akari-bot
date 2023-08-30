@@ -108,7 +108,7 @@ class ModulesManager:
         for m in cls.modules:
             module = cls.modules[m]
             if module.hooks_list:
-                for hook in module.hooks_list:
+                for hook in module.hooks_list.set:
                     hook_name = module.bind_prefix + (('.' + hook.name) if hook.name else '')
                     cls.modules_hooks.update({hook_name: hook.function})
 

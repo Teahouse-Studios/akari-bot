@@ -17,6 +17,7 @@ class Bot:
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
     FetchedSession = FS
+    ModuleHookContext = ModuleHookContext
 
     @staticmethod
     async def sendMessage(target: Union[FS, MessageSession, str], msg: Union[MessageChain, list],
