@@ -60,8 +60,8 @@ body:
   - type: textarea
     id: other
     attributes:
-      label: 备注
-      description: 您还想告诉我们什么？
-      placeholder: 什么都可以哦，没有就算了吧。
+      label: 理由
+      description: 如果您需要较多的花瓣，请向我们说明理由。
+      placeholder: 
     validations:
       required: false
