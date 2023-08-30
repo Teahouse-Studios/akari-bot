@@ -8,10 +8,11 @@ from typing import List, Union
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage, FetchTarget as FT
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import FinishedSession as FinS
+from core.types import MsgInfo, Session, FetchTarget as FT, \
+    FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
 import nio
@@ -243,14 +244,23 @@ Bot.FetchedSession = FetchedSession
 
 class FetchTarget(FT):
     name = client_name
-    match_target_regex = re.compile(r'^(Matrix)\|(.*)')
-    match_sender_regex = re.compile(r'^(Matrix)\|(.*)')
 
     @staticmethod
     async def fetch_target(targetId, senderId=None) -> Union[FetchedSession]:
-        fet = await super().fetch_target(targetId, senderId)
-        if fet:
-            return await fet._resolve_matrix_room_()
+        matchChannel = re.match(r'^(Matrix)\|(.*)', targetId)
+        if matchChannel:
+            targetFrom = senderFrom = matchChannel.group(1)
+            targetId = matchChannel.group(2)
+            if senderId:
+                matchSender = re.match(r'^(Matrix)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+            session = Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
+            await session._resolve_matrix_room_()
+            return session
 
     @staticmethod
     async def fetch_target_list(targetList: list) -> List[FetchedSession]:

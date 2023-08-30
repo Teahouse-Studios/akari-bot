@@ -16,10 +16,10 @@ from bots.aiocqhttp.info import client_name
 from config import Config
 from core.builtins import Bot, ErrorMessage, base_superuser_list
 from core.builtins import Plain, Image, Voice, Temp, command_prefix
-from core.builtins.message import MessageSession as MS, FetchTarget as FT
+from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import FinishedSession as FinS
+from core.types import MsgInfo, Session, FetchTarget as FT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from database import BotDBUtil
 from core.utils.storedata import get_stored_list
@@ -237,8 +237,22 @@ class MessageSession(MS):
 
 class FetchTarget(FT):
     name = client_name
-    match_target_regex = re.compile(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)')
-    match_sender_regex = re.compile(r'^(QQ\|Tiny|QQ)\|(.*)')
+
+    @staticmethod
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
+        matchTarget = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', targetId)
+        if matchTarget:
+            targetFrom = senderFrom = matchTarget.group(1)
+            targetId = matchTarget.group(2)
+            if senderId:
+                matchSender = re.match(r'^(QQ\|Tiny|QQ)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
     @staticmethod
     async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
