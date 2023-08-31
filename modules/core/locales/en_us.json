@@ -152,7 +152,7 @@
     "core.message.toggle.check.enable": "Check prompt enabled.",
     "core.message.toggle.typing.disable": "Input prompt disabled.",
     "core.message.toggle.typing.enable": "Input prompt enabled.",
-    "core.message.version": "当前机器人版本号：${commit}",
+    "core.message.version": "Current robot version: ${commit}",
     "core.message.whoami": "Your ID is: ${senderid}\nThe ID of this conversation is: ${targetid}",
     "core.message.whoami.admin": "(You have admin privileges for this conversation)",
     "core.message.whoami.botadmin": "(You have robot admin privileges for this conversation)",
