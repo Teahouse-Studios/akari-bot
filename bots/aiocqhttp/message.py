@@ -12,14 +12,14 @@ import ujson as json
 from aiocqhttp import MessageSegment
 
 from bots.aiocqhttp.client import bot
+from bots.aiocqhttp.info import client_name
 from config import Config
 from core.builtins import Bot, ErrorMessage, base_superuser_list
 from core.builtins import Plain, Image, Voice, Temp, command_prefix
 from core.builtins.message import MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, \
-    FetchedSession as FS, FinishedSession as FinS
+from core.types import MsgInfo, Session, FetchTarget as FT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from database import BotDBUtil
 from core.utils.storedata import get_stored_list
@@ -134,13 +134,6 @@ class MessageSession(MS):
                     raise e
         return FinishedSession(self, send['message_id'], [send])
 
-    async def checkPermission(self):
-        if self.target.targetFrom == 'QQ' \
-                or self.target.senderId in self.custom_admins \
-                or self.target.senderInfo.query.isSuperUser:
-            return True
-        return await self.checkNativePermission()
-
     async def checkNativePermission(self):
         if self.target.targetFrom == 'QQ':
             return True
@@ -242,32 +235,27 @@ class MessageSession(MS):
             pass
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId):
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
-                              targetFrom=targetFrom,
-                              senderFrom=targetFrom,
-                              senderName='',
-                              clientName='QQ',
-                              messageId=0,
-                              replyId=None)
-        self.session = Session(message=False, target=targetId, sender=targetId)
-        self.parent = MessageSession(self.target, self.session)
-
-
 class FetchTarget(FT):
-    name = 'QQ'
+    name = client_name
 
     @staticmethod
-    async def fetch_target(targetId) -> Union[FetchedSession, bool]:
+    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
         matchTarget = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', targetId)
         if matchTarget:
-            return FetchedSession(matchTarget.group(1), matchTarget.group(2))
-        return False
+            targetFrom = senderFrom = matchTarget.group(1)
+            targetId = matchTarget.group(2)
+            if senderId:
+                matchSender = re.match(r'^(QQ\|Tiny|QQ)\|(.*)', senderId)
+                if matchSender:
+                    senderFrom = matchSender.group(1)
+                    senderId = matchSender.group(2)
+            else:
+                senderId = targetId
+
+            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[FetchedSession]:
+    async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
         lst = []
         group_list_raw = await bot.call_action('get_group_list')
         group_list = []
@@ -300,11 +288,11 @@ class FetchTarget(FT):
         return lst
 
     @staticmethod
-    async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
+    async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
         _tsk = []
         blocked = False
 
-        async def post_(fetch_: FetchedSession):
+        async def post_(fetch_: Bot.FetchedSession):
             nonlocal _tsk
             nonlocal blocked
             try:
@@ -392,10 +380,13 @@ class FetchTarget(FT):
                         else:
                             else_.append(post_(fetch))
 
-            if in_whitelist:
-                for x in in_whitelist:
-                    await x
+            async def post_in_whitelist(lst):
+                for l in lst:
+                    await l
                     await asyncio.sleep(random.randint(1, 5))
+
+            if in_whitelist:
+                asyncio.create_task(post_in_whitelist(in_whitelist))
 
             async def post_not_in_whitelist(lst):
                 for f in lst:
@@ -410,3 +401,4 @@ class FetchTarget(FT):
 
 Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget
+Bot.client_name = client_name

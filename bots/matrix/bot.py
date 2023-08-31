@@ -4,6 +4,7 @@ from tracemalloc import start
 from bots.matrix import client
 
 from bots.matrix.client import bot
+from bots.matrix.info import client_name
 import nio
 
 from core.builtins import PrivateAssets, Url
@@ -62,7 +63,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
                                  targetFrom=f'Matrix',
                                  senderFrom='Matrix',
                                  senderName=senderName,
-                                 clientName='Matrix',
+                                 clientName=client_name,
                                  messageId=event.event_id,
                                  replyId=replyId),
                          Session(message=event.source, target=room.room_id, sender=event.sender))

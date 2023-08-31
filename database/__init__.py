@@ -1,3 +1,4 @@
+import uuid
 import datetime
 from typing import Union, List
 
@@ -7,7 +8,6 @@ from tenacity import retry, stop_after_attempt
 from core.types.message import MessageSession, FetchTarget, FetchedSession
 from database.orm import Session
 from database.tables import *
-from database.tables import TargetInfo
 
 session = Session.session
 
@@ -267,6 +267,7 @@ class BotDBUtil:
                 session.commit()
             session.add_all([CommandTriggerTime(targetId=self.msg.target.senderId, commandName=self.name)])
             session.commit()
+            session.expire_all()
 
     @staticmethod
     @retry(stop=stop_after_attempt(3))
@@ -279,8 +280,13 @@ class BotDBUtil:
         return False
 
     class Data:
-        def __init__(self, msg: Union[MessageSession, FetchTarget]):
-            self.targetName = msg.target.clientName if isinstance(msg, MessageSession) else msg.name
+        def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
+            if isinstance(msg, MessageSession):
+                self.targetName = msg.target.clientName
+            elif isinstance(msg, FetchTarget):
+                self.targetName = msg.name
+            else:
+                self.targetName = msg
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -383,6 +389,56 @@ class BotDBUtil:
                 [UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action, detail=detail)])
             session.commit()
             return self.check_mute()
+
+    class JobQueue:
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def add(target_client: str, action: str, args: dict):
+            taskid = str(uuid.uuid4())
+            session.add_all([JobQueueTable(taskid=taskid, targetClient=target_client, action=action,
+                                           args=json.dumps(args))])
+            session.commit()
+            session.expire_all()
+            return taskid
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        def get(taskid: str) -> JobQueueTable:
+            return session.query(JobQueueTable).filter_by(taskid=taskid).first()
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        def get_first(target_client: str) -> JobQueueTable:
+            return session.query(JobQueueTable).filter_by(targetClient=target_client, hasDone=False).first()
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        def get_all(target_client: str) -> List[JobQueueTable]:
+            return session.query(JobQueueTable).filter_by(targetClient=target_client, hasDone=False).all()
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def return_val(query: JobQueueTable, value):
+            query.returnVal = json.dumps(value)
+            query.hasDone = True
+            session.commit()
+            session.expire_all()
+            return True
+
+        @staticmethod
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def clear(time=43200):
+            queries = session.query(JobQueueTable).all()
+            for q in queries:
+                if datetime.datetime.now().timestamp() - q.timestamp.timestamp() > time:
+                    session.delete(q)
+            session.commit()
+            session.expire_all()
+            return True
 
 
 __all__ = ["BotDBUtil", "auto_rollback_error", "session"]

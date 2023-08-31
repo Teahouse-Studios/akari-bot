@@ -264,13 +264,17 @@ class MessageSession:
 
 
 class FetchedSession:
-    def __init__(self, targetFrom, targetId):
+    def __init__(self, targetFrom, targetId, senderFrom=None, senderId=None):
+        if senderFrom is None:
+            senderFrom = targetFrom
+        if senderId is None:
+            senderId = targetId
         self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{targetFrom}|{targetId}',
+                              senderId=f'{targetFrom}|{senderId}',
                               targetFrom=targetFrom,
-                              senderFrom=targetFrom,
+                              senderFrom=senderFrom,
                               senderName='', clientName='', replyId=None, messageId=0)
-        self.session = Session(message=False, target=targetId, sender=targetId)
+        self.session = Session(message=False, target=targetId, sender=senderId)
         self.parent = MessageSession(self.target, self.session)
 
     async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
@@ -288,7 +292,7 @@ class FetchTarget:
     name = ''
 
     @staticmethod
-    async def fetch_target(targetId) -> FetchedSession:
+    async def fetch_target(targetId, senderId=None) -> FetchedSession:
         """
         尝试从数据库记录的对象ID中取得对象消息会话，实际此会话中的消息文本会被设为False（因为本来就没有）。
         """
@@ -313,4 +317,14 @@ class FetchTarget:
         raise NotImplementedError
 
 
-__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession"]
+class ModuleHookContext:
+    """
+    模块任务上下文。主要用于传递模块任务的参数。
+    """
+
+    def __init__(self, args: dict):
+        self.args = args
+
+
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession",
+           "ModuleHookContext"]

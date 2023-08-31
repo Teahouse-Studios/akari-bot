@@ -107,5 +107,10 @@ class MessageSession(MessageSession):
     def checkSuperUser(self):
         return True if self.target.senderInfo.query.isSuperUser else False
 
+    async def checkPermission(self):
+        if self.target.senderId in self.custom_admins or self.target.senderInfo.query.isSuperUser:
+            return True
+        return await self.checkNativePermission()
+
 
 __all__ = ["MessageSession"]
