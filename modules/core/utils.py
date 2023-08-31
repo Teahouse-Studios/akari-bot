@@ -8,23 +8,22 @@ from config import Config
 from core.builtins import Bot, command_prefix, PrivateAssets
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
+from core.utils.bot import Version
 from cpuinfo import get_cpu_info
 from database import BotDBUtil
 from datetime import datetime, timedelta
 
 jwt_secret = Config('jwt_secret')
 
-version = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
+ver = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
 
-@version.handle()
+@ver.handle()
 async def bot_version(msg: Bot.MessageSession):
-
-    ver = os.path.abspath(PrivateAssets.path + '/version')
-    open_version = open(ver, 'r')
-    msgs = msg.locale.t('core.message.version', commit=open_version.read())
-    open_version.close()
-    await msg.finish(msgs, msgs)
+    if Version.value:
+        await msg.finish(msg.locale.t('core.message.version', commit=Version.value))
+    else:
+        await msg.finish(msg.locale.t('core.message.version.unknown'))
 
 
 ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'])

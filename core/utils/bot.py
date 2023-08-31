@@ -12,6 +12,10 @@ from core.background_tasks import init_background_task
 from core.types import PrivateAssets, Secret
 
 
+class Version:
+    value = None
+
+
 async def init_async(start_scheduler=True) -> None:
     load_modules()
     gather_list = []
@@ -27,12 +31,10 @@ async def init_async(start_scheduler=True) -> None:
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
-    version = os.path.abspath(PrivateAssets.path + '/version')
-    with open(version, 'w') as write_version:
-        try:
-            write_version.write(os.popen('git rev-parse HEAD', 'r').read()[0:6])
-        except Exception as e:
-            write_version.write('unknown')
+    try:
+        Version.value = os.popen('git rev-parse HEAD', 'r').read()[0:6]
+    except Exception as e:
+        Logger.warn(f'Failed to get git commit hash, is it a git repository?')
     Logger.info(f'Hello, {bot_name}!')
 
 
@@ -63,4 +65,4 @@ async def load_prompt(bot) -> None:
             os.remove(loader_cache)
 
 
-__all__ = ['init_async', 'load_prompt']
+__all__ = ['init_async', 'load_prompt', 'Version']
