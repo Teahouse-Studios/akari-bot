@@ -19,14 +19,14 @@ async def rc_loader(msg: Bot.MessageSession):
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
+    if msg.Feature.forward and msg.target.target_from == 'QQ|Group':
         try:
             nodelist = await rc_qq(start_wiki)
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.sendMessage(msg.locale.t('wiki.message.rollback'))
+            await msg.send_message(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
         res = await rc(msg, start_wiki)
@@ -42,14 +42,14 @@ async def ab_loader(msg: Bot.MessageSession):
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.targetFrom == 'QQ|Group':
+    if msg.Feature.forward and msg.target.target_from == 'QQ|Group':
         try:
             nodelist = await ab_qq(start_wiki)
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
             traceback.print_exc()
-            await msg.sendMessage(msg.locale.t('wiki.message.rollback'))
+            await msg.send_message(msg.locale.t('wiki.message.rollback'))
             legacy = True
     if legacy:
         res = await ab(msg, start_wiki)

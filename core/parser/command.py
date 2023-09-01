@@ -23,7 +23,9 @@ class CommandParser:
         self.options_desc = []
         self.lang = self.msg.locale if self.msg is not None else Locale('zh_cn')
         help_docs = {}
-        for match in (args.command_list.set if self.msg is None else args.command_list.get(self.msg.target.targetFrom)):
+        for match in (
+            args.command_list.set if self.msg is None else args.command_list.get(
+                self.msg.target.target_from)):
             if match.help_doc:
                 for m in match.help_doc:
                     help_docs[m] = {'priority': match.priority, 'meta': match}

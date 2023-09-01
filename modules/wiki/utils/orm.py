@@ -13,7 +13,7 @@ engine = db.engine
 class WikiTargetSetInfo(Base):
     __tablename__ = table_prefix + 'TargetSetInfo'
     __table_args__ = {'extend_existing': True}
-    targetId = Column(String(512), primary_key=True)
+    target_id = Column(String(512), primary_key=True)
     link = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     iws = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)
     headers = Column(LONGTEXT if session.bind.dialect.name == 'mysql' else Text)

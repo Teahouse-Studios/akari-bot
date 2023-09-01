@@ -73,5 +73,5 @@ async def cytoid_profile(msg: Bot.MessageSession):
            f'NextLevelExp: {nextLevelExp}\n' + \
            f'Rating: {rating}\n' + \
            f'Grade: {", ".join(grade_t)}'
-    msgchain = [Image(path=avatar), Plain(text)]
-    await msg.finish(msgchain)
+    message_chain = [Image(path=avatar), Plain(text)]
+    await msg.finish(message_chain)

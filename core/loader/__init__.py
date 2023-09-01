@@ -119,14 +119,14 @@ class ModulesManager:
         cls._return_cache.clear()
 
     @classmethod
-    def search_related_module(cls, module, includeSelf=True):
+    def search_related_module(cls, module, include_self=True):
         if module in cls.modules_origin:
             modules = []
             py_module = cls.return_py_module(module)
             for m in cls.modules_origin:
                 if cls.modules_origin[m].startswith(py_module):
                     modules.append(m)
-            if not includeSelf:
+            if not include_self:
                 modules.remove(module)
             return modules
         else:

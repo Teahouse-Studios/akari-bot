@@ -66,14 +66,14 @@ async def message_handler(event: Event):
                 event.message = 'help'
             prefix = ['']
 
-    targetId = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
+    target_id = 'QQ|' + (f'Group|{str(event.group_id)}' if event.detail_type == 'group' else str(event.user_id))
 
-    msg = MessageSession(MsgInfo(targetId=targetId,
-                                 senderId=f'QQ|{str(event.user_id)}',
-                                 targetFrom='QQ|Group' if event.detail_type == 'group' else 'QQ',
-                                 senderFrom='QQ', senderName=event.sender['nickname'], clientName=client_name,
-                                 messageId=event.message_id,
-                                 replyId=replyId),
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=f'QQ|{str(event.user_id)}',
+                                 target_from='QQ|Group' if event.detail_type == 'group' else 'QQ',
+                                 sender_from='QQ', sender_name=event.sender['nickname'], client_name=client_name,
+                                 message_id=event.message_id,
+                                 reply_id=replyId),
                          Session(message=event,
                                  target=event.group_id if event.detail_type == 'group' else event.user_id,
                                  sender=event.user_id))
@@ -107,13 +107,13 @@ async def _(event):
     match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
     if match_reply:
         replyId = int(match_reply.group(1))
-    targetId = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
-    msg = MessageSession(MsgInfo(targetId=targetId,
-                                 senderId=f'QQ|Tiny|{str(event.user_id)}',
-                                 targetFrom='QQ|Guild',
-                                 senderFrom='QQ|Tiny', senderName=event.sender['nickname'], clientName=client_name,
-                                 messageId=event.message_id,
-                                 replyId=replyId),
+    target_id = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=f'QQ|Tiny|{str(event.user_id)}',
+                                 target_from='QQ|Guild',
+                                 sender_from='QQ|Tiny', sender_name=event.sender['nickname'], client_name=client_name,
+                                 message_id=event.message_id,
+                                 reply_id=replyId),
                          Session(message=event,
                                  target=f'{str(event.guild_id)}|{str(event.channel_id)}',
                                  sender=event.user_id))
@@ -142,8 +142,8 @@ async def _(event: Event):
 @bot.on_notice('group_ban')
 async def _(event: Event):
     if event.user_id == int(qq_account):
-        result = BotDBUtil.UnfriendlyActions(targetId=event.group_id,
-                                             senderId=event.operator_id).add_and_check('mute', str(event.duration))
+        result = BotDBUtil.UnfriendlyActions(target_id=event.group_id,
+                                             sender_id=event.operator_id).add_and_check('mute', str(event.duration))
         if event.duration >= 259200:
             result = True
         if result:

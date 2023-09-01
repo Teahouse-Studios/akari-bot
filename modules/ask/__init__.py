@@ -31,16 +31,15 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 @a.command('<question> {{ask.help}}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
-    is_superuser = msg.checkSuperUser()
+    is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
         raise Exception(msg.locale.t('error.config.secret.not_found'))
     if not is_superuser and msg.data.petal <= 0:  # refuse
-        await msg.finish(msg.locale.t('core.message.petal.no_petals')+ Config('issue_url'))
+        await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 
-    
     qc = BotDBUtil.CoolDown(msg, 'call_openai')
     c = qc.check(60)
-    if c == 0 or msg.target.targetFrom == 'TEST|Console' or is_superuser:
+    if c == 0 or msg.target.target_from == 'TEST|Console' or is_superuser:
         if hasattr(msg, 'parsed_msg'):
             question = msg.parsed_msg['<question>']
         else:
@@ -68,9 +67,9 @@ async def _(msg: Bot.MessageSession):
 
         if await check_bool(res):
             rickroll(msg)
-        await msg.sendMessage(chain)
+        await msg.send_message(chain)
 
-        if msg.target.targetFrom != 'TEST|Console' and not is_superuser:
+        if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
     else:
         await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))

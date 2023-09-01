@@ -14,11 +14,11 @@ async def bugtracker(msg: Bot.MessageSession):
         q = re.match(r'(.*-.*)', mojira_id)
         if q:
             result = await bugtracker_get(msg, q.group(1))
-            await msg.sendMessage(result[0])
+            await msg.send_message(result[0])
             if result[1] is not None:
                 screenshot = await make_screenshot(result[1])
                 if screenshot:
-                    await msg.sendMessage(Image(screenshot))
+                    await msg.send_message(Image(screenshot))
 
 
 @bug.regex(pattern=r'\!?(BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-(\d+)\b', mode='M', flags=re.I,
@@ -27,11 +27,11 @@ async def regex_bugtracker(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
     if len(matched_msg.group(1)) < 10:
         result = await bugtracker_get(msg, matched_msg.group(1) + '-' + matched_msg.group(2))
-        await msg.sendMessage(result[0])
+        await msg.send_message(result[0])
         if result[1] is not None:
             screenshot = await make_screenshot(result[1])
             if screenshot:
-                await msg.sendMessage(Image(screenshot))
+                await msg.send_message(Image(screenshot))
 
 
 @bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)'
@@ -43,10 +43,10 @@ async def _(msg: Bot.MessageSession):
             for t in title:
                 if t != '':
                     get_ = await bugtracker_get(msg, t.split('?')[0], nolink=True)
-                    await msg.sendMessage(get_[0])
+                    await msg.send_message(get_[0])
                     if get_[1] is not None:
                         screenshot = await make_screenshot(get_[1])
                         if screenshot:
-                            await msg.sendMessage(Image(screenshot))
+                            await msg.send_message(Image(screenshot))
 
     await bgtask(msg)

@@ -56,7 +56,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         if is_dirty:
             rickroll(msg)
         else:
-            await msg.sendMessage([Plain(message)])
+            await msg.send_message([Plain(message)])
 
             async def download():
                 download_pic = await download_to_cache(

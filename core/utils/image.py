@@ -38,14 +38,14 @@ async def image_split(i: Image) -> List[Image]:
 save_source = True
 
 
-async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
+async def msgchain2image(message_chain: Union[List, MessageChain], use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
             return False
         use_local = False
-    if isinstance(msgchain, List):
-        msgchain = MessageChain(msgchain)
+    if isinstance(message_chain, List):
+        message_chain = MessageChain(message_chain)
     lst = []
     html_template = """<!DOCTYPE html>
 <html lang="en">
@@ -88,7 +88,7 @@ async def msgchain2image(msgchain: Union[List, MessageChain], use_local=True):
 </body>
 </html>"""
 
-    for m in msgchain.asSendable(embed=False):
+    for m in message_chain.as_sendable(embed=False):
         if isinstance(m, Plain):
             lst.append('<div>' + m.text.replace('\n', '<br>') + '</div>')
         if isinstance(m, Image):

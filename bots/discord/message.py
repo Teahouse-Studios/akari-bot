@@ -69,30 +69,30 @@ class MessageSession(MS):
         quote = True
         wait = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False, allow_split_image=True
-                          ) -> FinishedSession:
-        msgchain = MessageChain(msgchain)
-        if not msgchain.is_safe and not disable_secret_check:
-            return await self.sendMessage(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
-        self.sent.append(msgchain)
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True
+                           ) -> FinishedSession:
+        message_chain = MessageChain(message_chain)
+        if not message_chain.is_safe and not disable_secret_check:
+            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+        self.sent.append(message_chain)
         count = 0
         send = []
-        for x in msgchain.asSendable():
+        for x in message_chain.as_sendable():
             if isinstance(x, Plain):
                 send_ = await self.session.target.send(x.text,
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
             elif isinstance(x, Image):
                 send_ = await self.session.target.send(file=discord.File(await x.get()),
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Voice):
                 send_ = await self.session.target.send(file=discord.File(x.path),
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None)
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: Voice: {str(x.__dict__)}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
 
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
@@ -100,7 +100,7 @@ class MessageSession(MS):
                                                        reference=self.session.message if quote and count == 0
                                                        and self.session.message else None,
                                                        files=files)
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: Embed: {str(x.__dict__)}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}')
             else:
                 send_ = False
             if send_:
@@ -112,7 +112,7 @@ class MessageSession(MS):
 
         return FinishedSession(self, msgIds, send)
 
-    async def checkNativePermission(self):
+    async def check_native_permission(self):
         if not self.session.message:
             channel = await client.fetch_channel(self.session.target)
             author = await channel.guild.fetch_member(self.session.sender)
@@ -127,7 +127,7 @@ class MessageSession(MS):
             Logger.error(traceback.format_exc())
         return False
 
-    async def toMessageChain(self):
+    async def to_message_chain(self):
         lst = []
         lst.append(Plain(self.session.message.content))
         for x in self.session.message.attachments:
@@ -136,7 +136,7 @@ class MessageSession(MS):
                 lst.append(Image(d))
         return MessageChain(lst)
 
-    def asDisplay(self, text_only=False):
+    def as_display(self, text_only=False):
         msg = self.session.message.content
         msg = re.sub(r'<@(.*?)>', r'Discord|Client|\1', msg)
         return msg
@@ -161,14 +161,14 @@ class MessageSession(MS):
 
 class FetchedSession(Bot.FetchedSession):
 
-    async def sendDirectMessage(self, msgchain, disable_secret_check=False, allow_split_image=True):
+    async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
         try:
             getChannel = await client.fetch_channel(self.session.target)
         except Exception:
             Logger.error(traceback.format_exc())
             return False
         self.session.target = self.session.sender = self.parent.session.target = self.parent.session.sender = getChannel
-        return await self.parent.sendDirectMessage(msgchain, disable_secret_check=disable_secret_check)
+        return await self.parent.send_direct_message(message_chain, disable_secret_check=disable_secret_check)
 
 
 Bot.FetchedSession = FetchedSession
@@ -178,25 +178,25 @@ class FetchTarget(FT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(targetId, senderId=None) -> Union[Bot.FetchedSession]:
-        matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', targetId)
+    async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
+        matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', target_id)
         if matchChannel:
             targetFrom = senderFrom = matchChannel.group(1)
-            targetId = matchChannel.group(2)
-            if senderId:
-                matchSender = re.match(r'^(Discord\|Client)\|(.*)', senderId)
+            target_id = matchChannel.group(2)
+            if sender_id:
+                matchSender = re.match(r'^(Discord\|Client)\|(.*)', sender_id)
                 if matchSender:
                     senderFrom = matchSender.group(1)
-                    senderId = matchSender.group(2)
+                    sender_id = matchSender.group(2)
             else:
-                senderId = targetId
+                sender_id = target_id
 
-            return Bot.FetchedSession(targetFrom, targetId, senderFrom, senderId)
+            return Bot.FetchedSession(targetFrom, target_id, senderFrom, sender_id)
 
     @staticmethod
-    async def fetch_target_list(targetList: list) -> List[Bot.FetchedSession]:
+    async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
         lst = []
-        for x in targetList:
+        for x in target_list:
             fet = await FetchTarget.fetch_target(x)
             if fet:
                 lst.append(fet)
@@ -208,10 +208,10 @@ class FetchTarget(FT):
             for x in user_list:
                 try:
                     if i18n:
-                        await x.sendDirectMessage(x.parent.locale.t(message, **kwargs))
+                        await x.send_direct_message(x.parent.locale.t(message, **kwargs))
 
                     else:
-                        await x.sendDirectMessage(message)
+                        await x.send_direct_message(message)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
@@ -219,14 +219,14 @@ class FetchTarget(FT):
         else:
             get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Discord")
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.targetId)
+                fetch = await FetchTarget.fetch_target(x.target_id)
                 if fetch:
                     try:
                         if i18n:
-                            await fetch.sendDirectMessage(fetch.parent.locale.t(message, **kwargs))
+                            await fetch.send_direct_message(fetch.parent.locale.t(message, **kwargs))
 
                         else:
-                            await fetch.sendDirectMessage(message)
+                            await fetch.send_direct_message(message)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:

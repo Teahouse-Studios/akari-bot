@@ -54,20 +54,20 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
         # https://spec.matrix.org/v1.7/client-server-api/#mnotice
         return
     isRoom = room.member_count != 2 or room.join_rule != 'invite'
-    targetId = room.room_id if isRoom else event.sender
+    target_id = room.room_id if isRoom else event.sender
     replyId = None
     if 'm.relates_to' in event.source['content'] and 'm.in_reply_to' in event.source['content']['m.relates_to']:
         replyId = event.source['content']['m.relates_to']['m.in_reply_to']['event_id']
     senderName = (await bot.get_displayname(event.sender)).displayname
 
-    msg = MessageSession(MsgInfo(targetId=f'Matrix|{targetId}',
-                                 senderId=f'Matrix|{event.sender}',
-                                 targetFrom=f'Matrix',
-                                 senderFrom='Matrix',
-                                 senderName=senderName,
-                                 clientName=client_name,
-                                 messageId=event.event_id,
-                                 replyId=replyId),
+    msg = MessageSession(MsgInfo(target_id=f'Matrix|{target_id}',
+                                 sender_id=f'Matrix|{event.sender}',
+                                 target_from=f'Matrix',
+                                 sender_from='Matrix',
+                                 sender_name=senderName,
+                                 client_name=client_name,
+                                 message_id=event.event_id,
+                                 reply_id=replyId),
                          Session(message=event.source, target=room.room_id, sender=event.sender))
     asyncio.create_task(parser(msg))
 

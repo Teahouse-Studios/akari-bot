@@ -50,7 +50,7 @@ async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if target.query is None:
         return JSONResponse(status_code=404, content={
-            'targetId': target_id,
+            'target_id': target_id,
             'notFound': True,
         })
     enabled_modules = target.enabled_modules
@@ -72,7 +72,7 @@ async def get_target(target_id: str):
     wiki_interwikis = wiki_target.get_interwikis()
 
     return {
-        'targetId': target_id,
+        'target_id': target_id,
         'enabledModules': enabled_modules,
         'isMuted': is_muted,
         'customAdmins': custom_admins,

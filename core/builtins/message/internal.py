@@ -158,7 +158,7 @@ class Embed(E):
         self.footer = footer
         self.fields = fields
 
-    def to_msgchain(self):
+    def to_message_chain(self):
         text_lst = []
         if self.title is not None:
             text_lst.append(self.title)
@@ -176,15 +176,15 @@ class Embed(E):
             text_lst.append("作者：" + self.author)
         if self.footer is not None:
             text_lst.append(self.footer)
-        msgchain = []
+        message_chain = []
         if text_lst:
-            msgchain.append(Plain('\n'.join(text_lst)))
+            message_chain.append(Plain('\n'.join(text_lst)))
         if self.image is not None:
-            msgchain.append(self.image)
-        return msgchain
+            message_chain.append(self.image)
+        return message_chain
 
     def __str__(self):
-        return str(self.to_msgchain())
+        return str(self.to_message_chain())
 
     def __repr__(self):
         return f'Embed(title="{self.title}", description="{self.description}", url="{self.url}", ' \

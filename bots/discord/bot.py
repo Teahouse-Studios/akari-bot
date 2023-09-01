@@ -72,7 +72,7 @@ async def on_message(message):
     target = "Discord|Channel"
     if isinstance(message.channel, discord.DMChannel):
         target = "Discord|DM|Channel"
-    targetId = f"{target}|{message.channel.id}"
+    target_id = f"{target}|{message.channel.id}"
     replyId = None
     if message.reference is not None:
         replyId = message.reference.message_id
@@ -84,14 +84,14 @@ async def on_message(message):
 
     msg = MessageSession(
         target=MsgInfo(
-            targetId=targetId,
-            senderId=f"Discord|Client|{message.author.id}",
-            senderName=message.author.name,
-            targetFrom=target,
-            senderFrom="Discord|Client",
-            clientName=client_name,
-            messageId=message.id,
-            replyId=replyId),
+            target_id=target_id,
+            sender_id=f"Discord|Client|{message.author.id}",
+            sender_name=message.author.name,
+            target_from=target,
+            sender_from="Discord|Client",
+            client_name=client_name,
+            message_id=message.id,
+            reply_id=replyId),
         session=Session(
             message=message,
             target=message.channel,

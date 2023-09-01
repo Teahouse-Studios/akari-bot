@@ -9,23 +9,23 @@ class MessageTaskManager:
 
     @classmethod
     def add_task(cls, session: MessageSession, flag, all_=False, reply=None):
-        sender = session.target.senderId
+        sender = session.target.sender_id
         task_type = 'reply' if reply is not None else 'wait'
         if all_:
             sender = 'all'
 
-        if session.target.targetId not in cls._list:
-            cls._list[session.target.targetId] = {}
-        if sender not in cls._list[session.target.targetId]:
-            cls._list[session.target.targetId][sender] = {}
-        cls._list[session.target.targetId][sender][session] = {
+        if session.target.target_id not in cls._list:
+            cls._list[session.target.target_id] = {}
+        if sender not in cls._list[session.target.target_id]:
+            cls._list[session.target.target_id][sender] = {}
+        cls._list[session.target.target_id][sender][session] = {
             'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp()}
         Logger.debug(cls._list)
 
     @classmethod
     def get_result(cls, session: MessageSession):
-        if 'result' in cls._list[session.target.targetId][session.target.senderId][session]:
-            return cls._list[session.target.targetId][session.target.senderId][session]['result']
+        if 'result' in cls._list[session.target.target_id][session.target.sender_id][session]:
+            return cls._list[session.target.target_id][session.target.sender_id][session]['result']
         else:
             return None
 
@@ -45,16 +45,16 @@ class MessageTaskManager:
 
     @classmethod
     async def check(cls, session: MessageSession):
-        if session.target.targetId in cls._list:
+        if session.target.target_id in cls._list:
             senders = []
-            if session.target.senderId in cls._list[session.target.targetId]:
-                senders.append(session.target.senderId)
-            if 'all' in cls._list[session.target.targetId]:
+            if session.target.sender_id in cls._list[session.target.target_id]:
+                senders.append(session.target.sender_id)
+            if 'all' in cls._list[session.target.target_id]:
                 senders.append('all')
             if senders is not None:
                 for sender in senders:
-                    for s in cls._list[session.target.targetId][sender]:
-                        get_ = cls._list[session.target.targetId][sender][s]
+                    for s in cls._list[session.target.target_id][sender]:
+                        get_ = cls._list[session.target.target_id][sender][s]
                         if get_['type'] == 'wait':
                             get_['result'] = session
                             get_['active'] = False
@@ -62,13 +62,13 @@ class MessageTaskManager:
                         elif get_['type'] == 'reply':
                             if isinstance(get_['reply'], list):
                                 for reply in get_['reply']:
-                                    if reply == session.target.replyId:
+                                    if reply == session.target.reply_id:
                                         get_['result'] = session
                                         get_['active'] = False
                                         get_['flag'].set()
                                         break
                             else:
-                                if get_['reply'] == session.target.replyId:
+                                if get_['reply'] == session.target.reply_id:
                                     get_['result'] = session
                                     get_['active'] = False
                                     get_['flag'].set()
