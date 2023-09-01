@@ -6,11 +6,14 @@ import uvicorn
 from fastapi import FastAPI
 import jwt
 
+from core.queue import JobQueue
+
 sys.path.append(os.getcwd())
 
 from core.loader import ModulesManager  # noqa: E402
 from core.utils.i18n import Locale  # noqa: E402
 from core.utils.bot import init_async, load_prompt  # noqa: E402
+from core.extra.scheduler import load_extra_schedulers  # noqa: E402
 from config import Config  # noqa: E402
 from database import BotDBUtil  # noqa: E402
 from modules.wiki.utils.dbutils import WikiTargetInfo  # noqa: E402
@@ -22,6 +25,8 @@ jwt_secret = Config('jwt_secret')
 @app.on_event("startup")
 async def startup_event():
     await init_async(start_scheduler=False)
+    load_extra_schedulers()
+    await JobQueue.secret_append_ip()
 
 
 @app.get("/")

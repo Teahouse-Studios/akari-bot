@@ -8,7 +8,7 @@ from config import Config
 from core.builtins import Bot, command_prefix, PrivateAssets
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
-from core.utils.bot import Version
+from core.utils.info import Info
 from cpuinfo import get_cpu_info
 from database import BotDBUtil
 from datetime import datetime, timedelta
@@ -20,8 +20,8 @@ ver = module('version', base=True, desc='{core.help.version}', developers=['Oasi
 
 @ver.handle()
 async def bot_version(msg: Bot.MessageSession):
-    if Version.value:
-        await msg.finish(msg.locale.t('core.message.version', commit=Version.value))
+    if Info.version:
+        await msg.finish(msg.locale.t('core.message.version', commit=Info.version))
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 

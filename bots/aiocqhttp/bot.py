@@ -2,6 +2,8 @@ import html
 import logging
 import os
 import re
+import sys
+
 import ujson as json
 
 from aiocqhttp import Event, Error
@@ -14,6 +16,7 @@ from core.builtins import EnableDirtyWordCheck, PrivateAssets, Url
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
+from core.utils.info import Info
 from database import BotDBUtil
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
@@ -161,5 +164,8 @@ async def _(event: Event):
 
 qq_host = Config("qq_host")
 if qq_host:
+    argv = sys.argv
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
     host, port = qq_host.split(':')
     bot.run(host=host, port=port, debug=False)

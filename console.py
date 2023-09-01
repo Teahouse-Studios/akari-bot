@@ -17,7 +17,7 @@ import traceback
 import aioconsole
 
 from bot import init_bot
-from bots.scheduler.bot import load_schedulers
+from core.extra.scheduler import load_extra_schedulers
 from core.builtins import PrivateAssets, EnableDirtyWordCheck
 from core.types import MsgInfo, AutoSession
 from core.console.template import Template as MessageSession
@@ -44,7 +44,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
 async def console_scheduler():
-    load_schedulers()
+    load_extra_schedulers()
     await init_async()
 
 

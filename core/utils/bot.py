@@ -7,13 +7,11 @@ import ujson as json
 from config import CFG
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger, bot_name
+from core.queue import JobQueue
 from core.scheduler import Scheduler
 from core.background_tasks import init_background_task
 from core.types import PrivateAssets, Secret
-
-
-class Version:
-    value = None
+from core.utils.info import Info
 
 
 async def init_async(start_scheduler=True) -> None:
@@ -28,11 +26,15 @@ async def init_async(start_scheduler=True) -> None:
     await asyncio.gather(*gather_list)
     init_background_task()
     if start_scheduler:
+        if not Info.subprocess:
+            from core.extra.scheduler import load_extra_schedulers
+            load_extra_schedulers()
+            await JobQueue.secret_append_ip()
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
     try:
-        Version.value = os.popen('git rev-parse HEAD', 'r').read()[0:6]
+        Info.version = os.popen('git rev-parse HEAD', 'r').read()[0:6]
     except Exception as e:
         Logger.warn(f'Failed to get git commit hash, is it a git repository?')
     Logger.info(f'Hello, {bot_name}!')
@@ -65,4 +67,4 @@ async def load_prompt(bot) -> None:
             os.remove(loader_cache)
 
 
-__all__ = ['init_async', 'load_prompt', 'Version']
+__all__ = ['init_async', 'load_prompt']

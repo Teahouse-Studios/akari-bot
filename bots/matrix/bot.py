@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 from tracemalloc import start
 from bots.matrix import client
 
@@ -13,6 +14,7 @@ from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
 from bots.matrix.message import MessageSession, FetchTarget
+from core.utils.info import Info
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + "/assets"))
 Url.disable_mm = True
@@ -96,4 +98,6 @@ async def start():
     Logger.error(f"sync loop stopped")
 
 if bot:
+    if 'subprocess' in sys.argv:
+        Info.subprocess = True
     asyncio.run(start())

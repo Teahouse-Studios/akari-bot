@@ -89,7 +89,8 @@ def run_bot():
 
         bot = os.path.abspath(f'{botdir}{bl}/bot.py')
         if os.path.exists(bot):
-            p = subprocess.Popen([sys.executable, bot], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            p = subprocess.Popen([sys.executable, bot, 'subprocess'], shell=False, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT,
                                  cwd=os.path.abspath('.'), env=envs)
             runlst.append(p)
             pidlst.append(p.pid)
