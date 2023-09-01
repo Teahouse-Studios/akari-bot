@@ -18,6 +18,7 @@ from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from database import BotDBUtil
 from core.utils.storedata import get_stored_list, update_stored_list
+from core.utils.info import Info
 
 su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -243,52 +244,48 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
-rst = module('restart', developers=['OasisAkari'], required_superuser=True)
+if Info.subprocess:
+    rst = module('restart', developers=['OasisAkari'], required_superuser=True)
 
+    def restart():
+        sys.exit(233)
 
-def restart():
-    sys.exit(233)
+    def write_version_cache(msg: Bot.MessageSession):
+        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
+        write_version = open(update, 'w')
+        write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
+        write_version.close()
 
+    restart_time = []
 
-def write_version_cache(msg: Bot.MessageSession):
-    update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
-    write_version = open(update, 'w')
-    write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
-    write_version.close()
+    async def wait_for_restart(msg: Bot.MessageSession):
+        get = ExecutionLockList.get()
+        if datetime.now().timestamp() - restart_time[0] < 60:
+            if len(get) != 0:
+                await msg.sendMessage(msg.locale.t("core.message.restart.wait", count=len(get)))
+                await asyncio.sleep(10)
+                return await wait_for_restart(msg)
+            else:
+                await msg.sendMessage(msg.locale.t("core.message.restart.restarting"))
+                get_wait_list = MessageTaskManager.get()
+                for x in get_wait_list:
+                    for y in get_wait_list[x]:
+                        for z in get_wait_list[x][y]:
+                            if get_wait_list[x][y][z]['active']:
+                                await z.sendMessage(z.locale.t("core.message.restart.prompt"))
 
-
-restart_time = []
-
-
-async def wait_for_restart(msg: Bot.MessageSession):
-    get = ExecutionLockList.get()
-    if datetime.now().timestamp() - restart_time[0] < 60:
-        if len(get) != 0:
-            await msg.sendMessage(msg.locale.t("core.message.restart.wait", count=len(get)))
-            await asyncio.sleep(10)
-            return await wait_for_restart(msg)
         else:
-            await msg.sendMessage(msg.locale.t("core.message.restart.restarting"))
-            get_wait_list = MessageTaskManager.get()
-            for x in get_wait_list:
-                for y in get_wait_list[x]:
-                    for z in get_wait_list[x][y]:
-                        if get_wait_list[x][y][z]['active']:
-                            await z.sendMessage(z.locale.t("core.message.restart.prompt"))
+            await msg.sendMessage(msg.locale.t("core.message.restart.timeout"))
 
-    else:
-        await msg.sendMessage(msg.locale.t("core.message.restart.timeout"))
-
-
-@rst.handle()
-async def restart_bot(msg: Bot.MessageSession):
-    await msg.sendMessage(msg.locale.t("core.message.confirm"))
-    confirm = await msg.waitConfirm()
-    if confirm:
-        restart_time.append(datetime.now().timestamp())
-        await wait_for_restart(msg)
-        write_version_cache(msg)
-        restart()
+    @rst.handle()
+    async def restart_bot(msg: Bot.MessageSession):
+        await msg.sendMessage(msg.locale.t("core.message.confirm"))
+        confirm = await msg.waitConfirm()
+        if confirm:
+            restart_time.append(datetime.now().timestamp())
+            await wait_for_restart(msg)
+            write_version_cache(msg)
+            restart()
 
 
 upd = module('update', developers=['OasisAkari'], required_superuser=True)
@@ -317,20 +314,20 @@ async def update_bot(msg: Bot.MessageSession):
         await msg.sendMessage(update_dependencies())
 
 
-upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r')
+if Info.subprocess:
+    upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r')
 
-
-@upds.handle()
-async def update_and_restart_bot(msg: Bot.MessageSession):
-    await msg.sendMessage(msg.locale.t("core.message.confirm"))
-    confirm = await msg.waitConfirm()
-    if confirm:
-        restart_time.append(datetime.now().timestamp())
-        await wait_for_restart(msg)
-        write_version_cache(msg)
-        await msg.sendMessage(pull_repo())
-        await msg.sendMessage(update_dependencies())
-        restart()
+    @upds.handle()
+    async def update_and_restart_bot(msg: Bot.MessageSession):
+        await msg.sendMessage(msg.locale.t("core.message.confirm"))
+        confirm = await msg.waitConfirm()
+        if confirm:
+            restart_time.append(datetime.now().timestamp())
+            await wait_for_restart(msg)
+            write_version_cache(msg)
+            await msg.sendMessage(pull_repo())
+            await msg.sendMessage(update_dependencies())
+            restart()
 
 
 if Bot.FetchTarget.name == 'QQ':
