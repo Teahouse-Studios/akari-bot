@@ -3,12 +3,12 @@ import os
 import re
 import shutil
 import string
-import traceback
 
 import ujson as json
 
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
+from core.logger import Logger
 
 assets_path = os.path.abspath('./assets/phigros')
 cache_path = os.path.abspath('./cache')
@@ -38,7 +38,7 @@ async def update_assets():
     data = {}
     try:
         update = await get_url(json_url, 200)
-    except ValueError:
+    except TimeoutError:
         update = await get_url(json_url_mirror, 200)
     update_json = json.loads(update)
     for song in update_json:
@@ -55,9 +55,14 @@ async def update_assets():
                 if download_file:
                     shutil.move(download_file, os.path.join(illustration_path, song_name))
             except Exception:
-                traceback.print_exc()
+                shutil.copy(os.path.abspath('./assets/unknown'), os.path.join(illustration_path, song_name))
+    Logger.info('Image download completed.')
     another_assets_url = 'https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
-    download_file = await download_to_cache(another_assets_url)
+    another_assets_url_mirror = 'https://gh.api.99988866.xyz/https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
+    try:
+        download_file = await download_to_cache(another_assets_url)
+    except TimeoutError:
+        download_file = await download_to_cache(another_assets_url_mirror)
     if download_file:
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
