@@ -1,6 +1,6 @@
 from core.component import module
 from core.builtins import Bot
-from core.utils.http import get_url
+from .generator import get_mkey
 
 mk = module('mkey', desc='计算任天堂系列主机的家长控制重置密码。', developers=['OasisAkari', 'Kurisu'])
 
@@ -23,8 +23,5 @@ async def mkey(msg: Bot.MessageSession, device: str, month: int, day: int, inqui
 
     device_code = device_codes[device.lower()]
 
-    api_call = f"https://mkey.eiphax.tech/api?platform={device_code}&inquiry={inquiry_num}&month={month}&day={day}"
-    if device_id:
-        api_call += f"&aux={device_id}"
-    result = await get_url(api_call, 200, fmt='json')
-    await msg.finish(f'您的重置密码是：{result["key"]}。')
+    result = get_mkey(inquiry_num, month, day, device_id, device_code)
+    await msg.finish(f'您的重置密码是：{result}。')
