@@ -6,7 +6,7 @@ mk = module('mkey', desc='计算任天堂系列主机的家长控制重置密码
 
 
 @mk.handle('<device> <month> <day> <inquiry_num> [<device_id>]')
-async def mkey(msg: Bot.MessageSession, device: str, month: int, day: int, inquiry: str, device_id: str = None):
+async def mkey(msg: Bot.MessageSession, device: str, month: int, day: int, inquiry_num: str, device_id: str = None):
 
     device_codes = {
         "3ds": "CTR",
@@ -23,7 +23,7 @@ async def mkey(msg: Bot.MessageSession, device: str, month: int, day: int, inqui
 
     device_code = device_codes[device.lower()]
 
-    api_call = f"https://mkey.eiphax.tech/api?platform={device_code}&inquiry={inquiry}&month={month}&day={day}"
+    api_call = f"https://mkey.eiphax.tech/api?platform={device_code}&inquiry={inquiry_num}&month={month}&day={day}"
     if device_id:
         api_call += f"&aux={device_id}"
     result = await get_url(api_call, '200', fmt='json')
