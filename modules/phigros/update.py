@@ -14,6 +14,7 @@ assets_path = os.path.abspath('./assets/phigros')
 cache_path = os.path.abspath('./cache')
 rating_path = os.path.abspath('./assets/phigros/rating.json')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
+json_url_mirror = 'https://gh.api.99988866.xyz/https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 
 p_headers = {'Accept': 'application/json',
              'X-LC-Id': 'rAK3FfdieFob2Nn8Am',
@@ -35,7 +36,11 @@ async def update_assets():
     illustration_list = os.listdir(illustration_path)
     file_path = random_cache_path() + '.json'
     data = {}
-    update_json = json.loads(await get_url(json_url, 200))
+    try:
+        update = await get_url(json_url, 200)
+    except ValueError:
+        update = await get_url(json_url_mirror, 200)
+    update_json = json.loads(update)
     for song in update_json:
         diff = {}
         for c in update_json[song]['chart']:
