@@ -9,11 +9,11 @@ import filetype
 from bots.discord.client import client
 from bots.discord.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, MessageSession as MS
+from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage, Voice
 from core.logger import Logger
-from core.types import FetchTarget as FT, FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.http import download_to_cache
 from database import BotDBUtil
 
@@ -59,7 +59,7 @@ class FinishedSession(FinS):
             Logger.error(traceback.format_exc())
 
 
-class MessageSession(MS):
+class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
@@ -148,7 +148,7 @@ class MessageSession(MS):
             Logger.error(traceback.format_exc())
 
     class Typing:
-        def __init__(self, msg: MS):
+        def __init__(self, msg: MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
@@ -174,7 +174,7 @@ class FetchedSession(Bot.FetchedSession):
 Bot.FetchedSession = FetchedSession
 
 
-class FetchTarget(FT):
+class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod

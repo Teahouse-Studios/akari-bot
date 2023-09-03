@@ -329,4 +329,4 @@ class ModuleHookContext:
 
 
 __all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession",
-           "ModuleHookContext"]
+           "ModuleHookContext", "MessageChain"]

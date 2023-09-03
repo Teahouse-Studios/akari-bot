@@ -9,10 +9,10 @@ from khl import MessageTypes, Message
 from bots.kook.client import bot
 from bots.kook.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import FetchTarget as FT, \
+from core.types import FetchTarget as FetchTargetT, \
     FinishedSession as FinS
 from database import BotDBUtil
 
@@ -57,7 +57,7 @@ class FinishedSession(FinS):
             Logger.error(traceback.format_exc())
 
 
-class MessageSession(MS):
+class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
@@ -151,7 +151,7 @@ class MessageSession(MS):
             Logger.error(traceback.format_exc())
 
     class Typing:
-        def __init__(self, msg: MS):
+        def __init__(self, msg: MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
@@ -197,7 +197,7 @@ class FetchedSession(Bot.FetchedSession):
 Bot.FetchedSession = FetchedSession
 
 
-class FetchTarget(FT):
+class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod

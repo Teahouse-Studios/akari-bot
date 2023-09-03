@@ -2,11 +2,12 @@ from typing import List, Union
 
 from PIL import Image
 
-from core.builtins import Plain, Image as BImage, confirm_command, Bot, FetchTarget as FT, FetchedSession as FS
-from core.builtins.message import MessageSession as MS
+from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
+                           FetchedSession as FetchedSessionT)
+from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import Session, MsgInfo, FinishedSession as FinS, AutoSession as AS, AutoSession
+from core.types import Session, MsgInfo, FinishedSession as FinS, AutoSession
 
 
 class FinishedSession(FinS):
@@ -17,8 +18,8 @@ class FinishedSession(FinS):
         print("(Tried to delete message, but I'm a console so I cannot do it :< )")
 
 
-class Template(MS):
-    session: Union[Session, AS]
+class Template(MessageSessionT):
+    session: Union[Session, AutoSession]
 
     class Feature:
         image = True
@@ -120,7 +121,7 @@ class Template(MS):
         print("(Tried to sleep for %d seconds, skip.)" % s)
 
     class Typing:
-        def __init__(self, msg: MS):
+        def __init__(self, msg: MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
@@ -130,7 +131,7 @@ class Template(MS):
             pass
 
 
-class FetchedSession(FS):
+class FetchedSession(FetchedSessionT):
 
     async def send_message(self, message_chain, disable_secret_check=False):
         """
@@ -142,7 +143,7 @@ class FetchedSession(FS):
         return await self.parent.send_message(message_chain, disable_secret_check=disable_secret_check, quote=False)
 
 
-class FetchTarget(FT):
+class FetchTarget(FetchTargetT):
     name = 'TEST'
 
     @staticmethod

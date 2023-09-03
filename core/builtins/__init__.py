@@ -3,7 +3,7 @@ from typing import Union, List
 
 from config import Config
 from core.loader import ModulesManager
-from core.types.message import FetchTarget, FetchedSession as FS, MsgInfo, Session, ModuleHookContext
+from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
 from database import BotDBUtil
 from .message import *
 from .message.chain import *
@@ -17,11 +17,11 @@ class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
-    FetchedSession = FS
+    FetchedSession = FetchedSessionT
     ModuleHookContext = ModuleHookContext
 
     @staticmethod
-    async def send_message(target: Union[FS, MessageSession, str], msg: Union[MessageChain, list],
+    async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],
                            disable_secret_check=False,
                            allow_split_image=True):
         if isinstance(target, str):
@@ -37,7 +37,7 @@ class Bot:
         return Bot.FetchTarget.fetch_target(target)
 
     @staticmethod
-    async def get_enabled_this_module(module: str) -> List[FS]:
+    async def get_enabled_this_module(module: str) -> List[FetchedSessionT]:
         lst = BotDBUtil.TargetInfo.get_enabled_this(module)
         fetched = []
         for x in lst:
@@ -71,7 +71,7 @@ class Bot:
                 raise ValueError("Invalid hook name")
 
 
-class FetchedSession(FS):
+class FetchedSession(FetchedSessionT):
     def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
         if sender_from is None:
             sender_from = target_from

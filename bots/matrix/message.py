@@ -9,10 +9,10 @@ import nio
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import FetchTarget as FT, \
+from core.types import FetchTarget as FetchedTargetT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
@@ -32,7 +32,7 @@ class FinishedSession(FinS):
             Logger.error(traceback.format_exc())
 
 
-class MessageSession(MS):
+class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
@@ -199,7 +199,7 @@ class MessageSession(MS):
 
     # https://spec.matrix.org/v1.7/client-server-api/#typing-notifications
     class Typing:
-        def __init__(self, msg: MS):
+        def __init__(self, msg: MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
@@ -242,7 +242,7 @@ class FetchedSession(Bot.FetchedSession):
 Bot.FetchedSession = FetchedSession
 
 
-class FetchTarget(FT):
+class FetchTarget(FetchedTargetT):
     name = client_name
 
     @staticmethod

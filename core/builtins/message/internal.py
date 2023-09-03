@@ -10,12 +10,12 @@ from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
 from config import Config
-from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
-    Url as U, ErrorMessage as EMsg
+from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
+                                         EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.utils.i18n import Locale
 
 
-class Plain(P):
+class Plain(PlainT):
     def __init__(self,
                  text, *texts):
         self.text = str(text)
@@ -29,7 +29,7 @@ class Plain(P):
         return f'Plain(text="{self.text}")'
 
 
-class Url(U):
+class Url(UrlT):
     mm = False
     disable_mm = False
     md_format = False
@@ -70,7 +70,7 @@ class ErrorMessage(EMsg):
         return self.error_message
 
 
-class Image(I):
+class Image(ImageT):
     def __init__(self,
                  path, headers=None):
         self.need_get = False
@@ -107,7 +107,7 @@ class Image(I):
         return f'Image(path="{self.path}", headers={self.headers})'
 
 
-class Voice(V):
+class Voice(VoiceT):
     def __init__(self,
                  path=None):
         self.path = path
@@ -119,7 +119,7 @@ class Voice(V):
         return f'Voice(path={self.path})'
 
 
-class EmbedField(EF):
+class EmbedField(EmbedFieldT):
     def __init__(self,
                  name: str = None,
                  value: str = None,
@@ -135,7 +135,7 @@ class EmbedField(EF):
         return f'EmbedField(name="{self.name}", value="{self.value}", inline={self.inline})'
 
 
-class Embed(E):
+class Embed(EmbedT):
     def __init__(self,
                  title: str = None,
                  description: str = None,

@@ -4,7 +4,7 @@ import discord
 
 from bots.discord.message import convert_embed
 from config import Config
-from core.builtins import Plain, Image, MessageSession as MS
+from core.builtins import Plain, Image, MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage
 from core.logger import Logger
@@ -25,7 +25,7 @@ class FinishedSession(FinS):
             Logger.error(traceback.format_exc())
 
 
-class MessageSession(MS):
+class MessageSession(MessageSessionT):
     command = ''
 
     class Feature:

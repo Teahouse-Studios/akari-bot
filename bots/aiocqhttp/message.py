@@ -16,11 +16,11 @@ from bots.aiocqhttp.info import client_name
 from config import Config
 from core.builtins import Bot, ErrorMessage, base_superuser_list
 from core.builtins import Plain, Image, Voice, Temp, command_prefix
-from core.builtins.message import MessageSession as MS
+from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
 from core.logger import Logger
-from core.types import FetchTarget as FT, FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
@@ -76,7 +76,7 @@ async def resending_group_message():
                                                                              prefix=command_prefix[0]))
 
 
-class MessageSession(MS):
+class MessageSession(MessageSessionT):
     class Feature:
         image = True
         voice = True
@@ -219,7 +219,7 @@ class MessageSession(MS):
         return await bot.call_action(action, **params)
 
     class Typing:
-        def __init__(self, msg: MS):
+        def __init__(self, msg: MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
@@ -235,7 +235,7 @@ class MessageSession(MS):
             pass
 
 
-class FetchTarget(FT):
+class FetchTarget(FetchTargetT):
     name = client_name
 
     @staticmethod
