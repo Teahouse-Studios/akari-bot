@@ -1,9 +1,11 @@
-import asyncio
+import mimetypes
 import mimetypes
 import os
 import re
 import traceback
 from typing import List, Union
+
+import nio
 
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import client_name
@@ -11,11 +13,10 @@ from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, \
+from core.types import FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil
-import nio
 
 enable_analytics = Config('enable_analytics')
 
