@@ -74,9 +74,9 @@ async def on_message(message):
     if isinstance(message.channel, discord.DMChannel):
         target = "Discord|DM|Channel"
     target_id = f"{target}|{message.channel.id}"
-    replyId = None
+    reply_id = None
     if message.reference is not None:
-        replyId = message.reference.message_id
+        reply_id = message.reference.message_id
     prefix = None
     if match_at := re.match(r'^<@(.*?)>', message.content):
         if match_at.group(1) == str(client.user.id):
@@ -92,7 +92,7 @@ async def on_message(message):
             sender_from="Discord|Client",
             client_name=client_name,
             message_id=message.id,
-            reply_id=replyId),
+            reply_id=reply_id),
         session=Session(
             message=message,
             target=message.channel,

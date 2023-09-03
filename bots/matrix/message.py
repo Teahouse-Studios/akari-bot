@@ -50,25 +50,25 @@ class MessageSession(MS):
         self.sent.append(message_chain)
         send: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(embed=False):
-            replyTo = None
+            reply_to = None
             if quote and len(send) == 0:
-                replyTo = self.target.message_id
+                reply_to = self.target.message_id
 
             if isinstance(x, Plain):
                 content = {
                     'msgtype': 'm.notice',
                     'body': x.text
                 }
-                if replyTo:
+                if reply_to:
                     # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
                     # todo: standardize fallback for m.image, m.video, m.audio, and m.file
-                    replyToType = self.session.message['content']['msgtype']
+                    reply_to_type = self.session.message['content']['msgtype']
                     content[
-                        'body'] = f">{' *' if replyToType == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
+                        'body'] = f">{' *' if reply_to_type == 'm.emote' else ''} <{self.session.sender}> {self.session.message['content']['body']}\n\n{x.text}"
                     content['format'] = 'org.matrix.custom.html'
-                    htmlText = x.text.replace('\n', '<br />')
+                    html_text = x.text.replace('\n', '<br />')
                     content[
-                        'formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{replyTo}?via={homeserver_host}\">In reply to</a>{' *' if replyToType == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{htmlText}"
+                        'formatted_body'] = f"<mx-reply><blockquote><a href=\"https://matrix.to/#/{self.session.target}/{reply_to}?via={homeserver_host}\">In reply to</a>{' *' if reply_to_type == 'm.emote' else ''} <a href=\"https://matrix.to/#/{self.session.sender}\">{self.session.sender}</a><br/>{self.session.message['content']['body']}</blockquote></mx-reply>{html_text}"
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
             elif isinstance(x, Image):
                 split = [x]
@@ -79,11 +79,11 @@ class MessageSession(MS):
                     with open(path, 'rb') as image:
                         filename = os.path.basename(path)
                         filesize = os.path.getsize(path)
-                        (contentType, contentEncoding) = mimetypes.guess_type(path)
-                        if contentType is None or contentEncoding is None:
-                            contentType = 'image'
-                            contentEncoding = 'png'
-                        mimetype = f"{contentType}/{contentEncoding}"
+                        (content_type, content_encoding) = mimetypes.guess_type(path)
+                        if content_type is None or content_encoding is None:
+                            content_type = 'image'
+                            content_encoding = 'png'
+                        mimetype = f"{content_type}/{content_encoding}"
 
                         (upload, upload_encryption) = await bot.upload(
                             image,
@@ -108,11 +108,11 @@ class MessageSession(MS):
                 path = x.path
                 filename = os.path.basename(path)
                 filesize = os.path.getsize(path)
-                (contentType, contentEncoding) = mimetypes.guess_type(path)
-                if contentType is None or contentEncoding is None:
-                    contentType = 'audio'
-                    contentEncoding = 'ogg'
-                mimetype = f"{contentType}/{contentEncoding}"
+                (content_type, content_encoding) = mimetypes.guess_type(path)
+                if content_type is None or content_encoding is None:
+                    content_type = 'audio'
+                    content_encoding = 'ogg'
+                mimetype = f"{content_type}/{content_encoding}"
 
                 with open(path, 'rb') as audio:
                     (upload, upload_encryption) = await bot.upload(
@@ -135,11 +135,11 @@ class MessageSession(MS):
                 }
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
 
-            if replyTo:
+            if reply_to:
                 # rich reply
                 content['m.relates_to'] = {
                     'm.in_reply_to': {
-                        'event_id': replyTo
+                        'event_id': reply_to
                     }
                 }
 
@@ -155,8 +155,8 @@ class MessageSession(MS):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
         # https://spec.matrix.org/v1.7/client-server-api/#permissions
-        powerLevels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
-        level = powerLevels.content['users'][self.session.sender]
+        power_levels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
+        level = power_levels.content['users'][self.session.sender]
         if level is not None and level >= 50:
             return True
         return False
@@ -247,18 +247,18 @@ class FetchTarget(FT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[FetchedSession]:
-        matchChannel = re.match(r'^(Matrix)\|(.*)', target_id)
-        if matchChannel:
-            targetFrom = senderFrom = matchChannel.group(1)
-            target_id = matchChannel.group(2)
+        match_channel = re.match(r'^(Matrix)\|(.*)', target_id)
+        if match_channel:
+            target_from = sender_from = match_channel.group(1)
+            target_id = match_channel.group(2)
             if sender_id:
-                matchSender = re.match(r'^(Matrix)\|(.*)', sender_id)
-                if matchSender:
-                    senderFrom = matchSender.group(1)
-                    sender_id = matchSender.group(2)
+                match_sender = re.match(r'^(Matrix)\|(.*)', sender_id)
+                if match_sender:
+                    sender_from = match_sender.group(1)
+                    sender_id = match_sender.group(2)
             else:
                 sender_id = target_id
-            session = Bot.FetchedSession(targetFrom, target_id, senderFrom, sender_id)
+            session = Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
             await session._resolve_matrix_room_()
             return session
 

@@ -99,10 +99,10 @@ class MessageSession(MS):
                 send.append(send_)
                 count += 1
 
-        msgIds = []
+        msg_ids = []
         for x in send:
-            msgIds.append(x['msg_id'])
-        return FinishedSession(self, msgIds, {self.session.message.channel_type.name: send})
+            msg_ids.append(x['msg_id'])
+        return FinishedSession(self, msg_ids, {self.session.message.channel_type.name: send})
 
     async def check_native_permission(self):
         self.session.message: Message
@@ -202,19 +202,19 @@ class FetchTarget(FT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        matchChannel = re.match(r'^(Kook\|.*?)\|(.*)', target_id)
-        if matchChannel:
-            targetFrom = senderFrom = matchChannel.group(1)
-            target_id = matchChannel.group(2)
+        match_channel = re.match(r'^(Kook\|.*?)\|(.*)', target_id)
+        if match_channel:
+            target_from = sender_from = match_channel.group(1)
+            target_id = match_channel.group(2)
             if sender_id:
-                matchSender = re.match(r'^(Kook\|User)\|(.*)', sender_id)
-                if matchSender:
-                    senderFrom = matchSender.group(1)
-                    sender_id = matchSender.group(2)
+                match_sender = re.match(r'^(Kook\|User)\|(.*)', sender_id)
+                if match_sender:
+                    sender_from = match_sender.group(1)
+                    sender_id = match_sender.group(2)
             else:
                 sender_id = target_id
 
-            return Bot.FetchedSession(targetFrom, target_id, senderFrom, sender_id)
+            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
     async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:

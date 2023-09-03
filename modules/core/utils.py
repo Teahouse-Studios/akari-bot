@@ -37,14 +37,14 @@ async def _(msg: Bot.MessageSession):
     result = "Pong!"
     if checkpermisson:
         timediff = str(datetime.now() - started_time)
-        Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
-        Cpu_usage = psutil.cpu_percent()
-        RAM = int(psutil.virtual_memory().total / (1024 * 1024))
-        RAM_percent = psutil.virtual_memory().percent
-        Swap = int(psutil.swap_memory().total / (1024 * 1024))
-        Swap_percent = psutil.swap_memory().percent
-        Disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
-        DiskTotal = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
+        boot_start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        cpu_usage = psutil.cpu_percent()
+        ram = int(psutil.virtual_memory().total / (1024 * 1024))
+        ram_percent = psutil.virtual_memory().percent
+        swap = int(psutil.swap_memory().total / (1024 * 1024))
+        swap_percent = psutil.swap_memory().percent
+        disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
+        disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
         """
         try:
             GroupList = len(await app.groupList())
@@ -56,17 +56,17 @@ async def _(msg: Bot.MessageSession):
             FriendList = msg.locale.t('core.message.ping.failed')
         """
         result += '\n' + msg.locale.t("core.message.ping.detail",
-                                      system_boot_time=Boot_Start,
+                                      system_boot_time=boot_start,
                                       bot_running_time=timediff,
                                       python_version=platform.python_version(),
                                       cpu_brand=get_cpu_info()['brand_raw'],
-                                      cpu_usage=Cpu_usage,
-                                      ram=RAM,
-                                      ram_percent=RAM_percent,
-                                      swap=Swap,
-                                      swap_percent=Swap_percent,
-                                      disk_space=Disk,
-                                      disk_space_total=DiskTotal)
+                                      cpu_usage=cpu_usage,
+                                      ram=ram,
+                                      ram_percent=ram_percent,
+                                      swap=swap,
+                                      swap_percent=swap_percent,
+                                      disk_space=disk,
+                                      disk_space_total=disk_total)
     await msg.finish(result)
 
 

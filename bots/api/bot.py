@@ -95,19 +95,14 @@ async def get_target(target_id: str):
 @app.get('/sender/{sender_id}')
 async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
-    isInBlockList = sender.query.isInBlockList
-    isInAllowList = sender.query.isInAllowList
-    isSuperUser = sender.query.isSuperUser
-    warns = sender.query.warns
-    disable_typing = sender.query.disable_typing
 
     return {
         'senderId': sender_id,
-        'isInBlockList': isInBlockList,
-        'isInAllowList': isInAllowList,
-        'isSuperUser': isSuperUser,
-        'warns': warns,
-        'disableTyping': disable_typing
+        'isInBlockList': sender.query.isInBlockList,
+        'isInAllowList': sender.query.isInAllowList,
+        'isSuperUser': sender.query.isSuperUser,
+        'warns': sender.query.warns,
+        'disableTyping': sender.query.disable_typing
     }
 
 

@@ -164,13 +164,13 @@ async def config_modules(msg: Bot.MessageSession):
     elif msg.parsed_msg.get('reload', False):
         if msg.check_super_user():
             def module_reload(module, extra_modules):
-                reloadCnt = ModulesManager.reload_module(module)
-                if reloadCnt > 1:
+                reload_count = ModulesManager.reload_module(module)
+                if reload_count > 1:
                     return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
                         '\n' if len(extra_modules) != 0 else '') + \
                         '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with",
-                                                                reloadCnt=reloadCnt - 1)
-                elif reloadCnt == 1:
+                                                                reloadCnt=reload_count - 1)
+                elif reload_count == 1:
                     return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
                         '\n' if len(extra_modules) != 0 else '') + '\n'.join(extra_modules) + msg.locale.t(
                         "core.message.module.reload.no_more")

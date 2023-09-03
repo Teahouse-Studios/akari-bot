@@ -218,19 +218,19 @@ class BotDBUtil:
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def __init__(self, senderId):
-            self.senderId = senderId
+        def __init__(self, sender_id):
+            self.sender_id = sender_id
             self.query = self.query_SenderInfo
             if self.query is None:
-                session.add_all([SenderInfo(id=senderId)])
+                session.add_all([SenderInfo(id=sender_id)])
                 session.commit()
-                self.query = session.query(SenderInfo).filter_by(id=senderId).first()
+                self.query = session.query(SenderInfo).filter_by(id=sender_id).first()
 
         @property
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def query_SenderInfo(self):
-            return session.query(SenderInfo).filter_by(id=self.senderId).first()
+            return session.query(SenderInfo).filter_by(id=self.sender_id).first()
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -367,10 +367,10 @@ class BotDBUtil:
             count = {}
             for criminal in unfriendly_list:
                 if datetime.datetime.now().timestamp() - criminal.timestamp.timestamp() < 86400:
-                    if criminal.senderId not in count:
-                        count[criminal.senderId] = 0
+                    if criminal.sender_id not in count:
+                        count[criminal.sender_id] = 0
                     else:
-                        count[criminal.senderId] += 1
+                        count[criminal.sender_id] += 1
             if len(count) >= 3:
                 return True
             for convict in count:

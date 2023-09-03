@@ -25,9 +25,9 @@ async def msg_handler(message: Message):
         target_id = f'Kook|{message.channel_type.name}|{message.target_id}'
     else:
         target_id = f'Kook|{message.channel_type.name}|{message.author_id}'
-    replyId = None
+    reply_id = None
     if 'quote' in message.extra:
-        replyId = message.extra['quote']['rong_id']
+        reply_id = message.extra['quote']['rong_id']
 
     msg = MessageSession(MsgInfo(target_id=target_id,
                                  sender_id=f'Kook|User|{message.author_id}',
@@ -35,7 +35,7 @@ async def msg_handler(message: Message):
                                  sender_from='Kook|User', sender_name=message.author.nickname,
                                  client_name=client_name,
                                  message_id=message.id,
-                                 reply_id=replyId),
+                                 reply_id=reply_id),
                          Session(message=message, target=message.target_id, sender=message.author_id))
     await parser(msg)
 

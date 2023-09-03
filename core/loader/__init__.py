@@ -57,14 +57,14 @@ def load_modules():
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
     Logger.info('All modules loaded.')
-    loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
-    openloadercache = open(loadercache, 'w')
+    loader_cache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
+    open_loader_cache = open(loader_cache, 'w')
     if err_prompt:
         err_prompt = re.sub(r'  File \"<frozen importlib.*?>\", .*?\n', '', '\n'.join(err_prompt))
-        openloadercache.write(err_prompt)
+        open_loader_cache.write(err_prompt)
     else:
-        openloadercache.write('')
-    openloadercache.close()
+        open_loader_cache.write('')
+    open_loader_cache.close()
 
     ModulesManager.refresh()
 
@@ -214,7 +214,6 @@ class ModulesManager:
         """
         卸载该小可模块（以及该模块所在文件的其它模块）
         """
-        origin_module = cls.modules_origin[module_name]
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
         cls.refresh()
@@ -230,8 +229,8 @@ class ModulesManager:
             Logger.info(f'Reloading {module_name} ...')
             module = sys.modules[module_name]
             cnt = 0
-            loadedModList = list(sys.modules.keys())
-            for mod in loadedModList:
+            loaded_module_list = list(sys.modules.keys())
+            for mod in loaded_module_list:
                 if mod.startswith(f'{module_name}.'):
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)

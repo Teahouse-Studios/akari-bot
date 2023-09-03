@@ -242,7 +242,7 @@ class FetchTarget(FT):
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
         match_target = re.match(r'^(QQ\|Group|QQ\|Guild|QQ)\|(.*)', target_id)
         if match_target:
-            targetFrom = sender_from = match_target.group(1)
+            target_from = sender_from = match_target.group(1)
             target_id = match_target.group(2)
             if sender_id:
                 match_sender = re.match(r'^(QQ\|Tiny|QQ)\|(.*)', sender_id)
@@ -252,7 +252,7 @@ class FetchTarget(FT):
             else:
                 sender_id = target_id
 
-            return Bot.FetchedSession(targetFrom, target_id, sender_from, sender_id)
+            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
     async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:

@@ -106,11 +106,11 @@ class MessageSession(MS):
             if send_:
                 send.append(send_)
             count += 1
-        msgIds = []
+        msg_ids = []
         for x in send:
-            msgIds.append(x.id)
+            msg_ids.append(x.id)
 
-        return FinishedSession(self, msgIds, send)
+        return FinishedSession(self, msg_ids, send)
 
     async def check_native_permission(self):
         if not self.session.message:
@@ -163,11 +163,11 @@ class FetchedSession(Bot.FetchedSession):
 
     async def send_direct_message(self, message_chain, disable_secret_check=False, allow_split_image=True):
         try:
-            getChannel = await client.fetch_channel(self.session.target)
+            get_channel = await client.fetch_channel(self.session.target)
         except Exception:
             Logger.error(traceback.format_exc())
             return False
-        self.session.target = self.session.sender = self.parent.session.target = self.parent.session.sender = getChannel
+        self.session.target = self.session.sender = self.parent.session.target = self.parent.session.sender = get_channel
         return await self.parent.send_direct_message(message_chain, disable_secret_check=disable_secret_check)
 
 
@@ -179,19 +179,19 @@ class FetchTarget(FT):
 
     @staticmethod
     async def fetch_target(target_id, sender_id=None) -> Union[Bot.FetchedSession]:
-        matchChannel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', target_id)
-        if matchChannel:
-            targetFrom = senderFrom = matchChannel.group(1)
-            target_id = matchChannel.group(2)
+        match_channel = re.match(r'^(Discord\|(?:DM\||)Channel)\|(.*)', target_id)
+        if match_channel:
+            target_from = sender_from = match_channel.group(1)
+            target_id = match_channel.group(2)
             if sender_id:
-                matchSender = re.match(r'^(Discord\|Client)\|(.*)', sender_id)
-                if matchSender:
-                    senderFrom = matchSender.group(1)
-                    sender_id = matchSender.group(2)
+                match_sender = re.match(r'^(Discord\|Client)\|(.*)', sender_id)
+                if match_sender:
+                    sender_from = match_sender.group(1)
+                    sender_id = match_sender.group(2)
             else:
                 sender_id = target_id
 
-            return Bot.FetchedSession(targetFrom, target_id, senderFrom, sender_id)
+            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
     async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:

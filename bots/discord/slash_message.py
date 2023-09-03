@@ -72,11 +72,11 @@ class MessageSession(MS):
                 send.append(send_)
             count += 1
             first_send = False
-        msgIds = []
+        msg_ids = []
         for x in send:
-            msgIds.append(x.id)
+            msg_ids.append(x.id)
 
-        return FinishedSession(self, msgIds, send)
+        return FinishedSession(self, msg_ids, send)
 
     async def check_permission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \

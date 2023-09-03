@@ -17,9 +17,9 @@ from core.utils.info import Info
 async def init_async(start_scheduler=True) -> None:
     load_modules()
     gather_list = []
-    Modules = ModulesManager.return_modules_list()
-    for x in Modules:
-        if schedules := Modules[x].schedule_list.set:
+    modules = ModulesManager.return_modules_list()
+    for x in modules:
+        if schedules := modules[x].schedule_list.set:
             for schedule in schedules:
                 Scheduler.add_job(func=schedule.function, trigger=schedule.trigger, misfire_grace_time=30,
                                   max_instance=1)

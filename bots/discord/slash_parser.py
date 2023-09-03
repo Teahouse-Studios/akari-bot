@@ -14,18 +14,18 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
         if isinstance(ctx.channel, discord.DMChannel):
             target = "Discord|DM|Channel"
         target_id = f"{target}|{ctx.channel.id}"
-        senderId = f"Discord|Client|{ctx.author.id}"
+        sender_id = f"Discord|Client|{ctx.author.id}"
     else:
         if isinstance(ctx.interaction.channel, discord.PartialMessage):
             target = "Discord|DM|Channel"
             target_id = f"{target}|{ctx.interaction.channel.id}"
         else:
             target_id = f"{target}|{ctx.interaction.channel_id}"
-        senderId = f"Discord|Client|{ctx.interaction.user.id}"
+        sender_id = f"Discord|Client|{ctx.interaction.user.id}"
     return MessageSession(
         target=MsgInfo(
             target_id=target_id,
-            sender_id=senderId,
+            sender_id=sender_id,
             sender_name=ctx.author.name if isinstance(
                 ctx,
                 discord.ApplicationContext) else ctx.interaction.user.name,
