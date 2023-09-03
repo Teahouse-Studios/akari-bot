@@ -11,7 +11,7 @@ engine = db.engine
 
 class PgrBindInfo(Base):
     __tablename__ = table_prefix + 'PgrBindInfo'
-    target_id = Column(String(512), primary_key=True)
+    targetId = Column(String(512), primary_key=True)
     sessiontoken = Column(String(512))
     username = Column(String(512))
 

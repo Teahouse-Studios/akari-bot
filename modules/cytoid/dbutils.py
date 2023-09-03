@@ -12,11 +12,11 @@ class CytoidBindInfoManager:
     @auto_rollback_error
     def __init__(self, msg: Bot.MessageSession):
         self.target_id = msg.target.sender_id
-        self.query = session.query(CytoidBindInfo).filter_by(target_id=self.target_id).first()
+        self.query = session.query(CytoidBindInfo).filter_by(targetId=self.target_id).first()
         if self.query is None:
-            session.add_all([CytoidBindInfo(target_id=self.target_id, username='')])
+            session.add_all([CytoidBindInfo(targetId=self.target_id, username='')])
             session.commit()
-            self.query = session.query(CytoidBindInfo).filter_by(target_id=self.target_id).first()
+            self.query = session.query(CytoidBindInfo).filter_by(targetId=self.target_id).first()
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error

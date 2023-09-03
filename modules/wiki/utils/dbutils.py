@@ -22,11 +22,11 @@ class WikiTargetInfo:
                 target_id = re.match(r'(QQ\|Guild\|.*?)\|.*', msg.target.target_id).group(1)
         else:
             target_id = msg
-        self.query = session.query(WikiTargetSetInfo).filter_by(target_id=target_id).first()
+        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
         if self.query is None:
-            session.add_all([WikiTargetSetInfo(target_id=target_id, iws='{}', headers='{}')])
+            session.add_all([WikiTargetSetInfo(targetId=target_id, iws='{}', headers='{}')])
             session.commit()
-            self.query = session.query(WikiTargetSetInfo).filter_by(target_id=target_id).first()
+            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
