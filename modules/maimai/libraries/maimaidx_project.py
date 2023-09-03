@@ -369,7 +369,7 @@ async def get_plate_process(msg, payload, plate):
         music = (await total_list.get()).by_id(str(song[0]))
         if music.ds[song[1]] > 13.6:
             song_remain_difficult.append([music.id, music.title, diffs[song[1]],
-                                         music.ds[song[1]], song[1], music.type])
+                                          music.ds[song[1]], song[1], music.type])
 
     prompt = msg.locale.t('maimai.message.plate', plate=plate,
                           song_remain_basic=len(song_remain_basic),

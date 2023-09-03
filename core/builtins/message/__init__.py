@@ -49,7 +49,8 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def wait_next_message(self, message_chain=None, quote=True, delete=False, append_instruction=True) -> MessageSession:
+    async def wait_next_message(self, message_chain=None, quote=True, delete=False,
+                                append_instruction=True) -> MessageSession:
         sent = None
         ExecutionLockList.remove(self)
         if message_chain is not None:

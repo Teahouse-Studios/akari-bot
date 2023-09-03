@@ -100,7 +100,8 @@ async def _(msg: Bot.MessageSession, color: str = None):
         anchor='mm',
         align='center',
         spacing=20)
-    await msg.finish([f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])
+    await msg.finish(
+        [f'HEX：{color_hex}\nRGB：{color_rgb}\nHSL：{color_hsl}{css_color_name}{material_color_name}', BotImage(img)])
 
 
 def get_luminance(color: webcolors.HTML5SimpleColor):

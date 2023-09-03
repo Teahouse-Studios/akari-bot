@@ -7,13 +7,12 @@ from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
 from config import CFG, Config
-from core.queue import JobQueue
 from core.logger import Logger
+from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
 from core.utils.http import get_url
 from core.utils.ip import IP
 from core.utils.storedata import get_stored_list, update_stored_list
-
 
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
@@ -60,6 +59,7 @@ async def get_article(version):
         traceback.print_exc()
         return '', ''
 
+
 trigger_times = 60 if not Config('slower_schedule') else 180
 
 
@@ -81,19 +81,22 @@ async def mcv_rss():
             if article[0] != '':
                 get_stored_news_title = get_stored_list('scheduler', 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await JobQueue.trigger_hook_all('minecraft_news', message='minecraft_news.message.update_log', i18n=True, version=release, article=article[0])
+                    await JobQueue.trigger_hook_all('minecraft_news', message='minecraft_news.message.update_log',
+                                                    i18n=True, version=release, article=article[0])
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
-            await JobQueue.trigger_hook_all('mcv_rss', message='mcv_rss.message.mcv_rss.snapshot', i18n=True, version=file['latest']['snapshot'])
+            await JobQueue.trigger_hook_all('mcv_rss', message='mcv_rss.message.mcv_rss.snapshot', i18n=True,
+                                            version=file['latest']['snapshot'])
             verlist.append(snapshot)
             update_stored_list('scheduler', 'mcv_rss', verlist)
             article = await get_article(snapshot)
             if article[0] != '':
                 get_stored_news_title = get_stored_list('scheduler', 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await JobQueue.trigger_hook_all('minecraft_news', message='minecraft_news.message.update_log', i18n=True, version=snapshot, article=article[0])
+                    await JobQueue.trigger_hook_all('minecraft_news', message='minecraft_news.message.update_log',
+                                                    i18n=True, version=snapshot, article=article[0])
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
     except Exception:
@@ -132,9 +135,11 @@ async def mcv_jira_rss():
             if release not in verlist:
                 Logger.info(f'huh, we find {release}.')
                 if release.lower().find('future version') != -1:
-                    await JobQueue.trigger_hook_all('mcv_jira_rss', message='mcv_rss.message.mcv_jira_rss.future', i18n=True, version=release)
+                    await JobQueue.trigger_hook_all('mcv_jira_rss', message='mcv_rss.message.mcv_jira_rss.future',
+                                                    i18n=True, version=release)
                 else:
-                    await JobQueue.trigger_hook_all('mcv_jira_rss', message='mcv_rss.message.mcv_jira_rss', i18n=True, version=release)
+                    await JobQueue.trigger_hook_all('mcv_jira_rss', message='mcv_rss.message.mcv_jira_rss', i18n=True,
+                                                    version=release)
                 verlist.append(release)
                 update_stored_list('scheduler', 'mcv_jira_rss', verlist)
 

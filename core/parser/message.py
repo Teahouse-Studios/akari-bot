@@ -5,7 +5,8 @@ import traceback
 from datetime import datetime
 
 from config import Config
-from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, base_superuser_list
+from core.builtins import command_prefix, ExecutionLockList, ErrorMessage, MessageTaskManager, Url, Bot, \
+    base_superuser_list
 from core.exceptions import AbuseWarning, FinishedException, InvalidCommandFormatError, InvalidHelpDocTypeError, \
     WaitCancelException, NoReportException, SendMessageFailed
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
@@ -358,9 +359,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     if bug_report_targets:
                         for target in bug_report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
-                                await f.send_direct_message(msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
+                                await f.send_direct_message(
+                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
             if command_first_word in current_unloaded_modules and msg.check_super_user():
-                await msg.send_message(msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
+                await msg.send_message(
+                    msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
             elif command_first_word in err_modules:
                 await msg.send_message(msg.locale.t('error.module.unloaded', module=command_first_word))
 
@@ -465,7 +468,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             if bug_report_targets:
                                 for target in bug_report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
-                                        await f.send_direct_message(msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
+                                        await f.send_direct_message(
+                                            msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
                         finally:
                             ExecutionLockList.remove(msg)
 

@@ -1,5 +1,4 @@
 import mimetypes
-import mimetypes
 import os
 import re
 import traceback

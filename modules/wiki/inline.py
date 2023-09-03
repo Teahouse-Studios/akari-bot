@@ -101,23 +101,29 @@ async def _(msg: Bot.MessageSession):
                             if guess_type is not None:
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                                     if msg.Feature.image:
-                                        await msg.send_message([Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)), Image(dl)],
-                                                               quote=False)
+                                        await msg.send_message(
+                                            [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
+                                             Image(dl)],
+                                            quote=False)
                                         img_send = True
                                 elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                                     if msg.Feature.voice:
-                                        await msg.send_message([Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)), Voice(dl)],
-                                                               quote=False)
+                                        await msg.send_message(
+                                            [Plain(msg.locale.t('wiki.message.wiki_inline.flies', file=get_page.file)),
+                                             Voice(dl)],
+                                            quote=False)
                         if msg.Feature.image:
                             if get_page.status and wiki_.wiki_info.in_allowlist:
                                 if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
                                     get_infobox = await generate_screenshot_v2(qq,
                                                                                allow_special_page=q[qq].in_allowlist,
                                                                                content_mode=get_page.has_template_doc or
-                                                                               get_page.title.split(':')[0] in [
+                                                                               get_page.title.split(':')[
+                                                                                   0] in [
                                                                                    'User'] or
-                                                                               ('Template:Disambiguation' in get_page.templates
-                                                                                or 'Template:Version disambiguation' in get_page.templates))
+                                                                               (
+                                                                                   'Template:Disambiguation' in get_page.templates
+                                                                                   or 'Template:Version disambiguation' in get_page.templates))
                                     if get_infobox:
                                         await msg.send_message(Image(get_infobox), quote=False)
                                 else:

@@ -5,7 +5,7 @@ import ujson as json
 from PIL import ImageFont
 
 from config import Config
-from core.builtins import Url, ErrorMessage
+from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download_to_cache
 from core.utils.http import get_url

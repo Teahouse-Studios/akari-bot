@@ -166,11 +166,14 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules):
                 reloadCnt = ModulesManager.reload_module(module)
                 if reloadCnt > 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + ('\n' if len(extra_modules) != 0 else '') + \
-                        '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with", reloadCnt=reloadCnt - 1)
+                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
+                        '\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with",
+                                                                reloadCnt=reloadCnt - 1)
                 elif reloadCnt == 1:
                     return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
-                        '\n' if len(extra_modules) != 0 else '') + '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.no_more")
+                        '\n' if len(extra_modules) != 0 else '') + '\n'.join(extra_modules) + msg.locale.t(
+                        "core.message.module.reload.no_more")
                 else:
                     return f'{msg.locale.t("core.message.module.reload.failed")}'
 
@@ -254,7 +257,7 @@ async def config_modules(msg: Bot.MessageSession):
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
                                                       msgs='\n'.join(recommend_modules_list) + '\n\n' +
-                                                      '\n'.join(recommend_modules_help_doc_list)))
+                                                           '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):
                 msglist = []
@@ -409,7 +412,8 @@ async def _(msg: Bot.MessageSession):
                     legacy_help = False
                     await msg.finish([Image(render),
                                       Plain(msg.locale.t("core.message.module.help.more_information",
-                                                         prefix=msg.prefixes[0], help_url=Config('help_url'), donate_url=Config('donate_url')))])
+                                                         prefix=msg.prefixes[0], help_url=Config('help_url'),
+                                                         donate_url=Config('donate_url')))])
         except Exception:
             traceback.print_exc()
     if legacy_help:

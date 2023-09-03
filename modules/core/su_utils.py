@@ -3,11 +3,11 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 
 import matplotlib.pyplot as plt
 import numpy as np
 import ujson as json
+from dateutil.relativedelta import relativedelta
 
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
@@ -16,9 +16,9 @@ from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
-from database import BotDBUtil
-from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.info import Info
+from core.utils.storedata import get_stored_list, update_stored_list
+from database import BotDBUtil
 
 su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
         await msg.finish(msg.locale.t("core.analytics.message.counts", first_record=first_record.timestamp,
-                         counts=get_counts))
+                                      counts=get_counts))
     else:
         await msg.finish(msg.locale.t("core.analytics.message.disabled"))
 
@@ -287,7 +287,6 @@ if Info.subprocess:
             write_version_cache(msg)
             restart()
 
-
 upd = module('update', developers=['OasisAkari'], required_superuser=True)
 
 
@@ -328,7 +327,6 @@ if Info.subprocess:
             await msg.send_message(pull_repo())
             await msg.send_message(update_dependencies())
             restart()
-
 
 if Bot.FetchTarget.name == 'QQ':
     resume = module('resume', developers=['OasisAkari'], required_base_superuser=True)
@@ -388,7 +386,6 @@ if Bot.FetchTarget.name == 'QQ':
             await msg.send_message(msg.locale.t('core.message.forward_msg.enable'))
         else:
             await msg.send_message(msg.locale.t('core.message.forward_msg.disable'))
-
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
 
@@ -479,7 +476,8 @@ if Config('openai_api_key'):
             group = msg.parsed_msg['<target>']
             target = BotDBUtil.TargetInfo(group)
             target.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
+            await msg.finish(
+                msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
         else:
             target = msg.data
             target.modify_petal(int(petal))

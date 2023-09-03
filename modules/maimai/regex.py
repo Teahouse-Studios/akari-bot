@@ -1,8 +1,8 @@
 import re
 
-from core.logger import Logger
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
+from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover
 from modules.maimai.libraries.maimaidx_music import Music, TotalList

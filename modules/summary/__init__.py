@@ -34,7 +34,8 @@ async def _(msg: Bot.MessageSession):
     texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
 
     char_count = sum([len(i) for i in texts])
-    wait_msg = await msg.send_message(msg.locale.t('summary.message.waiting', count=char_count, time=round(char_count / 33.5, 1)))
+    wait_msg = await msg.send_message(
+        msg.locale.t('summary.message.waiting', count=char_count, time=round(char_count / 33.5, 1)))
 
     nth = 0
     prev = ''

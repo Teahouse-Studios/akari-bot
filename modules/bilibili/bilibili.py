@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from core.builtins import Bot
-from core.builtins import Image, Plain, ErrorMessage
+from core.builtins import Image, Plain
 from core.utils.http import get_url
 
 
@@ -12,10 +12,10 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
             await msg.finish(msg.locale.t("bilibili.message.error.invalid"))
         else:
             await msg.finish(msg.locale.t('bilibili.message.not_found'))
-        
+
     view = res['data']['View']
     stat = view['stat']
-    
+
     pic = view['pic']
     video_url = f"https://www.bilibili.com/video/{view['bvid']}\n"
     title = view['title']
@@ -45,18 +45,20 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
         output = video_url + msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
     else:
         output = video_url + msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
-                                                            owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku, reply=stat_reply,
-                                                            like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share, time=time)
-        
+                                          owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
+                                          reply=stat_reply,
+                                          like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
+                                          time=time)
+
     await msg.finish([Image(pic), Plain(output)])
 
 
 def format_num(number):
     if number >= 1000000000:
-        return f'{number/1000000000:.1f}G'
+        return f'{number / 1000000000:.1f}G'
     elif number >= 1000000:
-        return f'{number/1000000:.1f}M'
+        return f'{number / 1000000:.1f}M'
     elif number >= 1000:
-        return f'{number/1000:.1f}k'
+        return f'{number / 1000:.1f}k'
     else:
         return str(number)

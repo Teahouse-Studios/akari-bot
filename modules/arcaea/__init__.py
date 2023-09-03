@@ -1,12 +1,10 @@
 import os
-import traceback
 import urllib.parse
 
 from config import CFG
-from core.builtins import Bot, ExecutionLockList
+from core.builtins import Bot
 from core.builtins import Plain, Image
 from core.component import module
-from core.logger import Logger
 from core.utils.http import get_url
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',

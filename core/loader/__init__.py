@@ -6,9 +6,8 @@ import traceback
 from typing import Dict, Union, Callable
 
 from config import Config
-
 from core.logger import Logger
-from core.types import Module, PrivateAssets, Secret
+from core.types import Module, PrivateAssets
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
 from core.utils.i18n import load_locale_file
 

@@ -1,8 +1,8 @@
 import re
+from html import unescape
 
 import ujson as json
 
-from html import unescape
 from core.builtins import Bot
 from core.builtins import Plain, Image, Url
 from core.component import module

@@ -5,8 +5,7 @@ import re
 import sys
 
 import ujson as json
-
-from aiocqhttp import Event, Error
+from aiocqhttp import Event
 
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name

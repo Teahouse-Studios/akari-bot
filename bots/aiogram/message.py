@@ -8,7 +8,7 @@ from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MS, ErrorMessage
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, \
+from core.types import FetchTarget as FT, \
     FinishedSession as FinS
 from core.utils.image import image_split
 from database import BotDBUtil

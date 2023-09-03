@@ -13,7 +13,7 @@ from core.builtins import Bot, Plain, Image, MessageSession as MS
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage, Voice
 from core.logger import Logger
-from core.types import MsgInfo, Session, FetchTarget as FT, FinishedSession as FinS
+from core.types import FetchTarget as FT, FinishedSession as FinS
 from core.utils.http import download_to_cache
 from database import BotDBUtil
 

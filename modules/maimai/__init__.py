@@ -1,11 +1,9 @@
-﻿from core.builtins import Bot, command_prefix, Plain, Image as BImage
-from core.component import module
-from core.logger import Logger
-from core.utils.image import msgchain2image
+﻿from core.builtins import command_prefix
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import update_alias, get_alias, get_cover
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, get_score_list
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
+from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, \
+    get_score_list
 from .regex import *
 
 total_list = TotalList()
@@ -442,12 +440,12 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
-                scoreline=scoreline,
-                tap_great=tap_great,
-                tap_great_prop=tap_great_prop,
-                brk=brk,
-                b2t_great=b2t_great,
-                b2t_great_prop=b2t_great_prop)}''')
+              scoreline=scoreline,
+              tap_great=tap_great,
+              tap_great_prop=tap_great_prop,
+              brk=brk,
+              b2t_great=b2t_great,
+              b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 

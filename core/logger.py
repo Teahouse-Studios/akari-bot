@@ -15,7 +15,7 @@ if not os.path.exists(logpath):
 
 bot_name = re.split(r'[/\\]', sys.path[0])[-1].title()
 basic_logger_format = "<cyan>[" + bot_name + \
-    "]</cyan><yellow>[{name}:{function}:{line}]</yellow><green>[{time:YYYY-MM-DD HH:mm:ss}]</green><level>[{level}]:{message}</level>"
+                      "]</cyan><yellow>[{name}:{function}:{line}]</yellow><green>[{time:YYYY-MM-DD HH:mm:ss}]</green><level>[{level}]:{message}</level>"
 
 
 class Logginglogger:

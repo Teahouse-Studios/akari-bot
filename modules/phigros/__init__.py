@@ -57,7 +57,8 @@ async def _(msg: Bot.MessageSession):
         try:
             headers = p_headers.copy()
             headers['X-LC-Session'] = bind[0]
-            get_save_url = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave', headers=headers,
+            get_save_url = await get_url('https://rak3ffdi.cloud.tds1.tapapis.cn/1.1/classes/_GameSave',
+                                         headers=headers,
                                          fmt='json')
             save_url = get_save_url['results'][0]['gameFile']['url']
             download = await download_to_cache(save_url)

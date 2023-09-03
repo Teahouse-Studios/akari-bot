@@ -2,7 +2,7 @@ from core.builtins import Bot
 from core.component import module
 from .dice import GenerateMessage
 
-dice = module('dice', alias='rd', developers=['Light-Beacon'], desc='{dice.help.desc}',)
+dice = module('dice', alias='rd', developers=['Light-Beacon'], desc='{dice.help.desc}', )
 
 
 @dice.command('<dices> [<dc>] {{dice.help}}',
@@ -39,7 +39,7 @@ async def _(message: Bot.MessageSession):
 @dice.handle('rule {{dice.help.rule}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     dc_rule = msg.data.options.get('dice_dc_reversed')
-    
+
     if dc_rule:
         msg.data.edit_option('dice_dc_reversed', False)
         await msg.finish(msg.locale.t("dice.message.rule.disable"))

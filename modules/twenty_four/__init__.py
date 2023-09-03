@@ -1,9 +1,10 @@
-import random
 import itertools
+import random
+
+from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
-from simpleeval import simple_eval
 
 no_solution = ['无解', '無解', 'none', 'n/a']
 

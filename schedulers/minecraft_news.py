@@ -7,12 +7,11 @@ import ujson as json
 
 from config import Config, CFG
 from core.builtins import Url
+from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
-
 
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')

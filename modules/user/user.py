@@ -21,7 +21,8 @@ async def get_user_info(msg, wikiurl, username, pic=False):
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
-            return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)], match_interwiki.group(2),
+            return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
+                                       match_interwiki.group(2),
                                        pic)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
@@ -51,7 +52,8 @@ async def get_user_info(msg, wikiurl, username, pic=False):
             data['global_users_groups'].append(groups[g] if g in groups else g)
     data['registration_time'] = base_user_info['registration']
     data['registration_time'] = UTC8(data['registration_time'], 'full') if data[
-        'registration_time'] is not None else msg.locale.t('unknown')
+        'registration_time'] is not None else msg.locale.t(
+        'unknown')
     data['edited_count'] = str(base_user_info['editcount'])
     data['gender'] = base_user_info['gender']
     if data['gender'] == 'female':
@@ -81,11 +83,15 @@ async def get_user_info(msg, wikiurl, username, pic=False):
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
-        data['blocked_time'] = UTC8(data['blocked_time'], 'full') if data['blocked_time'] is not None else msg.locale.t('unknown')
+        data['blocked_time'] = UTC8(data['blocked_time'], 'full') if data['blocked_time'] is not None else msg.locale.t(
+            'unknown')
         data['blocked_expires'] = base_user_info['blockedexpiry']
-        data['blocked_expires'] = UTC8(data['blocked_expires'], 'full') if data['blocked_expires'] is not None else msg.locale.t('unknown')
+        data['blocked_expires'] = UTC8(data['blocked_expires'], 'full') if data[
+            'blocked_expires'] is not None else msg.locale.t(
+            'unknown')
         data['blocked_reason'] = base_user_info['blockedreason']
-        data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] is not None else msg.locale.t('unknown')
+        data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] is not None else msg.locale.t(
+            'unknown')
 
     if pic:
         assets_path = os.path.abspath('./assets/')
@@ -108,33 +114,35 @@ async def get_user_info(msg, wikiurl, username, pic=False):
         elif blocked_by and blocked_reason:
             bantype = 'Y'
         image = tpg(msg,
-            favicon=os.path.join(site_icon, 'Wiki.png'),
-            wikiname=wiki.wiki_info.name,
-            username=data['username'] if 'username' in data else '?',
-            gender=data['gender'] if 'gender' in data else '?',
-            registertime=data['registration_time'] if 'registration_time' in data else '?',
-            contributionwikis=data['edited_wiki_count'] if 'edited_wiki_count' in data else '?',
-            createcount=data['created_page_count'] if 'created_page_count' in data else '?',
-            editcount=data['edited_count'] if 'edited_count' in data else '?',
-            deletecount=data['deleted_count'] if 'deleted_count' in data else '?',
-            patrolcount=data['patrolled_count'] if 'patrolled_count' in data else '?',
-            sitetop=data['site_rank'] if 'site_rank' in data else '?',
-            globaltop=data['global_rank'] if 'global_rank' in data else '?',
-            wikipoint=data['wikipoints'] if 'wikipoints' in data else '?',
-            blockbyuser=data['blocked_by'] if 'blocked_by' in data else '?',
-            blocktimestamp1=data['blocked_time'] if 'blocked_time' in data else '?',
-            blocktimestamp2=data['blocked_expires'] if 'blocked_expires' in data else '?',
-            blockreason=data['blocked_reason'] if 'blocked_reason' in data else '?',
-            bantype=bantype)
+                    favicon=os.path.join(site_icon, 'Wiki.png'),
+                    wikiname=wiki.wiki_info.name,
+                    username=data['username'] if 'username' in data else '?',
+                    gender=data['gender'] if 'gender' in data else '?',
+                    registertime=data['registration_time'] if 'registration_time' in data else '?',
+                    contributionwikis=data['edited_wiki_count'] if 'edited_wiki_count' in data else '?',
+                    createcount=data['created_page_count'] if 'created_page_count' in data else '?',
+                    editcount=data['edited_count'] if 'edited_count' in data else '?',
+                    deletecount=data['deleted_count'] if 'deleted_count' in data else '?',
+                    patrolcount=data['patrolled_count'] if 'patrolled_count' in data else '?',
+                    sitetop=data['site_rank'] if 'site_rank' in data else '?',
+                    globaltop=data['global_rank'] if 'global_rank' in data else '?',
+                    wikipoint=data['wikipoints'] if 'wikipoints' in data else '?',
+                    blockbyuser=data['blocked_by'] if 'blocked_by' in data else '?',
+                    blocktimestamp1=data['blocked_time'] if 'blocked_time' in data else '?',
+                    blocktimestamp2=data['blocked_expires'] if 'blocked_expires' in data else '?',
+                    blockreason=data['blocked_reason'] if 'blocked_reason' in data else '?',
+                    bantype=bantype)
         return [Plain(data['url']), Image(image)]
 
     else:
         msgs = []
         if user := data.get('username', False):
-            msgs.append(msg.locale.t('user.message.username') + user + (' | ' + msg.locale.t('user.message.edited_count') + data['edited_count']
-                                        if 'edited_count' in data and 'created_page_count' not in data else ''))
+            msgs.append(msg.locale.t('user.message.username') + user + (
+                ' | ' + msg.locale.t('user.message.edited_count') + data['edited_count']
+                if 'edited_count' in data and 'created_page_count' not in data else ''))
         if users_groups := data.get('users_groups', False):
-            msgs.append(msg.locale.t('user.message.users_groups') + msg.locale.t('message.delimiter').join(users_groups))
+            msgs.append(
+                msg.locale.t('user.message.users_groups') + msg.locale.t('message.delimiter').join(users_groups))
         if gender_ := data.get('gender', False):
             msgs.append(msg.locale.t('user.message.gender') + gender_)
         if registration := data.get('registration_time', False):
@@ -172,7 +180,8 @@ async def get_user_info(msg, wikiurl, username, pic=False):
             msgs.append(' | '.join(sub_edit_counts4))
 
         if global_users_groups := data.get('global_users_groups', False):
-            msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('message.delimiter').join(global_users_groups))
+            msgs.append(msg.locale.t('user.message.global_users_groups') + msg.locale.t('message.delimiter').join(
+                global_users_groups))
         if global_edit_count := data.get('global_edit_count', False):
             msgs.append(msg.locale.t('user.message.global_edited_count') + global_edit_count)
         if global_home := data.get('global_home', False):
@@ -181,9 +190,13 @@ async def get_user_info(msg, wikiurl, username, pic=False):
         if blocked_by := data.get('blocked_by', False):
             msgs.append(data['user'] + msg.locale.t('user.message.user.blocked'))
             msgs.append(
-                msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=blocked_by) + (msg.locale.t('user.message.user.blocked.blocked_time') + data['blocked_time'] if 'blocked_time' in data else '')
-                + (msg.locale.t('user.message.user.blocked.blocked_expires') + data['blocked_expires'] if 'blocked_expires' in data else '')
-                + (msg.locale.t('user.message.user.blocked.blocked_reason') + data['blocked_reason'] if 'blocked_reason' in data else ''))
+                msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=blocked_by) + (
+                    msg.locale.t('user.message.user.blocked.blocked_time') + data[
+                        'blocked_time'] if 'blocked_time' in data else '')
+                + (msg.locale.t('user.message.user.blocked.blocked_expires') + data[
+                    'blocked_expires'] if 'blocked_expires' in data else '')
+                + (msg.locale.t('user.message.user.blocked.blocked_reason') + data[
+                    'blocked_reason'] if 'blocked_reason' in data else ''))
 
         if url := data.get('url', False):
             msgs.append(url)

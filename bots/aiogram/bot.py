@@ -38,6 +38,7 @@ async def on_startup(dispatcher):
     await init_async()
     await load_prompt(FetchTarget)
 
+
 if 'subprocess' in sys.argv:
     Info.subprocess = True
 

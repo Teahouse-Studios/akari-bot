@@ -1,17 +1,17 @@
-import os
 import platform
+import time
+from datetime import datetime, timedelta
+
 import jwt
 import psutil
-import time
+from cpuinfo import get_cpu_info
 
 from config import Config
-from core.builtins import Bot, command_prefix, PrivateAssets
+from core.builtins import Bot, command_prefix
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
-from cpuinfo import get_cpu_info
 from database import BotDBUtil
-from datetime import datetime, timedelta
 
 jwt_secret = Config('jwt_secret')
 
@@ -132,7 +132,8 @@ locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon']
 async def _(msg: Bot.MessageSession):
     lang = msg.locale.t("language")
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    await msg.finish(f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
+    await msg.finish(
+        f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
 
 
 @locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
@@ -167,8 +168,9 @@ async def _(msg: Bot.MessageSession):
         rights += '\n' + msg.locale.t("core.message.whoami.botadmin")
     if msg.check_super_user():
         rights += '\n' + msg.locale.t("core.message.whoami.superuser")
-    await msg.finish(msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + rights,
-                     disable_secret_check=True)
+    await msg.finish(
+        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + rights,
+        disable_secret_check=True)
 
 
 tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)

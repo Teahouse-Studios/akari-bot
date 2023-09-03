@@ -61,14 +61,15 @@ class DiceMod(DiceItemBase):
     def __init__(self, session, diceCode: str, postive: bool):
         super().__init__(diceCode, postive)
         if not diceCode.isdigit():
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.M.invalid"), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.M.invalid"),
                                  '+' if self.postive else '-' + diceCode)
         else:
             self.result = int(diceCode)
             if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
-                raise DiceValueError(session, 
-                                     session.locale.t("dice.message.error.value.M.out_of_range", min=MIN_MOD_NUMBER, max=MAX_MOD_NUMBER), 
+                raise DiceValueError(session,
+                                     session.locale.t("dice.message.error.value.M.out_of_range", min=MIN_MOD_NUMBER,
+                                                      max=MAX_MOD_NUMBER),
                                      self.result)
 
     def GetDetail(self):
@@ -86,18 +87,18 @@ class Dice(DiceItemBase):
         self.type = args[1]
         self.adv = args[2]
         if self.count <= 0 or self.count > MAX_DICE_COUNT:
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.n.out_of_range", max=MAX_DICE_COUNT), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.n.out_of_range", max=MAX_DICE_COUNT),
                                  self.count)
         if self.type <= 0:
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.n.less2"), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.n.less2"),
                                  self.count)
         if self.type == 1:
             raise DiceValueError(session, session.locale.t("dice.message.error.value.n.d1"))
         if abs(self.adv) > self.count:
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.k.out_of_range"), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.k.out_of_range"),
                                  self.adv)
 
     def GetArgs(self, session):
@@ -121,16 +122,16 @@ class Dice(DiceItemBase):
                 advantage += '1'  # K/KL后没有值默认为1
         # 语法合法检定
         if not diceCount.isdigit():
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.m.invalid"), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.m.invalid"),
                                  diceCount)
         if not diceType.isdigit():
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.n.invalid"), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.n.invalid"),
                                  diceType)
         if not (advantage.isdigit() or (advantage[0] == '-' and advantage[1:].isdigit())):
-            raise DiceValueError(session, 
-                                 session.locale.t("dice.message.error.value.k.invalid"), 
+            raise DiceValueError(session,
+                                 session.locale.t("dice.message.error.value.k.invalid"),
                                  advantage)
         return (int(diceCount), int(diceType), int(advantage))
 
@@ -182,12 +183,14 @@ class Dice(DiceItemBase):
 
 
 async def GenerateMessage(msg, dices: str, times: int, dc: int):
-    if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0, MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
+    if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
+                MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
         raise OverflowError(msg.locale.t("error.config.invalid"))
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
         return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
-        return DiceValueError(msg, msg.locale.t('dice.message.error.value.N.out_of_range', max=MAX_ROLL_TIMES), times).message
+        return DiceValueError(msg, msg.locale.t('dice.message.error.value.N.out_of_range', max=MAX_ROLL_TIMES),
+                              times).message
     diceCodeList = re.compile(r'[+-]?[^+-]+').findall(dices)
     diceList = []
     haveErr = False

@@ -170,13 +170,15 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
                     if version_info is not None:
-                        await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                        await msg.finish(
+                            f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
             elif ver not in mod_info[3]:
                 await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
                 if version_info is not None:
-                    await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                    await msg.finish(
+                        f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
         else:  # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
             for version in version_index:

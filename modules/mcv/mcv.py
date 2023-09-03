@@ -73,7 +73,7 @@ async def mcbv(msg):
 """ if IP.country != 'China' else '') + \
         f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
 {ms_store_version if ms_store_version is not None else msg.locale.t('mcv.message.mcbv.get_failed')}
-""" +\
+""" + \
         msg.locale.t("mcv.message.mcbv", msg2=msg2)
 
 

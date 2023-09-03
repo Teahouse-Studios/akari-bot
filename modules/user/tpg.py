@@ -101,9 +101,12 @@ def tpg(msg, favicon, wikiname, username, gender, registertime, contributionwiki
     draw.text((690, 1195), str(globaltop), '#ffffff', font=font)
 
     if bantype == 'Y' or bantype == 'YN':
-        draw.text((200, 1439), msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=str(blockbyuser)), '#ffffff', font=font)
-        draw.text((200, 1489), msg.locale.t('user.message.blocked.blocked_time') + str(blocktimestamp1) + '（UTC+8）', '#ffffff', font=font)
-        draw.text((200, 1539), msg.locale.t('user.message.blocked.blocked_expires') + str(blocktimestamp2), '#ffffff', font=font)
+        draw.text((200, 1439), msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=str(blockbyuser)),
+                  '#ffffff', font=font)
+        draw.text((200, 1489), msg.locale.t('user.message.blocked.blocked_time') + str(blocktimestamp1) + '（UTC+8）',
+                  '#ffffff', font=font)
+        draw.text((200, 1539), msg.locale.t('user.message.blocked.blocked_expires') + str(blocktimestamp2), '#ffffff',
+                  font=font)
     if bantype == 'Y':
         draw.text((200, 1589), str(blockreason), '#ffffff', font=font)
     filepath = abspath('./cache/' + str(uuid.uuid4()) + '.png')

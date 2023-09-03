@@ -1,5 +1,4 @@
 import re
-import traceback
 from html import escape
 from typing import List, Union
 

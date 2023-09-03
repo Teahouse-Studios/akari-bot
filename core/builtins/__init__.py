@@ -2,8 +2,8 @@ import asyncio
 from typing import Union, List
 
 from config import Config
-from core.types.message import FetchTarget, FetchedSession as FS, MsgInfo, Session, ModuleHookContext
 from core.loader import ModulesManager
+from core.types.message import FetchTarget, FetchedSession as FS, MsgInfo, Session, ModuleHookContext
 from database import BotDBUtil
 from .message import *
 from .message.chain import *

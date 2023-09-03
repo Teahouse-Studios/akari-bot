@@ -12,6 +12,7 @@ async def meme(query: str):
     )
     return f'Moegirlpedia result: {results[0]}\n\nNbnhhsh result: {results[1]}\n\nUrban Dictionary result: {results[2]}'
 
+
 meme_tool = AkariTool.from_function(
     func=meme,
     description='A tool for looking up Internet memes, powered by Moegirlpedia, Nbnhhsh and Urban Dictionary. Input should be the exact name of the meme.'

@@ -1,7 +1,7 @@
 import os
+from os.path import abspath
 
 import toml
-from os.path import abspath
 
 from core.exceptions import ConfigFileNotFound
 

@@ -62,7 +62,8 @@ async def _(msg: Bot.MessageSession):
             elif block['type'] == 'latex':
                 chain.append(Image(PILImage.open(io.BytesIO(await generate_latex(block['content'])))))
             elif block['type'] == 'code':
-                chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
+                chain.append(Image(PILImage.open(
+                    io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
 
         if await check_bool(res):
             rickroll(msg)

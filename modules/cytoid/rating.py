@@ -301,7 +301,8 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), chart_name, '#ffffff', font=font)
     drawtext.text(
-        (20, 185), f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
+        (20, 185),
+        f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
         f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
     playtime_width = font3.getsize(playtime)[0]

@@ -99,7 +99,8 @@ def drawb19(username, rks_acc, b19data):
             cardimg.alpha_composite(triangle_img.resize((75, 75)), (0, 0))
             draw_card = ImageDraw.Draw(cardimg)
             draw_card.text((20, 155), song_id, '#ffffff', font=font3)
-            draw_card.text((20, 180), f'Score: {song_score} Acc: {song_acc:.4f}\nRks: {song_rks:.4f}', '#ffffff', font=font)
+            draw_card.text((20, 180), f'Score: {song_score} Acc: {song_acc:.4f}\nRks: {song_rks:.4f}', '#ffffff',
+                           font=font)
 
             b19img.alpha_composite(cardimg, (w, h))
             fname += 1

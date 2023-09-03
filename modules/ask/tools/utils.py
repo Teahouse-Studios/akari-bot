@@ -10,12 +10,14 @@ from core.utils.i18n import Locale
 def to_json_func(func: Callable):
     async def wrapper(*args, **kwargs):
         return json.dumps(await func(*args, **kwargs))
+
     return wrapper
 
 
 def to_async_func(func: Callable):
     async def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -25,6 +27,7 @@ def with_args(func: Callable, *args, **kwargs):
         if len(a) == 1 and a[0] == '':
             return await func(*args, **kwargs, **k)
         return await func(*args, *a, **kwargs, **k)
+
     return wrapper
 
 
@@ -44,7 +47,8 @@ class AkariTool(StructuredTool):
             args_schema: Any = None,
             description: str = None,
             return_direct: bool = False):
-        super().__init__(name=name, args_schema=args_schema, description=description, return_direct=return_direct, func=func)
+        super().__init__(name=name, args_schema=args_schema, description=description, return_direct=return_direct,
+                         func=func)
         self.coroutine = func
 
 

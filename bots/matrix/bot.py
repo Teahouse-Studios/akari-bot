@@ -1,19 +1,18 @@
 import asyncio
 import os
 import sys
-from tracemalloc import start
-from bots.matrix import client
 
-from bots.matrix.client import bot
-from bots.matrix.info import client_name
 import nio
 
+from bots.matrix import client
+from bots.matrix.client import bot
+from bots.matrix.info import client_name
+from bots.matrix.message import MessageSession, FetchTarget
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
-from bots.matrix.message import MessageSession, FetchTarget
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + "/assets"))
@@ -96,6 +95,7 @@ async def start():
     Logger.info(f"starting sync loop")
     await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
     Logger.error(f"sync loop stopped")
+
 
 if bot:
     if 'subprocess' in sys.argv:

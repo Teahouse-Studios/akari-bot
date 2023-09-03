@@ -5,11 +5,11 @@ import os
 import ujson as json
 
 from config import CFG
+from core.background_tasks import init_background_task
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger, bot_name
 from core.queue import JobQueue
 from core.scheduler import Scheduler
-from core.background_tasks import init_background_task
 from core.types import PrivateAssets, Secret
 from core.utils.info import Info
 

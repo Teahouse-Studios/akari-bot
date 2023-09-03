@@ -34,6 +34,7 @@ async def on_ready():
         await load_prompt(FetchTarget)
         count = 1
 
+
 slash_load_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'slash'))
 
 
@@ -97,6 +98,7 @@ async def on_message(message):
             target=message.channel,
             sender=message.author))
     await parser(msg, prefix=prefix)
+
 
 if 'subprocess' in sys.argv:
     Info.subprocess = True

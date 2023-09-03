@@ -1,10 +1,11 @@
-import aiohttp
 import re
+from urllib.parse import urlparse
+
+import aiohttp
 
 from core.builtins import Bot
 from core.component import module
 from .bilibili import get_info
-from urllib.parse import urlparse
 
 api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
 

@@ -1,4 +1,3 @@
-
 import os
 
 from langchain.chains import RetrievalQA
@@ -47,6 +46,7 @@ self_knowledge = RetrievalQA.from_chain_type(
 
 async def self_knowledge_func(query: str):
     return await self_knowledge.arun(query)
+
 
 self_knowledge_tool = AkariTool.from_function(
     func=self_knowledge_func,
