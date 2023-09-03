@@ -101,6 +101,14 @@ class CFG:
         cls.load()
         return True
 
+    @classmethod
+    def get_url(cls, q):
+        q = cls.get(q)
+        if q:
+            if q[-1] != '/':
+                q += '/'
+        return q
+
 
 CFG.load()
 Config = CFG.get

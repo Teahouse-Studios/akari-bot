@@ -109,7 +109,7 @@ async def _(msg: Bot.MessageSession):
 
 @ccode.command('stop {{chemical_code.stop.help}}')
 async def s(msg: Bot.MessageSession):
-    state = play_state.get(msg.target.target_id, False)  # 尝试获取 play_state 中是否有此对象的游戏状态
+    state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.target_id]['active'] = False  # 标记为非活跃状态
@@ -125,7 +125,7 @@ async def s(msg: Bot.MessageSession):
 @ccode.command('<csid> {{chemical_code.help.csid}}')
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
-    if (id.isdigit() and int(id) > 0):  # 如果 ID 为纯数字
+    if id.isdigit() and int(id) > 0:  # 如果 ID 为纯数字
         await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
         await msg.finish(msg.locale.t('chemical_code.message.csid.invalid'))
@@ -240,7 +240,8 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
         await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
-                                              Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha', times=set_timeout))])
+                                              Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
+                                                                                 times=set_timeout))])
         if play_state[msg.target.target_id]['active']:  # 检查对象是否为活跃状态
             if result.as_display(text_only=True) == csr['name']:
                 await result.send_message(msg.locale.t('chemical_code.message.correct'))

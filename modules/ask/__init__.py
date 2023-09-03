@@ -1,15 +1,14 @@
 import io
 import re
-
 from decimal import Decimal
-from langchain.callbacks import get_openai_callback
+
 from PIL import Image as PILImage
+from langchain.callbacks import get_openai_callback
 
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.exceptions import NoReportException
 from database import BotDBUtil
 from .agent import agent_executor
 from .formatting import generate_latex, generate_code_snippet

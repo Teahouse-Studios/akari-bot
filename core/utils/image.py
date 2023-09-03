@@ -8,14 +8,14 @@ import ujson as json
 from PIL import Image as PImage
 from aiofile import async_open
 
-from config import Config
+from config import CFG
 from core.builtins import Plain, Image, Voice, Embed, MessageChain
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download_to_cache
 
-web_render = Config('web_render')
-web_render_local = Config('web_render_local')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 
 async def image_split(i: Image) -> List[Image]:
@@ -116,7 +116,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], use_local=Tru
         fi.write(d['content'])
 
     try:
-        pic = await download_to_cache((web_render_local if use_local else web_render) + '/element_screenshot',
+        pic = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",
