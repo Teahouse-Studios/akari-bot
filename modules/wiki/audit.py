@@ -6,7 +6,8 @@ from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
 if Config('enable_urlmanager'):
-    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
+    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True,
+                 alias='wau')
 
     @aud.handle(['trust <apiLink>', 'block <apiLink>'])
     async def _(msg: Bot.MessageSession):
