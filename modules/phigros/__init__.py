@@ -26,8 +26,8 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'Discord|Channel',
         'Telegram|group',
         'Telegram|supergroup',
-            'Kook|GROUP']:
-        send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning")))
+        'Kook|GROUP']:
+        send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False))
         need_revoke = True
     headers = p_headers.copy()
     headers['X-LC-Session'] = sessiontoken
@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         bind = PgrBindInfoManager(msg).set_bind_info(sessiontoken=sessiontoken, username=get_user_info['nickname'])
         if bind:
             send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.success",
-                                                                username=get_user_info['nickname'])))
+                                                                username=get_user_info['nickname']), quote=False))
         if need_revoke:
             await msg.sleep(15)
             for i in send_msg:
