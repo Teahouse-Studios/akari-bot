@@ -54,7 +54,7 @@ async def _(msg: Bot.MessageSession):
 async def config_modules(msg: Bot.MessageSession):
     alias = ModulesManager.modules_aliases
     modules_ = ModulesManager.return_modules_list(
-        targetFrom=msg.target.target_from)
+        target_from=msg.target.target_from)
     enabled_modules_list = BotDBUtil.TargetInfo(msg).enabled_modules
     wait_config = [msg.parsed_msg.get(
         '<module>')] + msg.parsed_msg.get('...', [])
@@ -277,7 +277,7 @@ hlp = module('help',
 @hlp.command('<module> {{core.help.module.help.detail}}')
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
-        targetFrom=msg.target.target_from)
+        target_from=msg.target.target_from)
     alias = ModulesManager.modules_aliases
     if msg.parsed_msg is not None:
         msgs = []
@@ -347,7 +347,7 @@ async def bot_help(msg: Bot.MessageSession):
 @hlp.command('{{core.help.module.help}}')
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
-        targetFrom=msg.target.target_from)
+        target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
     legacy_help = True
     if msg.Feature.image:
@@ -439,7 +439,7 @@ async def _(msg: Bot.MessageSession):
 
 async def modules_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
-        targetFrom=msg.target.target_from)
+        target_from=msg.target.target_from)
     legacy_help = True
     if msg.Feature.image:
         try:

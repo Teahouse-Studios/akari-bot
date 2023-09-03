@@ -153,20 +153,20 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, targetFrom: str = None) -> \
+    def return_modules_list(cls, target_from: str = None) -> \
             Dict[str, Module]:
-        if targetFrom is not None:
-            if targetFrom in cls._return_cache:
-                return cls._return_cache[targetFrom]
+        if target_from is not None:
+            if target_from in cls._return_cache:
+                return cls._return_cache[target_from]
             returns = {}
             for m in cls.modules:
                 if isinstance(cls.modules[m], Module):
-                    if targetFrom in cls.modules[m].exclude_from:
+                    if target_from in cls.modules[m].exclude_from:
                         continue
                     available = cls.modules[m].available_for
-                    if targetFrom in available or '*' in available:
+                    if target_from in available or '*' in available:
                         returns.update({m: cls.modules[m]})
-            cls._return_cache.update({targetFrom: returns})
+            cls._return_cache.update({target_from: returns})
             return returns
         return cls.modules
 

@@ -115,7 +115,7 @@ async def get_sender(sender_id: str):
 async def get_module_list(target_id: str):
     target_from = '|'.join(target_id.split('|')[:-2])
     return ModulesManager.return_modules_list(
-        targetFrom=target_from)
+        target_from=target_from)
 
 
 @app.post('/module/{target_id}/{module_name}')
