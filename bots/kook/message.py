@@ -150,6 +150,11 @@ class MessageSession(MessageSessionT):
         except Exception:
             Logger.error(traceback.format_exc())
 
+    sendMessage = send_message
+    asDisplay = as_display
+    toMessageChain = to_message_chain
+    checkNativePermission = check_native_permission
+
     class Typing:
         def __init__(self, msg: MessageSessionT):
             self.msg = msg

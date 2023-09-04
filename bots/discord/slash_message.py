@@ -92,8 +92,12 @@ class MessageSession(MessageSessionT):
             return True
         return False
 
-    def as_display(self):
+    def as_display(self, text_only=False):
         return self.command
+
+    sendMessage = send_message
+    asDisplay = as_display
+    checkNativePermission = check_native_permission
 
     async def delete(self):
         try:

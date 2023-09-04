@@ -8,12 +8,12 @@ from core.builtins.tasks import MessageTaskManager
 from core.builtins.temp import ExecutionLockList
 from core.builtins.utils import confirm_command
 from core.exceptions import WaitCancelException
-from core.types.message import *
+from core.types.message import MessageSession as MessageSessionT, MsgInfo, Session
 from core.utils.i18n import Locale
 from database import BotDBUtil
 
 
-class MessageSession(MessageSession):
+class MessageSession(MessageSessionT):
     def __init__(self,
                  target: MsgInfo,
                  session: Session):
@@ -50,7 +50,7 @@ class MessageSession(MessageSession):
             raise WaitCancelException
 
     async def wait_next_message(self, message_chain=None, quote=True, delete=False,
-                                append_instruction=True) -> MessageSession:
+                                append_instruction=True) -> MessageSessionT:
         sent = None
         ExecutionLockList.remove(self)
         if message_chain is not None:
@@ -69,7 +69,7 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True) -> MessageSession:
+    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True) -> MessageSessionT:
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
         if append_instruction:
@@ -84,7 +84,7 @@ class MessageSession(MessageSession):
         else:
             raise WaitCancelException
 
-    async def wait_anyone(self, message_chain=None, delete=False) -> MessageSession:
+    async def wait_anyone(self, message_chain=None, delete=False) -> MessageSessionT:
         send = None
         ExecutionLockList.remove(self)
         if message_chain is not None:
@@ -112,6 +112,13 @@ class MessageSession(MessageSession):
         if self.target.sender_id in self.custom_admins or self.target.sender_info.query.isSuperUser:
             return True
         return await self.check_native_permission()
+
+    waitConfirm = wait_confirm
+    waitNextMessage = wait_next_message
+    waitReply = wait_reply
+    waitAnyone = wait_anyone
+    checkPermission = check_permission
+    checkSuperUser = check_super_user
 
 
 __all__ = ["MessageSession"]

@@ -248,6 +248,18 @@ class MessageSession:
     async def call_api(self, action, **params):
         raise NotImplementedError
 
+    sendMessage = send_message
+    sendDirectMessage = send_direct_message
+    waitConfirm = wait_confirm
+    waitNextMessage = wait_next_message
+    waitReply = wait_reply
+    waitAnyone = wait_anyone
+    asDisplay = as_display
+    toMessageChain = to_message_chain
+    checkPermission = check_permission
+    checkNativePermission = check_native_permission
+    checkSuperUser = check_super_user
+
     class Feature:
         """
         此消息来自的客户端所支持的消息特性一览，用于不同平台适用特性判断（如QQ支持消息类型的语音而Discord不支持）
@@ -288,6 +300,8 @@ class FetchedSession:
         """
         return await self.parent.send_direct_message(message_chain, disable_secret_check,
                                                      allow_split_image=allow_split_image)
+
+    sendDirectMessage = send_direct_message
 
 
 class FetchTarget:

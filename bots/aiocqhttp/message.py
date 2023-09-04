@@ -218,6 +218,11 @@ class MessageSession(MessageSessionT):
     async def call_api(self, action, **params):
         return await bot.call_action(action, **params)
 
+    sendMessage = send_message
+    asDisplay = as_display
+    toMessageChain = to_message_chain
+    checkNativePermission = check_native_permission
+
     class Typing:
         def __init__(self, msg: MessageSessionT):
             self.msg = msg

@@ -197,6 +197,11 @@ class MessageSession(MessageSessionT):
         except Exception:
             Logger.error(traceback.format_exc())
 
+    sendMessage = send_message
+    asDisplay = as_display
+    toMessageChain = to_message_chain
+    checkNativePermission = check_native_permission
+
     # https://spec.matrix.org/v1.7/client-server-api/#typing-notifications
     class Typing:
         def __init__(self, msg: MessageSessionT):

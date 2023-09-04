@@ -120,6 +120,16 @@ class Template(MessageSessionT):
     async def sleep(self, s):
         print("(Tried to sleep for %d seconds, skip.)" % s)
 
+    sendMessage = send_message
+    waitConfirm = wait_confirm
+    waitReply = wait_reply
+    waitAnyone = wait_anyone
+    asDisplay = as_display
+    toMessageChain = to_message_chain
+    checkPermission = check_permission
+    checkNativePermission = check_native_permission
+    checkSuperUser = check_super_user
+
     class Typing:
         def __init__(self, msg: MessageSessionT):
             self.msg = msg
