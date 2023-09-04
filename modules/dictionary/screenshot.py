@@ -9,10 +9,10 @@ import aiohttp
 import ujson as json
 from bs4 import BeautifulSoup
 
-from config import Config
+from config import CFG
 from core.logger import Logger
 
-web_render = Config('web_render_local')
+web_render = CFG.get_url('web_render_local')
 
 
 async def get_pic(link, source) -> Union[str, bool]:
@@ -22,7 +22,7 @@ async def get_pic(link, source) -> Union[str, bool]:
         Logger.info('Starting find section..')
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(web_render + '/source?url=' + link,
+                async with session.get(web_render + 'source?url=' + link,
                                        timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
         except BaseException:

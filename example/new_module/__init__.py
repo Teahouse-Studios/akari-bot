@@ -11,7 +11,7 @@ test = module('test')
 async def _(session: Bot.MessageSession):
     #  >>> ~test
     #  <<< Hello World!
-    await session.sendMessage('Hello World!')
+    await session.send_message('Hello World!')
 
 
 @test.command('say <word>')
@@ -27,8 +27,8 @@ async def _(session: Bot.MessageSession):
     #  <<< Reply me!
     #  >>> Hello World! >> [Reply me!]
     #  <<< Hello World!
-    s = await session.waitReply('Send a word')
-    await s.sendMessage(s.asDisplay())
+    s = await session.wait_reply('Send a word')
+    await s.send_message(s.as_display())
 
 
 @test.command('confirm')
@@ -37,16 +37,16 @@ async def _(session: Bot.MessageSession):
     #  <<< Are you sure?
     #  >>> Yes
     #  <<< OK!
-    s = await session.waitConfirm('Are you sure?')
+    s = await session.wait_confirm('Are you sure?')
     if s:
-        await s.sendMessage('OK!')
+        await s.send_message('OK!')
 
 
 @test.command('image')
 async def _(session: Bot.MessageSession):
     #  >>> ~test image
     #  <<< A picture: Image(url='https://http.cat/100.jpg')
-    await session.sendMessage([Plain('A picture:'), Image('https://http.cat/100.jpg')])
+    await session.send_message([Plain('A picture:'), Image('https://http.cat/100.jpg')])
 
 
 @test.regex(re.compile(r'\{\{(.*)}}'), mode='M')  # re.match
@@ -61,7 +61,7 @@ async def _(session: Bot.MessageSession):
     #  >>> [[Hello]] [[World]]
     #  <<< Hello
     #  <<< World
-    await session.sendMessage(session.matched_msg[0])
+    await session.send_message(session.matched_msg[0])
     await session.finish(session.matched_msg[1])
 
 

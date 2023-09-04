@@ -6,7 +6,7 @@ from discord import Embed as DiscordEmbed
 from core.builtins.message.internal import Embed, EmbedField
 
 
-def removeIneffectiveText(prefix: str, lst: list) -> list:
+def remove_ineffective_text(prefix: str, lst: list) -> list:
     '''删除命令首尾的空格和换行以及重复命令。
 
     :param prefix: 机器人的命令前缀。
@@ -38,7 +38,7 @@ def removeIneffectiveText(prefix: str, lst: list) -> list:
     return lst
 
 
-def removeDuplicateSpace(text: str) -> str:
+def remove_duplicate_space(text: str) -> str:
     '''删除命令中间多余的空格。
 
     :param text: 字符串。
@@ -53,7 +53,7 @@ def removeDuplicateSpace(text: str) -> str:
     return text
 
 
-def convertDiscordEmbed(embed: Union[DiscordEmbed, dict]) -> Embed:
+def convert_discord_embed(embed: Union[DiscordEmbed, dict]) -> Embed:
     '''将DiscordEmbed转换为Embed。
     :param embed: DiscordEmbed。
     :returns: Embed。'''
@@ -120,4 +120,4 @@ def split_multi_arguments(lst: list):
         return list(set(new_lst))
 
 
-__all__ = ['removeDuplicateSpace', 'removeIneffectiveText', 'convertDiscordEmbed', "split_multi_arguments"]
+__all__ = ['remove_duplicate_space', 'remove_ineffective_text', 'convert_discord_embed', "split_multi_arguments"]

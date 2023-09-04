@@ -1,11 +1,11 @@
 import ipaddress
 import json
 import socket
+from typing import Any, Dict
 
 from core.builtins import Bot
-from core.utils.http import get_url
 from core.component import module
-from typing import Any, Dict
+from core.utils.http import get_url
 
 ip = module('ip', developers=['Dianliang233'])
 

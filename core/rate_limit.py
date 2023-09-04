@@ -1,5 +1,6 @@
 import time
 from typing import Literal, Self
+
 from attr import define
 
 

@@ -2,9 +2,9 @@ import asyncio
 import traceback
 
 from core.builtins import Bot
-from core.builtins import Image, Plain, Url, ErrorMessage
-from core.utils.http import get_url, download_to_cache
+from core.builtins import Image, Plain, Url
 from core.dirty_check import rickroll
+from core.utils.http import get_url, download_to_cache
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
@@ -56,7 +56,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
         if is_dirty:
             rickroll(msg)
         else:
-            await msg.sendMessage([Plain(message)])
+            await msg.send_message([Plain(message)])
 
             async def download():
                 download_pic = await download_to_cache(

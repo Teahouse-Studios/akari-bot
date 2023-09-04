@@ -1,4 +1,5 @@
 import time
+
 from langconv.converter import LanguageConverter
 from langconv.language.zh import zh_cn, zh_hk, zh_tw
 
@@ -25,8 +26,8 @@ async def _(msg: Bot.MessageSession, language: str, content: str):
     res = lc.convert(content)
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
-    if msg.checkSuperUser():
-            res += '\n' + msg.locale.t("langconv.message.running_time", time=delta)
+    if msg.check_super_user():
+        res += '\n' + msg.locale.t("langconv.message.running_time", time=delta)
     if await check_bool(res):
         rickroll(msg)
     await msg.finish(res)

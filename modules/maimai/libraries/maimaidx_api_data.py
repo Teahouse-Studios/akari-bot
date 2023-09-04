@@ -1,10 +1,12 @@
-import ujson as json
 import os
+
+import ujson as json
 
 from core.utils.http import get_url, post_url
 from .maimaidx_music import get_cover_len5_id
 
 assets_path = os.path.abspath('./assets/maimai')
+
 
 async def update_alias():
     try:
@@ -24,7 +26,7 @@ async def update_alias():
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(output_data, file)
-    except:
+    except BaseException:
         return False
 
     return True
@@ -88,11 +90,12 @@ async def get_plate(msg, payload):
 
     return data
 
+
 def get_cover(sid):
     cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
     cover_dir = f"./assets/maimai/static/mai/cover/"
     cover_path = cover_dir + f'{get_cover_len5_id(sid)}.png'
-    if sid == '11364': #8-EM 的封面需要本地调用
+    if sid == '11364':  # 8-EM 的封面需要本地调用
         return os.path.abspath(cover_path)
     else:
         return cover_url

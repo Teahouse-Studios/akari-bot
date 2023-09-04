@@ -1,17 +1,20 @@
-import random
 import itertools
+import random
+
+from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
-from simpleeval import simple_eval
 
 no_solution = ['无解', '無解', 'none', 'n/a']
+
 
 def calc(expression):
     try:
         return simple_eval(expression)
-    except:
+    except BaseException:
         return None
+
 
 def is_valid(expression):
     operators = ['+', '-', '*', '/', '(', ')']
@@ -55,9 +58,9 @@ async def has_solution(numbers):
     permutations = list(itertools.permutations(numbers))
     operators = ['+', '-', '*', '/']
     expressions = list(itertools.product(operators, repeat=3))
-    
+
     for perm in permutations:
-        for expr in expressions: # 穷举就完事了
+        for expr in expressions:  # 穷举就完事了
             exp = '((( {} {} {} ) {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return True
@@ -91,47 +94,46 @@ def contains_all_numbers(expression, numbers):
 
 
 tf = module('twenty_four', alias=['twentyfour', '24'],
-               desc='{twenty_four.help.desc}', developers=['DoroWolf'])
+            desc='{twenty_four.help.desc}', developers=['DoroWolf'])
 play_state = {}
 
 
 @tf.command('{{twenty_four.help}}')
 async def _(msg: Bot.MessageSession):
-    if msg.target.targetId in play_state and play_state[msg.target.targetId]['active']: 
+    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         await msg.finish(msg.locale.t('twenty_four.message.running'))
-    play_state.update({msg.target.targetId: {'active': True}})
+    play_state.update({msg.target.target_id: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
     has_solution_flag = await has_solution(numbers)
 
-    answer = await msg.waitNextMessage(msg.locale.t('twenty_four.message', numbers=numbers))
-    expression = answer.asDisplay(text_only=True)
-    if play_state[msg.target.targetId]['active']:
+    answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers))
+    expression = answer.as_display(text_only=True)
+    if play_state[msg.target.target_id]['active']:
         if expression.lower() in no_solution:
             if has_solution_flag:
-                await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.have_solution'))
+                await answer.send_message(msg.locale.t('twenty_four.message.incorrect.have_solution'))
             else:
-                await answer.sendMessage(msg.locale.t('twenty_four.message.correct'))
+                await answer.send_message(msg.locale.t('twenty_four.message.correct'))
         elif is_valid(expression):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
-                await answer.sendMessage(msg.locale.t('twenty_four.message.correct'))
+                await answer.send_message(msg.locale.t('twenty_four.message.correct'))
             else:
-                await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect'))
+                await answer.send_message(msg.locale.t('twenty_four.message.incorrect'))
         else:
-            await answer.sendMessage(msg.locale.t('twenty_four.message.incorrect.error'))
-        play_state[msg.target.targetId]['active'] = False
-
+            await answer.send_message(msg.locale.t('twenty_four.message.incorrect.error'))
+        play_state[msg.target.target_id]['active'] = False
 
 
 @tf.command('stop {{twenty_four.stop.help}}')
 async def s(msg: Bot.MessageSession):
-    state = play_state.get(msg.target.targetId, False)
+    state = play_state.get(msg.target.target_id, False)
     if state:
         if state['active']:
-            play_state[msg.target.targetId]['active'] = False
-            await msg.sendMessage(msg.locale.t('twenty_four.stop.message'))
+            play_state[msg.target.target_id]['active'] = False
+            await msg.send_message(msg.locale.t('twenty_four.stop.message'))
         else:
-            await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
+            await msg.send_message(msg.locale.t('twenty_four.stop.message.none'))
     else:
-        await msg.sendMessage(msg.locale.t('twenty_four.stop.message.none'))
+        await msg.send_message(msg.locale.t('twenty_four.stop.message.none'))

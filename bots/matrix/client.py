@@ -1,6 +1,7 @@
 import os
-from nio import AsyncClient, AsyncClientConfig
+
 import urllib3
+from nio import AsyncClient, AsyncClientConfig
 
 from config import Config
 from core.logger import Logger
@@ -18,7 +19,6 @@ if not os.path.exists(store_path_nio):
     os.mkdir(store_path_nio)
 
 store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
-
 
 if homeserver and user and token:
     if homeserver.endswith('/'):

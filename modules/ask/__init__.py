@@ -1,15 +1,14 @@
 import io
 import re
-
 from decimal import Decimal
-from langchain.callbacks import get_openai_callback
+
 from PIL import Image as PILImage
+from langchain.callbacks import get_openai_callback
 
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.exceptions import NoReportException
 from database import BotDBUtil
 from .agent import agent_executor
 from .formatting import generate_latex, generate_code_snippet
@@ -31,16 +30,15 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 @a.command('<question> {{ask.help}}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
-    is_superuser = msg.checkSuperUser()
+    is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
         raise Exception(msg.locale.t('error.config.secret.not_found'))
     if not is_superuser and msg.data.petal <= 0:  # refuse
-        await msg.finish(msg.locale.t('core.message.petal.no_petals')+ Config('issue_url'))
+        await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 
-    
     qc = BotDBUtil.CoolDown(msg, 'call_openai')
     c = qc.check(60)
-    if c == 0 or msg.target.targetFrom == 'TEST|Console' or is_superuser:
+    if c == 0 or msg.target.target_from == 'TEST|Console' or is_superuser:
         if hasattr(msg, 'parsed_msg'):
             question = msg.parsed_msg['<question>']
         else:
@@ -64,13 +62,14 @@ async def _(msg: Bot.MessageSession):
             elif block['type'] == 'latex':
                 chain.append(Image(PILImage.open(io.BytesIO(await generate_latex(block['content'])))))
             elif block['type'] == 'code':
-                chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
+                chain.append(Image(PILImage.open(
+                    io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
 
         if await check_bool(res):
             rickroll(msg)
-        await msg.sendMessage(chain)
+        await msg.send_message(chain)
 
-        if msg.target.targetFrom != 'TEST|Console' and not is_superuser:
+        if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
     else:
         await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))

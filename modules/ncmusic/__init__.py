@@ -2,7 +2,6 @@ from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.http import get_url
 
-
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
                  support_languages=['zh_cn'])
@@ -22,7 +21,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
     for i, song in enumerate(songs, start=1):
         send_msg += f"{i}. {song['name']}"
         if 'transNames' in song:
-            send_msg += f"（{' / '.join(song['transNames'] )}）"
+            send_msg += f"（{' / '.join(song['transNames'])}）"
         send_msg += f"——{' / '.join(artist['name'] for artist in song['artists'])}"
         send_msg += f"《{song['album']['name']}》"
         if 'transNames' in song['album']:

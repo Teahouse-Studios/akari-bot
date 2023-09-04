@@ -25,27 +25,27 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
             query_type = 'bestRecords'
         elif query_type == 'r30':
             query_type = 'recentRecords'
-        Profile_url = 'http://services.cytoid.io/profile/' + uid
-        Profile_json = json.loads(await get_url(Profile_url, 200))
-        if 'statusCode' in Profile_json:
-            if Profile_json['statusCode'] == 404:
+        profile_url = 'http://services.cytoid.io/profile/' + uid
+        profile_json = json.loads(await get_url(profile_url, 200))
+        if 'statusCode' in profile_json:
+            if profile_json['statusCode'] == 404:
                 return {'status': False, 'text': msg.locale.t('cytoid.message.user_not_found')}
-        ProfileId = Profile_json['user']['id']
-        ProfileRating = Profile_json['rating']
-        ProfileLevel = Profile_json['exp']['currentLevel']
-        ProfileUid = Profile_json['user']['uid']
-        nick = Profile_json['user']['name']
+        profile_id = profile_json['user']['id']
+        profile_rating = profile_json['rating']
+        profile_level = profile_json['exp']['currentLevel']
+        profile_uid = profile_json['user']['uid']
+        nick = profile_json['user']['name']
         if nick is None:
-            nick = ProfileUid
-        if 'avatar' in Profile_json['user']:
-            Avatar_img = Profile_json['user']['avatar']['medium']
+            nick = profile_uid
+        if 'avatar' in profile_json['user']:
+            avatar_img = profile_json['user']['avatar']['medium']
         else:
-            Avatar_img = None
+            avatar_img = None
         transport = AIOHTTPTransport(url='https://services.cytoid.io/graphql')
         client = Client(transport=transport, fetch_schema_from_transport=True)
         query = gql(
             f"""
-            query StudioAnalytics($id: ID = "{ProfileId}") {{
+            query StudioAnalytics($id: ID = "{profile_id}") {{
           profile(id: $id) {{
             id
             {query_type}(limit: 30) {{
@@ -82,7 +82,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         result = await client.execute_async(query)
         workdir = os.path.abspath(Config("cache_path") + str(uuid.uuid4()))
         os.mkdir(workdir)
-        bestRecords = result['profile'][query_type]
+        best_records = result['profile'][query_type]
         rank = 0
         resources = []
         songcards = []
@@ -122,7 +122,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
                 make_songcard(thumbpath, chart_type, difficulty, chart_name, score, acc, rt, playtime, rank, details,
                               havecover))
 
-        for x in bestRecords:
+        for x in best_records:
             rank += 1
             resources.append(mkresources(x, rank))
 
@@ -136,7 +136,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
 
         # b30card
         b30img = Image.new("RGBA", (1955, 1600), '#1e2129')
-        avatar_path = await download_avatar_thumb(Avatar_img, ProfileId)
+        avatar_path = await download_avatar_thumb(avatar_img, profile_id)
         if avatar_path:
             im = Image.open(avatar_path)
             im = im.resize((110, 110))
@@ -161,7 +161,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         drawtext.text((get_img_width - get_name_width - 150, 30), nick, '#ffffff', font=font4)
 
         font5 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
-        level_text = f'等级 {ProfileLevel}'
+        level_text = f'等级 {profile_level}'
         level_text_width = font5.getsize(level_text)[0]
         level_text_height = font5.getsize(level_text)[1]
         img_level = Image.new("RGBA", (level_text_width + 20, 40), '#050a1a')
@@ -170,7 +170,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
                             level_text, '#ffffff', font=font5)
         b30img.alpha_composite(img_level, (1825 - img_level.width - 20, 85))
         font6 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Light.ttf'), 20)
-        rating_text = f'Rating {str(round(float(ProfileRating), 2))}'
+        rating_text = f'Rating {str(round(float(profile_rating), 2))}'
         rating_text_width = font6.getsize(rating_text)[0]
         rating_text_height = font6.getsize(rating_text)[1]
         img_rating = Image.new("RGBA", (rating_text_width + 20, 40), '#050a1a')
@@ -301,7 +301,8 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     drawtext.text((20, 130), score, '#ffffff', font=font3)
     drawtext.text((20, 155), chart_name, '#ffffff', font=font)
     drawtext.text(
-        (20, 185), f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
+        (20, 185),
+        f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
         f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
     playtime_width = font3.getsize(playtime)[0]

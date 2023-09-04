@@ -13,7 +13,6 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 from config import Config
 from core.logger import Logger
 from .cache import random_cache_path
-from ..exceptions import NoReportException
 
 logging_resp = False
 debug = Config('debug')
@@ -31,14 +30,15 @@ def private_ip_check(url: str):
     :param url: 需要检查的url。'''
     hostname = urllib.parse.urlparse(url).hostname
     addr_info = socket.getaddrinfo(hostname, 80)
-    
+
     addr = addr_info[0][4][0]
     if _matcher_private_ips.match(addr):
         raise ValueError(
             f'Attempt of requesting private IP addresses is not allowed, requesting {hostname}.')
 
 
-async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20, attempt=3,
+async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20,
+                  attempt=3,
                   request_private_ip=False, logging_err_resp=True):
     """利用AioHttp获取指定url的内容。
 

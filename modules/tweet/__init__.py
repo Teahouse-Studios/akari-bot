@@ -2,14 +2,14 @@ import re
 
 import ujson as json
 
-from config import Config
+from config import CFG
 from core.builtins import Bot
 from core.builtins.message import Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.utils.http import download_to_cache, get_url
 
-web_render_local = Config('web_render_local')
+web_render_local = CFG.get_url('web_render_local')
 t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', alias=['x'])
 
 
@@ -28,7 +28,8 @@ async def _(msg: Bot.MessageSession, tweet: str):
     if not res_json['data']:
         await msg.finish(msg.locale.t('tweet.message.not_found'))
     else:
-        if await check_bool(res_json['data']['text'], res_json['data']['user']['name'], res_json['data']['user']['screen_name']):
+        if await check_bool(res_json['data']['text'], res_json['data']['user']['name'],
+                            res_json['data']['user']['screen_name']):
             rickroll(msg)
         else:
             css = '''
@@ -63,7 +64,10 @@ async def _(msg: Bot.MessageSession, tweet: str):
                     display: none;
                 }
             '''
-            pic = await download_to_cache(web_render_local + '/element_screenshot', method='POST', headers={
+            pic = await download_to_cache(web_render_local + 'element_screenshot', method='POST', headers={
                 'Content-Type': 'application/json',
-            }, post_data=json.dumps({'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False, 'element': 'article'}), request_private_ip=True)
-            await msg.finish([Image(pic), f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"])
+            }, post_data=json.dumps(
+                {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,
+                 'element': 'article'}), request_private_ip=True)
+            await msg.finish(
+                [Image(pic), f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"])

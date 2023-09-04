@@ -8,10 +8,10 @@ import ujson as json
 from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage
 from core.builtins.utils import Secret
 from core.logger import Logger
-from core.types.message import MessageChain as MC
+from core.types.message import MessageChain as MessageChainT
 
 
-class MessageChain(MC):
+class MessageChain(MessageChainT):
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
                                        Tuple[Union[Plain, Image, Voice, Embed, Url]],
                                        Plain, Image, Voice, Embed, Url]):
@@ -94,11 +94,11 @@ class MessageChain(MC):
                             return False
         return True
 
-    def asSendable(self, locale="zh_cn", embed=True):
+    def as_sendable(self, locale="zh_cn", embed=True):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
-                value += x.to_msgchain()
+                value += x.to_message_chain()
             elif isinstance(x, ErrorMessage):
                 value.append(ErrorMessage(x.error_message, locale=locale))
             elif isinstance(x, Plain):

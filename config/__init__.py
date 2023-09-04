@@ -1,7 +1,7 @@
 import os
+from os.path import abspath
 
 import toml
-from os.path import abspath
 
 from core.exceptions import ConfigFileNotFound
 
@@ -100,6 +100,14 @@ class CFG:
             f.write(toml.dumps(cls.value))
         cls.load()
         return True
+
+    @classmethod
+    def get_url(cls, q):
+        q = cls.get(q)
+        if q:
+            if q[-1] != '/':
+                q += '/'
+        return q
 
 
 CFG.load()

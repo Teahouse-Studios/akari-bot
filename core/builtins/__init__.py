@@ -2,8 +2,8 @@ import asyncio
 from typing import Union, List
 
 from config import Config
-from core.types.message import FetchTarget, FetchedSession as FS, MsgInfo, Session, ModuleHookContext
 from core.loader import ModulesManager
+from core.types.message import FetchTarget, FetchedSession as FetchedSessionT, MsgInfo, Session, ModuleHookContext
 from database import BotDBUtil
 from .message import *
 from .message.chain import *
@@ -17,27 +17,27 @@ class Bot:
     MessageSession = MessageSession
     FetchTarget = FetchTarget
     client_name = FetchTarget.name
-    FetchedSession = FS
+    FetchedSession = FetchedSessionT
     ModuleHookContext = ModuleHookContext
 
     @staticmethod
-    async def sendMessage(target: Union[FS, MessageSession, str], msg: Union[MessageChain, list],
-                          disable_secret_check=False,
-                          allow_split_image=True):
+    async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],
+                           disable_secret_check=False,
+                           allow_split_image=True):
         if isinstance(target, str):
             target = Bot.FetchTarget.fetch_target(target)
             if not target:
                 raise ValueError("Target not found")
         if isinstance(msg, list):
             msg = MessageChain(msg)
-        await target.sendDirectMessage(msg, disable_secret_check, allow_split_image)
+        await target.send_direct_message(msg, disable_secret_check, allow_split_image)
 
     @staticmethod
     async def fetch_target(target: str):
         return Bot.FetchTarget.fetch_target(target)
 
     @staticmethod
-    async def get_enabled_this_module(module: str) -> List[FS]:
+    async def get_enabled_this_module(module: str) -> List[FetchedSessionT]:
         lst = BotDBUtil.TargetInfo.get_enabled_this(module)
         fetched = []
         for x in lst:
@@ -71,24 +71,24 @@ class Bot:
                 raise ValueError("Invalid hook name")
 
 
-class FetchedSession(FS):
-    def __init__(self, targetFrom, targetId, senderFrom=None, senderId=None):
-        if senderFrom is None:
-            senderFrom = targetFrom
-        if senderId is None:
-            senderId = targetId
-        self.target = MsgInfo(targetId=f'{targetFrom}|{targetId}',
-                              senderId=f'{senderFrom}|{senderId}',
-                              targetFrom=targetFrom,
-                              senderFrom=senderFrom,
-                              senderName='',
-                              clientName=Bot.client_name,
-                              messageId=0,
-                              replyId=None)
-        self.session = Session(message=False, target=targetId, sender=senderId)
+class FetchedSession(FetchedSessionT):
+    def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
+        if sender_from is None:
+            sender_from = target_from
+        if sender_id is None:
+            sender_id = target_id
+        self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
+                              sender_id=f'{sender_from}|{sender_id}',
+                              target_from=target_from,
+                              sender_from=sender_from,
+                              sender_name='',
+                              client_name=Bot.client_name,
+                              message_id=0,
+                              reply_id=None)
+        self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
-        if senderId is not None:
-            self.parent.target.senderInfo = BotDBUtil.SenderInfo(f'{senderFrom}|{senderId}')
+        if sender_id is not None:
+            self.parent.target.sender_info = BotDBUtil.SenderInfo(f'{sender_from}|{sender_id}')
 
 
 Bot.FetchedSession = FetchedSession

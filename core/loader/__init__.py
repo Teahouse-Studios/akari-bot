@@ -6,9 +6,8 @@ import traceback
 from typing import Dict, Union, Callable
 
 from config import Config
-
 from core.logger import Logger
-from core.types import Module, PrivateAssets, Secret
+from core.types import Module, PrivateAssets
 from core.types.module.component_meta import CommandMeta, RegexMeta, ScheduleMeta, HookMeta
 from core.utils.i18n import load_locale_file
 
@@ -58,14 +57,14 @@ def load_modules():
             err_prompt.append(errmsg)
             err_modules.append(fun_file)
     Logger.info('All modules loaded.')
-    loadercache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
-    openloadercache = open(loadercache, 'w')
+    loader_cache = os.path.abspath(PrivateAssets.path + '/.cache_loader')
+    open_loader_cache = open(loader_cache, 'w')
     if err_prompt:
         err_prompt = re.sub(r'  File \"<frozen importlib.*?>\", .*?\n', '', '\n'.join(err_prompt))
-        openloadercache.write(err_prompt)
+        open_loader_cache.write(err_prompt)
     else:
-        openloadercache.write('')
-    openloadercache.close()
+        open_loader_cache.write('')
+    open_loader_cache.close()
 
     ModulesManager.refresh()
 
@@ -119,14 +118,14 @@ class ModulesManager:
         cls._return_cache.clear()
 
     @classmethod
-    def search_related_module(cls, module, includeSelf=True):
+    def search_related_module(cls, module, include_self=True):
         if module in cls.modules_origin:
             modules = []
             py_module = cls.return_py_module(module)
             for m in cls.modules_origin:
                 if cls.modules_origin[m].startswith(py_module):
                     modules.append(m)
-            if not includeSelf:
+            if not include_self:
                 modules.remove(module)
             return modules
         else:
@@ -154,20 +153,20 @@ class ModulesManager:
     _return_cache = {}
 
     @classmethod
-    def return_modules_list(cls, targetFrom: str = None) -> \
+    def return_modules_list(cls, target_from: str = None) -> \
             Dict[str, Module]:
-        if targetFrom is not None:
-            if targetFrom in cls._return_cache:
-                return cls._return_cache[targetFrom]
+        if target_from is not None:
+            if target_from in cls._return_cache:
+                return cls._return_cache[target_from]
             returns = {}
             for m in cls.modules:
                 if isinstance(cls.modules[m], Module):
-                    if targetFrom in cls.modules[m].exclude_from:
+                    if target_from in cls.modules[m].exclude_from:
                         continue
                     available = cls.modules[m].available_for
-                    if targetFrom in available or '*' in available:
+                    if target_from in available or '*' in available:
                         returns.update({m: cls.modules[m]})
-            cls._return_cache.update({targetFrom: returns})
+            cls._return_cache.update({target_from: returns})
             return returns
         return cls.modules
 
@@ -215,7 +214,6 @@ class ModulesManager:
         """
         卸载该小可模块（以及该模块所在文件的其它模块）
         """
-        origin_module = cls.modules_origin[module_name]
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
         cls.refresh()
@@ -231,8 +229,8 @@ class ModulesManager:
             Logger.info(f'Reloading {module_name} ...')
             module = sys.modules[module_name]
             cnt = 0
-            loadedModList = list(sys.modules.keys())
-            for mod in loadedModList:
+            loaded_module_list = list(sys.modules.keys())
+            for mod in loaded_module_list:
                 if mod.startswith(f'{module_name}.'):
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)

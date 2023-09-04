@@ -50,7 +50,7 @@ async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
     if target.query is None:
         return JSONResponse(status_code=404, content={
-            'targetId': target_id,
+            'target_id': target_id,
             'notFound': True,
         })
     enabled_modules = target.enabled_modules
@@ -72,7 +72,7 @@ async def get_target(target_id: str):
     wiki_interwikis = wiki_target.get_interwikis()
 
     return {
-        'targetId': target_id,
+        'target_id': target_id,
         'enabledModules': enabled_modules,
         'isMuted': is_muted,
         'customAdmins': custom_admins,
@@ -95,19 +95,14 @@ async def get_target(target_id: str):
 @app.get('/sender/{sender_id}')
 async def get_sender(sender_id: str):
     sender = BotDBUtil.SenderInfo(sender_id)
-    isInBlockList = sender.query.isInBlockList
-    isInAllowList = sender.query.isInAllowList
-    isSuperUser = sender.query.isSuperUser
-    warns = sender.query.warns
-    disable_typing = sender.query.disable_typing
 
     return {
         'senderId': sender_id,
-        'isInBlockList': isInBlockList,
-        'isInAllowList': isInAllowList,
-        'isSuperUser': isSuperUser,
-        'warns': warns,
-        'disableTyping': disable_typing
+        'isInBlockList': sender.query.isInBlockList,
+        'isInAllowList': sender.query.isInAllowList,
+        'isSuperUser': sender.query.isSuperUser,
+        'warns': sender.query.warns,
+        'disableTyping': sender.query.disable_typing
     }
 
 
@@ -115,7 +110,7 @@ async def get_sender(sender_id: str):
 async def get_module_list(target_id: str):
     target_from = '|'.join(target_id.split('|')[:-2])
     return ModulesManager.return_modules_list(
-        targetFrom=target_from)
+        target_from=target_from)
 
 
 @app.post('/module/{target_id}/{module_name}')

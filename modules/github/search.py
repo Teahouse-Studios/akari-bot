@@ -1,8 +1,8 @@
 import traceback
 
-from core.builtins import Bot, Url, ErrorMessage
-from core.utils.http import get_url
+from core.builtins import Bot, Url
 from core.dirty_check import rickroll
+from core.utils.http import get_url
 from modules.github.utils import dirty_check, darkCheck
 
 
@@ -11,7 +11,7 @@ async def search(msg: Bot.MessageSession):
         result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200,
                                fmt='json')
         if result['total_count'] == 0:
-             message = msg.locale.t("github.message.search.none")
+            message = msg.locale.t("github.message.search.none")
         else:
             items = result['items']
             item_count_expected = int(result['total_count']) if result['total_count'] < 5 else 5
@@ -33,5 +33,5 @@ async def search(msg: Bot.MessageSession):
             rickroll(msg)
 
         await msg.finish(message)
-    except:
+    except BaseException:
         traceback.print_exc()

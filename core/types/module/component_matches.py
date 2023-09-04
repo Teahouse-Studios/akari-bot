@@ -11,12 +11,12 @@ class CommandMatches:
         self.set.append(meta)
         return self.set
 
-    def get(self, targetFrom: str) -> List[CommandMeta]:
+    def get(self, target_from: str) -> List[CommandMeta]:
         metas = []
         for meta in self.set:
-            if targetFrom in meta.exclude_from:
+            if target_from in meta.exclude_from:
                 continue
-            if targetFrom in meta.available_for or '*' in meta.available_for:
+            if target_from in meta.available_for or '*' in meta.available_for:
                 metas.append(meta)
         return metas
 

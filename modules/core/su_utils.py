@@ -3,11 +3,11 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 
 import matplotlib.pyplot as plt
 import numpy as np
 import ujson as json
+from dateutil.relativedelta import relativedelta
 
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
@@ -16,9 +16,9 @@ from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
-from database import BotDBUtil
-from core.utils.storedata import get_stored_list, update_stored_list
 from core.utils.info import Info
+from core.utils.storedata import get_stored_list, update_stored_list
+from database import BotDBUtil
 
 su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
 
@@ -26,7 +26,7 @@ su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], 
 @su.handle('add <UserID>')
 async def add_su(message: Bot.MessageSession):
     user = message.parsed_msg['<UserID>']
-    if not user.startswith(f'{message.target.senderFrom}|'):
+    if not user.startswith(f'{message.target.sender_from}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
@@ -36,7 +36,7 @@ async def add_su(message: Bot.MessageSession):
 @su.handle('del <UserID>')
 async def del_su(message: Bot.MessageSession):
     user = message.parsed_msg['<UserID>']
-    if not user.startswith(f'{message.target.senderFrom}|'):
+    if not user.startswith(f'{message.target.sender_from}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
         await msg.finish(msg.locale.t("core.analytics.message.counts", first_record=first_record.timestamp,
-                         counts=get_counts))
+                                      counts=get_counts))
     else:
         await msg.finish(msg.locale.t("core.analytics.message.disabled"))
 
@@ -138,32 +138,32 @@ async def _(msg: Bot.MessageSession):
 set_ = module('set', required_superuser=True)
 
 
-@set_.handle('modules <targetId> <modules> ...')
+@set_.handle('modules <target_id> <modules> ...')
 async def _(msg: Bot.MessageSession):
-    target = msg.parsed_msg['<targetId>']
-    if not target.startswith(f'{msg.target.targetFrom}|'):
+    target = msg.parsed_msg['<target_id>']
+    if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.waitConfirm(msg.locale.t("core.message.set.confirm.init"))
+        wait_confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
         if not wait_confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
-               if m in ModulesManager.return_modules_list(msg.target.targetFrom)]
+               if m in ModulesManager.return_modules_list(msg.target.target_from)]
     target_data.enable(modules)
     await msg.finish(msg.locale.t("core.message.set.module.success") + ", ".join(modules))
 
 
-@set_.handle('option <targetId> <k> <v>')
+@set_.handle('option <target_id> <k> <v>')
 async def _(msg: Bot.MessageSession):
-    target = msg.parsed_msg['<targetId>']
+    target = msg.parsed_msg['<target_id>']
     k = msg.parsed_msg['<k>']
     v = msg.parsed_msg['<v>']
-    if not target.startswith(f'{msg.target.targetFrom}|'):
+    if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.waitConfirm(msg.locale.t("core.message.set.confirm.init"))
+        wait_confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
         if not wait_confirm:
             return
     if v.startswith(('[', '{')):
@@ -182,7 +182,7 @@ ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser
 @ae.handle('check <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     warns = BotDBUtil.SenderInfo(user).query.warns
     await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns))
@@ -192,7 +192,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     count = int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     warn_count = await warn_user(user, count)
     await msg.finish(msg.locale.t("core.message.abuse.warn.success", user=user, counts=count, warn_counts=warn_count))
@@ -202,7 +202,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     count = 0 - int(msg.parsed_msg.get('<count>', 1))
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     warn_count = await warn_user(user, count)
     await msg.finish(msg.locale.t("core.message.abuse.revoke.success", user=user, counts=count, warn_counts=warn_count))
@@ -211,7 +211,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('clear <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     await pardon_user(user)
     await msg.finish(msg.locale.t("core.message.abuse.clear.success", user=user))
@@ -220,7 +220,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('untempban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     await remove_temp_ban(user)
     await msg.finish(msg.locale.t("core.message.abuse.untempban.success", user=user))
@@ -229,7 +229,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('ban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', True):
         await msg.finish(msg.locale.t("core.message.abuse.ban.success", user=user))
@@ -238,7 +238,7 @@ async def _(msg: Bot.MessageSession):
 @ae.handle('unban <user>')
 async def _(msg: Bot.MessageSession):
     user = msg.parsed_msg['<user>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
+    if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
@@ -253,7 +253,7 @@ if Info.subprocess:
     def write_version_cache(msg: Bot.MessageSession):
         update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
         write_version = open(update, 'w')
-        write_version.write(json.dumps({'From': msg.target.targetFrom, 'ID': msg.target.targetId}))
+        write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
         write_version.close()
 
     restart_time = []
@@ -262,31 +262,30 @@ if Info.subprocess:
         get = ExecutionLockList.get()
         if datetime.now().timestamp() - restart_time[0] < 60:
             if len(get) != 0:
-                await msg.sendMessage(msg.locale.t("core.message.restart.wait", count=len(get)))
+                await msg.send_message(msg.locale.t("core.message.restart.wait", count=len(get)))
                 await asyncio.sleep(10)
                 return await wait_for_restart(msg)
             else:
-                await msg.sendMessage(msg.locale.t("core.message.restart.restarting"))
+                await msg.send_message(msg.locale.t("core.message.restart.restarting"))
                 get_wait_list = MessageTaskManager.get()
                 for x in get_wait_list:
                     for y in get_wait_list[x]:
                         for z in get_wait_list[x][y]:
                             if get_wait_list[x][y][z]['active']:
-                                await z.sendMessage(z.locale.t("core.message.restart.prompt"))
+                                await z.send_message(z.locale.t("core.message.restart.prompt"))
 
         else:
-            await msg.sendMessage(msg.locale.t("core.message.restart.timeout"))
+            await msg.send_message(msg.locale.t("core.message.restart.timeout"))
 
     @rst.handle()
     async def restart_bot(msg: Bot.MessageSession):
-        await msg.sendMessage(msg.locale.t("core.message.confirm"))
-        confirm = await msg.waitConfirm()
+        await msg.send_message(msg.locale.t("core.message.confirm"))
+        confirm = await msg.wait_confirm()
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
             write_version_cache(msg)
             restart()
-
 
 upd = module('update', developers=['OasisAkari'], required_superuser=True)
 
@@ -307,11 +306,11 @@ def update_dependencies():
 
 @upd.handle()
 async def update_bot(msg: Bot.MessageSession):
-    await msg.sendMessage(msg.locale.t("core.message.confirm"))
-    confirm = await msg.waitConfirm()
+    await msg.send_message(msg.locale.t("core.message.confirm"))
+    confirm = await msg.wait_confirm()
     if confirm:
-        await msg.sendMessage(pull_repo())
-        await msg.sendMessage(update_dependencies())
+        await msg.send_message(pull_repo())
+        await msg.send_message(update_dependencies())
 
 
 if Info.subprocess:
@@ -319,16 +318,15 @@ if Info.subprocess:
 
     @upds.handle()
     async def update_and_restart_bot(msg: Bot.MessageSession):
-        await msg.sendMessage(msg.locale.t("core.message.confirm"))
-        confirm = await msg.waitConfirm()
+        await msg.send_message(msg.locale.t("core.message.confirm"))
+        confirm = await msg.wait_confirm()
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
             write_version_cache(msg)
-            await msg.sendMessage(pull_repo())
-            await msg.sendMessage(update_dependencies())
+            await msg.send_message(pull_repo())
+            await msg.send_message(update_dependencies())
             restart()
-
 
 if Bot.FetchTarget.name == 'QQ':
     resume = module('resume', developers=['OasisAkari'], required_base_superuser=True)
@@ -337,17 +335,17 @@ if Bot.FetchTarget.name == 'QQ':
     async def resume_sending_group_message(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(msg.locale.t("core.message.resume.processing", counts=len(targets)))
+            await msg.send_message(msg.locale.t("core.message.resume.processing", counts=len(targets)))
             for x in targets:
                 if x['i18n']:
-                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message'], **x['kwargs']))
+                    await x['fetch'].send_direct_message(x['fetch'].parent.locale.t(x['message'], **x['kwargs']))
                 else:
-                    await x['fetch'].sendDirectMessage(x['message'])
+                    await x['fetch'].send_direct_message(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
-            await msg.sendMessage(msg.locale.t("core.message.resume.done"))
+            await msg.send_message(msg.locale.t("core.message.resume.done"))
         else:
-            await msg.sendMessage(msg.locale.t("core.message.resume.nothing"))
+            await msg.send_message(msg.locale.t("core.message.resume.nothing"))
 
     @resume.handle('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
@@ -357,23 +355,23 @@ if Bot.FetchTarget.name == 'QQ':
         del Temp.data['waiting_for_send_group_message'][0]
         Temp.data['is_group_message_blocked'] = False
         if targets := Temp.data['waiting_for_send_group_message']:
-            await msg.sendMessage(msg.locale.t("core.message.resume.skip", counts=len(targets)))
+            await msg.send_message(msg.locale.t("core.message.resume.skip", counts=len(targets)))
             for x in targets:
                 if x['i18n']:
-                    await x['fetch'].sendDirectMessage(x['fetch'].parent.locale.t(x['message']))
+                    await x['fetch'].send_direct_message(x['fetch'].parent.locale.t(x['message']))
                 else:
-                    await x['fetch'].sendDirectMessage(x['message'])
+                    await x['fetch'].send_direct_message(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
-            await msg.sendMessage(msg.locale.t("core.message.resume.done"))
+            await msg.send_message(msg.locale.t("core.message.resume.done"))
         else:
-            await msg.sendMessage(msg.locale.t("core.message.resume.nothing"))
+            await msg.send_message(msg.locale.t("core.message.resume.nothing"))
 
     @resume.handle('clear')
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.sendMessage(msg.locale.t("core.message.resume.clear"))
+        await msg.send_message(msg.locale.t("core.message.resume.clear"))
 
     forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
 
@@ -385,10 +383,9 @@ if Bot.FetchTarget.name == 'QQ':
         alist['status'] = not alist['status']
         update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
         if alist['status']:
-            await msg.sendMessage(msg.locale.t('core.message.forward_msg.enable'))
+            await msg.send_message(msg.locale.t('core.message.forward_msg.enable'))
         else:
-            await msg.sendMessage(msg.locale.t('core.message.forward_msg.disable'))
-
+            await msg.send_message(msg.locale.t('core.message.forward_msg.disable'))
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True)
 
@@ -479,7 +476,8 @@ if Config('openai_api_key'):
             group = msg.parsed_msg['<target>']
             target = BotDBUtil.TargetInfo(group)
             target.modify_petal(int(petal))
-            await msg.finish(msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
+            await msg.finish(
+                msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
         else:
             target = msg.data
             target.modify_petal(int(petal))

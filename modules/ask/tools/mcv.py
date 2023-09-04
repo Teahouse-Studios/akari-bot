@@ -10,6 +10,7 @@ async def mcv_all():
     )
     return '\n---'.join(results)
 
+
 mcv_tool = AkariTool.from_function(
     name='minecraft_versions',
     func=mcv_all,

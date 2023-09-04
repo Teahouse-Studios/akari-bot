@@ -1,17 +1,17 @@
-import os
 import platform
+import time
+from datetime import datetime, timedelta
+
 import jwt
 import psutil
-import time
+from cpuinfo import get_cpu_info
 
 from config import Config
-from core.builtins import Bot, command_prefix, PrivateAssets
+from core.builtins import Bot, command_prefix
 from core.component import module
 from core.utils.i18n import get_available_locales, Locale, load_locale_file
 from core.utils.info import Info
-from cpuinfo import get_cpu_info
 from database import BotDBUtil
-from datetime import datetime, timedelta
 
 jwt_secret = Config('jwt_secret')
 
@@ -33,18 +33,18 @@ started_time = datetime.now()
 
 @ping.handle()
 async def _(msg: Bot.MessageSession):
-    checkpermisson = msg.checkSuperUser()
+    checkpermisson = msg.check_super_user()
     result = "Pong!"
     if checkpermisson:
         timediff = str(datetime.now() - started_time)
-        Boot_Start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
-        Cpu_usage = psutil.cpu_percent()
-        RAM = int(psutil.virtual_memory().total / (1024 * 1024))
-        RAM_percent = psutil.virtual_memory().percent
-        Swap = int(psutil.swap_memory().total / (1024 * 1024))
-        Swap_percent = psutil.swap_memory().percent
-        Disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
-        DiskTotal = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
+        boot_start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        cpu_usage = psutil.cpu_percent()
+        ram = int(psutil.virtual_memory().total / (1024 * 1024))
+        ram_percent = psutil.virtual_memory().percent
+        swap = int(psutil.swap_memory().total / (1024 * 1024))
+        swap_percent = psutil.swap_memory().percent
+        disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
+        disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
         """
         try:
             GroupList = len(await app.groupList())
@@ -56,17 +56,17 @@ async def _(msg: Bot.MessageSession):
             FriendList = msg.locale.t('core.message.ping.failed')
         """
         result += '\n' + msg.locale.t("core.message.ping.detail",
-                                      system_boot_time=Boot_Start,
+                                      system_boot_time=boot_start,
                                       bot_running_time=timediff,
                                       python_version=platform.python_version(),
                                       cpu_brand=get_cpu_info()['brand_raw'],
-                                      cpu_usage=Cpu_usage,
-                                      ram=RAM,
-                                      ram_percent=RAM_percent,
-                                      swap=Swap,
-                                      swap_percent=Swap_percent,
-                                      disk_space=Disk,
-                                      disk_space_total=DiskTotal)
+                                      cpu_usage=cpu_usage,
+                                      ram=ram,
+                                      ram_percent=ram_percent,
+                                      swap=swap,
+                                      swap_percent=swap_percent,
+                                      disk_space=disk,
+                                      disk_space_total=disk_total)
     await msg.finish(result)
 
 
@@ -89,8 +89,8 @@ async def config_gu(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("core.message.admin.list.none"))
     user = msg.parsed_msg['<UserID>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.senderFrom))
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.sender_from))
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
@@ -106,9 +106,9 @@ async def config_gu(msg: Bot.MessageSession):
 @admin.handle('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
-    if not user.startswith(f'{msg.target.senderFrom}|'):
-        await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.senderFrom))
-    if user == msg.target.senderId:
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.sender_from))
+    if user == msg.target.sender_id:
         await msg.finish(msg.locale.t("core.message.admin.ban.self"))
     if 'ban' in msg.parsed_msg:
         if user not in msg.options.get('ban', []):
@@ -132,14 +132,15 @@ locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon']
 async def _(msg: Bot.MessageSession):
     lang = msg.locale.t("language")
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    await msg.finish(f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
+    await msg.finish(
+        f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
 
 
 @locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales():
-        if BotDBUtil.TargetInfo(msg.target.targetId).edit('locale', lang):
+        if BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
             await msg.finish(Locale(lang).t('success'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
@@ -161,14 +162,15 @@ whoami = module('whoami', developers=['Dianliang233'], base=True)
 @whoami.handle('{{core.help.whoami}}')
 async def _(msg: Bot.MessageSession):
     rights = ''
-    if await msg.checkNativePermission():
+    if await msg.check_native_permission():
         rights += '\n' + msg.locale.t("core.message.whoami.admin")
-    elif await msg.checkPermission():
+    elif await msg.check_permission():
         rights += '\n' + msg.locale.t("core.message.whoami.botadmin")
-    if msg.checkSuperUser():
+    if msg.check_super_user():
         rights += '\n' + msg.locale.t("core.message.whoami.superuser")
-    await msg.finish(msg.locale.t('core.message.whoami', senderid=msg.target.senderId, targetid=msg.target.targetId) + rights,
-                     disable_secret_check=True)
+    await msg.finish(
+        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + rights,
+        disable_secret_check=True)
 
 
 tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
@@ -176,7 +178,7 @@ tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True
 
 @tog.handle('typing {{core.help.toggle.typing}}')
 async def _(msg: Bot.MessageSession):
-    target = BotDBUtil.SenderInfo(msg.target.senderId)
+    target = BotDBUtil.SenderInfo(msg.target.sender_id)
     state = target.query.disable_typing
     if not state:
         target.edit('disable_typing', True)
@@ -222,9 +224,9 @@ leave = module(
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.waitConfirm(msg.locale.t('core.message.leave.confirm'))
+    confirm = await msg.wait_confirm(msg.locale.t('core.message.leave.confirm'))
     if confirm:
-        await msg.sendMessage(msg.locale.t('core.message.leave.success'))
+        await msg.send_message(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
@@ -236,6 +238,6 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(jwt.encode({
         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days
         'iat': datetime.utcnow(),
-        'senderId': msg.target.senderId,
+        'senderId': msg.target.sender_id,
         'code': msg.parsed_msg['<code>']
     }, bytes(jwt_secret, 'utf-8'), algorithm='HS256'))

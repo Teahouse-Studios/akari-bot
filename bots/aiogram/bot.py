@@ -19,17 +19,17 @@ Url.disable_mm = True
 
 @dp.message_handler(content_types=[ContentType.TEXT, ContentType.PHOTO, ContentType.AUDIO])
 async def msg_handler(message: types.Message):
-    targetId = f'Telegram|{message.chat.type}|{message.chat.id}'
-    replyId = None
+    target_id = f'Telegram|{message.chat.type}|{message.chat.id}'
+    reply_id = None
     if message.reply_to_message is not None:
-        replyId = message.reply_to_message.message_id
-    msg = MessageSession(MsgInfo(targetId=targetId,
-                                 senderId=f'Telegram|User|{message.from_user.id}',
-                                 targetFrom=f'Telegram|{message.chat.type}',
-                                 senderFrom='Telegram|User', senderName=message.from_user.username,
-                                 clientName=client_name,
-                                 messageId=message.message_id,
-                                 replyId=replyId),
+        reply_id = message.reply_to_message.message_id
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=f'Telegram|User|{message.from_user.id}',
+                                 target_from=f'Telegram|{message.chat.type}',
+                                 sender_from='Telegram|User', sender_name=message.from_user.username,
+                                 client_name=client_name,
+                                 message_id=message.message_id,
+                                 reply_id=reply_id),
                          Session(message=message, target=message.chat.id, sender=message.from_user.id))
     await parser(msg)
 
@@ -37,6 +37,7 @@ async def msg_handler(message: types.Message):
 async def on_startup(dispatcher):
     await init_async()
     await load_prompt(FetchTarget)
+
 
 if 'subprocess' in sys.argv:
     Info.subprocess = True

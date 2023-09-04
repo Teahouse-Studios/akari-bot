@@ -14,7 +14,6 @@ from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
-
 bots_required_configs = {'aiocqhttp': ['qq_host', 'qq_account'], 'discord': ['dc_token'], 'aiogram': ['tg_token'],
                          'kook': ['kook_token'], 'matrix': ['matrix_homeserver', 'matrix_user', 'matrix_token'], }
 

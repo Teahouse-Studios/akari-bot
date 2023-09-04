@@ -10,12 +10,12 @@ import ujson as json
 from PIL import ImageFont
 from bs4 import BeautifulSoup, Comment
 
-from config import Config
+from config import CFG
 from core.logger import Logger
 from core.utils.http import download_to_cache
 
-web_render = Config('web_render')
-web_render_local = Config('web_render_local')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 assets_path = os.path.abspath('./assets/')
@@ -36,7 +36,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
             elements_.insert(0, '.diff')
         Logger.info('[Webrender] Generating element screenshot...')
         try:
-            img = await download_to_cache((web_render_local if use_local else web_render) + '/element_screenshot',
+            img = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
                                           status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",
@@ -49,7 +49,8 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
                                           )
         except aiohttp.ClientConnectorError:
             if use_local:
-                return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode, use_local=False)
+                return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode,
+                                                    use_local=False)
             else:
                 return False
         except ValueError:
@@ -58,7 +59,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
     else:
         Logger.info('[Webrender] Generating section screenshot...')
         try:
-            img = await download_to_cache((web_render_local if use_local else web_render) + '/section_screenshot',
+            img = await download_to_cache((web_render_local if use_local else web_render) + 'section_screenshot',
                                           status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",
@@ -71,7 +72,8 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
                                           )
         except aiohttp.ClientConnectorError:
             if use_local:
-                return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode, use_local=False)
+                return await generate_screenshot_v2(page_link, section, allow_special_page, content_mode,
+                                                    use_local=False)
             else:
                 return False
         except ValueError:

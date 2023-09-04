@@ -30,7 +30,7 @@ from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
 
-class mkey_generator():
+class MkeyGenerator:
     __props = {
         "RVL": {
             "traits": ["big-endian"],
@@ -469,7 +469,7 @@ class mkey_generator():
 
 
 def get_mkey(inquiry, month, day, aux, device):
-    mkey = mkey_generator()
+    mkey = MkeyGenerator()
 
     master_key = mkey.generate(inquiry, month, day, aux, device)
     return master_key

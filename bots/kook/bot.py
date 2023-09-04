@@ -1,16 +1,16 @@
 import os
 import sys
 
-from bots.kook.client import bot
-from bots.kook.info import client_name
 from khl import Message, MessageTypes
 
+from bots.kook.client import bot
+from bots.kook.info import client_name
+from bots.kook.message import MessageSession, FetchTarget
 from config import Config
 from core.builtins import PrivateAssets, Url, EnableDirtyWordCheck
 from core.parser.message import parser
 from core.types import MsgInfo, Session
 from core.utils.bot import load_prompt, init_async
-from bots.kook.message import MessageSession, FetchTarget
 from core.utils.info import Info
 
 PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
@@ -22,20 +22,20 @@ Url.md_format = True
 @bot.on_message((MessageTypes.TEXT, MessageTypes.IMG))
 async def msg_handler(message: Message):
     if message.channel_type.name == "GROUP":
-        targetId = f'Kook|{message.channel_type.name}|{message.target_id}'
+        target_id = f'Kook|{message.channel_type.name}|{message.target_id}'
     else:
-        targetId = f'Kook|{message.channel_type.name}|{message.author_id}'
-    replyId = None
+        target_id = f'Kook|{message.channel_type.name}|{message.author_id}'
+    reply_id = None
     if 'quote' in message.extra:
-        replyId = message.extra['quote']['rong_id']
+        reply_id = message.extra['quote']['rong_id']
 
-    msg = MessageSession(MsgInfo(targetId=targetId,
-                                 senderId=f'Kook|User|{message.author_id}',
-                                 targetFrom=f'Kook|{message.channel_type.name}',
-                                 senderFrom='Kook|User', senderName=message.author.nickname,
-                                 clientName=client_name,
-                                 messageId=message.id,
-                                 replyId=replyId),
+    msg = MessageSession(MsgInfo(target_id=target_id,
+                                 sender_id=f'Kook|User|{message.author_id}',
+                                 target_from=f'Kook|{message.channel_type.name}',
+                                 sender_from='Kook|User', sender_name=message.author.nickname,
+                                 client_name=client_name,
+                                 message_id=message.id,
+                                 reply_id=reply_id),
                          Session(message=message, target=message.target_id, sender=message.author_id))
     await parser(msg)
 
@@ -44,6 +44,7 @@ async def msg_handler(message: Message):
 async def _(b: bot):
     await init_async()
     await load_prompt(FetchTarget)
+
 
 if 'subprocess' in sys.argv:
     Info.subprocess = True

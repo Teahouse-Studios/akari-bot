@@ -7,11 +7,10 @@ import operator as op
 import statistics
 import sys
 
-from utils import invoke
-
 from simpleeval import EvalWithCompoundTypes, DEFAULT_FUNCTIONS, DEFAULT_NAMES, DEFAULT_OPERATORS
 
 from constant import consts
+from utils import invoke
 
 funcs = {}
 named_funcs = {}
