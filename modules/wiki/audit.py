@@ -5,8 +5,10 @@ from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
-if Config('qq_enable_urlmanager'):
-    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
+
+if Config('enable_urlmanager'):
+    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True,
+                 alias='wau')
 
     @aud.handle(['trust <apiLink>', 'block <apiLink>'])
     async def _(msg: Bot.MessageSession):
