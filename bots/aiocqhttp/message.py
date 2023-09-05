@@ -363,7 +363,7 @@ class FetchTarget(FetchTargetT):
             in_whitelist = []
             else_ = []
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.target_id)
+                fetch = await FetchTarget.fetch_target(x.targetId)
                 Logger.debug(fetch)
                 if fetch:
                     if fetch.target.target_from == 'QQ|Group':

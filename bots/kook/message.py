@@ -247,7 +247,7 @@ class FetchTarget(FetchTargetT):
         else:
             get_target_id = BotDBUtil.TargetInfo.get_enabled_this(module_name, "Kook")
             for x in get_target_id:
-                fetch = await FetchTarget.fetch_target(x.target_id)
+                fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
                         if i18n:
