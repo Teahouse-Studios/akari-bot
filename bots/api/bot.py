@@ -7,6 +7,7 @@ from fastapi import FastAPI
 import jwt
 
 from core.queue import JobQueue
+from core.scheduler import Scheduler
 
 sys.path.append(os.getcwd())
 
@@ -26,6 +27,7 @@ jwt_secret = Config('jwt_secret')
 async def startup_event():
     await init_async(start_scheduler=False)
     load_extra_schedulers()
+    Scheduler.start()
     await JobQueue.secret_append_ip()
 
 
