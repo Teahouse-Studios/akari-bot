@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Awaitable, Callable, Optional
 
 import ujson as json
 from langchain.tools import StructuredTool
@@ -44,11 +44,12 @@ class AkariTool(StructuredTool):
             self,
             name: str,
             func: Callable,
+            coroutine=Optional[Callable[..., Awaitable[str]]],
             args_schema: Any = None,
             description: str = None,
             return_direct: bool = False):
-        super().__init__(name=name, args_schema=args_schema, description=description, return_direct=return_direct,
-                         func=func)
+        super().__init__(name=name, args_schema=args_schema, description=description,
+                         return_direct=return_direct, func=func, coroutine=coroutine)
         self.coroutine = func
 
 
