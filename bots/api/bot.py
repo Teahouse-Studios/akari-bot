@@ -140,4 +140,4 @@ async def get_translation(locale: str, string: str):
         })
 
 if __name__ == "__main__":
-    uvicorn.run("bot:app", port=Config('api_port') or 5000, log_level="info", reload=True)
+    uvicorn.run("bot:app", port=Config('api_port') or 5000, log_level="info")
