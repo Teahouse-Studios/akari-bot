@@ -65,7 +65,6 @@ trigger_times = 60 if not Config('slower_schedule') else 180
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcv_rss():
-    Logger.info('Checking Minecraft Java Edition version...')
     url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:
         verlist = get_stored_list('scheduler', 'mcv_rss')
