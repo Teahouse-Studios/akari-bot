@@ -63,6 +63,7 @@ python-whois = "^0.8.0"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
+pycodestyle = "2.10.0"
 
 [build-system]
 requires = ["poetry-core"]
