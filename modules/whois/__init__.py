@@ -1,4 +1,3 @@
-import datetime
 from whois import whois
 
 from core.builtins import Bot, Plain, Image
@@ -11,6 +10,7 @@ def process(input):
         return input[0]
     else:
         return input
+
 
 def get_value(dict, key):
     if key in dict:
@@ -27,7 +27,7 @@ w = module('whois', desc='{whois.help.desc}',
 async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     output = await msg.finish(res)
-    
+
     img = await msgchain2image([Plain(output)])
     await msg.finish([Image(img)])
 
@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession, domain: str):
 async def get_whois(msg, domain):
     try:
         info = whois(domain)
-    except:
+    except BaseException:
         await msg.finish(msg.locale.t("whois.message.get_failed"))
 
     domain_name = get_value(info, 'domain_name')
@@ -59,7 +59,7 @@ async def get_whois(msg, domain):
 
     if whois_server:
         whois_server = whois_server.lower()
-        
+
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))
     else:

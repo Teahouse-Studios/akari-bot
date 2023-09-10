@@ -1,7 +1,6 @@
 from core.builtins import Bot
 from core.component import module
 
-
 mcv_rss = module('mcv_rss',
                  developers=['OasisAkari', 'Dianliang233'],
                  recommend_modules=['mcv_jira_rss', 'mcbv_jira_rss', 'mcdv_jira_rss'],

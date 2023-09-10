@@ -9,14 +9,14 @@ from core.logger import Logger
 
 
 async def server(msg, address, raw=False, showplayer=False, mode='j'):
-    matchObj = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
+    match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
     servers = []
     n = '\n'
 
-    if matchObj:
-        serip = matchObj.group(1)
-        port1 = matchObj.group(2)
-        port2 = matchObj.group(2)
+    if match_object:
+        serip = match_object.group(1)
+        port1 = match_object.group(2)
+        port2 = match_object.group(2)
     else:
         serip = address
         port1 = '25565'
@@ -55,7 +55,8 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
                                         for x in jejson['players']['sample']:
                                             playerlist.append(x['name'])
                                         servers.append(
-                                            msg.locale.t('server.message.player.current') + '\n' + '\n'.join(playerlist))
+                                            msg.locale.t('server.message.player.current') + '\n' + '\n'.join(
+                                                playerlist))
                                     else:
                                         if jejson['players']['online'] == 0:
                                             servers.append(msg.locale.t('server.message.player.current.none'))

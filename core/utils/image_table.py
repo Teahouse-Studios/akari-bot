@@ -1,5 +1,4 @@
 import re
-import traceback
 from html import escape
 from typing import List, Union
 
@@ -7,13 +6,13 @@ import aiohttp
 import ujson as json
 from tabulate import tabulate
 
-from config import Config
+from config import CFG
 from core.logger import Logger
 from .cache import random_cache_path
 from .http import download_to_cache
 
-web_render = Config('web_render')
-web_render_local = Config('web_render_local')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 
 class ImageTable:
@@ -29,7 +28,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
             return False
         use_local = False
     pic = False
-    
+
     try:
         tblst = []
         if isinstance(table, ImageTable):
@@ -68,9 +67,9 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
 
         try:
             pic = await download_to_cache(
-                web_render_local if use_local else web_render, 
+                web_render_local if use_local else web_render,
                 method='POST',
-                post_data=json.dumps(html), 
+                post_data=json.dumps(html),
                 request_private_ip=True,
                 headers={
                     'Content-Type': 'application/json',
@@ -79,9 +78,9 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
         except aiohttp.ClientConnectorError:
             if use_local:
                 pic = await download_to_cache(
-                    web_render, 
-                    method='POST', 
-                    post_data=json.dumps(html), 
+                    web_render,
+                    method='POST',
+                    post_data=json.dumps(html),
                     request_private_ip=True,
                     headers={
                         'Content-Type': 'application/json',
@@ -89,7 +88,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                 )
     except Exception:
         Logger.exception("error at image_table_render")
-    
+
     return pic
 
 

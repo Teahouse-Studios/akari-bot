@@ -2,7 +2,7 @@ import os
 import re
 from collections.abc import MutableMapping
 from string import Template
-from typing import TypedDict, Dict, Any, Union
+from typing import Dict, Any, Union
 
 import ujson as json
 

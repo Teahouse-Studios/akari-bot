@@ -22,33 +22,33 @@ async def set_alias(msg: Bot.MessageSession):
                     has_prefix = True
                     break
             if not has_prefix:
-                await msg.sendMessage(msg.locale.t("core.message.alias.add.invalid_prefix"))
+                await msg.send_message(msg.locale.t("core.message.alias.add.invalid_prefix"))
                 return
             alias[arg1] = arg2
             msg.data.edit_option('command_alias', alias)
-            await msg.sendMessage(msg.locale.t("core.message.alias.add.success", arg1=arg1, arg2=arg2))
+            await msg.send_message(msg.locale.t("core.message.alias.add.success", arg1=arg1, arg2=arg2))
         else:
-            await msg.sendMessage(msg.locale.t("core.message.alias.add.already_in", arg1=arg1))
+            await msg.send_message(msg.locale.t("core.message.alias.add.already_in", arg1=arg1))
     elif 'remove' in msg.parsed_msg:
         if arg1 in alias:
             del alias[arg1]
             msg.data.edit_option('command_alias', alias)
-            await msg.sendMessage(msg.locale.t("core.message.alias.remove.success", arg1=arg1))
+            await msg.send_message(msg.locale.t("core.message.alias.remove.success", arg1=arg1))
         else:
-            await msg.sendMessage(msg.locale.t("core.message.alias.remove.not_found", arg1=arg1))
+            await msg.send_message(msg.locale.t("core.message.alias.remove.not_found", arg1=arg1))
     elif 'reset' in msg.parsed_msg:
         msg.data.edit_option('command_alias', {})
-        await msg.sendMessage(msg.locale.t("core.message.alias.reset.success"))
+        await msg.send_message(msg.locale.t("core.message.alias.reset.success"))
     elif 'list' in msg.parsed_msg:
         if len(alias) == 0:
-            await msg.sendMessage(msg.locale.t("core.message.alias.list.none"))
+            await msg.send_message(msg.locale.t("core.message.alias.list.none"))
         else:
             table = ImageTable([[k, alias[k]] for k in alias],
                                [msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
             img = await image_table_render(table)
             if img:
-                await msg.sendMessage([msg.locale.t("core.message.alias.list.lists"), Image(img)])
+                await msg.send_message([msg.locale.t("core.message.alias.list.lists"), Image(img)])
             else:
-                await msg.sendMessage(f'{msg.locale.t("core.message.alias.list.lists")}\n'
-                                      + '\n'.join([f'{k} -> {alias[k]}' for k in alias]))
+                await msg.send_message(f'{msg.locale.t("core.message.alias.list.lists")}\n'
+                                       + '\n'.join([f'{k} -> {alias[k]}' for k in alias]))

@@ -3,12 +3,11 @@ import traceback
 
 import ujson as json
 
-from core.logger import Logger
 from core.builtins import Bot
-from database import BotDBUtil
+from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
-
+from database import BotDBUtil
 
 _queue_tasks = {}
 
@@ -68,7 +67,7 @@ async def check_job_queue():
             if tsk.action == 'validate_permission':
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
                 if fetch:
-                    return_val(tsk, {'value': await fetch.parent.checkPermission()})
+                    return_val(tsk, {'value': await fetch.parent.check_permission()})
             if tsk.action == 'trigger_hook':
                 await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
                 return_val(tsk, {})

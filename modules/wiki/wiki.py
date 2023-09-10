@@ -69,7 +69,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
     if start_wiki is None:
         if isinstance(session, Bot.MessageSession):
-            await session.sendMessage(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
+            await session.send_message(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
         start_wiki = 'https://minecraft.fandom.com/zh/api.php'
     if lang in interwiki_list:
         start_wiki = interwiki_list[lang]
@@ -276,7 +276,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
             raise AbuseWarning(session.locale.t('tos.reason.too_many_redirects'))
         except InvalidWikiError as e:
             if isinstance(session, Bot.MessageSession):
-                await session.sendMessage(session.locale.t('error') + str(e))
+                await session.send_message(session.locale.t('error') + str(e))
             else:
                 msg_list.append(Plain(session.locale.t('error') + str(e)))
     if isinstance(session, Bot.MessageSession):
@@ -285,7 +285,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     not dl_list, not wait_list, not wait_possible_list]):
                 await session.finish(msg_list)
             else:
-                await session.sendMessage(msg_list)
+                await session.send_message(msg_list)
 
         async def infobox():
             if render_infobox_list and session.Feature.image:
@@ -305,7 +305,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                             if get_infobox:
                                 infobox_msg_list.append(Image(get_infobox))
                 if infobox_msg_list:
-                    await session.sendMessage(infobox_msg_list, quote=False)
+                    await session.send_message(infobox_msg_list, quote=False)
 
         async def section():
             if render_section_list and session.Feature.image:
@@ -323,7 +323,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
                 if section_msg_list:
-                    await session.sendMessage(section_msg_list, quote=False)
+                    await session.send_message(section_msg_list, quote=False)
 
         async def image_and_voice():
             if dl_list:
@@ -333,20 +333,20 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if guess_type is not None:
                         if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                             if session.Feature.image:
-                                await session.sendMessage(Image(dl), quote=False)
+                                await session.send_message(Image(dl), quote=False)
                         elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                             if session.Feature.voice:
-                                await session.sendMessage(Voice(dl), quote=False)
+                                await session.send_message(Voice(dl), quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
                 confirm = await session.waitNextMessage(wait_msg_list)
                 auto_index = False
                 index = 0
-                if confirm.asDisplay(text_only=True) in confirm_command:
+                if confirm.as_display(text_only=True) in confirm_command:
                     auto_index = True
-                elif confirm.asDisplay(text_only=True).isdigit():
-                    index = int(confirm.asDisplay()) - 1
+                elif confirm.as_display(text_only=True).isdigit():
+                    index = int(confirm.as_display()) - 1
                 else:
                     return
                 preset_message = []

@@ -5,7 +5,7 @@ import ujson as json
 from PIL import ImageFont
 
 from config import Config
-from core.builtins import Url, ErrorMessage
+from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download_to_cache
 from core.utils.http import get_url
@@ -54,16 +54,16 @@ async def make_screenshot(page_link, use_local=True):
         return False
 
 
-async def bugtracker_get(session, mojiraId: str, nolink=False):
+async def bugtracker_get(session, mojira_id: str, nolink=False):
     data = {}
-    id_ = mojiraId.upper()
+    id_ = mojira_id.upper()
     try:
         json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
         get_json = await get_url(json_url, 200)
     except ValueError as e:
         if str(e).startswith('401'):
             await session.finish(session.locale.t("bugtracker.message.get_failed"))
-    if mojiraId not in spx_cache:
+    if mojira_id not in spx_cache:
         get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
         if get_spx:
             spx_cache.update(json.loads(get_spx))
@@ -94,9 +94,9 @@ async def bugtracker_get(session, mojiraId: str, nolink=False):
                     data["resolution"] = fields['resolution']['name'] if fields[
                         'resolution'] is not None else 'Unresolved'
                 if 'versions' in load_json['fields']:
-                    Versions = fields['versions']
+                    versions = fields['versions']
                     verlist = []
-                    for item in Versions[:]:
+                    for item in versions[:]:
                         verlist.append(item['name'])
                     if verlist[0] == verlist[-1]:
                         data['version'] = "Version: " + verlist[0]
@@ -126,7 +126,7 @@ async def bugtracker_get(session, mojiraId: str, nolink=False):
             type_ = 'Type: ' + type_
             if status_ := data.get("status", False):
                 if status_ in ['Open', 'Resolved']:
-                    Type = f'{type_} | Status: {status_}'
+                    type_ = f'{type_} | Status: {status_}'
             msglist.append(type_)
         if project := data.get("project", False):
             project = 'Project: ' + project

@@ -1,16 +1,15 @@
-﻿from core.builtins import Bot, command_prefix, Plain, Image as BImage
-from core.component import module
-from core.logger import Logger
-from core.utils.image import msgchain2image
+﻿from core.builtins import command_prefix
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import update_alias, get_alias, get_cover
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, get_score_list
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
+from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, \
+    get_score_list
 from .regex import *
 
 total_list = TotalList()
 
-level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+', '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
+level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
+              '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
 
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
@@ -157,14 +156,14 @@ async def _(msg: Bot.MessageSession, sid: str):
 
 @mai.handle('b50 [<username>] {{maimai.help.b50}}')
 async def _(msg: Bot.MessageSession, username: str = None):
-    if username is None and msg.target.senderFrom == "QQ":
+    if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
     img = await generate(msg, payload)
-    await msg.finish([BImage(img)])    
+    await msg.finish([BImage(img)])
 
 
 @mai.handle('info <id_or_alias> [<username>] {{maimai.help.info}}')
@@ -188,7 +187,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if username is None and msg.target.senderFrom == "QQ":
+    if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
         if username is None:
@@ -201,17 +200,17 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     await msg.finish(
         [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"{file}"), Plain(output)])
-    
+
 
 @mai.handle('plate <plate> [<username>] {{maimai.help.plate}}')
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
-    if username is None and msg.target.senderFrom == "QQ":
+    if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
-    
+
     if plate == '真将' or (plate[1] == '者' and plate[0] != '霸'):
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
@@ -226,15 +225,32 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
 
 @mai.handle('process <level> <goal> [<username>] {{maimai.help.process}}')
 async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
-    goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
+    goal_list = [
+        "A",
+        "AA",
+        "AAA",
+        "S",
+        "S+",
+        "SS",
+        "SS+",
+        "SSS",
+        "SSS+",
+        "FC",
+        "FC+",
+        "AP",
+        "AP+",
+        "FS",
+        "FS+",
+        "FDX",
+        "FDX+"]
 
-    if username is None and msg.target.senderFrom == "QQ":
+    if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
         if username is None:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
-    
+
     if level in level_list:
         level_num = int(level.split('+')[0])
         if level_num < 8:
@@ -252,12 +268,11 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
     else:
         img = await msgchain2image([Plain(output)])
         await msg.finish([BImage(img)])
-    
 
 
 @mai.handle('rank [<username>] {{maimai.help.rank}}')
 async def _(msg: Bot.MessageSession, username: str = None):
-    if username is None and msg.target.senderFrom == "QQ":
+    if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
         if username is None:
@@ -269,7 +284,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 @mai.handle('scorelist <level> [<username>] {{maimai.help.scorelist}}')
 async def _(msg: Bot.MessageSession, level: str, username: str = None):
-    if username is None and msg.target.senderFrom == "QQ":
+    if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
         if username is None:
@@ -285,7 +300,6 @@ async def _(msg: Bot.MessageSession, level: str, username: str = None):
     else:
         img = await msgchain2image([Plain(res)])
         await msg.finish([BImage(img)])
-
 
 
 @mai.handle('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
@@ -393,9 +407,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"{file}"),
              Plain(msg.locale.t("maimai.message.song",
-                                    artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
-                                    bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                                    level='/'.join((str(ds) for ds in music['ds']))))]) 
+                                artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
+                                bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
+                                level='/'.join((str(ds) for ds in music['ds']))))])
 
 
 @mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
@@ -426,12 +440,12 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
-                scoreline=scoreline,
-                tap_great=tap_great,
-                tap_great_prop=tap_great_prop,
-                brk=brk,
-                b2t_great=b2t_great,
-                b2t_great_prop=b2t_great_prop)}''')
+              scoreline=scoreline,
+              tap_great=tap_great,
+              tap_great_prop=tap_great_prop,
+              brk=brk,
+              b2t_great=b2t_great,
+              b2t_great_prop=b2t_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 

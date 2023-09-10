@@ -26,11 +26,11 @@ async def cytoid_profile(msg: Bot.MessageSession):
     if nick is None:
         nick = False
     avatar = profile['user']['avatar']['large']
-    basicExp = profile['exp']['basicExp']
-    levelExp = profile['exp']['levelExp']
-    totalExp = profile['exp']['totalExp']
-    currentLevel = profile['exp']['currentLevel']
-    nextLevelExp = profile['exp']['nextLevelExp']
+    basic_exp = profile['exp']['basicExp']
+    level_exp = profile['exp']['levelExp']
+    total_exp = profile['exp']['totalExp']
+    current_level = profile['exp']['currentLevel']
+    next_level_exp = profile['exp']['nextLevelExp']
     rating = profile['rating']
     grade: dict = profile['grade']
     grade_t = []
@@ -66,12 +66,12 @@ async def cytoid_profile(msg: Bot.MessageSession):
         grade_t.append(f'F: {f}')
     text = f'UID: {uid}\n' + \
            (f'Nickname: {nick}\n' if nick else '') + \
-           f'BasicExp: {basicExp}\n' + \
-           f'LevelExp: {levelExp}\n' + \
-           f'TotalExp: {totalExp}\n' + \
-           f'CurrentLevel: {currentLevel}\n' + \
-           f'NextLevelExp: {nextLevelExp}\n' + \
+           f'BasicExp: {basic_exp}\n' + \
+           f'LevelExp: {level_exp}\n' + \
+           f'TotalExp: {total_exp}\n' + \
+           f'CurrentLevel: {current_level}\n' + \
+           f'NextLevelExp: {next_level_exp}\n' + \
            f'Rating: {rating}\n' + \
            f'Grade: {", ".join(grade_t)}'
-    msgchain = [Image(path=avatar), Plain(text)]
-    await msg.finish(msgchain)
+    message_chain = [Image(path=avatar), Plain(text)]
+    await msg.finish(message_chain)

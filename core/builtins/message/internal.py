@@ -10,12 +10,12 @@ from PIL import Image as PImage
 from tenacity import retry, stop_after_attempt
 
 from config import Config
-from core.types.message.internal import Plain as P, Image as I, Voice as V, Embed as E, EmbedField as EF, \
-    Url as U, ErrorMessage as EMsg
+from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
+                                         EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
 from core.utils.i18n import Locale
 
 
-class Plain(P):
+class Plain(PlainT):
     def __init__(self,
                  text, *texts):
         self.text = str(text)
@@ -29,7 +29,7 @@ class Plain(P):
         return f'Plain(text="{self.text}")'
 
 
-class Url(U):
+class Url(UrlT):
     mm = False
     disable_mm = False
     md_format = False
@@ -70,7 +70,7 @@ class ErrorMessage(EMsg):
         return self.error_message
 
 
-class Image(I):
+class Image(ImageT):
     def __init__(self,
                  path, headers=None):
         self.need_get = False
@@ -107,7 +107,7 @@ class Image(I):
         return f'Image(path="{self.path}", headers={self.headers})'
 
 
-class Voice(V):
+class Voice(VoiceT):
     def __init__(self,
                  path=None):
         self.path = path
@@ -119,7 +119,7 @@ class Voice(V):
         return f'Voice(path={self.path})'
 
 
-class EmbedField(EF):
+class EmbedField(EmbedFieldT):
     def __init__(self,
                  name: str = None,
                  value: str = None,
@@ -135,7 +135,7 @@ class EmbedField(EF):
         return f'EmbedField(name="{self.name}", value="{self.value}", inline={self.inline})'
 
 
-class Embed(E):
+class Embed(EmbedT):
     def __init__(self,
                  title: str = None,
                  description: str = None,
@@ -158,7 +158,7 @@ class Embed(E):
         self.footer = footer
         self.fields = fields
 
-    def to_msgchain(self):
+    def to_message_chain(self):
         text_lst = []
         if self.title is not None:
             text_lst.append(self.title)
@@ -176,15 +176,15 @@ class Embed(E):
             text_lst.append("作者：" + self.author)
         if self.footer is not None:
             text_lst.append(self.footer)
-        msgchain = []
+        message_chain = []
         if text_lst:
-            msgchain.append(Plain('\n'.join(text_lst)))
+            message_chain.append(Plain('\n'.join(text_lst)))
         if self.image is not None:
-            msgchain.append(self.image)
-        return msgchain
+            message_chain.append(self.image)
+        return message_chain
 
     def __str__(self):
-        return str(self.to_msgchain())
+        return str(self.to_message_chain())
 
     def __repr__(self):
         return f'Embed(title="{self.title}", description="{self.description}", url="{self.url}", ' \

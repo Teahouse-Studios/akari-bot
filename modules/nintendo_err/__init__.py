@@ -3,7 +3,7 @@ import discord
 
 from core.builtins import Bot
 from core.component import module
-from core.utils.message import convertDiscordEmbed
+from core.utils.message import convert_discord_embed
 from . import switch, wiiu_support, wiiu_results, ctr_support, ctr_results
 
 
@@ -111,6 +111,6 @@ async def result(msg: Bot.MessageSession):
             embed.description = ret.extra_description
         for field in ret:
             embed.add_field(name=field.field_name, value=field.message, inline=False)
-        await msg.finish(convertDiscordEmbed(embed))
+        await msg.finish(convert_discord_embed(embed))
     else:
         await msg.finish(f'你输入的代码是无效的，或者此功能不支持你使用的主机。')

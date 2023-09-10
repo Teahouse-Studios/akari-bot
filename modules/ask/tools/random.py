@@ -1,6 +1,8 @@
 import secrets
 import uuid
 
+from typing import List
+
 from .utils import AkariTool, parse_input
 
 
@@ -9,7 +11,7 @@ async def random_number(max: int, min: int):
     return random
 
 
-async def random_choice(input: list[str]):
+async def random_choice(input: List[str]):
     parsed = parse_input(input)
     return secrets.choice(parsed)
 

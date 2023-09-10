@@ -5,13 +5,16 @@ from urllib.parse import quote
 
 import ujson as json
 
-from config import Config
+from config import Config, CFG
 from core.builtins import Url
+from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
+
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 
 class Article:
@@ -45,13 +48,10 @@ async def start_check_news():
     baseurl = 'https://www.minecraft.net'
     url = quote(
         f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
-    webrender = Config('web_render')
-    if not webrender:
+    if not web_render:
         return
     try:
-        if webrender[-1] != '/':
-            webrender += '/'
-        get = webrender + 'source?url=' + url
+        get = web_render + 'source?url=' + url
         getpage = await get_url(get, 200, attempt=1, logging_err_resp=False)
         if getpage:
             alist = get_stored_list('scheduler', 'mcnews')

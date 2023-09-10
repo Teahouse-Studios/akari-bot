@@ -17,7 +17,7 @@ import traceback
 import aioconsole
 
 from bot import init_bot
-from bots.scheduler.bot import load_schedulers
+from core.extra.scheduler import load_extra_schedulers
 from core.builtins import PrivateAssets, EnableDirtyWordCheck
 from core.types import MsgInfo, AutoSession
 from core.console.template import Template as MessageSession
@@ -44,7 +44,7 @@ PrivateAssets.set(os.path.abspath(os.path.dirname(__file__) + '/assets'))
 
 
 async def console_scheduler():
-    load_schedulers()
+    load_extra_schedulers()
     await init_async()
 
 
@@ -62,12 +62,12 @@ async def console_command():
 
 async def send_command(msg, interactions=None):
     Logger.info('-------Start-------')
-    returns = await parser(MessageSession(target=MsgInfo(targetId='TEST|Console|0',
-                                                         senderId='TEST|0',
-                                                         senderName='',
-                                                         targetFrom='TEST|Console',
-                                                         senderFrom='TEST', clientName='TEST', messageId=0,
-                                                         replyId=None),
+    returns = await parser(MessageSession(target=MsgInfo(target_id='TEST|Console|0',
+                                                         sender_id='TEST|0',
+                                                         sender_name='',
+                                                         target_from='TEST|Console',
+                                                         sender_from='TEST', client_name='TEST', message_id=0,
+                                                         reply_id=None),
                                           session=AutoSession(message=msg, target='TEST|Console|0', sender='TEST|0',
                                                               auto_interactions=interactions)))
     # print(returns)

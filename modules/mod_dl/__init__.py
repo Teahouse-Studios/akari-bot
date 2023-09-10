@@ -148,8 +148,8 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             reply_text.append(f"{count}. {mod[1]}")
             cache_result.append(mod)
 
-        reply = await msg.waitReply('\n'.join(reply_text) + '\n' + msg.locale.t("mod_dl.message.prompt"))
-        replied = reply.asDisplay(text_only=True)
+        reply = await msg.wait_reply('\n'.join(reply_text) + '\n' + msg.locale.t("mod_dl.message.prompt"))
+        replied = reply.as_display(text_only=True)
 
         # 查找 Mod
         if replied.isdigit():
@@ -163,20 +163,22 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
 
         if mod_info[0] == "modrinth":  # modrinth mod
             if ver is None:
-                reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n'
-                                             + "\n".join(mod_info[3])
-                                             + f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
-                replied2 = reply2.asDisplay(text_only=True)
+                reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n'
+                                              + "\n".join(mod_info[3])
+                                              + f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
+                replied2 = reply2.as_display(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
                     if version_info is not None:
-                        await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                        await msg.finish(
+                            f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
             elif ver not in mod_info[3]:
                 await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
                 if version_info is not None:
-                    await msg.finish(f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                    await msg.finish(
+                        f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
         else:  # curseforge mod
             version_index, ver_list = await get_curseforge_mod_version_index(mod_info[2]), []
             for version in version_index:
@@ -184,10 +186,10 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                     ver_list.append(version["gameVersion"])
             if version_index is not None:
                 if ver is None:
-                    reply2 = await msg.waitReply(f'{msg.locale.t("mod_dl.message.version")}\n' +
-                                                 '\n'.join(ver_list) +
-                                                 f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
-                    ver = reply2.asDisplay(text_only=True)
+                    reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +
+                                                  '\n'.join(ver_list) +
+                                                  f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
+                    ver = reply2.as_display(text_only=True)
                 elif ver not in ver_list:
                     await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
 

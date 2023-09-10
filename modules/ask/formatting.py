@@ -14,7 +14,6 @@ async def generate_latex(formula: str):
             return await img.read()
 
 
-
 async def generate_code_snippet(code: str, language: str):
     async with aiohttp.ClientSession() as session:
         async with session.post(url='https://sourcecodeshots.com/api/image', data=json.dumps({

@@ -41,11 +41,11 @@ pint = "^0.21"
 simpleeval = "^0.9.12"
 pywin32 = { version = "^305", platform = "win32" }
 tenacity = "^8.1.0"
-openai = "^0.27.8"
+openai = "^0.28.0"
 cryptography = "^41.0.2"
 pre-commit = "^3.0.4"
 webcolors = "^1.12"
-langchain = "^0.0.277"
+langchain = "^0.0.276"
 wolframalpha = "^5.0.0"
 duckduckgo-search = "^3.0.0"
 chromadb = "^0.4.0"
@@ -63,6 +63,7 @@ python-whois = "^0.8.0"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
+pycodestyle = "2.10.0"
 
 [build-system]
 requires = ["poetry-core"]

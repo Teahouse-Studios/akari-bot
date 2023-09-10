@@ -5,9 +5,10 @@ from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
 
-if Config('qq_enable_urlmanager'):
-    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True)
 
+if Config('enable_urlmanager'):
+    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True,
+                 alias='wau')
 
     @aud.handle(['trust <apiLink>', 'block <apiLink>'])
     async def _(msg: Bot.MessageSession):
@@ -31,7 +32,6 @@ if Config('qq_enable_urlmanager'):
             result = msg.locale.t('wiki.message.error.add') + \
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
-
 
     @aud.handle(['distrust <apiLink>', 'unblock <apiLink>'])
     async def _(msg: Bot.MessageSession):
@@ -57,7 +57,6 @@ if Config('qq_enable_urlmanager'):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-
     @aud.handle('query <apiLink>')
     async def _(msg: Bot.MessageSession):
         req = msg.parsed_msg
@@ -82,7 +81,6 @@ if Config('qq_enable_urlmanager'):
             result = msg.locale.t('wiki.message.error.query') + \
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
-
 
     @aud.handle('list')
     async def _(msg: Bot.MessageSession):

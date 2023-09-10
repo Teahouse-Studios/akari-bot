@@ -4,7 +4,7 @@ import discord
 
 from bots.discord.message import convert_embed
 from config import Config
-from core.builtins import Plain, Image, MessageSession as MS
+from core.builtins import Plain, Image, MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage
 from core.logger import Logger
@@ -25,7 +25,7 @@ class FinishedSession(FinS):
             Logger.error(traceback.format_exc())
 
 
-class MessageSession(MS):
+class MessageSession(MessageSessionT):
     command = ''
 
     class Feature:
@@ -37,63 +37,67 @@ class MessageSession(MS):
         quote = False
         wait = True
 
-    async def sendMessage(self, msgchain, quote=True, disable_secret_check=False, allow_split_image=True
-                          ) -> FinishedSession:
-        msgchain = MessageChain(msgchain)
-        if not msgchain.is_safe and not disable_secret_check:
-            return await self.sendMessage(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
-        self.sent.append(msgchain)
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True
+                           ) -> FinishedSession:
+        message_chain = MessageChain(message_chain)
+        if not message_chain.is_safe and not disable_secret_check:
+            return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
+        self.sent.append(message_chain)
         count = 0
         send = []
         first_send = True
-        for x in msgchain.asSendable():
+        for x in message_chain.as_sendable():
             if isinstance(x, Plain):
                 if first_send:
                     send_ = await self.session.message.respond(x.text)
                 else:
                     send_ = await self.session.message.send(x.text)
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: {x.text}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: {x.text}')
             elif isinstance(x, Image):
                 if first_send:
                     send_ = await self.session.message.respond(file=discord.File(await x.get()))
                 else:
                     send_ = await self.session.message.send(file=discord.File(await x.get()))
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: Image: {str(x.__dict__)}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
             elif isinstance(x, Embed):
                 embeds, files = await convert_embed(x)
                 if first_send:
                     send_ = await self.session.message.respond(embed=embeds)
                 else:
                     send_ = await self.session.message.send(embed=embeds)
-                Logger.info(f'[Bot] -> [{self.target.targetId}]: Embed: {str(x.__dict__)}')
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}')
             else:
                 send_ = False
             if send_:
                 send.append(send_)
             count += 1
             first_send = False
-        msgIds = []
+        msg_ids = []
         for x in send:
-            msgIds.append(x.id)
+            msg_ids.append(x.id)
 
-        return FinishedSession(self, msgIds, send)
+        return FinishedSession(self, msg_ids, send)
 
-    async def checkPermission(self):
+    async def check_permission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
                 or isinstance(self.session.message.channel, discord.DMChannel) \
-                or self.target.senderInfo.query.isSuperUser \
-                or self.target.senderInfo.check_TargetAdmin(self.target.targetId):
+                or self.target.sender_info.query.isSuperUser \
+                or self.target.sender_info.check_TargetAdmin(self.target.target_id):
             return True
         return False
 
-    async def checkNativePermission(self):
+    async def check_native_permission(self):
         if self.session.message.channel.permissions_for(self.session.message.author).administrator \
                 or isinstance(self.session.message.channel, discord.DMChannel):
             return True
         return False
 
-    def asDisplay(self):
+    def as_display(self, text_only=False):
         return self.command
+
+    sendMessage = send_message
+    asDisplay = as_display
+    checkNativePermission = check_native_permission
 
     async def delete(self):
         try:

@@ -13,27 +13,34 @@ def ctx_to_session(ctx: Union[discord.ApplicationContext, discord.AutocompleteCo
     if isinstance(ctx, discord.ApplicationContext):
         if isinstance(ctx.channel, discord.DMChannel):
             target = "Discord|DM|Channel"
-        targetId = f"{target}|{ctx.channel.id}"
-        senderId = f"Discord|Client|{ctx.author.id}"
+        target_id = f"{target}|{ctx.channel.id}"
+        sender_id = f"Discord|Client|{ctx.author.id}"
     else:
         if isinstance(ctx.interaction.channel, discord.PartialMessage):
             target = "Discord|DM|Channel"
-            targetId = f"{target}|{ctx.interaction.channel.id}"
+            target_id = f"{target}|{ctx.interaction.channel.id}"
         else:
-            targetId = f"{target}|{ctx.interaction.channel_id}"
-        senderId = f"Discord|Client|{ctx.interaction.user.id}"
-    return MessageSession(target=MsgInfo(targetId=targetId,
-                                         senderId=senderId,
-                                         senderName=ctx.author.name if isinstance(ctx,
-                                                                                  discord.ApplicationContext) else ctx.interaction.user.name,
-                                         targetFrom='Discord|Slash', senderFrom="Discord|Client",
-                                         clientName='Discord|Slash',
-                                         messageId=0),
-                          session=Session(message=ctx,
-                                          target=ctx.channel if isinstance(ctx,
-                                                                           discord.ApplicationContext) else ctx.interaction.channel,
-                                          sender=ctx.author if isinstance(ctx,
-                                                                          discord.ApplicationContext) else ctx.interaction.user))
+            target_id = f"{target}|{ctx.interaction.channel_id}"
+        sender_id = f"Discord|Client|{ctx.interaction.user.id}"
+    return MessageSession(
+        target=MsgInfo(
+            target_id=target_id,
+            sender_id=sender_id,
+            sender_name=ctx.author.name if isinstance(
+                ctx,
+                discord.ApplicationContext) else ctx.interaction.user.name,
+            target_from='Discord|Slash',
+            sender_from="Discord|Client",
+            client_name='Discord|Slash',
+            message_id=0),
+        session=Session(
+            message=ctx,
+            target=ctx.channel if isinstance(
+                ctx,
+                discord.ApplicationContext) else ctx.interaction.channel,
+            sender=ctx.author if isinstance(
+                ctx,
+                discord.ApplicationContext) else ctx.interaction.user))
 
 
 async def slash_parser(ctx: discord.ApplicationContext, command: str):

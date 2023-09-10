@@ -1,5 +1,5 @@
-import uuid
 import datetime
+import uuid
 from typing import Union, List
 
 import ujson as json
@@ -29,20 +29,20 @@ class BotDBUtil:
     class TargetInfo:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
             if isinstance(msg, (MessageSession, FetchTarget)):
-                self.targetId = str(msg.target.targetId)
+                self.target_id = str(msg.target.target_id)
             else:
-                self.targetId = msg
+                self.target_id = msg
             self.query = self.query_data
 
         @property
         def query_data(self):
-            return session.query(TargetInfo).filter_by(targetId=self.targetId).first()
+            return session.query(TargetInfo).filter_by(targetId=self.target_id).first()
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def init(self):
             if self.query is None:
-                session.add_all([TargetInfo(targetId=self.targetId)])
+                session.add_all([TargetInfo(targetId=self.target_id)])
                 session.commit()
                 return self.query_data
             else:
@@ -218,19 +218,19 @@ class BotDBUtil:
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
-        def __init__(self, senderId):
-            self.senderId = senderId
+        def __init__(self, sender_id):
+            self.sender_id = sender_id
             self.query = self.query_SenderInfo
             if self.query is None:
-                session.add_all([SenderInfo(id=senderId)])
+                session.add_all([SenderInfo(id=sender_id)])
                 session.commit()
-                self.query = session.query(SenderInfo).filter_by(id=senderId).first()
+                self.query = session.query(SenderInfo).filter_by(id=sender_id).first()
 
         @property
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def query_SenderInfo(self):
-            return session.query(SenderInfo).filter_by(id=self.senderId).first()
+            return session.query(SenderInfo).filter_by(id=self.sender_id).first()
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -247,7 +247,7 @@ class BotDBUtil:
         def __init__(self, msg: MessageSession, name):
             self.msg = msg
             self.name = name
-            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.senderId),
+            self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.sender_id),
                                                                      commandName=name).first()
             self.need_insert = True if self.query is None else False
 
@@ -265,16 +265,16 @@ class BotDBUtil:
             if not self.need_insert:
                 session.delete(self.query)
                 session.commit()
-            session.add_all([CommandTriggerTime(targetId=self.msg.target.senderId, commandName=self.name)])
+            session.add_all([CommandTriggerTime(targetId=self.msg.target.sender_id, commandName=self.name)])
             session.commit()
             session.expire_all()
 
     @staticmethod
     @retry(stop=stop_after_attempt(3))
     @auto_rollback_error
-    def isGroupInAllowList(targetId):
+    def isGroupInAllowList(target_id):
         session.expire_all()
-        query = session.query(GroupAllowList).filter_by(targetId=targetId).first()
+        query = session.query(GroupAllowList).filter_by(targetId=target_id).first()
         if query is not None:
             return True
         return False
@@ -282,7 +282,7 @@ class BotDBUtil:
     class Data:
         def __init__(self, msg: Union[MessageSession, FetchTarget, str]):
             if isinstance(msg, MessageSession):
-                self.targetName = msg.target.clientName
+                self.targetName = msg.target.client_name
             elif isinstance(msg, FetchTarget):
                 self.targetName = msg.name
             else:
@@ -317,8 +317,8 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def add(self, command, module_name, module_type):
-            session.add(AnalyticsData(targetId=self.target.target.targetId,
-                                      senderId=self.target.target.senderId,
+            session.add(AnalyticsData(targetId=self.target.target.target_id,
+                                      senderId=self.target.target.sender_id,
                                       command=command,
                                       moduleName=module_name, moduleType=module_type))
             session.commit()
@@ -346,9 +346,9 @@ class BotDBUtil:
             return session.query(AnalyticsData).filter(*filter_).count()
 
     class UnfriendlyActions:
-        def __init__(self, targetId, senderId):
-            self.targetId = targetId
-            self.senderId = senderId
+        def __init__(self, target_id, sender_id):
+            self.target_id = target_id
+            self.sender_id = sender_id
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
@@ -357,7 +357,7 @@ class BotDBUtil:
 
             :return: True = yes, False = no
             """
-            query = session.query(UnfriendlyActionsTable).filter_by(targetId=self.targetId).all()
+            query = session.query(UnfriendlyActionsTable).filter_by(targetId=self.target_id).all()
             unfriendly_list = []
             for records in query:
                 if datetime.datetime.now().timestamp() - records.timestamp.timestamp() < 432000:
@@ -367,10 +367,10 @@ class BotDBUtil:
             count = {}
             for criminal in unfriendly_list:
                 if datetime.datetime.now().timestamp() - criminal.timestamp.timestamp() < 86400:
-                    if criminal.senderId not in count:
-                        count[criminal.senderId] = 0
+                    if criminal.sender_id not in count:
+                        count[criminal.sender_id] = 0
                     else:
-                        count[criminal.senderId] += 1
+                        count[criminal.sender_id] += 1
             if len(count) >= 3:
                 return True
             for convict in count:
@@ -385,8 +385,8 @@ class BotDBUtil:
 
             :return: True = yes, False = no
             """
-            session.add_all(
-                [UnfriendlyActionsTable(targetId=self.targetId, senderId=self.senderId, action=action, detail=detail)])
+            session.add_all([UnfriendlyActionsTable(targetId=self.target_id,
+                                                    senderId=self.sender_id, action=action, detail=detail)])
             session.commit()
             return self.check_mute()
 

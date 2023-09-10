@@ -23,7 +23,7 @@ class MessageChain:
         """
         raise NotImplementedError
 
-    def asSendable(self, embed=True) -> list:
+    def as_sendable(self, embed=True) -> list:
         """
         将消息链转换为可发送的格式。
         """

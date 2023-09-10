@@ -23,9 +23,9 @@ s = module(
 
 @s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
-    f_msg = await msg.waitNextMessage(msg.locale.t('summary.message'), append_instruction=False)
+    f_msg = await msg.wait_next_message(msg.locale.t('summary.message'), append_instruction=False)
     try:
-        f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.asDisplay()).group(1)
+        f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.as_display()).group(1)
     except AttributeError:
         await msg.finish(msg.locale.t('summary.message.not_found'))
     Logger.info(f)
@@ -34,7 +34,8 @@ async def _(msg: Bot.MessageSession):
     texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
 
     char_count = sum([len(i) for i in texts])
-    wait_msg = await msg.sendMessage(msg.locale.t('summary.message.waiting', count=char_count, time=round(char_count / 33.5, 1)))
+    wait_msg = await msg.send_message(
+        msg.locale.t('summary.message.waiting', count=char_count, time=round(char_count / 33.5, 1)))
 
     nth = 0
     prev = ''

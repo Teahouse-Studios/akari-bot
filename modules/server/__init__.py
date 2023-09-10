@@ -13,11 +13,11 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
           options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
 async def main(msg: Bot.MessageSession):
     gather_list = []
-    matchObj = re.match(r'(.*)[\s:](.*)', msg.parsed_msg["<ServerIP:Port>"], re.M | re.I)
+    match_object = re.match(r'(.*)[\s:](.*)', msg.parsed_msg["<ServerIP:Port>"], re.M | re.I)
     is_local_ip = False
     server_address = msg.parsed_msg["<ServerIP:Port>"]
-    if matchObj:
-        server_address = matchObj.group(1)
+    if match_object:
+        server_address = match_object.group(1)
 
     if server_address == 'localhost':
         is_local_ip = True
@@ -41,7 +41,7 @@ async def main(msg: Bot.MessageSession):
                     is_local_ip = True
     if is_local_ip:
         await msg.finish(msg.locale.t('server.message.error.local_ip'))
-    
+
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(

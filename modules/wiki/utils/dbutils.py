@@ -16,17 +16,17 @@ class WikiTargetInfo:
     @auto_rollback_error
     def __init__(self, msg: [MessageSession, str]):
         if isinstance(msg, MessageSession):
-            if msg.target.targetFrom != 'QQ|Guild':
-                targetId = msg.target.targetId
+            if msg.target.target_from != 'QQ|Guild':
+                target_id = msg.target.target_id
             else:
-                targetId = re.match(r'(QQ\|Guild\|.*?)\|.*', msg.target.targetId).group(1)
+                target_id = re.match(r'(QQ\|Guild\|.*?)\|.*', msg.target.target_id).group(1)
         else:
-            targetId = msg
-        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
+            target_id = msg
+        self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
         if self.query is None:
-            session.add_all([WikiTargetSetInfo(targetId=targetId, iws='{}', headers='{}')])
+            session.add_all([WikiTargetSetInfo(targetId=target_id, iws='{}', headers='{}')])
             session.commit()
-            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=targetId).first()
+            self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error

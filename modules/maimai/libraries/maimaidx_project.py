@@ -75,6 +75,7 @@ diffs = {
 
 achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]
 
+
 async def get_rank(msg, payload):
     player_data = await get_record(msg, payload)
 
@@ -106,11 +107,11 @@ async def get_rank(msg, payload):
 
     if rating:
         await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
-                                  rating=rating, rank=rank, average_rating=formatted_average_rating,
-                                  surpassing_rate=formatted_surpassing_rate))
+                                      rating=rating, rank=rank, average_rating=formatted_average_rating,
+                                      surpassing_rate=formatted_surpassing_rate))
     else:
         await msg.finish(msg.locale.t('maimai.message.rank.not_found', time=time, total_rank=total_rank, user=username,
-                                  average_rating=formatted_average_rating))
+                                      average_rating=formatted_average_rating))
 
 
 async def get_player_score(msg, payload, input_id):
@@ -150,7 +151,8 @@ async def get_player_score(msg, payload, input_id):
                     entry_output += f" {sync_rank}{sync_rank}"
                 output_lines.append(entry_output)
         else:
-            output_lines.append(f"{diffs[level]} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
+            output_lines.append(
+                f"{diffs[level]} {music['level'][level]}\n{msg.locale.t('maimai.message.info.no_record')}")
 
     return '\n'.join(output_lines)
 
@@ -179,13 +181,17 @@ async def get_level_process(msg, payload, process, goal):
     elif goal in comboRank:
         combo_index = comboRank.index(goal)
         for song in verlist:
-            if song['level'] == process and ((song['fc'] and combo_rank.index(song['fc']) < combo_index) or not song['fc']):
+            if song['level'] == process and (
+                (song['fc'] and combo_rank.index(
+                    song['fc']) < combo_index) or not song['fc']):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal in syncRank:
         sync_index = syncRank.index(goal)
         for song in verlist:
-            if song['level'] == process and ((song['fs'] and sync_rank.index(song['fs']) < sync_index) or not song['fs']):
+            if song['level'] == process and (
+                (song['fs'] and sync_rank.index(
+                    song['fs']) < sync_index) or not song['fs']):
                 song_remain.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     for music in (await total_list.get()):
@@ -295,7 +301,9 @@ async def get_plate_process(msg, payload, plate):
                 song_remain_expert.append([song['id'], song['level_index']])
             if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_master.append([song['id'], song['level_index']])
-            if version in ['舞', '霸'] and song['level_index'] == 4 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+            if version in [
+                    '舞', '霸'] and song['level_index'] == 4 and song['achievements'] < (
+                    100.0 if goal == '将' else 80.0):
                 song_remain_remaster.append([song['id'], song['level_index']])
             song_played.append([song['id'], song['level_index']])
     elif goal in ['極', '极']:
@@ -360,7 +368,8 @@ async def get_plate_process(msg, payload, plate):
     for song in song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster:
         music = (await total_list.get()).by_id(str(song[0]))
         if music.ds[song[1]] > 13.6:
-            song_remain_difficult.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
+            song_remain_difficult.append([music.id, music.title, diffs[song[1]],
+                                          music.ds[song[1]], song[1], music.type])
 
     prompt = msg.locale.t('maimai.message.plate', plate=plate,
                           song_remain_basic=len(song_remain_basic),
@@ -368,15 +377,16 @@ async def get_plate_process(msg, payload, plate):
                           song_remain_expert=len(song_remain_expert),
                           song_remain_master=len(song_remain_master))
 
-    song_remain: list[list] = song_remain_basic + song_remain_advanced + song_remain_expert + song_remain_master + song_remain_remaster
+    song_remain: list[list] = song_remain_basic + song_remain_advanced + \
+        song_remain_expert + song_remain_master + song_remain_remaster
     song_record = [[s['id'], s['level_index']] for s in verlist]
-    
+
     if version in ['舞', '霸']:
         prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
 
     prompt += msg.locale.t('message.end')
 
-    await msg.sendMessage(prompt.strip())
+    await msg.send_message(prompt.strip())
 
     output = ''
     if len(song_remain_difficult) > 0:
@@ -419,7 +429,8 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip() + '\n'
+                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
+                ) + '\n'
             if len(song_remain) > 10:
                 get_img = True
         else:

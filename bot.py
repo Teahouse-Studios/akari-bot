@@ -14,7 +14,6 @@ from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
-
 bots_required_configs = {'aiocqhttp': ['qq_host', 'qq_account'], 'discord': ['dc_token'], 'aiogram': ['tg_token'],
                          'kook': ['kook_token'], 'matrix': ['matrix_homeserver', 'matrix_user', 'matrix_token'], }
 
@@ -89,7 +88,8 @@ def run_bot():
 
         bot = os.path.abspath(f'{botdir}{bl}/bot.py')
         if os.path.exists(bot):
-            p = subprocess.Popen([sys.executable, bot], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            p = subprocess.Popen([sys.executable, bot, 'subprocess'], shell=False, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT,
                                  cwd=os.path.abspath('.'), env=envs)
             runlst.append(p)
             pidlst.append(p.pid)

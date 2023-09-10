@@ -1,16 +1,15 @@
 import os
-import traceback
+import urllib.parse
 
-from config import Config
-from core.builtins import Bot, ExecutionLockList
+from config import CFG
+from core.builtins import Bot
 from core.builtins import Plain, Image
 from core.component import module
-from core.logger import Logger
 from core.utils.http import get_url
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
-webrender = Config('web_render')
+webrender = CFG.get_url('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 
 
@@ -20,15 +19,16 @@ class WithErrCode(Exception):
 
 @arc.command('<sb616>')
 async def _(msg: Bot.MessageSession):
-    await msg.sendMessage([Plain(msg.locale.t("arcaea.message.sb616")),
-                           Image(os.path.abspath('./assets/noc.jpg'))])
+    await msg.send_message([Plain(msg.locale.t("arcaea.message.sb616")),
+                            Image(os.path.abspath('./assets/noc.jpg'))])
 
 
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("error.webrender.unconfigured")])
-    resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
+    resp = await get_url(webrender + 'source?url=' +
+                         urllib.parse.quote('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'), 200,
                          fmt='json')
     if resp:
         await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
@@ -41,7 +41,9 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(msg.locale.t("error.webrender.unconfigured"))
-    resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/showcase/', 200, fmt='json')
+    resp = await get_url(webrender + 'source?url=' +
+                         urllib.parse.quote('https://webapi.lowiro.com/webapi/song/showcase/'),
+                         200, fmt='json')
     if resp:
         value = resp["value"][0]
         image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
@@ -58,9 +60,12 @@ async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(msg.locale.t("error.webrender.unconfigured"))
     if msg.parsed_msg.get('free', False):
-        resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/rank/free/', 200, fmt='json')
+        resp = await get_url(webrender + 'source?url=' +
+                             urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/free/'),
+                             200, fmt='json')
     else:
-        resp = await get_url(webrender + '/source?url=https://webapi.lowiro.com/webapi/song/rank/paid/', 200, fmt='json')
+        resp = await get_url(webrender + 'source?url=' +
+                             urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/paid/'), 200, fmt='json')
     if resp:
         r = []
         rank = 0

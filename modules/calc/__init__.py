@@ -42,17 +42,17 @@ c = module('calc', developers=[
                                               '{calc.help.option.more}': 'https://bot.teahouse.team/-/340',
                                               })
 async def _(msg: Bot.MessageSession):
-    expr = msg.asDisplay().split(' ', 1)[1]
+    expr = msg.as_display().split(' ', 1)[1]
     start = time.perf_counter_ns()
     res = await spawn_subprocess('/calc.py', expr, msg)
     stop = time.perf_counter_ns()
     delta = (stop - start) / 1000000
     if res[:6] == 'Result':
-        if msg.target.senderFrom == "Discord|Client":
+        if msg.target.sender_from == "Discord|Client":
             m = f'`{(expr)}` = {res[7:]}'
         else:
             m = f'{(expr)} = {res[7:]}'
-        if msg.checkSuperUser():
+        if msg.check_super_user():
             m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
         await msg.finish(m)
     else:
