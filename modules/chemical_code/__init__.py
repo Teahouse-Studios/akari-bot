@@ -126,7 +126,7 @@ async def s(msg: Bot.MessageSession):
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']  # 从已解析的消息中获取 ChemSpider ID
     if id.isdigit():  # 如果 ID 为纯数字
-        if int(id) = 0:
+        if int(id) == 0:
             await chemical_code(msg)
         else:
             await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
