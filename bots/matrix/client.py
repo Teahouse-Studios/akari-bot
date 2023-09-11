@@ -30,5 +30,6 @@ if homeserver and user and token:
                                    store_path=store_path_nio,
                                    config=AsyncClientConfig(store_sync_tokens=True))
     bot.access_token = token
+    bot.load_store()
 else:
     bot = False
