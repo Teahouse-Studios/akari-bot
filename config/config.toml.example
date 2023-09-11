@@ -14,6 +14,7 @@ tg_token =
 matrix_homeserver =
 matrix_user =
 matrix_token =
+matrix_megolm_backup_passphrase =
 kook_token =
 openai_api_key =
 nl2c_model =
