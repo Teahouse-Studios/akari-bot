@@ -9,6 +9,7 @@ from core.logger import Logger
 homeserver: str = Config('matrix_homeserver')
 user: str = Config('matrix_user')
 device_id: str = Config('matrix_device_id')
+device_name: str = Config('matrix_device_name')
 token: str = Config('matrix_token')
 megolm_backup_passphrase: str = Config('matrix_megolm_backup_passphrase')
 

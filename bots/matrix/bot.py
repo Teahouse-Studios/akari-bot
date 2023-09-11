@@ -147,6 +147,9 @@ async def start():
             await bot.import_keys(megolm_backup_path, passphrase)
             Logger.info(f"megolm backup imported")
 
+    # set device name
+    await bot.update_device(client.device_id, {"display_name": client.device_name})
+
     await init_async()
     await load_prompt(FetchTarget)
 

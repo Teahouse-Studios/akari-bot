@@ -314,21 +314,30 @@ pip install -r requirements.txt
 
 `matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
 
+`matrix_device_name =` - 填写机器人的设备名称（可随便乱写，给人看的）
+
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
-> 不推荐使用其他客户端获取 Access Token，这样容易导致其他用户的设备验证混乱
+> 不推荐使用其他客户端获取 Access Token，这样容易导致 olm 会话非常混乱
 >
-> 如果使用客户端获取 Access Token，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
+> 如果（不怕死）使用客户端获取 Access Token，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
 
-您也可以使用以下命令进行密码登录（但仍需手动完成后续的[设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification)、[交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing)和[服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups)恢复等流程）：
+使用以下命令进行密码登录：
 
-```
+```bash
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
 ##### E2E加密
 
 目前，由于 libolm 在一些情况下需要手动配置，机器人默认没有启用端对端加密（e2ee）支持。
+
+若要启用 E2EE 支持，请执行以下命令：
+
+```bash
+poetry run -- pip3 install matrix-nio[e2e] ; Poetry
+pip3 install matrix-nio[e2e] ; PIP
+```
 
 `matrix_megolm_backup_passphrase =` - （可选）填写机器人的 megolm 备份密码短语，建议使用随机的长密码，不填写则不会导出 megolm 备份。
 

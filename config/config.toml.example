@@ -14,6 +14,7 @@ tg_token =
 matrix_homeserver =
 matrix_user =
 matrix_device_id =
+matrix_device_name =
 matrix_token =
 matrix_megolm_backup_passphrase =
 kook_token =
