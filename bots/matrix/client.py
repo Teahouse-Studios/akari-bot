@@ -40,7 +40,6 @@ if homeserver and user and token:
                                    device_id=device_id,
                                    store_path=store_path_nio,
                                    config=AsyncClientConfig(store_sync_tokens=True))
-    bot.access_token = token
-    bot.load_store()
+    bot.restore_login(user, device_id, token)
 else:
     bot = False
