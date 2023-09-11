@@ -143,7 +143,7 @@ class MessageSession(MessageSessionT):
                     }
                 }
 
-            resp = await bot.room_send(self.session.target, 'm.room.message', content)
+            resp = await bot.room_send(self.session.target, 'm.room.message', content, ignore_unverified_devices=True)
             if 'status_code' in resp.__dict__:
                 Logger.error(f"Error in sending message: {str(resp)}")
             else:
