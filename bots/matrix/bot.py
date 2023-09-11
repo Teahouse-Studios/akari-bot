@@ -92,7 +92,11 @@ async def start():
 
     # E2EE setup
     if bot.olm:
+        if bot.should_query_keys:
+            Logger.info("querying matrix E2E encryption keys")
+            await bot.keys_query()
         if bot.should_upload_keys:
+            Logger.info("uploading matrix E2E encryption keys")
             await bot.keys_upload()
         megolm_backup_path = os.path.join(client.store_path_megolm_backup, f"restore.txt")
         if os.path.exists(megolm_backup_path):
