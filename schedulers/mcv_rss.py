@@ -42,7 +42,7 @@ async def get_article(version):
     if not link:
         link = 'https://www.minecraft.net/en-us/article/minecraft-java-edition-' + re.sub("\\.", "-", version)
     if not web_render:
-        return
+        return '', ''
     get = web_render + 'source?url=' + quote(link)
 
     try:
