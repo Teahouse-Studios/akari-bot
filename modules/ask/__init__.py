@@ -1,17 +1,24 @@
 import io
+import os
 import re
 from decimal import Decimal
 
 from PIL import Image as PILImage
-from langchain.callbacks import get_openai_callback
 
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from database import BotDBUtil
-from .agent import agent_executor
-from .formatting import generate_latex, generate_code_snippet
+
+os.environ['LANGCHAIN_TRACING_V2'] = "true"
+os.environ['LANGCHAIN_ENDPOINT'] = Config('langsmith_endpoint')
+os.environ['LANGCHAIN_PROJECT'] = Config('langsmith_project')
+os.environ['LANGCHAIN_API_KEY'] = Config('langsmith_api_key')
+
+from langchain.callbacks import get_openai_callback  # noqa: E402
+from .agent import agent_executor  # noqa: E402
+from .formatting import generate_latex, generate_code_snippet  # noqa: E402
 
 ONE_K = Decimal('1000')
 # https://openai.com/pricing
@@ -27,7 +34,7 @@ CNY_TO_PETAL = 100
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
 
-@a.command('<question> {{ask.help}}')
+@a.command('[--verbose] <question> {{ask.help}}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()

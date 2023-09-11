@@ -1,6 +1,6 @@
 from langchain.agents import AgentExecutor
 from langchain.agents.openai_functions_agent.base import OpenAIFunctionsAgent
-from langchain.callbacks.stdout import StdOutCallbackHandler
+from langchain.callbacks import StdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 
 from config import Config
@@ -15,7 +15,11 @@ llm = ChatOpenAI(
         'frequency_penalty': 0.0,
         'presence_penalty': 0.0})
 
-agent = OpenAIFunctionsAgent.from_llm_and_tools(llm=llm, tools=tools,
-                                                callback_manager=StdOutCallbackHandler, system_message=system_message)
+
+agent = OpenAIFunctionsAgent.from_llm_and_tools(
+    llm=llm,
+    tools=tools,
+    callback_manager=[StdOutCallbackHandler],
+    system_message=system_message)
 
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True)

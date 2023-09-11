@@ -13,7 +13,7 @@ if appid:
 
     wolfram_tool = AkariTool.from_function(
         func=wolfram_alpha,
-        description='A wrapper around Wolfram Alpha. Useful for when you need to answer questions about Math, Science, Technology, Culture, Society and Everyday Life. Also useful for generating SHA or MD5 hashes. Input should be a search query in English.'
+        description='A wrapper around Wolfram Alpha. ALWAYS USE THIS TOOL when you need to answer questions about MATH, Science, Technology, Culture, Society and Everyday Life. Also useful for generating SHA or MD5 hashes. Input should be a search query in English.'
     )
 else:
     wolfram_tool = None
