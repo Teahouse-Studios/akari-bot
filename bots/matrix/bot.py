@@ -89,6 +89,11 @@ async def start():
     bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     bot.add_event_callback(on_message, nio.RoomMessageFormatted)
 
+    # E2EE setup
+    if bot.olm:
+        if bot.should_upload_keys:
+            await bot.keys_upload()
+
     await init_async()
     await load_prompt(FetchTarget)
 
