@@ -115,6 +115,13 @@ async def start():
         if client.megolm_backup_passphrase:
             backup_date = strftime('%Y-%m')
             backup_path = os.path.join(client.store_path_megolm_backup, f"akaribot-megolm-backup-{backup_date}.txt")
+            old_backup_path = os.path.join(
+                client.store_path_megolm_backup,
+                f"akaribot-megolm-backup-{backup_date}-old.txt")
+            if os.path.exists(backup_path):
+                if os.path.exists(old_backup_path):
+                    os.remove(old_backup_path)
+                os.rename(backup_path, old_backup_path)
             Logger.info(f"saving megolm keys backup to {backup_path}")
             await bot.export_keys(backup_path, client.megolm_backup_passphrase)
             Logger.info(f"megolm backup exported")
