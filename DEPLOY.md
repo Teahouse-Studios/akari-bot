@@ -334,6 +334,8 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 `matrix_megolm_backup_passphrase =` - （可选）填写机器人的 megolm 备份密码短语，建议使用随机的长密码，不填写则不会导出 megolm 备份。
 
+如果需要导入 megolm 备份，请将备份文件放置在 `matrix_store/megolm_backup/restore.txt` 下，并将密码短语写入 `matrix_store/megolm_backup/restore-passphrase.txt`。
+
 ### 配置其他功能
 
 由于小可有较多功能，部分功能需要进一步的配置才能使用。

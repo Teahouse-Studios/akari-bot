@@ -94,6 +94,15 @@ async def start():
     if bot.olm:
         if bot.should_upload_keys:
             await bot.keys_upload()
+        megolm_backup_path = os.path.join(client.store_path_megolm_backup, f"restore.txt")
+        if os.path.exists(megolm_backup_path):
+            pass_path = os.path.join(client.store_path_megolm_backup, f"restore-passphrase.txt")
+            assert os.path.exists(pass_path)
+            Logger.info(f"importing megolm keys backup from {megolm_backup_path}")
+            with open(pass_path) as f:
+                passphrase = f.read()
+            await bot.import_keys(megolm_backup_path, passphrase)
+            Logger.info(f"megolm backup imported")
 
     await init_async()
     await load_prompt(FetchTarget)
