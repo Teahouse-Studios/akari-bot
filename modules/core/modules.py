@@ -8,7 +8,7 @@ from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
 from .utils import reload_locale
-from ...core.utils.i18n import load_locale_file
+from core.utils.i18n import load_locale_file
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
 
