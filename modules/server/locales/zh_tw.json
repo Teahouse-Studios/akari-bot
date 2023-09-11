@@ -2,7 +2,7 @@
     "server.help": "取得 Minecraft：Java 版/基岩版伺服器 motd。",
     "server.help.option.p": "顯示玩家列表",
     "server.help.option.r": "顯示原始資訊",
-    "server.help.revoke": "是否啟用自動撤回功能（預設為是）。",
+    "server.help.revoke": "是否啟用自動回收功能（預設為是）。",
     "server.message.error": "查詢呼叫 API 時發生錯誤。",
     "server.message.error.local_ip": "發生錯誤：無效的域名或 IP 位址。",
     "server.message.gamemode": "遊戲模式：",
