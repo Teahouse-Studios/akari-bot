@@ -97,6 +97,22 @@ async def on_verify(event: nio.KeyVerificationEvent):
         Logger.warn(f"unknown key verification event: {event}")
 
 
+async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown):
+    if event.msgtype == 'm.key.verification.request':
+        Logger.info(f"cancelling in-room verification in {room.room_id}")
+        msg = 'You are requesting a in-room verification to akari-bot. But I does not support in-room-verification at this time, please use to-device verification!'
+        await bot.room_send(room.room_id, 'm.room.message', {
+            'msgtype': 'm.notice',
+            'body': msg
+        })
+        await bot.to_device(nio.ToDeviceMessage(type='m.key.verification.cancel', content={
+            "code": "m.invalid_message",
+            "reason": msg,
+        },
+        ))
+    pass
+
+
 async def start():
     # Logger.info(f"trying first sync")
     # sync = await bot.sync()
@@ -115,6 +131,7 @@ async def start():
     bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     bot.add_event_callback(on_message, nio.RoomMessageFormatted)
     bot.add_to_device_callback(on_verify, nio.KeyVerificationEvent)
+    bot.add_event_callback(on_in_room_verify, nio.RoomMessageUnknown)
 
     # E2EE setup
     if bot.olm:
