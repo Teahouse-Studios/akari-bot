@@ -79,8 +79,22 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
 
 
 async def on_verify(event: nio.KeyVerificationEvent):
-    print(event)
-    pass
+    if isinstance(event, nio.KeyVerificationStart):
+        await bot.accept_key_verification(event.transaction_id)
+        await bot.to_device(bot.key_verifications[event.transaction_id].share_key())
+        Logger.info(f"accepted key verification request {event.transaction_id} from {event.sender} {event.from_device}")
+    elif isinstance(event, nio.KeyVerificationCancel):
+        Logger.info(f"key verification {event.transaction_id} is cancelled: {event.reason}")
+    elif isinstance(event, nio.KeyVerificationKey):
+        Logger.info(
+            f"key verification {event.transaction_id}: {bot.key_verifications[event.transaction_id].get_emoji()}")
+        await bot.confirm_short_auth_string(event.transaction_id)
+    elif isinstance(event, nio.KeyVerificationMac):
+        mac = bot.key_verifications[event.transaction_id].get_mac()
+        Logger.info(f"key verification {event.transaction_id} succeeded: {mac}")
+        await bot.to_device(mac)
+    else:
+        Logger.warn(f"unknown key verification event: {event}")
 
 
 async def start():
@@ -100,7 +114,7 @@ async def start():
     bot.add_event_callback(on_invite, nio.InviteEvent)
     bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     bot.add_event_callback(on_message, nio.RoomMessageFormatted)
-    bot.add_event_callback(on_verify, nio.KeyVerificationEvent)
+    bot.add_to_device_callback(on_verify, nio.KeyVerificationEvent)
 
     # E2EE setup
     if bot.olm:
