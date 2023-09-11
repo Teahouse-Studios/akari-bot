@@ -7,7 +7,7 @@ from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 
-l = module('langconv', developers=['Dianliang233'], alias={'lc': 'langconv'}, desc='{langconv.help}')
+l = module('langconv', developers=['Dianliang233'], alias=['lc'])
 
 lc_zh_cn = LanguageConverter.from_language(zh_cn)
 lc_zh_hk = LanguageConverter.from_language(zh_hk)
