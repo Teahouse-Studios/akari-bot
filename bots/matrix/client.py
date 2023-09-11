@@ -22,8 +22,14 @@ if homeserver and user and token:
         os.mkdir(store_path)
     if not os.path.exists(store_path_nio):
         os.mkdir(store_path_nio)
-    if megolm_backup_passphrase and not os.path.exists(store_path_megolm_backup):
-        os.mkdir(store_path_megolm_backup)
+    if megolm_backup_passphrase:
+        if not os.path.exists(store_path_megolm_backup):
+            os.mkdir(store_path_megolm_backup)
+        if len(megolm_backup_passphrase) <= 10:
+            Logger.warn("matrix_megolm_backup_passphrase is too short. It is insecure.")
+    else:
+        Logger.warn(
+            f"Matrix megolm backup is not setup. It is recommended to set matrix_megolm_backup_passphrase to a unique passphrase.")
 
     if homeserver.endswith('/'):
         Logger.warn(f"The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error")
