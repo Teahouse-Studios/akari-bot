@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+from time import strftime
 
 import nio
 
@@ -99,7 +100,15 @@ async def start():
 
     Logger.info(f"starting sync loop")
     await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
-    Logger.error(f"sync loop stopped")
+    Logger.info(f"sync loop stopped")
+
+    if bot.olm:
+        if client.megolm_backup_passphrase:
+            backup_date = strftime('%Y-%m')
+            backup_path = os.path.join(client.store_path_megolm_backup, f"akaribot-megolm-backup-{backup_date}.txt")
+            Logger.info(f"saving megolm keys backup to {backup_path}")
+            bot.export_keys(backup_path, client.megolm_backup_passphrase)
+            Logger.info(f"megolm backup exported")
 
 
 if bot:
