@@ -41,5 +41,9 @@ if homeserver and user and token:
                                    store_path=store_path_nio,
                                    config=AsyncClientConfig(store_sync_tokens=True))
     bot.restore_login(user, device_id, token)
+    if bot.olm:
+        Logger.info(f"Matrix E2E encryption support available")
+    else:
+        Logger.info(f"Matrix E2E encryption support not available")
 else:
     bot = False
