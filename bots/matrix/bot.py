@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 from time import strftime
+from uuid import uuid4
 
 import nio
 
@@ -105,11 +106,17 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
             'msgtype': 'm.notice',
             'body': msg
         })
-        await bot.to_device(nio.ToDeviceMessage(type='m.key.verification.cancel', content={
-            "code": "m.invalid_message",
-            "reason": msg,
-        },
-        ))
+        tx_id = str(uuid4())
+        resp = await bot.to_device(nio.ToDeviceMessage(type='m.key.verification.cancel',
+                                                       recipient=event.sender,
+                                                       recipient_device=event.content['from_device'],
+                                                       content={
+                                                           "code": "m.invalid_message",
+                                                           "reason": msg,
+                                                           "transaction_id": tx_id
+                                                       },
+                                                       ), tx_id)
+        Logger.info(resp)
     pass
 
 
