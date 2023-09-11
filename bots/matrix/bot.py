@@ -107,7 +107,7 @@ async def start():
             backup_date = strftime('%Y-%m')
             backup_path = os.path.join(client.store_path_megolm_backup, f"akaribot-megolm-backup-{backup_date}.txt")
             Logger.info(f"saving megolm keys backup to {backup_path}")
-            bot.export_keys(backup_path, client.megolm_backup_passphrase)
+            await bot.export_keys(backup_path, client.megolm_backup_passphrase)
             Logger.info(f"megolm backup exported")
 
 
