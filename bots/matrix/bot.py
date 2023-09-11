@@ -176,7 +176,7 @@ async def start():
             Logger.info(f"megolm backup imported")
 
     # set device name
-    await bot.update_device(client.device_id, {"display_name": client.device_name})
+    asyncio.create_task(bot.update_device(client.device_id, {"display_name": client.device_name}))
 
     await init_async()
     await load_prompt(FetchTarget)
