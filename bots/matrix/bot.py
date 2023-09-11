@@ -50,6 +50,12 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
 
 
 async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
+    if event.sender != bot.user_id and bot.olm:
+        for device_id, olm_device in bot.device_store[event.sender].items():
+            if bot.olm.is_device_verified(olm_device):
+                continue
+            bot.verify_device(olm_device)
+            Logger.info(f"trust olm device for device id {event.sender} -> {device_id}")
     if event.source['content']['msgtype'] == 'm.notice':
         # https://spec.matrix.org/v1.7/client-server-api/#mnotice
         return
@@ -72,6 +78,11 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     asyncio.create_task(parser(msg))
 
 
+async def on_verify(event: nio.KeyVerificationEvent):
+    print(event)
+    pass
+
+
 async def start():
     # Logger.info(f"trying first sync")
     # sync = await bot.sync()
@@ -89,15 +100,29 @@ async def start():
     bot.add_event_callback(on_invite, nio.InviteEvent)
     bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     bot.add_event_callback(on_message, nio.RoomMessageFormatted)
+    bot.add_event_callback(on_verify, nio.KeyVerificationEvent)
 
     # E2EE setup
     if bot.olm:
-        if bot.should_query_keys:
-            Logger.info("querying matrix E2E encryption keys")
-            await bot.keys_query()
         if bot.should_upload_keys:
-            Logger.info("uploading matrix E2E encryption keys")
-            await bot.keys_upload()
+            Logger.info(f"uploading matrix E2E encryption keys")
+            resp = await bot.keys_upload()
+            if isinstance(
+                    resp,
+                    nio.KeysUploadError) and "One time key" in resp.message and "already exists." in resp.message:
+                Logger.warn(
+                    f"matrix E2EE keys have been uploaded for this session, we are going to force claim it down: {resp}")
+                keys = 0
+                while True:
+                    resp = await bot.keys_claim({client.user: [client.device_id]})
+                    Logger.info(f"matrix OTK claim resp #{keys+1}: {resp}")
+                    if isinstance(resp, nio.KeysClaimError):
+                        break
+                    keys += 1
+                    resp = await bot.keys_upload()
+                    if not isinstance(resp, nio.KeysUploadError):
+                        Logger.info(f"successfully uploaded matrix OTK keys after {keys} claims")
+                        break
         megolm_backup_path = os.path.join(client.store_path_megolm_backup, f"restore.txt")
         if os.path.exists(megolm_backup_path):
             pass_path = os.path.join(client.store_path_megolm_backup, f"restore-passphrase.txt")

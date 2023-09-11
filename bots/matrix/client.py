@@ -37,7 +37,6 @@ if homeserver and user and token:
     homeserver_host = urllib3.util.parse_url(homeserver).host
     bot: AsyncClient = AsyncClient(homeserver,
                                    user,
-                                   device_id=device_id,
                                    store_path=store_path_nio,
                                    config=AsyncClientConfig(store_sync_tokens=True))
     bot.restore_login(user, device_id, token)
