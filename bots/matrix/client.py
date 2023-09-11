@@ -8,6 +8,7 @@ from core.logger import Logger
 
 homeserver: str = Config('matrix_homeserver')
 user: str = Config('matrix_user')
+device_id: str = Config('matrix_device_id')
 token: str = Config('matrix_token')
 megolm_backup_passphrase: str = Config('matrix_megolm_backup_passphrase')
 
@@ -36,7 +37,7 @@ if homeserver and user and token:
     homeserver_host = urllib3.util.parse_url(homeserver).host
     bot: AsyncClient = AsyncClient(homeserver,
                                    user,
-                                   device_id='AkariBot',
+                                   device_id=device_id,
                                    store_path=store_path_nio,
                                    config=AsyncClientConfig(store_sync_tokens=True))
     bot.access_token = token

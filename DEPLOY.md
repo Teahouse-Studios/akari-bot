@@ -310,7 +310,9 @@ pip install -r requirements.txt
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的[用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+
+`matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
@@ -326,11 +328,7 @@ pip install -r requirements.txt
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
-##### E2E加密
-
-目前，由于 libolm 在一些情况下需要手动配置，机器人默认没有启用端对端加密（e2ee）支持。
-
-`matrix_megolm_backup_passphrase =` - （可选）填写机器人的 megolm 备份密码短语，建议使用随机的长密码，不填写则不会导出 megolm 备份。
+目前，由于 libolm 在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
 
 ### 配置其他功能
 
