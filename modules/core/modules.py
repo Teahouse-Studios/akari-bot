@@ -7,6 +7,8 @@ from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
+from .utils import reload_locale
+from core.utils.i18n import load_locale_file
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
 
@@ -195,6 +197,7 @@ async def config_modules(msg: Bot.MessageSession):
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                     msglist.append(module_reload(module_, extra_reload_modules))
+            reload_locale()
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
