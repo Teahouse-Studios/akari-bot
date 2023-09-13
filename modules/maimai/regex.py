@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output.strip())
 
 
-@mai_regex.handle(re.compile(r"([0-9]+\+?)\s?(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
+@mai_regex.handle(re.compile(r"([0-9]+\+?)\s(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
 async def _(msg: Bot.MessageSession):
     goal_list = [
         "A",
