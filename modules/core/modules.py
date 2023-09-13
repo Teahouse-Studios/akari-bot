@@ -197,7 +197,7 @@ async def config_modules(msg: Bot.MessageSession):
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                     msglist.append(module_reload(module_, extra_reload_modules))
-            reload_locale()
+            reload_locale(msg)
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
