@@ -58,7 +58,7 @@ class CFG:
         if value is None:
             value = value_n.get(q)
         if value is None:
-            print(f'Config {q} not found, is it configured?')
+            print(f'[Config] Config {q} not found, is it configured?')
         return value
 
     @classmethod
