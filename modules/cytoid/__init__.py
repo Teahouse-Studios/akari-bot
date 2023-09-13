@@ -1,7 +1,7 @@
 from core.builtins import Bot
 from core.builtins import Image
 from core.component import module
-from database import BotDBUtil
+from core.utils.cooldown import CoolDown
 from .dbutils import CytoidBindInfoManager
 from .profile import cytoid_profile
 from .rating import get_rating
@@ -36,7 +36,7 @@ async def _(msg: Bot.MessageSession):
         if msg.target.target_from == 'TEST|Console':
             c = 0
         else:
-            qc = BotDBUtil.CoolDown(msg, 'cytoid_rank')
+            qc = CoolDown('cytoid_rank', msg)
             c = qc.check(150)
         if c == 0:
             img = await get_rating(query_id, query, msg)
