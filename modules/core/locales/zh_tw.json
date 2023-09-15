@@ -1,10 +1,4 @@
 {
-    "core.analytics.message.counts": "機器人已執行指令次數（自 ${first_record} 開始統計）：${counts}",
-    "core.analytics.message.days": "最近 30 日的「${module}」指令呼叫次數統計（自 ${first_record} 開始統計）：",
-    "core.analytics.message.days.total": "最近 30 日的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
-    "core.analytics.message.disabled": "機器人未啟用指令統計功能。",
-    "core.analytics.message.years": "最近一年的「${module}」指令呼叫次數统计（自 ${first_record} 开始统计）：",
-    "core.analytics.message.years.total": "最近一年的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
     "core.help.admin": "一些群組管理員可使用的指令。",
     "core.help.admin.add": "設定成員為機器人管理員，以實現不設定成員為群組管理員的狀況下管理機器人的效果。已是群組管理員無須設定此指令。",
     "core.help.admin.ban": "限制某人在此群組使用機器人。",
@@ -157,5 +151,12 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n此對話的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你擁有此對話的管理員權限）",
     "core.message.whoami.botadmin": "（你擁有此對話的機器人管理員權限）",
-    "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）"
+    "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）",
+    "core.message.analytics.counts": "機器人已執行指令次數（自 ${first_record} 開始統計）：${counts}",
+    "core.message.analytics.days": "最近 30 日的「${module}」指令呼叫次數統計（自 ${first_record} 開始統計）：",
+    "core.message.analytics.days.total": "最近 30 日的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
+    "core.message.analytics.disabled": "機器人未啟用指令統計功能。",
+    "core.message.analytics.year": "最近一年的「${module}」指令呼叫次數统计（自 ${first_record} 开始统计）：",
+    "core.message.analytics.year.total": "最近一年的所有指令呼叫次數統計（自 ${first_record} 開始統計）：",
+    "core.message.raise": "例外測試。"
 }
