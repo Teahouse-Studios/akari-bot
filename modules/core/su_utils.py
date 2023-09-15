@@ -409,7 +409,9 @@ rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=Tr
 @rse.handle()
 @rse.handle('[<exception>] [-n]')
 async def _(msg: Bot.MessageSession):
-    e = msg.parsed_msg.get('<exception>', None)
+    e = None
+    if '<exception>' in msg.parsed_msg:
+        e = msg.parsed_msg.get('<exception>', None)
     if e is None:
         e = msg.locale.t("core.message.raise")
     if msg.parsed_msg.get('-n', False):
