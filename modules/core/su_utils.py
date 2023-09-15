@@ -406,6 +406,7 @@ async def _(msg: Bot.MessageSession):
 rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True)
 
 
+@rse.handle()
 @rse.handle('[<exception>] [-n]')
 async def _(msg: Bot.MessageSession):
     e = msg.parsed_msg.get('<exception>', None)
