@@ -152,7 +152,7 @@
     "core.message.whoami.admin": "(You have admin privileges for this conversation)",
     "core.message.whoami.botadmin": "(You have robot admin privileges for this conversation)",
     "core.message.whoami.superuser": "(You have superuser permission)",
-    "core.message.analytics.counts": "Number of times the commands have executed (from ${first_record}): ${counts}",
+    "core.message.analytics.counts": "Number of commands have executed (from ${first_record}): ${counts}\nNumber of commands have executed today: ${counts_today}",
     "core.message.analytics.days": "Last 30 days for command \"${module}\" calls (from ${first_record}): ",
     "core.message.analytics.days.total": "Last 30 days for all command calls (from ${first_record}): ",
     "core.message.analytics.disabled": "Command analytics is not enabled.",
