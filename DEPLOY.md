@@ -310,23 +310,38 @@ pip install -r requirements.txt
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的[用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+
+`matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
+
+`matrix_device_name =` - 填写机器人的设备名称（可随便乱写，给人看的）
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
-> 获取完 Access Token 后，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
+> 不推荐使用其他客户端获取 Access Token，这样容易导致 olm 会话非常混乱
+>
+> 如果（不怕死）使用客户端获取 Access Token，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
 
-对于 Element 及其分支（如 SchindiChat），Access Token 可以从“所有设置”->“帮助及关于”->“高级”->“访问令牌”中获取。
+使用以下命令进行密码登录：
 
-对于 Cinny，Access Token 可以从浏览器的的 localStorage 中提取（参考 [cinnyapp/cinny#938](https://github.com/cinnyapp/cinny/issues/938)）。
-
-对于没有合适的客户端的用户（？），您也可以使用以下命令进行密码登录（但仍需手动完成后续的[设备验证](https://spec.matrix.org/v1.7/client-server-api/#device-verification)、[交叉签名](https://spec.matrix.org/v1.7/client-server-api/#cross-signing)和[服务端密钥备份](https://spec.matrix.org/v1.7/client-server-api/#server-side-key-backups)恢复等流程）：
-
-```
+```bash
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
-目前，由于 libolm 在一些情况下需要手动安装，机器人没有端对端加密（e2ee）支持。
+##### E2E加密
+
+目前，由于 libolm 在一些情况下需要手动配置，机器人默认没有启用端对端加密（e2ee）支持。
+
+若要启用 E2EE 支持，请执行以下命令：
+
+```bash
+poetry run -- pip3 install matrix-nio[e2e] ; Poetry
+pip3 install matrix-nio[e2e] ; PIP
+```
+
+`matrix_megolm_backup_passphrase =` - （可选）填写机器人的 megolm 备份密码短语，建议使用随机的长密码，不填写则不会导出 megolm 备份。
+
+如果需要导入 megolm 备份，请将备份文件放置在 `matrix_store/megolm_backup/restore.txt` 下，并将密码短语写入 `matrix_store/megolm_backup/restore-passphrase.txt`。
 
 ### 配置其他功能
 
