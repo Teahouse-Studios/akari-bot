@@ -18,11 +18,11 @@ from .text import remove_suffix
 class LocaleNode():
     '''本地化树节点'''
     value: str
-    childen: dict
+    children: dict
 
     def __init__(self, v: str = None):
         self.value = v
-        self.childen = {}
+        self.children = {}
 
     def query_node(self, path: str):
         '''查询本地化树节点'''
@@ -33,8 +33,8 @@ class LocaleNode():
         if len(path) == 0:
             return self
         nxt_node = path[0]
-        if nxt_node in self.childen.keys():
-            return self.childen[nxt_node]._query_node(path[1:])
+        if nxt_node in self.children.keys():
+            return self.children[nxt_node]._query_node(path[1:])
         else:
             return None
 
@@ -48,9 +48,9 @@ class LocaleNode():
             self.value = write_value
             return
         nxt_node = path[0]
-        if nxt_node not in self.childen.keys():
-            self.childen[nxt_node] = LocaleNode()
-        self.childen[nxt_node]._update_node(path[1:], write_value)
+        if nxt_node not in self.children.keys():
+            self.children[nxt_node] = LocaleNode()
+        self.children[nxt_node]._update_node(path[1:], write_value)
 
 
 locale_root = LocaleNode()
@@ -138,7 +138,7 @@ class Locale:
         fallback_lng = list(self.fallback_lng)
         fallback_lng.insert(0, self.locale)
         for lng in fallback_lng:
-            if lng in locale_root.childen:
+            if lng in locale_root.children:
                 node = locale_root.query_node(lng).query_node(key)
                 if node is not None:
                     return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
@@ -156,7 +156,7 @@ class Locale:
 
 
 def get_available_locales():
-    return list(locale_root.childen.keys())
+    return list(locale_root.children.keys())
 
 
 def tl_str(locale: Locale, text: str, fallback_failed_prompt=False) -> str:
