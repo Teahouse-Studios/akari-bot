@@ -1,4 +1,4 @@
-'''基于logging的日志器。'''
+"""基于loguru的日志器。"""
 import os
 import re
 import sys

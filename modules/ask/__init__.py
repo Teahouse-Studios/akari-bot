@@ -9,7 +9,7 @@ from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from database import BotDBUtil
+from core.utils.cooldown import CoolDown
 
 os.environ['LANGCHAIN_TRACING_V2'] = "true"
 os.environ['LANGCHAIN_ENDPOINT'] = Config('langsmith_endpoint')
@@ -43,7 +43,7 @@ async def _(msg: Bot.MessageSession):
     if not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 
-    qc = BotDBUtil.CoolDown(msg, 'call_openai')
+    qc = CoolDown('call_openai', msg)
     c = qc.check(60)
     if c == 0 or msg.target.target_from == 'TEST|Console' or is_superuser:
         if hasattr(msg, 'parsed_msg'):

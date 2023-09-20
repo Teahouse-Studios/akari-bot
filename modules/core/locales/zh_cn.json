@@ -1,10 +1,4 @@
 {
-    "core.analytics.message.counts": "机器人已执行命令次数（自 ${first_record} 开始统计）：${counts}",
-    "core.analytics.message.days": "最近 30 天的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
-    "core.analytics.message.days.total": "最近 30 天的所有命令调用次数统计（自 ${first_record} 开始统计）：",
-    "core.analytics.message.disabled": "机器人未开启命令统计功能。",
-    "core.analytics.message.years": "最近一年的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
-    "core.analytics.message.years.total": "最近一年的所有命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.help.admin": "一些群组管理员可使用的命令。",
     "core.help.admin.add": "设置成员为机器人管理员。以实现不设置成员为群组管理员的状況下管理机器人的效果。已是群组管理员无需设置此项目。",
     "core.help.admin.ban": "限制某人在本群使用机器人。",
@@ -157,5 +151,12 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
+    "core.message.analytics.counts": "机器人已执行命令次数（自 ${first_record} 开始统计）：${counts}\n今日已执行命令次数：${counts_today}",
+    "core.message.analytics.days": "最近 30 天的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
+    "core.message.analytics.days.total": "最近 30 天的所有命令调用次数统计（自 ${first_record} 开始统计）：",
+    "core.message.analytics.disabled": "机器人未开启命令统计功能。",
+    "core.message.analytics.year": "最近一年的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
+    "core.message.analytics.year.total": "最近一年的所有命令调用次数统计（自 ${first_record} 开始统计）：",
+    "core.message.raise": "异常测试。"
 }

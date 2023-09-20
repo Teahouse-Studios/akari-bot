@@ -12,6 +12,7 @@ from dateutil.relativedelta import relativedelta
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
+from core.exceptions import NoReportException
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
@@ -51,10 +52,15 @@ async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
-        await msg.finish(msg.locale.t("core.analytics.message.counts", first_record=first_record.timestamp,
-                                      counts=get_counts))
+        
+        new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
+        old = datetime.now().replace(hour=0, minute=0, second=0)
+        get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
+        
+        await msg.finish(msg.locale.t("core.message.analytics.counts", first_record=first_record.timestamp,
+                                      counts=get_counts, counts_today=get_counts_today))
     else:
-        await msg.finish(msg.locale.t("core.analytics.message.disabled"))
+        await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
 
 @ana.handle('days [<name>]')
@@ -65,9 +71,9 @@ async def _(msg: Bot.MessageSession):
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
         if module_ is None:
-            result = msg.locale.t("core.analytics.message.days.total", first_record=first_record.timestamp)
+            result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
         else:
-            result = msg.locale.t("core.analytics.message.days", module=module_,
+            result = msg.locale.t("core.message.analytics.days", module=module_,
                                   first_record=first_record.timestamp)
         data_ = {}
         for d in range(30):
@@ -95,7 +101,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result), Image(path)])
 
 
-@ana.handle('years [<name>]')
+@ana.handle('year [<name>]')
 async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
@@ -103,9 +109,9 @@ async def _(msg: Bot.MessageSession):
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
         if module_ is None:
-            result = msg.locale.t("core.analytics.message.years.total", first_record=first_record.timestamp)
+            result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
         else:
-            result = msg.locale.t("core.analytics.message.years", module=module_,
+            result = msg.locale.t("core.message.analytics.year", module=module_,
                                   first_record=first_record.timestamp)
         data_ = {}
         for d in range(12):
@@ -402,6 +408,23 @@ say = module('say', developers=['OasisAkari'], required_superuser=True)
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
+rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True)
+
+
+@rse.handle()
+@rse.handle('[<exception>] [-n]')
+async def _(msg: Bot.MessageSession):
+    e = None
+    if msg.parsed_msg:
+        e = msg.parsed_msg.get('<exception>', None)
+        if not e:
+            e = msg.locale.t("core.message.raise")
+        if msg.parsed_msg.get('-n', False):
+            raise NoReportException(e)
+    if not e:
+        e = msg.locale.t("core.message.raise")
+    raise Exception(e)
+
 
 if Config('enable_eval'):
     _eval = module('eval', developers=['Dianliang233'], required_superuser=True)
@@ -446,14 +469,6 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))
-
-
-rse = module('raise', developers=['OasisAkari'], required_superuser=True)
-
-
-@rse.handle()
-async def _(msg: Bot.MessageSession):
-    raise Exception("Test Exception")
 
 
 if Config('openai_api_key'):

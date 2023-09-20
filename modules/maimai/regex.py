@@ -194,7 +194,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output.strip())
 
 
-@mai_regex.handle(re.compile(r"([0-9]+\+?)\s?(.+)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
+@mai_regex.handle(re.compile(r"([0-9]+\+?)\s(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
 async def _(msg: Bot.MessageSession):
     goal_list = [
         "A",
@@ -217,6 +217,8 @@ async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
+    if goal is None:
+        return
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:

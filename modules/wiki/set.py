@@ -7,7 +7,7 @@ from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki
 
-enable_urlmanager = Config('qq_enable_urlmanager')
+enable_urlmanager = Config('enable_urlmanager')
 
 
 @wiki.handle('set <WikiUrl> {{wiki.help.set}}', required_admin=True)

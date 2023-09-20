@@ -3,6 +3,7 @@ from sqlalchemy.dialects.mysql import LONGTEXT
 
 from database.orm import Session, DB_LINK
 from database.orm_base import Base
+from core.utils.i18n import default_locale
 
 is_mysql = DB_LINK.startswith('mysql')
 
@@ -25,7 +26,7 @@ class TargetInfo(Base):
     options = Column(LONGTEXT if is_mysql else Text, default='{}')
     custom_admins = Column(LONGTEXT if is_mysql else Text, default='[]')
     muted = Column(Boolean, default=False)
-    locale = Column(String(512), default='zh_cn')
+    locale = Column(String(512), default=default_locale)
     petal = Column(Integer, default=0)
 
 
