@@ -10,13 +10,18 @@ from config import Config
 from .text import remove_suffix
 
 
+default_locale = Config('locale')
+if not default_locale:
+    default_locale = 'zh_cn'
+
+
 # Load all locale files into memory
 
 # We might change this behavior in the future and read them on demand as
 # locale files get too large
 
-class LocaleNode():
-    '''本地化树节点'''
+class LocaleNode:
+    """本地化树节点"""
     value: str
     children: dict
 
@@ -25,11 +30,11 @@ class LocaleNode():
         self.children = {}
 
     def query_node(self, path: str):
-        '''查询本地化树节点'''
+        """查询本地化树节点"""
         return self._query_node(path.split('.'))
 
     def _query_node(self, path: list):
-        '''通过路径队列查询本地化树节点'''
+        """通过路径队列查询本地化树节点"""
         if len(path) == 0:
             return self
         nxt_node = path[0]
@@ -39,11 +44,11 @@ class LocaleNode():
             return None
 
     def update_node(self, path: str, write_value: str):
-        '''更新本地化树节点'''
+        """更新本地化树节点"""
         return self._update_node(path.split('.'), write_value)
 
     def _update_node(self, path: list, write_value: str):
-        '''通过路径队列更新本地化树节点'''
+        """通过路径队列更新本地化树节点"""
         if len(path) == 0:
             self.value = write_value
             return
@@ -115,7 +120,7 @@ class Locale:
         return key in self.data
 
     def t(self, key: Union[str, dict], fallback_failed_prompt=True, *args, **kwargs) -> str:
-        '''获取本地化字符串'''
+        """获取本地化字符串"""
         if isinstance(key, dict):
             if (ft := key.get(self.locale)) is not None:
                 return ft
@@ -128,7 +133,7 @@ class Locale:
         return Template(localized).safe_substitute(*args, **kwargs)
 
     def get_locale_node(self, path: str):
-        '''获取本地化节点'''
+        """获取本地化节点"""
         return self.data.query_node(path)
 
     def get_string_with_fallback(self, key: str, fallback_failed_prompt) -> str:
@@ -166,4 +171,4 @@ def tl_str(locale: Locale, text: str, fallback_failed_prompt=False) -> str:
     return text
 
 
-__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'tl_str']
+__all__ = ['Locale', 'load_locale_file', 'get_available_locales', 'tl_str', 'default_locale']
