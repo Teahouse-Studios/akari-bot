@@ -43,18 +43,6 @@ class Session:
         return f'Session(message={self.message}, target={self.target}, sender={self.sender})'
 
 
-class AutoSession(Session):
-    """
-    For autotest
-    """
-
-    def __init__(self, message, target, sender, auto_interactions=None):
-        super().__init__(message, target, sender)
-        if auto_interactions is None:
-            auto_interactions = []
-        self.auto_interactions = auto_interactions
-
-
 class FinishedSession:
     def __init__(self, session, message_id: Union[List[int], List[str], int, str], result):
         self.session = session
@@ -342,5 +330,5 @@ class ModuleHookContext:
         self.args = args
 
 
-__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession", "AutoSession",
+__all__ = ["FetchTarget", "MsgInfo", "MessageSession", "Session", "FetchedSession", "FinishedSession",
            "ModuleHookContext", "MessageChain"]

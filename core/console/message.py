@@ -7,7 +7,7 @@ from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTa
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
-from core.types import Session, MsgInfo, FinishedSession as FinS, AutoSession
+from core.types import Session, MsgInfo, FinishedSession as FinS
 
 
 class FinishedSession(FinS):
@@ -18,8 +18,8 @@ class FinishedSession(FinS):
         print("(Tried to delete message, but I'm a console so I cannot do it :< )")
 
 
-class Template(MessageSessionT):
-    session: Union[Session, AutoSession]
+class MessageSession(MessageSessionT):
+    session: Union[Session]
 
     class Feature:
         image = True
@@ -50,12 +50,8 @@ class Template(MessageSessionT):
         if message_chain is not None:
             send = await self.send_message(message_chain)
             print("（发送“是”或符合确认条件的词语来确认）")
-        print(self.session.auto_interactions)
-        if self.session.auto_interactions:
-            c = self.session.auto_interactions[0]
-            del self.session.auto_interactions[0]
-        else:
-            c = input('Confirm: ')
+
+        c = input('Confirm: ')
         print(c)
         if message_chain is not None and delete:
             await send.delete()
@@ -68,11 +64,7 @@ class Template(MessageSessionT):
         send = None
         if message_chain is not None:
             send = await self.send_message(message_chain)
-        if self.session.auto_interactions:
-            c = self.session.auto_interactions[0]
-            del self.session.auto_interactions[0]
-        else:
-            c = input('Confirm: ')
+        c = input('Confirm: ')
         print(c)
         if message_chain is not None and delete:
             await send.delete()
@@ -85,14 +77,13 @@ class Template(MessageSessionT):
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.send_message(message_chain, quote)
         c = input('Reply: ')
-        return Template(target=MsgInfo(target_id='TEST|Console|0',
-                                       sender_id='TEST|0',
-                                       sender_name='',
-                                       target_from='TEST|Console',
-                                       sender_from='TEST', client_name='TEST', message_id=0,
-                                       reply_id=None),
-                        session=AutoSession(message=c, target='TEST|Console|0', sender='TEST|0',
-                                            auto_interactions=None))
+        return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
+                                             sender_id='TEST|0',
+                                             sender_name='',
+                                             target_from='TEST|Console',
+                                             sender_from='TEST', client_name='TEST', message_id=0,
+                                             reply_id=None),
+                              session=Session(message=c, target='TEST|Console|0', sender='TEST|0'))
 
     def as_display(self, text_only=False):
         return self.session.message
@@ -169,5 +160,5 @@ class FetchTarget(FetchTargetT):
             await fetch.send_message(message)
 
 
-Bot.MessageSession = Template
+Bot.MessageSession = MessageSession
 Bot.FetchTarget = FetchTarget

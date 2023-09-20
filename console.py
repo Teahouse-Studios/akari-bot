@@ -19,8 +19,8 @@ import aioconsole
 from bot import init_bot
 from core.extra.scheduler import load_extra_schedulers
 from core.builtins import PrivateAssets, EnableDirtyWordCheck
-from core.types import MsgInfo, AutoSession
-from core.console.template import Template as MessageSession
+from core.types import MsgInfo, Session
+from core.console.message import MessageSession
 from core.parser.message import parser
 from core.utils.bot import init_async
 from core.logger import Logger
@@ -68,8 +68,7 @@ async def send_command(msg, interactions=None):
                                                          target_from='TEST|Console',
                                                          sender_from='TEST', client_name='TEST', message_id=0,
                                                          reply_id=None),
-                                          session=AutoSession(message=msg, target='TEST|Console|0', sender='TEST|0',
-                                                              auto_interactions=interactions)))
+                                          session=Session(message=msg, target='TEST|Console|0', sender='TEST|0')))
     # print(returns)
     Logger.info('----Process end----')
     return returns
