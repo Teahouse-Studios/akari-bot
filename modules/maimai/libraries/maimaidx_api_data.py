@@ -12,7 +12,7 @@ assets_path = os.path.abspath('./assets/maimai')
 
 async def update_alias():
     try:
-        url = "https://download.fanyu.site/maimai/alias_uc.json"
+        url = "https://download.fanyu.site/maimai/alias.json"
         input_data = await get_url(url, 200, fmt='json')
 
         output_data = {}
