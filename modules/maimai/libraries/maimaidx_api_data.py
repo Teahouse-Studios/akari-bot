@@ -33,8 +33,6 @@ async def update_assets():
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(output_data, file)
-    except:
-        return False
         
     Logger.info('Maimai alias download completed.')
     
