@@ -24,17 +24,6 @@ async def update_alias():
                     output_data[value] = []
                 output_data[value].append(key)
 
-        for sid in range(1, 20000):
-            try:
-                s = await total_list.get().by_id(sid)
-                key = str(sid)  
-                if key in output_data:
-                    output_data[key].append(s['title'])
-                else:
-                    output_data[key] = [s['title']]
-            except Exception as e:
-                continue
-        
         output_data = {k: output_data[k] for k in sorted(output_data)}
 
         file_path = os.path.join(assets_path, "mai_alias.json")
