@@ -35,7 +35,7 @@ async def update_assets():
     except:
         return False
         
-    Logger.info('[MAIMAI] Alias update completed.')
+    Logger.info('Maimai alias download completed.')
     
     for sid in range(20000):
         try:
@@ -50,7 +50,7 @@ async def update_assets():
             else:
                 return False
                 
-    Logger.info('[MAIMAI] Cover update completed.')
+    Logger.info('Maimai covers download completed.')
     
     return True
 
