@@ -41,7 +41,7 @@ async def update_assets():
         try:
             cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
             cover_path = f"{cover_dir}{get_cover_len5_id(sid)}.png"
-                download_cover = await download_to_cache(cover_url)
+            download_cover = await download_to_cache(cover_url)
                 if download_cover:
                     shutil.move(download_cover, cover_path)
         except ValueError as e:
