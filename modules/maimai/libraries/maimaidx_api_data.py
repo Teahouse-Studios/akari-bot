@@ -1,19 +1,22 @@
 import os
+import shutil
 
 import ujson as json
 
-from core.utils.http import get_url, post_url
+from core.logger import Logger
+from core.utils.http import get_url, post_url, download_to_cache
 from .maimaidx_music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
 
 assets_path = os.path.abspath('./assets/maimai')
+cover_dir = f"{assets_path}/static/mai/cover/"
 
 
-async def update_alias():
+async def update_assets():
     try:
-        url = "https://download.fanyu.site/maimai/alias.json"
-        input_data = await get_url(url, 200, fmt='json')
+        alias_url = "https://download.fanyu.site/maimai/alias.json"
+        input_data = await get_url(alias_url, 200, fmt='json')
 
         output_data = {}
         for key, values in input_data.items():
@@ -29,9 +32,26 @@ async def update_alias():
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(output_data, file)
-    except BaseException:
+    except:
         return False
-
+        
+    Logger.info('Maimai alias download completed.')
+    
+    for sid in range(20000):
+        try:
+            cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
+            cover_path = f"{cover_dir}{get_cover_len5_id(sid)}.png"
+                download_cover = await download_to_cache(cover_url)
+                if download_cover:
+                    shutil.move(download_cover, cover_path)
+        except ValueError as e:
+            if str(e).startswith('404'):
+                continue
+            else:
+                return False
+                
+    Logger.info('Maimai covers download completed.')
+    
     return True
 
 
@@ -96,9 +116,8 @@ async def get_plate(msg, payload):
 
 def get_cover(sid):
     cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
-    cover_dir = f"./assets/maimai/static/mai/cover/"
-    cover_path = cover_dir + f'{get_cover_len5_id(sid)}.png'
-    if sid == '11364':  # 8-EM 的封面需要本地调用
+    cover_path = f"{cover_dir}{get_cover_len5_id(sid)}.png"
+    if os.path.exists(os.path.abspath(cover_path)):
         return os.path.abspath(cover_path)
     else:
         return cover_url
