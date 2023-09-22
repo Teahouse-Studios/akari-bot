@@ -46,7 +46,7 @@ async def update_assets():
                 static_cover_dir = os.path.join(static_path, 'mai/cover')
                 zip_ref.extractall(static_cover_dir)
 
-            if os.path.exists(cover_dir)
+            if os.path.exists(cover_dir):
                 shutil.rmtree(cover_dir)
         
             cover_list = os.listdir(static_cover_dir)
