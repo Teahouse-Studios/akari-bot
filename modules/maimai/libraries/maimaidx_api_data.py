@@ -40,7 +40,7 @@ async def update_assets():
     
     try:
             static_url = f"https://www.diving-fish.com/maibot/static.zip"
-            download_file = await download_to_cache(static_url)
+            download_file = await download_to_cache(static_url, timeout=120)
 
             ca = random_cache_path()
             shutil.unpack_archive(download_file, ca)
@@ -52,7 +52,7 @@ async def update_assets():
             if os.path.exists(static_cover_dir):
                 shutil.move(static_cover_dir, cover_dir)
     except:
-            raise
+            return False
                 
     Logger.info('Maimai covers download completed.')
     
