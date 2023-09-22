@@ -1,10 +1,10 @@
 import os
 import shutil
-import zipfile
 
 import ujson as json
 
 from core.logger import Logger
+from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
 from .maimaidx_music import get_cover_len5_id, TotalList
 
@@ -40,20 +40,17 @@ async def update_assets():
     
     try:
             static_url = f"https://www.diving-fish.com/maibot/static.zip"
-            static_path = await download_to_cache(static_url, status_code=200)
-        
-            with zipfile.ZipFile(static_path, 'r') as zip_ref:
-                static_cover_dir = os.path.join(static_path, 'mai/cover')
-                zip_ref.extractall(static_cover_dir)
+            download_file = await download_to_cache(static_url)
 
+            ca = random_cache_path()
+            shutil.unpack_archive(download_file, ca)
+        
             if os.path.exists(cover_dir):
                 shutil.rmtree(cover_dir)
         
-            cover_list = os.listdir(static_cover_dir)
-            for cover in cover_list:
-                source = os.path.join(static_cover_dir, cover)
-                cover_path = os.path.join(cover_dir, cover)
-                shutil.move(source, cover_path)
+            static_cover_dir = os.path.join(ca, 'mai/cover')
+            if os.path.exists(static_cover_dir):
+                shutil.move(static_cover_dir, cover_dir)
     except:
             return False
                 
