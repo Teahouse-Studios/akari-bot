@@ -1,5 +1,6 @@
 import os
 import shutil
+import zipfile
 
 import ujson as json
 
@@ -10,7 +11,7 @@ from .maimaidx_music import get_cover_len5_id, TotalList
 total_list = TotalList()
 
 assets_path = os.path.abspath('./assets/maimai')
-cover_dir = f"{assets_path}/static/mai/cover/"
+cover_dir = f"{assets_path}/static/mai/cover"
 
 
 async def update_assets():
@@ -37,18 +38,24 @@ async def update_assets():
         
     Logger.info('Maimai alias download completed.')
     
-    for sid in range(20000):
-        try:
-            cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
-            cover_path = f"{cover_dir}{get_cover_len5_id(sid)}.png"
-            download_cover = await download_to_cache(cover_url, status_code=200, attempt=1, logging_err_resp=False)
-            if download_cover:
-                shutil.move(download_cover, cover_path)
-        except ValueError as e:
-            if str(e).startswith('404'):
-                continue
-            else:
-                return False
+    try:
+            static_url = f"https://www.diving-fish.com/maibot/static.zip"
+            static_path = await download_to_cache(static_url, status_code=200)
+        
+            with zipfile.ZipFile(static_path, 'r') as zip_ref:
+                static_cover_dir = os.path.join(static_path, 'mai/cover')
+                zip_ref.extractall(static_cover_dir)
+
+            if os.path.exists(cover_dir)
+                shutil.rmtree(cover_dir)
+        
+            cover_list = os.listdir(static_cover_dir)
+            for cover in cover_list:
+                source = os.path.join(static_cover_dir, cover)
+                cover_path = os.path.join(cover_dir, cover)
+                shutil.move(source, cover_path)
+    except:
+            return False
                 
     Logger.info('Maimai covers download completed.')
     
@@ -116,7 +123,7 @@ async def get_plate(msg, payload):
 
 def get_cover(sid):
     cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
-    cover_path = f"{cover_dir}{get_cover_len5_id(sid)}.png"
+    cover_path = f"{cover_dir}/{get_cover_len5_id(sid)}.png"
     if os.path.exists(os.path.abspath(cover_path)):
         return os.path.abspath(cover_path)
     else:
