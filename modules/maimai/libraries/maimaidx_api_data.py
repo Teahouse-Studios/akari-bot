@@ -4,7 +4,7 @@ import shutil
 import ujson as json
 
 from core.logger import Logger
-from core.utils.http import get_url, post_url
+from core.utils.http import get_url, post_url, download_to_cache
 from .maimaidx_music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
