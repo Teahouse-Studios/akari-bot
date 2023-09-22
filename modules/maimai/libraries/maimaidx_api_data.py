@@ -3,7 +3,9 @@ import os
 import ujson as json
 
 from core.utils.http import get_url, post_url
-from .maimaidx_music import get_cover_len5_id
+from .maimaidx_music import get_cover_len5_id, TotalList
+
+total_list = TotalList()
 
 assets_path = os.path.abspath('./assets/maimai')
 
