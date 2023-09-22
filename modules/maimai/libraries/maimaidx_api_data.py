@@ -33,6 +33,8 @@ async def update_assets():
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(output_data, file)
+    except:
+        return False
         
     Logger.info('Maimai alias download completed.')
     
@@ -50,7 +52,7 @@ async def update_assets():
             if os.path.exists(static_cover_dir):
                 shutil.move(static_cover_dir, cover_dir)
     except:
-            return False
+            raise
                 
     Logger.info('Maimai covers download completed.')
     
@@ -74,7 +76,7 @@ async def get_alias(msg, input, get_music=False):
         input = input.replace("_", " ")
         if input in data:
             result = data[input]
-
+    
     return result
 
 
