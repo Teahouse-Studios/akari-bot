@@ -40,7 +40,7 @@ async def update_assets():
     
     try:
             static_url = f"https://www.diving-fish.com/maibot/static.zip"
-            download_file = await download_to_cache(static_url, timeout=120)
+            download_file = await download_to_cache(static_url, timeout=30)
 
             ca = random_cache_path()
             shutil.unpack_archive(download_file, ca)
