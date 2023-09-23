@@ -40,7 +40,7 @@ async def update_assets():
     
     try:
             static_url = f"https://www.diving-fish.com/maibot/static.zip"
-            download_file = await download_to_cache(static_url, timeout=30)
+            download_file = await download_to_cache(static_url, timeout=60)
 
             ca = random_cache_path()
             shutil.unpack_archive(download_file, ca)
@@ -51,6 +51,8 @@ async def update_assets():
             static_cover_dir = os.path.join(ca, 'mai/cover')
             if os.path.exists(static_cover_dir):
                 shutil.move(static_cover_dir, cover_dir)
+
+            os.remove(download_file)
     except:
             return False
                 
