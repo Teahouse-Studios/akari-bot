@@ -160,7 +160,7 @@ async def check_bool(*text):
 
 
 def rickroll(msg):
-    if Config("enable_rickroll"):
+    if Config("enable_rickroll") and Config("rickroll_url"):
         raise NoReportException(Config("rickroll_url"))
     else:
         raise NoReportException(msg.locale.t("error.message.chain.unsafe"))
