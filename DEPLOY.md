@@ -156,7 +156,7 @@ pip install -r requirements.txt
 
 如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
 
-```powershell
+```sh
 pip install -r requirements.txt
 ```
 
@@ -326,7 +326,7 @@ pip install -r requirements.txt
 
 使用以下命令进行密码登录：
 
-```bash
+```sh
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
@@ -336,7 +336,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 若要启用 E2EE 支持，请执行以下命令：
 
-```bash
+```sh
 poetry run -- pip3 install matrix-nio[e2e] ; Poetry
 pip3 install matrix-nio[e2e] ; PIP
 ```
@@ -383,7 +383,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
 
-    ```
+    ```conf
     CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
     FC_SERVER_PORT=15551 # 填写服务运行的端口
     ```

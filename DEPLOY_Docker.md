@@ -245,7 +245,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
 
-    ```
+    ```conf
     CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
     FC_SERVER_PORT=15551 # 填写服务运行的端口
     ```
