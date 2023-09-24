@@ -56,7 +56,7 @@ async def update_assets():
                     shutil.move(download_file, os.path.join(illustration_path, song_name))
             except Exception:
                 shutil.copy(os.path.abspath('./assets/unknown'), os.path.join(illustration_path, song_name))
-    Logger.info('Image download completed.')
+    Logger.info('Phigros illustrations download completed.')
     another_assets_url = 'https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
     another_assets_url_mirror = 'https://gh.api.99988866.xyz/https://github.com/7aGiven/PhigrosLibrary/archive/refs/heads/master.zip'
     try:
