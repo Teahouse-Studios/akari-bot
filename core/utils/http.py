@@ -11,6 +11,7 @@ from aiohttp import TCPConnector
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
+from core.exceptions import NoReportException
 from core.logger import Logger
 from .cache import random_cache_path
 
@@ -83,7 +84,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                         text = await req.text()
                         return text
             except asyncio.exceptions.TimeoutError:
-                raise ValueError(f'Request timeout.')
+                raise NoReportException(f'Request timeout.')
             except Exception as e:
                 Logger.error(f'Error while requesting {url}: {e}')
                 raise e
@@ -134,7 +135,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                         text = await req.text()
                         return text
             except asyncio.exceptions.TimeoutError:
-                raise ValueError(f'Request timeout.')
+                raise NoReportException(f'Request timeout.')
             except Exception as e:
                 Logger.error(f'Error while requesting {url}: {e}')
                 raise e
