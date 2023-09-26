@@ -27,6 +27,8 @@ async def _(msg: Bot.MessageSession, tweet: str):
     res_json = json.loads(res)
     if not res_json['data']:
         await msg.finish(msg.locale.t('tweet.message.not_found'))
+    elif res_json['data']['__typename'] != "Tweet":
+        await msg.finish(f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}")
     else:
         if await check_bool(res_json['data']['text'], res_json['data']['user']['name'],
                             res_json['data']['user']['screen_name']):
