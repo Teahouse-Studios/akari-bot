@@ -31,7 +31,8 @@ plate_to_version = {
     '煌': 'maimai でらっくす Splash',
     '宙': 'maimai でらっくす UNiVERSE',
     '星': 'maimai でらっくす UNiVERSE',
-    '祭': 'maimai でらっくす FESTiVAL'
+    '祭': 'maimai でらっくす FESTiVAL',
+    '祝': 'maimai でらっくす FESTiVAL'
 }
 
 score_to_rank = {
