@@ -188,6 +188,7 @@ async def config_modules(msg: Bot.MessageSession):
                 elif module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
                 else:
+                    extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.core"))
                         if confirm:
@@ -196,7 +197,6 @@ async def config_modules(msg: Bot.MessageSession):
                         else:
                             continue
 
-                    extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
                                                                       modules='\n'.join(extra_reload_modules)))
