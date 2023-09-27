@@ -141,7 +141,7 @@ async def get_player_score(msg, payload, input_id):
             level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
     output_lines = []
-    for level, scores in level_scores.items():5
+    for level, scores in level_scores.items():
         if scores:
             output_lines.append(f"{diffs[level]} {music['level'][level]}")
             for score in scores:
