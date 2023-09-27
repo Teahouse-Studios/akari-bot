@@ -192,11 +192,12 @@ async def config_modules(msg: Bot.MessageSession):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.core"))
                         if confirm:
                             base_mode = True
+
                         else:
                             continue
 
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
-                    if len(extra_reload_modules):
+                    elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
                                                                       modules='\n'.join(extra_reload_modules)))
                         if not confirm:
