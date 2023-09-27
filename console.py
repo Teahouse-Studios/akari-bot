@@ -60,7 +60,7 @@ async def console_command():
         Logger.error(traceback.format_exc())
 
 
-async def send_command(msg, interactions=None):
+async def send_command(msg):
     Logger.info('-------Start-------')
     returns = await parser(MessageSession(target=MsgInfo(target_id='TEST|Console|0',
                                                          sender_id='TEST|0',
