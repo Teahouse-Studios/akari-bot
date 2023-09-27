@@ -119,6 +119,7 @@ async def get_player_score(msg, payload, input_id):
     payload['version'] = list(set(version for version in plate_to_version.values()))
     res = await get_plate(msg, payload)
     verlist = res["verlist"]
+
     music = (await total_list.get()).by_id(input_id)
     level_scores = {level: [] for level in range(len(music['level']))}
 
@@ -140,7 +141,7 @@ async def get_player_score(msg, payload, input_id):
             level_scores[level_index].append((diffs[level_index], achievements, score_rank, combo_rank, sync_rank))
 
     output_lines = []
-    for level, scores in level_scores.items():
+    for level, scores in level_scores.items():5
         if scores:
             output_lines.append(f"{diffs[level]} {music['level'][level]}")
             for score in scores:
@@ -149,7 +150,7 @@ async def get_player_score(msg, payload, input_id):
                 if combo_rank and sync_rank:
                     entry_output += f" {combo_rank} {sync_rank}"
                 elif combo_rank or sync_rank:
-                    entry_output += f" {sync_rank}{sync_rank}"
+                    entry_output += f" {combo_rank}{sync_rank}"
                 output_lines.append(entry_output)
         else:
             output_lines.append(
