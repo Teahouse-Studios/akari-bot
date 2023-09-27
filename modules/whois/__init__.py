@@ -19,11 +19,10 @@ def get_value(dict, key):
         return None
 
 
-w = module('whois', desc='{whois.help.desc}',
-           developers=['DoroWolf'])
+w = module('whois', developers=['DoroWolf'])
 
 
-@w.handle('<domain>')
+@w.handle('<domain> {{whois.help}}')
 async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     output = await msg.finish(res)

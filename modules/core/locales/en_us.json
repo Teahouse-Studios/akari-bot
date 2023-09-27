@@ -12,7 +12,6 @@
     "core.help.leave": "Let the robot leave the group.",
     "core.help.locale": "View the language for robots.",
     "core.help.locale.set": "Set the language for robots.",
-    "core.help.locale.reload": "重载机器人语言文件",
     "core.help.module.disable": "Disable single/multiple modules.",
     "core.help.module.disable_all": "Disable all modules.",
     "core.help.module.enable": "Enable single/multiple module(s).",

@@ -147,7 +147,7 @@ async def config_gu(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
 
 
-@locale.handle('reload {{core.help.locale.reload}}', required_superuser=True)
+@locale.handle('reload', required_superuser=True)
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
