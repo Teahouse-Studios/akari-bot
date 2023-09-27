@@ -165,9 +165,11 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(msg.locale.t("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get('reload', False):
         if msg.check_super_user():
-            def module_reload(module, extra_modules):
+            def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
-                if reload_count > 1:
+                if base_mode:
+                    return f'{msg.locale.t("core.message.module.reload.success.core")}'
+                elif reload_count > 1:
                     return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
                         '\n' if len(extra_modules) != 0 else '') + \
                         '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with",
@@ -180,12 +182,19 @@ async def config_modules(msg: Bot.MessageSession):
                     return f'{msg.locale.t("core.message.module.reload.failed")}'
 
             for module_ in wait_config_list:
-
+                base_mode = False
                 if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                     msglist.append(module_reload(module_, []))
                 elif module_ not in modules_:
                     msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
                 else:
+                    if modules_[module_].base:
+                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.core"))
+                        if confirm:
+                            base_mode = True
+                        else:
+                            continue
+
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
@@ -196,7 +205,7 @@ async def config_modules(msg: Bot.MessageSession):
                     if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
-                    msglist.append(module_reload(module_, extra_reload_modules))
+                    msglist.append(module_reload(module_, extra_reload_modules, base_mode))
             reload_locale(msg)
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
