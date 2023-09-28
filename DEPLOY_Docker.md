@@ -361,8 +361,6 @@ pip3 install matrix-nio[e2e] ; PIP
 
 为了达到目的，您需要前往 [Wolfram|Alpha 开发者平台](https://developer.wolframalpha.com/) 注册一个账号并申请一个 Simple API，然后填写以下字段：
 
-> 申请 API 访问权限时可能需要使用到加速器。
-
 `wolfram_alpha_appid =` - Wolfram|Alpha 的 APPID。
 
 #### 其他功能
