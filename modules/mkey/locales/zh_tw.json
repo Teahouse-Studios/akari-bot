@@ -1,0 +1,9 @@
+{
+    "mkey.help.desc": "計算任天堂系列主機的 Parental Controls 萬用密碼。",
+    "mkey.message.error.date.month": "無效的月份。",
+    "mkey.message.error.date.day": "無效的日期。",
+    "mkey.message.error.inquiry_num": "無效的確認碼。",
+    "mkey.message.error.device": "無效的主機。",
+    "mkey.message.error.hal": "Switch 需要指定主機 ID。",
+    "mkey.message.result": "您的萬用密碼是：${result}。"
+}
