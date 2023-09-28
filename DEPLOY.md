@@ -221,18 +221,7 @@ pip install -r requirements.txt
 
     **Linux** - 请在命令行中输入 `tar -xzvf [文件名]`。
 
-3. 运行 go-cqhttp：
-
-    **Windows**
-
-    1. 双击`go-cqhttp_*.exe`，根据提示生成运行脚本。
-    2. 双击运行脚本。
-
-    **Linux**
-
-    1. 通过 SSH 连接到服务器。
-    2. `cd`到解压目录。
-    3. 输入 `./go-cqhttp`，`Enter` 运行。
+3. 运行 go-cqhttp。
 
 4. 此时将提示：
 
@@ -241,38 +230,27 @@ pip install -r requirements.txt
     [INFO]: 默认配置文件已生成,请编辑 config.yml 后重启程序.
     ```
 
-    程序将会自动在存放 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 文件夹的目录下生成一个默认配置文件 `config.yml`。
+    程序将会自动在存放 go-cqhttp 文件夹的目录下生成一个默认配置文件 `config.yml`。
 
-    接下来，请配置 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的 `config.yml` 文件中的对应的连接方式和签名服务器。
+    接下来，请配置 go-cqhttp 的 `config.yml` 文件中的对应的连接方式。
 
     ```yml
-    account:
-        ...
-        # 数据包的签名服务器
-        # 兼容 https://github.com/fuqiuluo/unidbg-fetch-qsign
-        # 暂不支持最新版qsign服务，可用版本：v1.1.0-
-        # 如果遇到 登录 45 错误, 或者发送信息风控的话需要填入一个服务器
-        # 示例:
-        # sign-server: 'http://127.0.0.1:8080' # 本地签名服务器
-        # sign-server: 'https://signserver.example.com' # 线上签名服务器
-        # 服务器可使用docker在本地搭建或者使用他人开放的服务
-        # 不建议使用公共服务器, 有封号风险
-        sign-server: '-'
-        ...
+    ...
     # 连接服务列表
     servers:
-        # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
-        #- http: # http 通信
-        #- ws:   # 正向 Websocket
-        #- ws-reverse: # 反向 Websocket
-        #- pprof: #性能分析服务器
-        - ws-reverse:
-            universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
-            reconnect-interval: 3000
-            middlewares:
-                <<: *default # 引用默认中间件
-            ...
-    ```
+      # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
+      #- http: # http 通信
+      #- ws:   # 正向 Websocket
+      #- ws-reverse: # 反向 Websocket
+      #- pprof: # 性能分析服务器
+      - ws-reverse:
+          universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
+          reconnect-interval: 3000
+          middlewares:
+            <<: *default # 引用默认中间件
+      ...
+    ...
+	```
 
     请在小可机器人的配置文件 `config.toml` 填写以下字段：
 
@@ -280,9 +258,55 @@ pip install -r requirements.txt
 
     `qq_account = 2314163511` - 填写机器人的 QQ 号。
 
-    > 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
-
     > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
+
+由于 QQ 风控机制的加强，go-cqhttp 若出现 Code45 报错情况时，请参照以下步骤配置签名服务器：
+
+5. 安装 JRE 1.8（Jave Runtime Environment 1.8），请善用搜索引擎查找安装方法。
+
+6. 在 [unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign) 的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+
+7. 在 [go-cqhttp dev 分支的 Actions 界面](https://github.com/Mrs4s/go-cqhttp/actions/workflows/ci.yml?query=branch%3Adev+event%3Apush) 中，点入最新的构建版本，并在 Artifacts 板块中下载对应系统类型的 go-cqhttp 构建文件并**替换**掉原正式版本的 go-cqhttp。
+
+8. 删除与 go-cqhttp 同一目录下的 `data` 文件夹及 `config.yml` 文件。
+
+9. 运行 go-cqhttp 并生成 `config.yml` 默认配置文件。
+
+10. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
+
+```sh
+bin\unidbg-fetch-qsign --basePath=txlib\8.9.71
+```
+
+11. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
+
+12. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
+
+    ```yml
+    account: # 账号相关
+      # 数据包的签名服务器列表，第一个作为主签名服务器，后续作为备用
+      sign-servers: 
+        - url: 'http://127.0.0.1:8080'  # 主签名服务器地址， 必填
+          key: '114514'  # 签名服务器所需要的apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
+          authorization: '-'   # authorization 内容, 依服务端设置，如 'Bearer xxxx'
+        ...
+      ...
+    ...
+    ```
+
+13. 运行 go-cqhttp 以生成设备文件。
+
+14. 下载[安卓手机协议](https://github.com/MrXiaoM/qsign/blob/mirai/txlib/8.9.71/android_phone.json)并将其重命名为 `1.json` 。将该文件储存在与 go-cqhttp 同一目录下的 `data\versions` 文件夹中。
+
+15. 在与 go-cqhttp 同一目录下的 `device.json` 文件夹中，并修改以下字段：
+
+    ```json
+    "protocol": 1,
+    ```
+
+16. 重启 go-cqhttp 完成最终配置。
+
+> 若在执行以上步骤中遇到问题，请访问 [go-cqhttp 官方讨论板块](https://github.com/Mrs4s/go-cqhttp/discussions)或在哔哩哔哩上查找合适的教程。
 
 #### Discord
 
