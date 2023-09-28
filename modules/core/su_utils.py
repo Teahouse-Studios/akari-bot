@@ -472,7 +472,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('openai_api_key'):
-    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals', base=True)
+    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals')
 
     @petal.handle()
     async def _(msg: Bot.MessageSession):
