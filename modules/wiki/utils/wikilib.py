@@ -16,6 +16,10 @@ from core.utils.http import get_url
 from core.utils.i18n import Locale, default_locale
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
+redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
+                 'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php'  # no more Fandom then
+                 }
+
 
 class InvalidPageIDError(Exception):
     pass
@@ -139,7 +143,8 @@ class WikiLib:
         self.locale = Locale(locale)
 
     async def get_json_from_api(self, api, **kwargs) -> dict:
-        api = re.sub(r'https://zh\.moegirl\.org\.cn/', 'https://mzh.moegirl.org.cn/', api)  # 萌娘百科强制使用移动版 API
+        if api in redirect_list:
+            api = redirect_list[api]
         if kwargs is not None:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
             Logger.debug(api)
