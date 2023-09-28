@@ -3,5 +3,5 @@
     "tweet.help.desc": "取得推文摘要。",
     "tweet.message.error": "發生錯誤：無法辨識推文 ID，請校對輸入。",
     "tweet.message.not_found": "未找到推文。",
-    "tweet.message.tombstone": "获取推文时出错："
+    "tweet.message.tombstone": "取得推文時出錯："
 }
