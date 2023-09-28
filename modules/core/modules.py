@@ -404,7 +404,7 @@ async def _(msg: Bot.MessageSession):
                 appends.append('\n'.join(malias) if malias else '')
                 if module_.developers:
                     appends.append(msg.locale.t('message.delimiter').join(module_.developers))
-                if module_.base:
+                if module_.base and not (module_.required_superuser or module_.required_base_superuser):
                     essential.append(appends)
                 if x in target_enabled_list:
                     m.append(appends)
