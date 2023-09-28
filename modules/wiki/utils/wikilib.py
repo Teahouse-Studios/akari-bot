@@ -239,6 +239,8 @@ class WikiLib:
                 if self.url.find('moegirl.org.cn') != -1:
                     message += '\n' + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
                 return WikiStatus(available=False, value=False, message=message)
+        if wiki_api_link in redirect_list:
+            wiki_api_link = redirect_list[wiki_api_link]
         get_cache_info = DBSiteInfo(wiki_api_link).get()
         if get_cache_info and datetime.datetime.now().timestamp() - get_cache_info[1].timestamp() < 43200:
             return WikiStatus(available=True,
@@ -266,7 +268,10 @@ class WikiLib:
         parse_url = urllib.parse.urlparse(self.url)
         get = DBSiteInfo.get_like_this(parse_url.netloc)
         if get is not None:
-            return WikiStatus(available=True, value=self.rearrange_siteinfo(get.siteInfo, get.apiLink), message='')
+            api_link = get.apiLink
+            if api_link in redirect_list:
+                api_link = redirect_list[api_link]
+            return WikiStatus(available=True, value=self.rearrange_siteinfo(get.siteInfo, api_link), message='')
         else:
             return WikiStatus(available=False, value=False, message='')
 
