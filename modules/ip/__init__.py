@@ -11,12 +11,12 @@ ip = module('ip', developers=['Dianliang233'])
 
 
 @ip.handle('<ip> {{ip.help}}')
-async def _(msg: Bot.MessageSession, ip: str):
+async def _(msg: Bot.MessageSession, ip_address: str):
     try:
-        ipaddress.ip_address(ip)
+        ipaddress.ip_address(ip_address)
     except BaseException:
         await msg.finish(msg.locale.t('ip.message.error.unknown'))
-    res = await check_ip(ip)
+    res = await check_ip(ip_address)
     await msg.finish(await format_ip(msg, res))
 
 

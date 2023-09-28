@@ -49,9 +49,9 @@ async def _(msg: Bot.MessageSession):
     delta = (stop - start) / 1000000
     if res[:6] == 'Result':
         if msg.target.sender_from == "Discord|Client":
-            m = f'`{(expr)}` = {res[7:]}'
+            m = f'`{expr}` = {res[7:]}'
         else:
-            m = f'{(expr)} = {res[7:]}'
+            m = f'{expr} = {res[7:]}'
         if msg.check_super_user():
             m += '\n' + msg.locale.t("calc.message.running_time", time=delta)
         await msg.finish(m)
