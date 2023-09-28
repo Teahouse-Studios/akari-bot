@@ -31,17 +31,17 @@ async def add_su(message: Bot.MessageSession):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.finish(message.locale.t("core.message.superuser.add.success", user=user))
+            await message.finish(message.locale.t("success"))
 
 
-@su.handle('del <UserID>')
+@su.handle('remove <UserID>')
 async def del_su(message: Bot.MessageSession):
     user = message.parsed_msg['<UserID>']
     if not user.startswith(f'{message.target.sender_from}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.finish(message.locale.t("core.message.superuser.remove.success", user=user))
+            await message.finish(message.locale.t("success"))
 
 
 ana = module('analytics', required_superuser=True, base=True)
