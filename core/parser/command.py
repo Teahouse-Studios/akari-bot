@@ -6,7 +6,7 @@ from typing import Union, Dict
 
 from core.exceptions import InvalidCommandFormatError
 from core.types import MessageSession, Module
-from core.utils.i18n import Locale
+from core.utils.i18n import Locale, default_locale
 from .args import parse_argv, Template, templates_to_str, DescPattern
 from ..logger import Logger
 
@@ -21,7 +21,7 @@ class CommandParser:
         self.origin_template = args
         self.msg: Union[MessageSession, None] = msg
         self.options_desc = []
-        self.lang = self.msg.locale if self.msg is not None else Locale('zh_cn')
+        self.lang = self.msg.locale if self.msg is not None else Locale(default_locale)
         help_docs = {}
         for match in (
             args.command_list.set if self.msg is None else args.command_list.get(

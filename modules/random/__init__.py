@@ -10,11 +10,11 @@ r = module('random', alias=['rand', 'rng'],
 
 
 @r.handle('number <min> <max> {{random.help.number}}', )
-async def _(msg: Bot.MessageSession, min: int, max: int):
-    if min > max:
-        random = secrets.randbelow(min - max + 1) + max
+async def _(msg: Bot.MessageSession, min_: int, max_: int):
+    if min_ > max_:
+        random = secrets.randbelow(min_ - max_ + 1) + max_
     else:
-        random = secrets.randbelow(max - min + 1) + min
+        random = secrets.randbelow(max_ - min_ + 1) + min_
 
     await msg.finish('' + str(random))
 

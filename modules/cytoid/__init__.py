@@ -7,7 +7,7 @@ from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name
 
-cytoid = module('cytoid',
+cytoid = module('cytoid', desc='{cytoid.help.desc}',
                 developers=['OasisAkari'], alias='ctd')
 
 

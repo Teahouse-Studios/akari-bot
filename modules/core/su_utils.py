@@ -21,7 +21,7 @@ from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
 
-su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True)
+su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True, base=True)
 
 
 @su.handle('add <UserID>')
@@ -44,7 +44,7 @@ async def del_su(message: Bot.MessageSession):
             await message.finish(message.locale.t("core.message.superuser.remove.success", user=user))
 
 
-ana = module('analytics', required_superuser=True)
+ana = module('analytics', required_superuser=True, base=True)
 
 
 @ana.handle()
@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result), Image(path)])
 
 
-set_ = module('set', required_superuser=True)
+set_ = module('set', required_superuser=True, base=True)
 
 
 @set_.handle('modules <target_id> <modules> ...')
@@ -182,7 +182,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
 
-ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True)
+ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True, base=True)
 
 
 @ae.handle('check <user>')
@@ -251,7 +251,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Info.subprocess:
-    rst = module('restart', developers=['OasisAkari'], required_superuser=True)
+    rst = module('restart', developers=['OasisAkari'], required_superuser=True, base=True)
 
     def restart():
         sys.exit(233)
@@ -293,7 +293,7 @@ if Info.subprocess:
             write_version_cache(msg)
             restart()
 
-upd = module('update', developers=['OasisAkari'], required_superuser=True)
+upd = module('update', developers=['OasisAkari'], required_superuser=True, base=True)
 
 
 def pull_repo():
@@ -320,7 +320,7 @@ async def update_bot(msg: Bot.MessageSession):
 
 
 if Info.subprocess:
-    upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r')
+    upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r', base=True)
 
     @upds.handle()
     async def update_and_restart_bot(msg: Bot.MessageSession):
@@ -379,7 +379,7 @@ if Bot.FetchTarget.name == 'QQ':
         Temp.data['waiting_for_send_group_message'] = []
         await msg.send_message(msg.locale.t("core.message.resume.clear"))
 
-    forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True)
+    forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True, base=True)
 
     @forward_msg.handle()
     async def _(msg: Bot.MessageSession):
@@ -393,7 +393,7 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.send_message(msg.locale.t('core.message.forward_msg.disable'))
 
-echo = module('echo', developers=['OasisAkari'], required_superuser=True)
+echo = module('echo', developers=['OasisAkari'], required_superuser=True, base=True)
 
 
 @echo.handle('<display_msg>')
@@ -401,14 +401,14 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'])
 
 
-say = module('say', developers=['OasisAkari'], required_superuser=True)
+say = module('say', developers=['OasisAkari'], required_superuser=True, base=True)
 
 
 @say.handle('<display_msg>')
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
-rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True)
+rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True, base=True)
 
 
 @rse.handle()
@@ -427,7 +427,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('enable_eval'):
-    _eval = module('eval', developers=['Dianliang233'], required_superuser=True)
+    _eval = module('eval', developers=['Dianliang233'], required_superuser=True, base=True)
 
     @_eval.handle('<display_msg>')
     async def _(msg: Bot.MessageSession):
@@ -442,7 +442,7 @@ def isfloat(num):
         return False
 
 
-_config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg')
+_config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg', base=True)
 
 
 @_config.handle('write <k> <v> [-s]')

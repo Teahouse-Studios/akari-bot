@@ -34,6 +34,8 @@ body:
         - Kook
         - Discord
         - Telegram
+    validations:
+      required: true
   - type: input
     id: user-id
     attributes:
