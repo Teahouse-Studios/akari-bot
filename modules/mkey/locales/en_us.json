@@ -1,0 +1,9 @@
+{
+    "mkey.help.desc": "Calculate the master key for Parental Controls of Nintendo devices.",
+    "mkey.message.error.date.month": "Invalid month.",
+    "mkey.message.error.date.day": "Invalid date.",
+    "mkey.message.error.inquiry_num": "Invalid inquiry number.",
+    "mkey.message.error.device": "Invalid device.",
+    "mkey.message.error.hal": "Switch needs to specify device ID.",
+    "mkey.message.result": "Your master key is: ${result}."
+}

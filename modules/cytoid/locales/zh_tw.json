@@ -1,6 +1,7 @@
 {
     "cytoid.help.b30": "查詢 Cytoid 使用者的 B30/R30 列表。",
     "cytoid.help.bind": "绑定 Cytoid 使用者。",
+    "cytoid.help.desc": "查詢 Cytoid 相關內容。",
     "cytoid.help.profile": "查詢一個使用者的基本資訊。",
     "cytoid.help.unbind": "解除綁定使用者。",
     "cytoid.message.b30.cooldown": "距上次執行已過去 ${time} 秒，此指令的冷卻時間為 150 秒。（據官方人員所述，此 API 的呼叫十分昂貴，故手動做出此限制，請諒解。）",
