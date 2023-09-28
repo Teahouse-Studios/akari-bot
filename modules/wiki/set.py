@@ -31,7 +31,7 @@ async def set_start_wiki(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@wiki.handle('iw (add|set) <Interwiki> <WikiUrl> {{wiki.help.iw.set}}', required_admin=True)
+@wiki.handle('iw add <Interwiki> <WikiUrl> {{wiki.help.iw.add}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     url = msg.parsed_msg['<WikiUrl>']
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = target.config_interwikis(iw, check.value.api, let_it=True)
             if result:
-                await msg.finish(msg.locale.t("wiki.message.iw.set.success", iw=iw, name=check.value.name) +
+                await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=iw, name=check.value.name) +
                                  (('\n' + msg.locale.t("wiki.message.wiki_audit.untrust") + Config(
                                      "wiki_whitelist_url"))
                                   if enable_urlmanager and not check.value.in_allowlist else ''))
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@wiki.handle('iw (del|delete|remove|rm) <Interwiki> {{wiki.help.iw.remove}}', required_admin=True)
+@wiki.handle('iw remove <Interwiki> {{wiki.help.iw.remove}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     iw = msg.parsed_msg['<Interwiki>']
     target = WikiTargetInfo(msg)
@@ -62,8 +62,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.message.iw.remove.success", iw=iw))
 
 
-@wiki.handle(['iw (list|show) {{wiki.help.iw.list}}',
-              'iw (list|show) legacy {{wiki.help.iw.list.legacy}}'])
+@wiki.handle(['iw list {{wiki.help.iw.list}}',
+              'iw list legacy {{wiki.help.iw.list.legacy}}'])
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     query = target.get_interwikis()
@@ -107,7 +107,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.message.iw.none", prefix=msg.prefixes[0]))
 
 
-@wiki.handle(['headers (list|show) {{wiki.help.headers.list}}'])
+@wiki.handle(['headers list {{wiki.help.headers.list}}'])
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
@@ -115,22 +115,22 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(prompt)
 
 
-@wiki.handle('headers (add|set) <Headers> {{wiki.help.headers.set}}', required_admin=True)
+@wiki.handle('headers add <Headers> {{wiki.help.headers.add}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     add = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
     if add:
-        await msg.finish(msg.locale.t("wiki.message.headers.set.success", headers=json.dumps(target.get_headers())))
+        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
 
 
-@wiki.handle('headers (del|delete|remove|rm) <HeaderKey> {{wiki.help.headers.remove}}', required_admin=True)
+@wiki.handle('headers remove <HeaderKey> {{wiki.help.headers.remove}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     delete = target.config_headers(
         [msg.parsed_msg['<HeaderHey>']], let_it=False)
     if delete:
-        await msg.finish(msg.locale.t("wiki.message.headers.set.success", headers=json.dumps(target.get_headers())))
+        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
 
 
 @wiki.handle('headers reset {{wiki.help.headers.reset}}', required_admin=True)

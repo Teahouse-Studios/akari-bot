@@ -168,7 +168,7 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
                 if base_mode:
-                    return f'{msg.locale.t("core.message.module.reload.success.core")}'
+                    return f'{msg.locale.t("core.message.module.reload.success.base")}'
                 elif reload_count > 1:
                     return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
                         '\n' if len(extra_modules) != 0 else '') + \
@@ -190,18 +190,17 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.core"))
+                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.base"))
                         if confirm:
                             base_mode = True
-
                         else:
-                            continue
+                            await msg.finish()
 
                     elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
                                                                       modules='\n'.join(extra_reload_modules)))
                         if not confirm:
-                            continue
+                            await msg.finish()
                     unloaded_list = CFG.get('unloaded_modules')
                     if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
@@ -248,6 +247,9 @@ async def config_modules(msg: Bot.MessageSession):
                     else:
                         msglist.append(msg.locale.t("core.message.module.unload.error"))
                     continue
+                if modules_[module_].base:
+                        msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
+                        continue
                 if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm")):
                     if ModulesManager.unload_module(module_):
                         msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
