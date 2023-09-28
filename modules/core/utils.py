@@ -80,7 +80,7 @@ admin = module('admin',
 
 @admin.handle([
     'add <UserID> {{core.help.admin.add}}',
-    'del <UserID> {{core.help.admin.del}}',
+    'remove <UserID> {{core.help.admin.remove}}',
     'list {{core.help.admin.list}}'])
 async def config_gu(msg: Bot.MessageSession):
     if 'list' in msg.parsed_msg:
@@ -94,13 +94,13 @@ async def config_gu(msg: Bot.MessageSession):
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):
-                await msg.finish(msg.locale.t('success'))
+                await msg.finish(msg.locale.t("core.message.admin.add.success", user=user))
         else:
             await msg.finish(msg.locale.t("core.message.admin.already"))
-    if 'del' in msg.parsed_msg:
+    if 'remove' in msg.parsed_msg:
         if user:
             if msg.data.remove_custom_admin(user):
-                await msg.finish(msg.locale.t('success'))
+                await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
 @admin.handle('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
@@ -147,7 +147,7 @@ async def config_gu(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
 
 
-@locale.handle('reload {{core.help.locale.reload}}', required_superuser=True)
+@locale.handle('reload', required_superuser=True)
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:

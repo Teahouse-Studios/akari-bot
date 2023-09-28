@@ -69,7 +69,7 @@ class MessageSession:
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
         "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp")
 
-    parsed_msg: Dict[str, str]
+    parsed_msg: Dict[str, Union[str, list]]
 
     def __init__(self,
                  target: MsgInfo,

@@ -1,5 +1,5 @@
 {
-    "whois.help.desc": "查询 WHOIS 信息。",
+    "whois.help": "查询 WHOIS 信息。",
     "whois.message.creation_date": "注册日期：",
     "whois.message.dnssec": "DNSSEC：",
     "whois.message.domain_name": "域名名称：",

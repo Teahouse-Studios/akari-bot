@@ -50,7 +50,7 @@
     "maimai.message.random.error": "發生錯誤：無法隨機歌曲，請校對輸入。",
     "maimai.message.rank": "截至 ${time}，\n查分器共有 ${total_rank} 名使用者，平均分數為 ${average_rating}，\n${user} 的分數為 ${rating}，排名為 #${rank}，\n你已經超越了 ${surpassing_rate}% 的玩家。",
     "maimai.message.rank.not_found": "截至 ${time}，\n查分器共有 ${total_rank} 名使用者，平均分數為 ${average_rating}，\n未找到 ${user} 的資料。",
-    "maimai.message.scoreline": "分數線 ${scoreline}% 允許的最多 TAP GREAT 數量為 ${tap_great}（每個-${tap_great_prop}%），\nBREAK 2500（一共 ${brk} 個）等價於 ${b2t_great} 個 TAP GREAT（-${b2t_great_prop}%）",
+    "maimai.message.scoreline": "分數線 ${scoreline}% 允許的最多 TAP GREAT 數量為 ${tap_great}（每個-${tap_great_prop}%），\nBREAK 2550（一共 ${brk} 個）等價於 ${b2t_great} 個 TAP GREAT（-${b2t_great_prop}%）",
     "maimai.message.scoreline.error": "發生錯誤：無法計算結果，請校對輸入。",
     "maimai.message.scorelist": "以下為 ${user} 的 ${level} 級分數列表：",
     "maimai.message.search": "「${keyword}」的搜尋結果：",

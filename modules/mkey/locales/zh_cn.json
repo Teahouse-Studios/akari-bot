@@ -1,0 +1,9 @@
+{
+    "mkey.help.desc": "计算任天堂系列主机的监护管理万能密码。",
+    "mkey.message.error.date.month": "无效的月份。",
+    "mkey.message.error.date.day": "无效的日期。",
+    "mkey.message.error.inquiry_num": "无效的确认代码。",
+    "mkey.message.error.device": "无效的主机。",
+    "mkey.message.error.hal": "Switch 需要指定主机 ID。",
+    "mkey.message.result": "您的万能密码是：${result}。"
+}
