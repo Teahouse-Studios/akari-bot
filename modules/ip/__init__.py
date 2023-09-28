@@ -10,7 +10,7 @@ from core.utils.http import get_url
 ip = module('ip', developers=['Dianliang233'])
 
 
-@ip.handle('<ip> {{ip.help}}')
+@ip.handle('<ip_address> {{ip.help}}')
 async def _(msg: Bot.MessageSession, ip_address: str):
     try:
         ipaddress.ip_address(ip_address)
