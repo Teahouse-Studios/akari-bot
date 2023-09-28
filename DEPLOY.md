@@ -1,14 +1,14 @@
 # 目录
 
-  * [简介](#简介)
-  * [正常部署](#正常部署)
-	* [准备](#准备)
-	* [下载源代码](#下载源代码)
-	* [安装依赖](#安装依赖)
-	* [配置](#配置)
-	* [运行机器人](#运行机器人)
-  * [获取帮助](#获取帮助)
-  * [开发](#开发)
+-   [简介](#简介)
+-   [正常部署](#正常部署)
+    -   [准备](#准备)
+    -   [下载源代码](#下载源代码)
+    -   [安装依赖](#安装依赖)
+    -   [配置](#配置)
+    -   [运行机器人](#运行机器人)
+-   [获取帮助](#获取帮助)
+-   [开发](#开发)
 
 # 简介
 
@@ -21,7 +21,9 @@
 ## 准备
 
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
+
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
+
 3. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
 
 ## 下载源代码
@@ -36,24 +38,24 @@
     git clone https://github.com/Teahouse-studios/akari-bot.git
     ```
 
-    直连GitHub的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
+    直连 GitHub 的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
 
     ```sh
     git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
     ```
 
-	镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
+    镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
 
 2. 按住 `Shift` + `右键`，选择`在此处打开 Powershell 窗口`或`在此处打开命令窗口`来打开终端。
 
 **方式二：直接下载代码**
 
 1. 您可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
-   
-   > 由于无法保证 release 版本的稳定性，我们不再提供 release 版本的下载。
 
-   > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
-  
+    > 由于无法保证 release 版本的稳定性，我们不再提供 release 版本的下载。
+
+    > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
+
 2. 解压源代码，按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端，进入文件夹。
 
 **Linux**
@@ -62,17 +64,17 @@
 
 2. 进入文件夹并执行以下指令：
 
-   ```sh
-   git clone https://github.com/Teahouse-studios/akari-bot.git
-   ```
+    ```sh
+    git clone https://github.com/Teahouse-studios/akari-bot.git
+    ```
 
-   直连GitHub的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
+    直连 GitHub 的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
 
-   ```sh
-   git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
-   ```
+    ```sh
+    git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
+    ```
 
-   镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
+    镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
 
 ## 安装依赖
 
@@ -84,19 +86,19 @@
 
 1. 打开 Powershell，并执行以下指令来安装 Poetry：
 
-   ```powershell
-   (Invoke-WebRequest -Uri "https://install.python-poetry.org" -UseBasicParsing).Content | py -
-   ```
+    ```powershell
+    (Invoke-WebRequest -Uri "https://install.python-poetry.org" -UseBasicParsing).Content | py -
+    ```
 
-   > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+    > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
 
-	> 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
+    > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
 
 2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
 
-   ```
-   %APPDATA%\Python\Scripts
-   ```
+    ```
+    %APPDATA%\Python\Scripts
+    ```
 
     请善用搜索引擎寻找更改 PATH 的方法。
 
@@ -106,9 +108,9 @@
 
 3. 在安装完 Poetry 后，请执行以下指令：
 
-   ```powershell
-   poetry install
-   ```
+    ```powershell
+    poetry install
+    ```
 
 **方式二：使用 pip**
 
@@ -126,17 +128,17 @@ pip install -r requirements.txt
 
 1. 打开终端，并执行以下指令来安装 Poetry：
 
-   ```sh
-   curl -sSL "https://install.python-poetry.org" | python3 -
-   ```
+    ```sh
+    curl -sSL "https://install.python-poetry.org" | python3 -
+    ```
 
-   > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python可执行路径） 并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
+    > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径） 并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
 
 2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
 
-   ```
-   $HOME/.local/bin
-   ```
+    ```
+    $HOME/.local/bin
+    ```
 
     请善用搜索引擎寻找更改 PATH 的方法。
 
@@ -146,15 +148,15 @@ pip install -r requirements.txt
 
 3. 在安装完 Poetry 后，请执行以下指令：
 
-   ```sh
-   poetry install
-   ```
+    ```sh
+    poetry install
+    ```
 
 **方式二：使用 pip**
 
 如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
 
-```powershell
+```sh
 pip install -r requirements.txt
 ```
 
@@ -200,87 +202,111 @@ pip install -r requirements.txt
 
 1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest)。
 
-	| 系统类型       | 可执行文件                    | 压缩文件                        |
-   | -------------- | ----------------------------- | ------------------------------- |
-   | Intel 版 Macos | Not available                 | `go-cqhttp_darwin_amd64.tar.gz` |
-   | M1 版 Macos    | Not available                 | `go-cqhttp_darwin_arm64.tar.gz` |
-   | 32 位 Linux    | Not available                 | `go-cqhttp_linux_386.tar.gz`    |
-   | 64 位 Linux    | Not available                 | `go-cqhttp_linux_amd64.tar.gz`  |
-   | arm64 Linux    | Not available                 | `go-cqhttp_linux_arm64.tar.gz`  |
-   | armv7 Linux    | Not available                 | `go-cqhttp_linux_armv7.tar.gz`  |
-   | 32 位 Windows  | `go-cqhttp_windows_386.exe`   | `go-cqhttp_windows_386.zip`     |
-   | 64 位 Windows  | `go-cqhttp_windows_amd64.exe` | `go-cqhttp_windows_amd64.zip`   |
-   | arm64 Windows  | `go-cqhttp_windows_arm64.exe` | `go-cqhttp_windows_arm64.zip`   |
-   | armv7 Windows  | `go-cqhttp_windows_armv7.exe` | `go-cqhttp_windows_armv7.zip`   |
+    | 系统类型       | 可执行文件                    | 压缩文件                        |
+    | -------------- | ----------------------------- | ------------------------------- |
+    | Intel 版 Macos | Not available                 | `go-cqhttp_darwin_amd64.tar.gz` |
+    | M1 版 Macos    | Not available                 | `go-cqhttp_darwin_arm64.tar.gz` |
+    | 32 位 Linux    | Not available                 | `go-cqhttp_linux_386.tar.gz`    |
+    | 64 位 Linux    | Not available                 | `go-cqhttp_linux_amd64.tar.gz`  |
+    | arm64 Linux    | Not available                 | `go-cqhttp_linux_arm64.tar.gz`  |
+    | armv7 Linux    | Not available                 | `go-cqhttp_linux_armv7.tar.gz`  |
+    | 32 位 Windows  | `go-cqhttp_windows_386.exe`   | `go-cqhttp_windows_386.zip`     |
+    | 64 位 Windows  | `go-cqhttp_windows_amd64.exe` | `go-cqhttp_windows_amd64.zip`   |
+    | arm64 Windows  | `go-cqhttp_windows_arm64.exe` | `go-cqhttp_windows_arm64.zip`   |
+    | armv7 Windows  | `go-cqhttp_windows_armv7.exe` | `go-cqhttp_windows_armv7.zip`   |
 
 2. 解压下载好的文件到一个已经预先准备好的文件夹中：
 
-   **Windows** - 请使用自己熟悉的解压软件自行解压。
+    **Windows** - 请使用自己熟悉的解压软件自行解压。
 
-   **Linux** - 请在命令行中输入 `tar -xzvf [文件名]`。
+    **Linux** - 请在命令行中输入 `tar -xzvf [文件名]`。
 
-3. 运行 go-cqhttp：
-
-   **Windows**
-
-   1. 双击`go-cqhttp_*.exe`，根据提示生成运行脚本。
-   2. 双击运行脚本。
-
-   **Linux**
-
-   1. 通过 SSH 连接到服务器。
-   2. `cd`到解压目录。
-   3. 输入 `./go-cqhttp`，`Enter` 运行。
+3. 运行 go-cqhttp。
 
 4. 此时将提示：
 
-	```
+    ```
     [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在
     [INFO]: 默认配置文件已生成,请编辑 config.yml 后重启程序.
-   ```
-
-	程序将会自动在存放 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 文件夹的目录下生成一个默认配置文件 `config.yml`。
-	
-	接下来，请配置 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 的 `config.yml` 文件中的对应的连接方式和签名服务器。
-
     ```
-    account:
-      ...
-      # 数据包的签名服务器
-      # 兼容 https://github.com/fuqiuluo/unidbg-fetch-qsign
-      # 暂不支持最新版qsign服务，可用版本：v1.1.0-
-      # 如果遇到 登录 45 错误, 或者发送信息风控的话需要填入一个服务器
-      # 示例:
-      # sign-server: 'http://127.0.0.1:8080' # 本地签名服务器
-      # sign-server: 'https://signserver.example.com' # 线上签名服务器
-      # 服务器可使用docker在本地搭建或者使用他人开放的服务
-      # 不建议使用公共服务器, 有封号风险
-      sign-server: '-'
+
+    程序将会自动在存放 go-cqhttp 文件夹的目录下生成一个默认配置文件 `config.yml`。
+
+    接下来，请配置 go-cqhttp 的 `config.yml` 文件中的对应的连接方式。
+
+    ```yml
     ...
     # 连接服务列表
     servers:
-	   # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
+      # 添加方式，同一连接方式可添加多个，具体配置说明请查看文档
       #- http: # http 通信
-	   #- ws:   # 正向 Websocket
-	   #- ws-reverse: # 反向 Websocket
-      #- pprof: #性能分析服务器
-	   - ws-reverse:
+      #- ws:   # 正向 Websocket
+      #- ws-reverse: # 反向 Websocket
+      #- pprof: # 性能分析服务器
+      - ws-reverse:
           universal: ws://127.0.0.1:11451/ws/ # 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/
-	       reconnect-interval: 3000
-	       middlewares:
-	         <<: *default # 引用默认中间件
-	       ...
-	 ```
-	
-	 请在小可机器人的配置文件 `config.toml` 填写以下字段：
-	
-	`qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
-	
-	`qq_account = 2314163511` - 填写机器人的 QQ 号。
-	
-	> 由于最近 QQ 封控机制加强，go-cqhttp 若出现 Code45 报错情况，请配置签名服务器，请注意：目前 go-cqhttp 暂不支持最新版本的签名服务器。
-	
-	> 若在配置中遇到问题，请参阅 [go-cqhttp官方文档](https://docs.go-cqhttp.org/)。
+          reconnect-interval: 3000
+          middlewares:
+            <<: *default # 引用默认中间件
+      ...
+    ...
+	```
+
+    请在小可机器人的配置文件 `config.toml` 填写以下字段：
+
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+
+    `qq_account = 2314163511` - 填写机器人的 QQ 号。
+
+    > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
+
+由于 QQ 风控机制的加强，go-cqhttp 若出现 Code45 报错情况时，请参照以下步骤配置签名服务器：
+
+5. 安装 JRE 1.8（Jave Runtime Environment 1.8），请善用搜索引擎查找安装方法。
+
+6. 在 [unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign) 的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+
+7. 在 [go-cqhttp dev 分支的 Actions 界面](https://github.com/Mrs4s/go-cqhttp/actions/workflows/ci.yml?query=branch%3Adev+event%3Apush) 中，点入最新的构建版本，并在 Artifacts 板块中下载对应系统类型的 go-cqhttp 构建文件并**替换**掉原正式版本的 go-cqhttp。
+
+8. 删除与 go-cqhttp 同一目录下的 `data` 文件夹及 `config.yml` 文件。
+
+9. 运行 go-cqhttp 并生成 `config.yml` 默认配置文件。
+
+10. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
+
+```sh
+bin\unidbg-fetch-qsign --basePath=txlib\8.9.71
+```
+
+11. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
+
+12. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
+
+    ```yml
+    account: # 账号相关
+      # 数据包的签名服务器列表，第一个作为主签名服务器，后续作为备用
+      sign-servers: 
+        - url: 'http://127.0.0.1:8080'  # 主签名服务器地址， 必填
+          key: '114514'  # 签名服务器所需要的apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
+          authorization: '-'   # authorization 内容, 依服务端设置，如 'Bearer xxxx'
+        ...
+      ...
+    ...
+    ```
+
+13. 运行 go-cqhttp 以生成设备文件。
+
+14. 下载[安卓手机协议](https://github.com/MrXiaoM/qsign/blob/mirai/txlib/8.9.71/android_phone.json)并将其重命名为 `1.json` 。将该文件储存在与 go-cqhttp 同一目录下的 `data\versions` 文件夹中。
+
+15. 在与 go-cqhttp 同一目录下的 `device.json` 文件夹中，并修改以下字段：
+
+    ```json
+    "protocol": 1,
+    ```
+
+16. 重启 go-cqhttp 完成最终配置。
+
+> 若在执行以上步骤中遇到问题，请访问 [go-cqhttp 官方讨论板块](https://github.com/Mrs4s/go-cqhttp/discussions)或在哔哩哔哩上查找合适的教程。
 
 #### Discord
 
@@ -324,17 +350,17 @@ pip install -r requirements.txt
 
 使用以下命令进行密码登录：
 
-```bash
+```sh
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
-##### E2E加密
+##### E2E 加密
 
 目前，由于 libolm 在一些情况下需要手动配置，机器人默认没有启用端对端加密（e2ee）支持。
 
 若要启用 E2EE 支持，请执行以下命令：
 
-```bash
+```sh
 poetry run -- pip3 install matrix-nio[e2e] ; Poetry
 pip3 install matrix-nio[e2e] ; PIP
 ```
@@ -365,7 +391,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理 QQ 频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-> 注意：QQ频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
+> 注意：QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
 > 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
@@ -375,13 +401,13 @@ pip3 install matrix-nio[e2e] ; PIP
 
 ##### 部署
 
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/) 。
-   
-2. 下载 [源代码文件](https://github.com/Teahouse-Studios/oa-web-render) ，并在终端内使用 `npm install` 安装依赖。
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/)。
+
+2. 下载[源代码文件](https://github.com/Teahouse-Studios/oa-web-render)，并在终端内使用 `npm install` 安装依赖。
 
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
 
-    ```
+    ```conf
     CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
     FC_SERVER_PORT=15551 # 填写服务运行的端口
     ```
@@ -404,7 +430,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 #### 模块
 
-##### coin 
+##### coin
 
 `coin` 模块需要一些额外的参数才能正常工作。
 
@@ -436,7 +462,8 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `maimai` 模块基于 [mai-bot](https://github.com/Diving-Fish/mai-bot) 修改而来。此模块需要额外的资源文件才可正常工作。
 
-1. 下载 [资源文件](https://www.diving-fish.com/maibot/static.zip) ，并于 `assets` 目录下创建一个 `maimai` 文件夹。
+1. 下载[资源文件](https://www.diving-fish.com/maibot/static.zip)，并于 `assets` 目录下创建一个 `maimai` 文件夹。
+
 2. 解压资源文件，形成以下目录结构：
 
     ```angular2html
@@ -454,6 +481,14 @@ pip3 install matrix-nio[e2e] ; PIP
 ##### secret
 
 此模块下的内容主要用于监测 Minecraft Wiki 注册日志和滥用日志，如无需要可直接删除此模块的文件夹。
+
+##### wolframalpha
+
+`wolframalpha` 模块需要一些额外的参数才能正常工作。
+
+为了达到目的，您需要前往 [Wolfram|Alpha 开发者平台](https://developer.wolframalpha.com/) 注册一个账号并申请一个 Simple API，然后填写以下字段：
+
+`wolfram_alpha_appid =` - Wolfram|Alpha 的 APPID。
 
 #### 其他功能
 
@@ -531,7 +566,6 @@ pip3 install matrix-nio[e2e] ; PIP
 
 > 请注意，您应该具备基本的提问技巧。
 > 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。
-
 
 # 开发
 
