@@ -17,6 +17,7 @@
     "core.help.module.enable": "Enable single/multiple module(s).",
     "core.help.module.enable_all": "Enable all modules.",
     "core.help.module.help": "View help list.",
+    "core.help.module.help.legacy": "View help list. (Legacy)",
     "core.help.module.help.detail": "View details of a module.",
     "core.help.module.list": "View all available modules.",
     "core.help.module.load": "Load single/multiple module(s)",

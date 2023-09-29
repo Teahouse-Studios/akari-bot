@@ -452,6 +452,31 @@ async def _(msg: Bot.MessageSession):
         await msg.finish('\n'.join(help_msg))
 
 
+@hlp.command('legacy {{core.help.module.help.legacy}}')
+async def _(msg: Bot.MessageSession):
+    module_list = ModulesManager.return_modules_list(
+        target_from=msg.target.target_from)
+    target_enabled_list = msg.enabled_modules
+    help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
+    essential = []
+    for x in module_list:
+        if module_list[x].base:
+            essential.append(module_list[x].bind_prefix)
+    help_msg.append(' | '.join(essential))
+    help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
+    module_ = []
+    for x in module_list:
+        if x in target_enabled_list:
+            module_.append(x)
+    help_msg.append(' | '.join(module_))
+    help_msg.append(
+        msg.locale.t(
+            "core.message.module.help.legacy.more_information",
+            prefix=msg.prefixes[0],
+            help_url=Config('help_url')))
+    await msg.finish('\n'.join(help_msg))
+
+
 async def modules_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)

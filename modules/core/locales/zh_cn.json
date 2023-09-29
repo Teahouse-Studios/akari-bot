@@ -17,6 +17,7 @@
     "core.help.module.enable": "开启一个/多个模块。",
     "core.help.module.enable_all": "开启所有模块。",
     "core.help.module.help": "查看帮助列表。",
+    "core.help.module.help.legacy": "查看帮助列表。（旧版）",
     "core.help.module.help.detail": "查看一个模块的详细信息。",
     "core.help.module.list": "查看所有可用模块。",
     "core.help.module.load": "加载一个/多个模块。",
