@@ -1,7 +1,13 @@
 {
     "ncmusic.help.search": "搜索网易云音乐。",
     "ncmusic.help.info": "获取音乐详细信息。",
-    "ncmusic.message.search.collapse": "…仅显示前 10 条内容。",
+    "ncmusic.message.search.collapse": "…仅显示前 20 条内容。",
+    "ncmusic.message.search.name": "歌名",
+    "ncmusic.message.search.album": "专辑名",
+    "ncmusic.message.search.number": "序号", 
+    "ncmusic.message.search.artists": "歌手",
     "ncmusic.message.search.result": "搜索结果：",
+    "ncmusic.message.search.wait": "输入对应的序号以查看歌曲信息。",
+    "ncmusic.message.search.error": "错误：请检查输入是否正确。",
     "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}"
 }
