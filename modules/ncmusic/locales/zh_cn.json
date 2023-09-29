@@ -8,6 +8,7 @@
     "ncmusic.message.search.artists": "歌手",
     "ncmusic.message.search.result": "搜索结果：",
     "ncmusic.message.search.wait": "输入对应的序号以查看歌曲信息。",
-    "ncmusic.message.search.error": "错误：请检查输入是否正确。",
-    "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}"
+    "ncmusic.error.wrong_input": "错误：请检查输入是否正确。",
+    "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}",
+    "ncmusic.error.out_of_range": "错误：超出限定范围"
 }
