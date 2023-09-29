@@ -27,6 +27,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             f"{song['id']}"
         ] for i, song in enumerate(songs, start=1)
     ]
+
     img = await image_table_render(ImageTable(data, [
         msg.locale.t('ncmusic.message.search.number'),
         msg.locale.t('ncmusic.message.search.name'),
@@ -34,20 +35,17 @@ async def search(msg: Bot.MessageSession, keyword: str):
         msg.locale.t('ncmusic.message.search.album'),
         'ID'
         ]))
+    
     send_msg.append(Image(img))
-    if len(result['result']['songs']) > 10:
-        send_msg.append(msg.locale.t('ncmusic.message.search.collapse'))
-    send_msg.append(msg.locale.t('ncmusic.message.search.wait'))
+    if len(result['result']['songs']) > 20:
+        send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
+    send_msg.append(Plain(msg.locale.t('ncmusic.message.search.wait')))
     query = await msg.wait_next_message(send_msg)
-    query = await query.to_message_chain()
-    for k in query.value:
-        if isinstance(k, Plain):
-            query = k.text
-        if isinstance(k, Image):
-            query = None
-            break
+    query = query.as_display(text_only=True)
     try:
         query = int(query)
+        if query > 20:
+            await msg.finish(msg.locale.t('ncmusic.error.out_of_range'))
         sid = result['result']['songs'][query - 1]['id']
         url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
         info = await get_url(url, 200, fmt='json')
@@ -61,7 +59,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
                                 artists=artist, detail=song_page)
         await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
     except Exception:
-        await msg.finish(msg.locale.t('ncmusic.message.search.error'))
+        await msg.finish(msg.locale.t('ncmusic.error.wrong_input'))
 
 
 
