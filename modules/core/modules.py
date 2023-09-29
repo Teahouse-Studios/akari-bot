@@ -435,7 +435,7 @@ async def _(msg: Bot.MessageSession):
         help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
         essential = []
         for x in module_list:
-            if module_list[x].base:
+            if module_list[x].base and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
         help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
@@ -460,7 +460,7 @@ async def _(msg: Bot.MessageSession):
     help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
     essential = []
     for x in module_list:
-        if module_list[x].base:
+        if module_list[x].base and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
             essential.append(module_list[x].bind_prefix)
     help_msg.append(' | '.join(essential))
     help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
