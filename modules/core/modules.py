@@ -408,7 +408,7 @@ async def _(msg: Bot.MessageSession):
                     appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 if module_.base and not (module_.required_superuser or module_.required_base_superuser):
                     essential.append(appends)
-                if x in target_enabled_list:
+                if x in target_enabled_list and not (module_.required_superuser or module_.required_base_superuser):
                     m.append(appends)
             if essential:
                 tables.append(ImageTable(
@@ -441,7 +441,7 @@ async def _(msg: Bot.MessageSession):
         help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
         module_ = []
         for x in module_list:
-            if x in target_enabled_list:
+            if x in target_enabled_list and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
                 module_.append(x)
         help_msg.append(' | '.join(module_))
         help_msg.append(
@@ -466,7 +466,7 @@ async def _(msg: Bot.MessageSession):
     help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
     module_ = []
     for x in module_list:
-        if x in target_enabled_list:
+        if x in target_enabled_list and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
             module_.append(x)
     help_msg.append(' | '.join(module_))
     help_msg.append(
