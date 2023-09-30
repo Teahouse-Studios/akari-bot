@@ -70,7 +70,6 @@ async def get_alias(msg, input_):
         data = json.load(file)
 
     result = []
-    input_ = input.replace("_", " ")
     if input_ in data:
         result = data[input_] # 此处的列表是歌曲别名列表
     
@@ -79,6 +78,7 @@ async def get_alias(msg, input_):
 
 async def search_by_alias(msg, input_):
     result = []
+    input_ = input_.replace("_", " ")
     s = (await total_list.get()).by_title(input_)
     if s:
         result.append(s['id'])
