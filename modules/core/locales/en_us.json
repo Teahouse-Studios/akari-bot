@@ -103,7 +103,7 @@
     "core.message.module.reload.confirm.base": "You are trying to reload the base modules! Continue?",
     "core.message.module.reload.failed": "Failed to reload module.",
     "core.message.module.reload.no_more": "\nNo remaining files were found.",
-    "core.message.module.reload.success": "Successfully reloaded module: \n${modules}",
+    "core.message.module.reload.success": "Success: Reload module: \n${modules}",
     "core.message.module.reload.success.base": "Reloaded the base modules successfully.",
     "core.message.module.reload.unbound": "Failed: Module \"${module}\" does not bound.",
     "core.message.module.reload.with": "\nAnd ${reloadCnt} files in this module.",
