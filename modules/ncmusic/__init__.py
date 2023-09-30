@@ -18,10 +18,10 @@ async def search(msg: Bot.MessageSession, keyword: str):
         await msg.finish(msg.locale.t('ncmusic.message.search.not_found'))
 
     songs = result['result']['songs'][:10]
-    send_msg = [Plain(msg.locale.t('ncmusic.message.search.result') + '\n')]
 
     if msg.Feature.image:
 
+        send_msg = [Plain(msg.locale.t('ncmusic.message.search.result') + '\n')]
         data = [[
                 str(i),
                 song['name'] + (f" ({' / '.join(song['transNames'])})" if 'transNames' in song else ''),
@@ -70,6 +70,8 @@ async def search(msg: Bot.MessageSession, keyword: str):
                     await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
 
     if legacy:
+        send_msg = msg.locale.t('ncmusic.message.search.result') + '\n'
+        
         for i, song in enumerate(songs, start=1):
             send_msg += f"{i}. {song['name']}"
             if 'transNames' in song:
