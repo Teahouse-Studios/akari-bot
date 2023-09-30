@@ -14,6 +14,7 @@ from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale, default_locale
+from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
@@ -155,7 +156,7 @@ class WikiLib:
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
                 raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
-            raise e
+            raise NoReportException(str(e))
 
     def rearrange_siteinfo(self, info: Union[dict, str], wiki_api_link) -> WikiInfo:
         if isinstance(info, str):
