@@ -1,6 +1,6 @@
 ﻿from core.builtins import command_prefix
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import update_assets, get_alias, get_cover
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover, search_by_alias, update_assets
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, \
     get_score_list
@@ -171,8 +171,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = (await total_list.get()).filter(full_search=id_or_alias)
-        sid_list += await get_alias(msg, id_or_alias, get_music=True)
+        sid_list = search_by_alias(msg, id_or_alias)
+        
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -353,8 +353,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = (await total_list.get()).filter(full_search=id_or_alias)
-        sid_list += await get_alias(msg, id_or_alias, get_music=True)
+        sid_list = search_by_alias(msg, id_or_alias)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:

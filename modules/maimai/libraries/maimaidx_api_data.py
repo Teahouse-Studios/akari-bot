@@ -61,7 +61,7 @@ async def update_assets():
     return True
 
 
-async def get_alias(msg, input, get_music=False):
+async def get_alias(msg, input):
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
@@ -70,14 +70,32 @@ async def get_alias(msg, input, get_music=False):
         data = json.load(file)
 
     result = []
-    if get_music:
-        for alias, ids in data.items():
-            if input in ids:
-                result.append(alias)
-    else:
-        input = input.replace("_", " ")
-        if input in data:
-            result = data[input]
+    input = input.replace("_", " ")
+    if input in data:
+        result = data[input]
+    
+    return result
+
+
+    async def search_by_alias(msg, input):
+    result = []
+    s = (await total_list.get()).by_title(input)
+    if s:
+        result.append(s['title'])
+
+    file_path = os.path.join(assets_path, "mai_alias.json")
+
+    if not os.path.exists(file_path):
+        return result
+
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    for alias, ids in data.items():
+        if input in ids:
+            if alias in result:
+                result.remove(alias)
+            result.append(alias)
     
     return result
 

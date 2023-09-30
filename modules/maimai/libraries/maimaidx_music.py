@@ -124,7 +124,6 @@ class MusicList(List[Music]):
                level: Optional[Union[str, List[str]]] = ...,
                ds: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
                title_search: Optional[str] = ...,
-               full_search: Optional[str] = ...,
                genre: Optional[Union[str, List[str]]] = ...,
                bpm: Optional[Union[float, List[float], Tuple[float, float]]] = ...,
                type: Optional[Union[str, List[str]]] = ...,
@@ -145,8 +144,6 @@ class MusicList(List[Music]):
             if not in_or_equal(music.type, type):
                 continue
             if not in_or_equal(music.bpm, bpm):
-                continue
-            if not in_or_equal(music.title, full_search):
                 continue
             if title_search is not Ellipsis and title_search.lower() not in music.title.lower():
                 continue
