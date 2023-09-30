@@ -71,7 +71,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
     if legacy:
         send_msg = msg.locale.t('ncmusic.message.search.result') + '\n'
-        
+
         for i, song in enumerate(songs, start=1):
             send_msg += f"{i}. {song['name']}"
             if 'transNames' in song:
@@ -84,6 +84,8 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
         if len(result['result']['songs']) > 10:
             send_msg += msg.locale.t('ncmusic.message.search.collapse')
+        else:
+            send_msg = send_msg.strip()
         
         await msg.finish(send_msg)
         
