@@ -81,7 +81,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             send_msg += f"（{song['id']}）\n"
 
         if len(result['result']['songs']) > 10:
-        send_msg += msg.locale.t('ncmusic.message.search.collapse')
+            send_msg += msg.locale.t('ncmusic.message.search.collapse')
         
         await msg.finish(send_msg)
         
