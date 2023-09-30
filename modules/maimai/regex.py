@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
         if not music:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
-        sid_list = search_by_alias(msg, name)
+        sid_list = await search_by_alias(msg, name)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -87,7 +87,7 @@ async def _(msg: Bot.MessageSession):
     if name[:2].lower() == "id":
         sid = name[2:]
     else:
-        sid_list = search_by_alias(msg, name)
+        sid_list = await search_by_alias(msg, name)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:

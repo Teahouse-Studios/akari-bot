@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = search_by_alias(msg, id_or_alias)
+        sid_list = await search_by_alias(msg, id_or_alias)
         
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
@@ -353,7 +353,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = search_by_alias(msg, id_or_alias)
+        sid_list = await search_by_alias(msg, id_or_alias)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
