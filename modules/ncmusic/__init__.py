@@ -39,7 +39,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
     send_msg.append(Image(img))
     if len(result['result']['songs']) > 20:
         send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
-    send_msg.append(Plain(msg.locale.t('ncmusic.message.search.input')))
+    send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
     query = await msg.wait_next_message(send_msg)
     query = query.as_display(text_only=True)
     try:
