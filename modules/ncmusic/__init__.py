@@ -9,7 +9,7 @@ ncmusic = module('ncmusic',
 
 @ncmusic.handle('search <keyword> {{ncmusic.help.search}}')
 async def search(msg: Bot.MessageSession, keyword: str):
-    url = f"https://autumnfish.cn/search?keywords={keyword}"
+    url = f"https://ncmusic.akari-bot.top/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')
 
     if result['result']['songCount'] == 0:
@@ -36,7 +36,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession, sid: str):
-    url = f"https://autumnfish.cn/song/detail?ids={sid}"
+    url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt='json')
 
     info = result['songs'][0]
