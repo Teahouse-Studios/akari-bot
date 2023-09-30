@@ -77,7 +77,7 @@ async def get_alias(msg, input):
     return result
 
 
-    async def search_by_alias(msg, input):
+async def search_by_alias(msg, input):
     result = []
     s = (await total_list.get()).by_title(input)
     if s:
