@@ -82,7 +82,7 @@ async def search_by_alias(msg, input_):
     res = (await total_list.get()).by_title(input_)
     if res:
         for music in res:
-            result.append(music['id'])
+            result.append(music.id)
 
     file_path = os.path.join(assets_path, "mai_alias.json")
 
