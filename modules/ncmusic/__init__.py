@@ -71,14 +71,14 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
     if legacy:
         for i, song in enumerate(songs, start=1):
-        send_msg += f"{i}. {song['name']}"
-        if 'transNames' in song:
-            send_msg += f"（{' / '.join(song['transNames'])}）"
-        send_msg += f"——{' / '.join(artist['name'] for artist in song['artists'])}"
-        send_msg += f"《{song['album']['name']}》"
-        if 'transNames' in song['album']:
-            send_msg += f"（{' / '.join(song['album']['transNames'])}）"
-        send_msg += f"（{song['id']}）\n"
+            send_msg += f"{i}. {song['name']}"
+            if 'transNames' in song:
+                send_msg += f"（{' / '.join(song['transNames'])}）"
+            send_msg += f"——{' / '.join(artist['name'] for artist in song['artists'])}"
+            send_msg += f"《{song['album']['name']}》"
+            if 'transNames' in song['album']:
+                send_msg += f"（{' / '.join(song['album']['transNames'])}）"
+            send_msg += f"（{song['id']}）\n"
 
         if len(result['result']['songs']) > 10:
         send_msg += msg.locale.t('ncmusic.message.search.collapse')
