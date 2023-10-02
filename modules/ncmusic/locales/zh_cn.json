@@ -9,7 +9,7 @@
     "ncmusic.message.search.prompt": "输入对应的序号以查看歌曲信息。",
     "ncmusic.message.search.table.header.album": "专辑名",
     "ncmusic.message.search.table.header.artists": "歌手",
-    "ncmusic.message.search.table.header.id": "ID",
+    "ncmusic.message.search.table.header.id": "序号",
     "ncmusic.message.search.table.header.name": "歌名",
     "ncmusic.message.search.result": "搜索结果："
 }
