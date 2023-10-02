@@ -28,11 +28,9 @@
 
 ## 下载源代码
 
-**Windows**
-
 **方式一：使用 [Git](https://git-scm.com/) 克隆**
 
-1. 请在要放置小可的文件夹中右键打开 Git Bash，并输入以下指令：
+1. 请在要放置小可的文件夹中右键打开终端，并输入以下指令：
 
     ```sh
     git clone https://github.com/Teahouse-studios/akari-bot.git
@@ -44,9 +42,17 @@
     git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
     ```
 
+    ```sh
+    git clone https://ghproxy.com/github.com/Teahouse-studios/akari-bot.git
+    ```
+
     镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
 
-2. 按住 `Shift` + `右键`，选择`在此处打开 Powershell 窗口`或`在此处打开命令窗口`来打开终端。
+2. 在文件夹内打开终端。
+
+    ```sh
+    cd .\akari-bot\
+    ```
 
 **方式二：直接下载代码**
 
@@ -56,29 +62,9 @@
 
     > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
 
-2. 解压源代码，按住 `Shift` + `右键`，选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口` 来打开终端，进入文件夹。
-
-**Linux**
-
-1. 安装 [Git](https://git-scm.com/)。
-
-2. 进入文件夹并执行以下指令：
-
-    ```sh
-    git clone https://github.com/Teahouse-studios/akari-bot.git
-    ```
-
-    直连 GitHub 的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
-
-    ```sh
-    git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
-    ```
-
-    镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
+2. 解压源代码，并在文件夹中打开终端。
 
 ## 安装依赖
-
-**Windows**
 
 **方式一：使用 [Poetry](https://python-poetry.org/)**
 
@@ -86,8 +72,16 @@
 
 1. 打开 Powershell，并执行以下指令来安装 Poetry：
 
+    **Windows**
+
     ```powershell
     (Invoke-WebRequest -Uri "https://install.python-poetry.org" -UseBasicParsing).Content | py -
+    ```
+
+    **Linux**
+
+    ```sh
+    curl -sSL "https://install.python-poetry.org" | python3 -
     ```
 
     > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
@@ -96,45 +90,13 @@
 
 2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
 
+    **Windows**
+
     ```
     %APPDATA%\Python\Scripts
     ```
 
-    请善用搜索引擎寻找更改 PATH 的方法。
-
-    在添加到 PATH 之后，您通常需要重启终端，甚至整个电脑才能使其生效。
-
-    您可以通过 `poetry --version` 确认安装是否有效。
-
-3. 在安装完 Poetry 后，请执行以下指令：
-
-    ```powershell
-    poetry install
-    ```
-
-**方式二：使用 pip**
-
-如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
-
-```powershell
-pip install -r requirements.txt
-```
-
-**Linux**
-
-**方式一：使用 [Poetry](https://python-poetry.org/)**
-
-如果您已经安装了 Poetry，您可以跳过以下安装步骤。
-
-1. 打开终端，并执行以下指令来安装 Poetry：
-
-    ```sh
-    curl -sSL "https://install.python-poetry.org" | python3 -
-    ```
-
-    > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径） 并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
-
-2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
+    **Linux**
 
     ```
     $HOME/.local/bin
@@ -159,6 +121,8 @@ pip install -r requirements.txt
 ```sh
 pip install -r requirements.txt
 ```
+
+> 在安装依赖时若出现报错，请转到[疑难解答](#疑难解答)
 
 ## 配置
 
@@ -570,3 +534,41 @@ pip3 install matrix-nio[e2e] ; PIP
 # 开发
 
 如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` git 钩子，它可以在提交 commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 pep8 格式化等。
+
+# 疑难解答
+
+以下的疑难解答部分可以解决小部分在自搭建时遇到的问题。
+
+在排错之前，请确保您已经详细地阅读了文档内所有的注释说明。
+
+疑难解答将会分为不同方面，如果您有更好的疑难解答欢迎提交 PR。
+
+## 安装依赖
+
+### 在安装依赖时遇到跟 `hnswlib` 有关的问题导致无法正常安装依赖
+
+该情况可能只会发生在 Windows 系统下。
+
+您可能没有安装好 Microsoft C++ 生成工具。
+
+1. 下载 [Microsoft C++ 生成工具](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)。
+
+2. 在下载文件夹中打开安装程序，等待片刻会出现一个名为“Visual Studio Installer”的窗口。
+
+3. 在“工作负荷”板块中，选择“使用 C++ 的桌面开发”，然后点击右下角的“安装”。
+
+4. 等待安装完成后即可关闭窗口。
+
+5. 尝试重新安装依赖。
+
+### 在使用 pip 安装依赖时遇到依赖冲突
+
+尝试在安装依赖时加上 `--no-deps` 参数。
+
+例：`pip install --no-deps -r requirements.txt`。
+
+## 配置
+
+### 无法注册 Wolfram|Alpha 账号
+
+尝试使用一些~~魔法~~加速器（例：Clash for Windows）。
