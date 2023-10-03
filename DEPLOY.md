@@ -566,9 +566,3 @@ pip3 install matrix-nio[e2e] ; PIP
 尝试在安装依赖时加上 `--no-deps` 参数。
 
 例：`pip install --no-deps -r requirements.txt`。
-
-## 配置
-
-### 无法注册 Wolfram|Alpha 账号
-
-尝试使用一些~~魔法~~加速器（例：Clash for Windows）。
