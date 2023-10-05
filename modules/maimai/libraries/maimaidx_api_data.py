@@ -61,7 +61,7 @@ async def update_assets():
     return True
 
 
-async def get_alias(msg, input, get_music=False):
+async def get_alias(msg, input_):
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
@@ -70,14 +70,32 @@ async def get_alias(msg, input, get_music=False):
         data = json.load(file)
 
     result = []
-    if get_music:
-        for alias, ids in data.items():
-            if input in ids:
-                result.append(alias)
-    else:
-        input = input.replace("_", " ")
-        if input in data:
-            result = data[input]
+    if input_ in data:
+        result = data[input_] # 此处的列表是歌曲别名列表
+    
+    return result
+
+
+async def search_by_alias(msg, input_):
+    result = []
+    input_ = input_.replace("_", " ")
+    s = (await total_list.get()).by_title(input_)
+    if s:
+        result.append(s['id'])
+
+    file_path = os.path.join(assets_path, "mai_alias.json")
+
+    if not os.path.exists(file_path):
+        return result
+
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    for alias, ids in data.items():
+        if input_ in ids:
+            if alias in result:
+                result.remove(alias)
+            result.append(alias) # 此处的列表是歌曲 ID 列表
     
     return result
 

@@ -4,7 +4,7 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
-from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover, search_by_alias
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score
 
@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
         if not music:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
-        sid_list = await get_alias(msg, name, get_music=True)
+        sid_list = await search_by_alias(msg, name)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -87,7 +87,7 @@ async def _(msg: Bot.MessageSession):
     if name[:2].lower() == "id":
         sid = name[2:]
     else:
-        sid_list = await get_alias(msg, name, get_music=True)
+        sid_list = await search_by_alias(msg, name)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
