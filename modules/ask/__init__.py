@@ -67,10 +67,19 @@ async def _(msg: Bot.MessageSession):
             if block['type'] == 'text':
                 chain.append(Plain(block['content']))
             elif block['type'] == 'latex':
-                chain.append(Image(PILImage.open(io.BytesIO(await generate_latex(block['content'])))))
+                content = await generate_latex(block['content'])
+                try:
+                    img = PILImage.open(io.BytesIO(content))
+                    chain.append(Image(img))
+                except Exception as e:
+                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
             elif block['type'] == 'code':
-                chain.append(Image(PILImage.open(
-                    io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
+                content = block['content']['code']
+                try:
+                    chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
+                                                                                            block['content']['language'])))))
+                except Exception as e:
+                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
         if await check_bool(res):
             rickroll(msg)
