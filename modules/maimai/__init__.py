@@ -429,24 +429,29 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         hold = int(chart['notes'][1])
         touch = int(chart['notes'][3]) if len(chart['notes']) == 5 else 0
         brk = int(chart['notes'][-1])
-        total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
-        break_bonus = 0.01 / brk
-        break_50_reduce = total_score * break_bonus / 4
-        reduce = 101 - scoreline
+        total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500    # 基础分
+        bonus_score = total_score * 0.01 / brk    # 奖励分
+        break_2550_reduce = bonus_score * 0.25    # 一个 BREAK 2550 减少 25% 奖励分
+        break_2000_reduce = bonus_score * 0.6 + brk * 100    # 一个 BREAK 2000 减少 100 基础分和 60% 奖励分
+        reduce = 101 - scoreline    # 理论值与给定完成率的差，以百分比计
         if reduce <= 0 or reduce >= 101:
             raise ValueError
-        tap_great = "{:.2f}".format(total_score * reduce / 10000)
+        tap_great = "{:.2f}".format(total_score * reduce / 10000)     #一个 TAP GREAT 减少 100 分
         tap_great_prop = "{:.4f}".format(10000 / total_score)
-        b2t_great = "{:.3f}".format(break_50_reduce / 100)
-        b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
+        b2t_2550_great = "{:.3f}".format(break_2550_reduce / 100)     #一个 TAP GREAT 减少 100 分
+        b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
+        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)
+        b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
               scoreline=scoreline,
               tap_great=tap_great,
               tap_great_prop=tap_great_prop,
               brk=brk,
-              b2t_great=b2t_great,
-              b2t_great_prop=b2t_great_prop)}''')
+              b2t_2550_great=b2t_2550_great,
+              b2t_2550_great_prop=b2t_2550_great_prop,
+              b2t_2000_great=b2t_2000_great,
+              b2t_2000_great_prop=b2t_2000_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
