@@ -44,16 +44,16 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='
              desc='{maimai.help.desc}')
 
 
-@mai.handle('base <rating> [<rating_max>] {{maimai.help.base}}')
-async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
-    if rating_max is not None:
-        if rating > rating_max:
+@mai.handle('base <constant> [<constant_max>] {{maimai.help.base}}')
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+    if constant_max is not None:
+        if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
-        result_set = await base_level_q(rating, rating_max)
-        s = msg.locale.t("maimai.message.base.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
+        result_set = await base_level_q(constant, constant_max)
+        s = msg.locale.t("maimai.message.base.range", constant=round(constant, 1), constant_max=round(constant_max, 1)) + "\n"
     else:
-        result_set = await base_level_q(rating)
-        s = msg.locale.t("maimai.message.base", rating=round(rating, 1)) + "\n"
+        result_set = await base_level_q(constant)
+        s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
@@ -454,6 +454,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
               b2t_2000_great_prop=b2t_2000_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
+
 
 
 @mai.command('update', required_superuser=True)
