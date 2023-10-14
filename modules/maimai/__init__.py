@@ -432,7 +432,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500    # 基础分
         bonus_score = total_score * 0.01 / brk    # 奖励分
         break_2550_reduce = bonus_score * 0.25    # 一个 BREAK 2550 减少 25% 奖励分
-        break_2000_reduce = bonus_score * 0.6 + brk * 100    # 一个 BREAK 2000 减少 100 基础分和 60% 奖励分
+        break_2000_reduce = bonus_score * 0.6 + 500    # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
         reduce = 101 - scoreline    # 理论值与给定完成率的差，以百分比计
         if reduce <= 0 or reduce >= 101:
             raise ValueError
@@ -440,7 +440,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         tap_great_prop = "{:.4f}".format(10000 / total_score)
         b2t_2550_great = "{:.3f}".format(break_2550_reduce / 100)     #一个 TAP GREAT 减少 100 分
         b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
-        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)
+        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)     #一个 TAP GREAT 减少 100 分
         b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
