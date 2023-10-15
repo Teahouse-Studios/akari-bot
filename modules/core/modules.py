@@ -28,9 +28,9 @@ m = module('module',
             'enable all {{core.help.module.enable_all}}',
             'disable <module>... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
-            'reload <module> ... {{core.help.module.reload}}',
-            'load <module> ... {{core.help.module.load}}',
-            'unload <module> ... {{core.help.module.unload}}',
+            'reload <module> ...',
+            'load <module> ...',
+            'unload <module> ...',
             'list {{core.help.module.list}}'], exclude_from=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
@@ -42,9 +42,9 @@ async def _(msg: Bot.MessageSession):
             'enable all {{core.help.module.enable_all}}',
             'disable <module> ... {{core.help.module.disable}}',
             'disable all {{core.help.module.disable_all}}',
-            'reload <module> ... {{core.help.module.reload}}',
-            'load <module> ... {{core.help.module.load}}',
-            'unload <module> ... {{core.help.module.unload}}',
+            'reload <module> ...',
+            'load <module> ...',
+            'unload <module> ...',
             'list {{core.help.module.list}}'], options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
