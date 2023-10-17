@@ -52,11 +52,11 @@ async def _(msg: Bot.MessageSession):
     if Config('enable_analytics'):
         first_record = BotDBUtil.Analytics.get_first()
         get_counts = BotDBUtil.Analytics.get_count()
-        
+
         new = datetime.now().replace(hour=0, minute=0, second=0) + timedelta(days=1)
         old = datetime.now().replace(hour=0, minute=0, second=0)
         get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
-        
+
         await msg.finish(msg.locale.t("core.message.analytics.counts", first_record=first_record.timestamp,
                                       counts=get_counts, counts_today=get_counts_today))
     else:
@@ -417,6 +417,7 @@ async def _(msg: Bot.MessageSession):
     e = None
     if msg.parsed_msg:
         e = msg.parsed_msg.get('<exception>', None)
+        e = e.replace("_", " ")
         if not e:
             e = msg.locale.t("core.message.raise")
         if msg.parsed_msg.get('-n', False):
@@ -497,3 +498,15 @@ if Config('openai_api_key'):
             target = msg.data
             target.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
+
+
+if Bot.FetchTarget.name == 'QQ':
+    post_whitelist = module('post_whitelist', required_superuser=True, base=True)
+
+    @post_whitelist.handle('<group_id>')
+    async def _(msg: Bot.MessageSession):
+        target_data = BotDBUtil.TargetInfo(msg.parsed_msg['<group_id>'])
+        k = 'in_post_whitelist'
+        v = not target_data.options.get(k, False)
+        target_data.edit_option(k, v)
+        await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))

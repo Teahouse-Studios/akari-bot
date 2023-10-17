@@ -23,14 +23,17 @@ async def main(msg: Bot.MessageSession, username_or_uuid: str):
         else:
             name = arg
             uuid = await name_to_uuid(arg)
-        sac = await uuid_to_skin_and_cape(uuid)
-        render = sac['render']
-        skin = sac['skin']
-        cape = sac['cape']
         namemc = 'https://namemc.com/profile/' + name
-        chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(render), Image(skin)]
-        if cape:
-            chain.append(Image(cape))
+        sac = await uuid_to_skin_and_cape(uuid)
+        if sac:
+            render = sac['render']
+            skin = sac['skin']
+            cape = sac['cape']
+            chain = [Plain(f'{name}（{uuid}）\nNameMC：{Url(namemc)}'), Image(render), Image(skin)]
+            if cape:
+                chain.append(Image(cape))
+            await msg.finish(chain)
+        else:
+            await msg.finish(f'{name}（{uuid}）\nNameMC：{Url(namemc)}')
     except ValueError:
-        chain = [Plain(msg.locale.t('mcplayer.message.not_found', player=arg))]
-    await msg.finish(chain)
+        await msg.finish(msg.locale.t('mcplayer.message.not_found', player=arg))

@@ -1,6 +1,6 @@
 ﻿from core.builtins import command_prefix
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import update_assets, get_alias, get_cover
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover, search_by_alias, update_assets
 from modules.maimai.libraries.maimaidx_music import Music, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, \
     get_score_list
@@ -44,16 +44,16 @@ mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='
              desc='{maimai.help.desc}')
 
 
-@mai.handle('base <rating> [<rating_max>] {{maimai.help.base}}')
-async def _(msg: Bot.MessageSession, rating: float, rating_max: float = None):
-    if rating_max is not None:
-        if rating > rating_max:
+@mai.handle('base <constant> [<constant_max>] {{maimai.help.base}}')
+async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+    if constant_max is not None:
+        if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
-        result_set = await base_level_q(rating, rating_max)
-        s = msg.locale.t("maimai.message.base.range", rating=round(rating, 1), rating_max=round(rating_max, 1)) + "\n"
+        result_set = await base_level_q(constant, constant_max)
+        s = msg.locale.t("maimai.message.base.range", constant=round(constant, 1), constant_max=round(constant_max, 1)) + "\n"
     else:
-        result_set = await base_level_q(rating)
-        s = msg.locale.t("maimai.message.base", rating=round(rating, 1)) + "\n"
+        result_set = await base_level_q(constant)
+        s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
@@ -171,7 +171,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = await get_alias(msg, id_or_alias, get_music=True)
+        sid_list = await search_by_alias(msg, id_or_alias)
+        
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -352,7 +353,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
     else:
-        sid_list = await get_alias(msg, id_or_alias, get_music=True)
+        sid_list = await search_by_alias(msg, id_or_alias)
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -428,26 +429,32 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         hold = int(chart['notes'][1])
         touch = int(chart['notes'][3]) if len(chart['notes']) == 5 else 0
         brk = int(chart['notes'][-1])
-        total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500
-        break_bonus = 0.01 / brk
-        break_50_reduce = total_score * break_bonus / 4
-        reduce = 101 - scoreline
+        total_score = 500 * tap + slide * 1500 + hold * 1000 + touch * 500 + brk * 2500    # 基础分
+        bonus_score = total_score * 0.01 / brk    # 奖励分
+        break_2550_reduce = bonus_score * 0.25    # 一个 BREAK 2550 减少 25% 奖励分
+        break_2000_reduce = bonus_score * 0.6 + 500    # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
+        reduce = 101 - scoreline    # 理论值与给定完成率的差，以百分比计
         if reduce <= 0 or reduce >= 101:
             raise ValueError
-        tap_great = "{:.2f}".format(total_score * reduce / 10000)
+        tap_great = "{:.2f}".format(total_score * reduce / 10000)     #一个 TAP GREAT 减少 100 分
         tap_great_prop = "{:.4f}".format(10000 / total_score)
-        b2t_great = "{:.3f}".format(break_50_reduce / 100)
-        b2t_great_prop = "{:.4f}".format(break_50_reduce / total_score * 100)
+        b2t_2550_great = "{:.3f}".format(break_2550_reduce / 100)     #一个 TAP GREAT 减少 100 分
+        b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
+        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)     #一个 TAP GREAT 减少 100 分
+        b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
               scoreline=scoreline,
               tap_great=tap_great,
               tap_great_prop=tap_great_prop,
               brk=brk,
-              b2t_great=b2t_great,
-              b2t_great_prop=b2t_great_prop)}''')
+              b2t_2550_great=b2t_2550_great,
+              b2t_2550_great_prop=b2t_2550_great_prop,
+              b2t_2000_great=b2t_2000_great,
+              b2t_2000_great_prop=b2t_2000_great_prop)}''')
     except Exception:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
+
 
 
 @mai.command('update', required_superuser=True)
