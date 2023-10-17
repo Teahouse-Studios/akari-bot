@@ -25,7 +25,7 @@
     "maimai.message.alias.alias_not_found": "未找到符合要求的别名。",
     "maimai.message.alias.file_not_found": "未找到别名文件，请使用“${prefix}maimai update”初始化文件。",
     "maimai.message.base": "以下为定数 ${constant} 的曲目列表：",
-    "maimai.message.base.range": "以下为定数 ${constant}-${constant_max} 的曲目列表：",
+    "maimai.message.base.range": "以下为定数 ${constant}-${rating_constant} 的曲目列表：",
     "maimai.message.chart_not_found": "未找到符合要求的谱面。",
     "maimai.message.error.non_digital": "发生错误：歌曲 ID 必须为数字！",
     "maimai.message.forbidden": "此用户禁止了其他人获取数据。",
