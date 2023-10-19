@@ -141,7 +141,7 @@ async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
         if lang not in completed_locales:
-            await msg.sendMessage(f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')} {msg.locale.t('core.message.locale.contribution')}")
+            await msg.sendMessage(f"{Locale(lang).t('core.message.locale')}{Locale(lang).t('language')} {Locale(lang).t('core.message.locale.contribution')}")
         await msg.finish(Locale(lang).t('success'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
