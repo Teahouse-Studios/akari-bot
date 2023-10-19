@@ -64,7 +64,7 @@
     "core.message.locale.reload.failed": "以下字符串重载失败：${detail}。",
     "core.message.locale.set.invalid": "语言代码无效，支持的语言代码：${langlist}",
     "core.message.locale": "当前使用的语言：",
-    "core.message.locale.contribution": "正在翻译中，欢迎前往 Crowdin 协助翻译：\nhttps://www.crowdin.com/project/akari-bot/",
+    "core.message.locale.contribution": "正在翻译中，欢迎前往 Crowdin 协助翻译：\nhttps://www.crowdin.com/project/akari-bot",
     "core.message.locale.set.prompt": "可使用“${prefix}locale <语言代码>”设置语言。\n支持的语言代码：${langlist}",
     "core.message.module.disable.already": "失败：“${module}”模块已关闭。",
     "core.message.module.disable.base": "失败：“${module}”为基础模块，无法关闭。",
