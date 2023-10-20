@@ -3,11 +3,13 @@
 from config import Config
 from core.builtins import Bot
 from core.component import module
+from core.utils.cooldown import CoolDown
+from modules.core.su_utils import gained_petal
 from .zhNum2Int import Zh2Int
 
-MAX_COIN_NUM = int(Config('coin_limit'))
-FACE_UP_RATE = int(Config('coin_faceup_rate'))  # n/10000
-FACE_DOWN_RATE = int(Config('coin_facedown_rate'))
+MAX_COIN_NUM = int(Config('coin_limit', 10))
+FACE_UP_RATE = int(Config('coin_faceup_rate', 4994))  # n/10000
+FACE_DOWN_RATE = int(Config('coin_facedown_rate', 4994))
 
 coin = module('coin', developers=['Light-Beacon'], desc='{coin.help.desc}')
 
@@ -85,10 +87,19 @@ stone = module('stone', developers=['OasisAkari'], desc='{stone.help.desc}')
 
 
 async def skip_stone(msg: Bot.MessageSession):
-    await msg.finish(msg.locale.t('stone.message.skip', count=secrets.randbelow(10)))
+    count = secrets.randbelow(11)
+    send = msg.locale.t('stone.message.skip', count=count)
+    if count == 10:
+        send += '\n' + gained_petal(msg, 1)
+    await msg.finish(send)
 
 
 @stone.command()
 @stone.regex(r'打水漂')
 async def _(msg: Bot.MessageSession):
+    if msg.target.target_from != 'TEST|Console':
+        qc = CoolDown('stone', msg)
+        c = qc.check(30)
+        if c != 0:
+            await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
     await skip_stone(msg)
