@@ -79,3 +79,16 @@ async def flipCoins(count: int, msg):
         else:
             output += msg.locale.t("message.end")
         return output
+
+
+stone = module('stone', developers=['OasisAkari'], desc='{stone.help.desc}')
+
+
+async def skip_stone(msg: Bot.MessageSession):
+    await msg.finish(msg.locale.t('stone.message.skip', count=secrets.randbelow(10)))
+
+
+@stone.command()
+@stone.regex(r'打水漂')
+async def _(msg: Bot.MessageSession):
+    await skip_stone(msg)
