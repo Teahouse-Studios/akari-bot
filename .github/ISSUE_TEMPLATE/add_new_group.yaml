@@ -10,13 +10,13 @@ body:
       value: |
         感谢您使用小可。由于近期腾讯加大了对第三方机器人的打击力度，鉴于当前局势的不确定性，我们暂时不再接受新的群组申请。
   - type: textarea
-     id: other
-     attributes:
-       label: 这是一个占位符
-       description: 占位符占位符占位符占位符
-       placeholder: 占位符占位符占位符占位符占位符占位符
-     validations:
-       required: false
+    id: other
+    attributes:
+      label: 这是一个占位符
+      description: 占位符占位符占位符占位符
+      placeholder: 占位符占位符占位符占位符占位符占位符
+    validations:
+      required: false
   # - type: markdown
   #   attributes:
   #     value: |
