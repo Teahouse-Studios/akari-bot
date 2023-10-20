@@ -90,7 +90,9 @@ async def skip_stone(msg: Bot.MessageSession):
     count = secrets.randbelow(11)
     send = msg.locale.t('stone.message.skip', count=count)
     if count == 10:
-        send += '\n' + gained_petal(msg, 1)
+        g = gained_petal(msg, 1)
+        if g:
+            send += '\n' + g
     await msg.finish(send)
 
 
