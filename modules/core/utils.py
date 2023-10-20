@@ -127,10 +127,10 @@ async def config_ban(msg: Bot.MessageSession):
 
 locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
 
+completed_locales = ["zh_cn", "zh_tw"]
 
 @locale.handle('{{core.help.locale}}')
 async def _(msg: Bot.MessageSession):
-    lang = msg.locale.t("language")
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
     await msg.finish(
         f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
@@ -139,9 +139,10 @@ async def _(msg: Bot.MessageSession):
 @locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
-    if lang in get_available_locales():
-        if BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
-            await msg.finish(Locale(lang).t('success'))
+    if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
+        if lang not in completed_locales:
+            await msg.sendMessage(Locale(lang).t('core.message.locale.contribution'))
+        await msg.finish(Locale(lang).t('success'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))

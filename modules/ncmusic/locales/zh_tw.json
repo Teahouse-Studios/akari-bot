@@ -1,7 +1,15 @@
 {
     "ncmusic.help.search": "搜尋網易雲音樂。",
     "ncmusic.help.info": "取得音樂詳細訊息。",
+    "ncmusic.message.info": "歌名：${name}（${id}）\n專輯名：${album}（${album_id}）\n歌手：${artists}\n歌曲詳情頁：${detail}",
     "ncmusic.message.search.collapse": "…僅顯示前 10 條內容。",
-    "ncmusic.message.search.result": "搜尋結果：",
-    "ncmusic.message.info": "歌名：${name}（${id}）\n專輯名：${album}（${album_id}）\n歌手：${artists}\n歌曲詳情頁：${detail}"
+    "ncmusic.message.search.invalid.non_digital": "无效的编号，必须为数字。",
+    "ncmusic.message.search.invalid.out_of_range": "编号超出范围。",
+    "ncmusic.message.search.not_found": "未找到结果。",
+    "ncmusic.message.search.prompt": "输入对应的序号以查看歌曲信息。",
+    "ncmusic.message.search.table.header.album": "专辑名",
+    "ncmusic.message.search.table.header.artists": "歌手",
+    "ncmusic.message.search.table.header.id": "序号",
+    "ncmusic.message.search.table.header.name": "歌名",
+    "ncmusic.message.search.result": "搜尋結果："
 }
