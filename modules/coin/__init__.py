@@ -104,4 +104,5 @@ async def _(msg: Bot.MessageSession):
         c = qc.check(30)
         if c != 0:
             await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
+        qc.reset()
     await skip_stone(msg)
