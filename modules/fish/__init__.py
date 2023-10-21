@@ -60,7 +60,7 @@ async def finish_fish(msg: Bot.MessageSession):
                 text += '\n' + g
         await msg.finish(text)
     else:
-        await msg.finish('你收回了鱼竿，什么都没有钓到。')
+        await msg.finish('你收回了鱼竿，什么都没有钓到。', quote=False)
 
 
 @fish.command('{{fish.help}}')
