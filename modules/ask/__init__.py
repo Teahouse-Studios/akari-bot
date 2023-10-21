@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession):
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
     else:
-        await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 
 
 def parse_markdown(md: str):
