@@ -530,6 +530,36 @@ def gained_petal(msg: Bot.MessageSession, amount):
             return msg.locale.t('core.message.gainedpetal.success', amount=amount)
 
 
+def lost_petal(msg: Bot.MessageSession, amount):
+    if Config('openai_api_key'):
+        limit = Config('lost_petal_limit', 5)
+        p = get_stored_list(msg.target.client_name, 'lostpetal')
+        if not p:
+            p = [{}]
+        p = p[0]
+        now = datetime.now().timestamp()
+        if msg.target.target_id not in p:
+            p[msg.target.target_id] = {'time': now, 'amount': amount}
+            p = [p]
+            update_stored_list(msg.target.client_name, 'lostpetal', p)
+            msg.data.modify_petal(-amount)
+            return msg.locale.t('core.message.lostpetal.success', amount=amount)
+        else:
+            if now - p[msg.target.target_id]['time'] > 60 * 60 * 24:
+                p[msg.target.target_id] = {'time': now, 'amount': -amount}
+                p = [p]
+                msg.data.modify_petal(-amount)
+                update_stored_list(msg.target.client_name, 'lostpetal', p)
+            else:
+                if p[msg.target.target_id]['amount'] + amount > limit:
+                    return msg.locale.t('core.message.lostpetal.limit')
+                p[msg.target.target_id]['amount'] += amount
+                p = [p]
+                update_stored_list(msg.target.client_name, 'lostpetal', p)
+                msg.data.modify_petal(-amount)
+            return msg.locale.t('core.message.lostpetal.success', amount=amount)
+
+
 if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)
 
