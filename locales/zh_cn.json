@@ -28,6 +28,7 @@
     "failed": "失败。",
     "i18n.prompt.fallback.failed": "（如果你看到了这条奇怪的字符串，说明我们又搞错了什么东西！\n请将问题反馈至\n${url}\n以便我们快速解决此问题。）",
     "language": "简体中文",
+    "message.cooldown": "距离上次执行已过去 ${time} 秒，本命令的冷却时间为 ${cd_time} 秒。",
     "message.delimiter": "、",
     "message.end": "。",
     "message.reply.prompt": "（请使用指定的词语回复本条消息）",

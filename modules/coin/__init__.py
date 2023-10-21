@@ -103,6 +103,6 @@ async def _(msg: Bot.MessageSession):
         qc = CoolDown('stone', msg)
         c = qc.check(30)
         if c != 0:
-            await msg.finish(msg.locale.t('stone.message.cooldown', time=int(c)))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
         qc.reset()
     await skip_stone(msg)
