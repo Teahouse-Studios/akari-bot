@@ -45,6 +45,9 @@ fish_list = {
 
 async def finish_fish(msg: Bot.MessageSession):
     play_state[msg.target.target_id]['active'] = False
+    if msg.target.target_from != 'TEST|Console':
+        qc = CoolDown('fish', msg)
+        qc.reset()
     if play_state[msg.target.target_id]['hooked']:
         fish_name_key = 'fish.message.type.' + play_state[msg.target.target_id]['fish_name']
         fish_name = msg.locale.t(fish_name_key, fallback_failed_prompt=False)
@@ -62,17 +65,15 @@ async def finish_fish(msg: Bot.MessageSession):
         await msg.finish(text)
     else:
         await msg.finish('你收回了鱼竿，什么都没有钓到。', quote=False)
-    if msg.target.target_from != 'TEST|Console':
-        qc = CoolDown('stone', msg)
-        qc.reset()
 
 
 @fish.command('{{fish.help}}')
 async def fish(msg: Bot.MessageSession):
-    qc = CoolDown('stone', msg)
-    c = qc.check(60)
-    if c != 0:
-        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
+    if msg.target.target_from != 'TEST|Console':
+        qc = CoolDown('fish', msg)
+        c = qc.check(60)
+        if c != 0:
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         return await finish_fish(msg)
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
