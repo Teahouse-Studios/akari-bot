@@ -28,7 +28,7 @@
     "failed": "Failed.",
     "i18n.prompt.fallback.failed": "(If you're seeing this strange string, it means something we got wrong again!\nPlease send the problem to\n${url}\nso that we can fix it in time.)",
     "language": "English",
-    "message.cooldown": "距离上次执行已过去 ${time} 秒，本命令的冷却时间为 ${cd_time} 秒。",
+    "message.cooldown": "${time} seconds after the last command, you should wait until it reach ${cd_time} seconds.",
     "message.delimiter": ", ",
     "message.end": ".",
     "message.reply.prompt": "(Please reply to this message using the specified words)",
