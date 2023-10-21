@@ -120,6 +120,8 @@
     "core.message.petal.self": "${petal} petals remains in the current group.",
     "core.message.gainedpetal.success": "获得了 ${amount} 片花瓣。",
     "core.message.gainedpetal.limit": "但是，本日获得花瓣已达到每日上限，请明日再试。",
+    "core.message.lostpetal.success": "失去了 ${amount} 片花瓣。",
+    "core.message.lostpetal.limit": "（本日失去花瓣已达到每日上限）",
     "core.message.ping.detail": "System startup time: ${system_boot_time}\nRobot is running: ${bot_running_time}\nPython version: ${python_version}\nProcessor model: ${cpu_brand}\nCurrent processor usage: ${cpu_usage}%\nPhysical memory: ${ram}M Utilized: ${ram_percent}%\nSwap memory: ${swap}M Utilized: ${swap_percent}%\nDisk capacity: ${disk_space}G/${disk_space_total}G",
     "core.message.ping.failed": "Failed to fetch.",
     "core.message.prefix.add.already": "This command already exists in the custom prefix list.",
