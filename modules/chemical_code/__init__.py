@@ -16,6 +16,7 @@ from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from core.utils.text import remove_prefix
+from modules.core.su_utils import gained_petal
 
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",
@@ -222,7 +223,10 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                 Logger.info(f'{wait_text} != {answer}')  # 输出日志
                 return await ans(wait, answer)  # 进行下一轮检查
             else:
-                await wait.send_message(wait.locale.t('chemical_code.message.correct'))
+                send_ = wait.locale.t('chemical_code.message.correct')
+                if g_msg := gained_petal(wait, 2):
+                    send_ += '\n' + g_msg
+                await wait.send_message(send_)
                 play_state[msg.target.target_id]['active'] = False  # 将对象标记为非活跃状态
 
     async def timer(start):  # 计时器函数
@@ -247,7 +251,10 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                                                                                  times=set_timeout))])
         if play_state[msg.target.target_id]['active']:  # 检查对象是否为活跃状态
             if result.as_display(text_only=True) == csr['name']:
-                await result.send_message(msg.locale.t('chemical_code.message.correct'))
+                send_ = msg.locale.t('chemical_code.message.correct')
+                if g_msg := gained_petal(msg, 1):
+                    send_ += '\n' + g_msg
+                await result.send_message(send_)
             else:
                 await result.send_message(
                     msg.locale.t('chemical_code.message.incorrect', answer=play_state[msg.target.target_id]["answer"]))

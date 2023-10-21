@@ -59,6 +59,8 @@ async def _(msg: Bot.MessageSession):
             price = tokens / ONE_K * PRICE_PER_1K_TOKEN
             petal = price * USD_TO_CNY * CNY_TO_PETAL
             msg.data.modify_petal(-petal)
+        else:
+            petal = 0
 
         blocks = parse_markdown(res)
 
@@ -83,12 +85,14 @@ async def _(msg: Bot.MessageSession):
 
         if await check_bool(res):
             rickroll(msg)
+        if petal != 0:
+            chain.append(Plain(msg.locale.t('ask.message.petal.cost', count=petal)))
         await msg.send_message(chain)
 
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
     else:
-        await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 
 
 def parse_markdown(md: str):

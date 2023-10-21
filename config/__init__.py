@@ -48,7 +48,7 @@ class CFG:
         cls._ts = os.path.getmtime(config_path)
 
     @classmethod
-    def get(cls, q):
+    def get(cls, q, default=None):
         q = q.lower()
         if os.path.getmtime(config_path) != cls._ts:
             cls.load()
@@ -59,6 +59,8 @@ class CFG:
             value = value_n.get(q)
         if value is None:
             print(f'[Config] Config {q} not found, is it configured?')
+        if value is None and default is not None:
+            return default
         return value
 
     @classmethod
