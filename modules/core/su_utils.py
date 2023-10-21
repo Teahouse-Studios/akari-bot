@@ -546,7 +546,7 @@ def lost_petal(msg: Bot.MessageSession, amount):
             return msg.locale.t('core.message.lostpetal.success', amount=amount)
         else:
             if now - p[msg.target.target_id]['time'] > 60 * 60 * 24:
-                p[msg.target.target_id] = {'time': now, 'amount': -amount}
+                p[msg.target.target_id] = {'time': now, 'amount': amount}
                 p = [p]
                 msg.data.modify_petal(-amount)
                 update_stored_list(msg.target.client_name, 'lostpetal', p)
