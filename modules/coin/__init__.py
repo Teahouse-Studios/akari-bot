@@ -97,7 +97,7 @@ async def skip_stone(msg: Bot.MessageSession):
         if lo := lost_petal(msg, 1):
             send += '\n' + lo
     if count == 10:
-        if g := gained_petal(msg, 1):
+        if g := gained_petal(msg, 2):
             send += '\n' + g
     if count in [3, 5, 9]:
         send += '\n' + msg.locale.t('eastereggs.message.1')

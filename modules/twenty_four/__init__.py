@@ -121,7 +121,7 @@ async def _(msg: Bot.MessageSession):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
-                if g_msg := gained_petal(msg, 1):
+                if g_msg := gained_petal(msg, 2):
                     send += '\n' + g_msg
                 await answer.send_message(send)
             else:
