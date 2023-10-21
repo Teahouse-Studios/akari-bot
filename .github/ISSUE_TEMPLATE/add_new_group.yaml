@@ -9,6 +9,8 @@ body:
     attributes:
       value: |
         感谢您使用小可。由于近期腾讯加大了对第三方机器人的打击力度，鉴于当前局势的不确定性，我们暂时不再接受新的群组申请。
+
+        若您具有相关部署条件，可阅读[自搭建部署教程](./DEPLOY.md)（或[Docker部署教程](./DEPLOY_Docker.md)）自行构建。
   - type: textarea
     id: other
     attributes:
