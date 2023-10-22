@@ -143,7 +143,7 @@ async def fish(msg: Bot.MessageSession):
                         play_state[msg.target.target_id]['hooked'] = True
                         hooked_time -= 0.25
                 else:
-                    if wait_time % 5 == 0:
+                    if wait_time % 10 == 0:
                         wait_repeat += 1
                         await msg.send_message(f'.' * wait_repeat, quote=False)
                     wait_time -= 0.25
