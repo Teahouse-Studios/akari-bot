@@ -62,7 +62,7 @@ async def finish_fish(msg: Bot.MessageSession):
         if play_state[msg.target.target_id]['hooked_time'] < 2:
             if g := gained_petal(msg, 1):
                 text += '\n' + g
-        await msg.finish(text)
+        await msg.finish(text, quote=False)
     else:
         await msg.finish('你收回了鱼竿，什么都没有钓到。', quote=False)
 
@@ -127,13 +127,14 @@ async def fish(msg: Bot.MessageSession):
                     repeat_state = 'red'
                 if wait_time <= 0:
                     if hooked_time <= 0:
-                        await msg.send_message(msg.locale.t(f"fish.message.escaped.{repeat_state}.{random.randint(1, 3)}"),
-                                               quote=False)
-                        play_state[msg.target.target_id]['hooked'] = False
-                        hooked_time = await generate_fish(msg)
-                        wait_time = random.randint(5, 30)
-                        wait_repeat = 0
-                        hook_repeat = 0
+                        if play_state[msg.target.target_id]['active']:
+                            play_state[msg.target.target_id]['hooked'] = False
+                            await msg.send_message(msg.locale.t(f"fish.message.escaped.{repeat_state}.{random.randint(1, 3)}"),
+                                                   quote=False)
+                            hooked_time = await generate_fish(msg)
+                            wait_time = random.randint(5, 30)
+                            wait_repeat = 0
+                            hook_repeat = 0
                     else:
                         if hooked_time % 1 == 0:
                             await msg.send_message(msg.locale.t(f"fish.message.hooked.{repeat_state}.{random.randint(1, 3)}"),
@@ -142,7 +143,7 @@ async def fish(msg: Bot.MessageSession):
                         play_state[msg.target.target_id]['hooked'] = True
                         hooked_time -= 0.25
                 else:
-                    if wait_time % 5 == 0:
+                    if wait_time % 10 == 0:
                         wait_repeat += 1
                         await msg.send_message(f'.' * wait_repeat, quote=False)
                     wait_time -= 0.25
