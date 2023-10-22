@@ -118,7 +118,7 @@
     "core.message.petal.modify": "已為群組 ${group} 修改了 ${add_petal} 花瓣，目前花瓣數為：${petal}。",
     "core.message.petal.no_petals": "群組內的花瓣不足，若需要增加花瓣，請前往此處申請：",
     "core.message.petal.self": "目前本群組的花瓣數為：${petal}。",
-    "core.message.gainedpetal.success": "获得了 ${amount} 片花瓣。",
+    "core.message.gainedpetal.success": "獲得了 ${amount} 片花瓣。",
     "core.message.gainedpetal.limit": "但是，本日获得花瓣已达到每日上限，请明日再试。",
     "core.message.lostpetal.success": "失去了 ${amount} 片花瓣。",
     "core.message.lostpetal.limit": "（本日失去花瓣已达到每日上限）",
