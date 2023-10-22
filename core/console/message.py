@@ -1,6 +1,7 @@
 from typing import List, Union
 
 from PIL import Image
+import aioconsole
 
 from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
@@ -51,7 +52,7 @@ class MessageSession(MessageSessionT):
             send = await self.send_message(message_chain)
             print("（发送“是”或符合确认条件的词语来确认）")
 
-        c = input('Confirm: ')
+        c = await aioconsole.ainput('Confirm: ')
         print(c)
         if message_chain is not None and delete:
             await send.delete()
@@ -64,7 +65,7 @@ class MessageSession(MessageSessionT):
         send = None
         if message_chain is not None:
             send = await self.send_message(message_chain)
-        c = input('Confirm: ')
+        c = await aioconsole.ainput('Confirm: ')
         print(c)
         if message_chain is not None and delete:
             await send.delete()
@@ -76,7 +77,7 @@ class MessageSession(MessageSessionT):
         if append_instruction:
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.send_message(message_chain, quote)
-        c = input('Reply: ')
+        c = await aioconsole.ainput('Reply: ')
         return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
                                              sender_id='TEST|0',
                                              sender_name='',
