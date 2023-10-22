@@ -1,11 +1,12 @@
 import random
-from typing import Awaitable, Callable, List, Optional
+from typing import Awaitable, Callable, List
 from core.builtins import Bot
 from core.component import module
 from core.utils.cooldown import CoolDown
+from modules.core.su_utils import gained_petal
 
 tic_tac_toe = module('tic_tac_toe',
-                     desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'], alias={
+                     desc='{ttt.help.desc}', developers=['Dianliang233'], alias={
                          'ttt': 'tic_tac_toe',
                          'tictactoe': 'tic_tac_toe',
                      })
@@ -71,7 +72,7 @@ async def game(msg: Bot.MessageSession,
 
 
 def format_table(table: GameTable):
-    return '\n'.join([' '.join(['X' if i == 1 else 'O' if i == 2 else '.' for i in row]) for row in table])
+    return '\n'.join([' '.join(['Ｘ' if i == 1 else 'Ｏ' if i == 2 else '．' for i in row]) for row in table])
 
 
 def generate_human_callback(msg: Bot.MessageSession, player: str):
@@ -191,7 +192,7 @@ async def terminate(msg: Bot.MessageSession):
 
 
 @tic_tac_toe.command('{{ttt.bot.help}}')
-@tic_tac_toe.command('expert {{ttt.bot.help}}')
+@tic_tac_toe.command('expert {{ttt.expert.help}}')
 async def ttt_with_bot(msg: Bot.MessageSession):
     if msg.target.target_from != 'TEST|Console':
         qc = CoolDown('fish', msg)
@@ -202,10 +203,16 @@ async def ttt_with_bot(msg: Bot.MessageSession):
         return await terminate(msg)
     play_state.update({msg.target.target_id: {'active': True}})
 
-    winner = await game(msg, generate_human_callback(msg, 'X'), expert_bot_callback if msg.parsed_msg else random_bot_callback)
+    try:
+        winner = await game(msg, generate_human_callback(msg, 'X'), expert_bot_callback if msg.parsed_msg else random_bot_callback)
+    except TerminationError:
+        return
 
     play_state[msg.target.target_id]['active'] = False
-    await msg.finish(winner, quote=False)
+    if winner == 0:
+        await msg.finish(msg.locale.t('ttt.draw'), quote=False)
+    g_msg = gained_petal(msg, 2) if winner == 1 and msg.parsed_msg else ''
+    await msg.finish(msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O') + '\n' + g_msg, quote=False)
 
 
 @tic_tac_toe.command('duo {{ttt.duo.help}}')
@@ -227,4 +234,4 @@ async def ttt_multiplayer(msg: Bot.MessageSession):
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
         await msg.finish(msg.locale.t('ttt.draw'), quote=False)
-    await msg.finish(msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'Y'), quote=False)
+    await msg.finish(msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O'), quote=False)
