@@ -1,4 +1,6 @@
 {
+    "fish.help.desc": "钓鱼",
+    "fish.help": "抛竿/收杆",
     "fish.message.size.tiny": "特小",
     "fish.message.size.small": "稍小",
     "fish.message.size.medium": "中",
