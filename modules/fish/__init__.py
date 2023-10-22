@@ -128,9 +128,9 @@ async def fish(msg: Bot.MessageSession):
                 if wait_time <= 0:
                     if hooked_time <= 0:
                         if play_state[msg.target.target_id]['active']:
+                            play_state[msg.target.target_id]['hooked'] = False
                             await msg.send_message(msg.locale.t(f"fish.message.escaped.{repeat_state}.{random.randint(1, 3)}"),
                                                    quote=False)
-                            play_state[msg.target.target_id]['hooked'] = False
                             hooked_time = await generate_fish(msg)
                             wait_time = random.randint(5, 30)
                             wait_repeat = 0
