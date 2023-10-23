@@ -223,8 +223,13 @@ def find_best_move(board):
     return best_move
 
 
+async def master_bot_callback(board: GameBoard):
+    return find_best_move(board)
+
+
 async def expert_bot_callback(board: GameBoard):
-    print(find_best_move(board))
+    if random.randint(0, 4) == 0:
+        return random_bot_callback(board)
     return find_best_move(board)
 
 
@@ -252,7 +257,18 @@ async def terminate(msg: Bot.MessageSession):
 
 @tic_tac_toe.command('{{ttt.bot.help}}')
 @tic_tac_toe.command('expert {{ttt.expert.help}}')
+@tic_tac_toe.command('master {{ttt.expert.help}}')
 async def ttt_with_bot(msg: Bot.MessageSession):
+    if msg.parsed_msg:
+        if 'expert' in msg.parsed_msg:
+            game_type = 'expert'
+            bot_callback = expert_bot_callback
+        else:
+            game_type = 'master'
+            bot_callback = master_bot_callback
+    else:
+        game_type = 'random'
+        bot_callback = random_bot_callback
     if msg.target.target_from != 'TEST|Console':
         qc = CoolDown('fish', msg)
         c = qc.check(60)
@@ -263,14 +279,14 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True}})
 
     try:
-        winner, board = await game(msg, generate_human_callback(msg, 'X'), expert_bot_callback if msg.parsed_msg else random_bot_callback)
+        winner, board = await game(msg, generate_human_callback(msg, 'X'), bot_callback)
     except TerminationError:
         return
 
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
         await msg.finish(msg.locale.t('ttt.draw'), quote=False)
-    g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and msg.parsed_msg else ''
+    g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and game_type != 'random' else ''
     await msg.finish(format_board(board) + '\n' + msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
 
