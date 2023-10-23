@@ -295,7 +295,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
 
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
-        await msg.finish(msg.locale.t('ttt.draw'), quote=False)
+        await msg.finish(format_board(board) + '\n' + msg.locale.t('ttt.draw'), quote=False)
     g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and game_type == 'expert' or game_type == 'master' else ''
     await msg.finish(format_board(board) + '\n' + msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
@@ -318,5 +318,5 @@ async def ttt_multiplayer(msg: Bot.MessageSession):
 
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
-        await msg.finish(msg.locale.t('ttt.draw'), quote=False)
+        await msg.finish(format_board(board) + '\n' + msg.locale.t('ttt.draw'), quote=False)
     await msg.finish(format_board(board) + '\n' + msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O'), quote=False)
