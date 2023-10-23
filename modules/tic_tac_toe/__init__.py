@@ -61,7 +61,7 @@ async def game(msg: Bot.MessageSession,
         o = await o_callback(table)
         table[o[0]][o[1]] = 2
         if winner := check_winner(table):
-            return winner
+            return winner, table
         spaces = []
         for i in range(3):
             for j in range(3):
