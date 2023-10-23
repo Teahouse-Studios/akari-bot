@@ -69,13 +69,13 @@ async def finish_fish(msg: Bot.MessageSession):
 
 @fish.command('{{fish.help}}')
 async def fish(msg: Bot.MessageSession):
+    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+        return await finish_fish(msg)
     if msg.target.target_from != 'TEST|Console':
         qc = CoolDown('fish', msg)
         c = qc.check(60)
         if c != 0:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
-    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        return await finish_fish(msg)
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
 
     async def ans(msg: Bot.MessageSession):  # 定义回答函数的功能
