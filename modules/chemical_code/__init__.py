@@ -224,8 +224,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 return await ans(wait, answer, random_mode)  # 进行下一轮检查
             else:
                 send_ = wait.locale.t('chemical_code.message.correct')
-                if g_msg := gained_petal(wait, 2) and random_mode is True:
-                    send_ += '\n' + g_msg
+                if random_mode:
+                    if g_msg := gained_petal(wait, 2):
+                        send_ += '\n' + g_msg
                 await wait.send_message(send_)
                 play_state[msg.target.target_id]['active'] = False  # 将对象标记为非活跃状态
 
