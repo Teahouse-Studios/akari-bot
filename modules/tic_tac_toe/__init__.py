@@ -257,7 +257,7 @@ async def terminate(msg: Bot.MessageSession):
 
 @tic_tac_toe.command('{{ttt.bot.help}}')
 @tic_tac_toe.command('expert {{ttt.expert.help}}')
-@tic_tac_toe.command('master {{ttt.expert.help}}')
+@tic_tac_toe.command('master {{ttt.master.help}}')
 async def ttt_with_bot(msg: Bot.MessageSession):
     if msg.parsed_msg:
         if 'expert' in msg.parsed_msg:
