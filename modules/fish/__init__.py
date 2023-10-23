@@ -1,26 +1,16 @@
 import asyncio
-import os
 import random
-import re
-import traceback
 from datetime import datetime
 
-from PIL import Image as PILImage
-from bs4 import BeautifulSoup
-from tenacity import retry, stop_after_attempt
-
 from core.builtins import Bot
-from core.builtins import Image, Plain
 from core.component import module
 from core.logger import Logger
-from core.utils.cache import random_cache_path
 from core.utils.cooldown import CoolDown
-from core.utils.http import get_url, download_to_cache
-from core.utils.text import remove_prefix
-from modules.core.su_utils import gained_petal
+from modules.core.su_utils import gained_petal, lost_petal
 
 fish = module('fish',
-              desc='{fish.help.desc}', developers=['OasisAkari'])
+              desc='{fish.help.desc}',
+              alias={"retract": "fish retract"}, developers=['OasisAkari'])
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 fish_list = {
@@ -49,26 +39,34 @@ async def finish_fish(msg: Bot.MessageSession):
         qc = CoolDown('fish', msg)
         qc.reset()
     if play_state[msg.target.target_id]['hooked']:
-        fish_name_key = 'fish.message.type.' + play_state[msg.target.target_id]['fish_name']
-        fish_name = msg.locale.t(fish_name_key, fallback_failed_prompt=False)
-        if fish_name == fish_name_key:
-            fish_name = play_state[msg.target.target_id]['fish_name']
-        fish_words_key = 'fish.message.fished.' + play_state[msg.target.target_id]['fish_name']
-        fish_words = msg.locale.t(fish_words_key, fallback_failed_prompt=False)
-        if fish_words == fish_words_key:
-            fish_words = msg.locale.t('fish.message.fished', name=fish_name)
-        text = f'{fish_words}\n' + \
-               f'体型：{msg.locale.t("fish.message.size." + play_state[msg.target.target_id]["fish_type"])}'
-        if play_state[msg.target.target_id]['hooked_time'] < 2:
-            if g := gained_petal(msg, 1):
-                text += '\n' + g
-        await msg.finish(text, quote=False)
+        rand_result = random.randint(1, 100)
+        if rand_result < 98:
+            fish_name_key = 'fish.message.type.' + play_state[msg.target.target_id]['fish_name']
+            fish_name = msg.locale.t(fish_name_key, fallback_failed_prompt=False)
+            if fish_name == fish_name_key:
+                fish_name = play_state[msg.target.target_id]['fish_name']
+            fish_words_key = 'fish.message.fished.' + play_state[msg.target.target_id]['fish_name']
+            fish_words = msg.locale.t(fish_words_key, fallback_failed_prompt=False)
+            if fish_words == fish_words_key:
+                fish_words = msg.locale.t('fish.message.fished', name=fish_name)
+            text = f'{fish_words}\n' + \
+                   (f'{msg.locale.t("fish.message.size")}'
+                    f'{msg.locale.t("fish.message.size." + play_state[msg.target.target_id]["fish_type"])}')
+            if play_state[msg.target.target_id]['hooked_time'] < 2:
+                if g := gained_petal(msg, 1):
+                    text += '\n' + g
+            await msg.finish(text, quote=False)
+        else:
+            send = msg.locale.t('fish.message.failed.' + str(random.randint(1, 3)))
+            if g := lost_petal(msg, 1):
+                send += '\n' + g
+            await msg.finish(send, quote=False)
     else:
-        await msg.finish('你收回了鱼竿，什么都没有钓到。', quote=False)
+        await msg.finish(msg.locale.t("fish.message.fished.nothing"), quote=False)
 
 
 @fish.command('{{fish.help}}')
-async def fish(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         return await finish_fish(msg)
     if msg.target.target_from != 'TEST|Console':
@@ -77,14 +75,6 @@ async def fish(msg: Bot.MessageSession):
         if c != 0:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
-
-    async def ans(msg: Bot.MessageSession):  # 定义回答函数的功能
-        wait = await msg.wait_anyone()  # 等待对象内的任意人回答
-        if play_state[msg.target.target_id]['active']:  # 检查对象是否为活跃状态
-            if (wait_text := wait.as_display(text_only=True)) in ['收', '收杆']:
-                return await finish_fish(msg)
-            else:
-                return ans(msg)
 
     async def generate_fish(msg: Bot.MessageSession):
         fish_type = random.choice(list(fish_list.keys()))
@@ -153,4 +143,21 @@ async def fish(msg: Bot.MessageSession):
                 await timer(start, wait_time, hooked_time, wait_repeat, hook_repeat)  # 重新调用计时器函数
 
     await msg.send_message(msg.locale.t('fish.message.start'))
-    await asyncio.gather(ans(msg), timer(datetime.now().timestamp(), wait_time, hooked_time))
+    Bot.ExecutionLockList.remove(msg)
+    await asyncio.create_task(timer(datetime.now().timestamp(), wait_time, hooked_time))
+
+
+@fish.handle('retract')
+@fish.regex(r'^(?:收杆|收)$')
+async def _(msg: Bot.MessageSession):
+    if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
+        return await finish_fish(msg)
+    else:
+        rand_result = random.randint(1, 100)
+        if rand_result < 98:
+            send = msg.locale.t('fish.message.not_started.1')
+        else:
+            send = msg.locale.t('fish.message.not_started.2')
+            if g := lost_petal(msg, 1):
+                send += '\n' + g
+        await msg.finish(send)
