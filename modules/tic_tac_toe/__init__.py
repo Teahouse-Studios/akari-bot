@@ -124,12 +124,14 @@ def is_move_left(board: GameBoard):
     return False
 
 
-def evaluate(b: GameBoard) -> int:
+def evaluate(b: GameBoard, worst: bool = False) -> int:
+    if worst:
+        return 10 if check_winner(b) == 1 else -10 if check_winner(b) == 2 else 0
     return 10 if check_winner(b) == 2 else -10 if check_winner(b) == 1 else 0
 
 
-def minimax(board: GameBoard, depth: int, is_max: bool):
-    score = evaluate(board)
+def minimax(board: GameBoard, depth: int, is_max: bool, worst: bool = False):
+    score = evaluate(board, worst=worst)
     player = 2
     opponent = 1
 
@@ -160,7 +162,7 @@ def minimax(board: GameBoard, depth: int, is_max: bool):
                     # the maximum value
                     best = max(best, minimax(board,
                                              depth + 1,
-                                             not is_max))
+                                             not is_max, worst=worst))
 
                     # Undo the move
                     board[i][j] = 0
@@ -182,14 +184,14 @@ def minimax(board: GameBoard, depth: int, is_max: bool):
 
                     # Call minimax recursively and choose
                     # the minimum value
-                    best = min(best, minimax(board, depth + 1, not is_max))
+                    best = min(best, minimax(board, depth + 1, not is_max, worst=worst))
 
                     # Undo the move
                     board[i][j] = 0
         return best
 
 
-def find_best_move(board):
+def find_best_move(board, worst=False):
     player = 2
     # opponent = 1
     best_val = -1000
@@ -208,7 +210,7 @@ def find_best_move(board):
                 board[i][j] = player
                 # compute evaluation function for this
                 # move.
-                move_val = minimax(board, 0, False)
+                move_val = minimax(board, 0, False, worst=False)
 
                 # Undo the move
                 board[i][j] = 0
@@ -225,6 +227,10 @@ def find_best_move(board):
 
 async def master_bot_callback(board: GameBoard):
     return find_best_move(board)
+
+
+async def noob_bot_callback(board: GameBoard):
+    return find_best_move(board, worst=True)
 
 
 async def expert_bot_callback(board: GameBoard):
@@ -256,16 +262,20 @@ async def terminate(msg: Bot.MessageSession):
 
 
 @tic_tac_toe.command('{{ttt.bot.help}}')
+@tic_tac_toe.command('noob {{ttt.noob.help}}')
 @tic_tac_toe.command('expert {{ttt.expert.help}}')
-@tic_tac_toe.command('master {{ttt.master.help}}')
+@tic_tac_toe.command('master {{ttt.expert.help}}')
 async def ttt_with_bot(msg: Bot.MessageSession):
     if msg.parsed_msg:
         if 'expert' in msg.parsed_msg:
             game_type = 'expert'
             bot_callback = expert_bot_callback
-        else:
+        elif 'master' in msg.parsed_msg:
             game_type = 'master'
             bot_callback = master_bot_callback
+        elif 'noob' in msg.parsed_msg:
+            game_type = 'noob'
+            bot_callback = noob_bot_callback
     else:
         game_type = 'random'
         bot_callback = random_bot_callback
@@ -286,7 +296,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
         await msg.finish(msg.locale.t('ttt.draw'), quote=False)
-    g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and game_type != 'random' else ''
+    g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and game_type == 'expert' or game_type == 'master' else ''
     await msg.finish(format_board(board) + '\n' + msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
 
