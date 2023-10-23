@@ -153,7 +153,6 @@ async def expert_bot_callback(table: GameTable):
 
     # first move
     if len(spaces) == 8:
-
         # 1 goes center
         if table[1][1] == 1:
             return random.choice([(0, 0), (0, 2), (2, 0), (2, 2)])
@@ -164,9 +163,19 @@ async def expert_bot_callback(table: GameTable):
     # second move
     if len(spaces) == 6:
         # 1 goes corner and 2 goes center and 1 goes corner, then 2 goes to any edge
-        pass
+        if table[1][1] == 2 and any([table[0][0] == table[2][2] == 1, table[0][2] == table[2][0] == 1]):
+            return random.choice([(0, 1), (1, 0), (1, 2), (2, 1)])
 
-    return random_bot_callback(table)
+    # prefer corner to edge
+    corners = (0, 0), (0, 2), (2, 0), (2, 2)
+    for corner in random.shuffle(corners):
+        if corner in spaces:
+            return corner
+    edges = (0, 1), (1, 0), (1, 2), (2, 1)
+    for edge in random.shuffle(edges):
+        if edge in spaces:
+            return edge
+    return random.choice(spaces)
 
 
 async def random_bot_callback(table: GameTable):
