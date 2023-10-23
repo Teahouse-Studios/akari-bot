@@ -130,12 +130,12 @@ async def chemical_code_by_id(msg: Bot.MessageSession):
         if int(id) == 0:
             await chemical_code(msg)
         else:
-            await chemical_code(msg, id)  # 将消息会话和 ID 一并传入 chemical_code 函数
+            await chemical_code(msg, id, random_mode=False)  # 将消息会话和 ID 一并传入 chemical_code 函数
     else:
         await msg.finish(msg.locale.t('chemical_code.message.csid.invalid'))
 
 
-async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
+async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, captcha_mode=False):
     # 要求传入消息会话和 ChemSpider ID，ID 留空将会使用缺省值 None
     # 检查对象（群组或私聊）是否在 play_state 中有记录及是否为活跃状态
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
@@ -172,7 +172,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
     if set_timeout < 2:
         set_timeout = 2
 
-    async def ans(msg: Bot.MessageSession, answer):  # 定义回答函数的功能
+    async def ans(msg: Bot.MessageSession, answer, random_mode):  # 定义回答函数的功能
         wait = await msg.wait_anyone()  # 等待对象内的任意人回答
         if play_state[msg.target.target_id]['active']:  # 检查对象是否为活跃状态
             if (wait_text := wait.as_display(text_only=True)) != answer:  # 如果回答不正确
@@ -224,7 +224,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                 return await ans(wait, answer)  # 进行下一轮检查
             else:
                 send_ = wait.locale.t('chemical_code.message.correct')
-                if g_msg := gained_petal(wait, 2):
+                if g_msg := gained_petal(wait, 2) and random_mode == True:
                     send_ += '\n' + g_msg
                 await wait.send_message(send_)
                 play_state[msg.target.target_id]['active'] = False  # 将对象标记为非活跃状态
@@ -244,7 +244,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, captcha_mode=False):
                                 Plain(msg.locale.t('chemical_code.message', times=set_timeout))])
         time_start = datetime.now().timestamp()  # 记录开始时间
 
-        await asyncio.gather(ans(msg, csr['name']), timer(time_start))  # 同时启动回答函数和计时器函数
+        await asyncio.gather(ans(msg, csr['name'], random_mode), timer(time_start))  # 同时启动回答函数和计时器函数
     else:
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
