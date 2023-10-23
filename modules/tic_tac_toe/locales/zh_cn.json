@@ -1,7 +1,9 @@
 {
     "ttt.help.desc": "下井字棋。",
-    "ttt.bot.help": "和（菜鸡）机器人下井字棋。",
-    "ttt.expert.help": "和大师机器人下井字棋。",
+    "ttt.bot.help": "和（菜鸡）机器人下井字棋。不会获得花瓣。",
+    "ttt.expert.help": "和专家机器人下井字棋。",
+    "ttt.master.help": "和大师机器人下井字棋。可能获得花瓣，但是你不会赢。",
+    "ttt.noob.help": "和一心只想让你赢的机器人下井字棋。不会获得花瓣。",
     "ttt.duo.help": "双人（也可以是多人）对战井字棋。不会获得花瓣。",
     "ttt.turn.message": "请 ${player} 落子。",
     "ttt.stop.message": "已停止。",
