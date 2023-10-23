@@ -71,7 +71,7 @@
     "fish.message.type.blue-marlin": "旗鱼",
     "fish.message.type.pop-eyed-goldfish": "龙睛金鱼",
     "fish.message.type.piranha": "食人鱼",
-    "fish.message.start": "开始钓鱼，重复使用~fish命令进行收杆。",
+    "fish.message.start": "开始钓鱼，使用~retract命令进行收杆。",
     "fish.message.timeout": "2分钟过去了，你什么都没有钓到。",
     "fish.message.not_started.1": "没有可收回的鱼竿，使用~fish命令开始钓鱼。",
     "fish.message.not_started.2": "你尝试收回鱼竿，可是这里没有鱼也没有竿。不幸的是，你用力过猛，掉进了水里。",
