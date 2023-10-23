@@ -221,10 +221,10 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                         traceback.print_exc()
 
                 Logger.info(f'{wait_text} != {answer}')  # 输出日志
-                return await ans(wait, answer)  # 进行下一轮检查
+                return await ans(wait, answer, random_mode)  # 进行下一轮检查
             else:
                 send_ = wait.locale.t('chemical_code.message.correct')
-                if g_msg := gained_petal(wait, 2) and random_mode == True:
+                if g_msg := gained_petal(wait, 2) and random_mode:
                     send_ += '\n' + g_msg
                 await wait.send_message(send_)
                 play_state[msg.target.target_id]['active'] = False  # 将对象标记为非活跃状态
