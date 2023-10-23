@@ -49,14 +49,14 @@ async def game(msg: Bot.MessageSession,
         x = await x_callback(table)
         table[x[0]][x[1]] = 1
         if winner := check_winner(table):
-            return winner
+            return winner, table
         spaces = []
         for i in range(3):
             for j in range(3):
                 if table[i][j] == 0:
                     spaces.append((i, j))
         if not spaces:
-            return 0
+            return 0, table
 
         o = await o_callback(table)
         table[o[0]][o[1]] = 2
@@ -68,7 +68,7 @@ async def game(msg: Bot.MessageSession,
                 if table[i][j] == 0:
                     spaces.append((i, j))
         if not spaces:
-            return 0
+            return 0, table
 
 
 def format_table(table: GameTable):
@@ -213,15 +213,15 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True}})
 
     try:
-        winner = await game(msg, generate_human_callback(msg, 'X'), expert_bot_callback if msg.parsed_msg else random_bot_callback)
+        winner, table = await game(msg, generate_human_callback(msg, 'X'), expert_bot_callback if msg.parsed_msg else random_bot_callback)
     except TerminationError:
         return
 
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
         await msg.finish(msg.locale.t('ttt.draw'), quote=False)
-    g_msg = gained_petal(msg, 2) if winner == 1 and msg.parsed_msg else ''
-    await msg.finish(msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O') + '\n' + g_msg, quote=False)
+    g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and msg.parsed_msg else ''
+    await msg.finish(format_table(table) + '\n' + msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
 
 @tic_tac_toe.command('duo {{ttt.duo.help}}')
@@ -236,11 +236,11 @@ async def ttt_multiplayer(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True}})
 
     try:
-        winner = await game(msg, generate_human_callback(msg, 'X'), generate_human_callback(msg, 'O'))
+        winner, table = await game(msg, generate_human_callback(msg, 'X'), generate_human_callback(msg, 'O'))
     except TerminationError:
         return
 
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
         await msg.finish(msg.locale.t('ttt.draw'), quote=False)
-    await msg.finish(msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O'), quote=False)
+    await msg.finish(format_table(table) + '\n' + msg.locale.t('ttt.winner', winner='X' if winner == 1 else 'O'), quote=False)
