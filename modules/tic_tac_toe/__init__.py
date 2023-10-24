@@ -235,7 +235,7 @@ async def noob_bot_callback(board: GameBoard):
 
 async def expert_bot_callback(board: GameBoard):
     if random.randint(0, 4) == 0:
-        return random_bot_callback(board)
+        return await random_bot_callback(board)
     return find_best_move(board)
 
 
