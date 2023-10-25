@@ -43,7 +43,6 @@
     "parser.module.desc": "Description:\n${desc}",
     "parser.module.disabled.prompt": "\"${module}\" module is not enabled, please use \"${prefix}enable ${module}\" to enable the module.",
     "parser.module.unloaded": "\"${module}\"hasn't been loaded yet. Use command \"${prefix}module load ${module}\" to load the module.",
-    "parser.sudo.permission.denied": "You are not a superuser and cannot use the sudo command.",
     "parser.superuser.permission.denied": "You do not have permission to use this command.",
     "success": "Success.",
     "tos.reason": "Reason: ",

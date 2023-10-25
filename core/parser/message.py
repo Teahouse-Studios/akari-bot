@@ -165,7 +165,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 mute = True
             if command_first_word == 'sudo':
                 if not msg.check_super_user():
-                    return await msg.send_message(msg.locale.t("parser.sudo.permission.denied"))
+                    return await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
                 sudo = True
                 del command_split[0]
                 command_first_word = command_split[0].lower()

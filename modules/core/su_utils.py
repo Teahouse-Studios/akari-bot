@@ -320,7 +320,7 @@ async def update_bot(msg: Bot.MessageSession):
             await msg.send_message(pull_repo_result)
             await msg.send_message(update_dependencies())
         else:
-            await msg.send_message(msg.locale.t("core.message.update.failed"))
+            await msg.finish(msg.locale.t("core.message.update.failed"))
             
 
 if Info.subprocess:
@@ -339,7 +339,7 @@ if Info.subprocess:
                 await msg.send_message(pull_repo_result)
                 await msg.send_message(update_dependencies())
             else:
-                await msg.send_message(msg.locale.t("core.message.update.restart.failed"))
+                await msg.send_message(msg.locale.t("core.message.update.failed"))
             restart()
 
 if Bot.FetchTarget.name == 'QQ':
