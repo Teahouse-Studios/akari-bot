@@ -1,13 +1,13 @@
 import math
 import random
-from typing import Awaitable, Callable, List
+from typing import Awaitable, Callable, List, Tuple
 from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal
 from core.utils.cooldown import CoolDown
 
 tic_tac_toe = module('tic_tac_toe',
-                     desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'], 
+                     desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'],
                      alias=['ttt', 'tictactoe'])
 play_state = {}
 
@@ -30,7 +30,7 @@ def check_winner(board: List[List[int]]):
 
 
 GameBoard = List[List[int]]
-GameCallback = Callable[[List[List[int]]], Awaitable[tuple[int]]]
+GameCallback = Callable[[List[List[int]]], Awaitable[Tuple[int]]]
 
 
 class TerminationError(Exception):
