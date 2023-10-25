@@ -59,7 +59,7 @@
     "tos.reason.cooldown": "一段时间内使用相同命令的次数过多。",
     "tos.tempbanned": "提示：\n由于你的行为触发了警告，我们已对你进行临时封禁。\n距离解封时间还有 ${ban_time} 秒。",
     "tos.tempbanned.warning": "提示：\n即使已被临时封禁，尝试继续滥用命令可能会导致你被再次警告。\n距离解封时间还有 ${ban_time} 秒。",
-    "tos.warning": "警告：\n根据服务条款，你已违反我们的行为准则。",
+    "tos.warning": "警告：\n本bot禁止短时间大量使用，您已触碰到此阈值。",
     "tos.warning.appeal": "如果你有任何异议，请至 ${issue_url} 发起问题。",
     "tos.warning.count": "这是对你的第 ${current_warns} 次警告。如超过 ${warn_counts} 次警告，我们将会把你的账户加入黑名单。",
     "tos.warning.last": "这是对你的最后一次警告。",
