@@ -55,7 +55,7 @@
     "tos.tempbanned.warning": "提示：\n即使已被暫時停權，嘗試繼續濫用指令可能會導致你被再次警告。\n距解除時間還有 ${ban_time} 秒。",
     "tos.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.warning.appeal": "如果你有任何異義，請至 ${issue_url} 發起問題。",
-    "tos.warning.count": "這是第 ${current_warns} 次警告。如超過 5 次警告，我們將會把你的帳戶加入黑名單。",
+    "tos.warning.count": "這是第 ${current_warns} 次警告。如超過 ${warn_counts} 次警告，我們將會把你的帳戶加入黑名單。",
     "tos.warning.last": "這是最後警告。",
     "unknown": "未知",
     "yes": "是"
