@@ -8,7 +8,7 @@ from core.utils.cooldown import CoolDown
 
 tic_tac_toe = module('tic_tac_toe',
                      desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'], 
-                     alias=['tic_tac_toe', 'tictactoe'])
+                     alias=['ttt', 'tictactoe'])
 play_state = {}
 
 
