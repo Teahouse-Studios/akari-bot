@@ -126,11 +126,11 @@ async def _(msg: Bot.MessageSession):
                             wait_repeat = 0
                             hook_repeat = 0
                     else:
+                        play_state[msg.target.target_id]['hooked'] = True
                         if hooked_time % 1 == 0:
                             await msg.send_message(msg.locale.t(f"fish.message.hooked.{repeat_state}.{random.randint(1, 3)}"),
                                                    quote=False)
                             hook_repeat += 1
-                        play_state[msg.target.target_id]['hooked'] = True
                         hooked_time -= 0.25
                 else:
                     if wait_time % 10 == 0:
