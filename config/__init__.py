@@ -61,6 +61,9 @@ class CFG:
             print(f'[Config] Config {q} not found, is it configured?')
         if value is None and default is not None:
             return default
+        if default is not None:
+            if not isinstance(value, type(default)):
+                print(f'[Config] Config {q} has a wrong type, expected {type(default)}, got {type(value)}')
         return value
 
     @classmethod
