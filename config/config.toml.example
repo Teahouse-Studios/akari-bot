@@ -70,3 +70,6 @@ dice_count_limit = 10
 api_port = 5000
 langsmith_endpoint = "https://api.smith.langchain.com"
 langsmith_project =
+enable_get_petal = true
+gained_petal_limit = 10
+lost_petal_limit = 5

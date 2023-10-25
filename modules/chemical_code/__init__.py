@@ -13,10 +13,10 @@ from core.builtins import Bot
 from core.builtins import Image, Plain
 from core.component import module
 from core.logger import Logger
+from core.petal import gained_petal
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from core.utils.text import remove_prefix
-from modules.core.su_utils import gained_petal
 
 csr_link = 'https://www.chemspider.com'  # ChemSpider 的链接
 special_id = ["22398", "140526", "4509317", "4509318", "4510681", "4510778", "4512975", "4514248", "4514266", "4514293",

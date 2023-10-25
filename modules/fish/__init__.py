@@ -5,8 +5,8 @@ from datetime import datetime
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
+from core.petal import gained_petal, lost_petal
 from core.utils.cooldown import CoolDown
-from modules.core.su_utils import gained_petal, lost_petal
 
 fish = module('fish',
               desc='{fish.help.desc}',
