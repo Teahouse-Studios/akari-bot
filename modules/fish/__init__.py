@@ -147,7 +147,7 @@ async def _(msg: Bot.MessageSession):
     await asyncio.create_task(timer(datetime.now().timestamp(), wait_time, hooked_time))
 
 
-@fish.handle('retract')
+@fish.handle('retract {{fish.retract.help}}')
 @fish.regex(r'^(?:收杆|收)$')
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:

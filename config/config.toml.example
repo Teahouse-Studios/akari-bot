@@ -53,6 +53,7 @@ slower_schedule = false
 enable_dirty_check = true
 enable_urlmanager = true
 enable_tos = false
+tos_waring_counts = 5
 enable_analytics = true
 enable_eval = true
 enable_rickroll = true
