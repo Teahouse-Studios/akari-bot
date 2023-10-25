@@ -3,8 +3,8 @@
 from config import Config
 from core.builtins import Bot
 from core.component import module
+from core.petal import gained_petal, lost_petal
 from core.utils.cooldown import CoolDown
-from modules.core.su_utils import gained_petal, lost_petal
 from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = int(Config('coin_limit', 10))
@@ -99,8 +99,6 @@ async def skip_stone(msg: Bot.MessageSession):
     if count == 10:
         if g := gained_petal(msg, 2):
             send += '\n' + g
-    if count in [3, 5, 9]:
-        send += '\n' + msg.locale.t('eastereggs.message.1')
     await msg.finish(send)
 
 

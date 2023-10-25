@@ -5,8 +5,7 @@ from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
-
-from modules.core.su_utils import gained_petal
+from core.petal import gained_petal
 
 no_solution = ['无解', '無解', 'none', 'n/a']
 
