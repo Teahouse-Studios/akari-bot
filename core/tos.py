@@ -4,6 +4,7 @@ from database import BotDBUtil
 
 WARNING_COUNTS = int(Config('tos_waring_counts', 5))
 
+
 async def warn_target(msg: Bot.MessageSession, reason=None):
     if WARNING_COUNTS >= 1:
         current_warns = int(msg.target.sender_info.query.warns) + 1
