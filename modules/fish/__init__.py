@@ -36,7 +36,7 @@ fish_list = {
 async def finish_fish(msg: Bot.MessageSession):
     play_state[msg.target.target_id]['active'] = False
     if msg.target.target_from != 'TEST|Console':
-        qc = CoolDown('fish', msg)
+        qc = CoolDown('fish', msg, all=True)
         qc.reset()
     if play_state[msg.target.target_id]['hooked']:
         rand_result = random.randint(1, 100)
@@ -70,7 +70,7 @@ async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         return await finish_fish(msg)
     if msg.target.target_from != 'TEST|Console':
-        qc = CoolDown('fish', msg)
+        qc = CoolDown('fish', msg, all=True)
         c = qc.check(60)
         if c != 0:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
