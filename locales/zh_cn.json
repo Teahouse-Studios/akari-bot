@@ -50,7 +50,7 @@
     "petal.message.lost.success": "失去了 ${amount} 片花瓣。",
     "petal.message.lost.limit": "（本日失去花瓣已达到每日上限。）",
     "game.message.stop": "已停止。",
-    "game.message.none": "当前游戏未在进行。",
+    "game.message.none": "当前此游戏未在进行。",
     "success": "成功。",
     "tos.reason": "具体原因：",
     "tos.reason.abuse": "一段时间内使用命令的次数过多。",
@@ -61,7 +61,7 @@
     "tos.warning": "警告：\n本bot禁止短时间大量使用，您已触碰到此阈值。",
     "tos.warning.appeal": "如果你有任何异议，请至 ${issue_url} 发起问题。",
     "tos.warning.count": "这是对你的第 ${current_warns} 次警告。如超过 ${warn_counts} 次警告，我们将会把你的账户加入黑名单。",
-    "tos.warning.last": "这是对你的最后一次警告。",
+    "tos.warning.last": "这是最后一次警告。",
     "unknown": "未知",
     "yes": "是"
 }

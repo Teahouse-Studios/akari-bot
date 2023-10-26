@@ -23,7 +23,7 @@
     "user.message.registration_time": "註冊時間：",
     "user.message.site_rank": "本站排名：",
     "user.message.username": "使用者：",
-    "user.message.users_groups": "用户组：",
+    "user.message.users_groups": "使用者群組：",
     "user.message.wiki_unavailable": "${wikiurl} 不可用。",
     "user.message.wikipoints": "Wikipoints："
 }
