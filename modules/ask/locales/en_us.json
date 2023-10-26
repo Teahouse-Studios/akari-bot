@@ -2,5 +2,6 @@
     "ask.help": "Answer your question via ChatGPT.",
     "ask.help.regex": "Question:<question>? Answer your question via ChatGPT.",
     "ask.help.desc": "Ask AkariBot anything!",
-    "ask.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into images. Here is the original text output:\n${text}) "
+    "ask.message.text2img.error": "(An error occurred: Unable to correctly convert the following content into images. Here is the original text output:\n${text}) ",
+    "ask.message.petal.cost": "(${count} petals used)"
 }
