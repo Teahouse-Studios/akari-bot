@@ -84,7 +84,7 @@
     "core.message.module.help.legacy.base": "Base Command: ",
     "core.message.module.help.legacy.external": "Extension Command: ",
     "core.message.module.help.legacy.more_information": "Use \"${prefix}help <module name>\" to see details.\nUse \"${prefix}module list\" to view all available modules.\nYou can also access the online documents: \n${help_url}",
-    "core.message.module.help.more_information": "Only enabled modules' help documents are shown here, use “${prefix}module list” to check full help documents 。\nOur bot's wiki are available at: \nhttps://bot.teahouse.team/wiki/\nYour sponsorship is warmly welcomed at: \nhttps://afdian.net/@teahouse",
+    "core.message.module.help.more_information": "本框架由akari-bot驱动。本自搭建版本仅供已授权的群聊使用，相关内容与本bot开发者、服务器所有人无关，亦不代表开发者或自搭建版本运维方立场。\n本分支项目维护代码地址：https://github.com/ZoruaFox/akari-bot",
     "core.message.module.help.not_found": "This module may not exist, please check your input.",
     "core.message.module.help.regex.detail": "(${msg})",
     "core.message.module.help.regex.no_information": "No description",
