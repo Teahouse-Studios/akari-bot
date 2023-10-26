@@ -19,6 +19,5 @@
     "coin.message.tail": "…\n…是反面！",
     "stone.help.desc": "打水漂。",
     "stone.message.skip": "你扔了一块石头，漂了 ${count} 下。",
-    "stone.message.skip.nothing": "你扔了一块石头，什么也没发生。",
-    "eastereggs.message.1": "※ 这使你充满了决心。"
+    "stone.message.skip.nothing": "你扔了一块石头，什么也没有发生。"
 }
