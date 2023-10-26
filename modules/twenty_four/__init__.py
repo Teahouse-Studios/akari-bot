@@ -115,7 +115,10 @@ async def _(msg: Bot.MessageSession):
             if has_solution_flag:
                 await answer.send_message(msg.locale.t('twenty_four.message.incorrect.have_solution'))
             else:
-                await answer.send_message(msg.locale.t('twenty_four.message.correct'))
+                send = msg.locale.t('twenty_four.message.correct')
+                if g_msg := gained_petal(msg, 2):
+                    send += '\n' + g_msg
+                await answer.send_message(send)
         elif is_valid(expression):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
