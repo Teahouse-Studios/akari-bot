@@ -5,7 +5,7 @@ from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
-from core.petal import gained_petal
+from core.petal import gained_petal, lost_petal
 
 no_solution = ['无解', '無解', 'none', 'n/a']
 
@@ -113,12 +113,14 @@ async def _(msg: Bot.MessageSession):
     if play_state[msg.target.target_id]['active']:
         if expression.lower() in no_solution:
             if has_solution_flag:
-                await answer.send_message(msg.locale.t('twenty_four.message.incorrect.have_solution'))
+                send = msg.locale.t('twenty_four.message.incorrect.have_solution')
+                if g_msg := lost_petal(msg, 1):
+                    send += '\n' + g_msg
             else:
                 send = msg.locale.t('twenty_four.message.correct')
                 if g_msg := gained_petal(msg, 2):
                     send += '\n' + g_msg
-                await answer.send_message(send)
+            await answer.send_message(send)
         elif is_valid(expression):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
