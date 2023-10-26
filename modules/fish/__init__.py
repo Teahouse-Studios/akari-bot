@@ -32,6 +32,8 @@ fish_list = {
     'huge': ['sturgeon', 'oar-fish', 'coelacanth', 'tuna', 'blue-marlin'],
 }
 
+fish_list_by_name = {x: y for y in fish_list for x in fish_list[y]}
+
 
 async def finish_fish(msg: Bot.MessageSession):
     play_state[msg.target.target_id]['active'] = False
@@ -77,8 +79,8 @@ async def _(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
 
     async def generate_fish(msg: Bot.MessageSession):
-        fish_type = random.choice(list(fish_list.keys()))
-        fish_name = random.choice(fish_list[fish_type])
+        fish_name = random.choice(list(fish_list_by_name.keys()))
+        fish_type = fish_list_by_name[fish_name]
         play_state[msg.target.target_id]['fish_type'] = fish_type
         play_state[msg.target.target_id]['fish_name'] = fish_name
         hooked_time_chance = random.randint(1, 100)
