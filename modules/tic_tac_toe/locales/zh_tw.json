@@ -1,13 +1,13 @@
 {
-    "ttt.help.desc": "下井字棋。",
-    "ttt.bot.help": "和（菜鸡）机器人下井字棋。不会获得花瓣。",
-    "ttt.expert.help": "和专家机器人下井字棋。",
-    "ttt.master.help": "和大师机器人下井字棋。可能获得花瓣，但是你不会赢。",
-    "ttt.noob.help": "和一心只想让你赢的机器人下井字棋。不会获得花瓣。",
-    "ttt.duo.help": "双人（也可以是多人）对战井字棋。不会获得花瓣。",
-    "ttt.turn.message": "请 ${player} 落子。",
-    "ttt.stop.message": "已停止。",
-    "ttt.stop.message.none": "当前没有游戏正在进行。",
-    "ttt.draw": "游戏已结束，平局。",
-    "ttt.winner": "游戏已结束，${winner} 赢了。"
+    "tic_tac_toe.help.desc": "下井字棋。",
+    "tic_tac_toe.help": "和机器人下井字棋。",
+    "tic_tac_toe.expert.help": "和专家级机器人下井字棋。",
+    "tic_tac_toe.master.help": "和大师级机器人下井字棋。",
+    "tic_tac_toe.noob.help": "和菜鸟级机器人下井字棋。",
+    "tic_tac_toe.duo.help": "双人对战井字棋。",
+    "tic_tac_toe.message.turn": "请 ${player} 落子。\n（发送数字以确定要落子的位置）",
+    "tic_tac_toe.stop.message": "已停止。",
+    "tic_tac_toe.stop.message.none": "当前没有游戏正在进行。",
+    "tic_tac_toe.message.draw": "游戏已结束，平局。",
+    "tic_tac_toe.message.winner": "游戏已结束，${winner} 赢了。"
 }
