@@ -109,6 +109,9 @@ class MessageSession(MessageSessionT):
         if self.target.target_from == 'QQ|Group':
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+            except aiocqhttp.exceptions.NetworkError:
+                send = await bot.send_group_msg(group_id=self.session.target, message=MessageSegment.text(
+                    '发生错误：消息发送超时，请稍后重试命令或尝试等待返回结果。'))
             except aiocqhttp.exceptions.ActionFailed:
                 message_chain.insert(0, Plain('消息被风控，尝试使用图片发送。'))
                 msg2img = MessageSegment.image(Path(await msgchain2image(message_chain)).as_uri())

@@ -315,9 +315,13 @@ async def update_bot(msg: Bot.MessageSession):
     await msg.send_message(msg.locale.t("core.message.confirm"))
     confirm = await msg.wait_confirm()
     if confirm:
-        await msg.send_message(pull_repo())
-        await msg.send_message(update_dependencies())
-
+        pull_repo_result = pull_repo()
+        if pull_repo_result != '':
+            await msg.send_message(pull_repo_result)
+            await msg.send_message(update_dependencies())
+        else:
+            await msg.finish(msg.locale.t("core.message.update.failed"))
+            
 
 if Info.subprocess:
     upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r', base=True)
@@ -330,8 +334,12 @@ if Info.subprocess:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
             write_version_cache(msg)
-            await msg.send_message(pull_repo())
-            await msg.send_message(update_dependencies())
+            pull_repo_result = pull_repo()
+            if pull_repo_result != '':
+                await msg.send_message(pull_repo_result)
+                await msg.send_message(update_dependencies())
+            else:
+                await msg.send_message(msg.locale.t("core.message.update.failed"))
             restart()
 
 if Bot.FetchTarget.name == 'QQ':
@@ -500,7 +508,7 @@ if Config('openai_api_key'):
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
 
 
-if Bot.FetchTarget.name == 'QQ':
+if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)
 
     @post_whitelist.handle('<group_id>')

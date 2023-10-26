@@ -36,7 +36,7 @@ async def remove_temp_ban(msg: Bot.MessageSession):
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     same = counter_same.get(msg.target.sender_id)
     if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
-        # 检查是否滥用（重复使用同一命令）
+        # 检查是否滥用（5分钟内重复使用同一命令10条）
         counter_same[msg.target.sender_id] = {'command': command, 'count': 1,
                                               'ts': datetime.now().timestamp()}
     else:
@@ -44,7 +44,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
         if same['count'] > 10:
             raise AbuseWarning(msg.locale.t("tos.reason.cooldown"))
     all_ = counter_all.get(msg.target.sender_id)
-    if all_ is None or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（重复使用同一命令）
+    if all_ is None or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {'count': 1,
                                              'ts': datetime.now().timestamp()}
     else:
@@ -165,7 +165,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 mute = True
             if command_first_word == 'sudo':
                 if not msg.check_super_user():
-                    return await msg.send_message(msg.locale.t("parser.sudo.permission.denied"))
+                    return await msg.send_message(msg.locale.t("parser.superuser.permission.denied"))
                 sudo = True
                 del command_split[0]
                 command_first_word = command_split[0].lower()

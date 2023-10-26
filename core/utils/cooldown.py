@@ -9,12 +9,15 @@ _cd_lst = {}
 
 class CoolDown:
 
-    def __init__(self, k, msg: Union[MessageSession, str]):
+    def __init__(self, k, msg: Union[MessageSession, str], all=False):
         self.k = k
         self.msg = msg
         self.sender_id = self.msg
         if isinstance(self.sender_id, MessageSession):
-            self.sender_id = self.sender_id.target.sender_id
+            if all:
+                self.sender_id = self.msg.target.target_id
+            else:
+                self.sender_id = self.sender_id.target.sender_id
 
     def add(self):
         if self.k not in _cd_lst:
