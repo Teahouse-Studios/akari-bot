@@ -102,7 +102,7 @@ play_state = {}
 @tf.command('{{twenty_four.help}}')
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        await msg.finish(msg.locale.t('twenty_four.message.running'))
+        await msg.finish(msg.locale.t('game.message.running'))
     play_state.update({msg.target.target_id: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
@@ -135,14 +135,14 @@ async def _(msg: Bot.MessageSession):
         play_state[msg.target.target_id]['active'] = False
 
 
-@tf.command('stop {{twenty_four.stop.help}}')
+@tf.command('stop {{game.help.stop}}')
 async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.target_id, False)
     if state:
         if state['active']:
             play_state[msg.target.target_id]['active'] = False
-            await msg.send_message(msg.locale.t('twenty_four.stop.message'))
+            await msg.send_message(msg.locale.t('game.message.stop'))
         else:
-            await msg.send_message(msg.locale.t('twenty_four.stop.message.none'))
+            await msg.send_message(msg.locale.t('game.message.stop.none'))
     else:
-        await msg.send_message(msg.locale.t('twenty_four.stop.message.none'))
+        await msg.send_message(msg.locale.t('game.message.stop.none'))
