@@ -11,4 +11,7 @@ client = Enka()
                  'placeholder <ph> Placeholder',
 )
 async def _(msg: Bot.MessageSession, genshin):
-    await msg.finish(client.fetch_user(193588293))
+    user = await client.fetch_user(193588293)
+    player_level = {user.player.level}
+    await msg.send_message(player_level)
+    
