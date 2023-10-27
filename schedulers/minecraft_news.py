@@ -51,7 +51,7 @@ async def start_check_news():
     if not web_render:
         return
     try:
-        get = web_render + 'source?url=' + url
+        get = web_render + '/source?url=' + url
         getpage = await get_url(get, 200, attempt=1, logging_err_resp=False)
         if getpage:
             alist = get_stored_list('scheduler', 'mcnews')
