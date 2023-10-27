@@ -9,7 +9,6 @@ from core.utils.http import get_url
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
-webrender = CFG.get_url('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
 
 
