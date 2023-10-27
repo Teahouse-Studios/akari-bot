@@ -18,7 +18,7 @@ async def jiki(term: str, locale: Locale):
         api = 'https://jikipedia.com/search?phrase=' + term
         webrender = Config('web_render')
         if webrender:
-            api = webrender + '/source?url=' + api
+            api = webrender + 'source?url=' + api
         html = await get_url(api, 200)
         Logger.debug(html)
         bs = BeautifulSoup(html, 'html.parser')
