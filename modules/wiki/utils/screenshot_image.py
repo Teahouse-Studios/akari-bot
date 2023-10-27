@@ -59,7 +59,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
     else:
         Logger.info('[Webrender] Generating section screenshot...')
         try:
-            img = await download_to_cache((web_render_local if use_local else ) + '/section_screenshot',
+            img = await download_to_cache((web_render_local if use_local else web_render) + '/section_screenshot',
                                           status_code=200,
                                           headers={'Content-Type': 'application/json'},
                                           method="POST",
