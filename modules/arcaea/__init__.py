@@ -26,7 +26,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish([msg.locale.t("error.webrender.unconfigured")])
-    resp = await get_url(webrender + '/source?url=' +
+    resp = await get_url(webrender + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'), 200,
                          fmt='json')
     if resp:
@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(msg.locale.t("error.webrender.unconfigured"))
-    resp = await get_url(webrender + '/source?url=' +
+    resp = await get_url(webrender + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/song/showcase/'),
                          200, fmt='json')
     if resp:
@@ -59,11 +59,11 @@ async def _(msg: Bot.MessageSession):
     if not webrender:
         await msg.finish(msg.locale.t("error.webrender.unconfigured"))
     if msg.parsed_msg.get('free', False):
-        resp = await get_url(webrender + '/source?url=' +
+        resp = await get_url(webrender + 'source?url=' +
                              urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/free/'),
                              200, fmt='json')
     else:
-        resp = await get_url(webrender + '/source?url=' +
+        resp = await get_url(webrender + 'source?url=' +
                              urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/paid/'), 200, fmt='json')
     if resp:
         r = []
