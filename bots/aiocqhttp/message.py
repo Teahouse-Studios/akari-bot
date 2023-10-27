@@ -111,9 +111,9 @@ class MessageSession(MessageSessionT):
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
             except aiocqhttp.exceptions.NetworkError:
                 send = await bot.send_group_msg(group_id=self.session.target, message=MessageSegment.text(
-                    '发生错误：消息发送超时，请稍后重试命令或尝试等待返回结果。'))
+                    self.locale.t("error.message.timeout")))
             except aiocqhttp.exceptions.ActionFailed:
-                message_chain.insert(0, Plain('消息被风控，尝试使用图片发送。'))
+                message_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
                 msg2img = MessageSegment.image(Path(await msgchain2image(message_chain)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
@@ -173,7 +173,7 @@ class MessageSession(MessageSessionT):
         if self.target.target_from == 'QQ|Group':
             get_ = get_stored_list(Bot.FetchTarget, 'forward_msg')
             if not get_['status']:
-                await self.send_message('转发消息已禁用。')
+                await self.send_message(self.locale.t("core.message.forward_msg.disabled"))
                 raise
             await bot.call_action('send_group_forward_msg', group_id=int(self.session.target), messages=nodelist)
 

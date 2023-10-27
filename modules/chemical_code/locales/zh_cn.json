@@ -15,10 +15,7 @@
     "chemical_code.message.incorrect.remind3": "提示：已经很接近了，请重试。",
     "chemical_code.message.incorrect.remind4": "提示：可能有元素遗漏，请检查。",
     "chemical_code.message.incorrect.remind5": "提示：元素顺序不正确，请检查。",
-    "chemical_code.message.running": "当前有游戏正在进行中。",
     "chemical_code.message.showid": "ID：${id}",
     "chemical_code.message.timeup": "已超时，正确答案是 ${answer}。",
-    "chemical_code.stop.help": "停止当前的游戏。",
-    "chemical_code.stop.message": "已停止，正确答案是 ${answer}。",
-    "chemical_code.stop.message.none": "当前没有游戏正在进行。"
+    "chemical_code.stop.message": "已停止，正确答案是 ${answer}。"
 }

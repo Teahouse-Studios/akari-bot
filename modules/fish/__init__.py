@@ -73,9 +73,9 @@ async def _(msg: Bot.MessageSession):
         return await finish_fish(msg)
     if msg.target.target_from != 'TEST|Console':
         qc = CoolDown('fish', msg, all=True)
-        c = qc.check(60)
+        c = qc.check(30)
         if c != 0:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
 
     async def generate_fish(msg: Bot.MessageSession):
@@ -144,7 +144,7 @@ async def _(msg: Bot.MessageSession):
 
                 await timer(start, wait_time, hooked_time, wait_repeat, hook_repeat)  # 重新调用计时器函数
 
-    await msg.send_message(msg.locale.t('fish.message.start'))
+    await msg.send_message(msg.locale.t('fish.message.start', prefix=msg.prefixes[0]))
     Bot.ExecutionLockList.remove(msg)
     await asyncio.create_task(timer(datetime.now().timestamp(), wait_time, hooked_time))
 
@@ -157,7 +157,7 @@ async def _(msg: Bot.MessageSession):
     else:
         rand_result = random.randint(1, 100)
         if rand_result < 98:
-            send = msg.locale.t('fish.message.not_started.1')
+            send = msg.locale.t('fish.message.not_started.1', prefix=msg.prefixes[0])
         else:
             send = msg.locale.t('fish.message.not_started.2')
             if g := lost_petal(msg, 1):
