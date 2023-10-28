@@ -3,16 +3,22 @@ from core.builtins import Bot
 from enkanetwork import EnkaNetworkAPI
 from core.utils.cooldown import CoolDown
 from config import Config
+from enkanetwork import Assets
 
 genshin = module('genshin', alias='yuanshen', desc='原神角色信息查询。', developers=['ZoruaFox'])
 
 client = EnkaNetworkAPI()
+assets = Assets(lang="zh")
 
-ENKA_URL = Config('enka_url')
+ENKA_URL = Config('enka_url') #预引入enka节点自定义
 
 @genshin.command()
 async def _(msg: Bot.MessageSession):
     data = await client.fetch_user(193588293)
     player_level = {data.player.level}
-    await msg.send_message(f'测试用玩家等级：{player_level}')
+    await msg.send_message(
+        f"测试用玩家昵称：{data.player.nickname}\n"
+        f"测试用玩家等级：{player_level}\n"
+        f"深境螺旋: {data.player.abyss_floor} 层 {data.player.abyss_room} 间"
+        )
     
