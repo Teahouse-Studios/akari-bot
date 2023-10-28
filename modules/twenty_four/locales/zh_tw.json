@@ -5,9 +5,5 @@
     "twenty_four.message.correct": "回答正確。",
     "twenty_four.message.incorrect.have_solution": "回答錯誤：該組合存在解。",
     "twenty_four.message.incorrect.error": "回答錯誤：運算式無效。",
-    "twenty_four.message.incorrect": "回答錯誤。",
-    "twenty_four.message.running": "目前有一局遊戲正在進行。",
-    "twenty_four.stop.help": "停止目前的遊戲。",
-    "twenty_four.stop.message": "已停止。",
-    "twenty_four.stop.message.none": "目前沒有遊戲正在進行。"
+    "twenty_four.message.incorrect": "回答錯誤。"
 }
