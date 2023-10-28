@@ -13,9 +13,9 @@ client = EnkaNetworkAPI()
 
 ENKA_URL = Config('enka_url') #预引入enka节点自定义
 
-@genshin.command()
+@genshin.handle('uid <number> {{genshin.help.uid}}')
 async def _(msg: Bot.MessageSession):
-    data = await client.fetch_user(193588293)
+    data = await client.fetch_user(msg['<number>'])
     player_level = {data.player.level}
     await msg.send_message(
         f"测试用玩家昵称：{data.player.nickname}\n"
