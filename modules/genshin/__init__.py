@@ -11,5 +11,5 @@ client = Enka()
 async def _(msg: Bot.MessageSession):
     user = await client.fetch_user(193588293)
     player_level = {user.player.level}
-    await msg.send_message(f'测试用玩家等级：' + player_level)
+    await msg.send_message('测试用玩家等级：' + str(player_level))
     
