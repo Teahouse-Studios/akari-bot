@@ -18,9 +18,10 @@ async def _(msg: Bot.MessageSession):
     data = await client.fetch_user(msg.parsed_msg['<number>'])
     player_level = {data.player.level}
     await msg.send_message(
-        f"测试用玩家昵称：{data.player.nickname}\n"
+        f"玩家昵称：{data.player.nickname}\n"
         f"玩家签名: {data.player.signature}\n"
-        f"测试用玩家等级：{data.player.level}\n"
+        f"玩家等级：{data.player.level}\n"
         f"深境螺旋: {data.player.abyss_floor} 层 {data.player.abyss_room} 间"
+        f"数据缓存时间：{data.ttl}\n"
         )
     
