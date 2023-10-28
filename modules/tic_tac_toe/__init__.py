@@ -246,17 +246,17 @@ async def random_bot_callback(board: GameBoard):
     return random.choice(random_spaces)
 
 
-@tic_tac_toe.command('stop {{tic_tac_toe.stop.help}}')
+@tic_tac_toe.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
     state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.target_id]['active'] = False  # 标记为非活跃状态
-            await msg.finish(msg.locale.t('tic_tac_toe.stop.message'), quote=False)
+            await msg.finish(msg.locale.t('game.message.stop'), quote=False)
         else:
-            await msg.finish(msg.locale.t('tic_tac_toe.stop.message.none'))
+            await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
-        await msg.finish(msg.locale.t('tic_tac_toe.stop.message.none'))
+        await msg.finish(msg.locale.t('game.message.stop.none'))
 
 
 @tic_tac_toe.command('{{tic_tac_toe.help}}')
@@ -278,7 +278,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
         game_type = 'random'
         bot_callback = random_bot_callback
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        return await terminate(msg)
+        await msg.finish(msg.locale.t('game.message.running'))
     play_state.update({msg.target.target_id: {'active': True}})
 
     try:
@@ -296,7 +296,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
 @tic_tac_toe.command('duo {{tic_tac_toe.duo.help}}')
 async def ttt_multiplayer(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        return await terminate(msg)
+        await msg.finish(msg.locale.t('game.message.running'))
     play_state.update({msg.target.target_id: {'active': True}})
 
     try:

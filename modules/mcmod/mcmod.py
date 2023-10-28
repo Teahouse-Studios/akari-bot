@@ -17,7 +17,7 @@ async def mcmod(msg, keyword: str, detail: bool = False):
     webrender = Config('web_render')
     if not webrender:
         return
-    search_url = webrender + '/source?url=' + quote(search_url)
+    search_url = webrender + 'source?url=' + quote(search_url)
     html = await get_url(search_url, 200)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
