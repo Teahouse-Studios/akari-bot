@@ -19,7 +19,7 @@ async def _(msg: Bot.MessageSession):
     player_level = {data.player.level}
     await msg.send_message(
         f"测试用玩家昵称：{data.player.nickname}\n"
-        f"测试用玩家等级：{player_level}\n"
+        f"测试用玩家等级：{data.player_level}\n"
         f"深境螺旋: {data.player.abyss_floor} 层 {data.player.abyss_room} 间"
         )
     
