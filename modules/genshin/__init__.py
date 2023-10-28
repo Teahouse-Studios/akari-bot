@@ -1,3 +1,4 @@
+import asyncio
 from core.component import module
 from core.builtins import Bot
 from enkanetwork import EnkaNetworkAPI
@@ -5,10 +6,10 @@ from core.utils.cooldown import CoolDown
 from config import Config
 from enkanetwork import Assets
 
+
 genshin = module('genshin', alias='yuanshen', desc='原神角色信息查询。', developers=['ZoruaFox'])
 
 client = EnkaNetworkAPI()
-assets = Assets(lang="zh")
 
 ENKA_URL = Config('enka_url') #预引入enka节点自定义
 
