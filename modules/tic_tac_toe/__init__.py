@@ -252,7 +252,7 @@ async def terminate(msg: Bot.MessageSession):
     if state:  # 若有
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.target_id]['active'] = False  # 标记为非活跃状态
-            await msg.finish(msg.locale.t('game.message.stop'), quote=False)
+            await msg.finish(msg.locale.t('game.message.stop'))
         else:
             await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
@@ -289,7 +289,11 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     play_state[msg.target.target_id]['active'] = False
     if winner == 0:
         await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.draw'), quote=False)
-    g_msg = '\n' + gained_petal(msg, 2) if winner == 1 and game_type in ['expert', 'master'] else ''
+    if winner == 1:
+        if game_type is 'random':
+            g_msg = '\n' + gained_petal(msg, 1)
+        if game_type is 'expert':
+            g_msg = '\n' + gained_petal(msg, 2)
     await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
 
