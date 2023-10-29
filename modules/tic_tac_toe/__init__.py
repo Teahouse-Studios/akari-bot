@@ -4,7 +4,6 @@ from typing import Awaitable, Callable, List, Tuple
 from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal
-from core.utils.cooldown import CoolDown
 
 tic_tac_toe = module('tic_tac_toe',
                      desc='{tic_tac_toe.help.desc}', developers=['Dianliang233'],
@@ -290,13 +289,12 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     if winner == 0:
         await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.draw'), quote=False)
     if winner == 1:
+        g_msg = ''
         if game_type == 'random' and (reward := gained_petal(msg, 1)):
             g_msg = '\n' + reward
         if game_type == 'expert' and (reward := gained_petal(msg, 2)):
             g_msg = '\n' + reward
-        else:
-            g_msg = ''
-    await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
+        await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
 
 @tic_tac_toe.command('duo {{tic_tac_toe.duo.help}}')
