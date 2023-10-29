@@ -292,7 +292,7 @@ async def ttt_with_bot(msg: Bot.MessageSession):
     if winner == 1:
         if game_type is 'random' and reward := gained_petal(msg, 1):
             g_msg = '\n' + reward
-        if game_type is 'expert' reward := gained_petal(msg, 2):
+        if game_type is 'expert' and reward := gained_petal(msg, 2):
             g_msg = '\n' + reward
     await msg.finish(format_board(board) + '\n' + msg.locale.t('tic_tac_toe.message.winner', winner='X' if winner == 1 else 'O') + g_msg, quote=False)
 
