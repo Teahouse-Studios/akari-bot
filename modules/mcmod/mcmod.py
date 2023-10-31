@@ -2,7 +2,7 @@ from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 
-from config import Config
+from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
@@ -14,10 +14,10 @@ api_details = 'https://search.mcmod.cn/s?filter=3&key='
 async def mcmod(msg, keyword: str, detail: bool = False):
     endpoint = api_details if detail else api
     search_url = endpoint + quote(keyword)
-    webrender = Config('web_render')
+    webrender = CFG.get_url('web_render')
     if not webrender:
         return
-    search_url = webrender + '/source?url=' + quote(search_url)
+    search_url = webrender + 'source?url=' + quote(search_url)
     html = await get_url(search_url, 200)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
