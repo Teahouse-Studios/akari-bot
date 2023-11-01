@@ -166,9 +166,9 @@ bcrypt==4.0.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0"
 beautifulsoup4==4.12.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da \
     --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a
-blinker==1.5 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:1eb563df6fdbc39eeddc177d953203f99f097e9bf0e2b8f9f3cf18b6ca425e36 \
-    --hash=sha256:923e5e2f69c155f2cc42dafbbd70e16e3fde24d2d4aa2ab72fbe386238892462
+blinker==1.7.0; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9 \
+    --hash=sha256:e6820ff6fa4e4d1d8e2747c2283749c3f547e4fee112b98555cdcdae32996182
 brotli==1.1.0 ; platform_python_implementation == "CPython" and python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:03d20af184290887bdea3f0f78c4f737d126c74dc2f3ccadf07e54ceca3bf208 \
     --hash=sha256:0541e747cce78e24ea12d69176f6a7ddb690e62c425e01d31cc065e69ce55b48 \
