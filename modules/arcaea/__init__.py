@@ -9,9 +9,8 @@ from core.utils.http import get_url
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
-webrender = CFG.get_url('web_render')
 assets_path = os.path.abspath('./assets/arcaea')
-
+webrender = CFG.get_url('web_render')
 
 class WithErrCode(Exception):
     pass
@@ -34,7 +33,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
                                              url=resp['value']['url']))])
     else:
-        msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
 @arc.command('random {{arcaea.help.random}}')
@@ -52,7 +51,7 @@ async def _(msg: Bot.MessageSession):
             result.append(Image(path=image))
         await msg.finish(result)
     else:
-        msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
 @arc.command('rank free {{arcaea.help.rank.free}}', 'rank paid {{arcaea.help.rank.paid}}')
@@ -74,4 +73,4 @@ async def _(msg: Bot.MessageSession):
             r.append(f'{rank}. {x["title"]["en"]} ({x["status"]})')
         await msg.finish('\n'.join(r))
     else:
-        msg.finish(msg.locale.t("arcaea.message.get_failed"))
+        await msg.finish(msg.locale.t("arcaea.message.get_failed"))

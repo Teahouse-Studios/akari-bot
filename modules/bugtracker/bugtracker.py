@@ -4,14 +4,14 @@ import aiohttp
 import ujson as json
 from PIL import ImageFont
 
-from config import Config
+from config import Config, CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download_to_cache
 from core.utils.http import get_url
 
-web_render = Config('web_render')
-web_render_local = Config('web_render_local')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
 font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
@@ -28,7 +28,7 @@ async def make_screenshot(page_link, use_local=True):
         use_local = False
     Logger.info('[Webrender] Generating element screenshot...')
     try:
-        img = await download_to_cache((web_render_local if use_local else web_render) + '/element_screenshot',
+        img = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot',
                                       status_code=200,
                                       headers={'Content-Type': 'application/json'},
                                       method="POST",

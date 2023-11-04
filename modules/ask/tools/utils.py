@@ -32,7 +32,10 @@ def with_args(func: Callable, *args, **kwargs):
 
 
 def parse_input(input: str):
-    vals = input.split(',')
+    if isinstance(input, list):  # wat hell it is appeared in here
+        vals = input
+    else:
+        vals = input.split(',')
     parsed = []
     for v in vals:
         parsed.append(v.strip().strip('"'.strip("'")))

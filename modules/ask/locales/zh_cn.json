@@ -1,6 +1,7 @@
 {
     "ask.help": "通过 ChatGPT 回答问题。",
-    "ask.help.regex": "问：<question> 通过 ChatGPT 回答问题",
+    "ask.help.regex": "问：<question>？ 通过 ChatGPT 回答问题。",
     "ask.help.desc": "有事为什么不问问小可呢？",
-    "ask.message.cooldown": "距离上次执行已过去 ${time} 秒，本命令的冷却时间为 60 秒。"
+    "ask.message.text2img.error": "（发生错误：无法正确将以下内容转换为图片，尝试原文输出：\n${text}）",
+    "ask.message.petal.cost": "（使用了 ${count} 片花瓣）"
 }

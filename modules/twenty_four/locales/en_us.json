@@ -5,9 +5,5 @@
     "twenty_four.message.correct": "回答正确。",
     "twenty_four.message.incorrect.have_solution": "回答错误：该组合存在解。",
     "twenty_four.message.incorrect.error": "回答错误：表达式无效。",
-    "twenty_four.message.incorrect": "回答错误。",
-    "twenty_four.message.running": "当前有一局游戏正在进行中。",
-    "twenty_four.stop.help": "停止当前的游戏。",
-    "twenty_four.stop.message": "已停止。",
-    "twenty_four.stop.message.none": "当前没有游戏正在进行。"
+    "twenty_four.message.incorrect": "回答错误。"
 }

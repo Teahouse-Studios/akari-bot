@@ -2,7 +2,7 @@ import traceback
 
 from bs4 import BeautifulSoup
 
-from config import Config
+from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
@@ -16,9 +16,9 @@ async def jiki(term: str, locale: Locale):
     :returns: 查询结果。'''
     try:
         api = 'https://jikipedia.com/search?phrase=' + term
-        webrender = Config('web_render')
+        webrender = CFG.get_url('web_render')
         if webrender:
-            api = webrender + '/source?url=' + api
+            api = webrender + 'source?url=' + api
         html = await get_url(api, 200)
         Logger.debug(html)
         bs = BeautifulSoup(html, 'html.parser')

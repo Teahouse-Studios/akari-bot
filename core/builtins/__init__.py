@@ -19,6 +19,7 @@ class Bot:
     client_name = FetchTarget.name
     FetchedSession = FetchedSessionT
     ModuleHookContext = ModuleHookContext
+    ExecutionLockList = ExecutionLockList
 
     @staticmethod
     async def send_message(target: Union[FetchedSessionT, MessageSession, str], msg: Union[MessageChain, list],

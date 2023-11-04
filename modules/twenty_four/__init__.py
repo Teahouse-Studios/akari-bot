@@ -5,6 +5,7 @@ from simpleeval import simple_eval
 
 from core.builtins import Bot
 from core.component import module
+from core.petal import gained_petal, lost_petal
 
 no_solution = ['无解', '無解', 'none', 'n/a']
 
@@ -101,7 +102,7 @@ play_state = {}
 @tf.command('{{twenty_four.help}}')
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        await msg.finish(msg.locale.t('twenty_four.message.running'))
+        await msg.finish(msg.locale.t('game.message.running'))
     play_state.update({msg.target.target_id: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
@@ -112,13 +113,21 @@ async def _(msg: Bot.MessageSession):
     if play_state[msg.target.target_id]['active']:
         if expression.lower() in no_solution:
             if has_solution_flag:
-                await answer.send_message(msg.locale.t('twenty_four.message.incorrect.have_solution'))
+                send = msg.locale.t('twenty_four.message.incorrect.have_solution')
+                if g_msg := lost_petal(msg, 1):
+                    send += '\n' + g_msg
             else:
-                await answer.send_message(msg.locale.t('twenty_four.message.correct'))
+                send = msg.locale.t('twenty_four.message.correct')
+                if g_msg := gained_petal(msg, 2):
+                    send += '\n' + g_msg
+            await answer.send_message(send)
         elif is_valid(expression):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
-                await answer.send_message(msg.locale.t('twenty_four.message.correct'))
+                send = msg.locale.t('twenty_four.message.correct')
+                if g_msg := gained_petal(msg, 2):
+                    send += '\n' + g_msg
+                await answer.send_message(send)
             else:
                 await answer.send_message(msg.locale.t('twenty_four.message.incorrect'))
         else:
@@ -126,14 +135,14 @@ async def _(msg: Bot.MessageSession):
         play_state[msg.target.target_id]['active'] = False
 
 
-@tf.command('stop {{twenty_four.stop.help}}')
+@tf.command('stop {{game.help.stop}}')
 async def s(msg: Bot.MessageSession):
     state = play_state.get(msg.target.target_id, False)
     if state:
         if state['active']:
             play_state[msg.target.target_id]['active'] = False
-            await msg.send_message(msg.locale.t('twenty_four.stop.message'))
+            await msg.send_message(msg.locale.t('game.message.stop'))
         else:
-            await msg.send_message(msg.locale.t('twenty_four.stop.message.none'))
+            await msg.send_message(msg.locale.t('game.message.stop.none'))
     else:
-        await msg.send_message(msg.locale.t('twenty_four.stop.message.none'))
+        await msg.send_message(msg.locale.t('game.message.stop.none'))

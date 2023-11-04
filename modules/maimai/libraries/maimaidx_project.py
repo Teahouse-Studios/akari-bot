@@ -421,7 +421,7 @@ async def get_plate_process(msg, payload, plate):
             for i, s in enumerate(sorted(song_remain, key=lambda i: i[2])):
                 m = (await total_list.get()).by_id(str(s[0]))
                 self_record = ''
-                if [int(s[0]), s[-1]] in song_record:
+                if [int(s[0]), s[-2]] in song_record:
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['将', '者']:
                         self_record = str(verlist[record_index]['achievements']) + '%'

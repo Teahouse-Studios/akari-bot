@@ -59,6 +59,8 @@ async def _(msg: Bot.MessageSession):
             price = tokens / ONE_K * PRICE_PER_1K_TOKEN
             petal = price * USD_TO_CNY * CNY_TO_PETAL
             msg.data.modify_petal(-petal)
+        else:
+            petal = 0
 
         blocks = parse_markdown(res)
 
@@ -67,19 +69,30 @@ async def _(msg: Bot.MessageSession):
             if block['type'] == 'text':
                 chain.append(Plain(block['content']))
             elif block['type'] == 'latex':
-                chain.append(Image(PILImage.open(io.BytesIO(await generate_latex(block['content'])))))
+                content = await generate_latex(block['content'])
+                try:
+                    img = PILImage.open(io.BytesIO(content))
+                    chain.append(Image(img))
+                except Exception as e:
+                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
             elif block['type'] == 'code':
-                chain.append(Image(PILImage.open(
-                    io.BytesIO(await generate_code_snippet(block['content']['code'], block['content']['language'])))))
+                content = block['content']['code']
+                try:
+                    chain.append(Image(PILImage.open(io.BytesIO(await generate_code_snippet(content,
+                                                                                            block['content']['language'])))))
+                except Exception as e:
+                    chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
         if await check_bool(res):
             rickroll(msg)
+        if petal != 0:
+            chain.append(Plain(msg.locale.t('ask.message.petal.cost', count=petal)))
         await msg.send_message(chain)
 
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
     else:
-        await msg.finish(msg.locale.t('ask.message.cooldown', time=int(c)))
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 
 
 def parse_markdown(md: str):

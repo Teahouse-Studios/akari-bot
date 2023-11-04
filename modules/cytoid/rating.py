@@ -17,6 +17,7 @@ from config import Config
 from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
+from core.utils.html2text import html2text
 
 
 async def get_rating(uid, query_type, msg: Bot.MessageSession):
@@ -301,7 +302,7 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
     font3 = ImageFont.truetype(os.path.abspath(font_path), 20)
     drawtext = ImageDraw.Draw(img)
     drawtext.text((20, 130), score, '#ffffff', font=font3)
-    drawtext.text((20, 155), chart_name, '#ffffff', font=font)
+    drawtext.text((20, 155), html2text(chart_name), '#ffffff', font=font)
     drawtext.text(
         (20, 185),
         f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
