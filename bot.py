@@ -43,8 +43,7 @@ def init_bot():
 
 pidlst = []
 
-if not (disabled_bots := Config('disabled_bots')):
-    disabled_bots = []
+disabled_bots = Config('disabled_bots', [])
 
 
 def run_bot():
