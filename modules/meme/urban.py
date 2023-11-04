@@ -2,7 +2,7 @@ import traceback
 
 import ujson as json
 
-from config import Config
+from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
@@ -16,7 +16,7 @@ async def urban(term: str, locale: Locale):
     :returns: 查询结果。'''
     try:
         url = 'http://api.urbandictionary.com/v0/define?term=' + term
-        webrender = Config('web_render')
+        webrender = CFG.get_url('web_render')
         if not webrender:
             return ''
         url = webrender + 'source?url=' + url
