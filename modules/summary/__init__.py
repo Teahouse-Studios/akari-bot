@@ -2,7 +2,7 @@ import openai
 import re
 
 from config import Config
-from core.builtins import Bot, Plain
+from core.builtins import Bot
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
@@ -77,7 +77,7 @@ async def _(msg: Bot.MessageSession):
             petal = 0
 
         if petal != 0:
-            output.append(Plain(msg.locale.t('ask.message.petal.cost', count=petal)))
+            output = output + msg.locale.t('ask.message.petal.cost', count=petal)
         await wait_msg.delete()
         if await check_bool(output):
             rickroll(msg)
