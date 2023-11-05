@@ -4,6 +4,22 @@ from config import Config
 from core.builtins import Bot
 from core.utils.storedata import get_stored_list, update_stored_list
 
+ONE_K = Decimal('1000')
+# https://openai.com/pricing
+BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo： $0.002 / 1K tokens
+# We are not tracking specific tool usage like searches b/c I'm too lazy, use a universal multiplier
+THIRD_PARTY_MULTIPLIER = Decimal('1.5')
+PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
+PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
+
+
+async def count_petal(tokens)
+    USD_TO_CNY = Decimal('7.3')
+    CNY_TO_PETAL = 100  # Assuming 1 USD = 7.3 CNY, 100 petal = 1 CNY
+
+    price = tokens / ONE_K * PRICE_PER_1K_TOKEN
+    petal = price * USD_TO_CNY * CNY_TO_PETAL
+    return petal
 
 def gained_petal(msg: Bot.MessageSession, amount):
     if Config('openai_api_key') and Config('enable_get_petal'):

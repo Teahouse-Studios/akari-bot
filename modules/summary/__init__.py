@@ -10,19 +10,17 @@ from core.logger import Logger
 
 openai.api_key = Config('openai_api_key')
 
-s = module(
-    'summary',
-    developers=[
-        'Dianliang233',
-        'OasisAkari'],
+s = module('summary', 
+    developers=['Dianliang233', 'OasisAkari'],
     desc='{summary.help.desc}',
-    available_for=[
-        'QQ',
-        'QQ|Group'])
+    available_for=['QQ', 'QQ|Group'])
 
 
 @s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
+    if not Config('openai_api_key'):
+        raise Exception(msg.locale.t('error.config.secret.not_found'))
+
     f_msg = await msg.wait_next_message(msg.locale.t('summary.message'), append_instruction=False)
     try:
         f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.as_display()).group(1)
@@ -32,6 +30,8 @@ async def _(msg: Bot.MessageSession):
     data = await f_msg.call_api('get_forward_msg', message_id=f)
     msgs = data['messages']
     texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
+    if await check_bool(texts):
+        rickroll(msg)
 
     char_count = sum([len(i) for i in texts])
     wait_msg = await msg.send_message(

@@ -9,6 +9,7 @@ from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
+from core.petal import count_petal
 from core.utils.cooldown import CoolDown
 
 os.environ['LANGCHAIN_TRACING_V2'] = "true"
@@ -19,17 +20,6 @@ os.environ['LANGCHAIN_API_KEY'] = Config('langsmith_api_key')
 from langchain.callbacks import get_openai_callback  # noqa: E402
 from .agent import agent_executor  # noqa: E402
 from .formatting import generate_latex, generate_code_snippet  # noqa: E402
-
-ONE_K = Decimal('1000')
-# https://openai.com/pricing
-BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo： $0.002 / 1K tokens
-# We are not tracking specific tool usage like searches b/c I'm too lazy, use a universal multiplier
-THIRD_PARTY_MULTIPLIER = Decimal('1.5')
-PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
-PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
-# Assuming 1 USD = 7.3 CNY, 100 petal = 1 CNY
-USD_TO_CNY = Decimal('7.3')
-CNY_TO_PETAL = 100
 
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
@@ -56,8 +46,7 @@ async def _(msg: Bot.MessageSession):
             res = await agent_executor.arun(question)
             tokens = cb.total_tokens
         if not is_superuser:
-            price = tokens / ONE_K * PRICE_PER_1K_TOKEN
-            petal = price * USD_TO_CNY * CNY_TO_PETAL
+            petal = await count_petal(tokens)
             msg.data.modify_petal(-petal)
         else:
             petal = 0
