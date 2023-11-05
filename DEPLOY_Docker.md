@@ -35,6 +35,12 @@
 docker pull bakabaka9/akari-bot:latest
 ```
 
+> 该镜像的作者长期未更新，建议使用以下镜像
+
+```sh
+docker pull silianz/akari-bot:dev-docker
+```
+
 ## 配置
 
 从小可的 GitHub 仓库中下载 `config` 文件夹，并放到事先准备好的目录下。
@@ -439,27 +445,3 @@ docker run \
 在排错之前，请确保您已经详细地阅读了文档内所有的注释说明。
 
 疑难解答将会分为不同方面，如果您有更好的疑难解答欢迎提交 PR。
-
-## 安装依赖
-
-### 在安装依赖时遇到跟 `hnswlib` 有关的问题导致无法正常安装依赖
-
-该情况可能只会发生在 Windows 系统下。
-
-您可能没有安装好 Microsoft C++ 生成工具。
-
-1. 下载 [Microsoft C++ 生成工具](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)。
-
-2. 在下载文件夹中打开安装程序，等待片刻会出现一个名为“Visual Studio Installer”的窗口。
-
-3. 在“工作负荷”板块中，选择“使用 C++ 的桌面开发”，然后点击右下角的“安装”。
-
-4. 等待安装完成后即可关闭窗口。
-
-5. 尝试重新安装依赖。
-
-### 在使用 pip 安装依赖时遇到依赖冲突
-
-尝试在安装依赖时加上 `--no-deps` 参数。
-
-例：`pip install --no-deps -r requirements.txt`。
