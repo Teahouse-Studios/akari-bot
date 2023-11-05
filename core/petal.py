@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from config import Config
 from core.builtins import Bot
+from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 
 ONE_K = Decimal('1000')
