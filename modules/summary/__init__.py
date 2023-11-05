@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession):
     data = await f_msg.call_api('get_forward_msg', message_id=f)
     msgs = data['messages']
     texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
-    if await check_bool(texts):
+    if await check_bool(''.join(texts)):
         rickroll(msg)
 
     char_count = sum([len(i) for i in texts])
