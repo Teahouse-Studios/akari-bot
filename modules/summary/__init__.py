@@ -81,10 +81,9 @@ async def _(msg: Bot.MessageSession):
         await wait_msg.delete()
         if await check_bool(output):
             rickroll(msg)
-        await msg.finish(output, disable_secret_check=True)
-
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
+        await msg.finish(output, disable_secret_check=True)
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 
