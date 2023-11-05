@@ -1,3 +1,6 @@
+import os
+import json
+
 from datetime import datetime
 from decimal import Decimal
 
@@ -14,11 +17,39 @@ THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 
-exchange_rate_api_key = Config('exchange_rate_api_key')
-exchange_rate_api_url = f'https://v6.exchangerate-api.com/v6/{exchange_rate_api_key}/pair/USD/CNY/1.0'
-exchange_rate_data = await get_url(exchange_rate_api_url, 200, fmt='json')
-if data['result'] == "success":
-    USD_TO_CNY = Decimal(exchange_rate_data['conversion_result'])
+
+
+def get_exchange_rate():
+    api_key = Config('exchange_rate_api_key')
+    api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY/1.0'
+    data = await get_url(api_url, 200, fmt='json')
+    if data['result'] == "success":
+        return data['conversion_result']
+    return None
+
+def load_or_refresh_cache():
+    cache_dir = Config('cache_path')
+    file_path = os.path.join(cache_dir, 'exchange_rate_cache.json')
+    if os.path.exists(file_path):
+        modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+        expiration_time = modified_time + timedelta(days=1)
+        current_time = datetime.now()
+        if current_time < expiration_time:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                return data
+
+    exchange_rate_data = get_exchange_rate()
+    if exchange_rate_data:
+        with open(file_path, 'w') as file:
+            json.dump(exchange_rate_data, file)
+        return exchange_rate_data
+    return None
+
+
+exchange_rate = load_or_refresh_cache()
+if exchange_rate:
+    USD_TO_CNY = Decimal(exchange_rate)
 else:
     USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
 
@@ -29,7 +60,7 @@ async def count_petal(tokens):
     petal = price * USD_TO_CNY * CNY_TO_PETAL
     return petal
 
-def gained_petal(msg: Bot.MessageSession, amount):
+async def gained_petal(msg: Bot.MessageSession, amount):
     if Config('openai_api_key') and Config('enable_get_petal'):
         limit = Config('gained_petal_limit', 10)
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
@@ -59,7 +90,7 @@ def gained_petal(msg: Bot.MessageSession, amount):
             return msg.locale.t('petal.message.gained.success', amount=amount)
 
 
-def lost_petal(msg: Bot.MessageSession, amount):
+async def lost_petal(msg: Bot.MessageSession, amount):
     if Config('openai_api_key') and Config('enable_get_petal'):
         limit = Config('lost_petal_limit', 5)
         p = get_stored_list(msg.target.client_name, 'lostpetal')

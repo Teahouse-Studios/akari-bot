@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
         if await check_bool(res):
             rickroll(msg)
         if petal != 0:
-            chain.append(Plain(msg.locale.t('ask.message.petal.cost', count=petal)))
+            chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
         await msg.send_message(chain)
 
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
