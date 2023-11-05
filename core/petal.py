@@ -13,11 +13,17 @@ THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 
+exchange_rate_api_key = Config('exchange_rate_api_key')
+exchange_rate_api_url = f'https://v6.exchangerate-api.com/v6/{exchange_rate_api_key}/pair/USD/CNY/1.0'
+exchange_rate_data = await get_url(exchange_rate_api_url, 200, fmt='json')
+if data['result'] == "success":
+    USD_TO_CNY = Decimal(exchange_rate_data['conversion_result'])
+else:
+    USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
+
 
 async def count_petal(tokens):
-    USD_TO_CNY = Decimal('7.3')
-    CNY_TO_PETAL = 100  # Assuming 1 USD = 7.3 CNY, 100 petal = 1 CNY
-
+    CNY_TO_PETAL = 100  # 100 petal = 1 CNY
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     petal = price * USD_TO_CNY * CNY_TO_PETAL
     return petal
