@@ -13,7 +13,7 @@ PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to b
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 
 
-async def count_petal(tokens)
+async def count_petal(tokens):
     USD_TO_CNY = Decimal('7.3')
     CNY_TO_PETAL = 100  # Assuming 1 USD = 7.3 CNY, 100 petal = 1 CNY
 

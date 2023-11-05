@@ -18,7 +18,7 @@ s = module('summary',
 
 @s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
-    if not Config('openai_api_key'):
+    if not openai.api_key:
         raise Exception(msg.locale.t('error.config.secret.not_found'))
 
     f_msg = await msg.wait_next_message(msg.locale.t('summary.message'), append_instruction=False)
