@@ -1,7 +1,6 @@
 import io
 import os
 import re
-from decimal import Decimal
 
 from PIL import Image as PILImage
 

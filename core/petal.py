@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from config import Config
 from core.builtins import Bot
