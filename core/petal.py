@@ -17,9 +17,7 @@ THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 
-
-
-def get_exchange_rate():
+async def get_exchange_rate():
     api_key = Config('exchange_rate_api_key')
     api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY/1.0'
     data = await get_url(api_url, 200, fmt='json')
@@ -27,7 +25,7 @@ def get_exchange_rate():
         return data['conversion_result']
     return None
 
-def load_or_refresh_cache():
+async def load_or_refresh_cache():
     cache_dir = Config('cache_path')
     file_path = os.path.join(cache_dir, 'exchange_rate_cache.json')
     if os.path.exists(file_path):
@@ -39,22 +37,19 @@ def load_or_refresh_cache():
                 data = json.load(file)
                 return data
 
-    exchange_rate_data = get_exchange_rate()
+    exchange_rate_data = await get_exchange_rate()
     if exchange_rate_data:
         with open(file_path, 'w') as file:
             json.dump(exchange_rate_data, file)
         return exchange_rate_data
     return None
 
-
-exchange_rate = load_or_refresh_cache()
-if exchange_rate:
-    USD_TO_CNY = Decimal(exchange_rate)
-else:
-    USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
-
-
 async def count_petal(tokens):
+    exchange_rate = await load_or_refresh_cache()
+    if exchange_rate:
+        USD_TO_CNY = Decimal(exchange_rate)
+    else:
+        USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
     CNY_TO_PETAL = 100  # 100 petal = 1 CNY
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     petal = price * USD_TO_CNY * CNY_TO_PETAL
