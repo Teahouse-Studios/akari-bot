@@ -10,7 +10,7 @@ class MessageChain:
 
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
                                        Tuple[Union[Plain, Image, Voice, Embed, Url]],
-                                       Plain, Image, Voice, Embed, Url]):
+                                       Plain, Image, Voice, Embed, Url] = None):
         """
         :param elements: 消息链元素
         """
@@ -26,6 +26,18 @@ class MessageChain:
     def as_sendable(self, embed=True) -> list:
         """
         将消息链转换为可发送的格式。
+        """
+        raise NotImplementedError
+
+    def to_list(self) -> list:
+        """
+        将消息链转换为列表。
+        """
+        raise NotImplementedError
+
+    def from_list(self, lst: list):
+        """
+        从列表构造消息链。
         """
         raise NotImplementedError
 

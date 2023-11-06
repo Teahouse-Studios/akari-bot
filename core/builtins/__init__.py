@@ -11,6 +11,7 @@ from .message.internal import *
 from .tasks import *
 from .temp import *
 from .utils import *
+from ..logger import Logger
 
 
 class Bot:
@@ -26,11 +27,12 @@ class Bot:
                            disable_secret_check=False,
                            allow_split_image=True):
         if isinstance(target, str):
-            target = Bot.FetchTarget.fetch_target(target)
+            target = await Bot.FetchTarget.fetch_target(target)
             if not target:
                 raise ValueError("Target not found")
         if isinstance(msg, list):
             msg = MessageChain(msg)
+        Logger.info(target.__dict__)
         await target.send_direct_message(msg, disable_secret_check, allow_split_image)
 
     @staticmethod
