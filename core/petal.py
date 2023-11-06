@@ -1,7 +1,7 @@
 import os
 import json
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from config import Config
@@ -17,6 +17,7 @@ THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 
+
 async def get_exchange_rate():
     api_key = Config('exchange_rate_api_key')
     api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY/1.0'
@@ -24,6 +25,7 @@ async def get_exchange_rate():
     if data['result'] == "success":
         return data['conversion_result']
     return None
+
 
 async def load_or_refresh_cache():
     cache_dir = Config('cache_path')
@@ -44,6 +46,7 @@ async def load_or_refresh_cache():
         return exchange_rate_data
     return None
 
+
 async def count_petal(tokens):
     exchange_rate = await load_or_refresh_cache()
     if exchange_rate:
@@ -54,6 +57,7 @@ async def count_petal(tokens):
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     petal = price * USD_TO_CNY * CNY_TO_PETAL
     return petal
+
 
 async def gained_petal(msg: Bot.MessageSession, amount):
     if Config('openai_api_key') and Config('enable_get_petal'):
