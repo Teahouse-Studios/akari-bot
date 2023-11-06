@@ -72,7 +72,8 @@ async def _(msg: Bot.MessageSession):
                     chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
         if await check_bool(res):
-            msg.sendMessage(msg.locale.t('petal.message.cost', count=petal))
+            if petal != 0:
+                msg.sendMessage(msg.locale.t('petal.message.cost', count=petal))
             rickroll(msg)
         if petal != 0:
             chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
