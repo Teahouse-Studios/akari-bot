@@ -11,8 +11,8 @@ import aiocqhttp.exceptions
 import ujson as json
 from aiocqhttp import MessageSegment
 
-from bots.aiocqhttp.client import bot
-from bots.aiocqhttp.info import client_name
+from bots.lagrange.client import bot
+from bots.lagrange.info import client_name
 from config import Config
 from core.builtins import Bot, ErrorMessage, base_superuser_list
 from core.builtins import Plain, Image, Voice, Temp, command_prefix
@@ -20,7 +20,6 @@ from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
 from core.logger import Logger
-from core.queue import JobQueue
 from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
@@ -46,7 +45,6 @@ class FinishedSession(FinS):
 last_send_typing_time = {}
 Temp.data['is_group_message_blocked'] = False
 Temp.data['waiting_for_send_group_message'] = []
-group_info = {}
 
 
 async def resending_group_message():
@@ -81,73 +79,55 @@ async def resending_group_message():
 class MessageSession(MessageSessionT):
     class Feature:
         image = True
-        voice = True
+        voice = False
         embed = False
-        forward = True
+        forward = False
         delete = True
         wait = True
-        quote = True
+        quote = False
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
                            allow_split_image=True) -> FinishedSession:
-
-        message_chain = MessageChain(message_chain)
-        if self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False):
-            lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
-            if self.session.target in lagrange_available_groups:
-                choose = random.randint(0, 1)
-                Logger.info(f'choose: {choose}')
-                if choose:
-                    can_sends = []
-                    for x in message_chain.value:
-                        if isinstance(x, (Plain, Image)):
-                            can_sends.append(x)
-                            message_chain.value.remove(x)
-                    if can_sends:
-                        await JobQueue.send_message('Lagrange', self.target.target_id,
-                                                    MessageChain(can_sends).to_list())
-                    if not message_chain.value:
-                        return
-        msg = MessageSegment.text('')
+        msg = []
+        """
         if quote and self.target.target_from == 'QQ|Group' and self.session.message:
             msg = MessageSegment.reply(self.session.message.message_id)
-
+        """
+        message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(message_chain)
         count = 0
         for x in message_chain.as_sendable(locale=self.locale.locale, embed=False):
             if isinstance(x, Plain):
-                msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
+                msg.append({
+                    "type": "text",
+                    "data": {
+                        "text": x.text
+                    }
+                })
             elif isinstance(x, Image):
-                msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
-            elif isinstance(x, Voice):
-                if self.target.target_from != 'QQ|Guild':
-                    msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
+                msg.append({
+                    "type": "image",
+                    "data": {
+                        "file": "base64://" + await x.get_base64()
+                    }
+                })
             count += 1
         Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
         if self.target.target_from == 'QQ|Group':
             try:
-                send = await bot.send_group_msg(group_id=self.session.target, message=msg)
+                send = await bot.send_group_msg(group_id=int(self.session.target), message=msg)
             except aiocqhttp.exceptions.NetworkError:
-                send = await bot.send_group_msg(group_id=self.session.target, message=MessageSegment.text(
+                send = await bot.send_group_msg(group_id=int(self.session.target), message=MessageSegment.text(
                     self.locale.t("error.message.timeout")))
             except aiocqhttp.exceptions.ActionFailed:
-                img_chain = message_chain.copy()
-                img_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
-                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain)).as_uri())
+                message_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
+                msg2img = MessageSegment.image(Path(await msgchain2image(message_chain)).as_uri())
                 try:
-                    send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
+                    send = await bot.send_group_msg(group_id=int(self.session.target), message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:
-                    if self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False):
-                        lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
-                        if self.session.target in lagrange_available_groups:
-                            await JobQueue.send_message('Lagrange', self.target.target_id,
-                                                        message_chain.to_list())
-                        else:
-                            raise SendMessageFailed(e.result['wording'])
-                    else:
-                        raise SendMessageFailed(e.result['wording'])
+                    raise SendMessageFailed(e.result['wording'])
 
             if Temp.data['is_group_message_blocked']:
                 asyncio.create_task(resending_group_message())
@@ -188,15 +168,16 @@ class MessageSession(MessageSessionT):
         return False
 
     def as_display(self, text_only=False):
-        m = html.unescape(self.session.message.message)
-        if text_only:
-            return ''.join(
-                re.split(r'\[CQ:.*?]', m)).strip()
-        m = re.sub(r'\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
-        m = re.sub(r'\[CQ:forward,id=(.*?)]', r'\[Ke:forward,id=\1]', m)
+        """m = html.unescape(self.session.message.message)
+            if text_only:
+                return ''.join(
+                    re.split(r'\\[CQ:.*?]', m)).strip()
+            m = re.sub(r'\\[CQ:at,qq=(.*?)]', r'QQ|\1', m)
+            m = re.sub(r'\\[CQ:forward,id=(.*?)]', r'\\[Ke:forward,id=\1]', m)
 
-        return ''.join(
-            re.split(r'\[CQ:.*?]', m)).strip()
+            return ''.join(
+                re.split(r'\\[CQ:.*?]', m)).strip()"""
+        return self.session.message
 
     async def fake_forward_msg(self, nodelist):
         if self.target.target_from == 'QQ|Group':
@@ -260,13 +241,13 @@ class MessageSession(MessageSessionT):
             self.msg = msg
 
         async def __aenter__(self):
-            if self.msg.target.target_from == 'QQ|Group':
+            """if self.msg.target.target_from == 'QQ|Group':
                 if self.msg.session.sender in last_send_typing_time:
                     if datetime.datetime.now().timestamp() - last_send_typing_time[self.msg.session.sender] <= 3600:
                         return
                 last_send_typing_time[self.msg.session.sender] = datetime.datetime.now().timestamp()
                 await bot.send_group_msg(group_id=self.msg.session.target,
-                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')
+                                         message=f'[CQ:poke,qq={self.msg.session.sender}]')"""
 
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             pass

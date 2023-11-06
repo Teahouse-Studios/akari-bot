@@ -1,9 +1,10 @@
 import asyncio
+from datetime import datetime
 import traceback
 
 import ujson as json
 
-from core.builtins import Bot
+from core.builtins import Bot, Temp, MessageChain
 from core.logger import Logger
 from core.utils.info import get_all_clients_name
 from core.utils.ip import append_ip, fetch_ip_info
@@ -47,6 +48,10 @@ class JobQueue:
         for target in get_all_clients_name():
             await cls.add_job(target, 'secret_append_ip', ip_info, wait=False)
 
+    @classmethod
+    async def send_message(cls, target_client: str, target_id: str, message):
+        await cls.add_job(target_client, 'send_message', {'target_id': target_id, 'message': message})
+
 
 def return_val(tsk, value: dict, status=True):
     value = value.update({'status': status})
@@ -63,16 +68,29 @@ async def check_job_queue():
     for tsk in get_all:
         Logger.debug(f'Received job queue task {tsk.taskid}, action: {tsk.action}')
         args = json.loads(tsk.args)
+        Logger.debug(f'Args: {args}')
         try:
             if tsk.action == 'validate_permission':
                 fetch = await Bot.FetchTarget.fetch_target(args['target_id'], args['sender_id'])
                 if fetch:
                     return_val(tsk, {'value': await fetch.parent.check_permission()})
+                else:
+                    return_val(tsk, {'value': False})
             if tsk.action == 'trigger_hook':
                 await Bot.Hook.trigger(args['module_or_hook_name'], args['args'])
                 return_val(tsk, {})
             if tsk.action == 'secret_append_ip':
                 append_ip(args)
+                return_val(tsk, {})
+            if tsk.action == 'send_message':
+                return_val(tsk, {})
+                fetch = await Bot.send_message(args['target_id'], MessageChain(args['message']))
+                Logger.debug(f'Send message to {args["target_id"]}')
+            if tsk.action == 'lagrange_keepalive':
+                Temp.data['lagrange_keepalive'] = datetime.now().timestamp()
+                return_val(tsk, {})
+            if tsk.action == 'lagrange_available_groups':
+                Temp.data['lagrange_available_groups'] = args
                 return_val(tsk, {})
 
         except Exception as e:
