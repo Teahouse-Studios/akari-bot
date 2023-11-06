@@ -77,7 +77,7 @@ async def _(msg: Bot.MessageSession):
             petal = 0
 
         if petal != 0:
-            output = output + msg.locale.t('petal.message.cost', count=petal)
+            output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()
         if await check_bool(output):
             rickroll(msg)
