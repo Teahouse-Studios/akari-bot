@@ -50,7 +50,7 @@ async def load_or_refresh_cache():
 async def count_petal(tokens):
     exchange_rate = await load_or_refresh_cache()
     if exchange_rate:
-        USD_TO_CNY = Decimal(exchange_rate)
+        USD_TO_CNY = Decimal(exchange_rate).quantize(Decimal('0.00'))
     else:
         USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
     CNY_TO_PETAL = 100  # 100 petal = 1 CNY
