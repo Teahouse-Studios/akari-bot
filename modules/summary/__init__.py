@@ -80,6 +80,7 @@ async def _(msg: Bot.MessageSession):
             output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()
         if await check_bool(output):
+            msg.sendMessage(msg.locale.t('petal.message.cost', count=petal))
             rickroll(msg)
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
