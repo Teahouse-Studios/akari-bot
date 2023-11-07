@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from config import Config
 from core.builtins import Bot
+from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 
@@ -45,6 +46,7 @@ async def load_or_refresh_cache():
 
     exchanged_petal_data = await get_petal_exchange_rate()
     if exchanged_petal_data:
+        Logger.info(f'Petal exchange rate is expired or cannot be found. Updated.')
         exchanged_petal_data["update_time"] = datetime.now()
         with open(file_path, 'w') as file:
             json.dump(exchanged_petal_data, file)
@@ -53,11 +55,13 @@ async def load_or_refresh_cache():
 
 
 async def count_petal(tokens):
+    Logger.info(f'{tokens} tokens have been consumed while calling AI.')
     petal_exchange_rate = await load_or_refresh_cache()
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     if petal_exchange_rate:
         petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
     else:
+        Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
         petal = price * USD_TO_CNY * CNY_TO_PETAL
     return petal
 
