@@ -420,22 +420,19 @@ rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=Tr
 
 
 @rse.handle()
-@rse.handle('[<exception>]')
+@rse.handle('[<exception>] [-n]')
 async def _(msg: Bot.MessageSession):
     e = None
     if msg.parsed_msg:
         e = msg.parsed_msg.get('<exception>', None)
+        e = e.replace("_", " ")
+        if not e:
+            e = msg.locale.t("core.message.raise")
+        if msg.parsed_msg.get('-n', False):
+            raise NoReportException(e)
     if not e:
         e = msg.locale.t("core.message.raise")
     raise Exception(e)
-
-
-@rse.handle('-n [<exception>]')
-async def _(msg: Bot.MessageSession):
-    e = msg.parsed_msg.get('<exception>', None)
-    if not e:
-        e = msg.locale.t("core.message.raise")
-    raise NoReportException(e)
 
 
 if Config('enable_eval'):
