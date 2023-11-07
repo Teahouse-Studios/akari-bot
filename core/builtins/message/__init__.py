@@ -28,6 +28,7 @@ class MessageSession(MessageSessionT):
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
         self.timestamp = datetime.now()
+        self.tmp = {}
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True) -> bool:
         send = None
