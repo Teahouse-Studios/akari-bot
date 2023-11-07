@@ -87,9 +87,9 @@ async def check_job_queue():
                 append_ip(args)
                 return_val(tsk, {})
             if tsk.action == 'send_message':
-
                 try:
                     await Bot.send_message(args['target_id'], MessageChain(args['message']))
+                    await asyncio.sleep(0.5)
                     return_val(tsk, {'send': True})
                 except Exception:
                     Logger.error(traceback.format_exc())
