@@ -431,6 +431,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @rse.handle('-n [<exception>]')
+async def _(msg: Bot.MessageSession):
     e = msg.parsed_msg.get('<exception>', None)
     if not e:
         e = msg.locale.t("core.message.raise")
