@@ -524,5 +524,5 @@ if Bot.client_name == 'QQ':
     @lagrange.handle()
     async def _(msg: Bot.MessageSession):
         await msg.finish(f'Keepalive: {str(Temp.data.get("lagrange_keepalive", "None"))}\n'
-                         f'Status: {str(Temp.data.get("lagrange_status", "None"))}'
+                         f'Status: {str(Temp.data.get("lagrange_status", "None"))}\n'
                          f'Groups: {str(Temp.data.get("lagrange_available_groups", "None"))}')
