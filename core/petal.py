@@ -32,13 +32,16 @@ async def get_petal_exchange_rate():
     return None
 
 
+import json
+from datetime import datetime, timedelta
+
 async def load_or_refresh_cache():
     cache_dir = Config('cache_path')
     file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             data = json.load(file)
-            update_time = data.get("update_time")
+            update_time = datetime.strptime(data.get("update_time"), "%Y-%m-%d %H:%M:%S")
             expiration_time = datetime(update_time.year, update_time.month, update_time.day, 0, 0, 0) + timedelta(days=1)
             current_time = datetime.now()
             if current_time < expiration_time:
@@ -49,9 +52,11 @@ async def load_or_refresh_cache():
         Logger.info(f'Petal exchange rate is expired or cannot be found. Updated.')
         exchanged_petal_data["update_time"] = datetime.now()
         with open(file_path, 'w') as file:
+            exchanged_petal_data["update_time"] = exchanged_petal_data["update_time"].strftime("%Y-%m-%d %H:%M:%S")
             json.dump(exchanged_petal_data, file)
         return exchanged_petal_data["exchanged_petal"]
     return None
+
 
 
 async def count_petal(tokens):
