@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from config import Config
 from core.builtins import Bot
+from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.storedata import get_stored_list, update_stored_list
 
@@ -22,41 +23,50 @@ CNY_TO_PETAL = 100  # 100 petal = 1 CNY
 
 async def get_petal_exchange_rate():
     api_key = Config('exchange_rate_api_key')
-    api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY/1.0'
+    api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY'
     data = await get_url(api_url, 200, fmt='json')
     if data['result'] == "success":
-        petal_value = data['conversion_result'] * CNY_TO_PETAL
-        return {"petal": petal_value}
+        exchange_rate = data['conversion_rate']
+        petal_value = exchange_rate * CNY_TO_PETAL
+        return {"exchange_rate": exchange_rate, "exchanged_petal": petal_value}
     return None
 
+
+import json
+from datetime import datetime, timedelta
 
 async def load_or_refresh_cache():
     cache_dir = Config('cache_path')
     file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
-        modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
-        next_day = modified_time + timedelta(days=1)
-        expiration_time = datetime(next_day.year, next_day.month, next_day.day, 0, 0, 0)
-        current_time = datetime.now()
-        if current_time < expiration_time:
-            with open(file_path, 'r') as file:
-                data = json.load(file)
-                return data["petal"]
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            update_time = datetime.strptime(data.get("update_time"), "%Y-%m-%d %H:%M:%S")
+            expiration_time = datetime(update_time.year, update_time.month, update_time.day, 0, 0, 0) + timedelta(days=1)
+            current_time = datetime.now()
+            if current_time < expiration_time:
+                return data["exchanged_petal"]
 
     exchanged_petal_data = await get_petal_exchange_rate()
     if exchanged_petal_data:
+        Logger.info(f'Petal exchange rate is expired or cannot be found. Updated.')
+        exchanged_petal_data["update_time"] = datetime.now()
         with open(file_path, 'w') as file:
+            exchanged_petal_data["update_time"] = exchanged_petal_data["update_time"].strftime("%Y-%m-%d %H:%M:%S")
             json.dump(exchanged_petal_data, file)
-        return exchange_rate_data["petal"]
+        return exchanged_petal_data["exchanged_petal"]
     return None
 
 
+
 async def count_petal(tokens):
+    Logger.info(f'{tokens} tokens have been consumed while calling AI.')
     petal_exchange_rate = await load_or_refresh_cache()
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     if petal_exchange_rate:
         petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
     else:
+        Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
         petal = price * USD_TO_CNY * CNY_TO_PETAL
     return petal
 
