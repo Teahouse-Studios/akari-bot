@@ -420,7 +420,7 @@ rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=Tr
 
 
 @rse.handle()
-@rse.handle('[<exception>] [-n]')
+@rse.handle('[-n] [<exception>]')
 async def _(msg: Bot.MessageSession):
     e = None
     if msg.parsed_msg:
