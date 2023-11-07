@@ -107,7 +107,7 @@ class MessageSession(MessageSessionT):
                         await JobQueue.send_message('Lagrange', self.target.target_id,
                                                     MessageChain(can_sends).to_list())
                     if not message_chain.value:
-                        return
+                        return FinishedSession(self, 0, [{}])
         msg = MessageSegment.text('')
         if quote and self.target.target_from == 'QQ|Group' and self.session.message:
             msg = MessageSegment.reply(self.session.message.message_id)
@@ -144,6 +144,7 @@ class MessageSession(MessageSessionT):
                         if self.session.target in lagrange_available_groups:
                             await JobQueue.send_message('Lagrange', self.target.target_id,
                                                         message_chain.to_list())
+                            return FinishedSession(self, 0, [{}])
                         else:
                             raise SendMessageFailed(e.result['wording'])
                     else:
