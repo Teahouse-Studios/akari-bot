@@ -35,6 +35,12 @@
 docker pull bakabaka9/akari-bot:latest
 ```
 
+> 该镜像的作者长期未更新，建议使用以下镜像
+
+```sh
+docker pull silianz/akari-bot:dev-docker
+```
+
 ## 配置
 
 从小可的 GitHub 仓库中下载 `config` 文件夹，并放到事先准备好的目录下。
@@ -74,6 +80,12 @@ docker pull bakabaka9/akari-bot:latest
 #### QQ
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
+
+> 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目：
+
+一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45 等问题，我们建议按照进阶配置来配置签名服务器。
+
+##### 基础配置
 
 如果您想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
 
@@ -133,27 +145,32 @@ docker pull bakabaka9/akari-bot:latest
 
     > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
 
+##### 进阶配置（配置签名服务器）
+
 由于 QQ 风控机制的加强，go-cqhttp 若出现 Code45 报错情况时，请参照以下步骤配置签名服务器：
 
-5. 安装 JRE 1.8（Jave Runtime Environment 1.8），请善用搜索引擎查找安装方法。
+5. 安装 JRE 17（Jave Runtime Environment 17），请善用搜索引擎查找安装方法。
 
-6. 在 [unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign) 的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库） 的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
 
-7. 在 [go-cqhttp dev 分支的 Actions 界面](https://github.com/Mrs4s/go-cqhttp/actions/workflows/ci.yml?query=branch%3Adev+event%3Apush) 中，点入最新的构建版本，并在 Artifacts 板块中下载对应系统类型的 go-cqhttp 构建文件并**替换**掉原正式版本的 go-cqhttp。
+7. 删除与 go-cqhttp 同一目录下的 `data` 文件夹和 `device.json` 文件。
 
-8. 删除与 go-cqhttp 同一目录下的 `data` 文件夹及 `config.yml` 文件。
+8. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
 
-9. 运行 go-cqhttp 并生成 `config.yml` 默认配置文件。
+    ```sh
+    bin\unidbg-fetch-qsign --basePath=txlib\<您要使用的版本>
+    ```
 
-10. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
+    请替换 `<您要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
 
-```sh
-bin\unidbg-fetch-qsign --basePath=txlib\8.9.71
-```
+    例：`--basePath=txlib\8.9.73`
 
-11. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
+    > 在选择版本时，应当遵从以下原则：
+    升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。Code45 了应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
-12. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
+9. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
+
+10. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
 
     ```yml
     account: # 账号相关
@@ -167,19 +184,18 @@ bin\unidbg-fetch-qsign --basePath=txlib\8.9.71
     ...
     ```
 
-13. 运行 go-cqhttp 以生成设备文件。
+11. 运行 go-cqhttp 以生成设备文件。
 
-14. 下载[安卓手机协议](https://github.com/MrXiaoM/qsign/blob/mirai/txlib/8.9.71/android_phone.json)并将其重命名为 `1.json` 。将该文件储存在与 go-cqhttp 同一目录下的 `data\versions` 文件夹中。
+12. 下载对应版本的[安卓手机协议](https://github.com/MrXiaoM/qsign/blob/mirai/txlib/)并将其重命名为 `1.json` 。将该文件储存在与 go-cqhttp 同一目录下的 `data\versions` 文件夹中。
 
-15. 在与 go-cqhttp 同一目录下的 `device.json` 文件夹中，并修改以下字段：
+13. 在与 go-cqhttp 同一目录下的 `device.json` 文件夹中，并修改以下字段：
 
     ```json
     "protocol": 1,
     ```
 
-16. 重启 go-cqhttp 完成最终配置。
+14. 重启 go-cqhttp 完成最终配置。
 
-> 若在执行以上步骤中遇到问题，请访问 [go-cqhttp 官方讨论板块](https://github.com/Mrs4s/go-cqhttp/discussions)或在哔哩哔哩上查找合适的教程。
 
 #### Discord
 
@@ -223,7 +239,7 @@ bin\unidbg-fetch-qsign --basePath=txlib\8.9.71
 
 使用以下命令进行密码登录：
 
-```bash
+```sh
 curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<password>"}' "https://<homeserver>/_matrix/client/r0/login"
 ```
 
@@ -233,7 +249,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 若要启用 E2EE 支持，请执行以下命令：
 
-```bash
+```sh
 poetry run -- pip3 install matrix-nio[e2e] ; Poetry
 pip3 install matrix-nio[e2e] ; PIP
 ```
@@ -429,27 +445,3 @@ docker run \
 在排错之前，请确保您已经详细地阅读了文档内所有的注释说明。
 
 疑难解答将会分为不同方面，如果您有更好的疑难解答欢迎提交 PR。
-
-## 安装依赖
-
-### 在安装依赖时遇到跟 `hnswlib` 有关的问题导致无法正常安装依赖
-
-该情况可能只会发生在 Windows 系统下。
-
-您可能没有安装好 Microsoft C++ 生成工具。
-
-1. 下载 [Microsoft C++ 生成工具](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)。
-
-2. 在下载文件夹中打开安装程序，等待片刻会出现一个名为“Visual Studio Installer”的窗口。
-
-3. 在“工作负荷”板块中，选择“使用 C++ 的桌面开发”，然后点击右下角的“安装”。
-
-4. 等待安装完成后即可关闭窗口。
-
-5. 尝试重新安装依赖。
-
-### 在使用 pip 安装依赖时遇到依赖冲突
-
-尝试在安装依赖时加上 `--no-deps` 参数。
-
-例：`pip install --no-deps -r requirements.txt`。

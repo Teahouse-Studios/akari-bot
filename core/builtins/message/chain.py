@@ -14,7 +14,7 @@ from core.types.message import MessageChain as MessageChainT
 class MessageChain(MessageChainT):
     def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
                                        Tuple[Union[Plain, Image, Voice, Embed, Url]],
-                                       Plain, Image, Voice, Embed, Url]):
+                                       Plain, Image, Voice, Embed, Url] = None):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
@@ -38,6 +38,19 @@ class MessageChain(MessageChainT):
                             self.value += match_kecode(e.text)
                     else:
                         self.value.append(e)
+                elif isinstance(e, dict):
+                    if e['type'] in ['plain', 'text']:
+                        self.value.append(Plain(e['data']['text']))
+                    elif e['type'] == 'image':
+                        self.value.append(Image(e['data']['path']))
+                    elif e['type'] == 'voice':
+                        self.value.append(Voice(e['data']['path']))
+                    elif e['type'] == 'embed':
+                        self.value.append(
+                            Embed(e['data']['title'], e['data']['description'], e['data']['url'],
+                                  e['data']['timestamp'],
+                                  e['data']['color'], Image(e['data']['image']), Image(e['data']['thumbnail']),
+                                  e['data']['author'], e['data']['footer'], e['data']['fields']))
                 elif isinstance(e, str):
                     if e != '':
                         self.value += match_kecode(e)
@@ -45,6 +58,8 @@ class MessageChain(MessageChainT):
                     Logger.error(f'Unexpected message type: {elements}')
         elif isinstance(elements, MessageChain):
             self.value = elements.value
+        elif elements is None:
+            pass
         else:
             Logger.error(f'Unexpected message type: {elements}')
 
@@ -99,17 +114,31 @@ class MessageChain(MessageChainT):
         for x in self.value:
             if isinstance(x, Embed) and not embed:
                 value += x.to_message_chain()
-            elif isinstance(x, ErrorMessage):
-                value.append(ErrorMessage(x.error_message, locale=locale))
             elif isinstance(x, Plain):
                 if x.text != '':
                     value.append(x)
                 else:
-                    Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale))
+                    value.append(Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale)))
             else:
                 value.append(x)
         if not value:
             value.append(Plain(ErrorMessage('{error.message.chain.empty}', locale=locale)))
+        return value
+
+    def to_list(self, locale="zh_cn", embed=True):
+        value = []
+        for x in self.value:
+            if isinstance(x, Embed) and not embed:
+                value += x.to_message_chain().to_list()
+            elif isinstance(x, Plain):
+                if x.text != '':
+                    value.append(x.to_dict())
+                else:
+                    value.append(Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale)).to_dict())
+            else:
+                value.append(x.to_dict())
+        if not value:
+            value.append(Plain(ErrorMessage('{error.message.chain.empty}', locale=locale)).to_dict())
         return value
 
     def append(self, element):
@@ -120,6 +149,9 @@ class MessageChain(MessageChainT):
 
     def insert(self, index, element):
         self.value.insert(index, element)
+
+    def copy(self):
+        return MessageChain(self.value.copy())
 
     def __str__(self):
         return f'[{", ".join([x.__repr__() for x in self.value])}]'
