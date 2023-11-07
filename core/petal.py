@@ -47,7 +47,7 @@ async def load_or_refresh_cache():
     if exchanged_petal_data:
         with open(file_path, 'w') as file:
             json.dump(exchanged_petal_data, file)
-        return exchange_rate_data["petal"]
+        return exchanged_petal_data["petal"]
     return None
 
 
