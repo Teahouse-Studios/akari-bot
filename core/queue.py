@@ -87,13 +87,12 @@ async def check_job_queue():
                 append_ip(args)
                 return_val(tsk, {})
             if tsk.action == 'send_message':
+                return_val(tsk, {'send': True})
                 try:
                     await Bot.send_message(args['target_id'], MessageChain(args['message']))
-                    return_val(tsk, {'send': True})
                 except Exception:
                     Logger.error(traceback.format_exc())
                     return_val(tsk, {'send': False})
-                await asyncio.sleep(2)
             if tsk.action == 'lagrange_keepalive':
                 Temp.data['lagrange_keepalive'] = datetime.now().timestamp()
                 return_val(tsk, {})
