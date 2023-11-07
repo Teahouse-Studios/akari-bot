@@ -35,17 +35,17 @@ async def load_or_refresh_cache():
     cache_dir = Config('cache_path')
     file_path = os.path.join(cache_dir, 'petal_exchange_rate_cache.json')
     if os.path.exists(file_path):
-        modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
-        next_day = modified_time + timedelta(days=1)
-        expiration_time = datetime(next_day.year, next_day.month, next_day.day, 0, 0, 0)
-        current_time = datetime.now()
-        if current_time < expiration_time:
-            with open(file_path, 'r') as file:
-                data = json.load(file)
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            update_time = data.get("update_time")
+            expiration_time = datetime(update_time.year, update_time.month, update_time.day, 0, 0, 0) + timedelta(days=1)
+            current_time = datetime.now()
+            if current_time < expiration_time:
                 return data["exchanged_petal"]
 
     exchanged_petal_data = await get_petal_exchange_rate()
     if exchanged_petal_data:
+        exchanged_petal_data["update_time"] = datetime.now()
         with open(file_path, 'w') as file:
             json.dump(exchanged_petal_data, file)
         return exchanged_petal_data["exchanged_petal"]
