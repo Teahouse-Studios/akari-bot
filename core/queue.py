@@ -54,7 +54,11 @@ class JobQueue:
 
 
 def return_val(tsk, value: dict, status=True):
-    value = value.update({'status': status})
+    status = {'status': status}
+    if value:
+        value = value.update(status)
+    else:
+        value = status
     BotDBUtil.JobQueue.return_val(tsk, value)
 
 
@@ -83,9 +87,13 @@ async def check_job_queue():
                 append_ip(args)
                 return_val(tsk, {})
             if tsk.action == 'send_message':
-                return_val(tsk, {})
-                fetch = await Bot.send_message(args['target_id'], MessageChain(args['message']))
-                Logger.debug(f'Send message to {args["target_id"]}')
+
+                try:
+                    await Bot.send_message(args['target_id'], MessageChain(args['message']))
+                    return_val(tsk, {'send': True})
+                except Exception:
+                    Logger.error(traceback.format_exc())
+                    return_val(tsk, {'send': False})
             if tsk.action == 'lagrange_keepalive':
                 Temp.data['lagrange_keepalive'] = datetime.now().timestamp()
                 return_val(tsk, {})
