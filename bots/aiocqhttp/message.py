@@ -92,7 +92,8 @@ class MessageSession(MessageSessionT):
                            allow_split_image=True) -> FinishedSession:
 
         message_chain = MessageChain(message_chain)
-        if self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False):
+        if (self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False) and not
+                self.tmp.get('enforce_send_by_master_client', False)):
             lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
             if self.session.target in lagrange_available_groups:
                 choose = random.randint(0, 1)
@@ -139,7 +140,8 @@ class MessageSession(MessageSessionT):
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:
-                    if self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False):
+                    if (self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False) and not
+                            self.tmp.get('enforce_send_by_master_client', False)):
                         lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
                         if self.session.target in lagrange_available_groups:
                             await JobQueue.send_message('Lagrange', self.target.target_id,

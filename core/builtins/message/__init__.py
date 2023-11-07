@@ -70,6 +70,7 @@ class MessageSession(MessageSessionT):
             raise WaitCancelException
 
     async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True) -> MessageSessionT:
+        self.tmp['enforce_send_by_master_client'] = True
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
         if append_instruction:

@@ -67,7 +67,7 @@ class MessageSession:
     """
     __slots__ = (
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
-        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp")
+        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp", "tmp")
 
     parsed_msg: Dict[str, Union[str, list]]
 
@@ -82,6 +82,7 @@ class MessageSession:
         self.enabled_modules: List[str] = []
         self.muted: bool = False
         self.timestamp: float = 0
+        self.tmp = {}
 
     async def send_message(self,
                            message_chain,
