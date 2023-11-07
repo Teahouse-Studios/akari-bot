@@ -93,7 +93,7 @@ async def check_job_queue():
                 except Exception:
                     Logger.error(traceback.format_exc())
                     return_val(tsk, {'send': False})
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(1)
             if tsk.action == 'lagrange_keepalive':
                 Temp.data['lagrange_keepalive'] = datetime.now().timestamp()
                 return_val(tsk, {})
