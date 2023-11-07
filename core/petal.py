@@ -55,7 +55,7 @@ async def count_petal(tokens):
     petal_exchange_rate = await load_or_refresh_cache()
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     if petal_exchange_rate:
-        petal = price * Decimal(exchange_rate).quantize(Decimal('0.00'))
+        petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
     else:
         petal = price * USD_TO_CNY * CNY_TO_PETAL
     return petal
