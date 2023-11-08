@@ -225,8 +225,8 @@ async def _(msg: Bot.MessageSession):
 
     if level in level_list:
         level_num = int(level.split('+')[0])
-        if level_num < 8:
-            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
+#        if level_num < 8:
+#            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
     else:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
