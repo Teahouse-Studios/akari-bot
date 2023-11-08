@@ -255,8 +255,8 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 
     if level in level_list:
         level_num = int(level.split('+')[0])
-        if level_num < 8:
-            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
+#        if level_num < 8:
+#            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
     else:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
@@ -403,7 +403,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(message)])
     else:
-        file = get_cover(music['id'])
         await msg.finish(
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
              BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
