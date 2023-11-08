@@ -11,7 +11,7 @@ from core.dirty_check import check_bool, rickroll
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
 
-os.environ['LANGCHAIN_TRACING_V2'] = Config('debug')
+os.environ['LANGCHAIN_TRACING_V2'] = "true"
 os.environ['LANGCHAIN_ENDPOINT'] = Config('langsmith_endpoint') if Config('langsmith_endpoint') is not None else os.environ.get('LANGCHAIN_ENDPOINT')
 os.environ['LANGCHAIN_PROJECT'] = Config('langsmith_project') if Config('langsmith_project') is not None else os.environ.get('LANGCHAIN_PROJECT')
 os.environ['LANGCHAIN_API_KEY'] = Config('langsmith_api_key') if Config('langsmith_api_key') is not None else os.environ.get('LANGCHAIN_API_KEY')
