@@ -73,5 +73,6 @@ dice_detail_cnt = 5
 dice_count_limit = 10
 api_port = 5000
 enable_langsmith = false
+enable_langsmith = false
 langsmith_endpoint = "https://api.smith.langchain.com"
 langsmith_project =
