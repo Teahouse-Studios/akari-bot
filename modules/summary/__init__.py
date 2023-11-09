@@ -21,7 +21,7 @@ s = module('summary',
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
-        raise Exception(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigError(msg.locale.t('error.config.secret.not_found'))
     if not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 

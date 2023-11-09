@@ -22,7 +22,7 @@ async def _(msg: Bot.MessageSession):
     base_currency = base[-3:]
 
     if not api_key:
-        raise Exception(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigError(msg.locale.t('error.config.secret.not_found'))
 
     try:
         if amount_str:
