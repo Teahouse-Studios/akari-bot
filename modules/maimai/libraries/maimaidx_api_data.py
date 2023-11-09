@@ -136,12 +136,3 @@ async def get_plate(msg, payload):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
 
     return data
-
-
-def get_cover(sid):
-    cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
-    cover_path = f"{cover_dir}/{get_cover_len5_id(sid)}.png"
-    if os.path.exists(os.path.abspath(cover_path)):
-        return os.path.abspath(cover_path)
-    else:
-        return cover_url
