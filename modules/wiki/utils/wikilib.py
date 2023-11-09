@@ -21,7 +21,7 @@ web_render_local = CFG.get_url('web_render_local')
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
                  'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then
-                 'https://minecraft.fandom.com/zh/api.php': 'https://zh.minecraft.wiki/api.php'
+                 # 'https://minecraft.fandom.com/zh/api.php': 'https://zh.minecraft.wiki/api.php'
                  }
 
 request_by_web_render_list = [re.compile(r'.*minecraft\.wiki'),  # sigh
