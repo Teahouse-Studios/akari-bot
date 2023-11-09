@@ -158,12 +158,14 @@ class WikiLib:
             Logger.debug(api)
         else:
             raise ValueError('kwargs is None')
+        request_local = False
         for x in request_by_web_render_list:
             if x.match(api):
                 api = web_render_local + 'source?url=' + urllib.parse.quote(api)
+                request_local = True
                 break
         try:
-            return await get_url(api, status_code=200, headers=self.headers, fmt="json")
+            return await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local)
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
                 raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
