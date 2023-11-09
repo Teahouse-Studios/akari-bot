@@ -8,7 +8,7 @@ from typing import Union, Dict, List
 import ujson as json
 
 import core.utils.html2text as html2text
-from config import Config
+from config import Config, CFG
 from core.builtins import Url
 from core.dirty_check import check
 from core.logger import Logger
@@ -17,9 +17,16 @@ from core.utils.i18n import Locale, default_locale
 from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
+web_render_local = CFG.get_url('web_render_local')
+
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
-                 'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php'  # no more Fandom then
+                 'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then
+                 'https://minecraft.fandom.com/zh/api.php': 'https://zh.minecraft.wiki/api.php'
                  }
+
+request_by_web_render_list = [re.compile(r'.*minecraft\.wiki'),  # sigh
+                              re.compile(r'.*runescape\.wiki'),
+                              ]
 
 
 class InvalidPageIDError(Exception):
@@ -151,6 +158,10 @@ class WikiLib:
             Logger.debug(api)
         else:
             raise ValueError('kwargs is None')
+        for x in request_by_web_render_list:
+            if x.match(api):
+                api = web_render_local + 'source?url=' + urllib.parse.quote(api)
+                break
         try:
             return await get_url(api, status_code=200, headers=self.headers, fmt="json")
         except Exception as e:
