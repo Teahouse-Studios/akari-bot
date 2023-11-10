@@ -79,10 +79,9 @@ async def get_alias(msg, input_):
 async def search_by_alias(msg, input_):
     result = []
     input_ = input_.replace("_", " ").strip()
-    res = (await total_list.get()).by_title(input_)
-    if res:
-        for s in res:
-            result.append(s['id'])
+    res = (await total_list.get()).filter(title=input_)
+    for s in res:
+        result.append(s['id'])
 
     file_path = os.path.join(assets_path, "mai_alias.json")
 
