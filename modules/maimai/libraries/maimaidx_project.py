@@ -118,7 +118,7 @@ async def get_rank(msg, payload):
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
     if rating:
-        output += f"\n{msg.locale.t('maimai.message.rank.player'user=username,
+        output += f"\n{msg.locale.t('maimai.message.rank.player', user=username,
                                       rating=rating, rank=rank, surpassing_rate=formatted_surpassing_rate)}"
     await msg.finish(output)
 
