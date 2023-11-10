@@ -21,7 +21,7 @@ async def bugtracker(msg: Bot.MessageSession):
                     await msg.send_message(Image(screenshot))
 
 
-@bug.regex(pattern=r'\!?(BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-(\d+)\b', mode='M', flags=re.I,
+@bug.regex(pattern=r'\!?(BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-(\d+)\b', mode='A', flags=re.I,
            desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
     matched_msg = msg.matched_msg
