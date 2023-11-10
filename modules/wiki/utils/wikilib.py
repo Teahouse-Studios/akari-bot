@@ -17,6 +17,7 @@ from core.utils.i18n import Locale, default_locale
 from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
+web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
@@ -161,7 +162,9 @@ class WikiLib:
         request_local = False
         for x in request_by_web_render_list:
             if x.match(api):
-                api = web_render_local + 'source?url=' + urllib.parse.quote(api)
+                if web_render:
+                    use_local = True if web_render_local else False
+                    api = (web_render_local if use_local else web_render) + 'source?url=' + urllib.parse.quote(api)
                 request_local = True
                 break
         try:

@@ -12,17 +12,21 @@ from bs4 import BeautifulSoup
 from config import CFG
 from core.logger import Logger
 
-web_render = CFG.get_url('web_render_local')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 
-async def get_pic(link, source) -> Union[str, bool]:
-    if not web_render:
-        return False
+async def get_pic(link, source, use_local=True) -> Union[str, bool]:
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return False
+        use_local = False
     try:
         Logger.info('Starting find section..')
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(web_render + 'source?url=' + link,
+                async with session.get((web_render_local if use_local else web_render) + 'source?url=' + link,
                                        timeout=aiohttp.ClientTimeout(total=20)) as req:
                     html = await req.read()
         except BaseException:
@@ -113,7 +117,7 @@ async def get_pic(link, source) -> Union[str, bool]:
         if os.path.exists(picname):
             os.remove(picname)
         async with aiohttp.ClientSession() as session:
-            async with session.post(web_render, headers={
+            async with session.post((web_render_local if use_local else web_render), headers={
                 'Content-Type': 'application/json',
             }, data=json.dumps(html)) as resp:
                 with open(picname, 'wb+') as jpg:
