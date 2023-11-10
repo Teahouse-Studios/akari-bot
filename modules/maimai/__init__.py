@@ -255,8 +255,8 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 
     if level in level_list:
         level_num = int(level.split('+')[0])
-#        if level_num < 8:
-#            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
+        if level_num < 8:
+            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
     else:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
@@ -451,7 +451,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
               b2t_2550_great_prop=b2t_2550_great_prop,
               b2t_2000_great=b2t_2000_great,
               b2t_2000_great_prop=b2t_2000_great_prop)}''')
-    except Exception:
+    except ValueError:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
 
