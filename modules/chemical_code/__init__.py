@@ -58,20 +58,20 @@ def parse_elements(formula: str) -> dict:
 
 
 @retry(stop=stop_after_attempt(3), reraise=True)
-async def search_csr(id=None):  # 根据 ChemSpider 的 ID 查询 ChemSpider 的链接，留空（将会使用缺省值 None）则随机查询
-    if id is not None:  # 如果传入了 ID，则使用 ID 查询
+async def search_csr(id=None):
+    if not id is not None: 
         answer_id = id
     else:
-        answer_id = random.randint(1, 116000000)  # 否则随机查询一个题目
+        answer_id = random.randint(1, 200000000)  # 数据库增长速度很快，可手动在此修改ID区间
     answer_id = str(answer_id)
     Logger.info("ChemSpider ID: " + answer_id)
-    get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')  # 在 ChemSpider 上搜索此化学式或 ID
+    get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')
     # Logger.info(get)
-    soup = BeautifulSoup(get, 'html.parser')  # 解析 HTML
+    soup = BeautifulSoup(get, 'html.parser')
     name = soup.find(
         'span',
         id='ctl00_ctl00_ContentSection_ContentPlaceHolder1_RecordViewDetails_rptDetailsView_ctl00_prop_MF').text  # 获取化学式名称
-    elements = parse_elements(name)  # 解析化学式，转为dict，key为元素，value为数量
+    elements = parse_elements(name)
     value = 0
     for element in elements:
         value += elements[element]
@@ -125,10 +125,10 @@ async def s(msg: Bot.MessageSession):
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']
     if id.isdigit():
-        if int(id) == 0:
+        if int(id) == 0: #若ID为0则随机
             await chemical_code(msg)
         else:
-            await chemical_code(msg, id, random_mode=False)  # 将消息会话和 ID 一并传入 chemical_code 函数
+            await chemical_code(msg, id, random_mode=False)
     else:
         await msg.finish(msg.locale.t('chemical_code.message.csid.invalid'))
 
@@ -144,7 +144,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         play_state[msg.target.target_id]['active'] = False
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
-    play_state[msg.target.target_id]['answer'] = csr['name']  # 将正确答案标记于 play_state 中存储的对象中
+    play_state[msg.target.target_id]['answer'] = csr['name'] 
     Logger.info(f'Answer: {csr["name"]}')
     Logger.info(f'Image: {csr["image"]}')
     download = False
@@ -224,7 +224,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                     if (g_msg := await gained_petal(wait, 2)):
                         send_ += '\n' + g_msg
                 await wait.send_message(send_)
-                play_state[msg.target.target_id]['active'] = False  # 将对象标记为非活跃状态
+                play_state[msg.target.target_id]['active'] = False
 
     async def timer(start):
         if play_state[msg.target.target_id]['active']: 
