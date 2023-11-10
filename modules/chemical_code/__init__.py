@@ -21,7 +21,7 @@ from core.utils.text import remove_prefix
 csr_link = 'https://www.chemspider.com'
 
 special_id_path = os.path.abspath(f'./assets/chemical_code/special_id') # 去掉文件扩展名并存储在special_id列表中
-special_id = [os.path.splitext(csid)[0] for csid in os.listdir(special_id_path)] # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+special_id = [os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)] # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
 element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
                  'Ar', 'Ca', 'Sc', 'Ti', 'Cr', 'Mn', 'Fe', 'Co', 'Ni',
@@ -59,7 +59,7 @@ def parse_elements(formula: str) -> dict:
 
 @retry(stop=stop_after_attempt(3), reraise=True)
 async def search_csr(id=None):
-    if not id is not None: 
+    if id is not None: 
         answer_id = id
     else:
         answer_id = random.randint(1, 200000000)  # 数据库增长速度很快，可手动在此修改ID区间
