@@ -125,7 +125,7 @@ async def s(msg: Bot.MessageSession):
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']
     if id.isdigit():
-        if int(id) == 0: #若ID为0则随机
+        if int(id) == 0: # 若 id 为 0，则随机
             await chemical_code(msg)
         else:
             await chemical_code(msg, id, random_mode=False)
