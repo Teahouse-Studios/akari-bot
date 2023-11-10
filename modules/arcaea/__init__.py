@@ -16,10 +16,10 @@ class WithErrCode(Exception):
     pass
 
 
-@arc.command('<sb616>')
+@arc.command('b30')
 async def _(msg: Bot.MessageSession):
     await msg.send_message([Plain(msg.locale.t("arcaea.message.sb616")),
-                            Image(os.path.abspath('./assets/noc.jpg'))])
+                            Image(os.path.abspath('./assets/arcaea/noc.jpg'))])
 
 
 @arc.command('download {{arcaea.help.download}}')

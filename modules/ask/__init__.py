@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
 
         if await check_bool(res):
             if petal != 0:
-                await msg.sendMessage(msg.locale.t('petal.message.cost', count=petal))
+                await msg.send_message(msg.locale.t('petal.message.cost', count=petal))
             rickroll(msg)
         if petal != 0:
             chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))

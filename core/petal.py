@@ -20,9 +20,6 @@ PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPL
 USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
 CNY_TO_PETAL = 100  # 100 petal = 1 CNY
 
-import json
-from datetime import datetime, timedelta
-
 
 async def get_petal_exchange_rate():
     api_key = Config('exchange_rate_api_key')
@@ -58,7 +55,6 @@ async def load_or_refresh_cache():
             json.dump(exchanged_petal_data, file)
         return exchanged_petal_data["exchanged_petal"]
     return None
-
 
 
 async def count_petal(tokens):

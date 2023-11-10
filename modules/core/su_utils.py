@@ -432,7 +432,7 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(e)
     if not e:
         e = msg.locale.t("core.message.raise")
-    raise Exception(e)
+    raise TestException(e)
 
 
 if Config('enable_eval'):
