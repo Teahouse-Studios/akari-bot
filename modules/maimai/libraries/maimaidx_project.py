@@ -105,6 +105,8 @@ async def get_rank(msg, payload):
         return data['username']
 
     username = await get_username(payload)
+    rating = None
+    rank = None
 
     for i, scoreboard in enumerate(sorted(rank_data, key=lambda x: x['ra'], reverse=True)):
         if scoreboard['username'] == username:
