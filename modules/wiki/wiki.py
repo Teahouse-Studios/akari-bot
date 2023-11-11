@@ -83,7 +83,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         for t in title:
             if prefix is not None and use_prefix:
                 t = prefix + t
-            if t[0] == ':':
+            if t and t[0] == ':':
                 if len(t) > 1:
                     query_task[start_wiki]['query'].append(t[1:])
             else:
