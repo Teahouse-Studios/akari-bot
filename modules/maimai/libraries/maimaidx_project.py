@@ -90,8 +90,10 @@ async def get_rank(msg, payload):
     average_rating = total_rating / total_rank
     formatted_average_rating = "{:.4f}".format(average_rating)
 
-    output = msg.locale.t('maimai.message.rank.global', time=time, total_rank=total_rank,
-                                      average_rating=formatted_average_rating)
+    output = []
+
+    output.append(msg.locale.t('maimai.message.rank.global', time=time, total_rank=total_rank,
+                                      average_rating=formatted_average_rating))
 
     async def get_username(payload):
         url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
@@ -120,9 +122,9 @@ async def get_rank(msg, payload):
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
     if rating:
-        output += '\n' + msg.locale.t('maimai.message.rank.player', user=username,
-                                      rating=rating, rank=rank, surpassing_rate=formatted_surpassing_rate)
-    await msg.finish(output)
+        output.append(msg.locale.t('maimai.message.rank.player', user=username,
+                                      rating=rating, rank=rank, surpassing_rate=formatted_surpassing_rate))
+    await msg.finish('\n'.join(output))
 
 
 async def get_player_score(msg, payload, input_id):

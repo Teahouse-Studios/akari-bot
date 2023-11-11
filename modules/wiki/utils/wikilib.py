@@ -520,8 +520,8 @@ class WikiLib:
                     rs1 = re.sub('The requested page title contains invalid characters:',
                                  self.locale.t("wiki.message.utils.wikilib.error.invalid_character"),
                                  page_raw['invalidreason'])
-                    rs = self.locale.t("error") + '“' + rs1 + '”。'
-                    rs = re.sub('".”', '"”', rs)
+                    rs = self.locale.t("error") + rs1
+                    rs = re.sub('".', '"' + self.locale.t("end"), rs)
                     page_info.desc = rs
                 elif 'missing' in page_raw:
                     if 'title' in page_raw:
