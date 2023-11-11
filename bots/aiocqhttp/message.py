@@ -21,7 +21,7 @@ from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
 from core.logger import Logger
 from core.queue import JobQueue
-from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS
+from core.types import FetchTarget as FetchTargetT, FinishedSession as FinS, MsgInfo, Session
 from core.utils.image import msgchain2image
 from core.utils.storedata import get_stored_list
 from database import BotDBUtil
@@ -278,6 +278,24 @@ class MessageSession(MessageSessionT):
             pass
 
 
+class FetchedSession(Bot.FetchedSession):
+    def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
+        if sender_from is None:
+            sender_from = target_from
+        if sender_id is None:
+            sender_id = target_id
+        self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
+                              sender_id=f'{target_from}|{sender_id}',
+                              target_from=target_from,
+                              sender_from=sender_from,
+                              sender_name='', client_name='', reply_id=None, message_id=0)
+        self.session = Session(message=False, target=int(target_id), sender=int(sender_id))
+        self.parent = MessageSession(self.target, self.session)
+
+
+Bot.FetchedSession = FetchedSession
+
+
 class FetchTarget(FetchTargetT):
     name = client_name
 
@@ -295,7 +313,7 @@ class FetchTarget(FetchTargetT):
             else:
                 sender_id = target_id
 
-            return Bot.FetchedSession(target_from, target_id, sender_from, sender_id)
+            return FetchedSession(target_from, target_id, sender_from, sender_id)
 
     @staticmethod
     async def fetch_target_list(target_list: list) -> List[Bot.FetchedSession]:
