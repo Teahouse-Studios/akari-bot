@@ -161,9 +161,9 @@ class MessageSession(MessageSessionT):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
         # https://spec.matrix.org/v1.7/client-server-api/#permissions
-        power_levels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
-        level = power_levels.content['users'][self.session.sender]
-        if level is not None and level >= 50:
+        power_levels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels').content
+        level = power_levels['users'][self.session.sender] if self.session.sender in power_levels['users'] else power_levels['users_default']
+        if level is not None and int(level) >= 50:
             return True
         return False
 
