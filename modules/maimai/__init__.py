@@ -2,8 +2,8 @@
 from core.utils.image import msgchain2image
 
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_alias, get_cover, search_by_alias, update_assets
-from modules.maimai.libraries.maimaidx_music import Music, TotalList
+from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_assets
+from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, \
     get_score_list
 from .regex import *
@@ -21,7 +21,7 @@ diff_label_zht = ['綠', '黃', '紅']
 
 def song_txt(music: Music):
     return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(get_cover(music.id), ),
+            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"),
             Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
@@ -199,10 +199,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     output = await get_player_score(msg, payload, sid)
 
-    file = get_cover(music['id'])
     await msg.finish(
         [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-         BImage(f"{file}"), Plain(output)])
+         BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
 
 
 @mai.handle('plate <plate> [<username>] {{maimai.help.plate}}')
@@ -377,7 +376,6 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
-        file = get_cover(music['id'])
         if len(chart['notes']) == 4:
             message = msg.locale.t(
                 "maimai.message.song.sd",
@@ -403,12 +401,11 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 charter=chart['charter'])
         await msg.finish(
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"{file}"), Plain(message)])
+             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(message)])
     else:
-        file = get_cover(music['id'])
         await msg.finish(
             [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"{file}"),
+             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
              Plain(msg.locale.t("maimai.message.song",
                                 artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
                                 bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
@@ -454,7 +451,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
               b2t_2550_great_prop=b2t_2550_great_prop,
               b2t_2000_great=b2t_2000_great,
               b2t_2000_great_prop=b2t_2000_great_prop)}''')
-    except Exception:
+    except ValueError:
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
 

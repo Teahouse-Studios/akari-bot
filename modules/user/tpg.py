@@ -13,9 +13,9 @@ def tpg(msg, favicon, wikiname, username, gender, registertime, contributionwiki
     font = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 40)
     font1 = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 70)
     if bantype is None:
-        img = Image.open(abspath('./assets/base.png'))
+        img = Image.open(abspath('./assets/user/base.png'))
     elif bantype == 'Y' or bantype == 'YN':
-        img = Image.open(abspath('./assets/ban.png'))
+        img = Image.open(abspath('./assets/user/ban.png'))
     if favicon:
         img2 = Image.open(favicon)
     else:
@@ -89,7 +89,7 @@ def tpg(msg, favicon, wikiname, username, gender, registertime, contributionwiki
     img3.alpha_composite(img7, (655, 960))
 
     if bantype == 'Y' or bantype == 'YN':
-        img8 = Image.open(abspath('./assets/Blocked.png'))
+        img8 = Image.open(abspath('./assets/user/Blocked.png'))
         w, h = img8.size
         w = int(w)
         h = int(h)

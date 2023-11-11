@@ -103,6 +103,6 @@ async def _(msg: Bot.MessageSession):
         send = msg.locale.t('stone.message.skip', count=count)
 
     if count == 10:
-        if g := gained_petal(msg, 1):
+        if g := (g_msg := await gained_petal(msg, 1)):
             send += '\n' + g
     await msg.finish(send)

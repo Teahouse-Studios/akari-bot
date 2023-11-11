@@ -8,7 +8,7 @@ from typing import Union, Dict, List
 import ujson as json
 
 import core.utils.html2text as html2text
-from config import Config
+from config import Config, CFG
 from core.builtins import Url
 from core.dirty_check import check
 from core.logger import Logger
@@ -17,9 +17,17 @@ from core.utils.i18n import Locale, default_locale
 from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
 
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
+
 redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.cn/api.php',  # 萌娘百科强制使用移动版 API
-                 'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php'  # no more Fandom then
+                 'https://minecraft.fandom.com/api.php': 'https://minecraft.wiki/api.php',  # no more Fandom then
+                 'https://minecraft.fandom.com/zh/api.php': 'https://zh.minecraft.wiki/api.php'
                  }
+
+request_by_web_render_list = [re.compile(r'.*minecraft\.wiki'),  # sigh
+                              re.compile(r'.*runescape\.wiki'),
+                              ]
 
 
 class InvalidPageIDError(Exception):
@@ -151,8 +159,16 @@ class WikiLib:
             Logger.debug(api)
         else:
             raise ValueError('kwargs is None')
+        request_local = False
+        for x in request_by_web_render_list:
+            if x.match(api):
+                if web_render:
+                    use_local = True if web_render_local else False
+                    api = (web_render_local if use_local else web_render) + 'source?url=' + urllib.parse.quote(api)
+                request_local = True
+                break
         try:
-            return await get_url(api, status_code=200, headers=self.headers, fmt="json")
+            return await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local)
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
                 raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
@@ -501,11 +517,11 @@ class WikiLib:
                 if 'editurl' in page_raw:
                     page_info.edit_link = page_raw['editurl']
                 if 'invalid' in page_raw:
-                    rs1 = re.sub('The requested page title contains invalid characters:',
-                                 self.locale.t("wiki.message.utils.wikilib.error.invalid_character"),
-                                 page_raw['invalidreason'])
-                    rs = self.locale.t("error") + '“' + rs1 + '”。'
-                    rs = re.sub('".”', '"”', rs)
+                    match = re.search(r'"(.)"', page_raw['invalidreason'])
+                    if match:
+                        rs = self.locale.t("wiki.message.utils.wikilib.error.invalid_character", char=match.group(1))
+                    else:
+                        rs = self.locale.t("wiki.message.utils.wikilib.error.empty_title")
                     page_info.desc = rs
                 elif 'missing' in page_raw:
                     if 'title' in page_raw:
