@@ -517,11 +517,8 @@ class WikiLib:
                 if 'editurl' in page_raw:
                     page_info.edit_link = page_raw['editurl']
                 if 'invalid' in page_raw:
-                    rs1 = re.sub('The requested page title contains invalid characters:',
-                                 self.locale.t("wiki.message.utils.wikilib.error.invalid_character"),
-                                 page_raw['invalidreason'])
-                    rs = self.locale.t("error") + rs1
-                    rs = re.sub('\.', self.locale.t("message.end"), rs)
+                    match = re.search(r'"(.)"', page_raw['invalidreason'])
+                    rs = self.locale.t("error") + self.locale.t("wiki.message.utils.wikilib.error.invalid_character", char=match.group(1))
                     page_info.desc = rs
                 elif 'missing' in page_raw:
                     if 'title' in page_raw:
