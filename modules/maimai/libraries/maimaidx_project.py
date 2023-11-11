@@ -107,8 +107,6 @@ async def get_rank(msg, payload):
         return data['username']
 
     username = await get_username(payload)
-    rating = None
-    rank = None
 
     for i, scoreboard in enumerate(sorted(rank_data, key=lambda x: x['ra'], reverse=True)):
         if scoreboard['username'] == username:
@@ -117,11 +115,14 @@ async def get_rank(msg, payload):
 
     if not rank:
         rank = total_rank
+    
+    if not rating:
+        rating = 0
 
     surpassing_rate = (total_rank - rank) / total_rank * 100
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
-    if rating:
+    if username:
         output.append(msg.locale.t('maimai.message.rank.player', user=username,
                                       rating=rating, rank=rank, surpassing_rate=formatted_surpassing_rate))
     await msg.finish('\n'.join(output))

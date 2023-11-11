@@ -521,6 +521,7 @@ class WikiLib:
                                  self.locale.t("wiki.message.utils.wikilib.error.invalid_character"),
                                  page_raw['invalidreason'])
                     rs = self.locale.t("error") + rs1
+                    rs = re.sub('\.', self.locale.t("message.end"), rs)
                     page_info.desc = rs
                 elif 'missing' in page_raw:
                     if 'title' in page_raw:
