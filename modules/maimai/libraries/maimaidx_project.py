@@ -78,51 +78,37 @@ achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 9
 
 
 async def get_rank(msg, payload):
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    player_data = await get_record(msg, payload)
+
+    username = player_data['username']
     url = f"https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt='json')
+    sorted_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)
 
-    total_rating = 0
-    for scoreboard in rank_data:
-        total_rating += scoreboard['ra']
-
-    total_rank = len(rank_data)
-    average_rating = total_rating / total_rank
-    formatted_average_rating = "{:.4f}".format(average_rating)
-
-    output = msg.locale.t('maimai.message.rank.global', time=time, total_rank=total_rank,
-                                      average_rating=formatted_average_rating)
-
-    async def get_username(payload):
-        url = f"https://www.diving-fish.com/api/maimaidxprober/query/player"
-        try:
-            data = await post_url(url,
-                                  data=json.dumps(payload),
-                                  status_code=200,
-                                  headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-        except:
-            return None
-        return data['username']
-
-    username = await get_username(payload)
-    rating = None
+    rating = 0
     rank = None
+    total_rating = 0
+    total_rank = len(sorted_data)
 
-    for i, scoreboard in enumerate(sorted(rank_data, key=lambda x: x['ra'], reverse=True)):
+    for i, scoreboard in enumerate(sorted_data):
         if scoreboard['username'] == username:
-            rating = scoreboard['ra']
             rank = i + 1
+            rating = scoreboard['ra']
+        total_rating += scoreboard['ra']
 
     if not rank:
         rank = total_rank
 
+    average_rating = total_rating / total_rank
     surpassing_rate = (total_rank - rank) / total_rank * 100
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    formatted_average_rating = "{:.4f}".format(average_rating)
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
-    if rating:
-        output += '\n' + msg.locale.t('maimai.message.rank.player', user=username,
-                                      rating=rating, rank=rank, surpassing_rate=formatted_surpassing_rate)
-    await msg.finish(output)
+    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
+                                      rating=rating, rank=rank, average_rating=formatted_average_rating,
+                                      surpassing_rate=formatted_surpassing_rate))
 
 
 async def get_player_score(msg, payload, input_id):
