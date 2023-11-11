@@ -97,7 +97,7 @@ class MessageSession(MessageSessionT):
             lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
             if self.session.target in lagrange_available_groups:
                 choose = random.randint(0, 1)
-                Logger.info(f'choose: {choose}')
+                Logger.debug(f'choose: {choose}')
                 if choose:
                     can_sends = []
                     for x in message_chain.value:
@@ -109,6 +109,9 @@ class MessageSession(MessageSessionT):
                                                     MessageChain(can_sends).to_list())
                     if not message_chain.value:
                         return FinishedSession(self, 0, [{}])
+        else:
+            Logger.debug(f'Do not use lagrange since some conditions are not met.\n{self.target.target_from} '
+                         f'{self.tmp.get("enforce_send_by_master_client", False)}')
         msg = MessageSegment.text('')
         if quote and self.target.target_from == 'QQ|Group' and self.session.message:
             msg = MessageSegment.reply(self.session.message.message_id)
