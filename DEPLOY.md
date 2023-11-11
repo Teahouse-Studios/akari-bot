@@ -9,6 +9,7 @@
     -   [运行机器人](#运行机器人)
 -   [获取帮助](#获取帮助)
 -   [开发](#开发)
+-   [疑难解答](#疑难解答)
 
 # 简介
 
@@ -43,7 +44,7 @@
     ```
 
     ```sh
-    git clone https://ghproxy.com/github.com/Teahouse-studios/akari-bot.git
+    git clone https://gh-proxy.com/github.com/Teahouse-studios/akari-bot.git
     ```
 
     镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
@@ -51,14 +52,14 @@
 2. 在文件夹内打开终端。
 
     ```sh
-    cd .\akari-bot\
+    cd akari-bot
     ```
 
 **方式二：直接下载代码**
 
 1. 您可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
 
-    > 由于无法保证 release 版本的稳定性，我们不再提供 release 版本的下载。
+    > 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
 
     > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
 
@@ -162,7 +163,7 @@ pip install -r requirements.txt
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
-> 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目：
+> 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目。
 
 一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45 等问题，我们建议按照进阶配置来配置签名服务器。
 
@@ -220,7 +221,7 @@ pip install -r requirements.txt
             <<: *default # 引用默认中间件
       ...
     ...
-	```
+    ```
 
     请在小可机器人的配置文件 `config.toml` 填写以下字段：
 
@@ -236,7 +237,7 @@ pip install -r requirements.txt
 
 5. 安装 JRE 17（Jave Runtime Environment 17），请善用搜索引擎查找安装方法。
 
-6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库） 的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
 
 7. 删除与 go-cqhttp 同一目录下的 `data` 文件夹和 `device.json` 文件。
 
@@ -251,7 +252,7 @@ pip install -r requirements.txt
     例：`--basePath=txlib\8.9.73`
 
     > 在选择版本时，应当遵从以下原则：
-    升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。Code45 了应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
+    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。Code45 了应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 9. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
 
@@ -260,7 +261,7 @@ pip install -r requirements.txt
     ```yml
     account: # 账号相关
       # 数据包的签名服务器列表，第一个作为主签名服务器，后续作为备用
-      sign-servers: 
+      sign-servers:
         - url: 'http://127.0.0.1:8080'  # 主签名服务器地址， 必填
           key: '114514'  # 签名服务器所需要的apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
           authorization: '-'   # authorization 内容, 依服务端设置，如 'Bearer xxxx'
@@ -280,7 +281,6 @@ pip install -r requirements.txt
     ```
 
 14. 重启 go-cqhttp 完成最终配置。
-
 
 #### Discord
 
@@ -318,8 +318,7 @@ pip install -r requirements.txt
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
-> 不推荐使用其他客户端获取 Access Token，这样容易导致 olm 会话非常混乱
->
+> 不推荐使用其他客户端获取 Access Token，这样容易导致 olm 会话非常混乱。
 > 如果（不怕死）使用客户端获取 Access Token，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
 
 使用以下命令进行密码登录：
@@ -330,7 +329,7 @@ curl -XPOST -d '{"type":"m.login.password", "user":"<user>", "password":"<passwo
 
 ##### E2E 加密
 
-目前，由于 libolm 在一些情况下需要手动配置，机器人默认没有启用端对端加密（e2ee）支持。
+目前，由于 libolm 在一些情况下需要手动配置，机器人默认没有启用端对端加密（E2EE）支持。
 
 若要启用 E2EE 支持，请执行以下命令：
 
@@ -359,7 +358,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `check_accessKeySecret =` - 填写获取的 AccessKeySecret。
 
-#### QQ 频道消息处理（beta）
+#### QQ 频道消息处理（Beta）
 
 通过上文的 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 方式，可以按需选择是否启用 QQ 频道消息处理功能。
 
@@ -543,7 +542,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 # 开发
 
-如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` git 钩子，它可以在提交 commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 pep8 格式化等。
+如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` Git 钩子，它可以在提交 Commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 PEP8 格式化等。
 
 # 疑难解答
 
