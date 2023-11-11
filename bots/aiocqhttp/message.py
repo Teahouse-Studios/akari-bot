@@ -95,7 +95,7 @@ class MessageSession(MessageSessionT):
         if (self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False) and not
                 self.tmp.get('enforce_send_by_master_client', False)):
             lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
-            if self.session.target in lagrange_available_groups:
+            if int(self.session.target) in lagrange_available_groups:
                 choose = random.randint(0, 1)
                 Logger.debug(f'choose: {choose}')
                 if choose:
