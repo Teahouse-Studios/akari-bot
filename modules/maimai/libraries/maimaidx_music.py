@@ -146,7 +146,7 @@ class MusicList(List[Music]):
                 continue
             if not in_or_equal(music.bpm, bpm):
                 continue
-            if not in_or_equal(music.title.lower(), title.lower()):
+            if title is not Ellipsis and not in_or_equal(music.title.lower(), title.lower()):
                 continue
             if title_search is not Ellipsis and title_search.lower() not in music.title.lower():
                 continue
