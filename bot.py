@@ -15,7 +15,8 @@ from database import BotDBUtil, session, DBVersion
 encode = 'UTF-8'
 
 bots_required_configs = {'aiocqhttp': ['qq_host', 'qq_account'], 'discord': ['dc_token'], 'aiogram': ['tg_token'],
-                         'kook': ['kook_token'], 'matrix': ['matrix_homeserver', 'matrix_user', 'matrix_token'], }
+                         'kook': ['kook_token'], 'matrix': ['matrix_homeserver', 'matrix_user', 'matrix_token'],
+                         'lagrange': ['lagrange_host']}
 
 
 class RestartBot(Exception):
@@ -43,8 +44,7 @@ def init_bot():
 
 pidlst = []
 
-if not (disabled_bots := Config('disabled_bots')):
-    disabled_bots = []
+disabled_bots = Config('disabled_bots', [])
 
 
 def run_bot():

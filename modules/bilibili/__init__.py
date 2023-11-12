@@ -27,14 +27,14 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
     await get_info(msg, url, get_detail)
 
 
-@bili.handle(re.compile(r"AV(\d+)", flags=re.I), desc="{bilibili.help.regex.av}")
+@bili.handle(re.compile(r"AV(\d+)", flags=re.I), mode='M', desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     url = f"{api_url}?aid={res.groups()[0]}"
     await get_info(msg, url, get_detail=False)
 
 
-@bili.handle(re.compile(r"BV[a-zA-Z0-9]{10}"), desc="{bilibili.help.regex.bv}")
+@bili.handle(re.compile(r"BV[a-zA-Z0-9]{10}"), mode='M', desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     url = f"{api_url}?bvid={res.group()}"

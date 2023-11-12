@@ -78,9 +78,9 @@ async def get_alias(msg, input_):
 
 async def search_by_alias(msg, input_):
     result = []
-    input_ = input_.replace("_", " ")
-    s = (await total_list.get()).by_title(input_)
-    if s:
+    input_ = input_.replace("_", " ").strip()
+    res = (await total_list.get()).filter(title=input_)
+    for s in res:
         result.append(s['id'])
 
     file_path = os.path.join(assets_path, "mai_alias.json")
@@ -136,12 +136,3 @@ async def get_plate(msg, payload):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
 
     return data
-
-
-def get_cover(sid):
-    cover_url = f"https://www.diving-fish.com/covers/{get_cover_len5_id(sid)}.png"
-    cover_path = f"{cover_dir}/{get_cover_len5_id(sid)}.png"
-    if os.path.exists(os.path.abspath(cover_path)):
-        return os.path.abspath(cover_path)
-    else:
-        return cover_url

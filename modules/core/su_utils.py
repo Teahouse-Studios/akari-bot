@@ -321,7 +321,7 @@ async def update_bot(msg: Bot.MessageSession):
             await msg.send_message(update_dependencies())
         else:
             await msg.finish(msg.locale.t("core.message.update.failed"))
-            
+
 
 if Info.subprocess:
     upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r', base=True)
@@ -432,7 +432,7 @@ async def _(msg: Bot.MessageSession):
             raise NoReportException(e)
     if not e:
         e = msg.locale.t("core.message.raise")
-    raise Exception(e)
+    raise TestException(e)
 
 
 if Config('enable_eval'):
@@ -518,3 +518,11 @@ if Bot.client_name == 'QQ':
         v = not target_data.options.get(k, False)
         target_data.edit_option(k, v)
         await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
+
+    lagrange = module('lagrange', developers=['OasisAkari'], required_superuser=True, base=True)
+
+    @lagrange.handle()
+    async def _(msg: Bot.MessageSession):
+        await msg.finish(f'Keepalive: {str(Temp.data.get("lagrange_keepalive", "None"))}\n'
+                         f'Status: {str(Temp.data.get("lagrange_status", "None"))}\n'
+                         f'Groups: {str(Temp.data.get("lagrange_available_groups", "None"))}')

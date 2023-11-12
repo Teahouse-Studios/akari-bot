@@ -114,18 +114,18 @@ async def _(msg: Bot.MessageSession):
         if expression.lower() in no_solution:
             if has_solution_flag:
                 send = msg.locale.t('twenty_four.message.incorrect.have_solution')
-                if g_msg := lost_petal(msg, 1):
+                if g_msg := (g_msg := await lost_petal(msg, 1)):
                     send += '\n' + g_msg
             else:
                 send = msg.locale.t('twenty_four.message.correct')
-                if g_msg := gained_petal(msg, 2):
+                if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
             await answer.send_message(send)
         elif is_valid(expression):
             result = calc(expression)
             if result == 24 and contains_all_numbers(expression, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
-                if g_msg := gained_petal(msg, 2):
+                if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
                 await answer.send_message(send)
             else:

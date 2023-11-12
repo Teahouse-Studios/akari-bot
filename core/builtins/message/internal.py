@@ -1,3 +1,4 @@
+import base64
 import re
 import uuid
 from os.path import abspath
@@ -27,6 +28,9 @@ class Plain(PlainT):
 
     def __repr__(self):
         return f'Plain(text="{self.text}")'
+
+    def to_dict(self):
+        return {'type': 'plain', 'data': {'text': self.text}}
 
 
 class Url(UrlT):
@@ -69,6 +73,9 @@ class ErrorMessage(EMsg):
     def __repr__(self):
         return self.error_message
 
+    def to_dict(self):
+        return {'type': 'error', 'data': {'error': self.error_message}}
+
 
 class Image(ImageT):
     def __init__(self,
@@ -100,11 +107,19 @@ class Image(ImageT):
                     image_cache.write(raw)
                 return img_path
 
+    async def get_base64(self):
+        file = await self.get()
+        with open(file, 'rb') as f:
+            return str(base64.b64encode(f.read()), "UTF-8")
+
     def __str__(self):
         return self.path
 
     def __repr__(self):
         return f'Image(path="{self.path}", headers={self.headers})'
+
+    def to_dict(self):
+        return {'type': 'image', 'data': {'path': self.path}}
 
 
 class Voice(VoiceT):
@@ -117,6 +132,9 @@ class Voice(VoiceT):
 
     def __repr__(self):
         return f'Voice(path={self.path})'
+
+    def to_dict(self):
+        return {'type': 'voice', 'data': {'path': self.path}}
 
 
 class EmbedField(EmbedFieldT):
@@ -133,6 +151,9 @@ class EmbedField(EmbedFieldT):
 
     def __repr__(self):
         return f'EmbedField(name="{self.name}", value="{self.value}", inline={self.inline})'
+
+    def to_dict(self):
+        return {'type': 'field', 'data': {'name': self.name, 'value': self.value, 'inline': self.inline}}
 
 
 class Embed(EmbedT):
@@ -191,6 +212,21 @@ class Embed(EmbedT):
                f'timestamp={self.timestamp}, color={self.color}, image={self.image.__repr__()}, ' \
                f'thumbnail={self.thumbnail.__repr__()}, author="{self.author}", footer="{self.footer}", ' \
                f'fields={self.fields})'
+
+    def to_dict(self):
+        return {
+            'type': 'embed',
+            'data': {
+                'title': self.title,
+                'description': self.description,
+                'url': self.url,
+                'timestamp': self.timestamp,
+                'color': self.color,
+                'image': self.image,
+                'thumbnail': self.thumbnail,
+                'author': self.author,
+                'footer': self.footer,
+                'fields': self.fields}}
 
 
 __all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage"]

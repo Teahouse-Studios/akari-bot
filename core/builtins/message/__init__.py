@@ -28,6 +28,7 @@ class MessageSession(MessageSessionT):
         self.enabled_modules = self.data.enabled_modules
         self.locale = Locale(self.data.locale)
         self.timestamp = datetime.now()
+        self.tmp = {}
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True) -> bool:
         send = None
@@ -70,6 +71,7 @@ class MessageSession(MessageSessionT):
             raise WaitCancelException
 
     async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True) -> MessageSessionT:
+        self.tmp['enforce_send_by_master_client'] = True
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
         if append_instruction:
