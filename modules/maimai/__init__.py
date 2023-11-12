@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 @mai.handle('id <id> [<diff>] {{maimai.help.id}}')
 @mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
-    if msg.parsed_msg['<id>']:
+    if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
     elif id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
