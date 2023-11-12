@@ -57,7 +57,7 @@
     "core.message.alias.remove.success": "已移除自定义命令别名：${arg1}",
     "core.message.alias.reset.success": "已重置自定义命令别名列表。",
     "core.message.confirm": "你确定吗？",
-    "core.message.update.failed": "尝试从 Github 获取更新失败，请稍后重试。",
+    "core.message.update.failed": "尝试从 GitHub 获取更新失败，请稍后重试。",
     "core.message.forward_msg.disable": "已关闭转发消息。",
     "core.message.forward_msg.enable": "已开启转发消息。",
     "core.message.forward_msg.disabled": "转发消息已关闭。",
