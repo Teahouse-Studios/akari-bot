@@ -44,14 +44,17 @@ class Article:
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180))
-async def start_check_news():
+async def start_check_news(use_local=True):
     baseurl = 'https://www.minecraft.net'
     url = quote(
         f'https://www.minecraft.net/content/minecraft-net/_jcr_content.articles.grid?tileselection=auto&tagsPath={",".join(Article.random_tags())}&offset=0&pageSize={Article.count}')
-    if not web_render:
-        return
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return
+        use_local = False
     try:
-        get = web_render + 'source?url=' + url
+        get = (web_render_local if use_local else web_render) + 'source?url=' + url
         getpage = await get_url(get, 200, attempt=1, logging_err_resp=False)
         if getpage:
             alist = get_stored_list('scheduler', 'mcnews')

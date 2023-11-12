@@ -70,7 +70,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
     if start_wiki is None:
         if isinstance(session, Bot.MessageSession):
             await session.send_message(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
-        start_wiki = 'https://minecraft.fandom.com/zh/api.php'
+        start_wiki = 'https://zh.minecraft.wiki/api.php'
     if lang in interwiki_list:
         start_wiki = interwiki_list[lang]
         lang = None
@@ -83,6 +83,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         for t in title:
             if prefix is not None and use_prefix:
                 t = prefix + t
+            if not t:
+                continue
             if t[0] == ':':
                 if len(t) > 1:
                     query_task[start_wiki]['query'].append(t[1:])

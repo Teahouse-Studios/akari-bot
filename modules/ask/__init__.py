@@ -11,6 +11,12 @@ from core.dirty_check import check_bool, rickroll
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
 
+os.environ['LANGCHAIN_TRACING_V2'] = str(Config('enable_langsmith'))
+if Config('enable_langsmith'):
+    os.environ['LANGCHAIN_ENDPOINT'] = Config('langsmith_endpoint')
+    os.environ['LANGCHAIN_PROJECT'] = Config('langsmith_project')
+    os.environ['LANGCHAIN_API_KEY'] = Config('langsmith_api_key')
+
 from langchain.callbacks import get_openai_callback  # noqa: E402
 from .agent import agent_executor  # noqa: E402
 from .formatting import generate_latex, generate_code_snippet  # noqa: E402
@@ -23,7 +29,7 @@ a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
-        raise Exception(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigError(msg.locale.t('error.config.secret.not_found'))
     if not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 
@@ -68,7 +74,7 @@ async def _(msg: Bot.MessageSession):
 
         if await check_bool(res):
             if petal != 0:
-                await msg.sendMessage(msg.locale.t('petal.message.cost', count=petal))
+                await msg.send_message(msg.locale.t('petal.message.cost', count=petal))
             rickroll(msg)
         if petal != 0:
             chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))

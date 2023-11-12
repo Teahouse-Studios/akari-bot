@@ -18,7 +18,7 @@ web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
 
-async def get_article(version):
+async def get_article(version, use_local=True):
     match_snapshot = re.match(r'.*?w.*', version)
     link = False
     if match_snapshot:
@@ -41,9 +41,12 @@ async def get_article(version):
                + f'-release-candidate-{match_release_candidate.group(2)}'
     if not link:
         link = 'https://www.minecraft.net/en-us/article/minecraft-java-edition-' + re.sub("\\.", "-", version)
-    if not web_render:
-        return '', ''
-    get = web_render + 'source?url=' + quote(link)
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            return '', ''
+        use_local = False
+    get = (web_render_local if use_local else web_render) + 'source?url=' + quote(link)
 
     try:
         html = await get_url(get, attempt=1)

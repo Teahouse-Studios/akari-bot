@@ -7,12 +7,14 @@ from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import get_url
 
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 async def news(msg):
     api = 'https://www.mcbbs.net/forum-news-1.html'
-    webrender = CFG.get_url('web_render')
-    if webrender:
-        api = webrender + 'source?url=' + api
+    if web_render:
+        use_local = True if web_render_local else False
+        api = (web_render_local if use_local else web_render) + 'source?url=' + api
     html = await get_url(api, 200)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')

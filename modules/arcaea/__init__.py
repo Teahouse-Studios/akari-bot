@@ -1,32 +1,40 @@
 import os
+
 import urllib.parse
 
 from config import CFG
 from core.builtins import Bot
 from core.builtins import Plain, Image
 from core.component import module
+from core.logger import Logger
 from core.utils.http import get_url
+
+assets_path = os.path.abspath('./assets/arcaea')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
+
 
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
-assets_path = os.path.abspath('./assets/arcaea')
-webrender = CFG.get_url('web_render')
 
 class WithErrCode(Exception):
     pass
 
 
-@arc.command('<sb616>')
+@arc.command('b30')
 async def _(msg: Bot.MessageSession):
     await msg.send_message([Plain(msg.locale.t("arcaea.message.sb616")),
-                            Image(os.path.abspath('./assets/noc.jpg'))])
+                            Image(os.path.abspath('./assets/arcaea/noc.jpg'))])
 
 
 @arc.command('download {{arcaea.help.download}}')
-async def _(msg: Bot.MessageSession):
-    if not webrender:
-        await msg.finish([msg.locale.t("error.webrender.unconfigured")])
-    resp = await get_url(webrender + 'source?url=' +
+async def _(msg: Bot.MessageSession, use_local=True):
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+        use_local = False
+    resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'), 200,
                          fmt='json')
     if resp:
@@ -37,10 +45,13 @@ async def _(msg: Bot.MessageSession):
 
 
 @arc.command('random {{arcaea.help.random}}')
-async def _(msg: Bot.MessageSession):
-    if not webrender:
-        await msg.finish(msg.locale.t("error.webrender.unconfigured"))
-    resp = await get_url(webrender + 'source?url=' +
+async def _(msg: Bot.MessageSession, use_local=True):
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+        use_local = False
+    resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/song/showcase/'),
                          200, fmt='json')
     if resp:
@@ -55,15 +66,18 @@ async def _(msg: Bot.MessageSession):
 
 
 @arc.command('rank free {{arcaea.help.rank.free}}', 'rank paid {{arcaea.help.rank.paid}}')
-async def _(msg: Bot.MessageSession):
-    if not webrender:
-        await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+async def _(msg: Bot.MessageSession, use_local=True):
+    if not web_render_local:
+        if not web_render:
+            Logger.warn('[Webrender] Webrender is not configured.')
+            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+        use_local = False
     if msg.parsed_msg.get('free', False):
-        resp = await get_url(webrender + 'source?url=' +
+        resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                              urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/free/'),
                              200, fmt='json')
     else:
-        resp = await get_url(webrender + 'source?url=' +
+        resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                              urllib.parse.quote('https://webapi.lowiro.com/webapi/song/rank/paid/'), 200, fmt='json')
     if resp:
         r = []

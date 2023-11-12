@@ -24,16 +24,15 @@ CNY_TO_PETAL = 100  # 100 petal = 1 CNY
 async def get_petal_exchange_rate():
     api_key = Config('exchange_rate_api_key')
     api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY'
-    data = await get_url(api_url, 200, fmt='json')
-    if data['result'] == "success":
-        exchange_rate = data['conversion_rate']
-        petal_value = exchange_rate * CNY_TO_PETAL
-        return {"exchange_rate": exchange_rate, "exchanged_petal": petal_value}
-    return None
+    try:
+        data = await get_url(api_url, 200, fmt='json')
+        if data['result'] == "success":
+            exchange_rate = data['conversion_rate']
+            petal_value = exchange_rate * CNY_TO_PETAL
+            return {"exchange_rate": exchange_rate, "exchanged_petal": petal_value}
+    except:
+        return None
 
-
-import json
-from datetime import datetime, timedelta
 
 async def load_or_refresh_cache():
     cache_dir = Config('cache_path')
@@ -56,7 +55,6 @@ async def load_or_refresh_cache():
             json.dump(exchanged_petal_data, file)
         return exchanged_petal_data["exchanged_petal"]
     return None
-
 
 
 async def count_petal(tokens):

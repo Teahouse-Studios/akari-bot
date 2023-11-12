@@ -10,14 +10,14 @@
     "coin.message.error.out_of_range": "An error occurred: You can only toss up to ${max} coins.",
     "coin.message.head": "...\n... It is heads!",
     "coin.message.mix": "...",
-    "coin.message.mix.head": " ${head} is/are heads",
+    "coin.message.mix.head": " ${head} are heads",
     "coin.message.mix.stand": "... and ${stand} stand(s) up!",
-    "coin.message.mix.tail": ", ${tail} is/are tails",
-    "coin.message.mix.tail2": " ${tail} is/are tails",
+    "coin.message.mix.tail": ", ${tail} are tails",
+    "coin.message.mix.tail2": " ${tail} are tails",
     "coin.message.prompt": "You toss ${count} coin(s)",
     "coin.message.stand": "...\n...It is standing up!",
     "coin.message.tail": "...\n... It is tails!",
-    "stone.help.desc": "打水漂。",
-    "stone.message.skip": "你扔了一块石头，漂了 ${count} 下。",
-    "stone.message.skip.nothing": "你扔了一块石头，什么也没有发生。"
+    "stone.help.desc": "Stone Skipping.",
+    "stone.message.skip": "You throw a stone, and it floated ${count} time(s).",
+    "stone.message.skip.nothing": "You throw a stone, and nothing happened."
 }
