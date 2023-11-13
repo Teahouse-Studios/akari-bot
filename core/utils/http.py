@@ -4,10 +4,9 @@ import socket
 import urllib.parse
 from typing import Union
 
-import aiohttp
+import httpx
 import filetype as ft
 from aiofile import async_open
-from aiohttp import TCPConnector
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 from config import Config
@@ -16,8 +15,7 @@ from .cache import random_cache_path
 
 logging_resp = False
 debug = Config('debug')
-if not (proxy := Config('proxy')):
-    proxy = ''
+proxy = Config('proxy')
 
 _matcher_private_ips = re.compile(
     r'^(?:127\.|0?10\.|172\.0?1[6-9]\.|172\.0?2[0-9]\.172\.0?3[01]\.|192\.168\.|169\.254\.|::1|[fF][cCdD][0-9a-fA-F]{2}:|[fF][eE][89aAbB][0-9a-fA-F]:)'
@@ -61,28 +59,29 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
         if not Config('allow_request_private_ip') and not request_private_ip:
             private_ip_check(url)
 
-        async with aiohttp.ClientSession(headers=headers,
-                                         connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
+        async with httpx.AsyncClient(headers=headers,
+                                     verify=False if debug else True,
+                                     proxies=proxy,
+                                     http2=True) as session:
             try:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
-                                       proxy=proxy, params=params) as req:
-                    Logger.debug(f'[{req.status}] {url}')
-                    if logging_resp:
-                        Logger.debug(await req.read())
-                    if status_code and req.status != status_code:
-                        if not logging_resp and logging_err_resp:
-                            Logger.error(await req.read())
-                        raise ValueError(
-                            f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
-                    if fmt is not None:
-                        if hasattr(req, fmt):
-                            return await getattr(req, fmt)()
-                        else:
-                            raise ValueError(f"NoSuchMethod: {fmt}")
+                req = await session.get(url, timeout=timeout, headers=headers, params=params)
+                Logger.debug(f'[{req.status_code}] {url}')
+                if logging_resp:
+                    Logger.debug(req.read())
+                if status_code and req.status_code != status_code:
+                    if not logging_resp and logging_err_resp:
+                        Logger.error(req.read())
+                    raise ValueError(
+                        f'{str(req.status_code)}[Ke:Image,path=https://http.cat/{str(req.status_code)}.jpg]')
+                if fmt is not None:
+                    if hasattr(req, fmt):
+                        return getattr(req, fmt)()
                     else:
-                        text = await req.text()
-                        return text
-            except asyncio.exceptions.TimeoutError:
+                        raise ValueError(f"NoSuchMethod: {fmt}")
+                else:
+                    text = req.text
+                    return text
+            except httpx.TimeoutException:
                 raise ValueError(f'Request timeout.')
             except Exception as e:
                 Logger.error(f'Error while requesting {url}: {e}')
@@ -111,29 +110,28 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
         if not Config('allow_request_private_ip') and not request_private_ip:
             private_ip_check(url)
 
-        async with aiohttp.ClientSession(headers=headers,
-                                         connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
+        async with httpx.AsyncClient(headers=headers, verify=False if debug else True,
+                                     proxies=proxy,
+                                     http2=True) as session:
             try:
-                async with session.post(url, data=data, headers=headers,
-                                        timeout=aiohttp.ClientTimeout(total=timeout),
-                                        proxy=proxy) as req:
-                    Logger.debug(f'[{req.status}] {url}')
-                    if logging_resp:
-                        Logger.debug(await req.read())
-                    if status_code and req.status != status_code:
-                        if not logging_resp and logging_err_resp:
-                            Logger.error(await req.read())
-                        raise ValueError(
-                            f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
-                    if fmt is not None:
-                        if hasattr(req, fmt):
-                            return await getattr(req, fmt)()
-                        else:
-                            raise ValueError(f"NoSuchMethod: {fmt}")
+                req = await session.post(url, data=data, headers=headers, timeout=timeout)
+                Logger.debug(f'[{req.status_code}] {url}')
+                if logging_resp:
+                    Logger.debug(req.read())
+                if status_code and req.status_code != status_code:
+                    if not logging_resp and logging_err_resp:
+                        Logger.error(req.read())
+                    raise ValueError(
+                        f'{str(req.status_code)}[Ke:Image,path=https://http.cat/{str(req.status_code)}.jpg]')
+                if fmt is not None:
+                    if hasattr(req, fmt):
+                        return getattr(req, fmt)()
                     else:
-                        text = await req.text()
-                        return text
-            except asyncio.exceptions.TimeoutError:
+                        raise ValueError(f"NoSuchMethod: {fmt}")
+                else:
+                    text = req.text
+                    return text
+            except httpx.TimeoutException:
                 raise ValueError(f'Request timeout.')
             except Exception as e:
                 Logger.error(f'Error while requesting {url}: {e}')
