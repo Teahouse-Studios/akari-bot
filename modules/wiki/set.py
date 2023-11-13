@@ -130,7 +130,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     delete = target.config_headers(
-        [msg.parsed_msg['<HeaderKey>']], let_it=False)
+        msg.parsed_msg['<HeaderKey>'], let_it=False)
     if delete:
         await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
     else:
