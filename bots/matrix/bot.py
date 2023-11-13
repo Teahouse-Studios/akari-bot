@@ -178,11 +178,18 @@ async def start():
     # set device name
     asyncio.create_task(bot.update_device(client.device_id, {"display_name": client.device_name}))
 
+    # sync joined room state
+    Logger.info(f"starting sync room full state")
+    # bot.upload_filter(presence={'limit':1},room={'timeline':{'limit':1}})
+    resp = await bot.sync(timeout=10000, since=bot.next_batch, full_state=True, set_presence='unavailable')
+    await bot._handle_invited_rooms(resp)
+    await bot._handle_joined_rooms(resp)
+
     await init_async()
     await load_prompt(FetchTarget)
 
     Logger.info(f"starting sync loop")
-    await bot.sync_forever(timeout=30000, full_state=True, set_presence='online')
+    await bot.sync_forever(timeout=30000, full_state=False, set_presence='online')
     Logger.info(f"sync loop stopped")
 
     if bot.olm:

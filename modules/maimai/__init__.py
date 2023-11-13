@@ -168,6 +168,72 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
+@mai.handle('id <id> [<diff>] {{maimai.help.id}}')
+@mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
+async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
+    if '<id>' in msg.parsed_msg:
+        sid = msg.parsed_msg['<id>']
+    elif id_or_alias[:2].lower() == "id":
+        sid = id_or_alias[2:]
+    else:
+        sid_list = await search_by_alias(msg, id_or_alias)
+        if len(sid_list) == 0:
+            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            await msg.finish(res.strip())
+        else:
+            sid = str(sid_list[0])
+    music = (await total_list.get()).by_id(sid)
+    if not music:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+
+    if diff is not None:
+        diff_index = get_diff(diff)
+        if not diff_index or (len(music['ds']) == 4 and diff_index == 4):
+            await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
+        chart = music['charts'][diff_index]
+        ds = music['ds'][diff_index]
+        level = music['level'][diff_index]
+        if len(chart['notes']) == 4:
+            message = msg.locale.t(
+                "maimai.message.song.sd",
+                diff=diff_label[diff_index],
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                brk=chart['notes'][3],
+                charter=chart['charter'])
+        else:
+            message = msg.locale.t(
+                "maimai.message.song.dx",
+                diff=diff_label[diff_index],
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                touch=chart['notes'][3],
+                brk=chart['notes'][4],
+                charter=chart['charter'])
+        await msg.finish(
+            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(message)])
+    else:
+        await msg.finish(
+            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
+             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
+             Plain(msg.locale.t("maimai.message.song",
+                                artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
+                                bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
+                                level='/'.join((str(ds) for ds in music['ds']))))])
+
+
 @mai.handle('info <id_or_alias> [<username>] {{maimai.help.info}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
@@ -347,69 +413,6 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 @mai.handle('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
-
-
-@mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
-async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
-    if id_or_alias[:2].lower() == "id":
-        sid = id_or_alias[2:]
-    else:
-        sid_list = await search_by_alias(msg, id_or_alias)
-        if len(sid_list) == 0:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-        elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
-            for sid in sorted(sid_list, key=int):
-                s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
-        else:
-            sid = str(sid_list[0])
-    music = (await total_list.get()).by_id(sid)
-    if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-
-    if diff is not None:
-        diff_index = get_diff(diff)
-        if not diff_index or (len(music['ds']) == 4 and diff_index == 4):
-            await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
-        chart = music['charts'][diff_index]
-        ds = music['ds'][diff_index]
-        level = music['level'][diff_index]
-        if len(chart['notes']) == 4:
-            message = msg.locale.t(
-                "maimai.message.song.sd",
-                diff=diff_label[diff_index],
-                level=level,
-                ds=ds,
-                tap=chart['notes'][0],
-                hold=chart['notes'][1],
-                slide=chart['notes'][2],
-                brk=chart['notes'][3],
-                charter=chart['charter'])
-        else:
-            message = msg.locale.t(
-                "maimai.message.song.dx",
-                diff=diff_label[diff_index],
-                level=level,
-                ds=ds,
-                tap=chart['notes'][0],
-                hold=chart['notes'][1],
-                slide=chart['notes'][2],
-                touch=chart['notes'][3],
-                brk=chart['notes'][4],
-                charter=chart['charter'])
-        await msg.finish(
-            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(message)])
-    else:
-        await msg.finish(
-            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
-             Plain(msg.locale.t("maimai.message.song",
-                                artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
-                                bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                                level='/'.join((str(ds) for ds in music['ds']))))])
 
 
 @mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')

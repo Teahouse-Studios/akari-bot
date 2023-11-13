@@ -1,6 +1,6 @@
 {
     "ncmusic.help.search": "搜尋網易雲音樂。",
-    "ncmusic.help.info": "取得音樂詳細訊息。",
+    "ncmusic.help.info": "取得音樂詳細資訊。",
     "ncmusic.message.info": "歌名：${name}（${id}）\n專輯名：${album}（${album_id}）\n歌手：${artists}\n歌曲詳情頁：${detail}",
     "ncmusic.message.search.collapse": "…僅顯示前 10 條內容。",
     "ncmusic.message.search.invalid.non_digital": "無效的編號，必須為數字。",
