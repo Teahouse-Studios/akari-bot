@@ -450,6 +450,13 @@ def isfloat(num):
     except ValueError:
         return False
 
+def isint(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
+        return False
+
 
 _config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg', base=True)
 
@@ -461,15 +468,15 @@ async def _(msg: Bot.MessageSession):
         value = True
     elif value.lower() == 'false':
         value = False
-    elif value.isdigit():
+    elif isint(value):
         value = int(value)
     elif isfloat(value):
         value = float(value)
-    elif re.match(r'^\{.*\}|\[.*\]$', value):
+    elif re.match(r'^\[.*\]$', value):
         try:
             value = json.loads(value)
         except:
-            pass
+            await msg.finish(msg.locale.t("config.message.write.failed"))
 
     CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("success"))
