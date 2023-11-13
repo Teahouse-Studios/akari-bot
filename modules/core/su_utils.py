@@ -12,7 +12,6 @@ from dateutil.relativedelta import relativedelta
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
-from core.exceptions import NoReportException
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
@@ -418,21 +417,10 @@ async def _(msg: Bot.MessageSession):
 
 rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True, base=True)
 
-
 @rse.handle()
-@rse.handle('[<exception>] [-n]')
 async def _(msg: Bot.MessageSession):
-    e = None
-    if msg.parsed_msg:
-        e = msg.parsed_msg.get('<exception>', None)
-        e = e.replace("_", " ")
-        if not e:
-            e = msg.locale.t("core.message.raise")
-        if msg.parsed_msg.get('-n', False):
-            raise NoReportException(e)
-    if not e:
-        e = msg.locale.t("core.message.raise")
-    raise TestException(e)
+    e = msg.locale.t("core.message.raise")
+    raise Exception(e)
 
 
 if Config('enable_eval'):
