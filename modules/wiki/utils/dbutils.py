@@ -74,7 +74,7 @@ class WikiTargetInfo:
             elif let_it is None:
                 headers_ = {}
             else:
-                headers = {k: v for k, v in headers_.items() if k not in headers}
+                headers_ = {k: v for k, v in headers_.items() if k not in headers}
             self.query.headers = json.dumps(headers_)
             session.commit()
             return True
