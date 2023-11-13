@@ -65,20 +65,21 @@ class WikiTargetInfo:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def config_headers(self, headers, let_it: [bool, None] = True):
-        headers = json.loads(headers)
-        headers_ = json.loads(self.query.headers)
-        if let_it:
-            for x in headers:
-                headers_[x] = headers[x]
-        elif let_it is None:
-            headers_ = {}
-        else:
-            for x in headers:
-                if x in headers_:
-                    del headers_[x]
-        self.query.headers = json.dumps(headers_)
-        session.commit()
-        return True
+        try:
+            headers_ = json.loads(self.query.headers)
+            if let_it:
+                headers = json.loads(headers)
+                for x in headers:
+                    headers_[x] = headers[x]
+            elif let_it is None:
+                headers_ = {}
+            else:
+                headers_ = {k: v for k, v in headers_.items() if k not in headers}
+            self.query.headers = json.dumps(headers_)
+            session.commit()
+            return True
+        except TypeError:
+            return False
 
     def get_headers(self):
         if self.query is not None:

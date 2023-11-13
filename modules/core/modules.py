@@ -167,19 +167,20 @@ async def config_modules(msg: Bot.MessageSession):
         if msg.check_super_user():
             def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
-                if base_mode:
-                    return f'{msg.locale.t("core.message.module.reload.success.base")}'
+                if base_mode and reload_count:
+                    return msg.locale.t("core.message.module.reload.success.base")
                 elif reload_count > 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
-                        '\n' if len(extra_modules) != 0 else '') + \
-                        '\n'.join(extra_modules) + msg.locale.t("core.message.module.reload.with",
-                                                                reloadCnt=reload_count - 1)
+                    return (f"{msg.locale.t('core.message.module.reload.success', module=module)}" +
+                            '\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + \
+                        f"\n{msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)}"
                 elif reload_count == 1:
-                    return f'{msg.locale.t("core.message.module.reload.success", module=module)}' + (
-                        '\n' if len(extra_modules) != 0 else '') + '\n'.join(extra_modules) + msg.locale.t(
-                        "core.message.module.reload.no_more")
+                    return (f"{msg.locale.t('core.message.module.reload.success', module=module)}" +
+                            '\n' if len(extra_modules) != 0 else '' +
+                            '\n'.join(extra_modules) +
+                            f"\n{msg.locale.t('core.message.module.reload.no_more')}")
                 else:
-                    return f'{msg.locale.t("core.message.module.reload.failed")}'
+                    return msg.locale.t("core.message.module.reload.failed")
 
             for module_ in wait_config_list:
                 base_mode = False
@@ -206,7 +207,7 @@ async def config_modules(msg: Bot.MessageSession):
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                     msglist.append(module_reload(module_, extra_reload_modules, base_mode))
-            reload_locale(msg)
+            await reload_locale(msg)
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
@@ -248,8 +249,8 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(msg.locale.t("core.message.module.unload.error"))
                     continue
                 if modules_[module_].base:
-                        msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
-                        continue
+                    msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
+                    continue
                 if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm")):
                     if ModulesManager.unload_module(module_):
                         msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
@@ -435,13 +436,15 @@ async def _(msg: Bot.MessageSession):
         help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
         essential = []
         for x in module_list:
-            if module_list[x].base and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
+            if module_list[x].base and not (
+                    module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
         help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
         module_ = []
         for x in module_list:
-            if x in target_enabled_list and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
+            if x in target_enabled_list and not (
+                    module_list[x].required_superuser or module_list[x].required_base_superuser):
                 module_.append(x)
         help_msg.append(' | '.join(module_))
         help_msg.append(
@@ -466,7 +469,8 @@ async def _(msg: Bot.MessageSession):
     help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
     module_ = []
     for x in module_list:
-        if x in target_enabled_list and not (module_list[x].required_superuser or module_list[x].required_base_superuser):
+        if x in target_enabled_list and not (
+                module_list[x].required_superuser or module_list[x].required_base_superuser):
             module_.append(x)
     help_msg.append(' | '.join(module_))
     help_msg.append(

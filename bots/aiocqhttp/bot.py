@@ -25,6 +25,7 @@ EnableDirtyWordCheck.status = True if Config('enable_dirty_check') else False
 Url.disable_mm = False if Config('enable_urlmanager') else True
 qq_account = str(Config("qq_account"))
 enable_listening_self_message = Config("qq_enable_listening_self_message")
+lagrange_account = Config("lagrange_account")
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=20))
@@ -49,6 +50,8 @@ async def message_handler(event: Event):
         if event.sub_type == 'group':
             if Config('qq_disable_temp_session'):
                 return await bot.send(event, '请先添加好友后再进行命令交互。')
+    if event.user_id == lagrange_account:
+        return
     filter_msg = re.match(r'.*?\[CQ:(?:json|xml).*?\].*?|.*?<\?xml.*?>.*?', event.message, re.MULTILINE | re.DOTALL)
     if filter_msg:
         match_json = re.match(r'.*?\[CQ:json,data=(.*?)\].*?', event.message, re.MULTILINE | re.DOTALL)

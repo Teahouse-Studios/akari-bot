@@ -51,8 +51,10 @@ class MessageSession(MessageSessionT):
         send: list[nio.RoomSendResponse] = []
         for x in message_chain.as_sendable(embed=False):
             reply_to = None
+            reply_to_user = None
             if quote and len(send) == 0:
                 reply_to = self.target.message_id
+                reply_to_user = self.session.sender
 
             if isinstance(x, Plain):
                 content = {
@@ -142,6 +144,10 @@ class MessageSession(MessageSessionT):
                         'event_id': reply_to
                     }
                 }
+                # mention target user
+                content['m.mentions'] = {
+                    'user_ids': [reply_to_user]
+                }
 
             resp = await bot.room_send(self.session.target, 'm.room.message', content, ignore_unverified_devices=True)
             if 'status_code' in resp.__dict__:
@@ -155,9 +161,9 @@ class MessageSession(MessageSessionT):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
         # https://spec.matrix.org/v1.7/client-server-api/#permissions
-        power_levels = await bot.room_get_state_event(self.session.target, 'm.room.power_levels')
-        level = power_levels.content['users'][self.session.sender]
-        if level is not None and level >= 50:
+        power_levels = (await bot.room_get_state_event(self.session.target, 'm.room.power_levels')).content
+        level = power_levels['users'][self.session.sender] if self.session.sender in power_levels['users'] else power_levels['users_default']
+        if level is not None and int(level) >= 50:
             return True
         return False
 
@@ -187,7 +193,6 @@ class MessageSession(MessageSessionT):
         elif msgtype == 'm.audio':
             url = str(content['url'])
             return MessageChain(Voice(await bot.mxc_to_http(url)))
-            pass
         Logger.error(f"Got unknown msgtype: {msgtype}")
         return MessageChain([])
 
