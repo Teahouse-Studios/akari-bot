@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
     if add:
         await msg.finish(msg.locale.t("wiki.message.headers.set.success", headers=json.dumps(target.get_headers())))
     else:
-        await msg.finish(msg.locale.t("wiki.message.headers.set.failed")))
+        await msg.finish(msg.locale.t("wiki.message.headers.set.failed"))
 
 
 @wiki.handle('headers remove <HeaderKey> {{wiki.help.headers.remove}}', required_admin=True)
@@ -134,7 +134,7 @@ async def _(msg: Bot.MessageSession):
     if delete:
         await msg.finish(msg.locale.t("wiki.message.headers.set.success", headers=json.dumps(target.get_headers())))
     else:
-        await msg.finish(msg.locale.t("wiki.message.headers.set.failed")))
+        await msg.finish(msg.locale.t("wiki.message.headers.set.failed"))
 
 
 @wiki.handle('headers reset {{wiki.help.headers.reset}}', required_admin=True)
