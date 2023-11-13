@@ -115,7 +115,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(prompt)
 
 
-@wiki.handle('headers add <Headers> {{wiki.help.headers.set}}', required_admin=True)
+@wiki.handle('headers set <Headers> {{wiki.help.headers.set}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     add = target.config_headers(
