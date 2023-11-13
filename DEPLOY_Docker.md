@@ -269,6 +269,8 @@ pip3 install matrix-nio[e2e] ; PIP
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
+另请注意，由于阿里云政策限制，内容安全服务**不面向个人开发者**，若账号未完成阿里云企业认证，即使生成 AccessKey 也不会调用相关接口。
+
 `check_accessKeyId =` - 填写获取的 AccessKeyID。
 
 `check_accessKeySecret =` - 填写获取的 AccessKeySecret。
