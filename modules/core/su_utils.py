@@ -476,7 +476,7 @@ async def _(msg: Bot.MessageSession):
         try:
             value = json.loads(value)
         except:
-            await msg.finish(msg.locale.t("config.message.write.failed"))
+            await msg.finish(msg.locale.t("core.message.config.write.failed"))
 
     CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("success"))
