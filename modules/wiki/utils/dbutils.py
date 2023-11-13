@@ -66,7 +66,7 @@ class WikiTargetInfo:
     @auto_rollback_error
     def config_headers(self, headers, let_it: [bool, None] = True):
         try:
-            headers = json.loads(headers)
+            headers = json.dumps(headers)
             headers_ = json.loads(self.query.headers)
             if let_it:
                 for x in headers:
