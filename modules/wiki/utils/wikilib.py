@@ -25,9 +25,9 @@ redirect_list = {'https://zh.moegirl.org.cn/api.php': 'https://mzh.moegirl.org.c
                  'https://minecraft.fandom.com/zh/api.php': 'https://zh.minecraft.wiki/api.php'
                  }
 
-request_by_web_render_list = [re.compile(r'.*minecraft\.wiki'),  # sigh
-                              re.compile(r'.*runescape\.wiki'),
-                              ]
+request_by_web_render_list = [  # re.compile(r'.*minecraft\.wiki'),  # sigh
+    # re.compile(r'.*runescape\.wiki'),
+]
 
 
 class InvalidPageIDError(Exception):
