@@ -465,8 +465,11 @@ async def _(msg: Bot.MessageSession):
         value = int(value)
     elif isfloat(value):
         value = float(value)
-    elif re.match('^(?:{.*}|[.*])$', value):
-        value = json.loads(value)
+    elif re.match(r'^\{.*\}|\[.*\]$', value):
+        try:
+            value = json.loads(value)
+        except:
+            pass
 
     CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("success"))
