@@ -38,7 +38,7 @@
     "wiki.message.fandom.disable": "Disabled to use Fandom global Interwiki queries.",
     "wiki.message.fandom.enable": "Enabled to use Fandom global Interwiki queries.",
     "wiki.message.flies": "This page includes the following files:",
-    "wiki.message.headers.show": "The following request headers are currently set:\n${headers}\nTo customize, use \"${prefix}wiki headers set <headers>\".\nExample:\n${prefix}wiki headers set {\"accept-language\": \"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
+    "wiki.message.headers.show": "The following request headers are currently set:\n${headers}\nTo customize, use \"${prefix}wiki headers add\".\nExample:\n${prefix}wiki headers set {\"accept-language\": \"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
     "wiki.message.headers.reset.success": "The request headers have been reset.",
     "wiki.message.headers.add.failed": "Fail to update the request headers, please check your input.",
     "wiki.message.headers.add.success": "The request headers have been updated: ${headers}",

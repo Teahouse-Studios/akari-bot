@@ -38,7 +38,7 @@
     "wiki.message.fandom.disable": "已停用 Fandom 全域 Interwiki 查詢。",
     "wiki.message.fandom.enable": "已啟用 Fandom 全域 Interwiki 查詢。",
     "wiki.message.flies": "此頁面含有以下檔案：",
-    "wiki.message.headers.show": "目前設定了以下請求標頭：\n${headers}\n如需自訂，請使用「${prefix}wiki headers set」。 \n示例：\n${prefix}wiki headers set {\"accept-language\": \"zh-TW,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
+    "wiki.message.headers.show": "目前設定了以下請求標頭：\n${headers}\n如需自訂，請使用「${prefix}wiki headers add」。 \n示例：\n${prefix}wiki headers set {\"accept-language\": \"zh-TW,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
     "wiki.message.headers.reset.success": "已重設請求時所使用的請求標頭。",
     "wiki.message.headers.add.failed": "更新请請求標頭失敗，请檢查輸入。",
     "wiki.message.headers.add.success": "已更新請求時所使用的請求標頭：${headers}",
