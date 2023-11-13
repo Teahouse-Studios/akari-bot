@@ -107,21 +107,23 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("wiki.message.iw.none", prefix=msg.prefixes[0]))
 
 
-@wiki.handle(['headers list {{wiki.help.headers.list}}'])
+@wiki.handle('headers show {{wiki.help.headers.show}}')
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     headers = target.get_headers()
-    prompt = msg.locale.t("wiki.message.headers.list", headers=json.dumps(headers), prefix=msg.prefixes[0])
+    prompt = msg.locale.t("wiki.message.headers.show", headers=json.dumps(headers), prefix=msg.prefixes[0])
     await msg.finish(prompt)
 
 
-@wiki.handle('headers add <Headers> {{wiki.help.headers.add}}', required_admin=True)
+@wiki.handle('headers add <Headers> {{wiki.help.headers.set}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     add = target.config_headers(
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=True)
     if add:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
+        await msg.finish(msg.locale.t("wiki.message.headers.set.success", headers=json.dumps(target.get_headers())))
+    else:
+        await msg.finish(msg.locale.t("wiki.message.headers.set.failed")))
 
 
 @wiki.handle('headers remove <HeaderKey> {{wiki.help.headers.remove}}', required_admin=True)
@@ -130,7 +132,9 @@ async def _(msg: Bot.MessageSession):
     delete = target.config_headers(
         [msg.parsed_msg['<HeaderHey>']], let_it=False)
     if delete:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
+        await msg.finish(msg.locale.t("wiki.message.headers.set.success", headers=json.dumps(target.get_headers())))
+    else:
+        await msg.finish(msg.locale.t("wiki.message.headers.set.failed")))
 
 
 @wiki.handle('headers reset {{wiki.help.headers.reset}}', required_admin=True)
