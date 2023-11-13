@@ -64,7 +64,7 @@
     "core.message.analytics.disabled": "机器人未开启命令统计功能。",
     "core.message.analytics.year": "最近一年的“${module}”命令调用次数统计（自 ${first_record} 开始统计）：",
     "core.message.analytics.year.total": "最近一年的所有命令调用次数统计（自 ${first_record} 开始统计）：",
-    "core.message.config.write.failed": "失败，请尝试转义引号后重试。",
+    "core.message.config.write.failed": "失败，请尝试转义引号或检查输入。",
     "core.message.forward_msg.disable": "已关闭转发消息。",
     "core.message.forward_msg.disabled": "转发消息已关闭。",
     "core.message.forward_msg.enable": "已开启转发消息。",
