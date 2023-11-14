@@ -2,7 +2,7 @@ import asyncio.exceptions
 import re
 import socket
 import urllib.parse
-from typing import Union
+from typing import Union, Callable
 
 import httpx
 import filetype as ft
@@ -75,7 +75,10 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                         f'{str(req.status_code)}[Ke:Image,path=https://http.cat/{str(req.status_code)}.jpg]')
                 if fmt is not None:
                     if hasattr(req, fmt):
-                        return getattr(req, fmt)()
+                        attr = getattr(req, fmt)
+                        if isinstance(attr, Callable):
+                            return attr()
+                        return attr
                     else:
                         raise ValueError(f"NoSuchMethod: {fmt}")
                 else:
@@ -125,7 +128,10 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                         f'{str(req.status_code)}[Ke:Image,path=https://http.cat/{str(req.status_code)}.jpg]')
                 if fmt is not None:
                     if hasattr(req, fmt):
-                        return getattr(req, fmt)()
+                        attr = getattr(req, fmt)
+                        if isinstance(attr, Callable):
+                            return attr()
+                        return attr
                     else:
                         raise ValueError(f"NoSuchMethod: {fmt}")
                 else:
