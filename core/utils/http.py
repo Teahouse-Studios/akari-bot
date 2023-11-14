@@ -1,11 +1,10 @@
-import asyncio.exceptions
 import re
 import socket
 import urllib.parse
-from typing import Union, Callable
+from typing import Union
 
-import httpx
 import filetype as ft
+import httpx
 from aiofile import async_open
 from tenacity import retry, wait_fixed, stop_after_attempt
 
@@ -76,7 +75,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                 if fmt is not None:
                     if hasattr(req, fmt):
                         attr = getattr(req, fmt)
-                        if isinstance(attr, Callable):
+                        if callable(attr):
                             return attr()
                         return attr
                     else:
@@ -129,7 +128,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                 if fmt is not None:
                     if hasattr(req, fmt):
                         attr = getattr(req, fmt)
-                        if isinstance(attr, Callable):
+                        if callable(attr):
                             return attr()
                         return attr
                     else:
