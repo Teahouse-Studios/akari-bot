@@ -17,7 +17,7 @@ from .teahouse import get_rss as get_teahouse_rss
 async def get_weekly(with_img=False, zh_tw=False):
     locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
     result = json.loads(await get_url(
-        'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid|images&format=json' +
+        'https://zh.minecraft.wiki/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=text|revid|images&format=json' +
         ('&variant=zh-tw' if zh_tw else ''),
         200))
     html = result['parse']['text']['*']
@@ -33,7 +33,7 @@ async def get_weekly(with_img=False, zh_tw=False):
         "weekly.message", text=text))]
     imglink = None
     if img:
-        get_image = await (WikiLib('https://minecraft.fandom.com/zh/wiki/')).parse_page_info('File:' + img[0])
+        get_image = await (WikiLib('https://zh.minecraft.wiki/wiki/')).parse_page_info('File:' + img[0])
         if get_image.status:
             imglink = get_image.file
     msg_list.append(
@@ -44,7 +44,7 @@ async def get_weekly(with_img=False, zh_tw=False):
                 article=str(
                     Url(f'https://minecraft.fandom.com{page[0]}')),
                 link=str(
-                    Url(f'https://minecraft.fandom.com/zh/wiki/?oldid={str(result["parse"]["revid"])}')))))
+                    Url(f'https://zh.minecraft.wiki/wiki/?oldid={str(result["parse"]["revid"])}')))))
     if imglink is not None and with_img:
         msg_list.append(Image(path=imglink))
 
@@ -53,19 +53,19 @@ async def get_weekly(with_img=False, zh_tw=False):
 
 async def get_weekly_img(with_img=False, zh_tw=False):
     locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
-    img = await generate_screenshot_v2('https://minecraft.fandom.com/zh/wiki/Minecraft_Wiki/weekly' +
+    img = await generate_screenshot_v2('https://zh.minecraft.wiki/wiki/Minecraft_Wiki/weekly' +
                                        ('?variant=zh-tw' if zh_tw else ''), content_mode=True, allow_special_page=True)
     msg_ = []
     if img:
         msg_.append(Image(path=img))
     if with_img:
         result = json.loads(await get_url(
-            'https://minecraft.fandom.com/zh/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
+            'https://zh.minecraft.wiki/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
             ('&variant=zh-tw' if zh_tw else ''),
             200))
         img = result['parse']['images']
         if img:
-            get_image = await (WikiLib('https://minecraft.fandom.com/zh/wiki/')).parse_page_info('File:' + img[0])
+            get_image = await (WikiLib('https://zh.minecraft.wiki/wiki/')).parse_page_info('File:' + img[0])
             if get_image.status:
                 msg_.append(Plain(locale.t("weekly.message.image", img=get_image.file)))
     return msg_
