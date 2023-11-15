@@ -56,7 +56,6 @@
     "core.message.alias.remove.not_found": "\"${arg1}\" alias does not exist in custom alias list.",
     "core.message.alias.remove.success": "Removed custom command alias: ${arg1}",
     "core.message.alias.reset.success": "The custom command alias has been reset.",
-    "core.message.confirm": "Are you sure?",
     "core.message.update.failed": "Failed to fetch update from GitHub. Please try again later.",
     "core.message.forward_msg.disable": "Forward message disabled.",
     "core.message.forward_msg.enable": "Forward message enabled.",

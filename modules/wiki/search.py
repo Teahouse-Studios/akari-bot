@@ -23,7 +23,7 @@ async def search_pages(session: Bot.MessageSession, title: Union[str, list, tupl
     enabled_fandom_addon = session.options.get('wiki_fandom_addon')
     if start_wiki is None:
         await session.send_message(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
-        start_wiki = 'https://minecraft.fandom.com/zh/api.php'
+        start_wiki = 'https://zh.minecraft.wiki/api.php'
     if isinstance(title, str):
         title = [title]
     query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
