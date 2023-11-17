@@ -170,15 +170,15 @@ async def config_modules(msg: Bot.MessageSession):
                 if base_mode and reload_count:
                     return msg.locale.t("core.message.module.reload.success.base")
                 elif reload_count > 1:
-                    return (f"{msg.locale.t('core.message.module.reload.success', module=module)}" +
-                            '\n' if len(extra_modules) != 0 else '') + \
-                        '\n'.join(extra_modules) + \
-                        f"\n{msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)}"
+                    return msg.locale.t('core.message.module.reload.success', module=module) + \
+                           ('\n' if len(extra_modules) != 0 else '') + \
+                           '\n'.join(extra_modules) + \
+                           '\n' + msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)
                 elif reload_count == 1:
-                    return (f"{msg.locale.t('core.message.module.reload.success', module=module)}" +
-                            '\n' if len(extra_modules) != 0 else '' +
-                            '\n'.join(extra_modules) +
-                            f"\n{msg.locale.t('core.message.module.reload.no_more')}")
+                    return msg.locale.t('core.message.module.reload.success', module=module) + \
+                           ('\n' if len(extra_modules) != 0 else '') + \
+                           '\n'.join(extra_modules) + \
+                           '\n' + msg.locale.t('core.message.module.reload.no_more')
                 else:
                     return msg.locale.t("core.message.module.reload.failed")
 
