@@ -97,7 +97,7 @@
     "core.message.module.help.regex.detail": "(${msg})",
     "core.message.module.help.regex.no_information": "No description",
     "core.message.module.help.support_regex": "This module supports regular expressions, the message will match with the following: ",
-    "core.message.module.help.table.header.alias": "Command Aliases",
+    "core.message.module.help.table.header.alias": "Command Alias",
     "core.message.module.help.table.header.base": "Base Module List",
     "core.message.module.help.table.header.external": "Extended Module List",
     "core.message.module.help.table.header.help": "Help",
@@ -158,7 +158,7 @@
     "core.message.update.failed": "Failed to fetch update from GitHub. Please try again later.",
     "core.message.version": "Current robot version: ${commit}",
     "core.message.version.unknown": "Unable to get version. This instance may not be deployed using Git.",
-    "core.message.whoami": "Your ID: ${senderid}\nThe ID of this conversation: ${targetid}",
+    "core.message.whoami": "Your ID: ${senderid}\nConversation ID: ${targetid}",
     "core.message.whoami.admin": "(You have admin permission for this conversation)",
     "core.message.whoami.botadmin": "(You have robot admin permission for this conversation)",
     "core.message.whoami.superuser": "(You have superuser permission)"
