@@ -21,5 +21,5 @@
     "ip.message.reverse": "反向解析：",
     "ip.message.type": "類型：",
     "ip.message.utc": "時區：",
-    "ip.help": "查詢 IP 訊息。"
+    "ip.help": "查詢 IP 資訊。"
 }

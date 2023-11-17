@@ -1,5 +1,5 @@
 {
-    "mcplayer.help": "透過玩家名稱或玩家 UUID 取得玩家訊息。",
-    "mcplayer.help.desc": "從 Mojang API 取得 Minecraft：Java 版的玩家訊息。",
-    "mcplayer.message.not_found": "未找到 ${player} 的訊息。"
+    "mcplayer.help": "透過玩家名稱或玩家 UUID 取得玩家資訊。",
+    "mcplayer.help.desc": "從 Mojang API 取得 Minecraft：Java 版的玩家資訊。",
+    "mcplayer.message.not_found": "未找到 ${player} 的資訊。"
 }

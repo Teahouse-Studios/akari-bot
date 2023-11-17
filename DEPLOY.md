@@ -354,6 +354,8 @@ pip3 install matrix-nio[e2e] ; PIP
 
 如有需求，请前往阿里云进行开通并获取 AccessKeyID 及 AccessKeySecret。未填写字段将不会使用屏蔽词服务。
 
+另请注意，由于阿里云政策限制，内容安全服务**不面向个人开发者**，若账号未完成阿里云企业认证，即使生成 AccessKey 也不会调用相关接口。
+
 `check_accessKeyId =` - 填写获取的 AccessKeyID。
 
 `check_accessKeySecret =` - 填写获取的 AccessKeySecret。
@@ -520,16 +522,8 @@ pip3 install matrix-nio[e2e] ; PIP
 
 您可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
 
-**Windows**
-
-1. 于 `console.py` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
-2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`。
-3. 于终端内输入 `python console.py` 来启动测试控制台。
-
-**Linux**
-
 1. 于 `console.py` 所在目录，打开终端。
-2. 于终端内输入 `python console.py` 来启动测试控制台。
+2. 在终端内输入 `python console.py` 来启动测试控制台。
 
 # 获取帮助
 
