@@ -368,6 +368,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 await msg.send_message(msg.locale.t('error.module.unloaded', module=command_first_word))
 
             return msg
+        if msg.muted:
+            return
         if running_mention:
             if msg.trigger_msg.find('小可') != -1:
                 if ExecutionLockList.check(msg):

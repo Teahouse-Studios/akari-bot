@@ -65,11 +65,13 @@ async def _(msg: Bot.MessageSession):
     elif video[:2] == "av":
         url = f"{api_url}?aid={video[2:]}"
     else:
-        url = await parse_shorturl(f"https://b23.tv/{video}")
+        ...
+#        url = await parse_shorturl(f"https://b23.tv/{video}")
 
     await get_info(msg, url, get_detail=False)
 
 
+"""
 async def parse_shorturl(shorturl):
     async with aiohttp.ClientSession() as session:
         async with session.get(shorturl, allow_redirects=True) as response:
@@ -78,3 +80,4 @@ async def parse_shorturl(shorturl):
             video = parsed_url.path.split("/")[-2]
             url = f"{api_url}?bvid={video}"
             return url
+"""
