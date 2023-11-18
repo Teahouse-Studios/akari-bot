@@ -41,7 +41,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
                                               'ts': datetime.now().timestamp()}
     else:
         same['count'] += 1
-        if same['count'] > 10:
+        if same['count'] > 5:
             raise AbuseWarning(msg.locale.t("tos.reason.cooldown"))
     all_ = counter_all.get(msg.target.sender_id)
     if all_ is None or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
@@ -49,7 +49,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
                                              'ts': datetime.now().timestamp()}
     else:
         all_['count'] += 1
-        if all_['count'] > 20:
+        if all_['count'] > 10:
             raise AbuseWarning(msg.locale.t("tos.reason.abuse"))
 
 
