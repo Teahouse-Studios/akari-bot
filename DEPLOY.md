@@ -235,7 +235,7 @@ pip install -r requirements.txt
 
 由于 QQ 风控机制的加强，go-cqhttp 若出现 Code45 报错情况时，请参照以下步骤配置签名服务器：
 
-5. 安装 JRE 17（Jave Runtime Environment 17），请善用搜索引擎查找安装方法。
+5. 安装 JRE 17（Java Runtime Environment 17），请善用搜索引擎查找安装方法。
 
 6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
 
