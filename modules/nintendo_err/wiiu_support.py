@@ -366,7 +366,7 @@ nex = Module('nex (game servers)', {
         'The Principal does not have the Capabilities to perform concurrent log ins, i.e. at any given time only one log-in may be maintained.'),
     309: ResultInfo('Data encryption failed.'),
     310: ResultInfo('The operation specifies or accesses an invalid PrincipalID.'),
-    311: ResultInfo('Maximum connnection number is reached.'),
+    311: ResultInfo('Maximum connection number is reached.'),
     312: ResultInfo('Invalid GID.'),
     313: ResultInfo('Invalid Control script ID.'),
     314: ResultInfo('Invalid operation in live/production environment.'),

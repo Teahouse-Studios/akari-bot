@@ -36,8 +36,8 @@ class DiceValueError(Exception):
 class DiceItemBase(object):
     """骰子项的基类"""
 
-    def __init__(self, dice_code: str, postive: bool):
-        self.postive = postive
+    def __init__(self, dice_code: str, positive: bool):
+        self.positive = positive
         self.code = dice_code
         self.result = None
         self.detail = ''
@@ -46,7 +46,7 @@ class DiceItemBase(object):
         if abs:
             return self.result
         else:
-            return self.result if self.postive else -self.result
+            return self.result if self.positive else -self.result
 
     def GetDetail(self):
         return self.detail
@@ -58,12 +58,12 @@ class DiceItemBase(object):
 class DiceMod(DiceItemBase):
     """调节值项"""
 
-    def __init__(self, session, dice_code: str, postive: bool):
-        super().__init__(dice_code, postive)
+    def __init__(self, session, dice_code: str, positive: bool):
+        super().__init__(dice_code, positive)
         if not dice_code.isdigit():
             raise DiceValueError(session,
                                  session.locale.t("dice.message.error.value.M.invalid"),
-                                 '+' if self.postive else '-' + dice_code)
+                                 '+' if self.positive else '-' + dice_code)
         else:
             self.result = int(dice_code)
             if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
@@ -79,9 +79,9 @@ class DiceMod(DiceItemBase):
 class Dice(DiceItemBase):
     """骰子项"""
 
-    def __init__(self, session, dice_code: str, postive: bool):
+    def __init__(self, session, dice_code: str, positive: bool):
         dice_code = dice_code.replace(' ', '')
-        super().__init__(dice_code, postive)
+        super().__init__(dice_code, positive)
         args = self.GetArgs(session)
         self.count = args[0]
         self.type = args[1]
@@ -146,13 +146,13 @@ class Dice(DiceItemBase):
             dice_results.append(secrets.randbelow(int(self.type)) + 1)
         if adv != 0:
             new_results = []
-            indexs = np.array(dice_results).argsort()
-            indexs = indexs[-adv:] if adv > 0 else indexs[:-adv]
+            indexes = np.array(dice_results).argsort()
+            indexes = indexes[-adv:] if adv > 0 else indexes[:-adv]
             output += '( '
             output_buffer = ''
             for i in range(self.count):
                 output_buffer += str(dice_results[i])
-                if i in indexs:
+                if i in indexes:
                     new_results.append(dice_results[i])
                     output_buffer += '*'
                 if i < self.count - 1:
@@ -229,7 +229,7 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
         result = 0
         for dice in dice_list:
             dice.Roll(msg)
-            output_line += '+' if dice.postive else '-'
+            output_line += '+' if dice.positive else '-'
             if isinstance(dice, Dice) and times * dice_count < MAX_DETAIL_CNT:
                 output_line += f'( {dice.GetDetail()})'
             else:
