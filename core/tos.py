@@ -2,7 +2,7 @@ from config import Config
 from core.builtins import Bot
 from database import BotDBUtil
 
-WARNING_COUNTS = Config('tos_waring_counts', 5)
+WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
 async def warn_target(msg: Bot.MessageSession, reason=None):
