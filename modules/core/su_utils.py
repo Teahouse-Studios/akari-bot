@@ -24,27 +24,27 @@ su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], 
 
 
 @su.handle('add <UserID>')
-async def add_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<UserID>']
-    if not user.startswith(f'{message.target.sender_from}|'):
-        await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
+async def add_su(msg: Bot.MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.finish(message.locale.t("success"))
+            await msg.finish(msg.locale.t("success"))
 
 
 @su.handle('remove <UserID>')
-async def del_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<UserID>']
-    if not user.startswith(f'{message.target.sender_from}|'):
-        await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
+async def del_su(msg: Bot.MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user == msg.target.sender_id:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if not confirm:
             return
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.finish(message.locale.t("success"))
+            await msg.finish(msg.locale.t("success"))
 
 
 ana = module('analytics', required_superuser=True, base=True)
