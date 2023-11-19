@@ -225,7 +225,7 @@ leave = module(
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(msg.locale.t('core.message.leave.confirm'))
+    confirm = await msg.wait_confirm(msg.locale.t('core.message.confirm'))
     if confirm:
         await msg.send_message(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)

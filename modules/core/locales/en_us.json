@@ -67,7 +67,6 @@
     "core.message.forward_msg.disable": "Forward message disabled.",
     "core.message.forward_msg.disabled": "Forward message is disabled.\n",
     "core.message.forward_msg.enable": "Forward message enabled.",
-    "core.message.leave.confirm": "Are you sure? This action is irreversible.",
     "core.message.leave.success": "Goodbye.",
     "core.message.locale": "Current language: ",
     "core.message.locale.reload.failed": "Failed to reload the following string: ${detail}.",

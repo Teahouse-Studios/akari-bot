@@ -67,7 +67,6 @@
     "core.message.forward_msg.disable": "已停用轉發訊息。",
     "core.message.forward_msg.disabled": "轉發訊息已停用。",
     "core.message.forward_msg.enable": "已啟用轉發訊息。",
-    "core.message.leave.confirm": "你確定嗎？此行為不可逆。",
     "core.message.leave.success": "已執行，再見。",
     "core.message.locale": "目前使用的語言：",
     "core.message.locale.reload.failed": "以下字串重新加載失敗：${detail}。",

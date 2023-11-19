@@ -155,8 +155,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
-        if not wait_confirm:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
+        if not confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.target_from)]
@@ -173,8 +173,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
-        if not wait_confirm:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
+        if not confirm:
             return
     if v.startswith(('[', '{')):
         v = json.loads(v)
