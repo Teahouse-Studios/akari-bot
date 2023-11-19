@@ -2,7 +2,6 @@
     "core.help.admin": "一些群組管理員可使用的指令。",
     "core.help.admin.add": "設定成員為機器人管理員，以實現不設定成員為群組管理員的狀況下管理機器人的效果。已是群組管理員無須設定此指令。",
     "core.help.admin.ban": "限制某人在此群組使用機器人。",
-    "core.help.admin.del": "取消成員的機器人管理員。",
     "core.help.admin.list": "列出所有機器人管理員。",
     "core.help.admin.unban": "解除對某人在此群組使用機器人的限制。",
     "core.help.alias.add": "新增自訂指令別名。",
@@ -160,5 +159,6 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n此對話的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你擁有此對話的管理員權限）",
     "core.message.whoami.botadmin": "（你擁有此對話的機器人管理員權限）",
-    "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）"
+    "core.message.whoami.superuser": "（你擁有此機器人的超級使用者權限）",
+    "core.help.admin.remove": "取消成員的機器人管理員。"
 }
