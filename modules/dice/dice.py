@@ -6,14 +6,14 @@ import numpy as np
 from config import Config
 from core.utils.text import remove_prefix
 
-MAX_DICE_COUNT = Config('dice_limit')  # 一次摇动最多的骰子数量
-MAX_ROLL_TIMES = Config('dice_roll_limit')  # 一次命令最多的摇动次数
-MAX_MOD_NUMBER = Config('dice_mod_max')  # 骰子最大加权值
-MIN_MOD_NUMBER = Config('dice_mod_min')  # 骰子最小加权值
-MAX_OUTPUT_CNT = Config('dice_output_cnt')  # 输出的最多数据量
-MAX_OUTPUT_LEN = Config('dice_output_len')  # 输出的最大长度
-MAX_DETAIL_CNT = Config('dice_detail_cnt')  # n次摇动的骰子的总量超过该值时将不再显示详细信息
-MAX_ITEM_COUNT = Config('dice_count_limit')  # 骰子多项式最多的项数
+MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
+MAX_ROLL_TIMES = Config('dice_roll_limit', 10)  # 一次命令最多的摇动次数
+MAX_MOD_NUMBER = Config('dice_mod_max', 10000)  # 骰子最大加权值
+MIN_MOD_NUMBER = Config('dice_mod_min', -10000)  # 骰子最小加权值
+MAX_OUTPUT_CNT = Config('dice_output_cnt', 50)  # 输出的最多数据量
+MAX_OUTPUT_LEN = Config('dice_output_len', 200)  # 输出的最大长度
+MAX_DETAIL_CNT = Config('dice_detail_cnt', 5)  # n次摇动的骰子的总量超过该值时将不再显示详细信息
+MAX_ITEM_COUNT = Config('dice_count_limit', 10)  # 骰子多项式最多的项数
 
 
 class DiceSyntaxError(Exception):
