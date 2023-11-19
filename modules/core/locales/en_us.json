@@ -2,7 +2,6 @@
     "core.help.admin": "Commands available to group administrators.",
     "core.help.admin.add": "Set members as robot administrators, implement the function of managing the robot without setting members as group administrators. It's no longer needed to set up it when you are already a group administrator.",
     "core.help.admin.ban": "Limit someone to use robot in the group.",
-    "core.help.admin.del": "Unmember robot administrator.",
     "core.help.admin.list": "List all robot administrators.",
     "core.help.admin.unban": "Unlimit someone to use robot in the group.",
     "core.help.alias.add": "Add custom command alias.",
@@ -160,5 +159,6 @@
     "core.message.whoami": "Your ID: ${senderid}\nConversation ID: ${targetid}",
     "core.message.whoami.admin": "(You have admin permission for this conversation)",
     "core.message.whoami.botadmin": "(You have robot admin permission for this conversation)",
-    "core.message.whoami.superuser": "(You have superuser permission)"
+    "core.message.whoami.superuser": "(You have superuser permission)",
+    "core.help.admin.remove": "Unmember robot administrator."
 }

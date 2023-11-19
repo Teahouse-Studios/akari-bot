@@ -82,7 +82,7 @@
     "wiki.message.utils.wikilib.error.empty": "發生錯誤：API 未返回任何內容，請聯絡此站點管理員取得原因。",
     "wiki.message.utils.wikilib.error.empty_title": "發生錯誤：請求的頁面標題為空的或僅含命名空間名稱。",
     "wiki.message.utils.wikilib.error.invalid_character": "發生錯誤：請求的頁面標題包含無效的字元：「${char}」。",
-    "wiki.message.utils.wikilib.get_failed.api": "從 API 取得訊息時出錯：",
+    "wiki.message.utils.wikilib.get_failed.api": "從 API 取得資訊時出錯：",
     "wiki.message.utils.wikilib.get_failed.cloudflare": "CloudFlare 攔截了機器人的請求，請聯絡站點管理員解決此問題。",
     "wiki.message.utils.wikilib.get_failed.forbidden": "伺服器拒絕了機器人的請求。",
     "wiki.message.utils.wikilib.get_failed.moegirl": "萌娘百科的 API 接口不穩定，請稍後再試或直接訪問站點。",
