@@ -30,12 +30,13 @@ class MessageSession(MessageSessionT):
         self.timestamp = datetime.now()
         self.tmp = {}
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True) -> bool:
+    async def wait_confirm(self, message_chain=None, quote=True, delete=True, append_instruction=True) -> bool:
         send = None
         ExecutionLockList.remove(self)
         if message_chain is not None:
             message_chain = MessageChain(message_chain)
-            message_chain.append(Plain(self.locale.t("message.wait.confirm.prompt.type1")))
+            if append_instruction:
+                message_chain.append(Plain(self.locale.t("message.wait.confirm.prompt.type1")))
             send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)

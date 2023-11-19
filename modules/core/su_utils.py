@@ -39,8 +39,7 @@ async def del_su(message: Bot.MessageSession):
     if not user.startswith(f'{message.target.sender_from}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
     if user == msg.target.sender_id:
-        await msg.send_message(msg.locale.t("core.message.confirm"))
-        confirm = await msg.wait_confirm()
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if not confirm:
             return
     if user:
@@ -155,7 +154,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
@@ -173,7 +172,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
     if v.startswith(('[', '{')):
@@ -289,8 +288,7 @@ if Info.subprocess:
 
     @rst.handle()
     async def restart_bot(msg: Bot.MessageSession):
-        await msg.send_message(msg.locale.t("core.message.confirm"))
-        confirm = await msg.wait_confirm()
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
@@ -316,8 +314,7 @@ def update_dependencies():
 
 @upd.handle()
 async def update_bot(msg: Bot.MessageSession):
-    await msg.send_message(msg.locale.t("core.message.confirm"))
-    confirm = await msg.wait_confirm()
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
     if confirm:
         pull_repo_result = pull_repo()
         if pull_repo_result != '':
@@ -332,8 +329,7 @@ if Info.subprocess:
 
     @upds.handle()
     async def update_and_restart_bot(msg: Bot.MessageSession):
-        await msg.send_message(msg.locale.t("core.message.confirm"))
-        confirm = await msg.wait_confirm()
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)

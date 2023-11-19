@@ -245,7 +245,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     else:
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))])
+                                                                                 times=set_timeout))], append_instruction=False)
         if play_state[msg.target.target_id]['active']: 
             if result.as_display(text_only=True) == csr['name']:
                 send_ = msg.locale.t('chemical_code.message.correct')
