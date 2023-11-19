@@ -1,7 +1,7 @@
 {
     "bilibili.help": "輸入影片編號取得對應資訊。",
     "bilibili.help.desc": "哔哩哔哩影片相關工具。",
-    "bilibili.help.option.i": "取得詳細訊息。",
+    "bilibili.help.option.i": "取得詳細資訊。",
     "bilibili.help.regex.av": "傳送 AV 號取得影片資訊。",
     "bilibili.help.regex.bv": "傳送 BV 號取得影片資訊。",
     "bilibili.help.regex.shorturl": "傳送 b23.tv 短網址取得影片資訊。",
