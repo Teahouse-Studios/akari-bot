@@ -42,7 +42,7 @@ async def del_su(message: Bot.MessageSession):
         await msg.send_message(msg.locale.t("core.message.confirm"))
         confirm = await msg.wait_confirm()
         if not confirm:
-            pass
+            return
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
             await message.finish(message.locale.t("success"))
