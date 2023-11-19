@@ -342,7 +342,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
                 except AbuseWarning as e:
-                    if enable_tos:
+                    if enable_tos and Config('tos_warning_counts', 5) >= 1:
                         await warn_target(msg, str(e))
                         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                                   'ts': datetime.now().timestamp()}
