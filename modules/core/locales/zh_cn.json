@@ -67,7 +67,6 @@
     "core.message.forward_msg.disable": "已关闭转发消息。",
     "core.message.forward_msg.disabled": "转发消息已关闭。",
     "core.message.forward_msg.enable": "已开启转发消息。",
-    "core.message.leave.confirm": "你确定吗？此操作不可逆。",
     "core.message.leave.success": "已执行，再见。",
     "core.message.locale": "当前使用的语言：",
     "core.message.locale.reload.failed": "以下字符串重载失败：${detail}。",
