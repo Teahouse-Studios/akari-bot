@@ -38,6 +38,11 @@ async def del_su(message: Bot.MessageSession):
     user = message.parsed_msg['<UserID>']
     if not user.startswith(f'{message.target.sender_from}|'):
         await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
+    if user == msg.target.sender_id:
+        await msg.send_message(msg.locale.t("core.message.confirm"))
+        confirm = await msg.wait_confirm()
+        if not confirm:
+            return
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
             await message.finish(message.locale.t("success"))

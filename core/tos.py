@@ -2,7 +2,7 @@ from config import Config
 from core.builtins import Bot
 from database import BotDBUtil
 
-WARNING_COUNTS = Config('tos_waring_counts', 5)
+WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
 async def warn_target(msg: Bot.MessageSession, reason=None):
@@ -29,9 +29,8 @@ async def pardon_user(user: str):
 
 
 async def warn_user(user: str, count=1):
-    if WARNING_COUNTS >= 1:
-        current_warns = int(BotDBUtil.SenderInfo(user).query.warns) + count
-        BotDBUtil.SenderInfo(user).edit('warns', current_warns)
-        if current_warns > WARNING_COUNTS:
-            BotDBUtil.SenderInfo(user).edit('isInBlockList', True)
-        return current_warns
+    current_warns = int(BotDBUtil.SenderInfo(user).query.warns) + count
+    BotDBUtil.SenderInfo(user).edit('warns', current_warns)
+    if current_warns > WARNING_COUNTS and WARNING_COUNTS >= 1:
+        BotDBUtil.SenderInfo(user).edit('isInBlockList', True)
+    return current_warns

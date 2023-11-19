@@ -21,6 +21,8 @@ enable_tos = Config('enable_tos')
 enable_analytics = Config('enable_analytics')
 bug_report_targets = Config('bug_report_targets')
 
+TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
+
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
 
@@ -55,15 +57,16 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
 
 async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
-    if is_temp_banned is not None:
+    is_superuser = msg.check_super_user()
+    if is_temp_banned is not None and not is_superuser:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
-        if ban_time < 300:
+        if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
-                return await msg.finish(msg.locale.t("tos.tempbanned", ban_time=str(int(300 - ban_time))))
+                return await msg.finish(msg.locale.t("tos.tempbanned", ban_time=str(int(TOS_TEMPBAN_TIME - ban_time))))
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
-                return await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=str(int(300 - ban_time))))
+                return await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=str(int(TOS_TEMPBAN_TIME - ban_time))))
             else:
                 raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
 
@@ -339,7 +342,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
 
                 except AbuseWarning as e:
-                    if enable_tos:
+                    if enable_tos and Config('tos_warning_counts', 5) >= 1:
                         await warn_target(msg, str(e))
                         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                                   'ts': datetime.now().timestamp()}
@@ -455,7 +458,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             await msg.send_message(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
 
                         except AbuseWarning as e:
-                            if enable_tos:
+                            if enable_tos and Config('tos_warning_counts', 5) >= 1:
                                 await warn_target(msg, str(e))
                                 temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                                           'ts': datetime.now().timestamp()}

@@ -145,7 +145,7 @@ async def get_translation(locale: str, string: str):
 
 if __name__ == "__main__":
     while True:
-        uvicorn.run("bot:app", port=Config('api_port') or 5000, log_level="info")
+        uvicorn.run("bot:app", port=Config('api_port', 5000), log_level="info")
         Logger.error('API Server crashed, is the port occupied?')
         Logger.error('Retrying in 5 seconds...')
         time.sleep(5)
