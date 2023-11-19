@@ -1,5 +1,5 @@
 {
-    "user.help.desc": "取得一個 MediaWiki 使用者的訊息。",
+    "user.help.desc": "取得一個 MediaWiki 使用者的資訊。",
     "user.help.option.p": "以圖像形式生成。",
     "user.message.blocked": "正在被封禁中！",
     "user.message.blocked.blocked_by": "被 ${blocked_by} 封禁，",
