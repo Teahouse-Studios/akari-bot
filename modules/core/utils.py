@@ -91,6 +91,11 @@ async def config_gu(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.sender_from))
+    if user == msg.target.sender_id:
+        await msg.send_message(msg.locale.t("core.message.confirm"))
+        confirm = await msg.wait_confirm()
+        if not confirm:
+            pass
     if 'add' in msg.parsed_msg:
         if user and user not in msg.custom_admins:
             if msg.data.add_custom_admin(user):

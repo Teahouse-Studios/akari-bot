@@ -22,6 +22,8 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
             msg.target.sender_info.edit('isInBlockList', True)
             return
         await msg.send_message('\n'.join(warn_template))
+    else:
+        await msg.send_message(msg.locale.t("error.prompt.noreport", err_msg=e))
 
 
 async def pardon_user(user: str):

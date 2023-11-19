@@ -50,7 +50,7 @@ class MessageSession(MessageSessionT):
         send = None
         if message_chain is not None:
             send = await self.send_message(message_chain)
-            print("（发送“是”或符合确认条件的词语来确认）")
+            print(self.locale.t("message.wait.confirm.prompt.type1"))
 
         c = await aioconsole.ainput('Confirm: ')
         print(c)
