@@ -159,7 +159,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd.split(":")[0] in ['Special', '特殊'] and rd.split(":")[1] in ['随机页面', '隨機頁面', 'Random']:
+                if rd.split(":")[0].lower() in ['special', '特殊'] and rd.split(":")[1].lower() in ['随机页面', '隨機頁面', 'Random']:
                     tasks.append(asyncio.create_task(
                         WikiLib(q, headers, locale=session.locale.locale).random_page()))
                 else:
@@ -231,7 +231,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.choice',
                                                                              title=display_before_title))
-                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type2"))
                                     pi = 0
                                     for p in r.possible_research_title:
                                         pi += 1
