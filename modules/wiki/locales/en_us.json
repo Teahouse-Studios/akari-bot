@@ -57,7 +57,7 @@
     "wiki.message.not_found.autofix": "Note: [${title}] does not exist. Did you mean: [${redirected_title}]?",
     "wiki.message.not_found.autofix.choice": "Note: [${title}] does not exist. Did you mean: ",
     "wiki.message.not_found.autofix.choice.prompt": "Please directly send the specified number to obtain the corresponding content. If you reply \"Yes\", the content of ${number} will be selected by default. Sending other content means canceling the operation.",
-    "wiki.message.not_found.autofix.confirm": "Note: [${title}] does not exist. Did you mean [${redirected_title}]?\n (Please directly send \"Yes\" to confirm, sending other content means canceling the operation.)",
+    "wiki.message.not_found.autofix.confirm": "Note: [${title}] does not exist. Did you mean [${redirected_title}]?",
     "wiki.message.not_set": "Initial wiki not set.",
     "wiki.message.prefix.reset.success": "The prefix have been reset.",
     "wiki.message.prefix.set.success": "The prefix have been updated: ${wiki_prefix}",
