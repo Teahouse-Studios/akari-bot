@@ -57,7 +57,7 @@
     "wiki.message.not_found.autofix": "提示：[${title}]不存在，您可能要找的是：[${redirected_title}]。",
     "wiki.message.not_found.autofix.choice": "提示：[${title}]不存在，您是否想要找的是：",
     "wiki.message.not_found.autofix.choice.prompt": "請直接傳送指定編號取得對應內容，若回覆「是」，則預設選擇 ${number} 號內容，传送其他內容則代表取消操作。",
-    "wiki.message.not_found.autofix.confirm": "提示：[${title}]不存在，您是否想要找的是[${redirected_title}]？\n（請直接傳送「是」字來確認，傳送其他內容則代表取消操作。）",
+    "wiki.message.not_found.autofix.confirm": "提示：[${title}]不存在，您是否想要找的是[${redirected_title}]？",
     "wiki.message.not_set": "未設定起始 Wiki。",
     "wiki.message.prefix.reset.success": "已重設請求時所使用的前綴。",
     "wiki.message.prefix.set.success": "成功：已更新請求時所使用的前綴：${wiki_prefix}",

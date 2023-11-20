@@ -231,6 +231,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 if len(r.possible_research_title) > 1:
                                     wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.choice',
                                                                              title=display_before_title))
+                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type2"))
                                     pi = 0
                                     for p in r.possible_research_title:
                                         pi += 1
@@ -241,10 +242,12 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             r.possible_research_title.index(display_title) + 1)))
                                     wait_possible_list.append({display_before_title: {display_title:
                                                                                       r.possible_research_title}})
+                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type2"))
                                 else:
                                     wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.confirm',
                                                                              title=display_before_title,
                                                                              redirected_title=display_title))
+                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type1"))
                             else:
                                 if r.edit_link is not None:
                                     plain_slice.append(r.edit_link + session.locale.t('wiki.message.redlink.not_found'))
@@ -342,7 +345,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
-                confirm = await session.waitNextMessage(wait_msg_list)
+                confirm = await session.wait_next_message(wait_msg_list, delete=True, append_instruction=False)
                 auto_index = False
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:
