@@ -71,7 +71,7 @@ async def count_petal(tokens):
 
 async def gained_petal(msg: Bot.MessageSession, amount):
     if Config('openai_api_key') and Config('enable_get_petal'):
-        limit = Config('gained_petal_limit', 10)
+        limit = Config('petal_gained_limit', 10)
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
             p = [{}]
@@ -101,7 +101,7 @@ async def gained_petal(msg: Bot.MessageSession, amount):
 
 async def lost_petal(msg: Bot.MessageSession, amount):
     if Config('openai_api_key') and Config('enable_get_petal'):
-        limit = Config('lost_petal_limit', 5)
+        limit = Config('petal_lost_limit', 5)
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:
             p = [{}]

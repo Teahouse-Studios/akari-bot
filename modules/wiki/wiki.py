@@ -14,7 +14,6 @@ from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
-
 special_namespace = ['special', '特殊']
 random_title = ['random', '随机页面', '隨機頁面']
 
