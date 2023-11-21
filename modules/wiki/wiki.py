@@ -15,6 +15,9 @@ from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, In
 
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 
+special_namespace = ['special', '特殊']
+random_title = ['random', '随机页面', '隨機頁面']
+
 wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
                      'interwiki': 'wiki iw'},
@@ -159,7 +162,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd.split(":")[0] in ['Special', '特殊'] and rd.split(":")[1] in ['随机页面', '隨機頁面', 'Random']:
+                if rd.split(":")[0].lower() in special_namespace and rd.split(":")[1].lower() in random_title:
                     tasks.append(asyncio.create_task(
                         WikiLib(q, headers, locale=session.locale.locale).random_page()))
                 else:
@@ -241,10 +244,12 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                             r.possible_research_title.index(display_title) + 1)))
                                     wait_possible_list.append({display_before_title: {display_title:
                                                                                       r.possible_research_title}})
+                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type2"))
                                 else:
                                     wait_plain_slice.append(session.locale.t('wiki.message.not_found.autofix.confirm',
                                                                              title=display_before_title,
                                                                              redirected_title=display_title))
+                                    wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type1"))
                             else:
                                 if r.edit_link is not None:
                                     plain_slice.append(r.edit_link + session.locale.t('wiki.message.redlink.not_found'))
@@ -342,7 +347,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:
-                confirm = await session.waitNextMessage(wait_msg_list)
+                confirm = await session.wait_next_message(wait_msg_list, delete=True, append_instruction=False)
                 auto_index = False
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:
