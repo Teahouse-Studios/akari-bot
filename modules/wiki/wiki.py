@@ -15,6 +15,9 @@ from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, In
 
 generate_screenshot_v2_blocklist = ['https://mzh.moegirl.org.cn', 'https://zh.moegirl.org.cn']
 
+special_namespace = ['special', '特殊']
+random_title = ['random', '随机页面', '隨機頁面']
+
 wiki = module('wiki',
               alias={'wiki_start_site': 'wiki set',
                      'interwiki': 'wiki iw'},
@@ -159,7 +162,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         try:
             tasks = []
             for rd in ready_for_query_pages:
-                if rd.split(":")[0].lower() in ['special', '特殊'] and rd.split(":")[1].lower() in ['随机页面', '隨機頁面', 'Random']:
+                if rd.split(":")[0].lower() in special_namespace and rd.split(":")[1].lower() in random_title:
                     tasks.append(asyncio.create_task(
                         WikiLib(q, headers, locale=session.locale.locale).random_page()))
                 else:
