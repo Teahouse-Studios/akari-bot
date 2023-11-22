@@ -214,7 +214,7 @@ async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    if goal is None:
+    if not goal:
         return
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
@@ -226,7 +226,7 @@ async def _(msg: Bot.MessageSession):
     if level in level_list:
         level_num = int(level.split('+')[0])
         if level_num < 8:
-            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
+            await msg.finish(msg.locale.t("maimai.message.process.error.less_than_8"))
     else:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
