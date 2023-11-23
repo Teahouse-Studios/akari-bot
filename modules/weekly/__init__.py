@@ -60,13 +60,14 @@ async def get_weekly(with_img=False, zh_tw=False):
 
 async def get_weekly_img(with_img=False, zh_tw=False):
     locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
-    img = await generate_screenshot_v2('https://zh.minecraft.wiki/wiki/Minecraft_Wiki/weekly' +
-                                       ('?variant=zh-tw' if zh_tw else ''), content_mode=True, allow_special_page=True)
+    img = await generate_screenshot_v2('https://zh.minecraft.wiki/wiki/Minecraft_Wiki/' +
+                                       ('?variant=zh-tw' if zh_tw else ''), content_mode=True, allow_special_page=True,
+                                       element=['#fp-section-weekly'])
     msg_ = []
     if img:
         msg_.append(Image(path=img))
     if with_img:
-        result = json.loads(await get_url(
+        """result = json.loads(await get_url(
             'https://zh.minecraft.wiki/api.php?action=parse&page=Minecraft_Wiki/weekly&prop=images&format=json' +
             ('&variant=zh-tw' if zh_tw else ''),
             200))
@@ -74,7 +75,7 @@ async def get_weekly_img(with_img=False, zh_tw=False):
         if img:
             get_image = await (WikiLib('https://zh.minecraft.wiki/wiki/')).parse_page_info('File:' + img[0])
             if get_image.status:
-                msg_.append(Plain(locale.t("weekly.message.image", img=get_image.file)))
+                msg_.append(Plain(locale.t("weekly.message.image", img=get_image.file)))"""
     return msg_
 
 

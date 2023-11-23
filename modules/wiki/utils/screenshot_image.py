@@ -2,7 +2,7 @@ import os
 import re
 import traceback
 import uuid
-from typing import Union
+from typing import Union, List
 from urllib.parse import urljoin
 
 import aiohttp
@@ -22,8 +22,11 @@ assets_path = os.path.abspath('./assets/')
 font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
 
-async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True):
+async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True,
+                                 element=None):
     elements_ = elements.copy()
+    if element is not None and isinstance(element, List):
+        elements_ += element
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
