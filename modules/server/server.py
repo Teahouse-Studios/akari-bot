@@ -35,16 +35,14 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
                             servers.append('[JE]')
                             if 'description' in jejson:
                                 description = jejson['description']
-                                if 'text' in description:
+                                if 'text' in description and description['text'] != '':
                                     servers.append(str(description['text']))
-                                elif 'extra' in description:
+                                if 'extra' in description and description['text'] != '':
                                     extra = description['extra']
                                     text = []
                                     for item in extra[:]:
                                         text.append(str(item['text']))
                                     servers.append(''.join(text))
-                                else:
-                                    servers.append(str(description))
 
                             if 'players' in jejson:
                                 onlinesplayer = f"{msg.locale.t('server.message.player')}{str(jejson['players']['online'])} / {str(jejson['players']['max'])}"
