@@ -98,6 +98,10 @@ async def config_gu(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("core.message.admin.already"))
     if 'remove' in msg.parsed_msg:
+        if user == msg.target.sender_id:
+            confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"))
+            if not confirm:
+                return
         if user:
             if msg.data.remove_custom_admin(user):
                 await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
@@ -127,8 +131,6 @@ async def config_ban(msg: Bot.MessageSession):
 
 locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
 
-completed_locales = ["zh_cn", "zh_tw"]
-
 @locale.handle('{{core.help.locale}}')
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
@@ -141,8 +143,6 @@ async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
         await msg.send_message(Locale(lang).t('success'))
-        if lang not in completed_locales:
-            await msg.finish(Locale(lang).t('core.message.locale.contribution'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
@@ -225,7 +225,7 @@ leave = module(
 
 @leave.handle()
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(msg.locale.t('core.message.leave.confirm'))
+    confirm = await msg.wait_confirm(msg.locale.t('core.message.confirm'))
     if confirm:
         await msg.send_message(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)

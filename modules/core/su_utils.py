@@ -12,7 +12,6 @@ from dateutil.relativedelta import relativedelta
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
-from core.exceptions import NoReportException
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
 from core.tos import pardon_user, warn_user
@@ -25,23 +24,27 @@ su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], 
 
 
 @su.handle('add <UserID>')
-async def add_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<UserID>']
-    if not user.startswith(f'{message.target.sender_from}|'):
-        await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
+async def add_su(msg: Bot.MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=msg.prefixes[0]))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
-            await message.finish(message.locale.t("success"))
+            await msg.finish(msg.locale.t("success"))
 
 
 @su.handle('remove <UserID>')
-async def del_su(message: Bot.MessageSession):
-    user = message.parsed_msg['<UserID>']
-    if not user.startswith(f'{message.target.sender_from}|'):
-        await message.finish(message.locale.t("core.message.superuser.invalid", prefix=message.prefixes[0]))
+async def del_su(msg: Bot.MessageSession):
+    user = msg.parsed_msg['<UserID>']
+    if not user.startswith(f'{msg.target.sender_from}|'):
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=msg.prefixes[0]))
+    if user == msg.target.sender_id:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+        if not confirm:
+            return
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
-            await message.finish(message.locale.t("success"))
+            await msg.finish(msg.locale.t("success"))
 
 
 ana = module('analytics', required_superuser=True, base=True)
@@ -151,8 +154,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
-        if not wait_confirm:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
+        if not confirm:
             return
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.target_from)]
@@ -169,8 +172,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
     if target_data.query is None:
-        wait_confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"))
-        if not wait_confirm:
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
+        if not confirm:
             return
     if v.startswith(('[', '{')):
         v = json.loads(v)
@@ -285,8 +288,7 @@ if Info.subprocess:
 
     @rst.handle()
     async def restart_bot(msg: Bot.MessageSession):
-        await msg.send_message(msg.locale.t("core.message.confirm"))
-        confirm = await msg.wait_confirm()
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
@@ -312,8 +314,7 @@ def update_dependencies():
 
 @upd.handle()
 async def update_bot(msg: Bot.MessageSession):
-    await msg.send_message(msg.locale.t("core.message.confirm"))
-    confirm = await msg.wait_confirm()
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
     if confirm:
         pull_repo_result = pull_repo()
         if pull_repo_result != '':
@@ -328,8 +329,7 @@ if Info.subprocess:
 
     @upds.handle()
     async def update_and_restart_bot(msg: Bot.MessageSession):
-        await msg.send_message(msg.locale.t("core.message.confirm"))
-        confirm = await msg.wait_confirm()
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if confirm:
             restart_time.append(datetime.now().timestamp())
             await wait_for_restart(msg)
@@ -418,21 +418,10 @@ async def _(msg: Bot.MessageSession):
 
 rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True, base=True)
 
-
 @rse.handle()
-@rse.handle('[<exception>] [-n]')
 async def _(msg: Bot.MessageSession):
-    e = None
-    if msg.parsed_msg:
-        e = msg.parsed_msg.get('<exception>', None)
-        e = e.replace("_", " ")
-        if not e:
-            e = msg.locale.t("core.message.raise")
-        if msg.parsed_msg.get('-n', False):
-            raise NoReportException(e)
-    if not e:
-        e = msg.locale.t("core.message.raise")
-    raise TestException(e)
+    e = msg.locale.t("core.message.raise")
+    raise Exception(e)
 
 
 if Config('enable_eval'):
@@ -450,6 +439,13 @@ def isfloat(num):
     except ValueError:
         return False
 
+def isint(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
+        return False
+
 
 _config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg', base=True)
 
@@ -461,12 +457,15 @@ async def _(msg: Bot.MessageSession):
         value = True
     elif value.lower() == 'false':
         value = False
-    elif value.isdigit():
+    elif isint(value):
         value = int(value)
     elif isfloat(value):
         value = float(value)
-    elif re.match('^(?:{.*}|[.*])$', value):
-        value = json.loads(value)
+    elif re.match(r'^\[.*\]$', value):
+        try:
+            value = json.loads(value)
+        except:
+            await msg.finish(msg.locale.t("core.message.config.write.failed"))
 
     CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
     await msg.finish(msg.locale.t("success"))

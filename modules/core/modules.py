@@ -170,15 +170,15 @@ async def config_modules(msg: Bot.MessageSession):
                 if base_mode and reload_count:
                     return msg.locale.t("core.message.module.reload.success.base")
                 elif reload_count > 1:
-                    return (f"{msg.locale.t('core.message.module.reload.success', module=module)}" +
-                            '\n' if len(extra_modules) != 0 else '') + \
-                        '\n'.join(extra_modules) + \
-                        f"\n{msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)}"
+                    return msg.locale.t('core.message.module.reload.success', module=module) + \
+                           ('\n' if len(extra_modules) != 0 else '') + \
+                           '\n'.join(extra_modules) + \
+                           '\n' + msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)
                 elif reload_count == 1:
-                    return (f"{msg.locale.t('core.message.module.reload.success', module=module)}" +
-                            '\n' if len(extra_modules) != 0 else '' +
-                            '\n'.join(extra_modules) +
-                            f"\n{msg.locale.t('core.message.module.reload.no_more')}")
+                    return msg.locale.t('core.message.module.reload.success', module=module) + \
+                           ('\n' if len(extra_modules) != 0 else '') + \
+                           '\n'.join(extra_modules) + \
+                           '\n' + msg.locale.t('core.message.module.reload.no_more')
                 else:
                     return msg.locale.t("core.message.module.reload.failed")
 
@@ -191,7 +191,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.base"))
+                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.base"), append_instruction=False)
                         if confirm:
                             base_mode = True
                         else:
@@ -199,7 +199,7 @@ async def config_modules(msg: Bot.MessageSession):
 
                     elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
-                                                                      modules='\n'.join(extra_reload_modules)))
+                                                                      modules='\n'.join(extra_reload_modules)), append_instruction=False)
                         if not confirm:
                             await msg.finish()
                     unloaded_list = CFG.get('unloaded_modules')
@@ -235,7 +235,7 @@ async def config_modules(msg: Bot.MessageSession):
             for module_ in wait_config_list:
                 if module_ not in modules_:
                     if module_ in err_modules:
-                        if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm")):
+                        if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm"), append_instruction=False):
                             unloaded_list = CFG.get('unloaded_modules')
                             if not unloaded_list:
                                 unloaded_list = []
@@ -251,7 +251,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if modules_[module_].base:
                     msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
                     continue
-                if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm")):
+                if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm"), append_instruction=False):
                     if ModulesManager.unload_module(module_):
                         msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
                         unloaded_list = CFG.get('unloaded_modules')
@@ -273,7 +273,7 @@ async def config_modules(msg: Bot.MessageSession):
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
                                                       msgs='\n'.join(recommend_modules_list) + '\n\n' +
-                                                           '\n'.join(recommend_modules_help_doc_list)))
+                                                           '\n'.join(recommend_modules_help_doc_list)), append_instruction=False)
         if confirm:
             if msg.data.enable(recommend_modules_list):
                 msglist = []

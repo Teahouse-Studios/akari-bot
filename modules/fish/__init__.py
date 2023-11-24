@@ -55,12 +55,12 @@ async def finish_fish(msg: Bot.MessageSession):
                    (f'{msg.locale.t("fish.message.size")}'
                     f'{msg.locale.t("fish.message.size." + play_state[msg.target.target_id]["fish_type"])}')
             if play_state[msg.target.target_id]['hooked_time'] < 2:
-                if g := (g_msg := await gained_petal(wait, 1)):
+                if g := await gained_petal(msg, 1):
                     text += '\n' + g
             await msg.finish(text, quote=False)
         else:
             send = msg.locale.t('fish.message.failed.' + str(random.randint(1, 3)))
-            if g := (g_msg := await lost_petal(wait, 1)):
+            if g := await lost_petal(msg, 1):
                 send += '\n' + g
             await msg.finish(send, quote=False)
     else:
@@ -160,6 +160,6 @@ async def _(msg: Bot.MessageSession):
             send = msg.locale.t('fish.message.not_started.1', prefix=msg.prefixes[0])
         else:
             send = msg.locale.t('fish.message.not_started.2')
-            if g := (g_msg := await lost_petal(wait, 1)):
+            if g := (g_msg := await lost_petal(msg, 1)):
                 send += '\n' + g
         await msg.finish(send)

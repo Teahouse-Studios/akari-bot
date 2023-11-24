@@ -10,6 +10,19 @@ config_path = abspath('./config/' + config_filename)
 
 old_cfg_file_path = abspath('./config/config.cfg')
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+def isint(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
+        return False
 
 def convert_cfg_to_toml():
     import configparser
@@ -25,8 +38,10 @@ def convert_cfg_to_toml():
                 config_dict[x][y] = True
             elif config_dict[x][y] == "False":
                 config_dict[x][y] = False
-            elif config_dict[x][y].isdigit():
+            elif isint(value):
                 config_dict[x][y] = int(config_dict[x][y])
+            elif isfloat(value):
+                config_dict[x][y] = float(config_dict[x][y])
 
     with open(config_path, 'w') as f:
         f.write(toml.dumps(config_dict))
