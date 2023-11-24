@@ -62,7 +62,7 @@ async def get_weekly_img(with_img=False, zh_tw=False):
     locale = Locale('zh_cn' if not zh_tw else 'zh_tw')
     img = await generate_screenshot_v2('https://zh.minecraft.wiki/wiki/Minecraft_Wiki/' +
                                        ('?variant=zh-tw' if zh_tw else ''), content_mode=True, allow_special_page=True,
-                                       element=['#fp-section-weekly'])
+                                       element=['div#fp-section-weekly'])
     msg_ = []
     if img:
         msg_.append(Image(path=img))
