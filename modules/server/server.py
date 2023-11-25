@@ -37,7 +37,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
                                 description = jejson['description']
                                 if 'text' in description and description['text'] != '':
                                     servers.append(str(description['text']))
-                                if 'extra' in description and description['text'] != '':
+                                if 'extra' in description and description['extra'] != '':
                                     extra = description['extra']
                                     text = []
                                     for item in extra[:]:
