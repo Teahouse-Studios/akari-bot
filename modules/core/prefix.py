@@ -26,7 +26,7 @@ async def set_prefix(msg: Bot.MessageSession):
             if prefix in prefixes:
                 prefixes.remove(prefix)
                 msg.data.edit_option('command_prefix', prefixes)
-                await msg.send_message(msg.locale.t("core.message.prefix.remove.success") + prefix)
+                await msg.send_message(msg.locale.t("core.message.prefix.remove.success", prefix=prefix))
             else:
                 await msg.send_message(msg.locale.t("core.message.prefix.remove.not_found"))
     elif 'reset' in msg.parsed_msg:

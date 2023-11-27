@@ -49,7 +49,7 @@
     "maimai.message.process.last": "您的 ${process} 级歌曲全谱面 ${goal} 剩余曲目如下：",
     "maimai.message.process.less_than_8": "歌曲等级必须大于 8 级。",
     "maimai.message.random.error": "发生错误：随机歌曲失败，请检查输入。",
-    "maimai.message.rank": "截至 ${time}，\n查分器共有 ${total_rank} 名用户，平均分数为 ${average_rating}。\n${user} 的分数为 ${rating}，排名为 #${rank}，\n你已经超越了 ${surpassing_rate}% 的玩家。",
+    "maimai.message.rank": "截至 ${time}，\n查分器共有 ${total_rank} 名用户，平均分数为 ${average_rating}。\n${user} 的分数为 ${rating}，排名为 #${rank}，\n已经超越了 ${surpassing_rate}% 的玩家。",
     "maimai.message.scoreline": "分数线 ${scoreline}% 允许的最多 TAP GREAT 数量为 ${tap_great}（每个-${tap_great_prop}%），\nBREAK 2550（一共 ${brk} 个）等价于 ${b2t_2550_great} 个 TAP GREAT（-${b2t_2550_great_prop}%），\nBREAK 2000（一共 ${brk} 个）等价于 ${b2t_2000_great} 个 TAP GREAT（-${b2t_2000_great_prop}%）",
     "maimai.message.scoreline.error": "发生错误：计算结果失败，请检查输入。",
     "maimai.message.scorelist": "以下为 ${user} 的 ${level} 级分数列表：",
