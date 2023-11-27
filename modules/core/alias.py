@@ -42,14 +42,14 @@ async def set_alias(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.alias.reset.success"))
     elif 'list' in msg.parsed_msg:
         if len(aliases) == 0:
-            await finish(msg.locale.t("core.message.alias.list.none"))
+            await msg.finish(msg.locale.t("core.message.alias.list.none"))
         else:
             table = ImageTable([[k, aliases[k]] for k in aliases],
                                [msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
             img = await image_table_render(table)
             if img:
-                await finish([msg.locale.t("core.message.alias.list"), Image(img)])
+                await msg.finish([msg.locale.t("core.message.alias.list"), Image(img)])
             else:
-                await finish(f'{msg.locale.t("core.message.alias.list")}\n'
+                await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
                                        + '\n'.join([f'{k} -> {aliases[k]}' for k in aliases]))
