@@ -38,7 +38,7 @@
     "wiki.message.fandom.disable": "已关闭 Fandom 全局 Interwiki 查询。",
     "wiki.message.fandom.enable": "已开启 Fandom 全局 Interwiki 查询。",
     "wiki.message.flies": "此页面包括以下文件：\n",
-    "wiki.message.headers.show": "当前设置了以下请求标头：\n${headers}\n如需自定义，请使用“${prefix}wiki headers add”。\n示例：\n${prefix}wiki headers set {\"accept-language\": \"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
+    "wiki.message.headers.show": "当前设置了以下请求标头：\n${headers}\n如需自定义，请使用“${prefix}wiki headers add”。\n示例：\n${prefix}wiki headers add {\"accept-language\": \"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\"}",
     "wiki.message.headers.reset.success": "已重置请求时所使用的请求标头。",
     "wiki.message.headers.add.failed": "更新请求标头失败，请检查输入。",
     "wiki.message.headers.add.success": "已更新请求时所使用的请求标头：${headers}",
@@ -105,6 +105,6 @@
     "wiki.message.wiki_audit.remove.failed": "失败，此 Wiki 不存在于${list_name}中：",
     "wiki.message.wiki_audit.remove.failed.other": "失败，此 Wiki 不存在于白名单中，此 Wiki 的白名单可能来自其他同一域名的 Wiki：",
     "wiki.message.wiki_audit.remove.success": "成功从${list_name}删除：",
-    "wiki.message.wiki_audit.untrust": "注意：此 Wiki 当前没有加入机器人的白名单列表中，查询此 Wiki 时将会对返回内容进行限制。\n若需取消限制，请在此处申请白名单：\n",
+    "wiki.message.wiki_audit.untrust": "注意：此 Wiki 当前没有加入机器人的白名单列表中，查询此 Wiki 时将会对返回内容进行限制。\n如需取消限制，请在此处申请白名单：\n",
     "wiki.message.wiki_inline.flies": "此页面包括以下文件：${file}"
 }
