@@ -116,7 +116,7 @@ async def _(msg: Bot.MessageSession):
          BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
 
 
-@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
@@ -140,23 +140,23 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))])
 
 
-@mai_regex.handle(re.compile(r"(随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
+@mai_regex.handle(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
                   desc="{maimai.help.maimai_regex.random}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
         try:
-            if res.groups()[1] in ["dx", "DX"]:
+            if res.groups()[0] in ["dx", "DX"]:
                 tp = ["DX"]
-            elif res.groups()[1] in ["sd", "SD"] or res.groups()[1] in ["标准", "標準"]:
+            elif res.groups()[0] in ["sd", "SD", "标准", "標準"]:
                 tp = ["SD"]
             else:
                 tp = ["SD", "DX"]
-            level = res.groups()[3]
-            if res.groups()[2] == "":
+            level = res.groups()[2]
+            if res.groups()[1] == "":
                 music_data = (await total_list.get()).filter(level=level, type=tp)
             else:
-                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[2])],
+                music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[1])],
                                                              type=tp)
             if len(music_data) == 0:
                 rand_result = msg.locale.t("maimai.message.music_not_found")
@@ -191,7 +191,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output.strip())
 
 
-@mai_regex.handle(re.compile(r"([0-9]+\+?)\s(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
+@mai_regex.handle(re.compile(r"([0-9]+\+?)\s?(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
 async def _(msg: Bot.MessageSession):
     goal_list = [
         "A",
@@ -214,7 +214,7 @@ async def _(msg: Bot.MessageSession):
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    if goal is None:
+    if not goal:
         return
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
@@ -226,7 +226,7 @@ async def _(msg: Bot.MessageSession):
     if level in level_list:
         level_num = int(level.split('+')[0])
         if level_num < 8:
-            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
+            await msg.finish(msg.locale.t("maimai.message.process.error.less_than_8"))
     else:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 

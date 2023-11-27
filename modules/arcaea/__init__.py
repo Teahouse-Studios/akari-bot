@@ -3,8 +3,7 @@ import os
 import urllib.parse
 
 from config import CFG
-from core.builtins import Bot
-from core.builtins import Plain, Image
+from core.builtins import Bot, Image, Plain
 from core.component import module
 from core.logger import Logger
 from core.utils.http import get_url

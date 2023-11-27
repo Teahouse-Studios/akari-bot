@@ -2,8 +2,7 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot
-from core.builtins import Image as Img
+from core.builtins import Bot, Image as Img
 from core.component import module
 from core.utils.cache import random_cache_path
 
