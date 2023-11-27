@@ -1,10 +1,11 @@
 {
-    "cytoid.help.b30": "查询 Cytoid 用户的 B30/R30 列表。",
+    "cytoid.help.b30": "查询 Cytoid 用户的 B30 列表。",
     "cytoid.help.bind": "绑定 Cytoid 用户。",
     "cytoid.help.desc": "查询 Cytoid 相关内容。",
     "cytoid.help.profile": "查询一个用户的基本信息。",
+    "cytoid.help.r30": "查询 Cytoid 用户的 R30 列表。",
     "cytoid.help.unbind": "解绑用户。",
-    "cytoid.message.b30.cooldown": "距离上次执行已过去 ${time} 秒，本命令的冷却时间为 150 秒。（据官方人员所述，此 API 的调用十分昂贵，故手动做出此限制，请谅解。）",
+    "cytoid.message.b30.cooldown": "（据官方人员所述，此 API 的调用十分昂贵，故手动做出此限制，请谅解。）",
     "cytoid.message.bind.failed": "绑定失败，请检查输入。",
     "cytoid.message.bind.success": "绑定成功：",
     "cytoid.message.unbind.success": "解绑成功。",
