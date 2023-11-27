@@ -1,5 +1,4 @@
-from core.builtins import Bot
-from core.builtins import Image
+from core.builtins import Bot, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
 from .dbutils import CytoidBindInfoManager
