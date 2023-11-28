@@ -34,7 +34,7 @@ async def init_async(start_scheduler=True) -> None:
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
     try:
-        Info.version = os.popen('git rev-parse HEAD', 'r').read()[0:6]
+        Info.version = os.popen('git rev-parse HEAD', 'r').read()
     except Exception as e:
         Logger.warn(f'Failed to get git commit hash, is it a git repository?')
     Logger.info(f'Hello, {bot_name}!')

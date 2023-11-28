@@ -157,10 +157,10 @@ class Audit:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def add_to_AllowList(self, op) -> bool:
+    def add_to_AllowList(self, date) -> bool:
         if self.inAllowList:
             return False
-        session.add_all([WikiAllowList(apiLink=self.api_link, operator=op)])
+        session.add_all([WikiAllowList(apiLink=self.api_link, operator=date)])
         session.commit()
         session.expire_all()
         return True
@@ -179,10 +179,10 @@ class Audit:
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
-    def add_to_BlockList(self, op) -> bool:
+    def add_to_BlockList(self, date) -> bool:
         if self.inBlockList:
             return False
-        session.add_all([WikiBlockList(apiLink=self.api_link, operator=op)])
+        session.add_all([WikiBlockList(apiLink=self.api_link, operator=date)])
         session.commit()
         session.expire_all()
         return True

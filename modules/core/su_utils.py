@@ -37,7 +37,7 @@ async def add_su(msg: Bot.MessageSession):
 async def del_su(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", target=msg.target.sender_from))
     if user == msg.target.sender_id:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if not confirm:
@@ -295,6 +295,7 @@ if Info.subprocess:
             write_version_cache(msg)
             restart()
 
+
 upd = module('update', developers=['OasisAkari'], required_superuser=True, base=True)
 
 
@@ -416,7 +417,7 @@ say = module('say', developers=['OasisAkari'], required_superuser=True, base=Tru
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
-rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True, base=True)
+rse = module('raise', developers=['OasisAkari'], required_superuser=True, base=True)
 
 @rse.handle()
 async def _(msg: Bot.MessageSession):
