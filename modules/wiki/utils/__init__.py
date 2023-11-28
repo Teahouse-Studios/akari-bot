@@ -20,14 +20,14 @@ async def rc_loader(msg: Bot.MessageSession):
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-        if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
-            try:
-                nodelist = await rc_qq(start_wiki)
-                await msg.fake_forward_msg(nodelist)
-                legacy = False
-            except Exception:
-                traceback.print_exc()
-                await msg.send_message(msg.locale.t('wiki.message.rollback'))
+    if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
+        try:
+            nodelist = await rc_qq(start_wiki)
+            await msg.fake_forward_msg(nodelist)
+            legacy = False
+        except Exception:
+            traceback.print_exc()
+            await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
         res = await rc(msg, start_wiki)
         await msg.finish(res)
