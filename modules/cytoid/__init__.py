@@ -1,5 +1,4 @@
-from core.builtins import Bot
-from core.builtins import Image
+from core.builtins import Bot, Image
 from core.component import module
 from core.utils.cooldown import CoolDown
 from .dbutils import CytoidBindInfoManager
@@ -7,17 +6,18 @@ from .profile import cytoid_profile
 from .rating import get_rating
 from .utils import get_profile_name
 
-cytoid = module('cytoid', desc='{cytoid.help.desc}',
+ctd = module('cytoid', desc='{cytoid.help.desc}',
                 developers=['OasisAkari'], alias='ctd')
 
 
-@cytoid.handle('profile [<UserID>] {{cytoid.help.profile}}')
+@ctd.handle('profile [<UserID>] {{cytoid.help.profile}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)
 
 
-@cytoid.handle('(b30|r30) [<UserID>] {{cytoid.help.b30}}')
+@ctd.handle('b30 [<UserID>] {{cytoid.help.b30}}',
+            'r30 [<UserID>] {{cytoid.help.r30}}')
 async def _(msg: Bot.MessageSession):
     if 'b30' in msg.parsed_msg:
         query = 'b30'
@@ -48,10 +48,11 @@ async def _(msg: Bot.MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            await msg.finish(msg.locale.t('cytoid.message.b30.cooldown', time=int(c)))
+            res = msg.locale.t('message.cooldown', time=int(c), cd_time='150') + msg.locale.t('cytoid.message.b30.cooldown')
+            await msg.finish(res)
 
 
-@cytoid.handle('bind <username> {{cytoid.help.bind}}')
+@ctd.handle('bind <username> {{cytoid.help.bind}}')
 async def _(msg: Bot.MessageSession):
     code: str = msg.parsed_msg['<username>'].lower()
     getcode = await get_profile_name(code)
@@ -67,7 +68,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('cytoid.message.bind.failed'))
 
 
-@cytoid.handle('unbind {{cytoid.help.unbind}}')
+@ctd.handle('unbind {{cytoid.help.unbind}}')
 async def _(msg: Bot.MessageSession):
     unbind = CytoidBindInfoManager(msg).remove_bind_info()
     if unbind:

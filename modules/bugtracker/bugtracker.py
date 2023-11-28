@@ -7,8 +7,7 @@ from PIL import ImageFont
 from config import Config, CFG
 from core.builtins import Url
 from core.logger import Logger
-from core.utils.http import download_to_cache
-from core.utils.http import get_url
+from core.utils.http import download_to_cache, get_url
 
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')

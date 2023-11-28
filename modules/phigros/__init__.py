@@ -2,8 +2,7 @@ import os.path
 import shutil
 import traceback
 
-from core.builtins import Bot
-from core.builtins import Image
+from core.builtins import Bot, Image
 from core.component import module
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache

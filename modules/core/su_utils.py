@@ -27,7 +27,7 @@ su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], 
 async def add_su(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", target=msg.target.sender_from))
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', True):
             await msg.finish(msg.locale.t("success"))
@@ -37,7 +37,7 @@ async def add_su(msg: Bot.MessageSession):
 async def del_su(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
-        await msg.finish(msg.locale.t("core.message.superuser.invalid", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("core.message.superuser.invalid", target=msg.target.sender_from))
     if user == msg.target.sender_id:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
         if not confirm:
@@ -295,36 +295,38 @@ if Info.subprocess:
             write_version_cache(msg)
             restart()
 
-upd = module('update', developers=['OasisAkari'], required_superuser=True, base=True)
+
+if Info.version:
+    upd = module('update', developers=['OasisAkari'], required_superuser=True, base=True)
 
 
-def pull_repo():
-    return os.popen('git pull', 'r').read()[:-1]
+    def pull_repo():
+        return os.popen('git pull', 'r').read()[:-1]
 
 
-def update_dependencies():
-    poetry_install = os.popen('poetry install').read()[:-1]
-    if poetry_install != '':
-        return poetry_install
-    pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
-    if len(pip_install) > 500:
-        return '...' + pip_install[-500:]
-    return
+    def update_dependencies():
+        poetry_install = os.popen('poetry install').read()[:-1]
+        if poetry_install != '':
+            return poetry_install
+        pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
+        if len(pip_install) > 500:
+            return '...' + pip_install[-500:]
+        return
 
 
-@upd.handle()
-async def update_bot(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
-    if confirm:
-        pull_repo_result = pull_repo()
-        if pull_repo_result != '':
-            await msg.send_message(pull_repo_result)
-            await msg.send_message(update_dependencies())
-        else:
-            await msg.finish(msg.locale.t("core.message.update.failed"))
+    @upd.handle()
+    async def update_bot(msg: Bot.MessageSession):
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+        if confirm:
+            pull_repo_result = pull_repo()
+            if pull_repo_result != '':
+                await msg.send_message(pull_repo_result)
+                await msg.send_message(update_dependencies())
+            else:
+                await msg.finish(msg.locale.t("core.message.update.failed"))
 
 
-if Info.subprocess:
+if Info.version and Info.subprocess:
     upds = module('update&restart', developers=['OasisAkari'], required_superuser=True, alias='u&r', base=True)
 
     @upds.handle()
@@ -416,7 +418,7 @@ say = module('say', developers=['OasisAkari'], required_superuser=True, base=Tru
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
-rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True, base=True)
+rse = module('raise', developers=['OasisAkari'], required_superuser=True, base=True)
 
 @rse.handle()
 async def _(msg: Bot.MessageSession):

@@ -1,5 +1,4 @@
-from core.builtins import Bot
-from core.builtins import Plain, Image, Url
+from core.builtins import Bot, Plain, Image, Url
 from core.component import module
 from .mojang_api import *
 

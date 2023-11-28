@@ -14,8 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from config import Config
-from core.builtins import Bot, ErrorMessage, base_superuser_list
-from core.builtins import Plain, Image, Voice, Temp, command_prefix
+from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed

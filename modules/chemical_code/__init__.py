@@ -9,8 +9,7 @@ from PIL import Image as PILImage
 from bs4 import BeautifulSoup
 from tenacity import retry, stop_after_attempt
 
-from core.builtins import Bot
-from core.builtins import Image, Plain
+from core.builtins import Bot, Image, Plain
 from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
