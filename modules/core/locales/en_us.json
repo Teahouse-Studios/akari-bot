@@ -19,6 +19,7 @@
     "core.help.module.help.detail": "View details of a module.",
     "core.help.module.help.legacy": "View help list. (Legacy)",
     "core.help.module.list": "View all available modules.",
+    "core.help.module.list.legacy": "View all available modules. (Legacy)",
     "core.help.mute": "Make the bot stop sending message.",
     "core.help.option.module.g": "Perform global operations of the channels.",
     "core.help.petal": "Get the number of petals in the current group.",
