@@ -21,7 +21,7 @@ ver = module('version', base=True, desc='{core.help.version}', developers=['Oasi
 @ver.handle()
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
-        await msg.finish(msg.locale.t('core.message.version', commit=Info.version))
+        await msg.finish(msg.locale.t('core.message.version', commit=Info.version[0:6]))
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
@@ -130,6 +130,7 @@ async def config_ban(msg: Bot.MessageSession):
 
 
 locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
+
 
 @locale.handle('{{core.help.locale}}')
 async def _(msg: Bot.MessageSession):
