@@ -19,6 +19,7 @@
     "core.help.module.help.detail": "檢視一個模組的詳細資訊。",
     "core.help.module.help.legacy": "檢視說明列表。（舊版）",
     "core.help.module.list": "檢視所有可用模組。",
+    "core.help.module.list": "檢視所有可用模組。（舊版）",
     "core.help.mute": "使機器人停止發言。",
     "core.help.option.module.g": "對頻道進行全域操作。",
     "core.help.petal": "取得目前群組的花瓣數。",
