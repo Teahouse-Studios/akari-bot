@@ -418,7 +418,7 @@ say = module('say', developers=['OasisAkari'], required_superuser=True, base=Tru
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
-rse = module('raise', developers=['OasisAkari, DoroWolf'], required_superuser=True, base=True)
+rse = module('raise', developers=['OasisAkari'], required_superuser=True, base=True)
 
 @rse.handle()
 async def _(msg: Bot.MessageSession):

@@ -1,5 +1,6 @@
 {
     "ncmusic.help.search": "搜索网易云音乐。",
+    "ncmusic.help.search.legacy": "搜索网易云音乐。（旧版）",
     "ncmusic.help.info": "获取音乐详细信息。",
     "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}",
     "ncmusic.message.search.collapse": "…仅显示前 10 条内容。",
