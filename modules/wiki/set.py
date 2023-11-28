@@ -87,11 +87,11 @@ async def _(msg: Bot.MessageSession):
         else:
             result = msg.locale.t("wiki.message.iw.list.legacy") + '\n' + \
                 '\n'.join([f'{x}: {query[x]}' for x in query])
-            if base_interwiki_link is not None:
-                result += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
-            await msg.finish(result)
     else:
-        await msg.finish(msg.locale.t("wiki.message.iw.none", prefix=msg.prefixes[0]))
+        result = msg.locale.t("wiki.message.iw.list.none", prefix=msg.prefixes[0])
+    if base_interwiki_link is not None:
+        result += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
+    await msg.finish(result)
 
 
 @wiki.handle('iw get <Interwiki> {{wiki.help.iw.get}}')
@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("wiki.message.iw.get.not_found", iw=msg.parsed_msg["<Interwiki>"]))
     else:
-        await msg.finish(msg.locale.t("wiki.message.iw.none", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("wiki.message.iw.list.none", prefix=msg.prefixes[0]))
 
 
 @wiki.handle('headers show {{wiki.help.headers.show}}')

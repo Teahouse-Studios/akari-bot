@@ -52,7 +52,7 @@
     "wiki.message.iw.list": "使用“${prefix}wiki iw get <Interwiki>”可以获取 Interwiki 对应的链接。",
     "wiki.message.iw.list.legacy": "当前设置了以下 Interwiki：",
     "wiki.message.iw.list.prompt": "此处展示的是为机器人设置的自定义 Interwiki，如需查看起始 Wiki 的 Interwiki，请见：${url}",
-    "wiki.message.iw.none": "当前没有设置任何 Interwiki，可使用“${prefix}wiki iw add”添加。",
+    "wiki.message.iw.list.none": "当前没有设置任何 Interwiki，可使用“${prefix}wiki iw add”添加。",
     "wiki.message.iw.remove.success": "已删除自定义 Interwiki：${iw}",
     "wiki.message.magic_word": "提示：机器人暂不支持魔术字。",
     "wiki.message.not_found": "未找到 [${title}]。",
