@@ -20,7 +20,7 @@ async def rc_loader(msg: Bot.MessageSession):
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.target_from == 'QQ|Group' and 'legacy' not in msg.parsed_msg:
+    if msg.Feature.forward and msg.target.target_from == 'QQ|Group' and not msg.parsed_msg.get('legacy', False):
         try:
             nodelist = await rc_qq(start_wiki)
             await msg.fake_forward_msg(nodelist)
@@ -43,7 +43,7 @@ async def ab_loader(msg: Bot.MessageSession):
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.target_from == 'QQ|Group' and 'legacy' not in msg.parsed_msg:
+    if msg.Feature.forward and msg.target.target_from == 'QQ|Group' and not msg.parsed_msg.get('legacy', False):
         try:
             nodelist = await ab_qq(start_wiki)
             await msg.fake_forward_msg(nodelist)

@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
     if query != {}:
-        if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
             img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:

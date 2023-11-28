@@ -79,7 +79,7 @@ if Config('enable_urlmanager'):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()
         legacy = True
-        if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             send_msgs = []
             allow_columns = [[x[0], x[1]] for x in allow_list]
             if allow_columns:

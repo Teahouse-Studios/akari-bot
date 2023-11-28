@@ -36,7 +36,7 @@ m = module('module',
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if 'legacy' in msg.parsed_msg:
+        if msg.parsed_msg.get('legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if 'legacy' in msg.parsed_msg:
+        if msg.parsed_msg.get('legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -375,7 +375,7 @@ async def _(msg: Bot.MessageSession):
         target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
     legacy_help = True
-    if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+    if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
         try:
             tables = []
             essential = []
