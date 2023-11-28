@@ -32,14 +32,14 @@ class WikiAllowList(Base):
     __tablename__ = table_prefix + 'WikiAllowList'
     __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
-    addDate = Column(String(512))
+    operator = Column(String(512))
 
 
 class WikiBlockList(Base):
     __tablename__ = table_prefix + 'WikiBlockList'
     __table_args__ = {'extend_existing': True}
     apiLink = Column(String(512), primary_key=True)
-    addDate = Column(String(512))
+    operator = Column(String(512))
 
 
 Session.create()
