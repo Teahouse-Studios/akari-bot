@@ -375,7 +375,7 @@ async def _(msg: Bot.MessageSession):
         target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
     legacy_help = True
-    if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
+    if not msg.parsed_msg and msg.Feature.image:
         try:
             tables = []
             essential = []
