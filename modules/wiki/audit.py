@@ -49,10 +49,6 @@ if Config('enable_urlmanager'):
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed', list_name=list_name) + api)
         else:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + api)
-    else:
-        result = msg.locale.t('wiki.message.error.query') + \
-            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
-        await msg.finish(result)
 
     @aud.handle('query <apiLink>')
     async def _(msg: Bot.MessageSession):
