@@ -50,5 +50,5 @@ mlg = module(
 
 
 @mlg.handle('{{mcv.help.mclgv}}')
-async def mcev_loader(msg: Bot.MessageSession):
+async def mclgv_loader(msg: Bot.MessageSession):
     await msg.finish(await mclgv(msg))
