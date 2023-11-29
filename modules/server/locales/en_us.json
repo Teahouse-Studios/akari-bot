@@ -2,7 +2,6 @@
     "server.help": "Get Minecraft: Java/Bedrock Edition server motd.",
     "server.help.option.p": "Show Players List",
     "server.help.option.r": "Show Raw Info",
-    "server.help.revoke": "Whether to enable automatic revoke (default enable).",
     "server.message.error": "An error occurred while querying for the API.",
     "server.message.error.local_ip": "An error occurred: Invalid domain name or IP address.",
     "server.message.gamemode": "Game mode: ",
