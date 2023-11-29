@@ -78,7 +78,7 @@ class WikiTargetInfo:
             self.query.headers = json.dumps(headers_)
             session.commit()
             return True
-        except TypeError:
+        except:
             return False
 
     def get_headers(self):
