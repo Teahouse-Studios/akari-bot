@@ -41,8 +41,9 @@ def get_diff(diff):
     return level
 
 
-mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='mai',
-             desc='{maimai.help.desc}')
+mai = module('maimai', 
+             recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], 
+             alias='mai', desc='{maimai.help.desc}')
 
 
 @mai.handle('base <constant> [<constant_max>] {{maimai.help.base}}')

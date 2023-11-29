@@ -1,7 +1,7 @@
 {
     "tweet.help": "Get tweet image from tweet ID or link. (P.S. We didn't pay the $200 Elon tax)",
     "tweet.help.desc": "Get tweet image from tweet ID or link. ",
-    "tweet.message.error": "发生错误：无法识别推文 ID，请检查输入。",
+    "tweet.message.error": "An error occurred: Unable to recongnize tweet ID. Please check your input.",
     "tweet.message.not_found": "Tweet not found.",
     "tweet.message.tombstone": "An error occurred while fetching Tweet: "
 }

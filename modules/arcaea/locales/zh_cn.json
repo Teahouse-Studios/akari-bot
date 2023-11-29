@@ -5,6 +5,8 @@
     "arcaea.help.rank.free": "查看当前免费包游玩排行。",
     "arcaea.help.rank.paid": "查看当前付费包游玩排行。",
     "arcaea.message.download": "目前的最新版本为 ${version}。\n下载地址：${url}",
+    "arcaea.message.get_failed": "获取失败。",
     "arcaea.message.sb616": "根据 Arcaea TOS 3.2.6 规定，无法使用该命令。\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/zh/terms_of_service",
-    "arcaea.message.get_failed": "获取失败。"
+    "ptt.help": "生成一张 Arcaea 潜力值图片。",
+    "ptt.message.error.invalid": "发生错误：潜力值必须为 ≥0.00 且 ≤99.99 的数字。"
 }
