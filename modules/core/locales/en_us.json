@@ -44,7 +44,7 @@
     "core.message.admin.ban.already": "This member has been banned from using bot.",
     "core.message.admin.ban.not_yet": "This member has not been banned from using bot.",
     "core.message.admin.ban.self": "You cannot do this for yourself!",
-    "core.message.admin.invalid": "Invalid ID format. The format should be \"${target}|<User ID>\".Use \"${prefix}whoami\" to view user ID.",
+    "core.message.admin.invalid": "Invalid ID format. The format should be \"${target}|<User ID>\". Use \"${prefix}whoami\" to view user ID.",
     "core.message.admin.list": "Bot administrators manually set in the current group: ",
     "core.message.admin.list.none": "There are currently no manual bot administrators.",
     "core.message.admin.remove.success": "Success: Removed ${user} from bot administrator.",
