@@ -52,7 +52,7 @@
     "wiki.message.iw.list": "Use \"${prefix}wiki iw get <Interwiki>\" to get the corresponding link to Interwiki.",
     "wiki.message.iw.list.legacy": "The following Interwiki(s) are currently set up:\n",
     "wiki.message.iw.list.prompt": "Here are the custom Interwiki(s) set up for bot. To view the Interwiki for the start wiki, see: ${url}",
-    "wiki.message.iw.list.none": "There is currently no Interwiki. Use \"${prefix}wiki iw add\" to add it.",
+    "wiki.message.iw.none": "There is currently no Interwiki. Can be added using \"${prefix}wiki iw add\".",
     "wiki.message.iw.remove.success": "Custom Interwiki removed: ${iw}",
     "wiki.message.magic_word": "Note: The bot does not currently support magic words.",
     "wiki.message.not_found": "[${title}] not found.",
