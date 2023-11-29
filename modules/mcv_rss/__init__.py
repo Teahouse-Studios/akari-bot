@@ -62,4 +62,4 @@ mclgv_jira_rss = module('mclgv_jira_rss',
 
 @mclgv_jira_rss.hook()
 async def mclgv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
-    await fetch.post_message('mclgvv_rss', **ctx.args)
+    await fetch.post_message('mclgv_rss', **ctx.args)
