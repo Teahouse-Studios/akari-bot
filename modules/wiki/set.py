@@ -133,8 +133,6 @@ async def _(msg: Bot.MessageSession):
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=False)
     if delete:
         await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
-    else:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.failed"))
 
 
 @wiki.handle('headers reset {{wiki.help.headers.reset}}', required_admin=True)

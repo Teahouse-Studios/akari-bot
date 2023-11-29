@@ -13,11 +13,11 @@ async def mcv(msg):
     try:
         data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
         message1 = msg.locale.t(
-            "mcv.message.mcv.message1",
+            "mcv.message.mcv.launcher",
             release=data['latest']['release'],
             snapshot=data['latest']['snapshot'])
     except (ConnectionError, OSError):  # Probably...
-        message1 = msg.locale.t("mcv.message.mcv.message1.failed")
+        message1 = msg.locale.t("mcv.message.mcv.launcher.failed")
     try:
         mojira = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200))
         release = []
@@ -27,8 +27,8 @@ async def mcv(msg):
                 release.append(v['name'])
         message2 = prefix.join(release)
     except Exception:
-        message2 = msg.locale.t("mcv.message.mcv.message2.failed")
-    return msg.locale.t("mcv.message.mcv", message1=message1, message2=message2)
+        message2 = msg.locale.t("mcv.message.mcv.jira.failed")
+    return msg.locale.t("mcv.message.mcv", launcher_ver=message1, jira_ver=message2)
 
 
 async def mcbv(msg):
@@ -74,7 +74,7 @@ async def mcbv(msg):
         f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
 {ms_store_version if ms_store_version is not None else msg.locale.t('mcv.message.mcbv.get_failed')}
 """ + \
-        msg.locale.t("mcv.message.mcbv", msg2=msg2)
+        msg.locale.t("mcv.message.mcbv", jira_ver=msg2)
 
 
 async def mcdv(msg):
@@ -86,7 +86,7 @@ async def mcdv(msg):
     for v in data:
         if not v['archived']:
             release.append(v["name"])
-    return msg.locale.t('mcv.message.mcdv', mcdversion=" | ".join(release))
+    return msg.locale.t('mcv.message.mcdv', version=" | ".join(release))
 
 
 async def mcev(msg):
@@ -97,4 +97,16 @@ async def mcev(msg):
         Logger.debug(version)
     except (ConnectionError, OSError):  # Probably...
         return ErrorMessage(msg.locale.t('mcv.message.error.server'))
-    return f'{msg.locale.t("mcv.message.mcev")}{version}'
+    return msg.locale.t("mcv.message.mcev", version=version)
+
+
+async def mclgv(msg):
+    try:
+        data = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/12200/versions', 200))
+    except (ConnectionError, OSError):  # Probably...
+        return ErrorMessage(msg.locale.t('mcv.message.error.server'))
+    release = []
+    for v in data:
+        if not v['archived']:
+            release.append(v["name"])
+    return msg.locale.t('mcv.message.mclgv', version=" | ".join(release))

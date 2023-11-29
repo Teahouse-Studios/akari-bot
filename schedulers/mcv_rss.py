@@ -196,3 +196,27 @@ async def mcdv_jira_rss():
                 update_stored_list('scheduler', 'mcdv_jira_rss', verlist)
     except Exception:
         traceback.print_exc()
+
+
+@Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
+async def mclgv_jira_rss():
+    try:
+        verlist = get_stored_list('scheduler', 'mclgv_jira_rss')
+        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/12200/versions', 200, attempt=1))
+        releases = []
+        for v in file:
+            if not v['archived']:
+                releases.append(v['name'])
+            else:
+                if v['name'] not in verlist:
+                    verlist.append(v['name'])
+        for release in releases:
+            if release not in verlist:
+                Logger.info(f'huh, we find {release}.')
+
+                await JobQueue.trigger_hook_all('mclgv_jira_rss', message='mcv_rss.message.mclgv_jira_rss',
+                                                i18n=True, version=release)
+                verlist.append(release)
+                update_stored_list('scheduler', 'mclgv_jira_rss', verlist)
+    except Exception:
+        traceback.print_exc()
