@@ -49,6 +49,6 @@ mlg = module(
     developers=['OasisAkari', 'Dianliang233'])
 
 
-@me.handle('{{mcv.help.mclgv}}')
+@mlg.handle('{{mcv.help.mclgv}}')
 async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mclgv(msg))
