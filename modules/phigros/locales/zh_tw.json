@@ -5,7 +5,6 @@
     "phigros.help.unbind": "解除綁定使用者。",
     "phigros.message.bind.success": "綁定成功：${usernane}",
     "phigros.message.bind.warning": "警告：您正在群組中綁定使用者，這有可能會使您的雲端存檔資料被他人竄改。請盡可能在私訊中綁定使用者以避免這種情況。\n您可以透過重新登入來重設 SessionToken。此次指令產生的訊息將在 15 秒後回收。",
-    "phigros.message.bind.revoke_failed": "自动撤回失败，请手动撤回消息。",
     "phigros.message.unbind.success": "解除綁定成功。",
     "phigros.message.user_unbound": "未綁定使用者，請使用「${prefix}phigros bind」綁定一個使用者。",
     "phigros.message.b19.get_failed": "取得失敗，請嘗試重新綁定 SessionToken 或回報開發人員：\n${err}"
