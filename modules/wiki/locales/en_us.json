@@ -1,6 +1,6 @@
 {
     "tos.reason.too_many_redirects": "Causes the bot to redirect the page too many times.",
-    "tos.reason.wiki_abuse": "More than 15 pages are queried at one time.",
+    "tos.reason.wiki_abuse": "Queried more than 15 pages at one time.",
     "wiki.help": "Query a wiki page.",
     "wiki.help.ab": "Get recent abuse logs for the default wiki.",
     "wiki.help.ab.legacy": "Get recent abuse logs for the default wiki. (Legacy)",
@@ -19,8 +19,8 @@
     "wiki.help.option.l": "Find the corresponding language version of this page, and return the current language if no result.",
     "wiki.help.prefix.reset": "Reset custom wiki prefix.",
     "wiki.help.prefix.set": "Set custom wiki prefix.",
-    "wiki.help.rc": "Get a list of recent changes to the default wiki.",
-    "wiki.help.rc.legacy": "Get a list of recent changes to the default wiki. (Legacy)",
+    "wiki.help.rc": "Get recent changes for the default wiki.",
+    "wiki.help.rc.legacy": "Get recent changes for the default wiki. (Legacy)",
     "wiki.help.redlink": "Toggle whether to return the edit link when the page does not exist.",
     "wiki.help.search": "Search a wiki page.",
     "wiki.help.set": "Set up start wiki.",
