@@ -52,7 +52,6 @@
     "wiki.message.iw.list": "使用“${prefix}wiki iw get <Interwiki>”可以获取 Interwiki 对应的链接。",
     "wiki.message.iw.list.legacy": "当前设置了以下 Interwiki：",
     "wiki.message.iw.list.prompt": "此处展示的是为机器人设置的自定义 Interwiki，如需查看起始 Wiki 的 Interwiki，请见：${url}",
-    "wiki.message.iw.none": "当前没有设置任何 Interwiki，可使用“${prefix}wiki iw add”添加。",
     "wiki.message.iw.remove.success": "已删除自定义 Interwiki：${iw}",
     "wiki.message.magic_word": "提示：机器人暂不支持魔术字。",
     "wiki.message.not_found": "未找到 [${title}]。",
@@ -108,5 +107,6 @@
     "wiki.message.wiki_audit.remove.failed.other": "失败，此 Wiki 不存在于白名单中，此 Wiki 的白名单可能来自其他同一域名的 Wiki：",
     "wiki.message.wiki_audit.remove.success": "成功从${list_name}删除：",
     "wiki.message.wiki_audit.untrust": "注意：此 Wiki 当前没有加入机器人的白名单列表中，查询此 Wiki 时将会对返回内容进行限制。\n如需取消限制，请在此处申请白名单：\n",
-    "wiki.message.wiki_inline.flies": "此页面包括以下文件：${file}"
+    "wiki.message.wiki_inline.flies": "此页面包括以下文件：${file}",
+    "wiki.message.iw.list.none": "当前没有设置任何 Interwiki，可使用“${prefix}wiki iw add”添加。"
 }
