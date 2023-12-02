@@ -44,7 +44,7 @@
     "core.message.admin.ban.already": "此成員已被禁止使用機器人。",
     "core.message.admin.ban.not_yet": "此成員沒有被禁止使用機器人。",
     "core.message.admin.ban.self": "你不可以對自己進行此操作！",
-    "core.message.admin.invalid": "ID 格式錯誤，格式應為「${target}|<使用者 ID>」。請使用「${prefix}whoami」指令檢視使用者 ID。",
+    "core.message.admin.invalid": "ID 格式錯誤，格式應為「${target}|<使用者 ID>」，請使用「${prefix}whoami」指令檢視使用者 ID。",
     "core.message.admin.list": "目前在群組內手動設定的機器人管理員：\n",
     "core.message.admin.list.none": "目前沒有手動設定的機器人管理員。",
     "core.message.admin.remove.success": "成功：已將 ${user} 移出機器人管理員。",
