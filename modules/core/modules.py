@@ -36,7 +36,7 @@ m = module('module',
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if 'legacy' in msg.parsed_msg:
+        if msg.parsed_msg.get('legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -55,7 +55,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):
         legacy = False
-        if 'legacy' in msg.parsed_msg:
+        if msg.parsed_msg.get('legacy', False):
             legacy = True
         await modules_help(msg, legacy)
     await config_modules(msg)
@@ -281,7 +281,7 @@ async def config_modules(msg: Bot.MessageSession):
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
                                                       msgs='\n'.join(recommend_modules_list) + '\n\n' +
-                                                           '\n'.join(recommend_modules_help_doc_list)), append_instruction=False)
+                                                           '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):
                 msglist = []
@@ -369,13 +369,13 @@ async def bot_help(msg: Bot.MessageSession):
 
 
 @hlp.command(['{{core.help.module.help}}',
-              'legacy {{core.help.module.help.legacy}}')
+              'legacy {{core.help.module.help.legacy}}'])
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     target_enabled_list = msg.enabled_modules
     legacy_help = True
-    if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+    if not msg.parsed_msg and msg.Feature.image:
         try:
             tables = []
             essential = []

@@ -1,6 +1,6 @@
 from core.builtins import Bot
 from core.component import module
-from .mcv import mcv, mcbv, mcdv, mcev
+from .mcv import mcv, mcbv, mcdv, mcev, mclgv
 
 m = module(
     bind_prefix='mcv',
@@ -42,3 +42,13 @@ me = module(
 @me.handle('{{mcv.help.mcev}}')
 async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mcev(msg))
+
+
+mlg = module(
+    bind_prefix='mclgv',
+    developers=['OasisAkari', 'Dianliang233'])
+
+
+@mlg.handle('{{mcv.help.mclgv}}')
+async def mclgv_loader(msg: Bot.MessageSession):
+    await msg.finish(await mclgv(msg))

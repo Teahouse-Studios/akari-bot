@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession):
         payload = {'username': username}
 
     if plate == '真将' or (plate[1] == '者' and plate[0] != '霸'):
-        await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
+        return
 
     output, get_img = await get_plate_process(msg, payload, plate)
 
@@ -226,9 +226,9 @@ async def _(msg: Bot.MessageSession):
     if level in level_list:
         level_num = int(level.split('+')[0])
         if level_num < 8:
-            await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
+            return
     else:
-        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
+        return
 
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))

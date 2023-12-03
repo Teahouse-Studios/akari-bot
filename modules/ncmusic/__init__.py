@@ -21,7 +21,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
     songs = result['result']['songs'][:10]
 
-    if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+    if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
 
         send_msg = [Plain(msg.locale.t('ncmusic.message.search.result') + '\n')]
         data = [[

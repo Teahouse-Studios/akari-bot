@@ -74,7 +74,7 @@ async def _(msg: Bot.MessageSession):
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
     if query != {}:
-        if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
             img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:
@@ -87,11 +87,11 @@ async def _(msg: Bot.MessageSession):
         else:
             result = msg.locale.t("wiki.message.iw.list.legacy") + '\n' + \
                 '\n'.join([f'{x}: {query[x]}' for x in query])
-            if base_interwiki_link is not None:
-                result += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
-            await msg.finish(result)
     else:
-        await msg.finish(msg.locale.t("wiki.message.iw.none", prefix=msg.prefixes[0]))
+        result = msg.locale.t("wiki.message.iw.list.none", prefix=msg.prefixes[0])
+    if base_interwiki_link is not None:
+        result += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
+    await msg.finish(result)
 
 
 @wiki.handle('iw get <Interwiki> {{wiki.help.iw.get}}')
@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession):
         else:
             await msg.finish(msg.locale.t("wiki.message.iw.get.not_found", iw=msg.parsed_msg["<Interwiki>"]))
     else:
-        await msg.finish(msg.locale.t("wiki.message.iw.none", prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t("wiki.message.iw.list.none", prefix=msg.prefixes[0]))
 
 
 @wiki.handle('headers show {{wiki.help.headers.show}}')
@@ -133,8 +133,6 @@ async def _(msg: Bot.MessageSession):
         " ".join(msg.trigger_msg.split(" ")[3:]), let_it=False)
     if delete:
         await msg.finish(msg.locale.t("wiki.message.headers.add.success", headers=json.dumps(target.get_headers())))
-    else:
-        await msg.finish(msg.locale.t("wiki.message.headers.add.failed"))
 
 
 @wiki.handle('headers reset {{wiki.help.headers.reset}}', required_admin=True)

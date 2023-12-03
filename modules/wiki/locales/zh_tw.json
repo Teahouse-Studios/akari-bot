@@ -52,7 +52,7 @@
     "wiki.message.iw.list": "使用 「${prefix}wiki iw get <Interwiki>」可以取得 Interwiki 對應的連結。",
     "wiki.message.iw.list.legacy": "目前設定了以下 Interwiki：",
     "wiki.message.iw.list.prompt": "此處展示的是機器人設定的自訂 Interwiki，如需查看起始 Wiki 的 Interwiki，請見：${url}",
-    "wiki.message.iw.none": "目前沒有設定任何 Interwiki，可使用 「${prefix}wiki iw add」新增。",
+    "wiki.message.iw.list.none": "目前沒有設定任何 Interwiki，可使用 「${prefix}wiki iw add」新增。",
     "wiki.message.iw.remove.success": "已刪除自訂 Interwiki：${iw}",
     "wiki.message.magic_word": "提示：機器人暫不支援魔術字。",
     "wiki.message.not_found": "未找到 [${title}]。",

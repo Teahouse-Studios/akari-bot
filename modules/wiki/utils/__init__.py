@@ -13,14 +13,14 @@ from .rc_qq import rc_qq
 rc_ = module('rc', developers=['OasisAkari'])
 
 
-@rc_.handle('{wiki.help.rc}')
-@rc_.handle('legacy {wiki.help.rc.legacy}')
+@rc_.handle(['{{wiki.help.rc}}', 
+             'legacy {{wiki.help.rc.legacy}}'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.target_from == 'QQ|Group' and 'legacy' not in msg.parsed_msg:
+    if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
         try:
             nodelist = await rc_qq(start_wiki)
             await msg.fake_forward_msg(nodelist)
@@ -36,14 +36,14 @@ async def rc_loader(msg: Bot.MessageSession):
 a = module('ab', developers=['OasisAkari'])
 
 
-@a.handle('{wiki.help.ab}')
-@rc_.handle('legacy {wiki.help.ab.legacy}')
+@a.handle(['{{wiki.help.ab}}', 
+           'legacy {{wiki.help.ab.legacy}}'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
-    if msg.Feature.forward and msg.target.target_from == 'QQ|Group' and 'legacy' not in msg.parsed_msg:
+    if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
         try:
             nodelist = await ab_qq(start_wiki)
             await msg.fake_forward_msg(nodelist)

@@ -1,6 +1,5 @@
 ﻿from core.builtins import command_prefix
 from core.utils.image import msgchain2image
-
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_assets
 from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
@@ -42,8 +41,9 @@ def get_diff(diff):
     return level
 
 
-mai = module('maimai', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], alias='mai',
-             desc='{maimai.help.desc}')
+mai = module('maimai', 
+             recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], 
+             alias='mai', desc='{maimai.help.desc}')
 
 
 @mai.handle('base <constant> [<constant_max>] {{maimai.help.base}}')

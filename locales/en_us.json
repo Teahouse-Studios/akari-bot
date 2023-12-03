@@ -20,7 +20,7 @@
     "error.message.report": "The following error occurred while executing \"${module}\": ",
     "error.message.timeout": "An error occurred: Message sending timed out. Please retry the command later or wait for the result to be returned.",
     "error.module.helpdoc.invalid": "\"${module}\" module provided invalid help information. Please contact the developers to solve this issue.",
-    "error.module.unbound": "\"${module}\" module is unbound with any commands and doesn't have the description. Pease contact the developers to solve this issue.",
+    "error.module.unbound": "\"${module}\" module is unbound with any commands and doesn't have the description. Please contact the developers to solve this issue.",
     "error.module.unloaded": "\"${module}\" module failed to load. Please contact the developers to resolve this issue.",
     "error.prompt": "An error occurred: ${error_msg}\nReport this issue: ",
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",

@@ -14,7 +14,7 @@ if Config('enable_urlmanager'):
 
     @aud.handle(['trust <apiLink>', 'block <apiLink>'])
     async def _(msg: Bot.MessageSession):
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         api = msg.parsed_msg['<apiLink>']
         check = await WikiLib(api).check_wiki_available()
         if check.available:
@@ -49,10 +49,6 @@ if Config('enable_urlmanager'):
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed', list_name=list_name) + api)
         else:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + api)
-    else:
-        result = msg.locale.t('wiki.message.error.query') + \
-            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
-        await msg.finish(result)
 
     @aud.handle('query <apiLink>')
     async def _(msg: Bot.MessageSession):
@@ -83,7 +79,7 @@ if Config('enable_urlmanager'):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()
         legacy = True
-        if 'legacy' not in msg.parsed_msg and msg.Feature.image:
+        if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             send_msgs = []
             allow_columns = [[x[0], x[1]] for x in allow_list]
             if allow_columns:
