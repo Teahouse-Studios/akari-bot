@@ -390,7 +390,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
                 diff += char
 
         if level == "":
-            if diff == "#":
+            if diff == "*":
                 music_data = (await total_list.get()).filter(type=dx_type)
             else:
                 raise ValueError
