@@ -13,7 +13,12 @@ web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
 
-t = module('tweet', developers=['Dianliang233'], desc='{tweet.help.desc}', alias=['x'])
+t = module('tweet', 
+           developers=['Dianliang233'], 
+           desc='{tweet.help.desc}', 
+           exclude_from=['QQ', 'QQ|Group', 'Kook'],
+           alias=['x']
+          )
 
 
 @t.handle('<tweet> {{tweet.help}}')
@@ -30,7 +35,7 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
 
     res = await get_url(f'https://react-tweet.vercel.app/api/tweet/{tweet_id}')

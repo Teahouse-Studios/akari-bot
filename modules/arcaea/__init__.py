@@ -34,7 +34,7 @@ async def _(msg: Bot.MessageSession, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
     resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'), 200,
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
     resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/song/showcase/'),
@@ -72,7 +72,7 @@ async def _(msg: Bot.MessageSession, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
     if msg.parsed_msg.get('free', False):
         resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +

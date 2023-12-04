@@ -107,15 +107,16 @@ async def get_record(msg, payload):
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        if str(e).startswith('403'):
+        elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
-
+        else:
+            await msg.finish(ErrorMessage(str(e)))
     return data
 
 
@@ -126,13 +127,14 @@ async def get_plate(msg, payload):
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        if str(e).startswith('403'):
+        elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
-
+        else:
+            await msg.finish(ErrorMessage(str(e)))
     return data
