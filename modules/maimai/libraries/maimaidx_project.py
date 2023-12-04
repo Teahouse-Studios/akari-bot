@@ -370,7 +370,7 @@ async def get_plate_process(msg, payload, plate):
         if music.ds[song[1]] > 13.6:  # 将难度为13+以上的谱面加入列表
             song_remain_difficult.append([music.id, music.title, diffs[song[1]],
                                           music.ds[song[1]], song[1], music.type])
-        song_remain_difficult = sorted(song_remain_difficult, key=lambda i: int(i[0]))  # 根据ID排序结果
+    song_remain_difficult = sorted(song_remain_difficult, key=lambda i: int(i[0]))  # 根据ID排序结果
 
     prompt = msg.locale.t('maimai.message.plate', plate=plate,
                           song_remain_basic=len(song_remain_basic),
