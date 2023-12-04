@@ -4,6 +4,8 @@ from core.utils.http import get_url
 from .maimaidx_api_data import get_record, get_plate
 from .maimaidx_music import TotalList
 
+JINGLEBELL_SONG_ID = 70
+
 total_list = TotalList()
 
 plate_to_version = {
@@ -371,13 +373,16 @@ async def get_plate_process(msg, payload, plate):
             song_remain_difficult.append([music.id, music.title, diffs[song[1]],
                                           music.ds[song[1]], song[1], music.type])
 
-    if version == '真':  # 真代歌曲不包含id70（​ジングルベル）
-        song_remain_basic = [music for music in song_remain_basic if music[0] != 70]
-        song_remain_advanced = [music for music in song_remain_advanced if music[0] != 70]
-        song_remain_expert = [music for music in song_remain_expert if music[0] != 70]
-        song_remain_master = [music for music in song_remain_master if music[0] != 70]
-        song_remain_remaster = [music for music in song_remain_remaster if music[0] != 70]
-        song_remain_difficult = [music for music in song_remain_difficult if music[0] != 70]
+    if version == '真':  # 真代歌曲不包含“​ジングルベル”
+        song_remain_basic = [music for music in song_remain_basic if music[0] != JINGLEBELL_SONG_ID]
+        song_remain_advanced = [music for music in song_remain_advanced if music[0] != JINGLEBELL_SONG_ID]
+        song_remain_expert = [music for music in song_remain_expert if music[0] != JINGLEBELL_SONG_ID]
+        song_remain_master = [music for music in song_remain_master if music[0] != JINGLEBELL_SONG_ID]
+        song_remain_remaster = [music for music in song_remain_remaster if music[0] != JINGLEBELL_SONG_ID]
+        song_remain_difficult = [music for music in song_remain_difficult if int(music[0]) != JINGLEBELL_SONG_ID]
+
+    song_remain: list[list] = song_remain_basic + song_remain_advanced + \
+    song_remain_expert + song_remain_master + song_remain_remaster
 
     prompt = msg.locale.t('maimai.message.plate', plate=plate,
                           song_remain_basic=len(song_remain_basic),
@@ -385,15 +390,13 @@ async def get_plate_process(msg, payload, plate):
                           song_remain_expert=len(song_remain_expert),
                           song_remain_master=len(song_remain_master))
 
-    song_remain: list[list] = song_remain_basic + song_remain_advanced + \
-        song_remain_expert + song_remain_master + song_remain_remaster
-    song_record = [[s['id'], s['level_index']] for s in verlist]
-
     if version in ['舞', '霸']:  # 霸者和舞牌需要Re:MASTER难度
         prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
 
     prompt += msg.locale.t('message.end')
     await msg.send_message(prompt.strip())
+
+    song_record = [[s['id'], s['level_index']] for s in verlist]
 
     output = ''
     if len(song_remain_difficult) > 0:
