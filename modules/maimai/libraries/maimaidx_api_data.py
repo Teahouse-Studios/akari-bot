@@ -116,7 +116,7 @@ async def get_record(msg, payload):
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            raise
+            await msg.finish(ErrorMessage(str(e)))
     return data
 
 
@@ -136,5 +136,5 @@ async def get_plate(msg, payload):
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            raise
+            await msg.finish(ErrorMessage(str(e)))
     return data

@@ -405,7 +405,7 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        if str(e).startswith('403'):
+        elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             await msg.finish(ErrorMessage(str(e)))
