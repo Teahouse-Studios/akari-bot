@@ -370,7 +370,6 @@ async def get_plate_process(msg, payload, plate):
         if music.ds[song[1]] > 13.6:  # 将难度为13+以上的谱面加入列表
             song_remain_difficult.append([music.id, music.title, diffs[song[1]],
                                           music.ds[song[1]], song[1], music.type])
-    song_remain_difficult = sorted(song_remain_difficult, key=lambda i: int(i[0]))  # 根据ID排序结果
 
     prompt = msg.locale.t('maimai.message.plate', plate=plate,
                           song_remain_basic=len(song_remain_basic),
@@ -392,9 +391,9 @@ async def get_plate_process(msg, payload, plate):
     if len(song_remain_difficult) > 0:
         if len(song_remain_difficult) < 50:  # 若剩余歌曲小于50个则显示
             output += msg.locale.t('maimai.message.plate.difficult.last') + '\n'
-            for i, s in enumerate(sorted(song_remain_difficult, key=lambda i: i[3])):
+            for i, s in enumerate(sorted(song_remain_difficult, key=lambda i: i[3])):  # 根据定数排序结果
                 self_record = ''
-                if [int(s[0]), s[-2]] in song_record:
+                if [int(s[0]), s[-2]] in song_record:   # 显示剩余13+以上歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['将', '者']:
                         self_record = str(verlist[record_index]['achievements']) + '%'
@@ -416,10 +415,10 @@ async def get_plate_process(msg, payload, plate):
             song_remain[i].append(ds)
         if len(song_remain) < 50:  # 若剩余歌曲小于50个则显示
             output += msg.locale.t('maimai.message.plate.last') + '\n'
-            for i, s in enumerate(sorted(song_remain, key=lambda i: i[2])):
+            for i, s in enumerate(sorted(song_remain, key=lambda i: i[2])):  # 根据难度排序结果
                 m = (await total_list.get()).by_id(str(s[0]))
                 self_record = ''
-                if [int(s[0]), s[-2]] in song_record:
+                if [int(s[0]), s[-2]] in song_record:   # 显示剩余歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['将', '者']:
                         self_record = str(verlist[record_index]['achievements']) + '%'
