@@ -371,6 +371,14 @@ async def get_plate_process(msg, payload, plate):
             song_remain_difficult.append([music.id, music.title, diffs[song[1]],
                                           music.ds[song[1]], song[1], music.type])
 
+    if version == '真':  # 真代歌曲不包含id70（​ジングルベル）
+        song_remain_basic = [music for music in song_remain_basic if music[0] != 70]
+        song_remain_advanced = [music for music in song_remain_advanced if music[0] != 70]
+        song_remain_expert = [music for music in song_remain_expert if music[0] != 70]
+        song_remain_master = [music for music in song_remain_master if music[0] != 70]
+        song_remain_remaster = [music for music in song_remain_remaster if music[0] != 70]
+        song_remain_difficult = [music for music insong_remain_difficult if music[0] != 70]
+
     prompt = msg.locale.t('maimai.message.plate', plate=plate,
                           song_remain_basic=len(song_remain_basic),
                           song_remain_advanced=len(song_remain_advanced),
