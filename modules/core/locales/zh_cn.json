@@ -44,7 +44,7 @@
     "core.message.admin.ban.already": "此成员已被设置禁止使用机器人。",
     "core.message.admin.ban.not_yet": "此成员没有被设置禁止使用机器人。",
     "core.message.admin.ban.self": "你不可以对自己进行此操作！",
-    "core.message.admin.invalid": "ID 格式错误，格式应为“${target}|<用户 ID>”。请使用“${prefix}whoami”查看用户 ID。",
+    "core.message.admin.invalid": "ID 格式错误，格式应为“${target}|<用户 ID>”，请使用“${prefix}whoami”查看用户 ID。",
     "core.message.admin.list": "当前在群内手动设置的机器人管理员：\n",
     "core.message.admin.list.none": "当前没有手动设置的机器人管理员。",
     "core.message.admin.remove.success": "成功：已将 ${user} 移出机器人管理员。",
