@@ -7,7 +7,7 @@ from .bugtracker import bugtracker_get, make_screenshot
 bug = module('bugtracker', alias='bug', developers=['OasisAkari'])
 
 
-@bug.handle('<MojiraID> {{bugtracker.help}}')
+@bug.command('<MojiraID> {{bugtracker.help}}')
 async def bugtracker(msg: Bot.MessageSession):
     mojira_id = msg.parsed_msg['<MojiraID>']
     if mojira_id:

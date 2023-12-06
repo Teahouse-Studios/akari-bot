@@ -455,35 +455,3 @@ async def get_plate_process(msg, payload, plate):
         output += msg.locale.t('maimai.message.plate.completed', plate=plate)
 
     return output, get_img
-
-
-def get_global_data(music, level_index):
-    stats = music.stats[level_index]
-    
-    fc_data_pair = [(c.upper() if c else 'Not FC', count) for c, count in zip([''] + comboRank, stats.fc_dist)]
-    acc_data_pair = [(s.upper(), count) for s, count in zip(scoreRank, stats.dist)]
-
-    fig, axs = plt.subplots(1, 2, figsize=(10, 8))
-
-    # Combo Plot
-    labels, counts = zip(*fc_data_pair)
-    colors = plt.cm.viridis(np.linspace(0, 1, len(labels)))
-    axs[0].pie(counts, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    axs[0].set_title('Combo')
-
-    # Sync Plot
-    labels, counts = zip(*acc_data_pair)
-    colors = plt.cm.viridis(np.linspace(0, 1, len(labels)))
-    axs[1].pie(counts, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    axs[1].set_title('Sync')
-
-    plt.suptitle(f'{music.id} {music.title} {diffs[level_index]}', color='#2c343c')
-    plt.legend(labels, loc='upper left')
-    plt.show()
-
-    # Save the plot to an image file
-    data_path = random_cache_path()
-    path = f'{data_path}.png'
-    fig.savefig(path)
-    
-    return path

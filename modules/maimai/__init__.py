@@ -46,7 +46,7 @@ mai = module('maimai',
              alias='mai', desc='{maimai.help.desc}')
 
 
-@mai.handle('base <constant> [<constant_max>] {{maimai.help.base}}')
+@mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     if constant_max is not None:
         if constant > constant_max:
@@ -87,7 +87,7 @@ async def base_level_q(ds1, ds2=None):
     return result_set
 
 
-@mai.handle('level <level> {{maimai.help.level}}')
+@mai.command('level <level> {{maimai.help.level}}')
 async def _(msg: Bot.MessageSession, level: str):
     result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
@@ -117,7 +117,7 @@ async def diff_level_q(level):
     return result_set
 
 
-@mai.handle('search <keyword> {{maimai.help.search}}')
+@mai.command('search <keyword> {{maimai.help.search}}')
 async def _(msg: Bot.MessageSession, keyword: str):
     name = keyword.strip()
     res = (await total_list.get()).filter(title_search=name)
@@ -136,7 +136,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish([BImage(img)])
 
 
-@mai.handle('alias <sid> {{maimai.help.alias}}')
+@mai.command('alias <sid> {{maimai.help.alias}}')
 async def _(msg: Bot.MessageSession, sid: str):
     if not sid.isdigit():
         if sid[:2].lower() == "id":
@@ -156,7 +156,7 @@ async def _(msg: Bot.MessageSession, sid: str):
         await msg.finish([Plain(result.strip())])
 
 
-@mai.handle('b50 [<username>] {{maimai.help.b50}}')
+@mai.command('b50 [<username>] {{maimai.help.b50}}')
 async def _(msg: Bot.MessageSession, username: str = None):
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
@@ -168,8 +168,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await msg.finish([BImage(img)])
 
 
-@mai.handle('id <id> [<diff>] {{maimai.help.id}}')
-@mai.handle('song <id_or_alias> [<diff>] {{maimai.help.song}}')
+@mai.command('id <id> [<diff>] {{maimai.help.id}}')
+@mai.command('song <id_or_alias> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
@@ -234,49 +234,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                                 level='/'.join((str(ds) for ds in music['ds']))))])
 
 
-@mai.handle('global <id_or_alias> <diff> {{maimai.help.global}}')
-async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
-    if id_or_alias[:2].lower() == "id":
-        sid = id_or_alias[2:]
-    else:
-        sid_list = await search_by_alias(msg, id_or_alias)
-        if len(sid_list) == 0:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-        elif len(sid_list) > 1:
-            res = msg.locale.t("maimai.message.song.prompt") + "\n"
-            for sid in sorted(sid_list, key=int):
-                s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
-            await msg.finish(res.strip())
-        else:
-            sid = str(sid_list[0])
-
-    music = (await total_list.get()).by_id(sid)
-    diff_index = get_diff(diff)
-    if not music:
-        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    elif not diff_index or (len(music['ds']) == 4 and diff_index == 4):
-        await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
-    elif not music.stats:
-        await msg.finish(msg.locale.t("maimai.message.global.music_not_found"))
-    elif not music.stats[level_index]:
-        await msg.finish(msg.locale.t("maimai.message.global.level_not_found"))
-    else:
-        stats = music.stats[level_index]
-        img_path = await music_global_data(music, level_index)
-
-        fit_diff = f"{stats.fit_diff:.2f}"
-        avg_score = f"{stats.avg:.2f}%"
-        avg_dx = f"{stats.avg_dx:.1f}"
-        avg_std_dev = f"{stats.std_dev:.2f}"
-        await msg.finish([BImage(img_path), 
-                          Plain(msg.locale.t("maimai.message.global",
-                                             artist=round(stats.cnt), fit_diff=fit_diff,
-                                             avg_score=avg_score, avg_dx=avg_dx,
-                                             avg_std_dev=avg_std_dev))])
-
-
-@mai.handle('info <id_or_alias> [<username>] {{maimai.help.info}}')
+@mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if id_or_alias[:2].lower() == "id":
         sid = id_or_alias[2:]
@@ -312,7 +270,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
          BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
 
 
-@mai.handle('plate <plate> [<username>] {{maimai.help.plate}}')
+@mai.command('plate <plate> [<username>] {{maimai.help.plate}}')
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
@@ -333,7 +291,7 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
         await msg.finish(output.strip())
 
 
-@mai.handle('process <level> <goal> [<username>] {{maimai.help.process}}')
+@mai.command('process <level> <goal> [<username>] {{maimai.help.process}}')
 async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
     goal_list = [
         "A",
@@ -380,7 +338,7 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
         await msg.finish(output.strip())
 
 
-@mai.handle('rank [<username>] {{maimai.help.rank}}')
+@mai.command('rank [<username>] {{maimai.help.rank}}')
 async def _(msg: Bot.MessageSession, username: str = None):
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
@@ -392,7 +350,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await get_rank(msg, payload)
 
 
-@mai.handle('scorelist <level> [<username>] {{maimai.help.scorelist}}')
+@mai.command('scorelist <level> [<username>] {{maimai.help.scorelist}}')
 async def _(msg: Bot.MessageSession, level: str, username: str = None):
     if username is None and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
@@ -410,7 +368,7 @@ async def _(msg: Bot.MessageSession, level: str, username: str = None):
         await msg.finish([Plain(res.strip())])
 
 
-@mai.handle('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
+@mai.command('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession, dx_type: str = None):
     filter = msg.parsed_msg['<diff+level>']
     level = ''
@@ -450,12 +408,12 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
-@mai.handle('random {{maimai.help.random}}')
+@mai.command('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(song_txt((await total_list.get()).random()))
 
 
-@mai.handle('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
+@mai.command('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
 async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
     try:
         if not sid.isdigit():

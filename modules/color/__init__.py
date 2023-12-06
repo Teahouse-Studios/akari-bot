@@ -24,8 +24,8 @@ css_names_to_hex = {**webcolors.CSS3_NAMES_TO_HEX, 'rebeccapurple': '#663399'}
 css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 
-@c.handle('[<color>] {{color.help}}')
-@c.handle()
+@c.command('[<color>] {{color.help}}')
+@c.command()
 async def _(msg: Bot.MessageSession, color: str = None):
     if color is None:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))

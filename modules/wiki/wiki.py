@@ -24,7 +24,7 @@ wiki = module('wiki',
               developers=['OasisAkari'])
 
 
-@wiki.handle('<PageName> [-l <lang>] {{wiki.help}}',
+@wiki.command('<PageName> [-l <lang>] {{wiki.help}}',
              options_desc={'-l': '{wiki.help.option.l}'})
 async def _(msg: Bot.MessageSession):
     get_lang = msg.parsed_msg.get('-l', False)
@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession):
     await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
 
 
-@wiki.handle('id <PageID> {{wiki.help.id}}')
+@wiki.command('id <PageID> {{wiki.help.id}}')
 async def _(msg: Bot.MessageSession):
     page_id: str = msg.parsed_msg['<PageID>']
     iw = None

@@ -11,7 +11,7 @@ mcbbs_news = module(
 )
 
 
-@mcbbs_news.handle('{{mcbbs_news.help}}')
+@mcbbs_news.command('{{mcbbs_news.help}}')
 async def main(msg: Bot.MessageSession):
     res = await news(msg)
     Logger.debug('res' + str(res))
