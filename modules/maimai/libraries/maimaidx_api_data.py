@@ -14,10 +14,10 @@ assets_path = os.path.abspath('./assets/maimai')
 cover_dir = f"{assets_path}/static/mai/cover"
 
 
-async def update_assets():
+async def update_alias():
     try:
-        alias_url = "https://download.fanyu.site/maimai/alias.json"
-        input_data = await get_url(alias_url, 200, fmt='json')
+        url = "https://download.fanyu.site/maimai/alias.json"
+        input_data = await get_url(url, 200, fmt='json')
 
         output_data = {}
         for key, values in input_data.items():
@@ -33,32 +33,33 @@ async def update_assets():
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(output_data, file)
+
+        return True
     except:
         return False
-        
-    Logger.info('Maimai alias download completed.')
-    
+
+
+
+async def update_covers():
     try:
-            static_url = f"https://www.diving-fish.com/maibot/static.zip"
-            download_file = await download_to_cache(static_url, timeout=60)
+        url = f"https://www.diving-fish.com/maibot/static.zip"
+        download_file = await download_to_cache(url, timeout=60)
 
-            ca = random_cache_path()
-            shutil.unpack_archive(download_file, ca)
+        Logger.info('Maimai covers download completed.')
+        ca = random_cache_path()
+        shutil.unpack_archive(download_file, ca)
         
-            if os.path.exists(cover_dir):
-                shutil.rmtree(cover_dir)
+        if os.path.exists(cover_dir):
+            shutil.rmtree(cover_dir)
         
-            static_cover_dir = os.path.join(ca, 'mai/cover')
-            if os.path.exists(static_cover_dir):
-                shutil.move(static_cover_dir, cover_dir)
+        static_cover_dir = os.path.join(ca, 'mai/cover')
+        if os.path.exists(static_cover_dir):
+            shutil.move(static_cover_dir, cover_dir)
 
-            os.remove(download_file)
+        os.remove(download_file)
+        return True
     except:
-            return False
-                
-    Logger.info('Maimai covers download completed.')
-    
-    return True
+        return False
 
 
 async def get_alias(msg, input_):

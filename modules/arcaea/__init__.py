@@ -19,6 +19,7 @@ web_render_local = CFG.get_url('web_render_local')
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
 
+
 class WithErrCode(Exception):
     pass
 
@@ -168,3 +169,15 @@ async def pttimg(msg: Bot.MessageSession):
     savepath = random_cache_path() + '.png'
     pttimgr.save(savepath)
     await msg.finish([Img(path=savepath)])
+
+
+@arc.handle('calc <score> <rating>')
+async def _(msg: Bot.MessageSession, score: int, rating: float):
+    ptt = 0
+    if score >= 10000000:
+        ptt += 2
+    elif score >= 9800000:
+        ptt += 1 + (score - 9800000) / 200000
+    else:
+        ptt += (score - 9500000) / 300000
+    await msg.finish([Plain(rating + ptt)])
