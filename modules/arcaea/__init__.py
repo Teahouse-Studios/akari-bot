@@ -93,11 +93,22 @@ async def _(msg: Bot.MessageSession, use_local=True):
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
-p = module('ptt',
-           developers=['OasisAkari'])
+@arc.command('calc <score> <rating>')
+async def _(msg: Bot.MessageSession, score: int, rating: float):
+    ptt = 0
+    if score >= 10000000:
+        ptt += 2
+    elif score >= 9800000:
+        ptt += 1 + (score - 9800000) / 200000
+    else:
+        ptt += (score - 9500000) / 300000
+    await msg.finish([Plain(rating + ptt)])
 
 
-@p.handle('<potential> {{ptt.help}}')
+p = module('ptt', developers=['OasisAkari'])
+
+
+@p.command('<potential> {{ptt.help}}')
 async def pttimg(msg: Bot.MessageSession):
     ptt = msg.parsed_msg['<potential>']
     # ptt
@@ -169,15 +180,3 @@ async def pttimg(msg: Bot.MessageSession):
     savepath = random_cache_path() + '.png'
     pttimgr.save(savepath)
     await msg.finish([Img(path=savepath)])
-
-
-@arc.handle('calc <score> <rating>')
-async def _(msg: Bot.MessageSession, score: int, rating: float):
-    ptt = 0
-    if score >= 10000000:
-        ptt += 2
-    elif score >= 9800000:
-        ptt += 1 + (score - 9800000) / 200000
-    else:
-        ptt += (score - 9500000) / 300000
-    await msg.finish([Plain(rating + ptt)])

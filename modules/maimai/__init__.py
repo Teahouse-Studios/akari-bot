@@ -329,13 +329,13 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
-    output, songs = await get_level_process(msg, payload, level, goal)
+    output, get_img = await get_level_process(msg, payload, level, goal)
 
-    if songs <= 10 or songs >= 50:
-        await msg.finish(output.strip())
-    else:
+    if get_img:
         img = await msgchain2image([Plain(output)])
         await msg.finish([BImage(img)])
+    else:
+        await msg.finish(output.strip())
 
 
 @mai.handle('rank [<username>] {{maimai.help.rank}}')
@@ -359,15 +359,13 @@ async def _(msg: Bot.MessageSession, level: str, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    res, output = await get_score_list(msg, payload, level)
+    res, get_img = await get_score_list(msg, payload, level)
 
-    if output == 0:
-        await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
-    if output <= 10:
-        await msg.finish([Plain(res.strip())])
-    else:
+    if get_img:
         img = await msgchain2image([Plain(res)])
         await msg.finish([BImage(img)])
+    else:
+        await msg.finish([Plain(res.strip())])
 
 
 @mai.handle('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')

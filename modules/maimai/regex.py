@@ -233,10 +233,10 @@ async def _(msg: Bot.MessageSession):
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
-    output, songs = await get_level_process(msg, payload, level, goal)
+    output, get_img = await get_level_process(msg, payload, level, goal)
 
-    if songs <= 10 or songs >= 50:
-        await msg.finish(output.strip())
-    else:
+    if get_img:
         img = await msgchain2image([Plain(output)])
         await msg.finish([BImage(img)])
+    else:
+        await msg.finish(output.strip())
