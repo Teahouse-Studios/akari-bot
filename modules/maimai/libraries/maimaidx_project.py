@@ -1,11 +1,7 @@
 from datetime import datetime
 
-import pyecharts.options as opts
-from PIL import Image
-from pyecharts.charts import Pie
-from pyecharts.render import make_snapshot
-from quart.utils import run_sync
-from snapshot_phantomjs import snapshot
+import matplotlib.pyplot as plt
+import numpy as np
 
 from core.utils.http import get_url
 from .cache import random_cache_path
@@ -461,110 +457,33 @@ async def get_plate_process(msg, payload, plate):
     return output, get_img
 
 
-async def get_global_data(music, level_index):
-    data_path = random_cache_path()
-
+def get_global_data(music, level_index):
     stats = music.stats[level_index]
-    fc_data_pair = [list(z) for z in zip([c.upper() if c else 'Not FC' for c in [''] + comboRank], stats.fc_dist)]
-    acc_data_pair = [list(z) for z in zip([s.upper() for s in scoreRank], stats.dist)]
+    
+    fc_data_pair = [(c.upper() if c else 'Not FC', count) for c, count in zip([''] + comboRank, stats.fc_dist)]
+    acc_data_pair = [(s.upper(), count) for s, count in zip(scoreRank, stats.dist)]
 
-    Pie(
-        init_opts=opts.InitOpts(
-            width='1000px',
-            height='800px',
-            bg_color='#fff',
-            js_host='./'
-        )
-    ).add(
-        series_name='Combo',
-        data_pair=fc_data_pair,
-        radius=[0, '30%'],
-        label_opts=opts.LabelOpts(
-            position='outside',
-            formatter='{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ',
-            background_color='#eee',
-            border_color='#aaa',
-            border_width=1,
-            border_radius=4,
-            rich={
-                'a': {'color': '#999', 'lineHeight': 22, 'align': 'center'},
-                'abg': {
-                    'backgroundColor': '#e3e3e3',
-                    'width': '100%',
-                    'align': 'right',
-                    'height': 22,
-                    'borderRadius': [4, 4, 0, 0],
-                },
-                'hr': {
-                    'borderColor': '#aaa',
-                    'width': '100%',
-                    'borderWidth': 0.5,
-                    'height': 0,
-                },
-                'b': {'fontSize': 16, 'lineHeight': 33},
-                'per': {
-                    'color': '#eee',
-                    'backgroundColor': '#334455',
-                    'padding': [2, 4],
-                    'borderRadius': 2,
-                },
-            },
-        )
-    ).add(
-        series_name='Sync',
-        data_pair=acc_data_pair,
-        radius=['50%', '70%'],
-        is_clockwise=True,
-        label_opts=opts.LabelOpts(
-            position='outside',
-            formatter='{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ',
-            background_color='#eee',
-            border_color='#aaa',
-            border_width=1,
-            border_radius=4,
-            rich={
-                'a': {'color': '#999', 'lineHeight': 22, 'align': 'center'},
-                'abg': {
-                    'backgroundColor': '#e3e3e3',
-                    'width': '100%',
-                    'align': 'right',
-                    'height': 22,
-                    'borderRadius': [4, 4, 0, 0],
-                },
-                'hr': {
-                    'borderColor': '#aaa',
-                    'width': '100%',
-                    'borderWidth': 0.5,
-                    'height': 0,
-                },
-                'b': {'fontSize': 16, 'lineHeight': 33},
-                'per': {
-                    'color': '#eee',
-                    'backgroundColor': '#334455',
-                    'padding': [2, 4],
-                    'borderRadius': 2,
-                },
-            },
-        )
-    ).set_global_opts(
-        title_opts=opts.TitleOpts(
-            title=f'{music.id} {music.title} {diffs[level_index]}',
-            pos_left='center',
-            pos_top='20',
-            title_textstyle_opts=opts.TextStyleOpts(color='#2c343c'),
-        ),
-        legend_opts=opts.LegendOpts(
-            pos_left=15,
-            pos_top=10,
-            orient='vertical'
-        )
-    ).set_series_opts(
-        tooltip_opts=opts.TooltipOpts(
-            trigger='item', formatter='{a} <br/>{b}: {c} ({d}%)'
-        )
-    ).render(f'{data_path}.html')
+    fig, axs = plt.subplots(1, 2, figsize=(10, 8))
 
-    await run_sync(make_snapshot)(snapshot, f'{data_path}.html', f'{data_path}.png', is_remove_html=False)
+    # Combo Plot
+    labels, counts = zip(*fc_data_pair)
+    colors = plt.cm.viridis(np.linspace(0, 1, len(labels)))
+    axs[0].pie(counts, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+    axs[0].set_title('Combo')
 
-    path = data_path + ".png"
+    # Sync Plot
+    labels, counts = zip(*acc_data_pair)
+    colors = plt.cm.viridis(np.linspace(0, 1, len(labels)))
+    axs[1].pie(counts, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+    axs[1].set_title('Sync')
+
+    plt.suptitle(f'{music.id} {music.title} {diffs[level_index]}', color='#2c343c')
+    plt.legend(labels, loc='upper left')
+    plt.show()
+
+    # Save the plot to an image file
+    data_path = random_cache_path()
+    path = f'{data_path}.png'
+    fig.savefig(path)
+    
     return path
