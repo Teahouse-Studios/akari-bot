@@ -3,8 +3,8 @@ from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_alias, update_covers
 from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score, get_rank, \
-    get_score_list
+from modules.maimai.libraries.maimaidx_project import get_global_data, get_level_process, \
+    get_plate_process, get_player_score, get_rank,get_score_list
 from .regex import *
 
 total_list = TotalList()
@@ -60,9 +60,9 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    if len(result_set) > 200:
+    elif len(result_set) > 200:
         await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
-    if len(result_set) <= 10:
+    elif len(result_set) <= 10:
         await msg.finish(s.strip())
     else:
         img = await msgchain2image([Plain(s)])
@@ -95,7 +95,7 @@ async def _(msg: Bot.MessageSession, level: str):
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    if len(result_set) <= 10:
+    elif len(result_set) <= 10:
         await msg.finish(s.strip())
     else:
         img = await msgchain2image([Plain(s)])
@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     res = (await total_list.get()).filter(title_search=name)
     if len(res) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    if len(res) > 200:
+    elif len(res) > 200:
         await msg.finish(msg.locale.t("maimai.message.too_much", length=len(res)))
     else:
         search_result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
@@ -232,6 +232,48 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                                 artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
                                 bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
                                 level='/'.join((str(ds) for ds in music['ds']))))])
+
+
+@mai.handle('global <id_or_alias> <diff> {{maimai.help.global}}')
+async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str):
+    if id_or_alias[:2].lower() == "id":
+        sid = id_or_alias[2:]
+    else:
+        sid_list = await search_by_alias(msg, id_or_alias)
+        if len(sid_list) == 0:
+            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+        elif len(sid_list) > 1:
+            res = msg.locale.t("maimai.message.song.prompt") + "\n"
+            for sid in sorted(sid_list, key=int):
+                s = (await total_list.get()).by_id(sid)
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+            await msg.finish(res.strip())
+        else:
+            sid = str(sid_list[0])
+
+    music = (await total_list.get()).by_id(sid)
+    diff_index = get_diff(diff)
+    if not music:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+    elif not diff_index or (len(music['ds']) == 4 and diff_index == 4):
+        await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
+    elif not music.stats:
+        await msg.finish(msg.locale.t("maimai.message.global.music_not_found"))
+    elif not music.stats[level_index]:
+        await msg.finish(msg.locale.t("maimai.message.global.level_not_found"))
+    else:
+        stats = music.stats[level_index]
+        img_path = await music_global_data(music, level_index)
+
+        fit_diff = f"{stats.fit_diff:.2f}"
+        avg_score = f"{stats.avg:.2f}%"
+        avg_dx = f"{stats.avg_dx:.1f}"
+        avg_std_dev = f"{stats.std_dev:.2f}"
+        await msg.finish([BImage(img_path), 
+                          Plain(msg.locale.t("maimai.message.global",
+                                             artist=round(stats.cnt), fit_diff=fit_diff,
+                                             avg_score=avg_score, avg_dx=avg_dx,
+                                             avg_std_dev=avg_std_dev))])
 
 
 @mai.handle('info <id_or_alias> [<username>] {{maimai.help.info}}')

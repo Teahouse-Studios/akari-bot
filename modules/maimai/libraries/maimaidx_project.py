@@ -1,6 +1,14 @@
 from datetime import datetime
 
+import pyecharts.options as opts
+from PIL import Image
+from pyecharts.charts import Pie
+from pyecharts.render import make_snapshot
+from quart.utils import run_sync
+from snapshot_phantomjs import snapshot
+
 from core.utils.http import get_url
+from .cache import random_cache_path
 from .maimaidx_api_data import get_record, get_plate
 from .maimaidx_music import TotalList
 
@@ -77,6 +85,11 @@ diffs = {
 }
 
 achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]  # 各个成绩对应的评级分界线（向上取）
+scoreRank = list(score_to_rank.values())  # Rank字典的值（文本显示）
+comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
+syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
+combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
+sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
 
 async def get_rank(msg, payload):
@@ -160,12 +173,6 @@ async def get_player_score(msg, payload, input_id):
 async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
-
-    scoreRank = list(score_to_rank.values())  # Rank字典的值（文本显示）
-    comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
-    syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
-    combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
-    sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
     payload['version'] = list(set(version for version in plate_to_version.values()))  # 全版本
     res = await get_plate(msg, payload)  # 获取用户成绩信息
@@ -279,11 +286,6 @@ async def get_plate_process(msg, payload, plate):
     song_remain_master = []
     song_remain_remaster = []
     song_remain_difficult = []
-
-    comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
-    syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
-    combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
-    sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
     version = plate[0]
     goal = plate[1:]
@@ -457,3 +459,112 @@ async def get_plate_process(msg, payload, plate):
         output += msg.locale.t('maimai.message.plate.completed', plate=plate)
 
     return output, get_img
+
+
+async def get_global_data(music, level_index):
+    data_path = random_cache_path()
+
+    stats = music.stats[level_index]
+    fc_data_pair = [list(z) for z in zip([c.upper() if c else 'Not FC' for c in [''] + comboRank], stats.fc_dist)]
+    acc_data_pair = [list(z) for z in zip([s.upper() for s in scoreRank], stats.dist)]
+
+    Pie(
+        init_opts=opts.InitOpts(
+            width='1000px',
+            height='800px',
+            bg_color='#fff',
+            js_host='./'
+        )
+    ).add(
+        series_name='Combo',
+        data_pair=fc_data_pair,
+        radius=[0, '30%'],
+        label_opts=opts.LabelOpts(
+            position='outside',
+            formatter='{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ',
+            background_color='#eee',
+            border_color='#aaa',
+            border_width=1,
+            border_radius=4,
+            rich={
+                'a': {'color': '#999', 'lineHeight': 22, 'align': 'center'},
+                'abg': {
+                    'backgroundColor': '#e3e3e3',
+                    'width': '100%',
+                    'align': 'right',
+                    'height': 22,
+                    'borderRadius': [4, 4, 0, 0],
+                },
+                'hr': {
+                    'borderColor': '#aaa',
+                    'width': '100%',
+                    'borderWidth': 0.5,
+                    'height': 0,
+                },
+                'b': {'fontSize': 16, 'lineHeight': 33},
+                'per': {
+                    'color': '#eee',
+                    'backgroundColor': '#334455',
+                    'padding': [2, 4],
+                    'borderRadius': 2,
+                },
+            },
+        )
+    ).add(
+        series_name='Sync',
+        data_pair=acc_data_pair,
+        radius=['50%', '70%'],
+        is_clockwise=True,
+        label_opts=opts.LabelOpts(
+            position='outside',
+            formatter='{a|{a}}{abg|}\n{hr|}\n {b|{b}: }{c}  {per|{d}%}  ',
+            background_color='#eee',
+            border_color='#aaa',
+            border_width=1,
+            border_radius=4,
+            rich={
+                'a': {'color': '#999', 'lineHeight': 22, 'align': 'center'},
+                'abg': {
+                    'backgroundColor': '#e3e3e3',
+                    'width': '100%',
+                    'align': 'right',
+                    'height': 22,
+                    'borderRadius': [4, 4, 0, 0],
+                },
+                'hr': {
+                    'borderColor': '#aaa',
+                    'width': '100%',
+                    'borderWidth': 0.5,
+                    'height': 0,
+                },
+                'b': {'fontSize': 16, 'lineHeight': 33},
+                'per': {
+                    'color': '#eee',
+                    'backgroundColor': '#334455',
+                    'padding': [2, 4],
+                    'borderRadius': 2,
+                },
+            },
+        )
+    ).set_global_opts(
+        title_opts=opts.TitleOpts(
+            title=f'{music.id} {music.title} {diffs[level_index]}',
+            pos_left='center',
+            pos_top='20',
+            title_textstyle_opts=opts.TextStyleOpts(color='#2c343c'),
+        ),
+        legend_opts=opts.LegendOpts(
+            pos_left=15,
+            pos_top=10,
+            orient='vertical'
+        )
+    ).set_series_opts(
+        tooltip_opts=opts.TooltipOpts(
+            trigger='item', formatter='{a} <br/>{b}: {c} ({d}%)'
+        )
+    ).render(f'{data_path}.html')
+
+    await run_sync(make_snapshot)(snapshot, f'{data_path}.html', f'{data_path}.png', is_remove_html=False)
+
+    path = data_path + ".png"
+    return path

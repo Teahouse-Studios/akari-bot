@@ -145,7 +145,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
 async def download_to_cache(url: str, filename=None, status_code: int = False, method="GET", post_data=None,
                             headers: dict = None, timeout=20, attempt=3, request_private_ip=False,
                             logging_err_resp=True) -> Union[str, bool]:
-    '''利用AioHttp下载指定url的内容，并保存到缓存（./cache目录）。
+    '''利用AioHttp下载指定url的内容，并保存到缓存（默认./cache目录）。
 
     :param url: 需要获取的url。
     :param filename: 指定保存的文件名，默认为随机文件名。
