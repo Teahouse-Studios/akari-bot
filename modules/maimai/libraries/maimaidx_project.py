@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from core.utils.http import get_url
-from .cache import random_cache_path
+from core.utils.cache import random_cache_path
 from .maimaidx_api_data import get_record, get_plate
 from .maimaidx_music import TotalList
 
