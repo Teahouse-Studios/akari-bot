@@ -19,7 +19,7 @@ wiki_inline = module('wiki_inline',
                      alias='wiki_regex', developers=['OasisAkari'])
 
 
-@wiki_inline.handle(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A',
+@wiki_inline.regex(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A',
                     desc="{wiki.help.wiki_inline.page}")
 async def _(msg: Bot.MessageSession):
     query_list = []
@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list, inline_mode=True)
 
 
-@wiki_inline.handle(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A',
+@wiki_inline.regex(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A',
                     desc='{wiki.help.wiki_inline.template}')
 async def _(msg: Bot.MessageSession):
     query_list = []
@@ -41,7 +41,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list, template=True, inline_mode=True)
 
 
-@wiki_inline.handle(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False,
+@wiki_inline.regex(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False,
                     desc='{wiki.help.wiki_inline.mediawiki}')
 async def _(msg: Bot.MessageSession):
     query_list = []
@@ -53,7 +53,7 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list, mediawiki=True, inline_mode=True)
 
 
-@wiki_inline.handle(re.compile(
+@wiki_inline.regex(re.compile(
     r'(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)', flags=re.I),
     mode='A', show_typing=False, logging=False,
     desc='{wiki.help.wiki_inline.url}')

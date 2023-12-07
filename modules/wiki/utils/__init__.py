@@ -13,7 +13,7 @@ from .rc_qq import rc_qq
 rc_ = module('rc', developers=['OasisAkari'])
 
 
-@rc_.handle(['{{wiki.help.rc}}', 
+@rc_.command(['{{wiki.help.rc}}', 
              'legacy {{wiki.help.rc.legacy}}'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -36,7 +36,7 @@ async def rc_loader(msg: Bot.MessageSession):
 a = module('ab', developers=['OasisAkari'])
 
 
-@a.handle(['{{wiki.help.ab}}', 
+@a.command(['{{wiki.help.ab}}', 
            'legacy {{wiki.help.ab.legacy}}'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -59,7 +59,7 @@ async def ab_loader(msg: Bot.MessageSession):
 n = module('newbie', desc='{wiki.help.newbie.desc}', developers=['OasisAkari'])
 
 
-@n.handle()
+@n.command()
 async def newbie_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:

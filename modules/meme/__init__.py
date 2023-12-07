@@ -15,7 +15,7 @@ meme = module(
     support_languages=['zh_cn', 'en_us'])
 
 
-@meme.handle('<term> {{meme.help}}')
+@meme.command('<term> {{meme.help}}')
 async def _(msg: Bot.MessageSession, term: str):
     #   res_jiki = await jiki(msg.parsed_msg['<term>'], msg.locale)
     #   R.I.P. jikipedia

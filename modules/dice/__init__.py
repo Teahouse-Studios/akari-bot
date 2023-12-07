@@ -36,7 +36,7 @@ async def _(message: Bot.MessageSession):
     await message.finish(await GenerateMessage(message, f'{groups[0]}D{dice_type}', int(roll_time), 0))
 
 
-@dice.handle('rule {{dice.help.rule}}', required_admin=True)
+@dice.command('rule {{dice.help.rule}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     dc_rule = msg.data.options.get('dice_dc_reversed')
 

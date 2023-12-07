@@ -1,6 +1,10 @@
 from datetime import datetime
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 from core.utils.http import get_url
+from core.utils.cache import random_cache_path
 from .maimaidx_api_data import get_record, get_plate
 from .maimaidx_music import TotalList
 
@@ -77,6 +81,11 @@ diffs = {
 }
 
 achievementList = [50.0, 60.0, 70.0, 75.0, 80.0, 90.0, 94.0, 97.0, 98.0, 99.0, 99.5, 100.0, 100.5]  # 各个成绩对应的评级分界线（向上取）
+scoreRank = list(score_to_rank.values())  # Rank字典的值（文本显示）
+comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
+syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
+combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
+sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
 
 async def get_rank(msg, payload):
@@ -161,12 +170,6 @@ async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
 
-    scoreRank = list(score_to_rank.values())  # Rank字典的值（文本显示）
-    comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
-    syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
-    combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
-    sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
-
     payload['version'] = list(set(version for version in plate_to_version.values()))  # 全版本
     res = await get_plate(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
@@ -208,6 +211,7 @@ async def get_level_process(msg, payload, process, goal):
         songs.append([music.id, music.title, diffs[song[1]], music.ds[song[1]], song[1], music.type])
 
     output = ''
+    get_img = False
     if len(song_remain) > 0:
         if len(song_remain) < 50:  # 若剩余歌曲小于50个则显示
             song_record = [[s['id'], s['level_index']] for s in verlist]
@@ -225,12 +229,14 @@ async def get_level_process(msg, payload, process, goal):
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
                 output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+            if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
+                get_img = True
         else:
-            output = f"{msg.locale.t('maimai.message.process', song_remain=len(song_remain), process=process, goal=goal)}"
+            await msg.finish(msg.locale.t('maimai.message.process', song_remain=len(song_remain), process=process, goal=goal))
     else:
-        output = f"{msg.locale.t('maimai.message.process.completed', process=process, goal=goal)}"
+        await msg.finish(msg.locale.t('maimai.message.process.completed', process=process, goal=goal))
 
-    return output, len(song_remain)
+    return output, get_img
 
 
 async def get_score_list(msg, payload, level):
@@ -257,10 +263,15 @@ async def get_score_list(msg, payload, level):
         output_lines.append(output)
 
     outputs = '\n'.join(output_lines)
-
     res = f"{msg.locale.t('maimai.message.scorelist', user=username, level=level)}\n{outputs}"
+    get_img = False
 
-    return res, len(output_lines)
+    if len(output_lines) == 0:
+        await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
+    elif len(output_lines) > 10:
+        get_img = True
+
+    return res, get_img
 
 
 async def get_plate_process(msg, payload, plate):
@@ -271,11 +282,6 @@ async def get_plate_process(msg, payload, plate):
     song_remain_master = []
     song_remain_remaster = []
     song_remain_difficult = []
-
-    comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示）
-    syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
-    combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
-    sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
     version = plate[0]
     goal = plate[1:]

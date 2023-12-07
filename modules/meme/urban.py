@@ -8,6 +8,8 @@ from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale
 
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 async def urban(term: str, locale: Locale):
     '''查询urban dictionary。
@@ -16,10 +18,11 @@ async def urban(term: str, locale: Locale):
     :returns: 查询结果。'''
     try:
         url = 'http://api.urbandictionary.com/v0/define?term=' + term
-        webrender = CFG.get_url('web_render')
-        if not webrender:
-            return ''
-        url = webrender + 'source?url=' + url
+        if web_render:
+            use_local = True if web_render_local else False
+        else:
+            return
+        url = (web_render_local if use_local else web_render) + 'source?url=' + url
         text = await get_url(url, 200, headers={'accept': '*/*',
                                                 'accept-encoding': 'gzip, deflate',
                                                 'accept-language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,en-GB;q=0.6',

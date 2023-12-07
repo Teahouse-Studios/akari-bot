@@ -3,6 +3,7 @@
     "core.help.admin.add": "设置成员为机器人管理员。以实现不设置成员为群组管理员的状況下管理机器人的效果。已是群组管理员无需设置此项目。",
     "core.help.admin.ban": "限制某人在本群使用机器人。",
     "core.help.admin.list": "列出所有机器人管理员。",
+    "core.help.admin.remove": "取消成员的机器人管理员。",
     "core.help.admin.unban": "解除对某人在本群使用机器人的限制。",
     "core.help.alias.add": "添加自定义命令别名。",
     "core.help.alias.list": "列出自定义命令别名列表。",
@@ -134,6 +135,8 @@
     "core.message.prefix.remove.not_found": "此命令前缀不存在于自定义前缀列表。",
     "core.message.prefix.remove.success": "已移除自定义命令前缀：${prefix}",
     "core.message.prefix.reset": "已重置自定义命令前缀列表。",
+    "core.message.purge.empty": "当前缓存目录为空。",
+    "core.message.purge.success": "成功清除缓存。",
     "core.message.raise": "异常测试。",
     "core.message.restart.prompt": "由于机器人正在重启，您此次执行命令的后续操作已被强制取消。\n请稍后重新执行命令，对此带来的不便，我们深感抱歉。",
     "core.message.restart.restarting": "重启中……",
@@ -159,6 +162,5 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
-    "core.help.admin.remove": "取消成员的机器人管理员。"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
 }

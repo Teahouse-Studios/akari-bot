@@ -9,15 +9,18 @@ from core.utils.http import get_url
 
 api = 'https://search.mcmod.cn/s?key='
 api_details = 'https://search.mcmod.cn/s?filter=3&key='
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 
 async def mcmod(msg, keyword: str, detail: bool = False):
     endpoint = api_details if detail else api
     search_url = endpoint + quote(keyword)
-    webrender = CFG.get_url('web_render')
-    if not webrender:
+    if web_render:
+        use_local = True if web_render_local else False
+    else:
         return
-    search_url = webrender + 'source?url=' + quote(search_url)
+    search_url = (web_render_local if use_local else web_render) + 'source?url=' + quote(search_url)
     html = await get_url(search_url, 200)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
