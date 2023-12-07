@@ -144,8 +144,21 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result), Image(path)])
 
 
-set_ = module('set', required_superuser=True, base=True)
+purge = module('set', required_superuser=True, base=True)
 
+@purge.command()
+async def _(msg: Bot.MessageSession):
+    cache_path = os.path.abspath(Config('cache_path'))
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+        os.mkdir(cache_path)
+        await msg.finish(msg.locale.t("core.message.purge.success"))
+    else:
+        os.mkdir(cache_path)
+        await msg.finish(msg.locale.t("core.message.purge.empty"))
+
+
+set_ = module('set', required_superuser=True, base=True)
 
 @set_.command('modules <target_id> <modules> ...')
 async def _(msg: Bot.MessageSession):
