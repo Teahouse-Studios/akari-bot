@@ -135,7 +135,7 @@
     "core.message.prefix.remove.not_found": "This command prefix does not exist in the custom prefix list.",
     "core.message.prefix.remove.success": "Custom command prefix removed: ${prefix}",
     "core.message.prefix.reset": "The custom command prefix has been reset.",
-    "core.message.purge.empty": "The cache directory is empty."
+    "core.message.purge.empty": "The cache directory is empty.",
     "core.message.purge.success": "Cache purged successfully.",
     "core.message.raise": "Test exception.",
     "core.message.restart.prompt": "Since the bot is restarting, your command execution have been forcibly cancelled.\nPlease re-execute the command later.",
