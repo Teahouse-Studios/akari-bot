@@ -3,6 +3,7 @@
     "core.help.admin.add": "Set members as bot administrators, implement the function of managing the robot without setting members as group administrators. It's no longer needed to set up it when you are already a group administrator.",
     "core.help.admin.ban": "Limit someone to use bot in the group.",
     "core.help.admin.list": "List all bot administrators.",
+    "core.help.admin.remove": "Remove bot administrator from member.",
     "core.help.admin.unban": "Remove limit someone to use bot in the group.",
     "core.help.alias.add": "Add custom command alias.",
     "core.help.alias.list": "List custom command alias.",
@@ -134,6 +135,8 @@
     "core.message.prefix.remove.not_found": "This command prefix does not exist in the custom prefix list.",
     "core.message.prefix.remove.success": "Custom command prefix removed: ${prefix}",
     "core.message.prefix.reset": "The custom command prefix has been reset.",
+    "core.message.purge.empty": "The cache directory is empty."
+    "core.message.purge.success": "Cache purged successfully.",
     "core.message.raise": "Test exception.",
     "core.message.restart.prompt": "Since the bot is restarting, your command execution have been forcibly cancelled.\nPlease re-execute the command later.",
     "core.message.restart.restarting": "Restarting...",
@@ -159,6 +162,5 @@
     "core.message.whoami": "Your ID: ${senderid}\nConversation ID: ${targetid}",
     "core.message.whoami.admin": "(You have admin permission for this conversation)",
     "core.message.whoami.botadmin": "(You have bot admin permission for this conversation)",
-    "core.message.whoami.superuser": "(You have superuser permission)",
-    "core.help.admin.remove": "Remove bot administrator from member."
+    "core.message.whoami.superuser": "(You have superuser permission)"
 }
