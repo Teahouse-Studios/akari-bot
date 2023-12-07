@@ -15,6 +15,7 @@ from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, T
 from core.component import module
 from core.loader import ModulesManager
 from core.parser.message import remove_temp_ban
+from core.scheduler import CronTrigger
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from core.utils.info import Info
