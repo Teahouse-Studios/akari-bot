@@ -29,8 +29,8 @@ async def get_petal_exchange_rate():
             exchange_rate = data['conversion_rate']
             petal_value = exchange_rate * CNY_TO_PETAL
             return {"exchange_rate": exchange_rate, "exchanged_petal": petal_value}
-    except:
-        return None
+    except Exception:
+        Logger.error(traceback.format_exc())
 
 
 async def load_or_refresh_cache():
@@ -39,21 +39,15 @@ async def load_or_refresh_cache():
     if os.path.exists(file_path):
         with open(file_path, 'r') as file:
             data = json.load(file)
-            update_time = datetime.strptime(data.get("update_time"), "%Y-%m-%d %H:%M:%S")
-            expiration_time = datetime(update_time.year, update_time.month, update_time.day, 0, 0, 0) + timedelta(days=1)
-            current_time = datetime.now()
-            if current_time < expiration_time:
-                return data["exchanged_petal"]
+            return data["exchanged_petal"]
 
     exchanged_petal_data = await get_petal_exchange_rate()
     if exchanged_petal_data:
-        Logger.info(f'Petal exchange rate is expired or cannot be found. Updated.')
-        exchanged_petal_data["update_time"] = datetime.now()
+        Logger.info(f'Petal exchange rate is expired or cannot be found. Updating...')
         with open(file_path, 'w') as file:
-            exchanged_petal_data["update_time"] = exchanged_petal_data["update_time"].strftime("%Y-%m-%d %H:%M:%S")
+            exchanged_petal_data["update_time"] = datetime.now().strftime("%Y-%m-%d")
             json.dump(exchanged_petal_data, file)
         return exchanged_petal_data["exchanged_petal"]
-    return None
 
 
 async def count_petal(tokens):
