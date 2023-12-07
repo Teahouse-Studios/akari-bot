@@ -145,12 +145,11 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result), Image(path)])
 
 
-purge = module('purge', required_superuser=True, base=True)
+purge = module('purge', developers=['DoroWolf'], required_superuser=True, base=True)
 
 @purge.command()
-async def purge_cache(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     cache_path = os.path.abspath(Config('cache_path'))
-    
     if os.path.exists(cache_path):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
@@ -162,6 +161,17 @@ async def purge_cache(msg: Bot.MessageSession):
         os.mkdir(cache_path)
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
+
+@purge.schedule(CronTrigger.from_crontab('0 0 * * *'))
+async def _():
+    cache_path = os.path.abspath(Config('cache_path'))
+    Logger.info('Start purging cache...')
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
+        os.mkdir(cache_path)
+    else:
+        os.mkdir(cache_path)
+    
 
 set_ = module('set', required_superuser=True, base=True)
 
