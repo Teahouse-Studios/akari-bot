@@ -148,12 +148,16 @@ async def _(msg: Bot.MessageSession):
 purge = module('purge', required_superuser=True, base=True)
 
 @purge.command()
-async def _(msg: Bot.MessageSession):
+async def purge_cache(msg: Bot.MessageSession):
     cache_path = os.path.abspath(Config('cache_path'))
+    
     if os.path.exists(cache_path):
-        shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-        await msg.finish(msg.locale.t("core.message.purge.success"))
+        if os.listdir(cache_path):
+            shutil.rmtree(cache_path)
+            os.mkdir(cache_path)
+            await msg.finish(msg.locale.t("core.message.purge.success"))
+        else:
+            await msg.finish(msg.locale.t("core.message.purge.empty"))
     else:
         os.mkdir(cache_path)
         await msg.finish(msg.locale.t("core.message.purge.empty"))
