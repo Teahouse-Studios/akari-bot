@@ -91,7 +91,7 @@
     "core.message.module.help.legacy.base": "Base Command: ",
     "core.message.module.help.legacy.external": "Extension Command: ",
     "core.message.module.help.legacy.more_information": "Use \"${prefix}help <module name>\" to view details.\nUse \"${prefix}module list\" to view all available modules.\nYou can also consult the web documentation for help:\n${help_url}",
-    "core.message.module.help.more_information": "Here are the help documents shown only show the enabled module(s). If you need to view the help documents of all modules, please use \"${prefix}module list\".\nYou can also consult the web documentation for help:\n${help_url}\nIf you have sufficient funds, welcome to sponsor on AFDian: \n${donate_url}",
+    "core.message.module.help.more_information": "Here are the help documents shown only show the enabled module(s). If you need to view the help documents of all modules, please use \"${prefix}module list\".\nYou can also consult the web documentation for help:\n${help_url}\nIf you have sufficient funds, welcome to sponsor us: \n${donate_url}",
     "core.message.module.help.not_found": "This module may not exist. Please check your input.",
     "core.message.module.help.regex.detail": "(${msg})",
     "core.message.module.help.regex.no_information": "No description",
