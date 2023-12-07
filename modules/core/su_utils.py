@@ -144,7 +144,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result), Image(path)])
 
 
-purge = module('set', required_superuser=True, base=True)
+purge = module('purge', required_superuser=True, base=True)
 
 @purge.command()
 async def _(msg: Bot.MessageSession):
