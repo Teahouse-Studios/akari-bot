@@ -136,7 +136,7 @@
     "core.message.prefix.remove.success": "已移除自定义命令前缀：${prefix}",
     "core.message.prefix.reset": "已重置自定义命令前缀列表。",
     "core.message.purge.empty": "当前缓存目录为空。",
-    "core.message.purge.success": "成功清除缓存目录。",
+    "core.message.purge.success": "成功清除缓存。",
     "core.message.raise": "异常测试。",
     "core.message.restart.prompt": "由于机器人正在重启，您此次执行命令的后续操作已被强制取消。\n请稍后重新执行命令，对此带来的不便，我们深感抱歉。",
     "core.message.restart.restarting": "重启中……",
