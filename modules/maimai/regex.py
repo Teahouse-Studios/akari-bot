@@ -47,7 +47,7 @@ mai_regex = module('maimai_regex',
                    alias='mai_regex', developers=['DoroWolf'], support_languages=['zh_cn', 'zh_tw'])
 
 
-@mai_regex.handle(re.compile(r"(.+)\s?是什[么麼]歌"), desc='{maimai.help.maimai_regex.song}')
+@mai_regex.regex(re.compile(r"(.+)\s?是什[么麼]歌"), desc='{maimai.help.maimai_regex.song}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name[:2].lower() == "id":
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))])
 
 
-@mai_regex.handle(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
+@mai_regex.regex(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
 async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     username = msg.matched_msg.groups()[1]
@@ -116,7 +116,7 @@ async def _(msg: Bot.MessageSession):
          BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
 
 
-@mai_regex.handle(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
+@mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
 async def _(msg: Bot.MessageSession):
     sid = msg.matched_msg.groups()[0]
     music = (await total_list.get()).by_id(sid)
@@ -140,7 +140,7 @@ async def _(msg: Bot.MessageSession):
                             level='/'.join((str(ds) for ds in music['ds']))))])
 
 
-@mai_regex.handle(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
+@mai_regex.regex(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
                   desc="{maimai.help.maimai_regex.random}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
@@ -168,7 +168,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
-@mai_regex.handle(re.compile(r"(.?)([極极将舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
+@mai_regex.regex(re.compile(r"(.?)([極极将舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
@@ -191,7 +191,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output.strip())
 
 
-@mai_regex.handle(re.compile(r"([0-9]+\+?)\s?(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
+@mai_regex.regex(re.compile(r"([0-9]+\+?)\s?(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
 async def _(msg: Bot.MessageSession):
     goal_list = [
         "A",
@@ -233,10 +233,10 @@ async def _(msg: Bot.MessageSession):
     if goal.upper() not in goal_list:
         await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
 
-    output, songs = await get_level_process(msg, payload, level, goal)
+    output, get_img = await get_level_process(msg, payload, level, goal)
 
-    if songs <= 10 or songs >= 50:
-        await msg.finish(output.strip())
-    else:
+    if get_img:
         img = await msgchain2image([Plain(output)])
         await msg.finish([BImage(img)])
+    else:
+        await msg.finish(output.strip())

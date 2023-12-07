@@ -9,7 +9,7 @@ mcplayer = module(
 )
 
 
-@mcplayer.handle('<username_or_uuid> {{mcplayer.help}}')
+@mcplayer.command('<username_or_uuid> {{mcplayer.help}}')
 async def main(msg: Bot.MessageSession, username_or_uuid: str):
     arg = username_or_uuid
     try:

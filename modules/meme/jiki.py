@@ -8,6 +8,8 @@ from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale
 
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 
 async def jiki(term: str, locale: Locale):
     '''查询小鸡百科。
@@ -16,9 +18,11 @@ async def jiki(term: str, locale: Locale):
     :returns: 查询结果。'''
     try:
         api = 'https://jikipedia.com/search?phrase=' + term
-        webrender = CFG.get_url('web_render')
-        if webrender:
-            api = webrender + 'source?url=' + api
+        if web_render:
+            use_local = True if web_render_local else False
+        else:
+            return
+        api = (web_render_local if use_local else web_render) + 'source?url=' + api
         html = await get_url(api, 200)
         Logger.debug(html)
         bs = BeautifulSoup(html, 'html.parser')

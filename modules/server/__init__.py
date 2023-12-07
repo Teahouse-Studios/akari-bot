@@ -9,7 +9,7 @@ from .server import server
 s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.handle('<ServerIP:Port> [-r] [-p] {{server.help}}',
+@s.command('<ServerIP:Port> [-r] [-p] {{server.help}}',
           options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
 async def main(msg: Bot.MessageSession):
     gather_list = []

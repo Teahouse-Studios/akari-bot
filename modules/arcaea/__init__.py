@@ -19,6 +19,7 @@ web_render_local = CFG.get_url('web_render_local')
 arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
 
+
 class WithErrCode(Exception):
     pass
 
@@ -34,7 +35,7 @@ async def _(msg: Bot.MessageSession, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
     resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/'), 200,
@@ -51,7 +52,7 @@ async def _(msg: Bot.MessageSession, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
     resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
                          urllib.parse.quote('https://webapi.lowiro.com/webapi/song/showcase/'),
@@ -72,7 +73,7 @@ async def _(msg: Bot.MessageSession, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
-            await msg.finish(msg.locale.t("error.webrender.unconfigured"))
+            await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
     if msg.parsed_msg.get('free', False):
         resp = await get_url((web_render_local if use_local else web_render) + 'source?url=' +
@@ -92,11 +93,22 @@ async def _(msg: Bot.MessageSession, use_local=True):
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
-p = module('ptt',
-           developers=['OasisAkari'])
+@arc.command('calc <score> <rating>')
+async def _(msg: Bot.MessageSession, score: int, rating: float):
+    ptt = 0
+    if score >= 10000000:
+        ptt += 2
+    elif score >= 9800000:
+        ptt += 1 + (score - 9800000) / 200000
+    else:
+        ptt += (score - 9500000) / 300000
+    await msg.finish([Plain(rating + ptt)])
 
 
-@p.handle('<potential> {{ptt.help}}')
+p = module('ptt', developers=['OasisAkari'])
+
+
+@p.command('<potential> {{ptt.help}}')
 async def pttimg(msg: Bot.MessageSession):
     ptt = msg.parsed_msg['<potential>']
     # ptt

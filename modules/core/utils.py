@@ -18,7 +18,7 @@ jwt_secret = Config('jwt_secret')
 ver = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
 
 
-@ver.handle()
+@ver.command()
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
         await msg.finish(msg.locale.t('core.message.version', commit=Info.version[0:6]))
@@ -31,7 +31,7 @@ ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkar
 started_time = datetime.now()
 
 
-@ping.handle()
+@ping.command()
 async def _(msg: Bot.MessageSession):
     checkpermisson = msg.check_super_user()
     result = "Pong!"
@@ -78,7 +78,7 @@ admin = module('admin',
                )
 
 
-@admin.handle([
+@admin.command([
     'add <UserID> {{core.help.admin.add}}',
     'remove <UserID> {{core.help.admin.remove}}',
     'list {{core.help.admin.list}}'])
@@ -107,7 +107,7 @@ async def config_gu(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
-@admin.handle('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
+@admin.command('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
@@ -132,14 +132,14 @@ async def config_ban(msg: Bot.MessageSession):
 locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
 
 
-@locale.handle('{{core.help.locale}}')
+@locale.command('{{core.help.locale}}')
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
     await msg.finish(
         f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
 
 
-@locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
+@locale.command('<lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
@@ -149,7 +149,7 @@ async def config_gu(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
 
 
-@locale.handle('reload', required_superuser=True)
+@locale.command('reload', required_superuser=True)
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
@@ -161,7 +161,7 @@ async def reload_locale(msg: Bot.MessageSession):
 whoami = module('whoami', developers=['Dianliang233'], base=True)
 
 
-@whoami.handle('{{core.help.whoami}}')
+@whoami.command('{{core.help.whoami}}')
 async def _(msg: Bot.MessageSession):
     rights = ''
     if await msg.check_native_permission():
@@ -178,7 +178,7 @@ async def _(msg: Bot.MessageSession):
 tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
 
 
-@tog.handle('typing {{core.help.toggle.typing}}')
+@tog.command('typing {{core.help.toggle.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.sender_id)
     state = target.query.disable_typing
@@ -190,7 +190,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.typing.enable'))
 
 
-@tog.handle('check {{core.help.toggle.check}}')
+@tog.command('check {{core.help.toggle.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state:
@@ -205,7 +205,7 @@ mute = module('mute', developers=['Dianliang233'], base=True, required_admin=Tru
               desc='{core.help.mute}')
 
 
-@mute.handle()
+@mute.command()
 async def _(msg: Bot.MessageSession):
     state = msg.data.switch_mute()
     if state:
@@ -224,7 +224,7 @@ leave = module(
     desc='{core.help.leave}')
 
 
-@leave.handle()
+@leave.command()
 async def _(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t('core.message.confirm'))
     if confirm:
@@ -235,7 +235,7 @@ async def _(msg: Bot.MessageSession):
 token = module('token', base=True, desc='{core.help.token}', developers=['Dianliang233'])
 
 
-@token.handle('<code>')
+@token.command('<code>')
 async def _(msg: Bot.MessageSession):
     await msg.finish(jwt.encode({
         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days

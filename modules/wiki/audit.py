@@ -12,7 +12,7 @@ if Config('enable_urlmanager'):
     aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True,
                  alias='wau')
 
-    @aud.handle(['trust <apiLink>', 'block <apiLink>'])
+    @aud.command(['trust <apiLink>', 'block <apiLink>'])
     async def _(msg: Bot.MessageSession):
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         api = msg.parsed_msg['<apiLink>']
@@ -34,7 +34,7 @@ if Config('enable_urlmanager'):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-    @aud.handle(['distrust <apiLink>', 'unblock <apiLink>'])
+    @aud.command(['distrust <apiLink>', 'unblock <apiLink>'])
     async def _(msg: Bot.MessageSession):
         api = msg.parsed_msg['<apiLink>']  # 已关闭的站点无法验证有效性
         if msg.parsed_msg.get('distrust', False):
@@ -50,7 +50,7 @@ if Config('enable_urlmanager'):
         else:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + api)
 
-    @aud.handle('query <apiLink>')
+    @aud.command('query <apiLink>')
     async def _(msg: Bot.MessageSession):
         api = msg.parsed_msg['<apiLink>']
         check = await WikiLib(api).check_wiki_available()
@@ -74,7 +74,7 @@ if Config('enable_urlmanager'):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-    @aud.handle(['list', 'list legacy'])
+    @aud.command(['list', 'list legacy'])
     async def _(msg: Bot.MessageSession):
         allow_list = Audit.get_allow_list()
         block_list = Audit.get_block_list()
