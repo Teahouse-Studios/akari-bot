@@ -51,9 +51,7 @@ def run_bot():
     cache_path = os.path.abspath(Config('cache_path'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
+    os.mkdir(cache_path)
 
     pid_cache = os.path.abspath('.pid_last')
     if os.path.exists(pid_cache):

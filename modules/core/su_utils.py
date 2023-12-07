@@ -169,9 +169,7 @@ async def _():
     Logger.info('Start purging cache...')
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
+    os.mkdir(cache_path)
     
 
 set_ = module('set', required_superuser=True, base=True)

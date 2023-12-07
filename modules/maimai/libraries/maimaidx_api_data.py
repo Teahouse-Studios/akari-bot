@@ -15,51 +15,45 @@ cover_dir = f"{assets_path}/static/mai/cover"
 
 
 async def update_alias():
-    try:
-        url = "https://download.fanyu.site/maimai/alias.json"
-        input_data = await get_url(url, 200, fmt='json')
+    url = "https://download.fanyu.site/maimai/alias.json"
+    input_data = await get_url(url, 200, fmt='json')
 
-        output_data = {}
-        for key, values in input_data.items():
-            for value in values:
-                if value == "未找到":
-                    continue
-                if value not in output_data:
-                    output_data[value] = []
-                output_data[value].append(key)
+    output_data = {}
+    for key, values in input_data.items():
+        for value in values:
+            if value == "未找到":
+                continue
+            if value not in output_data:
+                output_data[value] = []
+            output_data[value].append(key)
 
-        output_data = {k: output_data[k] for k in sorted(output_data)}
+    output_data = {k: output_data[k] for k in sorted(output_data)}
 
-        file_path = os.path.join(assets_path, "mai_alias.json")
-        with open(file_path, 'w') as file:
-            json.dump(output_data, file)
-
-        return True
-    except:
-        return False
-
+    file_path = os.path.join(assets_path, "mai_alias.json")
+    with open(file_path, 'w') as file:
+        json.dump(output_data, file)
+        
+    return True
 
 
 async def update_covers():
-    try:
-        url = f"https://www.diving-fish.com/maibot/static.zip"
-        download_file = await download_to_cache(url, timeout=60)
+    url = f"https://www.diving-fish.com/maibot/static.zip"
+    download_file = await download_to_cache(url, timeout=60)
 
-        Logger.info('Maimai covers download completed.')
-        ca = random_cache_path()
-        shutil.unpack_archive(download_file, ca)
-        
-        if os.path.exists(cover_dir):
-            shutil.rmtree(cover_dir)
-        
-        static_cover_dir = os.path.join(ca, 'mai/cover')
-        if os.path.exists(static_cover_dir):
-            shutil.move(static_cover_dir, cover_dir)
+    Logger.info('Maimai covers download completed.')
+    ca = random_cache_path()
+    shutil.unpack_archive(download_file, ca)
 
-        os.remove(download_file)
-        return True
-    except:
-        return False
+    if os.path.exists(cover_dir):
+        shutil.rmtree(cover_dir)
+        
+    static_cover_dir = os.path.join(ca, 'mai/cover')
+    if os.path.exists(static_cover_dir):
+        shutil.move(static_cover_dir, cover_dir)
+
+    os.remove(download_file)
+
+    return True
 
 
 async def get_alias(msg, input_):
@@ -117,7 +111,7 @@ async def get_record(msg, payload):
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            await msg.finish(ErrorMessage(str(e)))
+            raise
     return data
 
 
@@ -137,5 +131,5 @@ async def get_plate(msg, payload):
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            await msg.finish(ErrorMessage(str(e)))
+            raise
     return data
