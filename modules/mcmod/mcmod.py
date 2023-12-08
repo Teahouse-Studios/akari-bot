@@ -21,7 +21,7 @@ async def mcmod(msg, keyword: str, detail: bool = False):
     else:
         return
     search_url = (web_render_local if use_local else web_render) + 'source?url=' + quote(search_url)
-    html = await get_url(search_url, 200)
+    html = await get_url(search_url, 200, request_private_ip=True)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.find_all('div', class_='result-item')
