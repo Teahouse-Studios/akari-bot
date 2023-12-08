@@ -408,7 +408,7 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            await msg.finish(ErrorMessage(str(e)))
+            raise
 
     sd_best = BestList(35)
     dx_best = BestList(15)

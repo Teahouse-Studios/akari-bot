@@ -53,7 +53,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
 
         is_dirty = await dirty_check(message, result['owner']['login']) or darkCheck(message)
         if is_dirty:
-            rickroll(msg)
+            await msg.finish(rickroll(msg))
         else:
             await msg.send_message([Plain(message)])
 

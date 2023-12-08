@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
     else:
         if await check_bool(res_json['data']['text'], res_json['data']['user']['name'],
                             res_json['data']['user']['screen_name']):
-            rickroll(msg)
+            await msg.finish(rickroll(msg))
 
         css = '''
             main {

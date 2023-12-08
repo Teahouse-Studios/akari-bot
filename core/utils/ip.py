@@ -23,5 +23,5 @@ async def fetch_ip_info() -> dict:
         Logger.info('Successfully fetched IP information.')
         return ip_info
     except Exception:
-        Logger.info('Failed to get IP information.')
+        Logger.error('Failed to get IP information.')
         Logger.error(traceback.format_exc())

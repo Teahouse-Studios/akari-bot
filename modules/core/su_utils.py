@@ -169,9 +169,7 @@ async def _():
     Logger.info('Start purging cache...')
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
+    os.mkdir(cache_path)
     
 
 set_ = module('set', required_superuser=True, base=True)
@@ -387,9 +385,9 @@ if Bot.FetchTarget.name == 'QQ':
                     await x['fetch'].send_direct_message(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
-            await msg.send_message(msg.locale.t("core.message.resume.done"))
+            await msg.finish(msg.locale.t("core.message.resume.done"))
         else:
-            await msg.send_message(msg.locale.t("core.message.resume.nothing"))
+            await msg.finish(msg.locale.t("core.message.resume.nothing"))
 
     @resume.command('continue')
     async def resume_sending_group_message(msg: Bot.MessageSession):
@@ -407,15 +405,15 @@ if Bot.FetchTarget.name == 'QQ':
                     await x['fetch'].send_direct_message(x['message'])
                 Temp.data['waiting_for_send_group_message'].remove(x)
                 await asyncio.sleep(30)
-            await msg.send_message(msg.locale.t("core.message.resume.done"))
+            await msg.finish(msg.locale.t("core.message.resume.done"))
         else:
-            await msg.send_message(msg.locale.t("core.message.resume.nothing"))
+            await msg.finish(msg.locale.t("core.message.resume.nothing"))
 
     @resume.command('clear')
     async def _(msg: Bot.MessageSession):
         Temp.data['is_group_message_blocked'] = False
         Temp.data['waiting_for_send_group_message'] = []
-        await msg.send_message(msg.locale.t("core.message.resume.clear"))
+        await msg.finish(msg.locale.t("core.message.resume.clear"))
 
     forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True, base=True)
 
@@ -427,9 +425,9 @@ if Bot.FetchTarget.name == 'QQ':
         alist['status'] = not alist['status']
         update_stored_list(Bot.FetchTarget, 'forward_msg', alist)
         if alist['status']:
-            await msg.send_message(msg.locale.t('core.message.forward_msg.enable'))
+            await msg.finish(msg.locale.t('core.message.forward_msg.enable'))
         else:
-            await msg.send_message(msg.locale.t('core.message.forward_msg.disable'))
+            await msg.finish(msg.locale.t('core.message.forward_msg.disable'))
 
 echo = module('echo', developers=['OasisAkari'], required_superuser=True, base=True)
 
