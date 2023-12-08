@@ -67,7 +67,7 @@ class MessageSession:
     """
     __slots__ = (
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
-        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp", "tmp")
+        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp", "tmp", "timezone")
 
     parsed_msg: Dict[str, Union[str, list]]
 

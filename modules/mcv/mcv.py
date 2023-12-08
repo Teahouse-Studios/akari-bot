@@ -12,6 +12,16 @@ from core.utils.ip import IP
 async def mcv(msg):
     try:
         data = json.loads(await get_url('https://piston-meta.mojang.com/mc/game/version_manifest.json', 200))
+        release = data['latest']['release']
+        snapshot = data['latest']['snapshot']
+        time_release = None
+        time_snapshot = None
+        for v in data['versions']:
+            if v['id'] == release:
+                time_release = v['releaseTime']
+            elif v['id'] == snapshot:
+                time_snapshot = v['releaseTime']
+
         message1 = msg.locale.t(
             "mcv.message.mcv.launcher",
             release=data['latest']['release'],

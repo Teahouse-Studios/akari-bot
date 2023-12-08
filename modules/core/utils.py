@@ -1,6 +1,6 @@
 import platform
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 
 import jwt
 import psutil
@@ -199,6 +199,23 @@ async def _(msg: Bot.MessageSession):
     else:
         msg.data.edit_option('typo_check', True)
         await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
+
+
+@tog.command('timeoffset <offset>')
+async def _(msg: Bot.MessageSession):
+    offset = msg.parsed_msg['<offset>']
+    try:
+        if offset[0] == '+':
+            offset = offset[1:]
+        elif offset[0] == '-':
+            offset = offset[1:]
+        hour, minute = map(int, offset.split(':'))
+        if hour > 12 or minute > 60:
+            raise ValueError
+    except ValueError:
+        await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
+    msg.data.edit_option('timezone_offset', offset)
+    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
 
 
 mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
