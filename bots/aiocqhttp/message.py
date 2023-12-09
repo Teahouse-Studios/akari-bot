@@ -107,7 +107,7 @@ class MessageSession(MessageSessionT):
                     if can_sends:
                         await JobQueue.send_message('Lagrange', self.target.target_id,
                                                     MessageChain(can_sends).to_list())
-                    if not message_chain_assendable.value:
+                    if not message_chain_assendable:
                         return FinishedSession(self, 0, [{}])
         else:
             Logger.debug(f'Do not use lagrange since some conditions are not met.\n{self.target.target_from} '
