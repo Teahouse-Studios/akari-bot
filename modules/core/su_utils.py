@@ -11,7 +11,7 @@ import ujson as json
 from dateutil.relativedelta import relativedelta
 
 from config import Config, CFG
-from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins import Bot, Image, Plain, Temp
 from core.component import module
 from core.loader import ModulesManager
 from core.logger import Logger
@@ -23,7 +23,7 @@ from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
 
-su = module('superuser', alias='su', developers=['OasisAkari', 'Dianliang233'], required_superuser=True, base=True)
+su = module('superuser', alias='su', required_superuser=True, base=True)
 
 
 @su.command('add <UserID>')
@@ -147,7 +147,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([Plain(result), Image(path)])
 
 
-purge = module('purge', developers=['DoroWolf'], required_superuser=True, base=True)
+purge = module('purge', required_superuser=True, base=True)
 
 
 @purge.command()
@@ -215,7 +215,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
 
-ae = module('abuse', alias='ae', developers=['Dianliang233'], required_superuser=True, base=True)
+ae = module('abuse', alias='ae', required_superuser=True, base=True)
 
 
 @ae.command('check <user>')
@@ -281,7 +281,6 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     if BotDBUtil.SenderInfo(user).edit('isInBlockList', False):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
-
 
 if Info.subprocess:
     rst = module('restart', developers=['OasisAkari'], required_superuser=True, base=True)
@@ -371,9 +370,8 @@ if Info.subprocess:
             else:
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
             restart()
-
 if Bot.FetchTarget.name == 'QQ':
-    resume = module('resume', developers=['OasisAkari'], required_base_superuser=True)
+    resume = module('resume', required_base_superuser=True)
 
     @resume.command()
     async def resume_sending_group_message(msg: Bot.MessageSession):
@@ -417,7 +415,7 @@ if Bot.FetchTarget.name == 'QQ':
         Temp.data['waiting_for_send_group_message'] = []
         await msg.finish(msg.locale.t("core.message.resume.clear"))
 
-    forward_msg = module('forward_msg', developers=['OasisAkari'], required_superuser=True, base=True)
+    forward_msg = module('forward_msg', required_superuser=True, base=True)
 
     @forward_msg.command()
     async def _(msg: Bot.MessageSession):
@@ -431,7 +429,7 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.finish(msg.locale.t('core.message.forward_msg.disable'))
 
-echo = module('echo', developers=['OasisAkari'], required_superuser=True, base=True)
+echo = module('echo', required_superuser=True, base=True)
 
 
 @echo.command('<display_msg>')
@@ -439,15 +437,14 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'])
 
 
-say = module('say', developers=['OasisAkari'], required_superuser=True, base=True)
+say = module('say', required_superuser=True, base=True)
 
 
 @say.command('<display_msg>')
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
-
-rse = module('raise', developers=['OasisAkari'], required_superuser=True, base=True)
+rse = module('raise', required_superuser=True, base=True)
 
 
 @rse.command()
@@ -457,12 +454,14 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('enable_eval'):
-    _eval = module('eval', developers=['Dianliang233'], required_superuser=True, base=True)
+    _eval = module('eval', required_superuser=True, base=True)
 
     @_eval.command('<display_msg>')
     async def _(msg: Bot.MessageSession):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
 
+
+_config = module('config', required_superuser=True, alias='cfg', base=True)
 
 def isfloat(num):
     try:
@@ -478,9 +477,6 @@ def isint(num):
         return True
     except ValueError:
         return False
-
-
-_config = module('config', developers=['OasisAkari'], required_superuser=True, alias='cfg', base=True)
 
 
 @_config.command('write <k> <v> [-s]')
@@ -513,7 +509,7 @@ async def _(msg: Bot.MessageSession):
 
 
 if Config('openai_api_key'):
-    petal = module('petal', developers=['Dianliang233'], base=True, alias='petals')
+    petal = module('petal', base=True, alias='petals')
 
     @petal.command()
     async def _(msg: Bot.MessageSession):
@@ -550,7 +546,7 @@ if Bot.client_name == 'QQ':
         target_data.edit_option(k, v)
         await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
-    lagrange = module('lagrange', developers=['OasisAkari'], required_superuser=True, base=True)
+    lagrange = module('lagrange', required_superuser=True, base=True)
 
     @lagrange.command()
     async def _(msg: Bot.MessageSession):

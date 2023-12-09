@@ -1,4 +1,5 @@
 import re
+import traceback
 
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
@@ -164,7 +165,7 @@ async def _(msg: Bot.MessageSession):
                 rand_result = song_txt(music_data.random())
             await msg.finish(rand_result)
         except Exception as e:
-            Logger.error(e)
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 

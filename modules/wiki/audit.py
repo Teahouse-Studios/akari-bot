@@ -9,7 +9,7 @@ from modules.wiki.utils.wikilib import WikiLib
 
 
 if Config('enable_urlmanager'):
-    aud = module('wiki_audit', developers=['Dianliang233', 'OasisAkari'], required_superuser=True,
+    aud = module('wiki_audit', required_superuser=True,
                  alias='wau')
 
     @aud.command(['trust <apiLink>', 'block <apiLink>'])
