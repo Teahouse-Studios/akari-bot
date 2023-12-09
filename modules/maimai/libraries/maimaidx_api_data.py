@@ -11,7 +11,7 @@ from .maimaidx_music import get_cover_len5_id, TotalList
 total_list = TotalList()
 
 assets_path = os.path.abspath('./assets/maimai')
-cover_dir = f"{assets_path}/static/mai/cover"
+cover_dir = f"{assets_path}/static/mai/pic"
 
 
 async def update_alias():
@@ -47,11 +47,9 @@ async def update_covers():
     if os.path.exists(cover_dir):
         shutil.rmtree(cover_dir)
         
-    static_cover_dir = os.path.join(ca, 'mai/cover')
+    static_cover_dir = os.path.join(ca, 'mai/pic')
     if os.path.exists(static_cover_dir):
         shutil.move(static_cover_dir, cover_dir)
-
-    os.remove(download_file)
 
     return True
 
