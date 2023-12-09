@@ -197,28 +197,22 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
 
 
-@tog.command('timeoffset <offset>')
-async def _(msg: Bot.MessageSession):
-    offset = msg.parsed_msg['<offset>']
+@tog.command('timeoffset <offset> {{core.help.toggle.timeoffset}}')
+async def _(msg: Bot.MessageSession, offset: str):
     try:
-        if offset[0] == '+':
-            _offset = offset[1:]
-        elif offset[0] == '-':
-            _offset = offset[1:]
+        tstr_split = [int(part) for part in offset.split(':')]
+        hour = tstr_split[0]
+        minute = tstr_split[1] if len(tstr_split) > 1 else 0
+        if minute == 0:
+            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
         else:
-            _offset = offset
-        tstr_spilt = _offset.split(':')
-        hour = int(tstr_spilt[0])
-        if len(tstr_spilt) == 2:
-            minute = int(tstr_spilt[1])
-        else:
-            minute = 0
+            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}:{abs(minute):02d}"
         if hour > 12 or minute > 60:
             raise ValueError
     except ValueError:
         await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
     msg.data.edit_option('timezone_offset', offset)
-    await msg.finish(msg.locale.t('success', offset=offset))
+    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
 
 
 mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
