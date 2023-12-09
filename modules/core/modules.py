@@ -313,7 +313,7 @@ async def bot_help(msg: Bot.MessageSession):
             if help_.args:
                 msgs.append(help_.return_formatted_help_doc())
 
-            doc = '\n'.join(msgs).strip()
+            doc = '\n'.join(msgs)
             if module_.regex_list.set:
                 doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
                 for regex in module_.regex_list.set:
@@ -355,7 +355,7 @@ async def bot_help(msg: Bot.MessageSession):
                     traceback.print_exc()
             if malias:
                 doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
-            await msg.finish(doc + devs_msg + wiki_msg)
+            await msg.finish((doc + devs_msg + wiki_msg).lstrip())
         else:
             await msg.finish(msg.locale.t("core.message.module.help.not_found"))
 
