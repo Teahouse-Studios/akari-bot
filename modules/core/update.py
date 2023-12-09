@@ -7,6 +7,7 @@ import ujson as json
 
 from core.builtins import Bot, PrivateAssets, ExecutionLockList, MessageTaskManager
 from core.component import module
+from core.logger import Logger
 from core.utils.info import Info
 
 upd = module('update', required_superuser=True, base=True)
@@ -96,5 +97,6 @@ if Info.subprocess:
                 await msg.send_message(pull_repo_result)
                 await msg.send_message(update_dependencies())
             else:
+                Logger.warn(f'Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
             restart()

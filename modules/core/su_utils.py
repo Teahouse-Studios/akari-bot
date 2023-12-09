@@ -14,6 +14,7 @@ from config import Config, CFG
 from core.builtins import Bot, Image, Plain, Temp
 from core.component import module
 from core.loader import ModulesManager
+from core.logger import Logger
 from core.parser.message import remove_temp_ban
 from core.scheduler import CronTrigger
 from core.tos import pardon_user, warn_user
