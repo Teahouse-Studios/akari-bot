@@ -200,17 +200,13 @@ async def _(msg: Bot.MessageSession):
 @tog.command('timeoffset <offset>')
 async def _(msg: Bot.MessageSession, offset: str):
     try:
-        if offset[0] in ['+', '-']:
-            _offset = offset[1:]
-        else:
-            _offset = offset
-            offset = '+' + offset
-        tstr_spilt = _offset.split(':')
-        hour = int(tstr_spilt[0])
-        if len(tstr_spilt) == 2:
-            minute = int(tstr_spilt[1])
-        else:
-            minute = 0
+        tstr_split = [int(part) for part in offset.split(':')]
+        hour = tstr_split[0]
+        minute = tstr_split[1] if len(tstr_split) > 1 else 0
+    if minute == 0:
+        offset = f"{'+' if hours >= 0 else '-'}{abs(hours)}"
+    else:
+        offset = f"{'+' if hours >= 0 else '-'}{abs(hours)}:{abs(minutes):02d}"
         if hour > 12 or minute > 60:
             raise ValueError
     except ValueError:
