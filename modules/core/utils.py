@@ -205,6 +205,8 @@ async def _(msg: Bot.MessageSession):
             _offset = offset[1:]
         elif offset[0] == '-':
             _offset = offset[1:]
+        else:
+            _offset = offset
         tstr_spilt = _offset.split(':')
         hour = int(tstr_spilt[0])
         if len(tstr_spilt) == 2:
