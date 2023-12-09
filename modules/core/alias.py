@@ -8,7 +8,8 @@ ali = module('alias', required_admin=True, base=True)
 @ali.command('add <alias> <command> {{core.help.alias.add}}',
              'remove <alias> {{core.help.alias.remove}}',
              'reset {{core.help.alias.reset}}',
-             'list {{core.help.alias.list}}')
+             'list {{core.help.alias.list}}',
+             'list legacy {{core.help.alias.list.legacy}}')
 async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
     alias = msg.parsed_msg.get('<alias>', False)
@@ -41,15 +42,20 @@ async def set_alias(msg: Bot.MessageSession):
         msg.data.edit_option('command_alias', {})
         await msg.finish(msg.locale.t("core.message.alias.reset.success"))
     elif 'list' in msg.parsed_msg:
+        legacy = True
         if len(aliases) == 0:
             await msg.finish(msg.locale.t("core.message.alias.list.none"))
-        else:
+        elif 'list' not in msg.parsed_msg:
             table = ImageTable([[k, aliases[k]] for k in aliases],
                                [msg.locale.t("core.message.alias.list.table.header.alias"),
                                 msg.locale.t("core.message.alias.list.table.header.command")])
             img = await image_table_render(table)
             if img:
+                legacy = False
                 await msg.finish([msg.locale.t("core.message.alias.list"), Image(img)])
             else:
+                pass
+        
+        if legacy:
                 await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
                                        + '\n'.join([f'{k} -> {aliases[k]}' for k in aliases]))

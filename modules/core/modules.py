@@ -174,9 +174,7 @@ async def config_modules(msg: Bot.MessageSession):
         if msg.check_super_user():
             def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
-                if base_mode:
-                    return msg.locale.t("core.message.module.reload.base", module=module)
-                elif reload_count > 1:
+                if reload_count > 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
                            ('\n' if len(extra_modules) != 0 else '') + \
                            '\n'.join(extra_modules) + \
@@ -198,7 +196,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        await msg.finish(msg.locale.t("core.message.module.reload.base"))
+                        await msg.finish(msg.locale.t("core.message.module.reload.base", module=module_))
 
                     elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
