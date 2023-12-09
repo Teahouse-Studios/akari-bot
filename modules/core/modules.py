@@ -175,7 +175,7 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
                 if base_mode and reload_count:
-                    return msg.locale.t("core.message.module.reload.success.base")
+                    return msg.locale.t("core.message.module.reload.success.base", module=module)
                 elif reload_count > 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
                            ('\n' if len(extra_modules) != 0 else '') + \
@@ -313,7 +313,7 @@ async def bot_help(msg: Bot.MessageSession):
             if help_.args:
                 msgs.append(help_.return_formatted_help_doc())
 
-            doc = '\n'.join(msgs)
+            doc = '\n'.join(msgs).strip()
             if module_.regex_list.set:
                 doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
                 for regex in module_.regex_list.set:
