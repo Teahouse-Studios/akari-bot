@@ -49,7 +49,7 @@ async def _():
                 for z in chk:
                     sz = z['content']
                     send_msg.append(sz)
-                    send_msg.append(FormattedTime(y['timestamp']))
+                    send_msg.append(FormattedTime(strptime2ts(y['timestamp'])))
                     if not z['status']:
                         send_msg.append('\n检测到外来信息介入，请前往日志查看所有消息。'
                                         'https://zh.minecraft.wiki/w/Special:%E6%BB%A5%E7%94%A8%E6%97%A5%E5%BF%97')
@@ -79,7 +79,7 @@ async def newbie():
             send_msg = []
             if 'title' in xz:
                 if xz['title'] not in qq:
-                    send_msg.append(FormattedTime(xz['timestamp'], date=False, seconds=False))
+                    send_msg.append(FormattedTime(strptime2ts(xz['timestamp']), date=False, seconds=False))
                     prompt = '新增新人：\n' + xz['title']
                     s = await check(prompt)
                     Logger.debug(s)
