@@ -206,7 +206,7 @@ async def _(msg: Bot.MessageSession, offset: str):
         if minute == 0:
             offset = f"{'+' if hours >= 0 else '-'}{abs(hour)}"
         else:
-        offset = f"{'+' if hours >= 0 else '-'}{abs(hour)}:{abs(minute):02d}"
+            offset = f"{'+' if hours >= 0 else '-'}{abs(hour)}:{abs(minute):02d}"
         if hour > 12 or minute > 60:
             raise ValueError
     except ValueError:
