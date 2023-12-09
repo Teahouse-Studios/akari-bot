@@ -173,7 +173,7 @@ class ModulesManager:
     @classmethod
     def reload_module(cls, module_name: str):
         """
-        重载该小可模块（以及该模块所在文件的其它模块）
+        重载该机器人模块（以及该模块所在文件的其它模块）
         """
         py_module = cls.return_py_module(module_name)
         unbind_modules = cls.search_related_module(module_name)
@@ -184,7 +184,7 @@ class ModulesManager:
     @classmethod
     def load_module(cls, module_name: str):
         """
-        加载该小可模块（以及该模块所在文件的其它模块）
+        加载该机器人模块（以及该模块所在文件的其它模块）
         """
         if module_name not in current_unloaded_modules:
             return False
@@ -212,7 +212,7 @@ class ModulesManager:
     @classmethod
     def unload_module(cls, module_name: str):
         """
-        卸载该小可模块（以及该模块所在文件的其它模块）
+        卸载该机器人模块（以及该模块所在文件的其它模块）
         """
         unbind_modules = cls.search_related_module(module_name)
         cls.remove_modules(unbind_modules)
@@ -223,7 +223,7 @@ class ModulesManager:
     @classmethod
     def reload_py_module(cls, module_name: str):
         """
-        重载该py模块
+        重载该Python模块
         """
         try:
             Logger.info(f'Reloading {module_name} ...')

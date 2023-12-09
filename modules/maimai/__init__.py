@@ -1,4 +1,8 @@
-﻿from core.builtins import command_prefix
+﻿import traceback
+
+from config import Config
+from core.builtins import Bot, command_prefix, Plain, Image as BImage
+from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_alias, update_covers
@@ -403,8 +407,8 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         else:
             rand_result = song_txt(music_data.random())
         await msg.finish(rand_result)
-    except Exception as e:
-        Logger.error(e)
+    except Exception:
+        Logger.error(traceback.format_exc())
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
@@ -463,3 +467,12 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))
+
+@mai.schedule(CronTrigger.from_crontab('0 0 * * *'))
+async def _():
+    Logger.info('Updating maimai alias...')
+    try:
+        await update_alias()
+    except Exception:
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
