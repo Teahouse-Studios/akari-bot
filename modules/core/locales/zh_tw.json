@@ -106,7 +106,7 @@
     "core.message.module.module.help": "模組「${module}」的說明資訊：",
     "core.message.module.recommends": "建議同時啟用以下模組：\n${msgs}\n是否一同啟用？",
     "core.message.module.reload.confirm": "此操作將額外同時重新載入以下模組：\n${modules}\n是否繼續？",
-    "core.message.module.reload.confirm.base": "你正在重新載入基礎模組！是否繼續？",
+    "core.message.module.reload.base": "失败：「${module}」為基礎模組，為防止機器人發生異常，此行為已被阻擋。",
     "core.message.module.reload.failed": "重新載入模組失敗。",
     "core.message.module.reload.no_more": "未發現已載入的其餘檔案。",
     "core.message.module.reload.success": "成功重新載入模組：\n${module}",

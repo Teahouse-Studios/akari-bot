@@ -19,7 +19,6 @@ m = module('module',
                   'load': 'module load',
                   'reload': 'module reload',
                   'unload': 'module unload'},
-           developers=['OasisAkari', 'Light-Beacon'],
            required_admin=True
            )
 
@@ -199,11 +198,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm.base"), append_instruction=False)
-                        if confirm:
-                            base_mode = True
-                        else:
-                            await msg.finish()
+                        await msg.finish(msg.locale.t("core.message.module.reload.base"))
 
                     elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
@@ -292,10 +287,7 @@ async def config_modules(msg: Bot.MessageSession):
         await msg.finish()
 
 
-hlp = module('help',
-             base=True,
-             developers=['OasisAkari', 'Dianliang233'],
-             )
+hlp = module('help', base=True)
 
 
 @hlp.command('<module> {{core.help.module.help.detail}}')
@@ -344,9 +336,9 @@ async def bot_help(msg: Bot.MessageSession):
                     malias.append(f'{a} -> {module_alias[a]}')
             if module_.developers is not None:
                 devs = msg.locale.t('message.delimiter').join(module_.developers)
+                devs_msg = '\n' + msg.locale.t("core.message.module.help.author.type1") + devs
             else:
-                devs = ''
-            devs_msg = '\n' + msg.locale.t("core.message.module.help.author.type1") + devs
+                devs_msg = ''
             wiki_msg = '\n' + msg.locale.t("core.message.module.help.helpdoc.address",
                                            help_url=Config('help_url')) + '/' + help_name
             if len(doc) > 500 and msg.Feature.image:
