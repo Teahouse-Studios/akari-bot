@@ -155,6 +155,8 @@
     "core.message.superuser.invalid": "ID 格式錯誤，格式應為「${target}|<使用者 ID>」",
     "core.message.toggle.check.disable": "已停用指令錯誤檢查提醒。",
     "core.message.toggle.check.enable": "已啟用指令錯誤檢查提醒。",
+    "core.message.toggle.timeoffset.invalid": "无效的时间偏移量。",
+    "core.message.toggle.timeoffset.success": "已将时间偏移量设定为 ${offset}。",
     "core.message.toggle.typing.disable": "已停用輸入提醒。",
     "core.message.toggle.typing.enable": "已啟用輸入提醒。",
     "core.message.update.failed": "嘗試從 GitHub 取得更新失敗，請稍後重試。",
