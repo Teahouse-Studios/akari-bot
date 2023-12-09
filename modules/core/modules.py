@@ -175,7 +175,7 @@ async def config_modules(msg: Bot.MessageSession):
             def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
                 if base_mode:
-                    return msg.locale.t("core.message.module.reload.success.base", module=module)
+                    return msg.locale.t("core.message.module.reload.base", module=module)
                 elif reload_count > 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
                            ('\n' if len(extra_modules) != 0 else '') + \
