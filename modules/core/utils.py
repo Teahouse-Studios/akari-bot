@@ -197,7 +197,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
 
 
-@tog.command('timeoffset <offset>')
+@tog.command('timeoffset <offset> {{core.help.toggle.timeoffset}}')
 async def _(msg: Bot.MessageSession, offset: str):
     try:
         tstr_split = [int(part) for part in offset.split(':')]
