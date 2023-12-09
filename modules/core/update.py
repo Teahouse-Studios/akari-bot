@@ -34,10 +34,9 @@ async def update_bot(msg: Bot.MessageSession):
         pull_repo_result = pull_repo()
         if pull_repo_result != '':
             await msg.send_message(pull_repo_result)
-            await msg.send_message(update_dependencies())
         else:
-            await msg.finish(msg.locale.t("core.message.update.failed"))
-
+            await msg.send_message(msg.locale.t("core.message.update.failed"))
+        await msg.send_message(update_dependencies())
 
 if Info.subprocess:
     rst = module('restart', required_superuser=True, base=True)

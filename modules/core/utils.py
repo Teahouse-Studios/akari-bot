@@ -1,6 +1,6 @@
 import platform
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 
 import jwt
 import psutil
@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
     result = "Pong!"
     if checkpermisson:
         timediff = str(datetime.now() - started_time)
-        boot_start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        boot_start = msg.ts2strftime(psutil.boot_time())
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -197,6 +197,30 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
 
 
+@tog.command('timeoffset <offset>')
+async def _(msg: Bot.MessageSession):
+    offset = msg.parsed_msg['<offset>']
+    try:
+        if offset[0] == '+':
+            _offset = offset[1:]
+        elif offset[0] == '-':
+            _offset = offset[1:]
+        else:
+            _offset = offset
+        tstr_spilt = _offset.split(':')
+        hour = int(tstr_spilt[0])
+        if len(tstr_spilt) == 2:
+            minute = int(tstr_spilt[1])
+        else:
+            minute = 0
+        if hour > 12 or minute > 60:
+            raise ValueError
+    except ValueError:
+        await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
+    msg.data.edit_option('timezone_offset', offset)
+    await msg.finish(msg.locale.t('success', offset=offset))
+
+
 mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
 
 
@@ -209,7 +233,13 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, required_admin=True, available_for='QQ|Group', alias='dismiss', desc='{core.help.leave}')
+leave = module(
+    'leave',
+    base=True,
+    required_admin=True,
+    available_for='QQ|Group',
+    alias='dismiss',
+    desc='{core.help.leave}')
 
 
 @leave.command()

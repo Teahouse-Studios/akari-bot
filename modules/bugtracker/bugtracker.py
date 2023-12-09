@@ -4,7 +4,7 @@ import aiohttp
 import ujson as json
 from PIL import ImageFont
 
-from config import Config, CFG
+from config import CFG
 from core.builtins import Url
 from core.logger import Logger
 from core.utils.http import download_to_cache, get_url

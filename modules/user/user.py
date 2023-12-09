@@ -6,14 +6,14 @@ import urllib.parse
 
 from bs4 import BeautifulSoup as bs
 
-from core.builtins import Plain, Image
+from core.builtins import Plain, Image, MessageSession
 from core.utils.http import get_url, download_to_cache
-from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
 from .tpg import tpg
+from modules.wiki.utils.time import strptime2ts
 
 
-async def get_user_info(msg, wikiurl, username, pic=False):
+async def get_user_info(msg: MessageSession, wikiurl, username, pic=False):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
         return [Plain(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))]
@@ -51,7 +51,7 @@ async def get_user_info(msg, wikiurl, username, pic=False):
         for g in user_central_auth_data['query']['globaluserinfo']['groups']:
             data['global_users_groups'].append(groups[g] if g in groups else g)
     data['registration_time'] = base_user_info['registration']
-    data['registration_time'] = UTC8(data['registration_time'], 'full') if data[
+    data['registration_time'] = msg.ts2strftime(strptime2ts(data['registration_time'])) if data[
         'registration_time'] is not None else msg.locale.t(
         'unknown')
     data['edited_count'] = str(base_user_info['editcount'])
@@ -83,13 +83,20 @@ async def get_user_info(msg, wikiurl, username, pic=False):
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
-        data['blocked_time'] = UTC8(data['blocked_time'], 'full') if data['blocked_time'] is not None else msg.locale.t(
-            'unknown')
-        data['blocked_expires'] = base_user_info['blockedexpiry']
-        data['blocked_expires'] = UTC8(data['blocked_expires'], 'full') if data[
-            'blocked_expires'] is not None else msg.locale.t(
-            'unknown')
-        data['blocked_reason'] = base_user_info['blockedreason']
+        if data['blocked_time'] in ['infinity', 'infinite']:
+            data['blocked_time'] = '无限期'
+        else:
+            data['blocked_time'] = msg.ts2strftime(strptime2ts(data['blocked_time'])) \
+                if data['blocked_time'] is not None else msg.locale.t(
+                'unknown')
+        data['blocked_expires'] = base_user_info.get('blockexpiry', None)
+        if data['blocked_expires'] in ['infinity', 'infinite']:
+            data['blocked_expires'] = '无限期'
+        else:
+            data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires'])) if data[
+                'blocked_expires'] is not None else msg.locale.t(
+                'unknown')
+        data['blocked_reason'] = base_user_info['blockreason']
         data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] is not None else msg.locale.t(
             'unknown')
 
@@ -188,7 +195,7 @@ async def get_user_info(msg, wikiurl, username, pic=False):
             msgs.append(msg.locale.t('user.message.global_home') + global_home)
 
         if blocked_by := data.get('blocked_by', False):
-            msgs.append(data['user'] + msg.locale.t('user.message.user.blocked'))
+            msgs.append(user + msg.locale.t('user.message.user.blocked'))
             msgs.append(
                 msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=blocked_by) + (
                     msg.locale.t('user.message.user.blocked.blocked_time') + data[

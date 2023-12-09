@@ -149,6 +149,7 @@ async def _(msg: Bot.MessageSession):
 
 purge = module('purge', required_superuser=True, base=True)
 
+
 @purge.command()
 async def _(msg: Bot.MessageSession):
     cache_path = os.path.abspath(Config('cache_path'))
@@ -171,9 +172,10 @@ async def _():
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     os.mkdir(cache_path)
-    
+
 
 set_ = module('set', required_superuser=True, base=True)
+
 
 @set_.command('modules <target_id> <modules> ...')
 async def _(msg: Bot.MessageSession):
@@ -357,6 +359,7 @@ async def _(msg: Bot.MessageSession):
 
 rse = module('raise', required_superuser=True, base=True)
 
+
 @rse.command()
 async def _(msg: Bot.MessageSession):
     e = msg.locale.t("core.message.raise")
@@ -373,12 +376,14 @@ if Config('enable_eval'):
 
 _config = module('config', required_superuser=True, alias='cfg', base=True)
 
+
 def isfloat(num):
     try:
         float(num)
         return True
     except ValueError:
         return False
+
 
 def isint(num):
     try:
@@ -402,7 +407,7 @@ async def _(msg: Bot.MessageSession):
     elif re.match(r'^\[.*\]$', value):
         try:
             value = json.loads(value)
-        except:
+        except BaseException:
             await msg.finish(msg.locale.t("core.message.config.write.failed"))
 
     CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
@@ -443,7 +448,6 @@ if Config('openai_api_key'):
             target = msg.data
             target.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
-
 
 if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)

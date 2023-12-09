@@ -163,5 +163,6 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
+    "core.message.toggle.timeoffset.invalid": "无效的时间偏移量。"
 }

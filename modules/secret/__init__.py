@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
-from core.builtins import Bot
+from core.builtins import Bot, Plain
+from core.builtins.message.internal import FormattedTime
 from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
 from core.scheduler import Scheduler, DateTrigger
-from modules.wiki.utils.UTC8 import UTC8
 from modules.wiki.utils.wikilib import WikiLib
+from modules.wiki.utils.time import strptime2ts
 
 wiki = WikiLib('https://zh.minecraft.wiki/api.php')
 bot = Bot.FetchTarget
@@ -31,6 +32,7 @@ async def _():
                                      aflprop='user|title|action|result|filter|timestamp',
                                      afllimit=30)
         for y in query2["query"]["abuselog"]:
+            send_msg = []
             identify = f'{y["user"]}{y["title"]}{y["timestamp"]}{y["filter"]}{y["action"]}{y["result"]}'
             if identify not in abuses:
                 s = f'用户：{y["user"]}\n' \
@@ -40,16 +42,18 @@ async def _():
                 result = y['result']
                 if result == '':
                     result = 'pass'
-                s += '处理结果：' + result + '\n'
-                s += UTC8(y['timestamp'], 'full')
+                s += '处理结果：' + result
+
                 chk = await check(s)
                 Logger.debug(chk)
                 for z in chk:
                     sz = z['content']
+                    send_msg.append(sz)
+                    send_msg.append(FormattedTime(strptime2ts(y['timestamp'])))
                     if not z['status']:
-                        sz = sz + '\n检测到外来信息介入，请前往日志查看所有消息。' \
-                                  'https://zh.minecraft.wiki/w/Special:%E6%BB%A5%E7%94%A8%E6%97%A5%E5%BF%97'
-                    await bot.post_message('__check_abuse__', sz)
+                        send_msg.append('\n检测到外来信息介入，请前往日志查看所有消息。'
+                                        'https://zh.minecraft.wiki/w/Special:%E6%BB%A5%E7%94%A8%E6%97%A5%E5%BF%97')
+                    await bot.post_message('__check_abuse__', send_msg)
                     abuses.append(identify)
 
 
@@ -69,12 +73,14 @@ async def newbie():
 
     @Scheduler.scheduled_job('interval', seconds=60)
     async def check_newbie():
+
         qqqq = await wiki.get_json(action='query', list='logevents', letype='newusers')
         for xz in qqqq['query']['logevents']:
+            send_msg = []
             if 'title' in xz:
                 if xz['title'] not in qq:
-                    prompt = UTC8(xz['timestamp'], 'onlytime') + \
-                        '新增新人：\n' + xz['title']
+                    send_msg.append(FormattedTime(strptime2ts(xz['timestamp']), date=False, seconds=False))
+                    prompt = '新增新人：\n' + xz['title']
                     s = await check(prompt)
                     Logger.debug(s)
                     for z in s:
@@ -82,5 +88,6 @@ async def newbie():
                         if not z['status']:
                             sz = sz + '\n检测到外来信息介入，请前往日志查看所有消息。' \
                                       'https://zh.minecraft.wiki/w/Special:%E6%97%A5%E5%BF%97?type=newusers'
-                        await bot.post_message('__check_newbie__', sz)
+                        send_msg.append(Plain(sz))
+                        await bot.post_message('__check_newbie__', send_msg)
                         qq.append(xz['title'])

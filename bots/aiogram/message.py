@@ -46,7 +46,7 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         count = 0
         send = []
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 send_ = await bot.send_message(self.session.target, x.text,
                                                reply_to_message_id=self.session.message.message_id if quote

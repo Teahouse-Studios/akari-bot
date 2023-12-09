@@ -9,7 +9,7 @@ from PIL import Image as PImage
 from aiofile import async_open
 
 from config import CFG
-from core.builtins import Plain, Image, Voice, Embed, MessageChain
+from core.builtins import Plain, Image, Voice, Embed, MessageChain, MessageSession
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import download_to_cache
@@ -38,7 +38,7 @@ async def image_split(i: Image) -> List[Image]:
 save_source = True
 
 
-async def msgchain2image(message_chain: Union[List, MessageChain], use_local=True):
+async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageSession = None, use_local=True):
     if not web_render_local:
         if not web_render:
             Logger.warn('[Webrender] Webrender is not configured.')
@@ -88,7 +88,7 @@ async def msgchain2image(message_chain: Union[List, MessageChain], use_local=Tru
 </body>
 </html>"""
 
-    for m in message_chain.as_sendable(embed=False):
+    for m in message_chain.as_sendable(msg=msg, embed=False):
         if isinstance(m, Plain):
             lst.append('<div>' + m.text.replace('\n', '<br>') + '</div>')
         if isinstance(m, Image):
