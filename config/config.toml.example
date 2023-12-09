@@ -33,6 +33,7 @@ cache_path = "./cache/"
 command_prefix = ["~", "～",]
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y",]
 disabled_bots = 
+timezone_offset = "+8"
 bug_report_url = "https://s.wd-ljt.com/botreportbug"
 bug_report_targets =
 donate_url = "https://afdian.net/@teahouse"

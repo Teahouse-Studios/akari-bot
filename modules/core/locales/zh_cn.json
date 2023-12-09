@@ -155,6 +155,8 @@
     "core.message.superuser.invalid": "ID 格式错误，格式应为“${target}|<用户 ID>”。",
     "core.message.toggle.check.disable": "已关闭错字检查提示。",
     "core.message.toggle.check.enable": "已开启错字检查提示。",
+    "core.message.toggle.timeoffset.invalid": "无效的时间偏移量。",
+    "core.message.toggle.timeoffset.success": "已将时间偏移量设定为 ${offset}。",
     "core.message.toggle.typing.disable": "已关闭输入提示。",
     "core.message.toggle.typing.enable": "已开启输入提示。",
     "core.message.update.failed": "尝试从 GitHub 获取更新失败，请稍后重试。",
@@ -163,6 +165,5 @@
     "core.message.whoami": "你的 ID 是：${senderid}\n本对话的 ID 是：${targetid}",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",
-    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）",
-    "core.message.toggle.timeoffset.invalid": "无效的时间偏移量。"
+    "core.message.whoami.superuser": "（你拥有本机器人的超级用户权限）"
 }

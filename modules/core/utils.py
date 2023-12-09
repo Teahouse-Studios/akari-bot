@@ -198,15 +198,15 @@ async def _(msg: Bot.MessageSession):
 
 
 @tog.command('timeoffset <offset>')
-async def _(msg: Bot.MessageSession):
-    offset = msg.parsed_msg['<offset>']
+async def _(msg: Bot.MessageSession, offset: str):
     try:
-        if offset[0] == '+':
+        if offset[0] in ['+', '-']:
             _offset = offset[1:]
-        elif offset[0] == '-':
-            _offset = offset[1:]
-        else:
+        elif offset == '0':
             _offset = offset
+            offset = '+' + offset
+        else:
+            raise ValueError
         tstr_spilt = _offset.split(':')
         hour = int(tstr_spilt[0])
         if len(tstr_spilt) == 2:
@@ -218,7 +218,7 @@ async def _(msg: Bot.MessageSession):
     except ValueError:
         await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
     msg.data.edit_option('timezone_offset', offset)
-    await msg.finish(msg.locale.t('success', offset=offset))
+    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
 
 
 mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
