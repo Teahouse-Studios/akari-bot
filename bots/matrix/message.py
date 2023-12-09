@@ -49,7 +49,7 @@ class MessageSession(MessageSessionT):
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(message_chain)
         send: list[nio.RoomSendResponse] = []
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             reply_to = None
             reply_to_user = None
             if quote and len(send) == 0:

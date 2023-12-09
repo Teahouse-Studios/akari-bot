@@ -67,7 +67,8 @@ class MessageSession:
     """
     __slots__ = (
         "target", "session", "trigger_msg", "parsed_msg", "matched_msg", "sent", "prefixes", "options",
-        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp", "tmp")
+        "enabled_modules", "muted", "custom_admins", "data", "locale", "timestamp", "tmp", "timezone_offset",
+        "_tz_offset")
 
     parsed_msg: Dict[str, Union[str, list]]
 
@@ -209,6 +210,16 @@ class MessageSession:
     async def get_text_channel_list(self):
         """
         用于获取子文字频道列表（QQ）。
+        """
+        raise NotImplementedError
+
+    def ts2strftime(self, timestamp: float, date=True, seconds=True, timezone=True):
+        """
+        用于将时间戳转换为可读的时间格式。
+        :param timestamp: 时间戳
+        :param date: 是否显示日期
+        :param seconds: 是否显示秒
+        :param timezone: 是否显示时区
         """
         raise NotImplementedError
 
