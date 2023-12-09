@@ -155,6 +155,8 @@
     "core.message.superuser.invalid": "Invalid ID format. The format should be \"${target}|<User ID>\".",
     "core.message.toggle.check.disable": "Check prompt disabled.",
     "core.message.toggle.check.enable": "Check prompt enabled.",
+    "core.message.toggle.timeoffset.invalid": "无效的时间偏移量。",
+    "core.message.toggle.timeoffset.success": "已将时间偏移量设定为 ${offset}。",
     "core.message.toggle.typing.disable": "Input prompt disabled.",
     "core.message.toggle.typing.enable": "Input prompt enabled.",
     "core.message.update.failed": "Failed to fetch update from GitHub. Please try again later.",
