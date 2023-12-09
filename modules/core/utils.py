@@ -216,7 +216,7 @@ async def _(msg: Bot.MessageSession):
     except ValueError:
         await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
     msg.data.edit_option('timezone_offset', offset)
-    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
+    await msg.finish(msg.locale.t('success', offset=offset))
 
 
 mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
@@ -231,7 +231,13 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.mute.disable'))
 
 
-leave = module('leave', base=True, required_admin=True, available_for='QQ|Group', alias='dismiss', desc='{core.help.leave}')
+leave = module(
+    'leave',
+    base=True,
+    required_admin=True,
+    available_for='QQ|Group',
+    alias='dismiss',
+    desc='{core.help.leave}')
 
 
 @leave.command()
