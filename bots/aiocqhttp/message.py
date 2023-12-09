@@ -119,7 +119,7 @@ class MessageSession(MessageSessionT):
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(message_chain)
         count = 0
-        for x in message_chain.as_sendable(locale=self.locale.locale, embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
@@ -138,7 +138,7 @@ class MessageSession(MessageSessionT):
             except aiocqhttp.exceptions.ActionFailed:
                 img_chain = message_chain.copy()
                 img_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
-                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain)).as_uri())
+                msg2img = MessageSegment.image(Path(await msgchain2image(self, img_chain)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:

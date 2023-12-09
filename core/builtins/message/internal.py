@@ -1,6 +1,7 @@
 import base64
 import re
 import uuid
+from datetime import datetime
 from os.path import abspath
 from typing import List
 from urllib import parse
@@ -13,6 +14,7 @@ from tenacity import retry, stop_after_attempt
 from config import Config
 from core.types.message.internal import (Plain as PlainT, Image as ImageT, Voice as VoiceT, Embed as EmbedT,
                                          EmbedField as EmbedFieldT, Url as UrlT, ErrorMessage as EMsg)
+from core.types.message import MessageSession
 from core.utils.i18n import Locale
 
 
@@ -54,6 +56,44 @@ class Url(UrlT):
 
     def __repr__(self):
         return f'Url(url="{self.url}")'
+
+    def to_dict(self):
+        return {'type': 'url', 'data': {'url': self.url}}
+
+
+class FormattedTime:
+    def __init__(self, timestamp: float, date=True, seconds=True, timezone=True):
+        self.timestamp = timestamp
+        self.date = date
+        self.seconds = seconds
+        self.timezone = timezone
+
+    def to_str(self, msg: MessageSession = None):
+        ftime_template = []
+        if msg:
+            if self.date:
+                ftime_template.append(msg.locale.t("time.date.format"))
+            if self.seconds:
+                ftime_template.append(msg.locale.t("time.time.format"))
+            else:
+                ftime_template.append(msg.locale.t("time.time.nosec.format"))
+            if self.timezone:
+                ftime_template.append(f"(UTC{msg._tz_offset})")
+        else:
+            ftime_template.append('%Y-%m-%d %H:%M:%S')
+        if not msg:
+            return datetime.fromtimestamp(self.timestamp).strftime(' '.join(ftime_template))
+        else:
+            return (datetime.utcfromtimestamp(self.timestamp) + msg.timezone_offset).strftime(' '.join(ftime_template))
+
+    def __str__(self):
+        return self.to_str()
+
+    def __repr__(self):
+        return f'FormattedTime(time={self.timestamp})'
+
+    def to_dict(self):
+        return {'type': 'time', 'data': {'time': self.timestamp}}
 
 
 class ErrorMessage(EMsg):
@@ -229,4 +269,4 @@ class Embed(EmbedT):
                 'fields': self.fields}}
 
 
-__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage"]
+__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime"]

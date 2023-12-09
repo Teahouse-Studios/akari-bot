@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
     result = "Pong!"
     if checkpermisson:
         timediff = str(datetime.now() - started_time)
-        boot_start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        boot_start = msg.ts2strftime(psutil.boot_time())
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -209,7 +209,12 @@ async def _(msg: Bot.MessageSession):
             offset = offset[1:]
         elif offset[0] == '-':
             offset = offset[1:]
-        hour, minute = map(int, offset.split(':'))
+        tstr_spilt = offset.split(':')
+        hour = int(tstr_spilt[0])
+        if len(tstr_spilt) == 2:
+            minute = int(tstr_spilt[1])
+        else:
+            minute = 0
         if hour > 12 or minute > 60:
             raise ValueError
     except ValueError:

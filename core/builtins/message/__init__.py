@@ -31,8 +31,9 @@ class MessageSession(MessageSessionT):
         self.locale = Locale(self.data.locale)
         self.timestamp = datetime.now()
         self.tmp = {}
-        self.timezone_offset = parse_time_string(self.options.get(
-            'timezone_offset', Config('timezone_offset', '+08:00')))
+        self._tz_offset = self.options.get(
+            'timezone_offset', Config('timezone_offset', '+8'))
+        self.timezone_offset = parse_time_string(self._tz_offset)
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, append_instruction=True) -> bool:
         send = None
@@ -126,6 +127,18 @@ class MessageSession(MessageSessionT):
     waitAnyone = wait_anyone
     checkPermission = check_permission
     checkSuperUser = check_super_user
+
+    def ts2strftime(self, timestamp: float, date=True, seconds=True, timezone=True):
+        ftime_template = []
+        if date:
+            ftime_template.append(self.locale.t("time.date.format"))
+        if seconds:
+            ftime_template.append(self.locale.t("time.time.format"))
+        else:
+            ftime_template.append(self.locale.t("time.time.nosec.format"))
+        if timezone:
+            ftime_template.append(f"(UTC{self._tz_offset})")
+        return (datetime.utcfromtimestamp(timestamp) + self.timezone_offset).strftime(' '.join(ftime_template))
 
 
 __all__ = ["MessageSession"]

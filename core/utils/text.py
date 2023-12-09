@@ -26,7 +26,14 @@ def parse_time_string(time_str):
         elif time_str[0] == '-':
             negative = True
             time_str = time_str[1:]
-        hour, minute = map(int, time_str.split(':'))
-        return datetime.timedelta(hours=hour if not negative else -hour, minutes=minute if not negative else -minute)
+        tstr_split = time_str.split(':')
+        hour = int(tstr_split[0])
+        minute = 0
+        if len(tstr_split) == 2:
+            minute = int(tstr_split[1])
+        if negative:
+            hour = -hour
+            minute = -minute
+        return datetime.timedelta(hours=hour, minutes=minute)
     except ValueError:
         return datetime.timedelta()

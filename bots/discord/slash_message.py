@@ -46,7 +46,7 @@ class MessageSession(MessageSessionT):
         count = 0
         send = []
         first_send = True
-        for x in message_chain.as_sendable():
+        for x in message_chain.as_sendable(self):
             if isinstance(x, Plain):
                 if first_send:
                     send_ = await self.session.message.respond(x.text)

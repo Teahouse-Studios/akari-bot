@@ -77,7 +77,7 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         count = 0
         send = []
-        for x in message_chain.as_sendable():
+        for x in message_chain.as_sendable(self):
             if isinstance(x, Plain):
                 send_ = await self.session.target.send(x.text,
                                                        reference=self.session.message if quote and count == 0

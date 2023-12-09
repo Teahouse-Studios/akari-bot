@@ -14,6 +14,7 @@ from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.loader import ModulesManager
+from core.logger import Logger
 from core.parser.message import remove_temp_ban
 from core.scheduler import CronTrigger
 from core.tos import pardon_user, warn_user
@@ -148,6 +149,7 @@ async def _(msg: Bot.MessageSession):
 
 purge = module('purge', developers=['DoroWolf'], required_superuser=True, base=True)
 
+
 @purge.command()
 async def _(msg: Bot.MessageSession):
     cache_path = os.path.abspath(Config('cache_path'))
@@ -170,9 +172,10 @@ async def _():
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
     os.mkdir(cache_path)
-    
+
 
 set_ = module('set', required_superuser=True, base=True)
+
 
 @set_.command('modules <target_id> <modules> ...')
 async def _(msg: Bot.MessageSession):
@@ -322,7 +325,6 @@ if Info.subprocess:
             write_version_cache(msg)
             restart()
 
-
 upd = module('update', developers=['OasisAkari'], required_superuser=True, base=True)
 
 
@@ -444,7 +446,9 @@ say = module('say', developers=['OasisAkari'], required_superuser=True, base=Tru
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
+
 rse = module('raise', developers=['OasisAkari'], required_superuser=True, base=True)
+
 
 @rse.command()
 async def _(msg: Bot.MessageSession):
@@ -466,6 +470,7 @@ def isfloat(num):
         return True
     except ValueError:
         return False
+
 
 def isint(num):
     try:
@@ -492,7 +497,7 @@ async def _(msg: Bot.MessageSession):
     elif re.match(r'^\[.*\]$', value):
         try:
             value = json.loads(value)
-        except:
+        except BaseException:
             await msg.finish(msg.locale.t("core.message.config.write.failed"))
 
     CFG.write(msg.parsed_msg['<k>'], value, msg.parsed_msg['-s'])
@@ -533,7 +538,6 @@ if Config('openai_api_key'):
             target = msg.data
             target.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
-
 
 if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)

@@ -34,7 +34,7 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         self.sent.append(message_chain)
         msg_list = []
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 msg_list.append(x.text)
                 print(x.text)
