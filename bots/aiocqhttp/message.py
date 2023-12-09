@@ -139,7 +139,7 @@ class MessageSession(MessageSessionT):
             except aiocqhttp.exceptions.ActionFailed:
                 img_chain = message_chain.copy()
                 img_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
-                msg2img = MessageSegment.image(Path(await msgchain2image(self, img_chain)).as_uri())
+                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain, self)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:
