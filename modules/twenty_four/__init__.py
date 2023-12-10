@@ -108,7 +108,7 @@ async def _(msg: Bot.MessageSession):
     numbers = [random.randint(1, 13) for _ in range(4)]
     has_solution_flag = await has_solution(numbers)
 
-    answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), append_instruction=False)
+    answer, _ = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), append_instruction=False)
     expression = answer.as_display(text_only=True)
     if play_state[msg.target.target_id]['active']:
         if expression.lower() in no_solution:

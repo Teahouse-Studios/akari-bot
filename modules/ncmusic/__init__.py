@@ -30,8 +30,8 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 f"{' / '.join(artist['name'] for artist in song['artists'])}",
                 f"{song['album']['name']}" + (f" ({' / '.join(song['album']['transNames'])})" if 'transNames' in song['album'] else ''),
                 f"{song['id']}"
-            ] for i, song in enumerate(songs, start=1)
-        ]
+                ] for i, song in enumerate(songs, start=1)
+                ]
 
         tables = ImageTable(data, [
             msg.locale.t('ncmusic.message.search.table.header.id'),
@@ -39,7 +39,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             msg.locale.t('ncmusic.message.search.table.header.artists'),
             msg.locale.t('ncmusic.message.search.table.header.album'),
             'ID'
-            ])
+        ])
 
         img = await image_table_render(tables)
         if img:
@@ -49,7 +49,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             if len(result['result']['songs']) > 10:
                 send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
             send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
-            query = await msg.wait_next_message(send_msg)
+            query, _ = await msg.wait_next_message(send_msg)
             query = query.as_display(text_only=True)
             try:
                 query = int(query)
@@ -87,7 +87,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             send_msg += msg.locale.t('ncmusic.message.search.collapse')
         send_msg += '\n'
         send_msg += msg.locale.t('ncmusic.message.search.prompt')
-        query = await msg.wait_next_message(send_msg)
+        query, _ = await msg.wait_next_message(send_msg)
         query = query.as_display(text_only=True)
         try:
             query = int(query)
@@ -108,7 +108,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
         except Exception:
             await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
-        
+
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession, sid: str):

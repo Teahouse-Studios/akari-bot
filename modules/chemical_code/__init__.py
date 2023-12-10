@@ -19,8 +19,9 @@ from core.utils.text import remove_prefix
 
 csr_link = 'https://www.chemspider.com'
 
-special_id_path = os.path.abspath(f'./assets/chemical_code/special_id') # 去掉文件扩展名并存储在special_id列表中
-special_id = [os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)] # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
+special_id_path = os.path.abspath(f'./assets/chemical_code/special_id')  # 去掉文件扩展名并存储在special_id列表中
+special_id = [os.path.splitext(filename)[0] for filename in os.listdir(
+    special_id_path)]  # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
 element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
                  'Ar', 'Ca', 'Sc', 'Ti', 'Cr', 'Mn', 'Fe', 'Co', 'Ni',
@@ -58,7 +59,7 @@ def parse_elements(formula: str) -> dict:
 
 @retry(stop=stop_after_attempt(3), reraise=True)
 async def search_csr(id=None):
-    if id is not None: 
+    if id is not None:
         answer_id = id
     else:
         answer_id = random.randint(1, 200000000)  # 数据库增长速度很快，可手动在此修改ID区间
@@ -95,7 +96,7 @@ ccode = module('chemical_code', alias={'cc': 'chemical_code',
 play_state = {}  # 创建一个空字典用于存放游戏状态
 
 
-@ccode.command('{{chemical_code.help}}')  
+@ccode.command('{{chemical_code.help}}')
 async def chemical_code_by_random(msg: Bot.MessageSession):
     await chemical_code(msg)
 
@@ -124,7 +125,7 @@ async def s(msg: Bot.MessageSession):
 async def chemical_code_by_id(msg: Bot.MessageSession):
     id = msg.parsed_msg['<csid>']
     if id.isdigit():
-        if int(id) == 0: # 若 id 为 0，则随机
+        if int(id) == 0:  # 若 id 为 0，则随机
             await chemical_code(msg)
         else:
             await chemical_code(msg, id, random_mode=False)
@@ -143,7 +144,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         play_state[msg.target.target_id]['active'] = False
         return await msg.finish(msg.locale.t('chemical_code.message.error'))
     # print(csr)
-    play_state[msg.target.target_id]['answer'] = csr['name'] 
+    play_state[msg.target.target_id]['answer'] = csr['name']
     Logger.info(f'Answer: {csr["name"]}')
     Logger.info(f'Image: {csr["image"]}')
     download = False
@@ -226,7 +227,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 play_state[msg.target.target_id]['active'] = False
 
     async def timer(start):
-        if play_state[msg.target.target_id]['active']: 
+        if play_state[msg.target.target_id]['active']:
             if datetime.now().timestamp() - start > 60 * set_timeout:
                 await msg.send_message(
                     msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.target_id]["answer"]))
@@ -242,10 +243,10 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
 
         await asyncio.gather(ans(msg, csr['name'], random_mode), timer(time_start))
     else:
-        result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
-                                              Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], append_instruction=False)
-        if play_state[msg.target.target_id]['active']: 
+        result, _ = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
+                                                 Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
+                                                                                    times=set_timeout))], append_instruction=False)
+        if play_state[msg.target.target_id]['active']:
             if result.as_display(text_only=True) == csr['name']:
                 send_ = msg.locale.t('chemical_code.message.correct')
                 if (g_msg := await gained_petal(wait, 1)):

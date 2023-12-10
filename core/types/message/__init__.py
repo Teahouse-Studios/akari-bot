@@ -141,13 +141,13 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    async def wait_next_message(self, message_chain=None, quote=True, delete=False, append_instruction=True):
+    async def wait_next_message(self, message_chain=None, quote=True, delete=False, append_instruction=True) -> (Self, FinishedSession):
         """
         一次性模板，用于等待对象的下一条消息。
         :param message_chain: 需要发送的确认消息，可不填
         :param quote: 是否引用传入dict中的消息（默认为True）
         :param delete: 是否在触发后删除消息
-        :return: 下一条消息的MessageChain对象
+        :return: 下一条消息的MessageChain对象和发出的提示消息
         """
         raise NotImplementedError
 
