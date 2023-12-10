@@ -236,12 +236,16 @@ class ReactionMessageSession(MessageSession):
     async def to_message_chain(self):
         return MessageChain([])
 
-    def is_quick_confirm(self, target: MessageSession) -> bool:
+    def is_quick_confirm(self, target: Union[MessageSession, FinishedSession]) -> bool:
         content = self.session.message['content']['m.relates_to']
         if content['rel_type'] == 'm.annotation':
-            if target is None or content['event_id'] == target.target.message_id:
-                if content['key'] in ['👍️', '✔️', '🎉']:  # todo: move to config
+            if content['key'] in ['👍️', '✔️', '🎉']:  # todo: move to config
+                if target is None:
                     return True
+                else:
+                    msg = [target.target.message_id] if isinstance(target, MessageSession) else target.message_id
+                    if content['event_id'] in msg:
+                        return True
         return False
 
     asDisplay = as_display

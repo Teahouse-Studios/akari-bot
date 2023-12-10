@@ -201,7 +201,7 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    def is_quick_confirm(self, target: Self = None) -> bool:
+    def is_quick_confirm(self, target: Union[Self, FinishedSession] = None) -> bool:
         """
         用于检查消息是否可用作快速确认事件。
         :param target: 确认的目标消息
