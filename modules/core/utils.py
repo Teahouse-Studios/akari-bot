@@ -1,6 +1,6 @@
 import platform
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 
 import jwt
 import psutil
@@ -15,7 +15,7 @@ from database import BotDBUtil
 
 jwt_secret = Config('jwt_secret')
 
-ver = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
+ver = module('version', base=True, desc='{core.help.version}')
 
 
 @ver.command()
@@ -26,7 +26,7 @@ async def bot_version(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
 
-ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'])
+ping = module('ping', base=True, desc='{core.help.ping}')
 
 started_time = datetime.now()
 
@@ -37,7 +37,7 @@ async def _(msg: Bot.MessageSession):
     result = "Pong!"
     if checkpermisson:
         timediff = str(datetime.now() - started_time)
-        boot_start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        boot_start = msg.ts2strftime(psutil.boot_time())
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -70,12 +70,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-admin = module('admin',
-               base=True,
-               required_admin=True,
-               developers=['OasisAkari'],
-               desc='{core.help.admin}'
-               )
+admin = module('admin', base=True, required_admin=True, desc='{core.help.admin}')
 
 
 @admin.command([
@@ -107,7 +102,8 @@ async def config_gu(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
-@admin.command('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
+@admin.command('ban <UserID> {{core.help.admin.ban}}',
+               'unban <UserID> {{core.help.admin.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
@@ -129,7 +125,7 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
+locale = module('locale', base=True)
 
 
 @locale.command('{{core.help.locale}}')
@@ -158,7 +154,7 @@ async def reload_locale(msg: Bot.MessageSession):
         await msg.send_message(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
-whoami = module('whoami', developers=['Dianliang233'], base=True)
+whoami = module('whoami', base=True)
 
 
 @whoami.command('{{core.help.whoami}}')
@@ -175,7 +171,7 @@ async def _(msg: Bot.MessageSession):
         disable_secret_check=True)
 
 
-tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
+tog = module('toggle', base=True, required_admin=True)
 
 
 @tog.command('typing {{core.help.toggle.typing}}')
@@ -201,8 +197,25 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
 
 
-mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
-              desc='{core.help.mute}')
+@tog.command('timeoffset <offset> {{core.help.toggle.timeoffset}}')
+async def _(msg: Bot.MessageSession, offset: str):
+    try:
+        tstr_split = [int(part) for part in offset.split(':')]
+        hour = tstr_split[0]
+        minute = tstr_split[1] if len(tstr_split) > 1 else 0
+        if minute == 0:
+            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
+        else:
+            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}:{abs(minute):02d}"
+        if hour > 12 or minute > 60:
+            raise ValueError
+    except ValueError:
+        await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
+    msg.data.edit_option('timezone_offset', offset)
+    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
+
+
+mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
 
 
 @mute.command()
@@ -216,7 +229,6 @@ async def _(msg: Bot.MessageSession):
 
 leave = module(
     'leave',
-    developers=['OasisAkari'],
     base=True,
     required_admin=True,
     available_for='QQ|Group',
@@ -232,7 +244,7 @@ async def _(msg: Bot.MessageSession):
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
-token = module('token', base=True, desc='{core.help.token}', developers=['Dianliang233'])
+token = module('token', base=True, desc='{core.help.token}')
 
 
 @token.command('<code>')

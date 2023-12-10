@@ -1,6 +1,6 @@
 from core.builtins import Url, Bot
 from core.dirty_check import check
-from modules.wiki.utils.UTC8 import UTC8
+from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 
 
@@ -12,7 +12,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
     for x in query['query']['abuselog'][:5]:
         if 'title' in x:
             d.append(msg.locale.t("wiki.message.ab.slice", title=x['title'], user=x['user'],
-                                  time=UTC8(x['timestamp'], 'onlytimenoutc'),
+                                  time=msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False),
                                   filter_name=x['filter'], result=x['result']))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)

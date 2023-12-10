@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 
 import aiohttp
 import ujson as json
-from PIL import ImageFont
 from bs4 import BeautifulSoup, Comment
 
 from config import CFG
@@ -19,7 +18,6 @@ web_render_local = CFG.get_url('web_render_local')
 elements = ['.notaninfobox', '.portable-infobox', '.infobox', '.tpl-infobox', '.infoboxtable', '.infotemplatebox',
             '.skin-infobox', '.arcaeabox', '.moe-infobox', '.rotable']
 assets_path = os.path.abspath('./assets/')
-font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
 
 async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True,

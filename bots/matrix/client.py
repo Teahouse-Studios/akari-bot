@@ -19,7 +19,7 @@ store_path_megolm_backup = os.path.join(store_path, 'megolm_backup')
 
 store_path_next_batch = os.path.join(store_path, 'next_batch.txt')
 
-if homeserver and user and token:
+if homeserver and user and device_id and token:
     if not os.path.exists(store_path):
         os.mkdir(store_path)
     if not os.path.exists(store_path_nio):

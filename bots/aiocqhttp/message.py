@@ -91,6 +91,7 @@ class MessageSession(MessageSessionT):
                            allow_split_image=True) -> FinishedSession:
 
         message_chain = MessageChain(message_chain)
+        message_chain_assendable = message_chain.as_sendable(self, embed=False)
         if (self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False) and not
                 self.tmp.get('enforce_send_by_master_client', False)):
             lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
@@ -99,14 +100,14 @@ class MessageSession(MessageSessionT):
                 Logger.debug(f'choose: {choose}')
                 if choose:
                     can_sends = []
-                    for x in message_chain.value:
+                    for x in message_chain_assendable:
                         if isinstance(x, (Plain, Image)):
                             can_sends.append(x)
-                            message_chain.value.remove(x)
+                            message_chain_assendable.remove(x)
                     if can_sends:
                         await JobQueue.send_message('Lagrange', self.target.target_id,
                                                     MessageChain(can_sends).to_list())
-                    if not message_chain.value:
+                    if not message_chain_assendable:
                         return FinishedSession(self, 0, [{}])
         else:
             Logger.debug(f'Do not use lagrange since some conditions are not met.\n{self.target.target_from} '
@@ -119,7 +120,7 @@ class MessageSession(MessageSessionT):
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
         self.sent.append(message_chain)
         count = 0
-        for x in message_chain.as_sendable(locale=self.locale.locale, embed=False):
+        for x in message_chain_assendable:
             if isinstance(x, Plain):
                 msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
@@ -138,7 +139,7 @@ class MessageSession(MessageSessionT):
             except aiocqhttp.exceptions.ActionFailed:
                 img_chain = message_chain.copy()
                 img_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
-                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain)).as_uri())
+                msg2img = MessageSegment.image(Path(await msgchain2image(img_chain, self)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=self.session.target, message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:

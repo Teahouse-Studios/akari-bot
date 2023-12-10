@@ -40,7 +40,7 @@ if Config('enable_langsmith'):
             else:
                 question = msg.matched_msg[0]
             if await check_bool(question):
-                rickroll(msg)
+                await msg.finish(rickroll(msg))
             with get_openai_callback() as cb:
                 res = await agent_executor.arun(question)
                 tokens = cb.total_tokens
@@ -72,9 +72,7 @@ if Config('enable_langsmith'):
                         chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
             if await check_bool(res):
-                if petal != 0:
-                    await msg.send_message(msg.locale.t('petal.message.cost', count=petal))
-                rickroll(msg)
+                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
             await msg.send_message(chain)

@@ -176,7 +176,8 @@ async def start():
             Logger.info(f"megolm backup imported")
 
     # set device name
-    asyncio.create_task(bot.update_device(client.device_id, {"display_name": client.device_name}))
+    if client.device_name:
+        asyncio.create_task(bot.update_device(client.device_id, {"display_name": client.device_name}))
 
     # sync joined room state
     Logger.info(f"starting sync room full state")

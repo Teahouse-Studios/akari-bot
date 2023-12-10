@@ -6,13 +6,14 @@ import string
 
 import ujson as json
 
+from config import Config
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from core.logger import Logger
 
 assets_path = os.path.abspath('./assets/phigros')
-cache_path = os.path.abspath('./cache')
-rating_path = os.path.abspath('./assets/phigros/rating.json')
+cache_path = os.path.abspath(Config('cache_path'))
+rating_path = os.path.abspath(f'{assets_path}/rating.json')
 json_url = 'https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 json_url_mirror = 'https://gh.api.99988866.xyz/https://raw.githubusercontent.com/ssmzhn/Phigros/main/Phigros.json'
 

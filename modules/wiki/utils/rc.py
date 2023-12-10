@@ -1,6 +1,6 @@
 from core.builtins import Url, Bot
 from core.dirty_check import check
-from modules.wiki.utils.UTC8 import UTC8
+from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 
 
@@ -12,7 +12,7 @@ async def rc(msg: Bot.MessageSession, wiki_url):
     for x in query['query']['recentchanges'][:5]:
         if 'title' in x:
             d.append(x['title'] + ' - ' + x['user'] +
-                     ' ' + UTC8(x['timestamp'], 'onlytime'))
+                     ' ' + msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False))
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:

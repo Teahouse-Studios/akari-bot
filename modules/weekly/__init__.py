@@ -103,4 +103,4 @@ async def _(msg: Bot.MessageSession):
 @wky.handle('teahouse image {{weekly.help.teahouse}}')
 async def _(msg: Bot.MessageSession):
     weekly = await get_teahouse_rss()
-    await msg.finish(Image(await msgchain2image([Plain(weekly)])))
+    await msg.finish(Image(await msgchain2image([Plain(weekly)], msg)))

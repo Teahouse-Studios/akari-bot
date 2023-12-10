@@ -1,4 +1,5 @@
 import re
+import traceback
 
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
@@ -110,7 +111,7 @@ async def _(msg: Bot.MessageSession):
         payload = {'username': username}
 
     output = await get_player_score(msg, payload, sid)
-    
+
     await msg.finish(
         [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
          BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
@@ -141,7 +142,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @mai_regex.regex(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
-                  desc="{maimai.help.maimai_regex.random}")
+                 desc="{maimai.help.maimai_regex.random}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     if res:
@@ -164,7 +165,7 @@ async def _(msg: Bot.MessageSession):
                 rand_result = song_txt(music_data.random())
             await msg.finish(rand_result)
         except Exception as e:
-            Logger.error(e)
+            Logger.error(traceback.format_exc())
             await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
@@ -185,7 +186,7 @@ async def _(msg: Bot.MessageSession):
     output, get_img = await get_plate_process(msg, payload, plate)
 
     if get_img:
-        img = await msgchain2image([Plain(output)])
+        img = await msgchain2image([Plain(output)], msg)
         await msg.finish([BImage(img)])
     else:
         await msg.finish(output.strip())
@@ -236,7 +237,7 @@ async def _(msg: Bot.MessageSession):
     output, get_img = await get_level_process(msg, payload, level, goal)
 
     if get_img:
-        img = await msgchain2image([Plain(output)])
+        img = await msgchain2image([Plain(output)], msg)
         await msg.finish([BImage(img)])
     else:
         await msg.finish(output.strip())

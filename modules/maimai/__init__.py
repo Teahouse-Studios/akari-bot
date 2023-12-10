@@ -1,10 +1,15 @@
-﻿from core.builtins import command_prefix
+from core.builtins import command_prefix
+import traceback
+
+from config import Config
+from core.builtins import Bot, command_prefix, Plain, Image as BImage
+from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_alias, update_covers
 from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, \
-    get_plate_process, get_player_score, get_rank,get_score_list
+    get_plate_process, get_player_score, get_rank, get_score_list
 from .regex import *
 
 total_list = TotalList()
@@ -41,8 +46,8 @@ def get_diff(diff):
     return level
 
 
-mai = module('maimai', 
-             recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'], 
+mai = module('maimai',
+             recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
              alias='mai', desc='{maimai.help.desc}')
 
 
@@ -52,7 +57,10 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
         result_set = await base_level_q(constant, constant_max)
-        s = msg.locale.t("maimai.message.base.range", constant=round(constant, 1), constant_max=round(constant_max, 1)) + "\n"
+        s = msg.locale.t(
+            "maimai.message.base.range", constant=round(
+                constant, 1), constant_max=round(
+                constant_max, 1)) + "\n"
     else:
         result_set = await base_level_q(constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
@@ -240,7 +248,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
         sid = id_or_alias[2:]
     else:
         sid_list = await search_by_alias(msg, id_or_alias)
-        
+
         if len(sid_list) == 0:
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         elif len(sid_list) > 1:
@@ -403,8 +411,8 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         else:
             rand_result = song_txt(music_data.random())
         await msg.finish(rand_result)
-    except Exception as e:
-        Logger.error(e)
+    except Exception:
+        Logger.error(traceback.format_exc())
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
@@ -436,11 +444,11 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         reduce = 101 - scoreline    # 理论值与给定完成率的差，以百分比计
         if reduce <= 0 or reduce >= 101:
             raise ValueError
-        tap_great = "{:.2f}".format(total_score * reduce / 10000)     #一个 TAP GREAT 减少 100 分
+        tap_great = "{:.2f}".format(total_score * reduce / 10000)  # 一个 TAP GREAT 减少 100 分
         tap_great_prop = "{:.4f}".format(10000 / total_score)
-        b2t_2550_great = "{:.3f}".format(break_2550_reduce / 100)     #一个 TAP GREAT 减少 100 分
+        b2t_2550_great = "{:.3f}".format(break_2550_reduce / 100)  # 一个 TAP GREAT 减少 100 分
         b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
-        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)     #一个 TAP GREAT 减少 100 分
+        b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)  # 一个 TAP GREAT 减少 100 分
         b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
@@ -456,10 +464,18 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
 
-
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_alias() and await update_covers():
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))
+
+@mai.schedule(CronTrigger.from_crontab('0 0 * * *'))
+async def _():
+    Logger.info('Updating maimai alias...')
+    try:
+        await update_alias()
+    except Exception:
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
