@@ -200,14 +200,15 @@ async def _(msg: Bot.MessageSession):
 @tog.command('timeoffset <offset> {{core.help.toggle.timeoffset}}')
 async def _(msg: Bot.MessageSession, offset: str):
     try:
-        tstr_split = [int(part) for part in offset.split(':')]
-        hour = tstr_split[0]
-        minute = tstr_split[1] if len(tstr_split) > 1 else 0
+        tstr_split = [part for part in offset.split(':')]
+        hour = int(tstr_split[0])
+        minute = int(tstr_split[1]) if len(tstr_split) > 1 else 0
         if minute == 0:
             offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
         else:
-            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}:{abs(minute):02d}"
-        if hour > 12 or minute > 60:
+            symbol = offset[0] if offset.startswith(("+", "-")) else "+"
+            offset = f"{symbol}{abs(hour)}:{abs(minute):02d}"
+        if hour > 12 or minute >= 60:
             raise ValueError
     except ValueError:
         await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
