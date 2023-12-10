@@ -137,7 +137,10 @@ class MessageSession(MessageSessionT):
         else:
             ftime_template.append(self.locale.t("time.time.nosec.format"))
         if timezone:
-            ftime_template.append(f"(UTC{self._tz_offset})")
+            if self._tz_offset == "+0":
+                ftime_template.append(f"(UTC)")
+            else:
+                ftime_template.append(f"(UTC{self._tz_offset})")
         return (datetime.utcfromtimestamp(timestamp) + self.timezone_offset).strftime(' '.join(ftime_template))
 
 
