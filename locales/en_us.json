@@ -58,7 +58,7 @@
     "petal.message.lost.limit": "(You can't lose more petals today.)",
     "petal.message.lost.success": "You lost ${amount} petal(s).",
     "success": "Success.",
-    "time.date.format": "%B %d, %Y",
+    "time.date.format": "%B %d, %Y,",
     "time.time.format": "%H:%M:%S",
     "time.time.nosec.format": "%H:%M",
     "tos.reason": "Reason: ",
