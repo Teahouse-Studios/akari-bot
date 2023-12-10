@@ -2276,23 +2276,22 @@ python-dateutil = ">=2.7"
 
 [[package]]
 name = "matrix-nio"
-version = "0.21.2"
+version = "0.22.1"
 description = "A Python Matrix client library, designed according to sans I/O principles."
 optional = false
 python-versions = ">=3.8.0,<4.0.0"
 files = [
-    {file = "matrix_nio-0.21.2-py3-none-any.whl", hash = "sha256:95bec84dd0d4eca4f0ce252d2f630d435edbc41bb405448d88916a3783479237"},
-    {file = "matrix_nio-0.21.2.tar.gz", hash = "sha256:414301fc25662af3e3436de5b955980474c03b0f3001f1b041c49743ede73232"},
+    {file = "matrix_nio-0.22.1-py3-none-any.whl", hash = "sha256:36a7175a41b145026db7f3bf004577aa8906d09ed8c53f276452ac06ed8635e4"},
+    {file = "matrix_nio-0.22.1.tar.gz", hash = "sha256:65956252c516f0b42b359d5816fbb66e2617a1f2c02ae45f2730257b815656d8"},
 ]
 
 [package.dependencies]
 aiofiles = ">=23.1.0,<24.0.0"
 aiohttp = ">=3.8.3,<4.0.0"
 aiohttp-socks = ">=0.7.0,<0.8.0"
-future = ">=0.18.2,<0.19.0"
 h11 = ">=0.14.0,<0.15.0"
 h2 = ">=4.0.0,<5.0.0"
-jsonschema = ">=4.4.0,<5.0.0"
+jsonschema = ">=4.14.0,<5.0.0"
 pycryptodome = ">=3.10.1,<4.0.0"
 unpaddedbase64 = ">=2.1.0,<3.0.0"
 
@@ -4525,4 +4524,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "831fc1e45a738ba83e525178c24db42d6d0833fa726c6d80d3abcc9738f310ee"
+content-hash = "45b7149aa43113d2c3d981764613294d4eb50b7be221047c6e8c1e3ce7351197"

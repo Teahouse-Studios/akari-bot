@@ -1145,9 +1145,9 @@ matplotlib==3.7.2 ; python_full_version >= "3.8.1" and python_full_version < "4.
     --hash=sha256:f081c03f413f59390a80b3e351cc2b2ea0205839714dbc364519bcf51f4b56ca \
     --hash=sha256:fdbb46fad4fb47443b5b8ac76904b2e7a66556844f33370861b4788db0f8816a \
     --hash=sha256:fdcd28360dbb6203fb5219b1a5658df226ac9bebc2542a9e8f457de959d713d0
-matrix-nio==0.21.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:414301fc25662af3e3436de5b955980474c03b0f3001f1b041c49743ede73232 \
-    --hash=sha256:95bec84dd0d4eca4f0ce252d2f630d435edbc41bb405448d88916a3783479237
+matrix-nio==0.22.1 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:36a7175a41b145026db7f3bf004577aa8906d09ed8c53f276452ac06ed8635e4 \
+    --hash=sha256:65956252c516f0b42b359d5816fbb66e2617a1f2c02ae45f2730257b815656d8
 monotonic==1.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:3a55207bcfed53ddd5c5bae174524062935efed17792e9de2ad0205ce9ad63f7 \
     --hash=sha256:68687e19a14f11f26d140dd5c86f3dba4bf5df58003000ed467e0e2a69bca96c
