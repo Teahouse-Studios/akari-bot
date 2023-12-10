@@ -201,6 +201,12 @@ class MessageSession:
         """
         raise NotImplementedError
 
+    def is_quick_confirm(self) -> bool:
+        """
+        用于检查消息是否可用作快速确认事件。
+        """
+        return False
+
     async def fake_forward_msg(self, nodelist):
         """
         用于发送假转发消息（QQ）。

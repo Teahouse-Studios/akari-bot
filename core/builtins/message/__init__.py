@@ -7,7 +7,7 @@ from core.builtins.message.chain import *
 from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager
 from core.builtins.temp import ExecutionLockList
-from core.builtins.utils import confirm_command
+from core.builtins.utils import confirm_command, quick_confirm
 from core.exceptions import WaitCancelException
 from core.types.message import MessageSession as MessageSessionT, MsgInfo, Session
 from core.utils.i18n import Locale
@@ -51,6 +51,8 @@ class MessageSession(MessageSessionT):
             if message_chain is not None and delete:
                 await send.delete()
             if result.as_display(text_only=True) in confirm_command:
+                return True
+            if quick_confirm and result.is_quick_confirm():
                 return True
             return False
         else:

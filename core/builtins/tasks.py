@@ -23,7 +23,7 @@ class MessageTaskManager:
         Logger.debug(cls._list)
 
     @classmethod
-    def get_result(cls, session: MessageSession):
+    def get_result(cls, session: MessageSession) -> MessageSession:
         if 'result' in cls._list[session.target.target_id][session.target.sender_id][session]:
             return cls._list[session.target.target_id][session.target.sender_id][session]['result']
         else:
