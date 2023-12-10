@@ -48,7 +48,7 @@ def get_diff(diff):
 
 mai = module('maimai',
              recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
-             alias='mai', desc='{maimai.help.desc}')
+             alias='mai', support_languages=['zh_cn'], desc='{maimai.help.desc}')
 
 
 @mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
