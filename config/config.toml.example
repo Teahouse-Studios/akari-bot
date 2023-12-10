@@ -3,14 +3,6 @@
 # Example: Boolean values in TOML must be lowercase.
 # If you don't need some functions, please delete the corresponding keys.
 
-本文将说明配置文件（config.toml）中各参数的用途。
-
-机器人的配置文件储存在 config 目录下，在第一次启动后生成。配制文件可使用 ~config 命令修改，并在重载模块或重启后生效。
-
-如果你不需要某些功能，请将对应的键删除，请勿留空。
-
-刚开始使用的机器人拥有以下默认配置：
-
 [secret]
 db_path = "mysql+pymysql://"
 check_accessKeyId =
