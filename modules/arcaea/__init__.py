@@ -103,7 +103,7 @@ async def _(msg: Bot.MessageSession, score: int, rating: float):
         ptt = rating + 1 + (score - 9800000) / 200000
     else:
         ptt = rating + (score - 9500000) / 300000
-    await msg.finish(round(max(0, ptt), 2))
+    await msg.finish([Plain(round(max(0, ptt), 2))])
 
 
 p = module('ptt', developers=['OasisAkari'])
