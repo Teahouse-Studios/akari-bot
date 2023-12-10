@@ -52,7 +52,7 @@ class MessageSession(MessageSessionT):
                 await send.delete()
             if result.as_display(text_only=True) in confirm_command:
                 return True
-            if quick_confirm and result.is_quick_confirm():
+            if quick_confirm and result.is_quick_confirm(self):
                 return True
             return False
         else:

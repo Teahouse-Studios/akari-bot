@@ -4,7 +4,7 @@ from typing import Union
 
 import filetype
 
-from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command, quick_confirm
 from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
@@ -25,7 +25,7 @@ wiki = module('wiki',
 
 
 @wiki.command('<PageName> [-l <lang>] {{wiki.help}}',
-             options_desc={'-l': '{wiki.help.option.l}'})
+              options_desc={'-l': '{wiki.help.option.l}'})
 async def _(msg: Bot.MessageSession):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
@@ -350,6 +350,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 auto_index = False
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:
+                    auto_index = True
+                if quick_confirm and confirm.is_quick_confirm(session):
                     auto_index = True
                 elif confirm.as_display(text_only=True).isdigit():
                     index = int(confirm.as_display()) - 1

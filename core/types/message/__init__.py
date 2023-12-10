@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Union, Dict
+from typing import List, Self, Union, Dict
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
@@ -201,9 +201,10 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    def is_quick_confirm(self) -> bool:
+    def is_quick_confirm(self, target: Self = None) -> bool:
         """
         用于检查消息是否可用作快速确认事件。
+        :param target: 确认的目标消息
         """
         return False
 
