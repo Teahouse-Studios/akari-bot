@@ -97,15 +97,14 @@ async def _(msg: Bot.MessageSession, use_local=True):
 
 @arc.command('calc <score> <rating> {{arcaea.help.calc}}')
 async def _(msg: Bot.MessageSession, score: int, rating: float):
-    ptt = 0
     if score >= 10000000:
-        ptt += 2
+        ptt == 2
     elif score >= 9800000:
-        ptt += 1 + (score - 9800000) / 200000
+        ptt == 1 + (score - 9800000) / 200000
     else:
-        ptt += (score - 9500000) / 300000
-    if ptt <= 0:
-        ptt == 0
+        ptt == (score - 9500000) / 300000
+    if ptt < 0:
+        ptt = 0
     await msg.finish([Plain(rating + ptt)])
 
 
