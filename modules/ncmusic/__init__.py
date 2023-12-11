@@ -6,6 +6,7 @@ from core.logger import logger
 
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
+                 desc='{ncmusic.help.desc}', 
                  support_languages=['zh_cn'])
 
 
@@ -41,35 +42,34 @@ async def search(msg: Bot.MessageSession, keyword: str):
             'ID'
             ])
 
-        if tables:
-            img = await image_table_render(tables)
-            if img:
-                legacy = False
+        img = await image_table_render(tables)
+        if img:
+            legacy = False
 
-                send_msg.append(Image(img))
-                if len(result['result']['songs']) > 10:
-                        send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
-                send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
-                query = await msg.wait_next_message(send_msg)
-                query = query.as_display(text_only=True)
-                try:
-                    query = int(query)
-                    if query > 10:
-                        await msg.finish(msg.locale.t('ncmusic.message.search.invalid.out_of_range'))
-                    sid = result['result']['songs'][query - 1]['id']
-                    url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
-                    info = await get_url(url, 200, fmt='json')
-                    info = info['songs'][0]
-                    artist = ' / '.join([ar['name'] for ar in info['ar']])
-                    song_page = f"https://music.163.com/#/song?id={info['id']}"
+            send_msg.append(Image(img))
+            if len(result['result']['songs']) > 10:
+                send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
+            send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
+            query = await msg.wait_next_message(send_msg)
+            query = query.as_display(text_only=True)
+            try:
+                query = int(query)
+                if query > 10:
+                    await msg.finish(msg.locale.t('ncmusic.message.search.invalid.out_of_range'))
+                sid = result['result']['songs'][query - 1]['id']
+                url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
+                info = await get_url(url, 200, fmt='json')
+                info = info['songs'][0]
+                artist = ' / '.join([ar['name'] for ar in info['ar']])
+                song_page = f"https://music.163.com/#/song?id={info['id']}"
 
-                    send_msg = msg.locale.t('ncmusic.message.info',
-                                            name=info['name'], id=info['id'],
-                                            album=info['al']['name'], album_id=info['al']['id'],
-                                            artists=artist, detail=song_page)
-                    await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
-                except Exception:
-                    await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
+                send_msg = msg.locale.t('ncmusic.message.info',
+                                        name=info['name'], id=info['id'],
+                                        album=info['al']['name'], album_id=info['al']['id'],
+                                        artists=artist, detail=song_page)
+                await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
+            except Exception:
+                await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
 
     if legacy:
         send_msg = msg.locale.t('ncmusic.message.search.result') + '\n'
@@ -116,13 +116,16 @@ async def info(msg: Bot.MessageSession, sid: str):
     url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
     result = await get_url(url, 200, fmt='json')
 
-    info = result['songs'][0]
-    artist = ' / '.join([ar['name'] for ar in info['ar']])
-    song_page = f"https://music.163.com/#/song?id={info['id']}"
+    if result['songs']:
+        info = result['songs'][0]
+        artist = ' / '.join([ar['name'] for ar in info['ar']])
+        song_page = f"https://music.163.com/#/song?id={info['id']}"
 
-    send_msg = msg.locale.t('ncmusic.message.info',
-                            name=info['name'], id=info['id'],
-                            album=info['al']['name'], album_id=info['al']['id'],
-                            artists=artist, detail=song_page)
-
-    await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
+        send_msg = msg.locale.t('ncmusic.message.info',
+                                name=info['name'], id=info['id'],
+                                album=info['al']['name'], album_id=info['al']['id'],
+                                artists=artist, detail=song_page)
+                                
+        await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
+    else:
+        await msg.finish(msg.locale.t('ncmusic.message.info.not_found'))

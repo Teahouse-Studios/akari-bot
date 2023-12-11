@@ -3,12 +3,13 @@ import urllib.parse
 from config import Config
 from core.dirty_check import check
 from core.logger import Logger
-from modules.wiki.utils.UTC8 import UTC8
+from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.action_cn import action
 from modules.wiki.utils.wikilib import WikiLib
+from core.builtins import MessageSession
 
 
-async def rc_qq(wiki_url):
+async def rc_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     qq_account = Config("qq_account")
     query = await wiki.get_json(action='query', list='recentchanges',
@@ -47,7 +48,7 @@ async def rc_qq(wiki_url):
     for x in query["query"]["recentchanges"]:
         t = []
         t.append(f"用户：{user_checked_map[x['user']]}")
-        t.append(UTC8(x['timestamp'], 'full'))
+        t.append(msg.ts2strftime(strptime2ts(x['timestamp'])))
         if x['type'] == 'edit':
             count = x['newlen'] - x['oldlen']
             if count > 0:

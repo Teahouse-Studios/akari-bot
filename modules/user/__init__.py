@@ -9,7 +9,7 @@ usr = module('user', alias='u',
              developers=['OasisAkari'])
 
 
-@usr.handle('<username> [-p] {{user.help.desc}}', options_desc={'-p': '{user.help.option.p}'})
+@usr.command('<username> [-p] {{user.help.desc}}', options_desc={'-p': '{user.help.option.p}'})
 async def user(msg: Bot.MessageSession):
     target = WikiTargetInfo(msg)
     get_url = target.get_start_wiki()

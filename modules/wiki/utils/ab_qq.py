@@ -1,11 +1,12 @@
 from config import Config
+from core.builtins import MessageSession
 from core.dirty_check import check
 from core.logger import Logger
-from modules.wiki.utils.UTC8 import UTC8
+from modules.wiki.utils.time import strptime2ts
 from modules.wiki.utils.wikilib import WikiLib
 
 
-async def ab_qq(wiki_url):
+async def ab_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     qq_account = Config("qq_account")
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp',
@@ -46,7 +47,7 @@ async def ab_qq(wiki_url):
         if result == '':
             result = 'pass'
         t.append(f"处理结果：{result}")
-        t.append(UTC8(x['timestamp'], 'full'))
+        t.append(msg.ts2strftime(strptime2ts(x['timestamp'])))
         ablist.append('\n'.join(t))
     for x in ablist:
         nodelist.append(

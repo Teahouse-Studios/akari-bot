@@ -5,7 +5,7 @@ from .generator import get_mkey
 mk = module('mkey', desc='{mkey.help.desc}', developers=['OasisAkari', 'Kurisu'])
 
 
-@mk.handle('<device> <month> <day> <inquiry_num> [<device_id>]')
+@mk.command('<device> <month> <day> <inquiry_num> [<device_id>]')
 async def mkey(msg: Bot.MessageSession, device: str, month: int, day: int, inquiry_num: str, device_id: str = None):
 
     device_codes = {

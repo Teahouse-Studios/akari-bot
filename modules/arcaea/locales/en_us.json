@@ -1,4 +1,5 @@
 {
+    "arcaea.help.calc": "Calculate the single Potential based on scores and rating.",
     "arcaea.help.desc": "Queries about Arcaea.",
     "arcaea.help.download": "Get the latest version of game apk.",
     "arcaea.help.random": "Random a track.",

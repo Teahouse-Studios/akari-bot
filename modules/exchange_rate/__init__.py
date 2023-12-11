@@ -54,7 +54,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         else:
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
-            await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
+            await msg.finish(f"{msg.locale.t('exchange_rate.message.error.unit')}{' '.join(unsupported_currencies)}")
     else:
         raise Exception(data['error-type'])
 

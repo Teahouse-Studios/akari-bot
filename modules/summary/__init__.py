@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
         msgs = data['messages']
         texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
         if await check_bool(''.join(texts)):
-            rickroll(msg)
+            await msg.finish(rickroll(msg))
 
         char_count = sum([len(i) for i in texts])
         wait_msg = await msg.send_message(
@@ -80,9 +80,7 @@ async def _(msg: Bot.MessageSession):
             output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()
         if await check_bool(output):
-            if petal != 0:
-                await msg.send_message(msg.locale.t('petal.message.cost', count=petal))
-            rickroll(msg)
+            await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
         await msg.finish(output, disable_secret_check=True)

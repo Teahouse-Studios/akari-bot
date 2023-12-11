@@ -76,7 +76,7 @@ class MessageSession(MessageSessionT):
         self.sent.append(message_chain)
         count = 0
         send = []
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 send_ = await self.session.message.reply(x.text, quote=quote if quote
                                                          and count == 0 and self.session.message else None)
@@ -184,7 +184,7 @@ class FetchedSession(Bot.FetchedSession):
 
         message_chain = MessageChain(message_chain)
 
-        for x in message_chain.as_sendable(embed=False):
+        for x in message_chain.as_sendable(self, embed=False):
             if isinstance(x, Plain):
                 await get_channel.send(x.text)
 

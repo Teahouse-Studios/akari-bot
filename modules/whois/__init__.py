@@ -27,7 +27,7 @@ async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     output = await msg.finish(res)
 
-    img = await msgchain2image([Plain(output)])
+    img = await msgchain2image([Plain(output)], msg)
     await msg.finish([Image(img)])
 
 

@@ -1,5 +1,0 @@
-{
-    "convert.help": "單位轉換，區分大小寫。",
-    "convert.help.desc": "全能單位轉換。",
-    "convert.message.error": "發生錯誤：無法轉換單位，請校對輸入。"
-}

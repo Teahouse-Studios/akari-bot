@@ -13,7 +13,7 @@ from .rc_qq import rc_qq
 rc_ = module('rc', developers=['OasisAkari'])
 
 
-@rc_.handle(['{{wiki.help.rc}}', 
+@rc_.command(['{{wiki.help.rc}}',
              'legacy {{wiki.help.rc.legacy}}'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -22,7 +22,7 @@ async def rc_loader(msg: Bot.MessageSession):
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
         try:
-            nodelist = await rc_qq(start_wiki)
+            nodelist = await rc_qq(msg, start_wiki)
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
@@ -36,7 +36,7 @@ async def rc_loader(msg: Bot.MessageSession):
 a = module('ab', developers=['OasisAkari'])
 
 
-@a.handle(['{{wiki.help.ab}}', 
+@a.command(['{{wiki.help.ab}}',
            'legacy {{wiki.help.ab.legacy}}'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -45,7 +45,7 @@ async def ab_loader(msg: Bot.MessageSession):
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
         try:
-            nodelist = await ab_qq(start_wiki)
+            nodelist = await ab_qq(msg, start_wiki)
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
@@ -59,7 +59,7 @@ async def ab_loader(msg: Bot.MessageSession):
 n = module('newbie', desc='{wiki.help.newbie.desc}', developers=['OasisAkari'])
 
 
-@n.handle()
+@n.command()
 async def newbie_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if start_wiki is None:

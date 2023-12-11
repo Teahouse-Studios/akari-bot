@@ -14,50 +14,45 @@ assets_path = os.path.abspath('./assets/maimai')
 cover_dir = f"{assets_path}/static/mai/cover"
 
 
-async def update_assets():
-    try:
-        alias_url = "https://download.fanyu.site/maimai/alias.json"
-        input_data = await get_url(alias_url, 200, fmt='json')
+async def update_alias():
+    url = "https://download.fanyu.site/maimai/alias.json"
+    input_data = await get_url(url, 200, fmt='json')
 
-        output_data = {}
-        for key, values in input_data.items():
-            for value in values:
-                if value == "未找到":
-                    continue
-                if value not in output_data:
-                    output_data[value] = []
-                output_data[value].append(key)
+    output_data = {}
+    for key, values in input_data.items():
+        for value in values:
+            if value == "未找到":
+                continue
+            if value not in output_data:
+                output_data[value] = []
+            output_data[value].append(key)
 
-        output_data = {k: output_data[k] for k in sorted(output_data)}
+    output_data = {k: output_data[k] for k in sorted(output_data)}
 
-        file_path = os.path.join(assets_path, "mai_alias.json")
-        with open(file_path, 'w') as file:
-            json.dump(output_data, file)
-    except:
-        return False
+    file_path = os.path.join(assets_path, "mai_alias.json")
+    with open(file_path, 'w') as file:
+        json.dump(output_data, file)
         
-    Logger.info('Maimai alias download completed.')
-    
-    try:
-            static_url = f"https://www.diving-fish.com/maibot/static.zip"
-            download_file = await download_to_cache(static_url, timeout=60)
+    return True
 
-            ca = random_cache_path()
-            shutil.unpack_archive(download_file, ca)
-        
-            if os.path.exists(cover_dir):
-                shutil.rmtree(cover_dir)
-        
-            static_cover_dir = os.path.join(ca, 'mai/cover')
-            if os.path.exists(static_cover_dir):
-                shutil.move(static_cover_dir, cover_dir)
 
-            os.remove(download_file)
-    except:
-            return False
-                
+async def update_covers():
+    url = f"https://www.diving-fish.com/maibot/static.zip"
+    download_file = await download_to_cache(url, timeout=60)
+
     Logger.info('Maimai covers download completed.')
-    
+    ca = random_cache_path()
+    shutil.unpack_archive(download_file, ca)
+
+    if os.path.exists(cover_dir):
+        shutil.rmtree(cover_dir)
+        
+    static_cover_dir = os.path.join(ca, 'mai/cover')
+    if os.path.exists(static_cover_dir):
+        shutil.move(static_cover_dir, cover_dir)
+
+    os.remove(download_file)
+
     return True
 
 
@@ -107,15 +102,16 @@ async def get_record(msg, payload):
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        if str(e).startswith('403'):
+        elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
-
+        else:
+            raise
     return data
 
 
@@ -126,13 +122,14 @@ async def get_plate(msg, payload):
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except ValueError as e:
+    except Exception as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        if str(e).startswith('403'):
+        elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
-
+        else:
+            raise
     return data

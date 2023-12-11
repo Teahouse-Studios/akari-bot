@@ -1,6 +1,6 @@
 import platform
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 
 import jwt
 import psutil
@@ -15,10 +15,10 @@ from database import BotDBUtil
 
 jwt_secret = Config('jwt_secret')
 
-ver = module('version', base=True, desc='{core.help.version}', developers=['OasisAkari', 'Dianliang233'])
+ver = module('version', base=True, desc='{core.help.version}')
 
 
-@ver.handle()
+@ver.command()
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
         await msg.finish(msg.locale.t('core.message.version', commit=Info.version[0:6]))
@@ -26,18 +26,18 @@ async def bot_version(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
 
-ping = module('ping', base=True, desc='{core.help.ping}', developers=['OasisAkari'])
+ping = module('ping', base=True, desc='{core.help.ping}')
 
 started_time = datetime.now()
 
 
-@ping.handle()
+@ping.command()
 async def _(msg: Bot.MessageSession):
     checkpermisson = msg.check_super_user()
     result = "Pong!"
     if checkpermisson:
         timediff = str(datetime.now() - started_time)
-        boot_start = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(psutil.boot_time()))
+        boot_start = msg.ts2strftime(psutil.boot_time())
         cpu_usage = psutil.cpu_percent()
         ram = int(psutil.virtual_memory().total / (1024 * 1024))
         ram_percent = psutil.virtual_memory().percent
@@ -70,15 +70,10 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-admin = module('admin',
-               base=True,
-               required_admin=True,
-               developers=['OasisAkari'],
-               desc='{core.help.admin}'
-               )
+admin = module('admin', base=True, required_admin=True, desc='{core.help.admin}')
 
 
-@admin.handle([
+@admin.command([
     'add <UserID> {{core.help.admin.add}}',
     'remove <UserID> {{core.help.admin.remove}}',
     'list {{core.help.admin.list}}'])
@@ -107,7 +102,8 @@ async def config_gu(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
-@admin.handle('ban <UserID> {{core.help.admin.ban}}', 'unban <UserID> {{core.help.admin.unban}}')
+@admin.command('ban <UserID> {{core.help.admin.ban}}',
+               'unban <UserID> {{core.help.admin.unban}}')
 async def config_ban(msg: Bot.MessageSession):
     user = msg.parsed_msg['<UserID>']
     if not user.startswith(f'{msg.target.sender_from}|'):
@@ -129,17 +125,17 @@ async def config_ban(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.ban.not_yet"))
 
 
-locale = module('locale', base=True, developers=['Dianliang233', 'Light-Beacon'])
+locale = module('locale', base=True)
 
 
-@locale.handle('{{core.help.locale}}')
+@locale.command('{{core.help.locale}}')
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
     await msg.finish(
         f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=command_prefix[0])}")
 
 
-@locale.handle('<lang> {{core.help.locale.set}}', required_admin=True)
+@locale.command('<lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
@@ -149,7 +145,7 @@ async def config_gu(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
 
 
-@locale.handle('reload', required_superuser=True)
+@locale.command('reload', required_superuser=True)
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
@@ -158,27 +154,27 @@ async def reload_locale(msg: Bot.MessageSession):
         await msg.send_message(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
-whoami = module('whoami', developers=['Dianliang233'], base=True)
+whoami = module('whoami', base=True)
 
 
-@whoami.handle('{{core.help.whoami}}')
+@whoami.command('{{core.help.whoami}}')
 async def _(msg: Bot.MessageSession):
-    rights = ''
+    perm = ''
     if await msg.check_native_permission():
-        rights += '\n' + msg.locale.t("core.message.whoami.admin")
+        perm += '\n' + msg.locale.t("core.message.whoami.admin")
     elif await msg.check_permission():
-        rights += '\n' + msg.locale.t("core.message.whoami.botadmin")
+        perm += '\n' + msg.locale.t("core.message.whoami.botadmin")
     if msg.check_super_user():
-        rights += '\n' + msg.locale.t("core.message.whoami.superuser")
+        perm += '\n' + msg.locale.t("core.message.whoami.superuser")
     await msg.finish(
-        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + rights,
+        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + perm,
         disable_secret_check=True)
 
 
-tog = module('toggle', developers=['OasisAkari'], base=True, required_admin=True)
+tog = module('toggle', base=True, required_admin=True)
 
 
-@tog.handle('typing {{core.help.toggle.typing}}')
+@tog.command('typing {{core.help.toggle.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.sender_id)
     state = target.query.disable_typing
@@ -190,7 +186,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.typing.enable'))
 
 
-@tog.handle('check {{core.help.toggle.check}}')
+@tog.command('check {{core.help.toggle.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state:
@@ -201,11 +197,29 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
 
 
-mute = module('mute', developers=['Dianliang233'], base=True, required_admin=True,
-              desc='{core.help.mute}')
+@tog.command('timeoffset <offset> {{core.help.toggle.timeoffset}}')
+async def _(msg: Bot.MessageSession, offset: str):
+    try:
+        tstr_split = [int(part) for part in offset.split(':')]
+        hour = tstr_split[0]
+        minute = tstr_split[1] if len(tstr_split) > 1 else 0
+        if minute == 0:
+            offset = f"{'+' if hour >= 0 else '-'}{abs(hour)}"
+        else:
+            symbol = offset[0] if offset.startswith(("+", "-")) else "+"
+            offset = f"{symbol}{abs(hour)}:{abs(minute):02d}"
+        if hour > 12 or minute >= 60:
+            raise ValueError
+    except ValueError:
+        await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
+    msg.data.edit_option('timezone_offset', offset)
+    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
 
 
-@mute.handle()
+mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
+
+
+@mute.command()
 async def _(msg: Bot.MessageSession):
     state = msg.data.switch_mute()
     if state:
@@ -216,7 +230,6 @@ async def _(msg: Bot.MessageSession):
 
 leave = module(
     'leave',
-    developers=['OasisAkari'],
     base=True,
     required_admin=True,
     available_for='QQ|Group',
@@ -224,7 +237,7 @@ leave = module(
     desc='{core.help.leave}')
 
 
-@leave.handle()
+@leave.command()
 async def _(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t('core.message.confirm'))
     if confirm:
@@ -232,10 +245,10 @@ async def _(msg: Bot.MessageSession):
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
-token = module('token', base=True, desc='{core.help.token}', developers=['Dianliang233'])
+token = module('token', base=True, desc='{core.help.token}')
 
 
-@token.handle('<code>')
+@token.command('<code>')
 async def _(msg: Bot.MessageSession):
     await msg.finish(jwt.encode({
         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days

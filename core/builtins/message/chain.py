@@ -5,22 +5,22 @@ from urllib.parse import urlparse
 
 import ujson as json
 
-from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage
+from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime
 from core.builtins.utils import Secret
 from core.logger import Logger
-from core.types.message import MessageChain as MessageChainT
+from core.types.message import MessageChain as MessageChainT, MessageSession
 
 
 class MessageChain(MessageChainT):
-    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url]],
-                                       Tuple[Union[Plain, Image, Voice, Embed, Url]],
-                                       Plain, Image, Voice, Embed, Url] = None):
+    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url, FormattedTime]],
+                                       Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime]],
+                                       Plain, Image, Voice, Embed, Url, FormattedTime] = None):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
         if isinstance(elements, str):
             elements = Plain(elements)
-        if isinstance(elements, (Plain, Image, Voice, Embed, Url)):
+        if isinstance(elements, (Plain, Image, Voice, Embed, Url, FormattedTime)):
             if isinstance(elements, Plain):
                 if elements.text != '':
                     elements = match_kecode(elements.text)
@@ -32,7 +32,7 @@ class MessageChain(MessageChainT):
                     self.value.append(Plain(str(e)))
                 elif isinstance(e, Url):
                     self.value.append(Plain(e.url))
-                elif isinstance(e, (Plain, Image, Voice, Embed)):
+                elif isinstance(e, (Plain, Image, Voice, Embed, FormattedTime)):
                     if isinstance(e, Plain):
                         if e.text != '':
                             self.value += match_kecode(e.text)
@@ -109,7 +109,10 @@ class MessageChain(MessageChainT):
                             return False
         return True
 
-    def as_sendable(self, locale="zh_cn", embed=True):
+    def as_sendable(self, msg: MessageSession = None, embed=True):
+        locale = None
+        if msg:
+            locale = msg.locale.locale
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
@@ -119,6 +122,8 @@ class MessageChain(MessageChainT):
                     value.append(x)
                 else:
                     value.append(Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale)))
+            elif isinstance(x, FormattedTime):
+                value.append(Plain(x.to_str(msg=msg)))
             else:
                 value.append(x)
         if not value:

@@ -14,9 +14,19 @@ from database import BotDBUtil, session, DBVersion
 
 encode = 'UTF-8'
 
-bots_required_configs = {'aiocqhttp': ['qq_host', 'qq_account'], 'discord': ['dc_token'], 'aiogram': ['tg_token'],
-                         'kook': ['kook_token'], 'matrix': ['matrix_homeserver', 'matrix_user', 'matrix_token'],
-                         'lagrange': ['lagrange_host']}
+bots_required_configs = {
+    'aiocqhttp': [
+        'qq_host',
+        'qq_account'],
+    'discord': ['dc_token'],
+    'aiogram': ['tg_token'],
+    'kook': ['kook_token'],
+    'matrix': [
+        'matrix_homeserver',
+        'matrix_user',
+        'matrix_device_id',
+        'matrix_token'],
+    'lagrange': ['lagrange_host']}
 
 
 class RestartBot(Exception):
@@ -51,9 +61,7 @@ def run_bot():
     cache_path = os.path.abspath(Config('cache_path'))
     if os.path.exists(cache_path):
         shutil.rmtree(cache_path)
-        os.mkdir(cache_path)
-    else:
-        os.mkdir(cache_path)
+    os.mkdir(cache_path)
 
     pid_cache = os.path.abspath('.pid_last')
     if os.path.exists(pid_cache):
