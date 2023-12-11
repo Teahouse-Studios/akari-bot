@@ -47,7 +47,6 @@ qq_host = "127.0.0.1:11451"
 qq_invite_join_group_notice = true
 qq_disable_temp_session = false
 qq_enable_listening_self_message = false
-qq_join_group_application_link = "https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+"
 allow_request_private_ip = false
 allow_bot_auto_approve_group_invite = false
 slower_schedule = false
