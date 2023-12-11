@@ -363,7 +363,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         for target in bug_report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
                                 await f.send_direct_message(
-                                    msg.locale.t('error.message.report', module=msg.trigger_msg) + tb)
+                                    f.locale.t('error.message.report', module=msg.trigger_msg) + tb)
             if command_first_word in current_unloaded_modules and msg.check_super_user():
                 await msg.send_message(
                     msg.locale.t('parser.module.unloaded', module=command_first_word, prefix=msg.prefixes[0]))
