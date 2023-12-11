@@ -1,4 +1,5 @@
 {
+    "arcaea.help.calc": "根据分数与歌曲定数计算对应的单曲潜力值。",
     "arcaea.help.desc": "查询 Arcaea 相关内容。",
     "arcaea.help.download": "获取最新版本的游戏 Apk。",
     "arcaea.help.random": "随机一首歌曲。",

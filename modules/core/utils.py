@@ -159,15 +159,15 @@ whoami = module('whoami', base=True)
 
 @whoami.command('{{core.help.whoami}}')
 async def _(msg: Bot.MessageSession):
-    rights = ''
+    perm = ''
     if await msg.check_native_permission():
-        rights += '\n' + msg.locale.t("core.message.whoami.admin")
+        perm += '\n' + msg.locale.t("core.message.whoami.admin")
     elif await msg.check_permission():
-        rights += '\n' + msg.locale.t("core.message.whoami.botadmin")
+        perm += '\n' + msg.locale.t("core.message.whoami.botadmin")
     if msg.check_super_user():
-        rights += '\n' + msg.locale.t("core.message.whoami.superuser")
+        perm += '\n' + msg.locale.t("core.message.whoami.superuser")
     await msg.finish(
-        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + rights,
+        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + perm,
         disable_secret_check=True)
 
 
