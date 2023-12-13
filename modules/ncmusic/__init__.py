@@ -97,7 +97,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             query = await msg.wait_confirm(send_msg, delete=False)
             if query:
                 sid = result['result']['songs'][0]['id']
-        else：
+        else:
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.prompt')
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
