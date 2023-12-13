@@ -65,7 +65,7 @@ async def search_csr(id=None):
     else:
         answer_id = random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
-    Logger.info("ChemSpider ID: " + answer_id)
+    Logger.info(f'ChemSpider ID: {answer_id}')
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')
@@ -147,11 +147,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     # print(csr)
     play_state[msg.target.target_id]['answer'] = csr['name'] 
     Logger.info(f'Answer: {csr["name"]}')
-    Logger.info(f'Image: {csr["image"]}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
-        Logger.info(f'File path: {file_path}')
         exists_file = os.path.exists(file_path)
         if exists_file:
             download = file_path
@@ -170,7 +168,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         set_timeout = 2
 
     async def ans(msg: Bot.MessageSession, answer, random_mode):
-        wait = await msg.wait_anyone()
+        wait = await msg.wait_anyone(timeout=3600)
         if play_state[msg.target.target_id]['active']:
             if (wait_text := wait.as_display(text_only=True)) != answer:
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
@@ -246,7 +244,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     else:
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], append_instruction=False)
+                                                                                 times=set_timeout))], timeout=3600, append_instruction=False)
         if play_state[msg.target.target_id]['active']: 
             if result.as_display(text_only=True) == csr['name']:
                 send_ = msg.locale.t('chemical_code.message.correct')
