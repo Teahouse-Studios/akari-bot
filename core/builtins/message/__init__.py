@@ -35,7 +35,7 @@ class MessageSession(MessageSessionT):
             'timezone_offset', Config('timezone_offset', '+8'))
         self.timezone_offset = parse_time_string(self._tz_offset)
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True, append_instruction=True) -> bool:
+    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True) -> bool:
         send = None
         ExecutionLockList.remove(self)
         if message_chain is not None:
@@ -45,7 +45,10 @@ class MessageSession(MessageSessionT):
             send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
-        await flag.wait()
+        try:
+            await asyncio.wait_for(flag.wait(), timeout=timeout)
+        except asyncio.TimeoutError:
+            raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if result is not None:
             if message_chain is not None and delete:
@@ -56,7 +59,7 @@ class MessageSession(MessageSessionT):
         else:
             raise WaitCancelException
 
-    async def wait_next_message(self, message_chain=None, quote=True, delete=False,
+    async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
                                 append_instruction=True) -> MessageSessionT:
         sent = None
         ExecutionLockList.remove(self)
@@ -67,7 +70,10 @@ class MessageSession(MessageSessionT):
             sent = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag)
-        await flag.wait()
+        try:
+            await asyncio.wait_for(flag.wait(), timeout=timeout)
+        except asyncio.TimeoutError:
+            raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if delete and sent is not None:
             await sent.delete()
@@ -76,7 +82,8 @@ class MessageSession(MessageSessionT):
         else:
             raise WaitCancelException
 
-    async def wait_reply(self, message_chain, quote=True, delete=False, all_=False, append_instruction=True) -> MessageSessionT:
+    async def wait_reply(self, message_chain, quote=True, delete=False, timeout=120,
+                         all_=False, append_instruction=True) -> MessageSessionT:
         self.tmp['enforce_send_by_master_client'] = True
         send = None
         ExecutionLockList.remove(self)
@@ -86,7 +93,10 @@ class MessageSession(MessageSessionT):
         send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, reply=send.message_id, all_=all_)
-        await flag.wait()
+        try:
+            await asyncio.wait_for(flag.wait(), timeout=timeout)
+        except asyncio.TimeoutError:
+            raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if delete and send is not None:
             await send.delete()
@@ -95,15 +105,18 @@ class MessageSession(MessageSessionT):
         else:
             raise WaitCancelException
 
-    async def wait_anyone(self, message_chain=None, delete=False) -> MessageSessionT:
+    async def wait_anyone(self, message_chain=None, quote=False, delete=False, timeout=120) -> MessageSessionT:
         send = None
         ExecutionLockList.remove(self)
         if message_chain is not None:
             message_chain = MessageChain(message_chain)
-            send = await self.send_message(message_chain, quote=False)
+            send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, all_=True)
-        await flag.wait()
+        try:
+            await asyncio.wait_for(flag.wait(), timeout=timeout)
+        except asyncio.TimeoutError:
+            raise WaitCancelException
         result = MessageTaskManager.get()[self.target.target_id]['all'][self]
         if 'result' in result:
             if send is not None and delete:
