@@ -129,9 +129,11 @@ async def info(msg: Bot.MessageSession, sid: str):
         song_url = f"https://music.163.com/#/song?id={info['id']}"
 
         send_msg = msg.locale.t('ncmusic.message.info',
-                                name=info['name'], id=info['id'],
-                                album=info['al']['name'], album_id=info['al']['id'],
-                                artists=artist)
+                                name=info['name'],
+                                id=info['id'],
+                                artists=artist,
+                                album=info['al']['name'],
+                                album_id=info['al']['id'])
                                 
         await msg.finish([Image(info['al']['picUrl']), Url(song_url), Plain(send_msg)])
     else:
