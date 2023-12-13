@@ -65,7 +65,7 @@ async def search_csr(id=None):
     else:
         answer_id = random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
-    Logger.info("ChemSpider ID: " + answer_id)
+    Logger.info(f'ChemSpider ID: {answer_id}')
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')
@@ -147,11 +147,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     # print(csr)
     play_state[msg.target.target_id]['answer'] = csr['name'] 
     Logger.info(f'Answer: {csr["name"]}')
-    Logger.info(f'Image: {csr["image"]}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
-        Logger.info(f'File path: {file_path}')
         exists_file = os.path.exists(file_path)
         if exists_file:
             download = file_path

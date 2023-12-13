@@ -50,7 +50,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             send_msg.append(Image(img))
             if song_count > 10:
                 song_count = 10
-                send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
+                send_msg.append(Plain(msg.locale.t("message.collapse", amount="10")))
         
         if song_count == 1:
             send_msg.append(Plain(msg.locale.t('ncmusic.message.search.confirm')))
@@ -92,7 +92,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
         if song_count > 10:
             song_count = 10
-            send_msg += msg.locale.t('ncmusic.message.search.collapse')
+            send_msg += msg.locale.t("message.collapse", amount="10")
 
         if song_count == 1:
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.confirm')
