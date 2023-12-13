@@ -131,14 +131,15 @@ class MessageSession(MessageSessionT):
     checkPermission = check_permission
     checkSuperUser = check_super_user
 
-    def ts2strftime(self, timestamp: float, date=True, seconds=True, timezone=True):
+    def ts2strftime(self, timestamp: float, date=True, time=True, seconds=True, timezone=True):
         ftime_template = []
         if date:
             ftime_template.append(self.locale.t("time.date.format"))
-        if seconds:
-            ftime_template.append(self.locale.t("time.time.format"))
-        else:
-            ftime_template.append(self.locale.t("time.time.nosec.format"))
+        if time:
+            if seconds:
+                ftime_template.append(self.locale.t("time.time.format"))
+            else:
+                ftime_template.append(self.locale.t("time.time.nosec.format"))
         if timezone:
             if self._tz_offset == "+0":
                 ftime_template.append(f"(UTC)")

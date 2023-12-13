@@ -60,7 +60,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     data = await get_url(url, 200, fmt='json')
-    current_time = datetime.datetime.now().timestamp()
+    time = msg.ts2strftime(datetime.datetime.now().timestamp(), time=False, timezone=False)
     if data['result'] == "success":
         exchange_rate = data['conversion_result']
         await msg.finish(
@@ -69,7 +69,7 @@ async def exchange(base_currency, target_currency, amount: float, msg):
                          base=base_currency, 
                          exchange_rate=exchange_rate,
                          target=target_currency, 
-                         time=msg.ts2strftime(current_time, seconds=False, timezone=False)))
+                         time=time))
     else:
         raise Exception(data['error-type'])
 
