@@ -1,4 +1,4 @@
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, Plain, Image, Url
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.http import get_url
@@ -126,13 +126,13 @@ async def info(msg: Bot.MessageSession, sid: str):
     if result['songs']:
         info = result['songs'][0]
         artist = ' / '.join([ar['name'] for ar in info['ar']])
-        song_page = f"https://music.163.com/#/song?id={info['id']}"
+        song_url = f"https://music.163.com/#/song?id={info['id']}"
 
         send_msg = msg.locale.t('ncmusic.message.info',
                                 name=info['name'], id=info['id'],
                                 album=info['al']['name'], album_id=info['al']['id'],
-                                artists=artist, detail=song_page)
+                                artists=artist)
                                 
-        await msg.finish([Image(info['al']['picUrl']), Plain(send_msg)])
+        await msg.finish([Image(info['al']['picUrl']), Url(song_url), Plain(send_msg)])
     else:
         await msg.finish(msg.locale.t('ncmusic.message.info.not_found'))
