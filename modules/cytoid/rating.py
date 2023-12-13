@@ -98,7 +98,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
             rt = x['rating']
             details = x['details']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            local_time = _date + timedelta(hours=Config("timezone_offset", 8))
+            local_time = _date + timedelta(hours=int(Config("timezone_offset", 8)))
             playtime = local_time.timestamp()
             nowtime = time.time()
             playtime = playtime - nowtime
