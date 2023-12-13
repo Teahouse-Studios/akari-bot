@@ -76,8 +76,9 @@ class MessageSession(MessageSessionT):
         else:
             raise WaitCancelException
 
-    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True) -> MessageSessionT:
+    async def wait_reply(self, message_chain, quote=True, delete=False, all_=False, append_instruction=True) -> MessageSessionT:
         self.tmp['enforce_send_by_master_client'] = True
+        send = None
         ExecutionLockList.remove(self)
         message_chain = MessageChain(message_chain)
         if append_instruction:
@@ -87,6 +88,8 @@ class MessageSession(MessageSessionT):
         MessageTaskManager.add_task(self, flag, reply=send.message_id, all_=all_)
         await flag.wait()
         result = MessageTaskManager.get_result(self)
+        if delete and send is not None:
+            await send.delete()
         if result is not None:
             return result
         else:

@@ -50,7 +50,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             if len(result['result']['songs']) > 10:
                 send_msg.append(Plain(msg.locale.t('ncmusic.message.search.collapse')))
             send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
-            query = await msg.wait_next_message(send_msg)
+            query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
             try:
                 query = int(query)
@@ -88,7 +88,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             send_msg += msg.locale.t('ncmusic.message.search.collapse')
         send_msg += '\n'
         send_msg += msg.locale.t('ncmusic.message.search.prompt')
-        query = await msg.wait_next_message(send_msg)
+        query = await msg.wait_reply(send_msg)
         query = query.as_display(text_only=True)
         try:
             query = int(query)
@@ -96,7 +96,6 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 await msg.finish(msg.locale.t('ncmusic.message.search.invalid.out_of_range'))
             sid = result['result']['songs'][query - 1]['id']
             url = f"https://ncmusic.akari-bot.top/song/detail?ids={sid}"
-            logger.info(url)
             info = await get_url(url, 200, fmt='json')
             info = info['songs'][0]
             artist = ' / '.join([ar['name'] for ar in info['ar']])
