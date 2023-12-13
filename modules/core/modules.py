@@ -49,7 +49,8 @@ async def _(msg: Bot.MessageSession):
             'load <module> ...',
             'unload <module> ...',
             'list {{core.help.module.list}}',
-            'list legacy {{core.help.module.list.legacy}}'], options_desc={'-g': '{core.help.option.module.g}'},
+            'list legacy {{core.help.module.list.legacy}}'],
+           options_desc={'-g': '{core.help.option.module.g}'},
            available_for=['QQ|Guild'])
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('list', False):

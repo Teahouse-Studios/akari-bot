@@ -151,7 +151,7 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True):
+    async def wait_reply(self, message_chain, quote=True, delete=False, all_=False, append_instruction=True):
         """
         一次性模板，用于等待触发对象回复消息。
         :param message_chain: 需要发送的确认消息，可不填

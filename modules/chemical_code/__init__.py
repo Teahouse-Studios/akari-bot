@@ -17,9 +17,11 @@ from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from core.utils.text import remove_prefix
 
+CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
+
 csr_link = 'https://www.chemspider.com'
 
-special_id_path = os.path.abspath(f'./assets/chemical_code/special_id') # 去掉文件扩展名并存储在special_id列表中
+special_id_path = os.path.abspath(f'./assets/chemical_code/special_id') # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)] # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
 element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
@@ -61,7 +63,7 @@ async def search_csr(id=None):
     if id is not None: 
         answer_id = id
     else:
-        answer_id = random.randint(1, 200000000)  # 数据库增长速度很快，可手动在此修改ID区间
+        answer_id = random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
     Logger.info("ChemSpider ID: " + answer_id)
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')

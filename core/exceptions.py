@@ -32,3 +32,6 @@ class InvalidTemplatePattern(Exception):
 
 class NoReportException(Exception):
     pass
+
+class TestException(Exception):
+    pass

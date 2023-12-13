@@ -286,11 +286,13 @@ class FetchTarget(FetchedTargetT):
         if user_list is not None:
             for x in user_list:
                 try:
-                    if i18n:
-                        await x.send_direct_message(x.parent.locale.t(message, **kwargs))
-
-                    else:
-                        await x.send_direct_message(message)
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
+                        else:
+                            msgchain = MessageChain([Plain(message)])
+                    await x.send_direct_message(msgchain)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
@@ -301,10 +303,13 @@ class FetchTarget(FetchedTargetT):
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
-                        if i18n:
-                            await fetch.send_direct_message(fetch.parent.locale.t(message, **kwargs))
-                        else:
-                            await fetch.send_direct_message(message)
+                        msgchain = message
+                        if isinstance(message, str):
+                            if i18n:
+                                msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
+                            else:
+                                msgchain = MessageChain([Plain(message)])
+                        await fetch.send_direct_message(msgchain)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:

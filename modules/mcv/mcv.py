@@ -1,5 +1,6 @@
 import json
 import re
+import datetime
 
 from google_play_scraper import app as google_play_scraper
 
@@ -18,14 +19,16 @@ async def mcv(msg):
         time_snapshot = None
         for v in data['versions']:
             if v['id'] == release:
-                time_release = v['releaseTime']
-            elif v['id'] == snapshot:
-                time_snapshot = v['releaseTime']
+                time_release = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
+            if v['id'] == snapshot:
+                time_snapshot = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
 
         message1 = msg.locale.t(
             "mcv.message.mcv.launcher",
             release=data['latest']['release'],
-            snapshot=data['latest']['snapshot'])
+            snapshot=data['latest']['snapshot'],
+            release_time=msg.ts2strftime(time_release),
+            snapshot_time=msg.ts2strftime(time_snapshot))
     except (ConnectionError, OSError):  # Probably...
         message1 = msg.locale.t("mcv.message.mcv.launcher.failed")
     try:

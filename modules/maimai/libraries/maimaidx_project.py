@@ -112,14 +112,19 @@ async def get_rank(msg, payload):
 
     average_rating = total_rating / total_rank
     surpassing_rate = (total_rank - rank) / total_rank * 100
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 
     formatted_average_rating = "{:.4f}".format(average_rating)
     formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
-    await msg.finish(msg.locale.t('maimai.message.rank', time=time, total_rank=total_rank, user=username,
-                                      rating=rating, rank=rank, average_rating=formatted_average_rating,
-                                      surpassing_rate=formatted_surpassing_rate))
+    await msg.finish(msg.locale.t('maimai.message.rank',
+                                   time=time,
+                                   total_rank=total_rank,
+                                   user=username,
+                                   rating=rating,
+                                   rank=rank,
+                                   average_rating=formatted_average_rating,
+                                   surpassing_rate=formatted_surpassing_rate))
 
 
 async def get_player_score(msg, payload, input_id):
