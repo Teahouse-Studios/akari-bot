@@ -93,7 +93,23 @@ class FormattedTime:
         return f'FormattedTime(time={self.timestamp})'
 
     def to_dict(self):
-        return {'type': 'time', 'data': {'time': self.timestamp}}
+        return {'type': 'formatted_time', 'data': {'time': self.timestamp, 'date': self.date, 'seconds': self.seconds,
+                                                   'timezone': self.timezone}}
+
+
+class I18NText:
+    def __init__(self, key, **kwargs):
+        self.key = key
+        self.kwargs = kwargs
+
+    def __str__(self):
+        return self.key
+
+    def __repr__(self):
+        return f'I18NText(key="{self.key}", kwargs={self.kwargs})'
+
+    def to_dict(self):
+        return {'type': 'i18n', 'data': {'key': self.key, 'kwargs': self.kwargs}}
 
 
 class ErrorMessage(EMsg):
@@ -269,4 +285,4 @@ class Embed(EmbedT):
                 'fields': self.fields}}
 
 
-__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime"]
+__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime", "I18NText"]
