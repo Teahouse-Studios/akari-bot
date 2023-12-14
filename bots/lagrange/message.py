@@ -104,7 +104,7 @@ class MessageSession(MessageSessionT):
                 msg.append({
                     "type": "text",
                     "data": {
-                        "text": x.text
+                        "text": ('\n' if count != 0 else '') + x.text
                     }
                 })
             elif isinstance(x, Image):
@@ -124,7 +124,7 @@ class MessageSession(MessageSessionT):
                     self.locale.t("error.message.timeout")))
             except aiocqhttp.exceptions.ActionFailed:
                 message_chain.insert(0, Plain(self.locale.t("error.message.limited.msg2img")))
-                msg2img = MessageSegment.image(Path(await msgchain2image(self, message_chain)).as_uri())
+                msg2img = MessageSegment.image(Path(await msgchain2image(message_chain, self)).as_uri())
                 try:
                     send = await bot.send_group_msg(group_id=int(self.session.target), message=msg2img)
                 except aiocqhttp.exceptions.ActionFailed as e:
