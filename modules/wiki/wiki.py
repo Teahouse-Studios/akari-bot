@@ -207,7 +207,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         render_section_list.append(
                             {r.link: {'url': r.info.realurl, 'section': r.selected_section,
                                       'in_allowlist': r.info.in_allowlist}})
-                        plain_slice.append('（章节渲染中）')
+                        plain_slice.append(session.locale.t("wiki.message.section.rendering"))
                     else:
                         if r.desc is not None and r.desc != '':
                             plain_slice.append(r.desc)
