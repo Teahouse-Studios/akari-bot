@@ -35,6 +35,7 @@
     "game.message.stop.none": "This game is not in progress.",
     "i18n.prompt.fallback.failed": "(If you're seeing this strange string, it means something we've messed up!\nPlease send the issue back to\n${url}\nso that we can fix it in time.)",
     "language": "English",
+    "message.brackets": " (${msg})",
     "message.collapse": "...show only the first ${amount} items.",
     "message.cooldown": "${time} second(s) have passed since the last execution. The cooldown time of this command are ${cd_time} second(s).",
     "message.delimiter": ", ",

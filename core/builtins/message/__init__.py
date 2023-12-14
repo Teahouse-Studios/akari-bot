@@ -158,9 +158,9 @@ class MessageSession(MessageSessionT):
                 ftime_template.append(self.locale.t("time.time.nosec.format"))
         if timezone:
             if self._tz_offset == "+0":
-                ftime_template.append(f"(UTC)")
+                ftime_template.append(self.locale.t("message.brackets", msg="UTC"))
             else:
-                ftime_template.append(f"(UTC{self._tz_offset})")
+                ftime_template.append(self.locale.t("message.brackets", msg=f"UTC{self._tz_offset}"))
         return (datetime.utcfromtimestamp(timestamp) + self.timezone_offset).strftime(' '.join(ftime_template))
 
 

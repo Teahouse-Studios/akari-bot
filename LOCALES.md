@@ -119,19 +119,19 @@
 中文弯引号和英文弯引号属于同一个字符，如果使用弯引号反而会造成阅读问题，请使用直引号 `"`。
 
 正确：
-> 
+> "Success is not final, failure is not fatal: It is the courage to continue that counts."
 
 错误：
-> 
+> “Success is not final, failure is not fatal: It is the courage to continue that counts.”
 
 ### 英文省略号使用三个点
 同上，请使用三个点 `...`。
 
 正确：
-> 
+> In the serene moonlit night, whispers of ancient tales lingered, echoing through the stillness of time...
 
 错误：
-> 
+> In the serene moonlit night, whispers of ancient tales lingered, echoing through the stillness of time…
 
 ## 全角和半角
 ### 使用全角中文标点
@@ -142,8 +142,6 @@
 > 嗨! 你知道嘛? 今天前台的小妹跟我说 "喵" 了哎!
 >
 > 嗨!你知道嘛?今天前台的小妹跟我说"喵"了哎!
-
-例外：如果括号内为没有中文且难以多语言化，则可以使用半角括号。
 
 ### 数字和英文使用半角字符
 正确：

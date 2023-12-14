@@ -22,7 +22,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     time = msg.ts2strftime(view['ctime'], timezone=False)
 
     if len(view['pages']) > 1:
-        pages = f" ({len(view['pages'])}P)"
+        pages = msg.locale.t("message.brackets", msg=f"{len(view['pages'])}P")
     else:
         pages = ''
 
