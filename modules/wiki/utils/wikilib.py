@@ -500,17 +500,6 @@ class WikiLib:
         if query is None:
             return PageInfo(title=title, link=None, desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                             info=self.wiki_info)
-        if selected_section or page_info.invalid_section:
-            parse_section_string = {'action': 'parse', 'page': title, 'prop': 'sections'}
-            parse_section = await self.get_json(**parse_section_string)
-            section_list = []
-            sections = parse_section['parse']['sections']
-            for s in sections:
-                section_list.append(s['anchor'])
-            page_info.sections = section_list
-            if selected_section:
-                if urllib.parse.unquote(selected_section) not in section_list:
-                    page_info.invalid_section = True
 
         redirects_: List[Dict[str, str]] = query.get('redirects')
         if redirects_ is not None:
@@ -617,6 +606,17 @@ class WikiLib:
                 else:
                     page_info.status = True
                     templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
+                    if selected_section or page_info.invalid_section:
+                        parse_section_string = {'action': 'parse', 'page': title, 'prop': 'sections'}
+                        parse_section = await self.get_json(**parse_section_string)
+                        section_list = []
+                        sections = parse_section['parse']['sections']
+                        for s in sections:
+                            section_list.append(s['anchor'])
+                        page_info.sections = section_list
+                        if selected_section:
+                            if urllib.parse.unquote(selected_section) not in section_list:
+                                page_info.invalid_section = True
                     if 'special' in page_raw:
                         full_url = re.sub(r'\$1',
                                           urllib.parse.quote(title.encode('UTF-8')),
