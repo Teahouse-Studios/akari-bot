@@ -17,16 +17,9 @@ mod_dl = module(
 x_api_key = Config("curseforge_api_key")
 if not x_api_key:
     # CurseForge API Key 未配置，使用镜像 https://mcim.z0z0r4.top ...(z0z0r4 不想解析网页)
-    MCIM_MODE = True
+    enable_mirror = True
 else:
-    MCIM_MODE = False
-
-
-def cn_chk(string: str):
-    for word in string:
-        if u'\u4e00' <= word <= u'\u9fff':
-            return True
-    return False
+    enable_mirror = False
 
 
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
@@ -37,8 +30,6 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         if match_ver is None:
             mod_name += ' ' + version
             ver = False
-    if cn_chk(mod_name):
-        await msg.finish(msg.locale.t("mod_dl.message.unsupport"))
 
     async def search_modrinth(name: str, ver: str):
         url = f'https://api.modrinth.com/v2/search?query={name}&limit=10'
@@ -56,7 +47,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             return results
 
     async def search_curseforge(name: str, ver: str):
-        if MCIM_MODE:
+        if enable_mirror:
             # https://mcim.z0z0r4.top/docs#/Curseforge/curseforge_search_curseforge_search_get
             url = f'https://mcim.z0z0r4.top/curseforge/search?gameId=432&searchFilter={name}&sortField=2&sortOrder=desc&pageSize=10&classId=6'
             headers = None
@@ -73,7 +64,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
             if resp is not None:
-                if not MCIM_MODE:  # 没提供 pagination
+                if not enable_mirror:  # 没提供 pagination
                     if resp["pagination"]["resultCount"] == 0:
                         return None
                 for mod in resp["data"]:
@@ -89,7 +80,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             return resp
 
     async def get_curseforge_mod_version_index(modid: str):
-        if MCIM_MODE:
+        if enable_mirror:
             # https://mcim.z0z0r4.top/docs#/Curseforge/get_mod_curseforge_mod__modid_slug__get
             url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}'
             headers = None
@@ -104,7 +95,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             return resp["data"]['latestFilesIndexes']
 
     async def get_curseforge_mod_file(modid: str, ver: str):
-        if MCIM_MODE:
+        if enable_mirror:
             url = f'https://mcim.z0z0r4.top/curseforge/mod/{modid}/files?gameVersion={ver}'
             headers = None
         else:
@@ -148,24 +139,24 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             reply_text.append(f"{count}. {mod[1]}")
             cache_result.append(mod)
 
-        reply = await msg.wait_reply('\n'.join(reply_text) + '\n' + msg.locale.t("mod_dl.message.prompt"))
+        reply = await msg.wait_reply('\n'.join(reply_text) + '\n' + msg.locale.t("mod_dl.message.prompt"), delete=True)
         replied = reply.as_display(text_only=True)
 
         # 查找 Mod
         if replied.isdigit():
             replied = int(replied)
             if replied > len(cache_result):
-                return await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
+                await msg.finish(msg.locale.t("mod_dl.message.invalid.out_of_range"))
             else:
                 mod_info = cache_result[replied - 1]
         else:
-            return await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
+            await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
 
         if mod_info[0] == "modrinth":  # modrinth mod
             if ver is None:
                 reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n'
                                               + "\n".join(mod_info[3])
-                                              + f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
+                                              + f'\n{msg.locale.t("mod_dl.message.version.prompt")}', delete=True)
                 replied2 = reply2.as_display(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
@@ -188,7 +179,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 if ver is None:
                     reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +
                                                   '\n'.join(ver_list) +
-                                                  f'\n{msg.locale.t("mod_dl.message.version.prompt")}')
+                                                  f'\n{msg.locale.t("mod_dl.message.version.prompt")}', delete=True)
                     ver = reply2.as_display(text_only=True)
                 elif ver not in ver_list:
                     await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))

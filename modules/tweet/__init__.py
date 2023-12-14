@@ -3,7 +3,7 @@ import ujson as json
 
 from config import CFG
 from core.builtins import Bot
-from core.builtins.message import Image
+from core.builtins.message import Image, Url
 from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
@@ -88,4 +88,4 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
             {'url': f'https://react-tweet-next.vercel.app/light/{tweet_id}', 'css': css, 'mw': False,
              'element': 'article'}), request_private_ip=True)
         await msg.finish(
-            [Image(pic), f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}"])
+            [Image(pic), Url(f"https://twitter.com/{res_json['data']['user']['screen_name']}/status/{tweet_id}")])
