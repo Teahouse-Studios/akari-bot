@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, Image, Plain, Url
 from core.utils.http import get_url
 
 
@@ -19,10 +19,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     video_url = f"https://www.bilibili.com/video/{view['bvid']}\n"
     title = view['title']
     tname = view['tname']
-
-    timestamp = view['ctime']
-    timeobject = datetime.fromtimestamp(timestamp)
-    time = timeobject.strftime('%Y-%m-%d %H:%M:%S')
+    time = msg.ts2strftime(view['ctime'], timezone=False)
 
     if len(view['pages']) > 1:
         pages = f" ({len(view['pages'])}P)"
@@ -41,15 +38,15 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     fans = format_num(res['data']['Card']['card']['fans'])
 
     if not get_detail:
-        output = video_url + msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
+        output = msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
     else:
-        output = video_url + msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
+        output = msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
                                           owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
                                           reply=stat_reply,
                                           like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
                                           time=time)
 
-    await msg.finish([Image(pic), Plain(output)])
+    await msg.finish([Image(pic), Url(video_url), Plain(output)])
 
 
 def format_num(number):
