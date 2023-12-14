@@ -20,7 +20,7 @@ from core.utils.http import get_url
 from core.utils.html2text import html2text
 
 
-async def get_rating(uid, query_type, msg: Bot.MessageSession):
+async def get_rating(msg: Bot.MessageSession, uid, query_type):
     try:
         if query_type == 'b30':
             query_type = 'bestRecords'
@@ -88,7 +88,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
         resources = []
         songcards = []
 
-        async def mkresources(x, rank):
+        async def mkresources(msg: Bot.MessageSession, x, rank):
             thumbpath = await download_cover_thumb(x['chart']['level']['uid'])
             chart_type = x['chart']['type']
             difficulty = x['chart']['difficulty']
@@ -98,7 +98,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
             rt = x['rating']
             details = x['details']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            local_time = _date + timedelta(hours=int(Config("timezone_offset", 8)))
+            local_time = _date + timedelta(hours=int(msg.options.get('timezone_offset', Config('timezone_offset', '+8'))))
             playtime = local_time.timestamp()
             nowtime = time.time()
             playtime = playtime - nowtime
@@ -125,7 +125,7 @@ async def get_rating(uid, query_type, msg: Bot.MessageSession):
 
         for x in best_records:
             rank += 1
-            resources.append(mkresources(x, rank))
+            resources.append(mkresources(msg, x, rank))
 
         await asyncio.gather(*resources)
         cards_ = await asyncio.gather(*songcards)

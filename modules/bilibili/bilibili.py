@@ -19,10 +19,10 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     video_url = f"https://www.bilibili.com/video/{view['bvid']}"
     title = view['title']
     tname = view['tname']
-    time = msg.ts2strftime(view['ctime'], timezone=False)
+    time = msg.ts2strftime(view['ctime'], iso=True, timezone=False)
 
     if len(view['pages']) > 1:
-        pages = f" ({len(view['pages'])}P)"
+        pages = msg.locale.t("message.brackets", msg=f"{len(view['pages'])}P")
     else:
         pages = ''
 
