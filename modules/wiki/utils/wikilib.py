@@ -479,7 +479,7 @@ class WikiLib:
                 selected_section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.selected_section = selected_section
-            if selected_section == '' and used_quote:
+            if not selected_section and used_quote:
                 page_info.invalid_section = True
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
