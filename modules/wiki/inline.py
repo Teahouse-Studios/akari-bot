@@ -131,7 +131,7 @@ async def _(msg: Bot.MessageSession):
                                     get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
                                     if get_infobox:
                                         await msg.send_message(Image(get_infobox), quote=False)
-                            if get_page.selected_section and get_page.invalid_section and wiki_.wiki_info.in_allowlist:
+                            if get_page.invalid_section and wiki_.wiki_info.in_allowlist:
                                 i_msg_lst = []
                                 session_data = [[str(i + 1), get_page.sections[i]] for i in
                                                 range(len(get_page.sections))]
