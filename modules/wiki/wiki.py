@@ -5,6 +5,7 @@ from typing import Union
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.utils.image_table import image_table_render, ImageTable
 from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
@@ -25,7 +26,7 @@ wiki = module('wiki',
 
 
 @wiki.command('<PageName> [-l <lang>] {{wiki.help}}',
-             options_desc={'-l': '{wiki.help.option.l}'})
+              options_desc={'-l': '{wiki.help.option.l}'})
 async def _(msg: Bot.MessageSession):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
@@ -201,8 +202,16 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         else:
                             plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
                                                                 redirected_title=display_title))
-                    if r.desc is not None and r.desc != '':
-                        plain_slice.append(r.desc)
+                    if (r.link is not None and r.selected_section is not None and r.info.in_allowlist and
+                            not r.invalid_section):
+                        render_section_list.append(
+                            {r.link: {'url': r.info.realurl, 'section': r.selected_section,
+                                      'in_allowlist': r.info.in_allowlist}})
+                        plain_slice.append('（章节渲染中）')
+                    else:
+                        if r.desc is not None and r.desc != '':
+                            plain_slice.append(r.desc)
+
                     if r.link is not None:
                         plain_slice.append(
                             str(Url(r.link, use_mm=not r.info.in_allowlist)))
@@ -211,19 +220,39 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         dl_list.append(r.file)
                         plain_slice.append(session.locale.t('wiki.message.flies') + r.file)
                     else:
-                        if r.link is not None and r.section is None:
+                        if r.link is not None and r.selected_section is None:
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
                                           (r.templates is not None and
                                            ('Template:Disambiguation' in r.templates or
                                             'Template:Version disambiguation' in r.templates))}})
-                        elif r.link is not None and r.section is not None and r.info.in_allowlist:
-                            render_section_list.append(
-                                {r.link: {'url': r.info.realurl, 'section': r.section,
-                                          'in_allowlist': r.info.in_allowlist}})
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
+                    if r.invalid_section and r.info.in_allowlist:
+                        if isinstance(session, Bot.MessageSession):
+
+                            if session.Feature.image:
+                                i_msg_lst = []
+                                session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
+                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section')))
+                                i_msg_lst.append(Image(await
+                                                       image_table_render(
+                                                           ImageTable(session_data,
+                                                                      ['ID',
+                                                                       session.locale.t('wiki.message.section')]))))
+
+                                async def _callback(msg: Bot.MessageSession):
+                                    display = msg.as_display(text_only=True)
+                                    if display.isdigit():
+                                        display = int(display)
+                                        if display <= len(r.sections):
+                                            r.selected_section = display - 1
+                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1])
+
+                                await session.send_message(i_msg_lst, callback=_callback)
+                            else:
+                                msg_list.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
                 else:
                     plain_slice = []
                     wait_plain_slice = []
@@ -323,11 +352,17 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                 get_section = await generate_screenshot_v2(ii, section=i[ii]['section'])
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
+                                else:
+                                    section_msg_list.append(Plain(
+                                        session.locale.t("wiki.message.error.unable_to_render_section")))
                             else:
                                 get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers,
                                                                            section=i[ii]['section'])
                                 if get_section:
                                     section_msg_list.append(Image(get_section))
+                                else:
+                                    section_msg_list.append(Plain(
+                                        session.locale.t("wiki.message.error.unable_to_render_section")))
                 if section_msg_list:
                     await session.send_message(section_msg_list, quote=False)
 

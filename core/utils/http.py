@@ -14,7 +14,7 @@ from config import Config
 from core.logger import Logger
 from .cache import random_cache_path
 
-logging_resp = False
+logging_resp = True
 debug = Config('debug')
 if not (proxy := Config('proxy')):
     proxy = ''
