@@ -2,7 +2,7 @@
     "mcv_rss.help.mcbv_jira_rss.desc": "啟用後 Mojira 更新基岩版時會自動推播訊息。",
     "mcv_rss.help.mcbv_rss.desc": "啟用後商店更新 Minecraft 基岩版時會自動推播訊息。",
     "mcv_rss.help.mcdv_jira_rss.desc": "啟用後 Mojira 更新 Minecraft Dungeons 時會自動推播訊息。",
-    "mcv_rss.help.mclgv_jira_rss.desc": "开启后 Mojira 更新 Minecraft Legends 时会自动推送消息。",
+    "mcv_rss.help.mclgv_jira_rss.desc": "啟用後 Mojira 更新 Minecraft Legends 時會自動推播訊息。",
     "mcv_rss.help.mcv_jira_rss.desc": "啟用後 Mojira 更新 Java 版時會自動推播訊息。",
     "mcv_rss.help.mcv_rss.desc": "啟用後 Minecraft 啟動器更新 Minecraft：Java 版時會自動推播訊息。",
     "mcv_rss.message.mcbv_jira_rss": "Mojira 已更新基岩版 ${version}。 \n（Mojira 上的資訊僅作版本號預覽用，不代表啟動器已更新此版本）",
@@ -11,6 +11,6 @@
     "mcv_rss.message.mclgv_jira_rss": "Mojira 已更新 Minecraft Legends ${version}。 \n（Mojira 上的資訊僅作版本號預覽用，不代表啟動器/商店已更新此版本）",
     "mcv_rss.message.mcv_jira_rss": "Mojira 已更新 Java 版 ${version}。 \n（Mojira 上的資訊僅作版本號預覽用，不代表啟動器已更新此版本）",
     "mcv_rss.message.mcv_jira_rss.future": "Mojira 已新增 Java 版 ${version}。 \n（Future Version 僅代表與此相關的版本正在規劃中，不代表啟動器已更新此版本）",
-    "mcv_rss.message.mcv_rss.release": "啟動器已更新 ${version} 正式版。",
-    "mcv_rss.message.mcv_rss.snapshot": "啟動器已更新 ${version} 快照。"
+    "mcv_rss.message.mcv_rss.release": "啟動器已更新 ${version} 正式版。\n更新時間：",
+    "mcv_rss.message.mcv_rss.snapshot": "啟動器已更新 ${version} 快照。\n更新時間："
 }

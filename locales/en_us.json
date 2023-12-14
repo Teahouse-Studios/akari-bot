@@ -61,6 +61,7 @@
     "petal.message.lost.success": "You lost ${amount} petal(s).",
     "success": "Success.",
     "time.date.format": "%B %d, %Y",
+    "time.date.iso.format": "%Y-%m-%d",
     "time.time.format": "%H:%M:%S",
     "time.time.nosec.format": "%H:%M",
     "tos.reason": "Reason: ",
