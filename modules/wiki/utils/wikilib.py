@@ -453,11 +453,13 @@ class WikiLib:
             arg_list = []
             _arg_list = []
             section_list = []
+            used_quote = False
             quote_code = False
             for a in split_name[1:]:
                 if len(a) > 0:
                     if a[0] == '#':
                         quote_code = True
+                        used_quote = True
                     if a[0] == '?':
                         quote_code = False
                     if quote_code:
@@ -477,6 +479,8 @@ class WikiLib:
                 selected_section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
             page_info.selected_section = selected_section
+            if selected_section == '' and used_quote:
+                page_info.invalid_section = True
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
