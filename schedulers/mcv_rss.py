@@ -1,3 +1,4 @@
+import datetime
 import re
 import traceback
 from urllib.parse import quote
@@ -7,6 +8,7 @@ from bs4 import BeautifulSoup
 from google_play_scraper import app as google_play_scraper
 
 from config import CFG, Config
+from core.builtins import I18NText, FormattedTime
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
@@ -74,32 +76,47 @@ async def mcv_rss():
         file = json.loads(await get_url(url, attempt=1))
         release = file['latest']['release']
         snapshot = file['latest']['snapshot']
+        time_release = 0
+        time_snapshot = 0
+        for v in file['versions']:
+            if v['id'] == release:
+                time_release = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
+            if v['id'] == snapshot:
+                time_snapshot = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
+
         if release not in verlist:
             Logger.info(f'huh, we find {release}.')
-            await JobQueue.trigger_hook_all('mcv_rss', message='mcv_rss.message.mcv_rss.release',
-                                            i18n=True, version=file['latest']['release'])
+
+            await JobQueue.trigger_hook_all('mcv_rss',
+                                            message=[I18NText('mcv_rss.message.mcv_rss.release',
+                                                              version=release).to_dict(),
+                                                     FormattedTime(time_release).to_dict()
+                                                     ])
             verlist.append(release)
             update_stored_list('scheduler', 'mcv_rss', verlist)
             article = await get_article(release)
             if article[0] != '':
                 get_stored_news_title = get_stored_list('scheduler', 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await JobQueue.trigger_hook_all('minecraft_news', message='minecraft_news.message.update_log',
-                                                    i18n=True, version=release, article=article[0])
+                    await JobQueue.trigger_hook_all('minecraft_news',
+                                                    message=[I18NText('minecraft_news.message.update_log',
+                                                                      version=release, article=article[0]).to_dict()])
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
             Logger.info(f'huh, we find {snapshot}.')
-            await JobQueue.trigger_hook_all('mcv_rss', message='mcv_rss.message.mcv_rss.snapshot', i18n=True,
-                                            version=file['latest']['snapshot'])
+            await JobQueue.trigger_hook_all('mcv_rss', message=[I18NText('mcv_rss.message.mcv_rss.snapshot',
+                                            version=file['latest']['snapshot']).to_dict(),
+                FormattedTime(time_snapshot).to_dict()])
             verlist.append(snapshot)
             update_stored_list('scheduler', 'mcv_rss', verlist)
             article = await get_article(snapshot)
             if article[0] != '':
                 get_stored_news_title = get_stored_list('scheduler', 'mcnews')
                 if article[1] not in get_stored_news_title:
-                    await JobQueue.trigger_hook_all('minecraft_news', message='minecraft_news.message.update_log',
-                                                    i18n=True, version=snapshot, article=article[0])
+                    await JobQueue.trigger_hook_all('minecraft_news',
+                                                    message=[I18NText('minecraft_news.message.update_log',
+                                                                      version=snapshot, article=article[0]).to_dict()])
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
     except Exception:

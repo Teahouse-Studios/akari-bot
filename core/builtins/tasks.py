@@ -6,6 +6,7 @@ from core.types import MessageSession
 
 class MessageTaskManager:
     _list = {}
+    _callback_list = {}
 
     @classmethod
     def add_task(cls, session: MessageSession, flag, all_=False, reply=None):
@@ -21,6 +22,10 @@ class MessageTaskManager:
         cls._list[session.target.target_id][sender][session] = {
             'flag': flag, 'active': True, 'type': task_type, 'reply': reply, 'ts': datetime.now().timestamp()}
         Logger.debug(cls._list)
+
+    @classmethod
+    def add_callback(cls, message_id, callback):
+        cls._callback_list[message_id] = {'callback': callback, 'ts': datetime.now().timestamp()}
 
     @classmethod
     def get_result(cls, session: MessageSession):
@@ -42,6 +47,9 @@ class MessageTaskManager:
                         if datetime.now().timestamp() - cls._list[target][sender][session]['ts'] > 3600:
                             cls._list[target][sender][session]['active'] = False
                             cls._list[target][sender][session]['flag'].set()  # no result = cancel
+        for message_id in cls._callback_list:
+            if datetime.now().timestamp() - cls._callback_list[message_id]['ts'] > 3600:
+                del cls._callback_list[message_id]
 
     @classmethod
     async def check(cls, session: MessageSession):
@@ -72,6 +80,8 @@ class MessageTaskManager:
                                     get_['result'] = session
                                     get_['active'] = False
                                     get_['flag'].set()
+        if session.target.reply_id in cls._callback_list:
+            await cls._callback_list[session.target.reply_id]['callback'](session)
 
 
 __all__ = ['MessageTaskManager']

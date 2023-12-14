@@ -11,6 +11,6 @@
     "mcv_rss.message.mclgv_jira_rss": "Mojira 已更新 Minecraft Legends ${version}。\n（Mojira 上的信息仅作版本号预览用，不代表启动器/商店已更新此版本）",
     "mcv_rss.message.mcv_jira_rss": "Mojira 已更新 Java 版 ${version}。\n（Mojira 上的信息仅作版本号预览用，不代表启动器已更新此版本）",
     "mcv_rss.message.mcv_jira_rss.future": "Mojira 已新增 Java 版 ${version}。\n（Future Version 仅代表与此相关的版本正在规划中，不代表启动器已更新此版本）",
-    "mcv_rss.message.mcv_rss.release": "启动器已更新 ${version} 正式版。",
-    "mcv_rss.message.mcv_rss.snapshot": "启动器已更新 ${version} 快照。"
+    "mcv_rss.message.mcv_rss.release": "启动器已更新 ${version} 正式版。\n更新时间：",
+    "mcv_rss.message.mcv_rss.snapshot": "启动器已更新 ${version} 快照。\n更新时间："
 }

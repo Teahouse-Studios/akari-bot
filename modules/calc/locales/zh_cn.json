@@ -26,6 +26,6 @@
     "calc.help.option.str": "转换为字符串：str(1) -> \"1\"",
     "calc.help.option.xor": "按位异或：1 ^ 1 -> 0",
     "calc.message.invalid": "表达式无效：${expr}",
-    "calc.message.running_time": "计算花费时间：${time} ms / 10000 ms。",
+    "calc.message.running_time": "计算花费时间：${time}ms / 10000ms。",
     "calc.message.time_out": "计算超时。"
 }

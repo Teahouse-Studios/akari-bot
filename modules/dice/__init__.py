@@ -18,9 +18,9 @@ dice = module('dice', alias='rd', developers=['Light-Beacon'], desc='{dice.help.
               })
 async def _(msg: Bot.MessageSession, dices, dc='0'):
     times = '1'
-    if '#' in dices:
-        times = dices.partition('#')[0]
-        dices = dices.partition('#')[2]
+    if 'x' in dices:
+        times = dices.partition('x')[0]
+        dices = dices.partition('x')[2]
     if not times.isdigit():
         await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
     if not dc.isdigit():

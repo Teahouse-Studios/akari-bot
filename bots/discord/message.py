@@ -9,7 +9,7 @@ import filetype
 from bots.discord.client import client
 from bots.discord.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT
+from core.builtins import Bot, Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage, Voice
 from core.logger import Logger
@@ -69,7 +69,8 @@ class MessageSession(MessageSessionT):
         quote = True
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True,
+                           callback=None
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
@@ -102,13 +103,15 @@ class MessageSession(MessageSessionT):
                                                        files=files)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}')
             else:
-                send_ = False
+                send_ = None
             if send_:
                 send.append(send_)
             count += 1
         msg_ids = []
         for x in send:
             msg_ids.append(x.id)
+            if callback:
+                MessageTaskManager.add_callback(x.id, callback)
 
         return FinishedSession(self, msg_ids, send)
 
@@ -212,11 +215,13 @@ class FetchTarget(FetchTargetT):
         if user_list is not None:
             for x in user_list:
                 try:
-                    if i18n:
-                        await x.send_direct_message(x.parent.locale.t(message, **kwargs))
-
-                    else:
-                        await x.send_direct_message(message)
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
+                        else:
+                            msgchain = MessageChain([Plain(message)])
+                    await x.send_direct_message(msgchain)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
@@ -227,11 +232,13 @@ class FetchTarget(FetchTargetT):
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
-                        if i18n:
-                            await fetch.send_direct_message(fetch.parent.locale.t(message, **kwargs))
-
-                        else:
-                            await fetch.send_direct_message(message)
+                        msgchain = message
+                        if isinstance(message, str):
+                            if i18n:
+                                msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
+                            else:
+                                msgchain = MessageChain([Plain(message)])
+                        await fetch.send_direct_message(msgchain)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:

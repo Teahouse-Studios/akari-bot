@@ -17,9 +17,11 @@ from core.utils.cache import random_cache_path
 from core.utils.http import get_url, download_to_cache
 from core.utils.text import remove_prefix
 
+CSID_RANGE_MAX = 200000000  # 数据库增长速度很快，可手动在此修改 ID 区间
+
 csr_link = 'https://www.chemspider.com'
 
-special_id_path = os.path.abspath(f'./assets/chemical_code/special_id') # 去掉文件扩展名并存储在special_id列表中
+special_id_path = os.path.abspath(f'./assets/chemical_code/special_id') # 去掉文件扩展名并存储在 special_id 列表中
 special_id = [os.path.splitext(filename)[0] for filename in os.listdir(special_id_path)] # 可能会导致识别问题的物质（如部分单质）ID，这些 ID 的图片将会在本地调用
 
 element_lists = ['He', 'Li', 'Be', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'Cl',
@@ -61,9 +63,9 @@ async def search_csr(id=None):
     if id is not None: 
         answer_id = id
     else:
-        answer_id = random.randint(1, 200000000)  # 数据库增长速度很快，可手动在此修改ID区间
+        answer_id = random.randint(1, CSID_RANGE_MAX)
     answer_id = str(answer_id)
-    Logger.info("ChemSpider ID: " + answer_id)
+    Logger.info(f'ChemSpider ID: {answer_id}')
     get = await get_url(csr_link + '/Search.aspx?q=' + answer_id, 200, fmt='text')
     # Logger.info(get)
     soup = BeautifulSoup(get, 'html.parser')
@@ -145,11 +147,9 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     # print(csr)
     play_state[msg.target.target_id]['answer'] = csr['name'] 
     Logger.info(f'Answer: {csr["name"]}')
-    Logger.info(f'Image: {csr["image"]}')
     download = False
     if csr["id"] in special_id:  # 如果正确答案在 special_id 中
         file_path = os.path.abspath(f'./assets/chemicalcode/special_id/{csr["id"]}.png')
-        Logger.info(f'File path: {file_path}')
         exists_file = os.path.exists(file_path)
         if exists_file:
             download = file_path
@@ -168,7 +168,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
         set_timeout = 2
 
     async def ans(msg: Bot.MessageSession, answer, random_mode):
-        wait = await msg.wait_anyone()
+        wait = await msg.wait_anyone(timeout=3600)
         if play_state[msg.target.target_id]['active']:
             if (wait_text := wait.as_display(text_only=True)) != answer:
                 if re.match(r'^[A-Za-z0-9]+$', wait_text):
@@ -244,7 +244,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
     else:
         result = await msg.wait_next_message([Plain(msg.locale.t('chemical_code.message.showid', id=csr["id"])),
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
-                                                                                 times=set_timeout))], append_instruction=False)
+                                                                                 times=set_timeout))], timeout=3600, append_instruction=False)
         if play_state[msg.target.target_id]['active']: 
             if result.as_display(text_only=True) == csr['name']:
                 send_ = msg.locale.t('chemical_code.message.correct')

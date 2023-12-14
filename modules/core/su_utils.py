@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
+from core.exceptions import TestException
 from core.loader import ModulesManager
 from core.logger import logger
 from core.parser.message import remove_temp_ban
@@ -22,6 +23,7 @@ from core.utils.cache import random_cache_path
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
+
 
 su = module('superuser', alias='su', required_superuser=True, base=True)
 
@@ -433,6 +435,7 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.finish(msg.locale.t('core.message.forward_msg.disable'))
 
+
 echo = module('echo', required_superuser=True, base=True)
 
 
@@ -448,13 +451,14 @@ say = module('say', required_superuser=True, base=True)
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
+
 rse = module('raise', required_superuser=True, base=True)
 
 
 @rse.command()
 async def _(msg: Bot.MessageSession):
     e = msg.locale.t("core.message.raise")
-    raise Exception(e)
+    raise TestException(e)
 
 
 if Config('enable_eval'):
