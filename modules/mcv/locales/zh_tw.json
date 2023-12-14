@@ -14,6 +14,6 @@
     "mcv.message.mclgv": "最新版：${version}\n（資訊來源於 Mojira，可能會比官方發布要早一段時間。資訊僅供參考。）",
     "mcv.message.mcv": "目前啟動器內最新版本為：\n${launcher_ver}\nMojira 上所記錄最新版本為：\n${jira_ver}\n（以啟動器內最新版本為準，Mojira 僅作版本號預覽用）",
     "mcv.message.mcv.jira.failed": "取得 Mojira 資訊失敗。",
-    "mcv.message.mcv.launcher": "最新版：${release}，最新快照：${snapshot}，",
+    "mcv.message.mcv.launcher": "最新版：${release}\n發佈於：${release_time}\n最新快照：${snapshot}\n發佈於：${snapshot_time}\n",
     "mcv.message.mcv.launcher.failed": "取得 manifest.json 失敗。"
 }
