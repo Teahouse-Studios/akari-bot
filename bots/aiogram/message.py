@@ -5,7 +5,7 @@ from typing import List, Union
 from bots.aiogram.client import dp, bot, token
 from bots.aiogram.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchTargetT, \
@@ -39,7 +39,7 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
@@ -89,6 +89,8 @@ class MessageSession(MessageSessionT):
         msg_ids = []
         for x in send:
             msg_ids.append(x.message_id)
+            if callback:
+                MessageTaskManager.add_callback(x.message_id, callback)
         return FinishedSession(self, msg_ids, send)
 
     async def check_native_permission(self):

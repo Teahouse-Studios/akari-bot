@@ -14,7 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from config import Config
-from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice
+from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
@@ -88,12 +88,13 @@ class MessageSession(MessageSessionT):
         quote = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True,
+                           callback=None) -> FinishedSession:
 
         message_chain = MessageChain(message_chain)
         message_chain_assendable = message_chain.as_sendable(self, embed=False)
         if (self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False) and not
-                self.tmp.get('enforce_send_by_master_client', False)):
+                self.tmp.get('enforce_send_by_master_client', False) and not callback):
             lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
             if int(self.session.target) in lagrange_available_groups:
                 choose = random.randint(0, 1)
@@ -170,6 +171,8 @@ class MessageSession(MessageSessionT):
                     return FinishedSession(self, 0, [{}])
                 else:
                     raise e
+        if callback:
+            MessageTaskManager.add_callback(send['message_id'], callback)
         return FinishedSession(self, send['message_id'], [send])
 
     async def check_native_permission(self):
