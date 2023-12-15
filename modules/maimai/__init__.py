@@ -28,7 +28,7 @@ async def song_txt(music: Music, detail=None):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
-        await get_url(img, 200)
+        await get_url(img, 200, fmt='read')
         info.append(BImage(img))
     except:
         pass
