@@ -465,7 +465,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("failed"))
 
 
-@mai.schedule(CronTrigger.from_crontab('0 */6 * * *'))
+@mai.schedule(CronTrigger.from_crontab('0 */12 * * *'))
 async def _():
     Logger.info('Updating maimai alias...')
     try:
