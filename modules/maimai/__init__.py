@@ -4,6 +4,7 @@ import traceback
 from config import Config
 from core.builtins import Bot, command_prefix, Plain, Image as BImage
 from core.scheduler import CronTrigger
+from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
 from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_alias, update_covers
@@ -23,10 +24,19 @@ diff_label_zhs = ['绿', '黄', '红', '紫', '白']
 diff_label_zht = ['綠', '黃', '紅']
 
 
-def song_txt(music: Music):
-    return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"),
-            Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
+async def song_txt(music: Music, detail=None):
+    info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n")]
+    try:
+        img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
+        await get_url(img, 200)
+        info.append(BImage(img))
+    except:
+        pass
+
+    if detail:
+        info.append(Plain(detail))
+
+    return info
 
 
 def get_diff(diff):
@@ -409,16 +419,19 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         if len(music_data) == 0:
             rand_result = msg.locale.t("maimai.message.music_not_found")
         else:
-            rand_result = song_txt(music_data.random())
+            music = music_data.random()
+            detail = f"\n{'/'.join(str(ds) for ds in music.ds)}"
+            rand_result = await song_txt(music, detail)
         await msg.finish(rand_result)
-    except Exception:
-        Logger.error(traceback.format_exc())
+    except ValueError:
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
 @mai.command('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
-    await msg.finish(song_txt((await total_list.get()).random()))
+    music = (await total_list.get()).random()
+    detail = f"\n{'/'.join(str(ds) for ds in music.ds)}"
+    await msg.finish(await song_txt(music, detail))
 
 
 @mai.command('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
@@ -471,7 +484,8 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish(msg.locale.t("failed"))
 
-@mai.schedule(CronTrigger.from_crontab('0 0 * * *'))
+
+@mai.schedule(CronTrigger.from_crontab('0 */6 * * *'))
 async def _():
     Logger.info('Updating maimai alias...')
     try:
