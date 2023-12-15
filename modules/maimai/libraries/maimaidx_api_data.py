@@ -7,13 +7,10 @@ from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
-
 from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 total_list = TotalList()
-
 assets_path = os.path.abspath('./assets/maimai')
-cover_dir = f"{assets_path}/static/mai/cover"
 
 
 async def update_alias():
@@ -28,6 +25,7 @@ async def update_alias():
 
 
 async def update_covers():
+    cover_dir = f"{assets_path}/static/mai/cover"
     url = f"https://www.diving-fish.com/maibot/static.zip"
     download_file = await download_to_cache(url, timeout=60)
 
