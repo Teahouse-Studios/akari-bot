@@ -6,8 +6,8 @@ from core.builtins import Bot, command_prefix, Plain, Image as BImage
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias, update_alias, update_covers
-from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_info, search_by_alias, update_alias, update_covers
+from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, \
     get_plate_process, get_player_score, get_rank, get_score_list
 from .regex import *
@@ -21,12 +21,6 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']
 diff_label_zht = ['綠', '黃', '紅']
-
-
-def song_txt(music: Music):
-    return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"),
-            Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
 def get_diff(diff):
@@ -151,10 +145,12 @@ async def _(msg: Bot.MessageSession, sid: str):
             sid = sid[2:]
         else:
             await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+
+    title = await get_info(music, cover=False)
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
         await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
@@ -229,17 +225,16 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await msg.finish(
-            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(message)])
+        await msg.finish(await get_info(music, Plain(message)))
     else:
-        await msg.finish(
-            [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-             BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
-             Plain(msg.locale.t("maimai.message.song",
-                                artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
-                                bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                                level='/'.join((str(ds) for ds in music['ds']))))])
+        message = msg.locale.t(
+            "maimai.message.song",
+            artist=music['basic_info']['artist'], 
+            genre=music['basic_info']['genre'],
+            bpm=music['basic_info']['bpm'], 
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
+        await msg.finish(await get_info(music, Plain(message)))
 
 
 @mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
@@ -273,9 +268,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     output = await get_player_score(msg, payload, sid)
 
-    await msg.finish(
-        [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-         BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
+    await msg.finish(await get_info(music, Plain(output)))
 
 
 @mai.command('plate <plate> [<username>] {{maimai.help.plate}}')
@@ -407,18 +400,18 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
                 music_data = (await total_list.get()).filter(level=level, diff=[get_diff(diff)], type=dx_type)
 
         if len(music_data) == 0:
-            rand_result = msg.locale.t("maimai.message.music_not_found")
+            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         else:
-            rand_result = song_txt(music_data.random())
-        await msg.finish(rand_result)
-    except Exception:
-        Logger.error(traceback.format_exc())
+            music = music_data.random()
+            await msg.finish(await get_info(music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+    except ValueError:
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
 @mai.command('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
-    await msg.finish(song_txt((await total_list.get()).random()))
+    music = (await total_list.get()).random()
+    await msg.finish(await get_info(music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
 
 
 @mai.command('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
@@ -471,7 +464,8 @@ async def _(msg: Bot.MessageSession):
     else:
         await msg.finish(msg.locale.t("failed"))
 
-@mai.schedule(CronTrigger.from_crontab('0 0 * * *'))
+
+@mai.schedule(CronTrigger.from_crontab('0 */6 * * *'))
 async def _():
     Logger.info('Updating maimai alias...')
     try:

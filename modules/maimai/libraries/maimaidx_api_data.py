@@ -3,10 +3,12 @@ import shutil
 
 import ujson as json
 
+from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
-from .maimaidx_music import get_cover_len5_id, TotalList
+
+from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 total_list = TotalList()
 
@@ -16,22 +18,11 @@ cover_dir = f"{assets_path}/static/mai/cover"
 
 async def update_alias():
     url = "https://download.fanyu.site/maimai/alias.json"
-    input_data = await get_url(url, 200, fmt='json')
-
-    output_data = {}
-    for key, values in input_data.items():
-        for value in values:
-            if value == "未找到":
-                continue
-            if value not in output_data:
-                output_data[value] = []
-            output_data[value].append(key)
-
-    output_data = {k: output_data[k] for k in sorted(output_data)}
+    data = await get_url(url, 200, fmt='json')
 
     file_path = os.path.join(assets_path, "mai_alias.json")
     with open(file_path, 'w') as file:
-        json.dump(output_data, file)
+        json.dump(data, file)
         
     return True
 
@@ -56,7 +47,20 @@ async def update_covers():
     return True
 
 
-async def get_alias(msg, input_):
+async def get_info(music: Music, *details):
+    info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
+    try:
+        img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
+        await get_url(img, 200, attempt=1, fmt='read')
+        info.append(Image(img))
+    except:
+        info.append('\u200B')
+    if details:
+        info.extend(details)
+    return info
+
+
+async def get_alias(msg, sid):
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
@@ -65,8 +69,8 @@ async def get_alias(msg, input_):
         data = json.load(file)
 
     result = []
-    if input_ in data:
-        result = data[input_] # 此处的列表是歌曲别名列表
+    if sid in data:
+        result = data[sid] # 此处的列表是歌曲别名列表
     
     return result
 
@@ -86,11 +90,11 @@ async def search_by_alias(msg, input_):
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-    for alias, ids in data.items():
-        if input_ in ids:
-            if alias in result:
-                result.remove(alias)
-            result.append(alias) # 此处的列表是歌曲 ID 列表
+    for sid, alias in data.items():
+        if input_ in alias:
+            if sid in result:
+                result.remove(sid)
+            result.append(sid) # 此处的列表是歌曲 ID 列表
     
     return result
 
