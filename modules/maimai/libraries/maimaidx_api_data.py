@@ -54,7 +54,7 @@ async def get_info(music: Music, *details):
         await get_url(img, 200, attempt=1, fmt='read')
         info.append(Image(img))
     except:
-        info.append('\n')
+        info.append('')
     if details:
         info.extend(details)
     return info
