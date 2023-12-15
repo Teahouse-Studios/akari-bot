@@ -18,22 +18,12 @@ cover_dir = f"{assets_path}/static/mai/cover"
 
 async def update_alias():
     url = "https://download.fanyu.site/maimai/alias.json"
-    input_data = await get_url(url, 200, fmt='json')
-
-    output_data = {}
-    for key, values in input_data.items():
-        for value in values:
-            if value == "未找到":
-                continue
-            if value not in output_data:
-                output_data[value] = []
-            output_data[value].append(key)
-
-    output_data = {k: output_data[k] for k in sorted(output_data)}
+    data = await get_url(url, 200, fmt='json')
+    data = json.loads(data)
 
     file_path = os.path.join(assets_path, "mai_alias.json")
     with open(file_path, 'w') as file:
-        json.dump(output_data, file)
+        json.dump(data, file)
         
     return True
 
@@ -65,13 +55,13 @@ async def get_info(music: Music, *details):
         await get_url(img, 200, fmt='read')
         info.append(Image(img))
     except:
-        pass
+        info.append('\n')
     if details:
         info.extend(details)
     return info
 
 
-async def get_alias(msg, input_):
+async def get_alias(msg, sid):
     file_path = os.path.join(assets_path, "mai_alias.json")
 
     if not os.path.exists(file_path):
@@ -80,7 +70,7 @@ async def get_alias(msg, input_):
         data = json.load(file)
 
     result = []
-    if input_ in data:
+    if sid in data:
         result = data[input_] # 此处的列表是歌曲别名列表
     
     return result
