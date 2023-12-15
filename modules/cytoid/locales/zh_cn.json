@@ -10,6 +10,6 @@
     "cytoid.message.bind.failed": "绑定失败，请检查输入。",
     "cytoid.message.bind.success": "绑定成功：",
     "cytoid.message.unbind.success": "解绑成功。",
-    "cytoid.message.user_not_found": "用户不存在。",
+    "cytoid.message.user_not_found": "未找到用户。",
     "cytoid.message.user_unbound": "未绑定用户，请使用“${prefix}cytoid bind”绑定一个用户。"
 }
