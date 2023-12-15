@@ -268,7 +268,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     output = await get_player_score(msg, payload, sid)
 
-    await msg.finish(await get_info(music, Plain(output))
+    await msg.finish(await get_info(music, Plain(output)))
 
 
 @mai.command('plate <plate> [<username>] {{maimai.help.plate}}')

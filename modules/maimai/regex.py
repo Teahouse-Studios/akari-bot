@@ -19,13 +19,6 @@ diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']
 diff_label_zht = ['綠', '黃', '紅']
 
-
-def song_txt(music: Music):
-    return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"),
-            Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
-
-
 def get_diff(diff):
     diff = diff.lower()
     diff_label_lower = [label.lower() for label in diff_label]
@@ -71,13 +64,12 @@ async def _(msg: Bot.MessageSession):
             if not music:
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    await msg.finish(await get_info(music, Plain(msg.locale.t(
-                                    "maimai.message.song",
-                                    artist=music['basic_info']['artist'], 
-                                    genre=music['basic_info']['genre'],
-                                    bpm=music['basic_info']['bpm'], 
-                                    version=music['basic_info']['from'],
-                                    level='/'.join((str(ds) for ds in music['ds']))))))
+    await msg.finish(await get_info(music, Plain(msg.locale.t("maimai.message.song",
+                                                artist=music['basic_info']['artist'], 
+                                                genre=music['basic_info']['genre'],
+                                                bpm=music['basic_info']['bpm'], 
+                                                version=music['basic_info']['from'],
+                                                level='/'.join((str(ds) for ds in music['ds']))))))
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
