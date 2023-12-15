@@ -54,7 +54,7 @@ async def get_info(music: Music, *details):
         await get_url(img, 200, attempt=1, fmt='read')
         info.append(Image(img))
     except:
-        info.append('\u200B')
+        info.append(Image("https://www.diving-fish.com/covers/00000.png"))
     if details:
         info.extend(details)
     return info
