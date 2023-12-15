@@ -128,12 +128,12 @@ class MessageSession(MessageSessionT):
             if isinstance(x, Plain):
                 msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
-                msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
+                msg = msg + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
                 if self.target.target_from != 'QQ|Guild':
                     msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
-        Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
+        Logger.info(f'[Bot] -> [{self.target.target_id}]: {message_chain_assendable}')
         if self.target.target_from == 'QQ|Group':
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
