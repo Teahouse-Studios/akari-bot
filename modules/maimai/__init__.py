@@ -225,15 +225,16 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await msg.finish(await get_info(music, Plain(message))
+        await msg.finish(await get_info(music, Plain(message)))
     else:
-        await msg.finish(await get_info(music, Plain(msg.locale.t(
-                                    "maimai.message.song",
-                                    artist=music['basic_info']['artist'], 
-                                    genre=music['basic_info']['genre'],
-                                    bpm=music['basic_info']['bpm'], 
-                                    version=music['basic_info']['from'],
-                                    level='/'.join((str(ds) for ds in music['ds']))))))
+        message = msg.locale.t(
+            "maimai.message.song",
+            artist=music['basic_info']['artist'], 
+            genre=music['basic_info']['genre'],
+            bpm=music['basic_info']['bpm'], 
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
+        await msg.finish(await get_info(music, Plain(message)))
 
 
 @mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
