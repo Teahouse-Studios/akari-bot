@@ -19,7 +19,6 @@ cover_dir = f"{assets_path}/static/mai/cover"
 async def update_alias():
     url = "https://download.fanyu.site/maimai/alias.json"
     data = await get_url(url, 200, fmt='json')
-    data = json.loads(data)
 
     file_path = os.path.join(assets_path, "mai_alias.json")
     with open(file_path, 'w') as file:
@@ -91,11 +90,11 @@ async def search_by_alias(msg, input_):
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-    for alias, ids in data.items():
-        if input_ in ids:
-            if alias in result:
-                result.remove(alias)
-            result.append(alias) # 此处的列表是歌曲 ID 列表
+    for sid, alias in data.items():
+        if input_ in alias:
+            if sid in result:
+                result.remove(sid)
+            result.append(sid) # 此处的列表是歌曲 ID 列表
     
     return result
 
