@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 import ujson as json
 
-from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime
+from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime, I18NText
 from core.builtins.utils import Secret
 from core.logger import Logger
 from core.types.message import MessageChain as MessageChainT, MessageSession
@@ -51,6 +51,13 @@ class MessageChain(MessageChainT):
                                   e['data']['timestamp'],
                                   e['data']['color'], Image(e['data']['image']), Image(e['data']['thumbnail']),
                                   e['data']['author'], e['data']['footer'], e['data']['fields']))
+                    elif e['type'] == 'url':
+                        self.value.append(Url(e['data']['url']))
+                    elif e['type'] == 'formatted_time':
+                        self.value.append(FormattedTime(e['data']['time'], e['data']['date'], e['data']['seconds'],
+                                                        e['data']['timezone']))
+                    elif e['type'] == 'i18n':
+                        self.value.append(I18NText(e['data']['key'], **e['data']['kwargs']))
                 elif isinstance(e, str):
                     if e != '':
                         self.value += match_kecode(e)
@@ -124,6 +131,8 @@ class MessageChain(MessageChainT):
                     value.append(Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale)))
             elif isinstance(x, FormattedTime):
                 value.append(Plain(x.to_str(msg=msg)))
+            elif isinstance(x, I18NText):
+                value.append(Plain(msg.locale.t(x.key, **x.kwargs)))
             else:
                 value.append(x)
         if not value:

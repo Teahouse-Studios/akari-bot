@@ -114,7 +114,8 @@ class PageInfo:
                  file: str = None,
                  desc: str = None,
                  args: str = None,
-                 section: str = None,
+                 selected_section: str = None,
+                 sections: List[str] = None,
                  interwiki_prefix: str = '',
                  status: bool = True,
                  templates: List[str] = None,
@@ -122,7 +123,7 @@ class PageInfo:
                  page_property: str = 'page',
                  has_template_doc: bool = False,
                  invalid_namespace: Union[str, bool] = False,
-                 possible_research_title: List[str] = None
+                 possible_research_title: List[str] = None,
                  ):
         self.info = info
         self.id = id
@@ -133,7 +134,8 @@ class PageInfo:
         self.file = file
         self.desc = desc
         self.args = args
-        self.section = section
+        self.selected_section = selected_section
+        self.sections = sections
         self.interwiki_prefix = interwiki_prefix
         self.templates = templates
         self.status = status
@@ -142,6 +144,7 @@ class PageInfo:
         self.has_template_doc = has_template_doc
         self.invalid_namespace = invalid_namespace
         self.possible_research_title = possible_research_title
+        self.invalid_section = False
 
 
 class WikiLib:
@@ -437,7 +440,7 @@ class WikiLib:
         if _tried > 5:
             if Config('enable_tos'):
                 raise WhatAreUDoingError
-        section = None
+        selected_section = None
         if title is not None:
             if title == '':
                 return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
@@ -450,11 +453,13 @@ class WikiLib:
             arg_list = []
             _arg_list = []
             section_list = []
+            used_quote = False
             quote_code = False
             for a in split_name[1:]:
                 if len(a) > 0:
                     if a[0] == '#':
                         quote_code = True
+                        used_quote = True
                     if a[0] == '?':
                         quote_code = False
                     if quote_code:
@@ -471,9 +476,11 @@ class WikiLib:
                 else:
                     title += _arg
             if len(section_list) > 1:
-                section = ''.join(section_list)[1:]
+                selected_section = ''.join(section_list)[1:]
             page_info = PageInfo(info=self.wiki_info, title=title, args=''.join(arg_list), interwiki_prefix=_prefix)
-            page_info.section = section
+            page_info.selected_section = selected_section
+            if not selected_section and used_quote:
+                page_info.invalid_section = True
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
@@ -484,7 +491,7 @@ class WikiLib:
         else:
             raise ValueError('title and pageid cannot be both None')
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
-        if use_textextracts and section is None:
+        if use_textextracts and selected_section is None:
             query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
@@ -493,6 +500,7 @@ class WikiLib:
         if query is None:
             return PageInfo(title=title, link=None, desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                             info=self.wiki_info)
+
         redirects_: List[Dict[str, str]] = query.get('redirects')
         if redirects_ is not None:
             for r in redirects_:
@@ -598,6 +606,17 @@ class WikiLib:
                 else:
                     page_info.status = True
                     templates = page_info.templates = [t['title'] for t in page_raw.get('templates', [])]
+                    if selected_section or page_info.invalid_section:
+                        parse_section_string = {'action': 'parse', 'page': title, 'prop': 'sections'}
+                        parse_section = await self.get_json(**parse_section_string)
+                        section_list = []
+                        sections = parse_section['parse']['sections']
+                        for s in sections:
+                            section_list.append(s['anchor'])
+                        page_info.sections = section_list
+                        if selected_section:
+                            if urllib.parse.unquote(selected_section) not in section_list:
+                                page_info.invalid_section = True
                     if 'special' in page_raw:
                         full_url = re.sub(r'\$1',
                                           urllib.parse.quote(title.encode('UTF-8')),
@@ -675,12 +694,12 @@ class WikiLib:
                                         page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = 'template'
                             if get_desc:
-                                if use_textextracts and section is None:
+                                if use_textextracts and (selected_section is None or page_info.invalid_section):
                                     raw_desc = page_raw.get('extract')
                                     if raw_desc is not None:
                                         page_desc = self.parse_text(raw_desc)
                                 else:
-                                    page_desc = self.parse_text(await self.get_html_to_text(title, section))
+                                    page_desc = self.parse_text(await self.get_html_to_text(title, selected_section))
                             full_url = page_raw['fullurl'] + page_info.args
                             file = None
                             if 'imageinfo' in page_raw:
@@ -736,8 +755,8 @@ class WikiLib:
                                                                              for possible_title in
                                                                              page_info.possible_research_title]
 
-                                if before_page_info.section is not None:
-                                    page_info.section = before_page_info.section
+                                if before_page_info.selected_section is not None:
+                                    page_info.selected_section = before_page_info.selected_section
         if not self.wiki_info.in_allowlist:
             checklist = []
             if page_info.title is not None:

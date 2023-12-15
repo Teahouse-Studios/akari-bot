@@ -9,7 +9,7 @@ import nio
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchedTargetT, \
@@ -43,7 +43,8 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True,
+                           callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
@@ -154,7 +155,9 @@ class MessageSession(MessageSessionT):
                 Logger.error(f"Error in sending message: {str(resp)}")
             else:
                 send.append(resp)
-
+        if callback:
+            for x in send:
+                MessageTaskManager.add_callback(x.event_id, callback)
         return FinishedSession(self, [resp.event_id for resp in send], self.session.target)
 
     async def check_native_permission(self):

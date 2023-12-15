@@ -9,6 +9,7 @@ from core.component import module
 from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import download_to_cache
+from core.utils.image_table import image_table_render, ImageTable
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib
@@ -20,7 +21,7 @@ wiki_inline = module('wiki_inline',
 
 
 @wiki_inline.regex(re.compile(r'\[\[(.*?)]]', flags=re.I), mode='A',
-                    desc="{wiki.help.wiki_inline.page}")
+                   desc="{wiki.help.wiki_inline.page}")
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -31,7 +32,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki_inline.regex(re.compile(r'\{\{(.*?)}}', flags=re.I), mode='A',
-                    desc='{wiki.help.wiki_inline.template}')
+                   desc='{wiki.help.wiki_inline.template}')
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -42,7 +43,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki_inline.regex(re.compile(r'≺(.*?)≻|⧼(.*?)⧽', flags=re.I), mode='A', show_typing=False,
-                    desc='{wiki.help.wiki_inline.mediawiki}')
+                   desc='{wiki.help.wiki_inline.mediawiki}')
 async def _(msg: Bot.MessageSession):
     query_list = []
     for x in msg.matched_msg:
@@ -130,6 +131,27 @@ async def _(msg: Bot.MessageSession):
                                     get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
                                     if get_infobox:
                                         await msg.send_message(Image(get_infobox), quote=False)
+                            if get_page.invalid_section and wiki_.wiki_info.in_allowlist:
+                                i_msg_lst = []
+                                session_data = [[str(i + 1), get_page.sections[i]] for i in
+                                                range(len(get_page.sections))]
+                                i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section')))
+                                i_msg_lst.append(Image(await
+                                                       image_table_render(
+                                                           ImageTable(session_data,
+                                                                      ['ID',
+                                                                       msg.locale.t('wiki.message.section')]))))
+
+                                async def _callback(msg: Bot.MessageSession):
+                                    display = msg.as_display(text_only=True)
+                                    if display.isdigit():
+                                        display = int(display)
+                                        if display <= len(get_page.sections):
+                                            get_page.selected_section = display - 1
+                                            await query_pages(msg, title=get_page.title + '#' +
+                                                              get_page.sections[display - 1])
+
+                                await msg.send_message(i_msg_lst, callback=_callback)
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:

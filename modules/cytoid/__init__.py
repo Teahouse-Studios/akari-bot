@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession):
     elif 'r30' in msg.parsed_msg:
         query = 'r30'
     else:
-        raise
+        return
     pat = msg.parsed_msg.get('<UserID>', False)
     if pat:
         query_id = pat
@@ -39,7 +39,7 @@ async def _(msg: Bot.MessageSession):
             qc = CoolDown('cytoid_rank', msg)
             c = qc.check(150)
         if c == 0:
-            img = await get_rating(query_id, query, msg)
+            img = await get_rating(msg, query_id, query)
             if 'path' in img:
                 await msg.send_message([Image(path=img['path'])], allow_split_image=False)
             if 'text' in img:
