@@ -3,6 +3,7 @@ import shutil
 
 import ujson as json
 
+from core.builtins import Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
@@ -62,7 +63,7 @@ async def get_info(music: Music, *details):
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
         await get_url(img, 200, fmt='read')
-        info.append(BImage(img))
+        info.append(Image(img))
     except:
         pass
     if details:
