@@ -64,7 +64,7 @@ async def _(msg: Bot.MessageSession):
             if not music:
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    await msg.finish(await get_info(music, Plain(msg.locale.t("maimai.message.song",
+    await msg.finish(await get_info(msg, music, Plain(msg.locale.t("maimai.message.song",
                                                 artist=music['basic_info']['artist'], 
                                                 genre=music['basic_info']['genre'],
                                                 bpm=music['basic_info']['bpm'], 
@@ -104,7 +104,7 @@ async def _(msg: Bot.MessageSession):
 
     output = await get_player_score(msg, payload, sid)
 
-    await msg.finish(await get_info(music, Plain(output)))
+    await msg.finish(await get_info(msg, music, Plain(output)))
 
 
 @mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
@@ -145,7 +145,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
-                await msg.finish(await get_info(music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+                await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
         except ValueError:
             await msg.finish(msg.locale.t("maimai.message.random.error"))
 

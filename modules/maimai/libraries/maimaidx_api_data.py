@@ -3,7 +3,7 @@ import shutil
 
 import ujson as json
 
-from core.builtins import Plain, Image
+from core.builtins import Bot, Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
@@ -45,7 +45,7 @@ async def update_covers():
     return True
 
 
-async def get_info(music: Music, *details):
+async def get_info(msg: Bot.MessageSession, music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}{msg.locale.t('message.brackets', msg='DX') if music['type'] == 'DX' else ''}")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"

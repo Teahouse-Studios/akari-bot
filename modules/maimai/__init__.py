@@ -150,7 +150,7 @@ async def _(msg: Bot.MessageSession, sid: str):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    title = await get_info(music, cover=False)
+    title = await get_info(msg, music, cover=False)
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
         await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
@@ -225,7 +225,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await msg.finish(await get_info(music, Plain(message)))
+        await msg.finish(await get_info(msg, music, Plain(message)))
     else:
         message = msg.locale.t(
             "maimai.message.song",
@@ -234,7 +234,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             bpm=music['basic_info']['bpm'], 
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(music, Plain(message)))
+        await msg.finish(await get_info(msg, music, Plain(message)))
 
 
 @mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
@@ -268,7 +268,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
     output = await get_player_score(msg, payload, sid)
 
-    await msg.finish(await get_info(music, Plain(output)))
+    await msg.finish(await get_info(msg, music, Plain(output)))
 
 
 @mai.command('plate <plate> [<username>] {{maimai.help.plate}}')
@@ -403,7 +403,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         else:
             music = music_data.random()
-            await msg.finish(await get_info(music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+            await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
     except ValueError:
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
@@ -411,7 +411,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 @mai.command('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).random()
-    await msg.finish(await get_info(music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+    await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
 
 
 @mai.command('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
