@@ -15,10 +15,10 @@ from database import BotDBUtil
 
 jwt_secret = Config('jwt_secret')
 
-ver = module('version', base=True, desc='{core.help.version}')
+ver = module('version', base=True)
 
 
-@ver.command()
+@ver.command('{{core.help.version}}')
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
         await msg.finish(msg.locale.t('core.message.version', commit=Info.version[0:6]))
@@ -26,12 +26,12 @@ async def bot_version(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
 
-ping = module('ping', base=True, desc='{core.help.ping}')
+ping = module('ping', base=True)
 
 started_time = datetime.now()
 
 
-@ping.command()
+@ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
     checkpermisson = msg.check_super_user()
     result = "Pong!"
@@ -216,10 +216,10 @@ async def _(msg: Bot.MessageSession, offset: str):
     await msg.finish(msg.locale.t('core.message.setup.timeoffset.success', offset=offset))
 
 
-mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
+mute = module('mute', base=True, required_admin=True)
 
 
-@mute.command()
+@mute.command('{{core.help.mute}}')
 async def _(msg: Bot.MessageSession):
     state = msg.data.switch_mute()
     if state:
@@ -233,11 +233,10 @@ leave = module(
     base=True,
     required_admin=True,
     available_for='QQ|Group',
-    alias='dismiss',
-    desc='{core.help.leave}')
+    alias='dismiss')
 
 
-@leave.command()
+@leave.command('{{core.help.leave}}')
 async def _(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t('core.message.confirm'))
     if confirm:
@@ -245,10 +244,10 @@ async def _(msg: Bot.MessageSession):
         await msg.call_api('set_group_leave', group_id=msg.session.target)
 
 
-token = module('token', base=True, desc='{core.help.token}')
+token = module('token', base=True)
 
 
-@token.command('<code>')
+@token.command('<code> {{core.help.token}}')
 async def _(msg: Bot.MessageSession):
     await msg.finish(jwt.encode({
         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days
