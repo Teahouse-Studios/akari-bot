@@ -88,8 +88,9 @@ async def search_by_alias(msg, input_):
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-    for sid, alias in data.items():
-        if input_ in alias.lower():
+    for sid, aliases in data.items():
+        if input_ in aliases:
+            aliases = [alias.lower() for alias in aliases]
             if sid in result:
                 result.remove(sid)
             result.append(sid) # 此处的列表是歌曲 ID 列表
