@@ -70,7 +70,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(result)
 
 
-admin = module('admin', base=True, required_admin=True, desc='{core.help.admin}')
+admin = module('admin', base=True, required_admin=True, desc='{core.help.admin.desc}')
 
 
 @admin.command([
@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession):
         disable_secret_check=True)
 
 
-setup = module('setup', base=True, required_admin=True, desc=)
+setup = module('setup', base=True, required_admin=True, desc='{core.help.setup.desc}')
 
 
 @setup.command('typing {{core.help.setup.typing}}')

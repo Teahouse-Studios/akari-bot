@@ -1,5 +1,5 @@
 {
-    "core.help.admin": "Commands available to group administrators.",
+    "core.help.admin.desc": "Commands available to group administrators.",
     "core.help.admin.add": "Set members as bot administrators, implement the function of managing the robot without setting members as group administrators. It's no longer needed to set up it when you are already a group administrator.",
     "core.help.admin.ban": "Limit someone to use bot in the group.",
     "core.help.admin.list": "View all bot administrators.",

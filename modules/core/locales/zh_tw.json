@@ -1,5 +1,5 @@
 {
-    "core.help.admin": "一些群組管理員可使用的指令。",
+    "core.help.admin.desc": "一些群組管理員可使用的指令。",
     "core.help.admin.add": "設定成員為機器人管理員，以實現不設定成員為群組管理員的狀況下管理機器人的效果。已是群組管理員無須設定此指令。",
     "core.help.admin.ban": "限制某人在此群組使用機器人。",
     "core.help.admin.list": "檢視所有機器人管理員。",
