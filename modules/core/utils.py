@@ -171,33 +171,33 @@ async def _(msg: Bot.MessageSession):
         disable_secret_check=True)
 
 
-tog = module('toggle', base=True, required_admin=True)
+setup = module('setup', base=True, required_admin=True, desc=)
 
 
-@tog.command('typing {{core.help.toggle.typing}}')
+@setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.sender_id)
     state = target.query.disable_typing
     if not state:
         target.edit('disable_typing', True)
-        await msg.finish(msg.locale.t('core.message.toggle.typing.disable'))
+        await msg.finish(msg.locale.t('core.message.setup.typing.disable'))
     else:
         target.edit('disable_typing', False)
-        await msg.finish(msg.locale.t('core.message.toggle.typing.enable'))
+        await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
 
 
-@tog.command('check {{core.help.toggle.check}}')
+@setup.command('check {{core.help.setup.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state:
         msg.data.edit_option('typo_check', False)
-        await msg.finish(msg.locale.t('core.message.toggle.check.enable'))
+        await msg.finish(msg.locale.t('core.message.setup.check.enable'))
     else:
         msg.data.edit_option('typo_check', True)
-        await msg.finish(msg.locale.t('core.message.toggle.check.disable'))
+        await msg.finish(msg.locale.t('core.message.setup.check.disable'))
 
 
-@tog.command('timeoffset <offset> {{core.help.toggle.timeoffset}}')
+@setup.command('timeoffset <offset> {{core.help.setup.timeoffset}}')
 async def _(msg: Bot.MessageSession, offset: str):
     try:
         tstr_split = [int(part) for part in offset.split(':')]
@@ -211,9 +211,9 @@ async def _(msg: Bot.MessageSession, offset: str):
         if hour > 12 or minute >= 60:
             raise ValueError
     except ValueError:
-        await msg.finish(msg.locale.t('core.message.toggle.timeoffset.invalid'))
+        await msg.finish(msg.locale.t('core.message.setup.timeoffset.invalid'))
     msg.data.edit_option('timezone_offset', offset)
-    await msg.finish(msg.locale.t('core.message.toggle.timeoffset.success', offset=offset))
+    await msg.finish(msg.locale.t('core.message.setup.timeoffset.success', offset=offset))
 
 
 mute = module('mute', base=True, required_admin=True, desc='{core.help.mute}')
