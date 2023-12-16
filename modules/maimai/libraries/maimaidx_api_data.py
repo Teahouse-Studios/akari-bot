@@ -75,7 +75,7 @@ async def get_alias(msg, sid):
 
 async def search_by_alias(msg, input_):
     result = []
-    input_ = input_.replace("_", " ").strip()
+    input_ = input_.replace("_", " ").strip().lower()
     res = (await total_list.get()).filter(title=input_)
     for s in res:
         result.append(s['id'])
@@ -89,7 +89,7 @@ async def search_by_alias(msg, input_):
         data = json.load(file)
 
     for sid, alias in data.items():
-        if input_ in alias:
+        if input_ in alias.lower():
             if sid in result:
                 result.remove(sid)
             result.append(sid) # 此处的列表是歌曲 ID 列表
