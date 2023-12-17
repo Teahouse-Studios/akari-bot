@@ -1,4 +1,4 @@
-﻿from core.builtins import command_prefix
+﻿import math
 import traceback
 
 from config import Config
@@ -162,10 +162,10 @@ async def _(msg: Bot.MessageSession, sid: str):
 
 @mai.command('b50 [<username>] {{maimai.help.b50}}')
 async def _(msg: Bot.MessageSession, username: str = None):
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
     img = await generate(msg, payload)
@@ -273,10 +273,10 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
 
 @mai.command('plate <plate> [<username>] {{maimai.help.plate}}')
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -313,10 +313,10 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
         "FDX",
         "FDX+"]
 
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -325,10 +325,10 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
         if level_num < 8:
             await msg.finish(msg.locale.t("maimai.message.process.less_than_8"))
     else:
-        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
+        await msg.finish(msg.locale.t("maimai.message.level_invalid"))
 
     if goal.upper() not in goal_list:
-        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
+        await msg.finish(msg.locale.t("maimai.message.goal_invalid"))
 
     output, get_img = await get_level_process(msg, payload, level, goal)
 
@@ -341,10 +341,10 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 
 @mai.command('rank [<username>] {{maimai.help.rank}}')
 async def _(msg: Bot.MessageSession, username: str = None):
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -353,10 +353,10 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 @mai.command('scorelist <level> [<username>] {{maimai.help.scorelist}}')
 async def _(msg: Bot.MessageSession, level: str, username: str = None):
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -414,8 +414,8 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
 
 
-@mai.command('scoreline <sid> <diff> <scoreline> {{maimai.help.scoreline}}')
-async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
+@mai.command('scoreline <sid> <diff> <score> {{maimai.help.scoreline}}')
+async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
     try:
         if not sid.isdigit():
             if sid[:2].lower() == "id":
@@ -434,7 +434,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         bonus_score = total_score * 0.01 / brk    # 奖励分
         break_2550_reduce = bonus_score * 0.25    # 一个 BREAK 2550 减少 25% 奖励分
         break_2000_reduce = bonus_score * 0.6 + 500    # 一个 BREAK 2000 减少 500 基础分和 60% 奖励分
-        reduce = 101 - scoreline    # 理论值与给定完成率的差，以百分比计
+        reduce = 101 - score    # 理论值与给定完成率的差，以百分比计
         if reduce <= 0 or reduce >= 101:
             raise ValueError
         tap_great = "{:.2f}".format(total_score * reduce / 10000)  # 一个 TAP GREAT 减少 100 分
@@ -445,7 +445,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
         await msg.finish(f'''{music['title']}{msg.locale.t('message.brackets', msg='DX') if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
-              scoreline=scoreline,
+              scoreline=score,
               tap_great=tap_great,
               tap_great_prop=tap_great_prop,
               brk=brk,
@@ -457,6 +457,48 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, scoreline: float):
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
 
+@mai.command('rating <base> [<score>] {{maimai.help.rating}}')
+async def _(msg: Bot.MessageSession, base: float, score: float):
+    if base > 15 or base < 0:
+        await msg.finish(msg.locale.t('maimai.message.base_invalid'))
+    if score:
+        await msg.finish(computeRa(base, score))
+#    else:
+#        ...
+
+def computeRa(base: float, achievement: float) -> int:
+    if achievement < 50:
+        baseRa = 7.0
+    elif achievement < 60:
+        baseRa = 8.0
+    elif achievement < 70:
+        baseRa = 9.6
+    elif achievement < 75:
+        baseRa = 11.2
+    elif achievement < 80:
+        baseRa = 12.0
+    elif achievement < 90:
+        baseRa = 13.6
+    elif achievement < 94:
+        baseRa = 15.2
+    elif achievement < 97:
+        baseRa = 16.8
+    elif achievement < 98:
+        baseRa = 20.0
+    elif achievement < 99:
+        baseRa = 20.3
+    elif achievement < 99.5:
+        baseRa = 20.8
+    elif achievement < 100:
+        baseRa = 21.1
+    elif achievement < 100.5:
+        baseRa = 21.6
+    else:
+        baseRa = 22.4
+
+    return math.floor(base * (min(100.5, achievement) / 100) * baseRa)
+
+
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_alias() and await update_covers():
@@ -465,7 +507,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("failed"))
 
 
-@mai.schedule(CronTrigger.from_crontab('0 */12 * * *'))
+@mai.schedule(CronTrigger.from_crontab('0 0 * * *'))
 async def _():
     Logger.info('Updating maimai alias...')
     try:

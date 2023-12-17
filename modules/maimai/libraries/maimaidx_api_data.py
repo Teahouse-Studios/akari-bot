@@ -1,5 +1,6 @@
 import os
 import shutil
+import traceback
 
 import ujson as json
 
@@ -105,7 +106,7 @@ async def get_record(msg, payload):
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except Exception as e:
+    except ValueError as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
@@ -114,7 +115,8 @@ async def get_record(msg, payload):
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            raise
+            traceback.print_exc()
+
     return data
 
 
@@ -125,7 +127,7 @@ async def get_plate(msg, payload):
                               data=json.dumps(payload),
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
-    except Exception as e:
+    except ValueError as e:
         if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
@@ -134,5 +136,6 @@ async def get_plate(msg, payload):
         elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            raise
+            traceback.print_exc()
+            
     return data

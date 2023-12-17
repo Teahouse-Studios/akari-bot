@@ -213,7 +213,7 @@ async def _(msg: Bot.MessageSession):
         return
 
     if goal.upper() not in goal_list:
-        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
+        await msg.finish(msg.locale.t("maimai.message.goal_invalid"))
 
     output, get_img = await get_level_process(msg, payload, level, goal)
 

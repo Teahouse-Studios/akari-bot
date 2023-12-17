@@ -89,19 +89,21 @@ sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
 
 async def get_rank(msg, payload):
-    player_data = await get_record(msg, payload)
+    time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 
-    username = player_data['username']
     url = f"https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt='json')
-    sorted_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
+    rank_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
+
+    player_data = await get_record(msg, payload)
+    username = player_data['username']
 
     rating = 0
     rank = None
     total_rating = 0
-    total_rank = len(sorted_data)
+    total_rank = len(rank_data)
 
-    for i, scoreboard in enumerate(sorted_data):
+    for i, scoreboard in enumerate(rank_data):
         if scoreboard['username'] == username:
             rank = i + 1
             rating = scoreboard['ra']
@@ -112,10 +114,6 @@ async def get_rank(msg, payload):
 
     average_rating = total_rating / total_rank
     surpassing_rate = (total_rank - rank) / total_rank * 100
-    time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
-
-    formatted_average_rating = "{:.4f}".format(average_rating)
-    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
     await msg.finish(msg.locale.t('maimai.message.rank',
                                    time=time,
@@ -123,8 +121,8 @@ async def get_rank(msg, payload):
                                    user=username,
                                    rating=rating,
                                    rank=rank,
-                                   average_rating=formatted_average_rating,
-                                   surpassing_rate=formatted_surpassing_rate))
+                                   average_rating="{:.4f}".format(average_rating),
+                                   surpassing_rate="{:.2f}".format(surpassing_rate)))
 
 
 async def get_player_score(msg, payload, input_id):
