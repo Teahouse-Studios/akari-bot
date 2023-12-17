@@ -362,7 +362,6 @@ class DrawBest(object):
 
 
 def computeRa(ds: float, achievement: float) -> int:
-    baseRa = 22.4
     if achievement < 50:
         baseRa = 7.0
     elif achievement < 60:
@@ -389,6 +388,8 @@ def computeRa(ds: float, achievement: float) -> int:
         baseRa = 21.1
     elif achievement < 100.5:
         baseRa = 21.6
+    else:
+        baseRa = 22.4
 
     return math.floor(ds * (min(100.5, achievement) / 100) * baseRa)
 

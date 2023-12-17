@@ -1,4 +1,5 @@
 {
+    "github.help.desc": "GitHub 查詢工具。",
     "github.help": "嘗試自動辨識並區分 repo/user。",
     "github.help.repo": "取得 Github 儲存庫資訊。",
     "github.help.search": "搜尋 Github 上的儲存庫。",

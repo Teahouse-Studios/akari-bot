@@ -89,19 +89,21 @@ sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
 
 async def get_rank(msg, payload):
-    player_data = await get_record(msg, payload)
+    time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 
-    username = player_data['username']
     url = f"https://www.diving-fish.com/api/maimaidxprober/rating_ranking"
     rank_data = await get_url(url, 200, fmt='json')
-    sorted_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
+    rank_data = sorted(rank_data, key=lambda x: x['ra'], reverse=True)  # 根据rating排名并倒序
+
+    player_data = await get_record(msg, payload)
+    username = player_data['username']
 
     rating = 0
     rank = None
     total_rating = 0
-    total_rank = len(sorted_data)
+    total_rank = len(rank_data)
 
-    for i, scoreboard in enumerate(sorted_data):
+    for i, scoreboard in enumerate(rank_data):
         if scoreboard['username'] == username:
             rank = i + 1
             rating = scoreboard['ra']
@@ -112,10 +114,6 @@ async def get_rank(msg, payload):
 
     average_rating = total_rating / total_rank
     surpassing_rate = (total_rank - rank) / total_rank * 100
-    time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
-
-    formatted_average_rating = "{:.4f}".format(average_rating)
-    formatted_surpassing_rate = "{:.2f}".format(surpassing_rate)
 
     await msg.finish(msg.locale.t('maimai.message.rank',
                                    time=time,
@@ -123,8 +121,8 @@ async def get_rank(msg, payload):
                                    user=username,
                                    rating=rating,
                                    rank=rank,
-                                   average_rating=formatted_average_rating,
-                                   surpassing_rate=formatted_surpassing_rate))
+                                   average_rating="{:.4f}".format(average_rating),
+                                   surpassing_rate="{:.2f}".format(surpassing_rate)))
 
 
 async def get_player_score(msg, payload, input_id):
@@ -233,7 +231,7 @@ async def get_level_process(msg, payload, process, goal):
                     elif goal in syncRank:
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+                output += f"{s[0]}\u200B. {s[1]}{msg.locale.t('message.brackets', msg='DX') if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
             if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
         else:
@@ -260,7 +258,7 @@ async def get_score_list(msg, payload, level):
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         music = (await total_list.get()).by_id(str(s[1]['id']))
-        output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
+        output = f"{music.id}\u200B. {music.title}{msg.locale.t('message.brackets', msg='DX') if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
         if s[1]["fc"] and s[1]["fs"]:
             output += f" {combo_conversion.get(s[1]['fc'], '')} {sync_conversion.get(s[1]['fs'], '')}"
         elif s[1]["fc"] or s[1]["fs"]:
@@ -425,7 +423,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+                output += f"{s[0]}\u200B. {s[1]}{msg.locale.t('message.brackets', msg='DX') if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
         else:
@@ -450,7 +448,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
+                output += f"{m.id}\u200B. {m.title}{msg.locale.t('message.brackets', msg='DX') if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
                 ) + '\n'
             if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True

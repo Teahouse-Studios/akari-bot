@@ -1,4 +1,3 @@
-import asyncio
 import traceback
 
 from core.builtins import Bot, Image, Plain, Url

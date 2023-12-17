@@ -2,7 +2,7 @@ from core.builtins import Bot
 from core.component import module
 from modules.github import repo, user, search
 
-github = module('github', alias='gh', developers=['Dianliang233'])
+github = module('github', alias='gh', developers=['Dianliang233'], desc='{github.help.desc}')
 
 
 @github.handle('<name> {{github.help}}')
@@ -18,7 +18,7 @@ async def _(msg: Bot.MessageSession):
     await repo.repo(msg)
 
 
-@github.handle(('user <name> {{github.help.user}}'))
+@github.handle('user <name> {{github.help.user}}')
 async def _(msg: Bot.MessageSession):
     await user.user(msg)
 
