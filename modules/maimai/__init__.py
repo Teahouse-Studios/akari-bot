@@ -462,9 +462,7 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
     if base > 15 or base < 0:
         await msg.finish(msg.locale.t('maimai.message.base_invalid'))
     if score:
-        await msg.finish(Plain[computeRa(base, score)])
-#    else:
-#        ...
+        await msg.finish([Plain(computeRa(base, score))])
 
 def computeRa(base: float, achievement: float) -> int:
     if achievement < 50:
