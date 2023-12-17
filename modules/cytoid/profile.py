@@ -1,3 +1,5 @@
+import ujson as json
+
 from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
