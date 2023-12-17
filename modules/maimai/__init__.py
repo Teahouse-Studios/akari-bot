@@ -459,7 +459,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
 
 @mai.command('rating <base> <score> {{maimai.help.rating}}')
 async def _(msg: Bot.MessageSession, base: float, score: float):
-    if base > 15 or base < 0:
+    if base > 15 or base < 1:
         await msg.finish(msg.locale.t('maimai.message.base_invalid'))
     if score:
         await msg.finish([Plain(computeRa(base, score))])
