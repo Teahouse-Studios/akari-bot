@@ -5,6 +5,7 @@ from bots.discord.slash_parser import slash_parser
 
 arcaea = client.create_group("arcaea", "Queries about Arcaea.")
 
+
 @arcaea.command(description="Get the latest version of game apk.")
 async def download(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "download")
