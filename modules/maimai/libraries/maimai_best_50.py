@@ -7,7 +7,6 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import ErrorMessage
 from core.utils.http import post_url
-from modules.maimai import computeRa
 from .maimaidx_music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
@@ -360,6 +359,39 @@ class DrawBest(object):
 
     def getDir(self):
         return self.img
+
+
+def computeRa(ds: float, achievement: float) -> int:
+    if achievement < 50:
+        baseRa = 7.0
+    elif achievement < 60:
+        baseRa = 8.0
+    elif achievement < 70:
+        baseRa = 9.6
+    elif achievement < 75:
+        baseRa = 11.2
+    elif achievement < 80:
+        baseRa = 12.0
+    elif achievement < 90:
+        baseRa = 13.6
+    elif achievement < 94:
+        baseRa = 15.2
+    elif achievement < 97:
+        baseRa = 16.8
+    elif achievement < 98:
+        baseRa = 20.0
+    elif achievement < 99:
+        baseRa = 20.3
+    elif achievement < 99.5:
+        baseRa = 20.8
+    elif achievement < 100:
+        baseRa = 21.1
+    elif achievement < 100.5:
+        baseRa = 21.6
+    else:
+        baseRa = 22.4
+
+    return math.floor(ds * (min(100.5, achievement) / 100) * baseRa)
 
 
 async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
