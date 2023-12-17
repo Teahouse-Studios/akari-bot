@@ -1,3 +1,5 @@
+import traceback
+
 from core.builtins import Bot, Image, Plain, Url
 from core.dirty_check import rickroll
 from core.utils.http import get_url, download_to_cache
