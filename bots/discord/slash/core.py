@@ -4,8 +4,11 @@ from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 from core.utils.i18n import get_available_locales
 
+admin = client.create_group("admin", "Commands available to bot administrators.")
+setup = client.create_group("setup", "Set up bot actions.")
+
 @client.slash_command(description="Set the bot running languages.")
-@discord.option(name="lang", description="Supported language codes.", choice=get_available_locales())
+@discord.option(name="lang", description="Supported language codes.", choices=get_available_locales())
 async def locale(ctx: discord.ApplicationContext, lang: str):
     await slash_parser(ctx, lang)
 
@@ -28,9 +31,6 @@ async def version(ctx: discord.ApplicationContext):
 @client.slash_command(description="Get the ID of the user account that sent the command inside the bot.")
 async def whoami(ctx: discord.ApplicationContext):
     await slash_parser(ctx, '')
-
-
-admin = client.create_group("admin", "Commands available to bot administrators.")
 
 
 @admin.command(description="Set members as bot administrators.")
@@ -60,10 +60,6 @@ async def ban(ctx: discord.ApplicationContext, user_id: str):
 @discord.option(name="user_id", description="The user ID.")
 async def ban(ctx: discord.ApplicationContext, user_id: str):
     await slash_parser(ctx, f'unban {user_id}')
-
-
-setup = client.create_group("setup", "Set up bot actions.")
-
 
 @setup.command(description="Set up whether to display input prompts.")
 async def typing(ctx: discord.ApplicationContext):
