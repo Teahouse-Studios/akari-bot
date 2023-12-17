@@ -45,7 +45,7 @@ async def main(msg: Bot.MessageSession):
     sm = ['j', 'b']
     for x in sm:
         gather_list.append(asyncio.ensure_future(s(
-            msg, f'{msg.parsed_msg["<ServerIP:Port>"]}', msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False
+            msg, f'{msg.parsed_msg["<address:port>"]}', msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False
                                                                                                              ), x)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
