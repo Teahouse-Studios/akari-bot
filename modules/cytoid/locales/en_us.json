@@ -1,7 +1,7 @@
 {
     "cytoid.help.b30": "Query the Best 30 list of Cytoid user. ",
     "cytoid.help.bind": "Bind Cytoid user.",
-    "cytoid.help.desc": "Query Cytoid related content.",
+    "cytoid.help.desc": "Query about Cytoid.",
     "cytoid.help.profile": "Query user profile.",
     "cytoid.help.r30": "Query the Recent 30 list of Cytoid user. ",
     "cytoid.help.unbind": "Unbind user.",
