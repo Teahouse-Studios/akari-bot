@@ -11,7 +11,7 @@
     "core.help.alias.remove": "Remove custom command alias.",
     "core.help.alias.reset": "Reset custom command alias.",
     "core.help.leave": "Let the bot leave the group.",
-    "core.help.locale": "View bot running language.",
+    "core.help.locale.desc": "Control bot language.",
     "core.help.locale.set": "Set bot running language.",
     "core.help.module.disable": "Disable single/multiple module(s).",
     "core.help.module.disable_all": "Disable all modules.",
