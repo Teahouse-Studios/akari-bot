@@ -3,48 +3,26 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
-arcaea = client.create_group("arcaea", "查询arcaea的相关信息")
+arcaea = client.create_group("arcaea", "Queries about Arcaea.")
 
-
-@arcaea.command(description="查询best30列表")
-async def b30(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "b30")
-
-
-@arcaea.command(description="查询最近游玩记录")
-async def info(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "info")
-
-
-@arcaea.command(description="绑定账户")
-@discord.option(name="friendcode", description="好友代码")
-async def bind(ctx: discord.ApplicationContext, friendcode: str):
-    await slash_parser(ctx, f"bind {friendcode}")
-
-
-@arcaea.command(description="取消绑定账户")
-async def unbind(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "unbind")
-
-
-@arcaea.command(description="获取最新版本的arcaea安卓版链接")
+@arcaea.command(description="Get the latest version of game apk.")
 async def download(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "download")
 
 
-@arcaea.command(description="随机一首歌曲")
+@arcaea.command(description="Random a song.")
 async def random(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "random")
 
 
-rank = arcaea.create_subgroup("rank", "查询arcaea日排行榜的相关信息")
+rank = arcaea.create_subgroup("rank", "View the current daily rank of Arcaea songs.")
 
 
-@rank.command(description="查询arcaea免费包当前日排行榜")
+@rank.command(description="View the current rank of the free packs.")
 async def free(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "rank free")
 
 
-@rank.command(description="查询arcaea收费包当前日排行榜")
+@rank.command(description="View the current rank of the paid packs.")
 async def paid(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "rank paid")

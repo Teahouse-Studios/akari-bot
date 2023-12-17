@@ -9,13 +9,13 @@ from .server import server
 s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
-@s.command('<ServerIP:Port> [-r] [-p] {{server.help}}',
+@s.command('<address:port> [-r] [-p] {{server.help}}',
           options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
 async def main(msg: Bot.MessageSession):
     gather_list = []
-    match_object = re.match(r'(.*)[\s:](.*)', msg.parsed_msg["<ServerIP:Port>"], re.M | re.I)
+    match_object = re.match(r'(.*)[\s:](.*)', msg.parsed_msg["<address:port>"], re.M | re.I)
     is_local_ip = False
-    server_address = msg.parsed_msg["<ServerIP:Port>"]
+    server_address = msg.parsed_msg["<address:port>"]
     if match_object:
         server_address = match_object.group(1)
 

@@ -10,7 +10,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
     return [ctx.options["address"]]
 
 
-@client.slash_command(description="获取一个Minecraft服务器的信息")
-@discord.option(name="address", description="服务器地址", autocomplete=auto_search)
+@client.slash_command(description="Get Minecraft: Java/Bedrock Edition server motd.")
+@discord.option(name="address", description="The server address.", autocomplete=auto_search)
 async def server(ctx: discord.ApplicationContext, address: str):
     await slash_parser(ctx, address)

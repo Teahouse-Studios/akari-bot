@@ -18,7 +18,7 @@ async def _(msg: Bot.MessageSession):
     await repo.repo(msg)
 
 
-@github.handle(('user <name> {{github.help.user}}'))
+@github.handle('user <name> {{github.help.user}}')
 async def _(msg: Bot.MessageSession):
     await user.user(msg)
 
