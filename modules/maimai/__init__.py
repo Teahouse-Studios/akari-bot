@@ -40,6 +40,39 @@ def get_diff(diff):
     return level
 
 
+def computeRa(base: float, achievement: float) -> int:
+    if achievement < 50:
+        baseRa = 7.0
+    elif achievement < 60:
+        baseRa = 8.0
+    elif achievement < 70:
+        baseRa = 9.6
+    elif achievement < 75:
+        baseRa = 11.2
+    elif achievement < 80:
+        baseRa = 12.0
+    elif achievement < 90:
+        baseRa = 13.6
+    elif achievement < 94:
+        baseRa = 15.2
+    elif achievement < 97:
+        baseRa = 16.8
+    elif achievement < 98:
+        baseRa = 20.0
+    elif achievement < 99:
+        baseRa = 20.3
+    elif achievement < 99.5:
+        baseRa = 20.8
+    elif achievement < 100:
+        baseRa = 21.1
+    elif achievement < 100.5:
+        baseRa = 21.6
+    else:
+        baseRa = 22.4
+
+    return math.floor(base * (min(100.5, achievement) / 100) * baseRa)
+    
+
 mai = module('maimai',
              recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
              alias='mai', support_languages=['zh_cn'], desc='{maimai.help.desc}')
@@ -457,7 +490,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
 
 
-@mai.command('rating <base> [<score>] {{maimai.help.rating}}')
+@mai.command('rating <base> <score> {{maimai.help.rating}}')
 async def _(msg: Bot.MessageSession, base: float, score: float):
     if base > 15 or base < 0:
         await msg.finish(msg.locale.t('maimai.message.base_invalid'))
@@ -465,38 +498,6 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
         await msg.finish(computeRa(base, score))
 #    else:
 #        ...
-
-def computeRa(base: float, achievement: float) -> int:
-    if achievement < 50:
-        baseRa = 7.0
-    elif achievement < 60:
-        baseRa = 8.0
-    elif achievement < 70:
-        baseRa = 9.6
-    elif achievement < 75:
-        baseRa = 11.2
-    elif achievement < 80:
-        baseRa = 12.0
-    elif achievement < 90:
-        baseRa = 13.6
-    elif achievement < 94:
-        baseRa = 15.2
-    elif achievement < 97:
-        baseRa = 16.8
-    elif achievement < 98:
-        baseRa = 20.0
-    elif achievement < 99:
-        baseRa = 20.3
-    elif achievement < 99.5:
-        baseRa = 20.8
-    elif achievement < 100:
-        baseRa = 21.1
-    elif achievement < 100.5:
-        baseRa = 21.6
-    else:
-        baseRa = 22.4
-
-    return math.floor(base * (min(100.5, achievement) / 100) * baseRa)
 
 
 @mai.command('update', required_superuser=True)
