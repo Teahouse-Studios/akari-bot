@@ -400,12 +400,12 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
                               status_code=200,
                               headers={'Content-Type': 'application/json', 'accept': '*/*'}, fmt='json')
     except ValueError as e:
-        if e.args == (400,):
+        if str(e).startswith('400'):
             if "qq" in payload:
                 await msg.finish(msg.locale.t("maimai.message.user_unbound"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
-        elif e.args == (403,):
+        elif str(e).startswith('403'):
             await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             raise

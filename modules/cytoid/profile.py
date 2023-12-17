@@ -1,5 +1,3 @@
-import ujson as json
-
 from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
@@ -17,7 +15,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
     try:
         profile = json.loads(await get_url(profile_url, status_code=200))
     except ValueError as e:
-        if e.args == (404,):
+        if str(e).startswith('404'):
             await msg.finish(msg.locale.t('cytoid.message.user_not_found'))
         raise e
     uid = profile['user']['uid']

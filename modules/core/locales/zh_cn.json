@@ -11,7 +11,7 @@
     "core.help.alias.remove": "移除自定义命令别名。",
     "core.help.alias.reset": "重置自定义命令别名。",
     "core.help.leave": "使机器人离开群组。",
-    "core.help.locale": "查看或设置机器人运行语言。",
+    "core.help.locale.desc": "控制机器人语言。",
     "core.help.locale.set": "设置机器人运行语言。",
     "core.help.module.disable": "关闭一个/多个模块。",
     "core.help.module.disable_all": "关闭所有模块。",
