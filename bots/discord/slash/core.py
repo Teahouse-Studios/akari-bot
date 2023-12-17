@@ -2,11 +2,10 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
-from core.utils.i18n import get_available_locales
 
 @client.slash_command(description="Set the bot running languages.")
-@discord.option(name="lang", description="Supported language codes.", choices=get_available_locales())
-async def locale(ctx: discord.ApplicationContext, lang: str = None):
+@discord.option(name="lang", default="", description="Supported language codes.")
+async def locale(ctx: discord.ApplicationContext, lang: str):
     await slash_parser(ctx, lang)
 
 
@@ -30,6 +29,20 @@ async def whoami(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
+setup = client.create_group("setup", "Set up bot actions.")
+
+
+@setup.command(description="Set up whether to display input prompts.")
+async def typing(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "typing")
+
+
+@setup.command(description="Set the time offset.")
+@discord.option(name="offset", description="The timezone offset.")
+async def offset(ctx: discord.ApplicationContext, offset: str):
+    await slash_parser(ctx, f"timeoffset {offset}")
+
+    
 admin = client.create_group("admin", "Commands available to bot administrators.")
 
 
@@ -60,17 +73,3 @@ async def ban(ctx: discord.ApplicationContext, user_id: str):
 @discord.option(name="user_id", description="The user ID.")
 async def ban(ctx: discord.ApplicationContext, user_id: str):
     await slash_parser(ctx, f"unban {user_id}")
-
-
-setup = client.create_group("setup", "Set up bot actions.")
-
-
-@setup.command(description="Set up whether to display input prompts.")
-async def typing(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "typing")
-
-
-@setup.command(description="Set the time offset.")
-@discord.option(name="offset", description="The timezone offset.")
-async def offset(ctx: discord.ApplicationContext, offset: str):
-    await slash_parser(ctx, f"timeoffset {offset}")
