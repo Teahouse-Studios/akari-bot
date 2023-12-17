@@ -2,7 +2,7 @@ from core.builtins import Bot
 from core.component import module
 from modules.github import repo, user, search
 
-github = module('github', alias='gh', developers=['Dianliang233'])
+github = module('github', alias='gh', developers=['Dianliang233'], desc='{github.help.desc}')
 
 
 @github.handle('<name> {{github.help}}')

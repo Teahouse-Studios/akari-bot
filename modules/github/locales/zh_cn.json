@@ -1,12 +1,13 @@
 {
     "github.help": "尝试自动识别并区分 repo/user。",
+    "github.help.desc": "GitHub 查询工具。",
     "github.help.repo": "获取 GitHub 存储库信息。",
     "github.help.search": "搜索 GitHub 上的存储库。",
     "github.help.user": "获取 GitHub 用户或组织信息。",
     "github.message.repo.not_found": "此存储库不存在，请检查输入。",
     "github.message.search": "搜索成功，共 ${result} 条结果：",
-    "github.message.search.none": "搜索成功，未找到结果。",
     "github.message.search.more_information": "另有 ${more_result} 条结果未显示。",
+    "github.message.search.none": "搜索成功，未找到结果。",
     "github.message.search.not_found": "未找到存储库，请检查输入。",
     "github.message.user.not_found": "查无此人，请检查输入。"
 }
