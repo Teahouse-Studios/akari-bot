@@ -11,7 +11,7 @@
     "core.help.alias.remove": "移除自訂指令別名。",
     "core.help.alias.reset": "重設自訂指令別名。",
     "core.help.leave": "使機器人離開群組。",
-    "core.help.locale": "檢視機器人使用的語言。",
+    "core.help.locale.desc": "控制機器人語言。",
     "core.help.locale.set": "設定機器人使用的語言。",
     "core.help.module.disable": "停用一個/多個模組。",
     "core.help.module.disable_all": "停用所有模組。",
