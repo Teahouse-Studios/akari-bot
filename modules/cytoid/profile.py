@@ -17,7 +17,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
     try:
         profile = json.loads(await get_url(profile_url, status_code=200))
     except ValueError as e:
-        if str(e).startswith('404'):
+        if e.args == (404,):
             await msg.finish(msg.locale.t('cytoid.message.user_not_found'))
         raise e
     uid = profile['user']['uid']

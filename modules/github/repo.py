@@ -66,6 +66,6 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
             asyncio.create_task(download())
 
     except ValueError as e:
-        if str(e).startswith('404'):
+        if e.args == (404,):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
         traceback.print_exc()

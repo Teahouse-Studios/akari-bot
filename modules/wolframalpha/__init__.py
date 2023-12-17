@@ -38,7 +38,7 @@ async def _(msg: Bot.MessageSession):
             os.remove(img_path)
             await msg.finish([BImage(output)])
     except ValueError as e:
-        if str(e).startswith('501'):
+        if e.args == (501,):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
 
 
@@ -57,5 +57,5 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(rickroll(msg))
         await msg.finish(data)
     except ValueError as e:
-        if str(e).startswith('501'):
+        if e.args == (501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
