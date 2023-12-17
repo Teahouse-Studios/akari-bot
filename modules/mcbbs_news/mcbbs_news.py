@@ -15,7 +15,7 @@ async def news(msg):
     if web_render:
         use_local = True if web_render_local else False
         api = (web_render_local if use_local else web_render) + 'source?url=' + api
-    html = await get_url(api, 200)
+    html = await get_url(api, 200, request_private_ip=True)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.select('#threadlisttableid > tbody[id^="normalthread_"]')
