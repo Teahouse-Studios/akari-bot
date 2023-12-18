@@ -3,6 +3,7 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
+
 @client.slash_command(description="Query the information of IP.")
 @discord.option(name="ip_address", description="The IP address.")
 async def ip(ctx: discord.ApplicationContext, ip_address: str):
