@@ -26,7 +26,7 @@
     "core.help.option.module.g": "对频道进行全局操作。",
     "core.help.petal": "获取当前群组的花瓣数。",
     "core.help.ping": "获取机器人状态。",
-    "core.help.prefix.add": "设置自定义命令前缀。",
+    "core.help.prefix.add": "添加自定义命令前缀。",
     "core.help.prefix.list": "查看自定义命令前缀列表。",
     "core.help.prefix.remove": "移除自定义命令前缀。",
     "core.help.prefix.reset": "重置自定义命令前缀。",

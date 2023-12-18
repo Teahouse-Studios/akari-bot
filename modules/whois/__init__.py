@@ -1,15 +1,19 @@
+from datetime import datetime
+
 from whois import whois
 
+from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.image import msgchain2image
+from core.utils.text import parse_time_string
 
 
-def process(input):
-    if isinstance(input, list) and len(input) > 0:
-        return input[0]
+def process(input_):
+    if isinstance(input_, list) and len(input_) > 0:
+        return input_[0]
     else:
-        return input
+        return input_
 
 
 def get_value(dict, key):
@@ -59,6 +63,16 @@ async def get_whois(msg, domain):
     if whois_server:
         whois_server = whois_server.lower()
 
+    if updated_date:  # 此时间为UTC时间
+        updated_date = (process(updated_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+
+    if creation_date:  # 此时间为UTC时间
+        creation_date = (process(creation_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+
+    if expiration_date:  # 此时间为UTC时间
+        expiration_date = (process(expiration_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+
+
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))
     else:
@@ -68,9 +82,9 @@ async def get_whois(msg, domain):
 {msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""
 {msg.locale.t('whois.message.registrar')}{registrar}""" if registrar else ''}{f"""
 {msg.locale.t('whois.message.whois_server')}{whois_server}""" if whois_server else ''}{f"""
-{msg.locale.t('whois.message.updated_date')}{str(process(updated_date))}""" if updated_date else ''}{f"""
-{msg.locale.t('whois.message.creation_date')}{str(process(creation_date))}""" if creation_date else ''}{f"""
-{msg.locale.t('whois.message.expiration_date')}{str(process(expiration_date))}""" if expiration_date else ''}{f"""
+{msg.locale.t('whois.message.updated_date')}{msg.ts2strftime(updated_date)}""" if updated_date else ''}{f"""
+{msg.locale.t('whois.message.creation_date')}{msg.ts2strftime(creation_date)}""" if creation_date else ''}{f"""
+{msg.locale.t('whois.message.expiration_date')}{msg.ts2strftime(expiration_date)}""" if expiration_date else ''}{f"""
 {msg.locale.t('whois.message.name_servers')}{', '.join(name_servers_list)}""" if name_servers else ''}{f"""
 {msg.locale.t('whois.message.dnssec')}{process(dnssec)}""" if dnssec else ''}{f"""
 {msg.locale.t('whois.message.name')}{process(name)}""" if name else ''}{f"""
