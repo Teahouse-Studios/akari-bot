@@ -26,7 +26,7 @@
     "core.help.option.module.g": "對頻道進行全域操作。",
     "core.help.petal": "取得目前群組的花瓣數。",
     "core.help.ping": "取得機器人狀態。",
-    "core.help.prefix.add": "設定自訂指令前綴。",
+    "core.help.prefix.add": "新增自訂指令前綴。",
     "core.help.prefix.list": "檢視自訂指令前綴列表。",
     "core.help.prefix.remove": "移除自訂指令前綴。",
     "core.help.prefix.reset": "重設自訂指令前綴。",
