@@ -2,7 +2,6 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
-from core.utils.i18n import get_available_locales
 
 @client.slash_command(description="View details of a module.")
 @discord.option(name="module", default="", description="The module you want to know about.")
@@ -11,7 +10,7 @@ async def help(ctx: discord.ApplicationContext, module: str):
 
 
 @client.slash_command(description="Set the bot running languages.")
-@discord.option(name="lang", choices=get_available_locales(), default="", description="Supported language codes.")
+@discord.option(name="lang", default="", description="Supported language codes.")
 async def locale(ctx: discord.ApplicationContext, lang: str):
     await slash_parser(ctx, lang)
 
