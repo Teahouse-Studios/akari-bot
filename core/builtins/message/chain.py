@@ -5,22 +5,22 @@ from urllib.parse import urlparse
 
 import ujson as json
 
-from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime, I18NText
+from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime, I18NContext
 from core.builtins.utils import Secret
 from core.logger import Logger
 from core.types.message import MessageChain as MessageChainT, MessageSession
 
 
 class MessageChain(MessageChainT):
-    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url, FormattedTime]],
-                                       Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime]],
-                                       Plain, Image, Voice, Embed, Url, FormattedTime] = None):
+    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
+                                       Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
+                                       Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext] = None):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
         if isinstance(elements, str):
             elements = Plain(elements)
-        if isinstance(elements, (Plain, Image, Voice, Embed, Url, FormattedTime)):
+        if isinstance(elements, (Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext)):
             if isinstance(elements, Plain):
                 if elements.text != '':
                     elements = match_kecode(elements.text)
@@ -57,7 +57,7 @@ class MessageChain(MessageChainT):
                         self.value.append(FormattedTime(e['data']['time'], e['data']['date'], e['data']['seconds'],
                                                         e['data']['timezone']))
                     elif e['type'] == 'i18n':
-                        self.value.append(I18NText(e['data']['key'], **e['data']['kwargs']))
+                        self.value.append(I18NContext(e['data']['key'], **e['data']['kwargs']))
                 elif isinstance(e, str):
                     if e != '':
                         self.value += match_kecode(e)
@@ -131,8 +131,12 @@ class MessageChain(MessageChainT):
                     value.append(Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale)))
             elif isinstance(x, FormattedTime):
                 value.append(Plain(x.to_str(msg=msg)))
-            elif isinstance(x, I18NText):
-                value.append(Plain(msg.locale.t(x.key, **x.kwargs)))
+            elif isinstance(x, I18NContext):
+                t_value = msg.locale.t(x.key, **x.kwargs)
+                if isinstance(t_value, str):
+                    value.append(t_value)
+                elif isinstance(t_value, list):
+                    value += MessageChain(t_value).as_sendable(msg)
             else:
                 value.append(x)
         if not value:
