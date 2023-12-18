@@ -2,15 +2,28 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
+from core.utils.i18n import get_available_locales
+
+
+@client.slash_command(description="View details of a module.")
+@discord.option(name="module", default="", description="The module you want to know about.")
+async def help(ctx: discord.ApplicationContext, module: str):
+    await slash_parser(ctx, module)
+
 
 @client.slash_command(description="Set the bot running languages.")
-@discord.option(name="lang", default="", description="Supported language codes.")
+@discord.option(name="lang", choices=get_available_locales(), default="", description="Supported language codes.")
 async def locale(ctx: discord.ApplicationContext, lang: str):
     await slash_parser(ctx, lang)
 
 
 @client.slash_command(description="Make the bot stop sending message.")
 async def mute(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "")
+
+
+@client.slash_command(description="Get the number of petals in the current channel.")
+async def petal(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
@@ -33,15 +46,15 @@ admin = client.create_group("admin", "Commands available to bot administrators."
 
 
 @admin.command(description="Set members as bot administrators.")
-@discord.option(name="user_id", description="The user ID.")
-async def add(ctx: discord.ApplicationContext, user_id: str):
-    await slash_parser(ctx, f"add {user_id}")
+@discord.option(name="userid", description="The user ID.")
+async def add(ctx: discord.ApplicationContext, userid: str):
+    await slash_parser(ctx, f"add {userid}")
 
 
 @admin.command(description="Remove bot administrator from member.")
-@discord.option(name="user_id", description="The user ID.")
-async def remove(ctx: discord.ApplicationContext, user_id: str):
-    await slash_parser(ctx, f"remove {user_id}")
+@discord.option(name="userid", description="The user ID.")
+async def remove(ctx: discord.ApplicationContext, userid: str):
+    await slash_parser(ctx, f"remove {userid}")
 
 
 @admin.command(description="View all bot administrators.")
@@ -50,16 +63,67 @@ async def list(ctx: discord.ApplicationContext):
 
 
 @admin.command(description="Limit someone to use bot in the channel.")
-@discord.option(name="user_id", description="The user ID.")
-async def ban(ctx: discord.ApplicationContext, user_id: str):
-    await slash_parser(ctx, f"ban {user_id}")
+@discord.option(name="userid", description="The user ID.")
+async def ban(ctx: discord.ApplicationContext, userid: str):
+    await slash_parser(ctx, f"ban {userid}")
 
 
 @admin.command(description="Remove limit someone to use bot in the channel.")
-@discord.option(name="user_id", description="The user ID.")
-async def unban(ctx: discord.ApplicationContext, user_id: str):
-    await slash_parser(ctx, f"unban {user_id}")
+@discord.option(name="userid", description="The user ID.")
+async def unban(ctx: discord.ApplicationContext, userid: str):
+    await slash_parser(ctx, f"unban {userid}")
+
+
+alias = client.create_group("alias", "Set custom command alias.")
+
+
+@alias.command(description="Add custom command alias.")
+@discord.option(name="alias", description="The custom alias.")
+@discord.option(name="command", description="The command you want to refer to.")
+async def add(ctx: discord.ApplicationContext, alias: str, command: str):
+    await slash_parser(ctx, f"add {alias} {command}")
+
+
+@alias.command(description="Remove custom command alias.")
+@discord.option(name="alias", description="The custom alias.")
+async def remove(ctx: discord.ApplicationContext, alias: str):
+    await slash_parser(ctx, f"remove {alias}")
+
+
+@alias.command(description="View custom command alias.")
+async def list(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "list")
+
+
+@alias.command(description="Reset custom command alias.")
+async def reset(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "reset")
+
+
+prefix = client.create_group("prefix", "Set custom command prefix.")
+
+
+@prefix.command(description="Add custom command prefix.")
+@discord.option(name="prefix", description="The custom prefix.")
+async def add(ctx: discord.ApplicationContext, prefix: str):
+    await slash_parser(ctx, f"add {prefix}")
+
+
+@prefix.command(description="Remove custom command prefix.")
+@discord.option(name="prefix", description="The custom prefix.")
+async def remove(ctx: discord.ApplicationContext, prefix: str):
+    await slash_parser(ctx, f"remove {prefix}")
+
+
+@prefix.command(description="View custom command prefix.")
+async def list(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "list")
+
     
+@prefix.command(description="Reset custom command prefix.")
+async def reset(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "reset")
+
 
 setup = client.create_group("setup", "Set up bot actions.")
 

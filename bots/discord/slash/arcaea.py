@@ -21,9 +21,9 @@ rank = arcaea.create_subgroup("rank", "View the current daily rank of Arcaea son
 
 @rank.command(description="View the current rank of the free packs.")
 async def free(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "free")
+    await slash_parser(ctx, "rank free")
 
 
 @rank.command(description="View the current rank of the paid packs.")
 async def paid(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "paid")
+    await slash_parser(ctx, "rank paid")
