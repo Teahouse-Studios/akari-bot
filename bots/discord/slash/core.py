@@ -12,7 +12,7 @@ async def help(ctx: discord.ApplicationContext, module: str):
 
 
 @client.slash_command(description="Set the bot running languages.")
-@discord.option(name="lang", default="", description="Supported language codes.")
+@discord.option(name="lang", choices=get_available_locales(), default="", description="Supported language codes.")
 async def locale(ctx: discord.ApplicationContext, lang: str):
     await slash_parser(ctx, lang)
 
