@@ -4,6 +4,11 @@ from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 from core.utils.i18n import get_available_locales
 
+@client.slash_command(description="View details of a module.")
+@discord.option(name="module", default="", description="The module you want to know about.")
+async def help(ctx: discord.ApplicationContext, module: str):
+    await slash_parser(ctx, module)
+
 
 @client.slash_command(description="Set the bot running languages.")
 @discord.option(name="lang", choices=get_available_locales(), default="", description="Supported language codes.")
@@ -18,6 +23,11 @@ async def mute(ctx: discord.ApplicationContext):
 
 @client.slash_command(description="Get bot status.")
 async def ping(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "")
+
+
+@client.slash_command(description="Get the number of petals in the current channel.")
+async def petal(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
