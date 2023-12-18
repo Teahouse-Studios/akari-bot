@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from whois import whois
 
 from core.builtins import Bot, Plain, Image
@@ -5,11 +7,11 @@ from core.component import module
 from core.utils.image import msgchain2image
 
 
-def process(input):
-    if isinstance(input, list) and len(input) > 0:
-        return input[0]
+def process(input_):
+    if isinstance(input_, list) and len(input_) > 0:
+        return input_[0]
     else:
-        return input
+        return input_
 
 
 def get_value(dict, key):
@@ -59,6 +61,15 @@ async def get_whois(msg, domain):
     if whois_server:
         whois_server = whois_server.lower()
 
+    if updated_date:
+        updated_date = process(updated_date).timestamp()
+
+    if creation_date:
+        creation_date = process(creation_date).timestamp()
+
+    if expiration_date:
+        expiration_date = process(expiration_date).timestamp()
+
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))
     else:
@@ -68,9 +79,9 @@ async def get_whois(msg, domain):
 {msg.locale.t('whois.message.domain_name')}{process(domain_name).lower()}{f"""
 {msg.locale.t('whois.message.registrar')}{registrar}""" if registrar else ''}{f"""
 {msg.locale.t('whois.message.whois_server')}{whois_server}""" if whois_server else ''}{f"""
-{msg.locale.t('whois.message.updated_date')}{str(process(updated_date))}""" if updated_date else ''}{f"""
-{msg.locale.t('whois.message.creation_date')}{str(process(creation_date))}""" if creation_date else ''}{f"""
-{msg.locale.t('whois.message.expiration_date')}{str(process(expiration_date))}""" if expiration_date else ''}{f"""
+{msg.locale.t('whois.message.updated_date')}{msg.ts2strftime(updated_date)}""" if updated_date else ''}{f"""
+{msg.locale.t('whois.message.creation_date')}{msg.ts2strftime(creation_date)}""" if creation_date else ''}{f"""
+{msg.locale.t('whois.message.expiration_date')}{msg.ts2strftime(expiration_date)}""" if expiration_date else ''}{f"""
 {msg.locale.t('whois.message.name_servers')}{', '.join(name_servers_list)}""" if name_servers else ''}{f"""
 {msg.locale.t('whois.message.dnssec')}{process(dnssec)}""" if dnssec else ''}{f"""
 {msg.locale.t('whois.message.name')}{process(name)}""" if name else ''}{f"""
