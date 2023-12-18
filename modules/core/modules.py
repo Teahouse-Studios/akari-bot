@@ -289,7 +289,7 @@ async def config_modules(msg: Bot.MessageSession):
 hlp = module('help', base=True)
 
 
-@hlp.command('<module> {{core.help.module.help.detail}}')
+@hlp.command('<module> {{core.help.help.detail}}')
 async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
@@ -314,7 +314,7 @@ async def bot_help(msg: Bot.MessageSession):
 
             doc = '\n'.join(msgs)
             if module_.regex_list.set:
-                doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
+                doc += '\n' + msg.locale.t("core.message.help.support_regex")
                 for regex in module_.regex_list.set:
                     pattern = None
                     if isinstance(regex.pattern, str):
@@ -324,10 +324,10 @@ async def bot_help(msg: Bot.MessageSession):
                     if pattern:
                         desc = regex.desc
                         if desc:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.detail",
+                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
                                                                   msg=msg.locale.tl_str(desc))
                         else:
-                            doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.no_information")
+                            doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
             module_alias = module_.alias
             malias = []
             if module_alias:
@@ -335,17 +335,17 @@ async def bot_help(msg: Bot.MessageSession):
                     malias.append(f'{a} -> {module_alias[a]}')
             if module_.developers is not None:
                 devs = msg.locale.t('message.delimiter').join(module_.developers)
-                devs_msg = '\n' + msg.locale.t("core.message.module.help.author.type1") + devs
+                devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
                 devs_msg = ''
-            wiki_msg = '\n' + msg.locale.t("core.message.module.help.helpdoc.address",
+            wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
                                            help_url=Config('help_url')) + '/' + help_name
             if len(doc) > 500 and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
-                                         [msg.locale.t("core.message.module.help.table.header.help"),
-                                          msg.locale.t("core.message.module.help.table.header.alias"),
-                                          msg.locale.t("core.message.module.help.author.type2")])]
+                                         [msg.locale.t("core.message.help.table.header.help"),
+                                          msg.locale.t("core.message.help.table.header.alias"),
+                                          msg.locale.t("core.message.help.author.type2")])]
                     render = await image_table_render(tables)
                     if render:
                         await msg.finish([Image(render),
@@ -356,11 +356,11 @@ async def bot_help(msg: Bot.MessageSession):
                 doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
             await msg.finish((doc + devs_msg + wiki_msg).lstrip())
         else:
-            await msg.finish(msg.locale.t("core.message.module.help.not_found"))
+            await msg.finish(msg.locale.t("core.message.help.not_found"))
 
 
-@hlp.command(['{{core.help.module.help}}',
-              'legacy {{core.help.module.help.legacy}}'])
+@hlp.command(['{{core.help.help}}',
+              'legacy {{core.help.help.legacy}}'])
 async def _(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
@@ -384,7 +384,7 @@ async def _(msg: Bot.MessageSession):
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
                 if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
+                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
                     for regex in module_.regex_list.set:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -394,10 +394,10 @@ async def _(msg: Bot.MessageSession):
                         if pattern:
                             desc = regex.desc
                             if desc:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.detail",
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
                                                                       msg=msg.locale.tl_str(desc))
                             else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.no_information")
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
                 appends.append(doc)
                 module_alias = module_.alias
                 malias = []
@@ -413,34 +413,34 @@ async def _(msg: Bot.MessageSession):
                     m.append(appends)
             if essential:
                 tables.append(ImageTable(
-                    essential, [msg.locale.t("core.message.module.help.table.header.base"),
-                                msg.locale.t("core.message.module.help.table.header.help"),
-                                msg.locale.t("core.message.module.help.table.header.alias"),
-                                msg.locale.t("core.message.module.help.author.type2")]))
+                    essential, [msg.locale.t("core.message.help.table.header.base"),
+                                msg.locale.t("core.message.help.table.header.help"),
+                                msg.locale.t("core.message.help.table.header.alias"),
+                                msg.locale.t("core.message.help.author.type2")]))
             if m:
-                tables.append(ImageTable(m, [msg.locale.t("core.message.module.help.table.header.external"),
-                                             msg.locale.t("core.message.module.help.table.header.help"),
-                                             msg.locale.t("core.message.module.help.table.header.alias"),
-                                             msg.locale.t("core.message.module.help.author.type2")]))
+                tables.append(ImageTable(m, [msg.locale.t("core.message.help.table.header.external"),
+                                             msg.locale.t("core.message.help.table.header.help"),
+                                             msg.locale.t("core.message.help.table.header.alias"),
+                                             msg.locale.t("core.message.help.author.type2")]))
             if tables:
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
                     await msg.finish([Image(render),
-                                      Plain(msg.locale.t("core.message.module.help.more_information",
+                                      Plain(msg.locale.t("core.message.help.more_information",
                                                          prefix=msg.prefixes[0], help_url=Config('help_url'),
                                                          donate_url=Config('donate_url')))])
         except Exception:
             traceback.print_exc()
     if legacy_help:
-        help_msg = [msg.locale.t("core.message.module.help.legacy.base")]
+        help_msg = [msg.locale.t("core.message.help.legacy.base")]
         essential = []
         for x in module_list:
             if module_list[x].base and not (
                     module_list[x].required_superuser or module_list[x].required_base_superuser):
                 essential.append(module_list[x].bind_prefix)
         help_msg.append(' | '.join(essential))
-        help_msg.append(msg.locale.t("core.message.module.help.legacy.external"))
+        help_msg.append(msg.locale.t("core.message.help.legacy.external"))
         module_ = []
         for x in module_list:
             if x in target_enabled_list and not (
@@ -449,7 +449,7 @@ async def _(msg: Bot.MessageSession):
         help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
-                "core.message.module.help.legacy.more_information",
+                "core.message.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))
@@ -479,7 +479,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                     doc_.append(help_.return_formatted_help_doc())
                 doc = '\n'.join(doc_)
                 if module_.regex_list.set:
-                    doc += '\n' + msg.locale.t("core.message.module.help.support_regex")
+                    doc += '\n' + msg.locale.t("core.message.help.support_regex")
                     for regex in module_.regex_list.set:
                         pattern = None
                         if isinstance(regex.pattern, str):
@@ -489,10 +489,10 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                         if pattern:
                             desc = regex.desc
                             if desc:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.detail",
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.detail",
                                                                       msg=msg.locale.tl_str(desc))
                             else:
-                                doc += f'\n{pattern} ' + msg.locale.t("core.message.module.help.regex.no_information")
+                                doc += f'\n{pattern} ' + msg.locale.t("core.message.help.regex.no_information")
                 appends.append(doc)
                 module_alias = module_.alias
                 malias = []
@@ -504,10 +504,10 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                     appends.append(msg.locale.t('message.delimiter').join(module_.developers))
                 m.append(appends)
             if m:
-                tables.append(ImageTable(m, [msg.locale.t("core.message.module.help.table.header.external"),
-                                             msg.locale.t("core.message.module.help.table.header.help"),
-                                             msg.locale.t("core.message.module.help.table.header.alias"),
-                                             msg.locale.t("core.message.module.help.author.type2")]))
+                tables.append(ImageTable(m, [msg.locale.t("core.message.help.table.header.external"),
+                                             msg.locale.t("core.message.help.table.header.help"),
+                                             msg.locale.t("core.message.help.table.header.alias"),
+                                             msg.locale.t("core.message.help.author.type2")]))
             if tables:
                 render = await image_table_render(tables)
                 if render:
@@ -516,7 +516,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         except Exception:
             traceback.print_exc()
     if legacy_help:
-        help_msg = [msg.locale.t("core.message.module.help.legacy.availables")]
+        help_msg = [msg.locale.t("core.message.help.legacy.availables")]
         module_ = []
         for x in module_list:
             if x[0] == '_':
@@ -527,7 +527,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
-                "core.message.module.help.legacy.more_information",
+                "core.message.help.legacy.more_information",
                 prefix=msg.prefixes[0],
                 help_url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))

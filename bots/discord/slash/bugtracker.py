@@ -6,10 +6,9 @@ from bots.discord.slash_parser import slash_parser
 
 async def auto_search(ctx: discord.AutocompleteContext):
     if ctx.options["mojiraid"] == '':
-        return ['MC-', 'MCPE-', 'MCD-', 'MCL-', 'REALMS-', 'WEB-', 'MCCE-']
+        return ['BDS-', 'MCPE-', 'MCD-', 'MCL-', 'MCLG-', 'REALMS-', 'MC-', 'WEB-']
 
-
-@client.command(description="查询一个已记录在Mojira上的bug信息")
+@client.command(description="Query the corresponding ticket on Mojira.")
 @discord.option(name="mojiraid", autocomplete=auto_search)
-async def bug(ctx: discord.ApplicationContext, mojiraid: str):
+async def bugtracker(ctx: discord.ApplicationContext, mojiraid: str):
     await slash_parser(ctx, mojiraid)

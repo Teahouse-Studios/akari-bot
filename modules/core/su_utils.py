@@ -299,7 +299,7 @@ def update_dependencies():
     pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
     if len(pip_install) > 500:
         return '...' + pip_install[-500:]
-    return
+    return pip_install
 
 
 @upd.command()

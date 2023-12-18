@@ -3,30 +3,30 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
-cytoid = client.create_group("cytoid", "查询Cytoid的相关信息")
+cytoid = client.create_group("cytoid", "Query about Cytoid.")
 
 
-@cytoid.command(description="查询Best30列表")
+@cytoid.command(description="Query the Best 30 list.")
 async def b30(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "b30")
 
 
-@cytoid.command(description="查询Recent30列表")
+@cytoid.command(description="Query the Recent 30 list.")
 async def r30(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "r30")
 
 
-@cytoid.command(description="查询个人信息")
+@cytoid.command(description="Query user profile.")
 async def profile(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "profile")
 
 
-@cytoid.command(description="绑定用户")
-@discord.option(name="username", description="用户名")
+@cytoid.command(description="Bind user.")
+@discord.option(name="username", description="Your Cytoid username.")
 async def bind(ctx: discord.ApplicationContext, username: str):
     await slash_parser(ctx, f"bind {username}")
 
 
-@cytoid.command(description="取消绑定用户")
+@cytoid.command(description="Unbind user.")
 async def unbind(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "unbind")
