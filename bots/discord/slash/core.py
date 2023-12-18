@@ -29,6 +29,38 @@ async def whoami(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
 
 
+admin = client.create_group("admin", "Commands available to bot administrators.")
+
+
+@admin.command(description="Set members as bot administrators.")
+@discord.option(name="user_id", description="The user ID.")
+async def add(ctx: discord.ApplicationContext, user_id: str):
+    await slash_parser(ctx, f"add {user_id}")
+
+
+@admin.command(description="Remove bot administrator from member.")
+@discord.option(name="user_id", description="The user ID.")
+async def remove(ctx: discord.ApplicationContext, user_id: str):
+    await slash_parser(ctx, f"remove {user_id}")
+
+
+@admin.command(description="View all bot administrators.")
+async def list(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "list")
+
+
+@admin.command(description="Limit someone to use bot in the channel.")
+@discord.option(name="user_id", description="The user ID.")
+async def ban(ctx: discord.ApplicationContext, user_id: str):
+    await slash_parser(ctx, f"ban {user_id}")
+
+
+@admin.command(description="Remove limit someone to use bot in the channel.")
+@discord.option(name="user_id", description="The user ID.")
+async def unban(ctx: discord.ApplicationContext, user_id: str):
+    await slash_parser(ctx, f"unban {user_id}")
+    
+
 setup = client.create_group("setup", "Set up bot actions.")
 
 
