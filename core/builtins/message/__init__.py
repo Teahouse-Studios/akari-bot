@@ -1,6 +1,6 @@
 import asyncio
 from config import Config
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 from core.builtins.message.chain import *

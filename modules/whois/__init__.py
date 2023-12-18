@@ -2,9 +2,11 @@ from datetime import datetime
 
 from whois import whois
 
+from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.utils.image import msgchain2image
+from core.utils.text import parse_time_string
 
 
 def process(input_):
@@ -61,14 +63,15 @@ async def get_whois(msg, domain):
     if whois_server:
         whois_server = whois_server.lower()
 
-    if updated_date:
-        updated_date = process(updated_date).timestamp()
+    if updated_date:  # 此时间为UTC时间
+        updated_date = (process(updated_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
 
-    if creation_date:
-        creation_date = process(creation_date).timestamp()
+    if creation_date:  # 此时间为UTC时间
+        creation_date = (process(creation_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
 
-    if expiration_date:
-        expiration_date = process(expiration_date).timestamp()
+    if expiration_date:  # 此时间为UTC时间
+        expiration_date = (process(expiration_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
+
 
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))

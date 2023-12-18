@@ -3,7 +3,7 @@ import os
 import time
 import traceback
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from os.path import abspath
 
 import aiohttp
@@ -18,6 +18,7 @@ from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.html2text import html2text
+from core.utils.text import parse_time_string
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
@@ -98,7 +99,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             rt = x['rating']
             details = x['details']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            local_time = _date + timedelta(hours=int(msg.options.get('timezone_offset', Config('timezone_offset', '+8'))))
+            local_time = _date + parse_time_string(msg.options.get('timezone_offset', Config('timezone_offset', '+8')))
             playtime = local_time.timestamp()
             nowtime = time.time()
             playtime = playtime - nowtime
