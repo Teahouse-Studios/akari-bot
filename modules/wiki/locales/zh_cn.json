@@ -85,7 +85,7 @@
     "wiki.message.utils.banned": "检测到外来信息介入，请前往滥用日志查看所有消息。",
     "wiki.message.utils.qq.prompt": "Tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。",
     "wiki.message.utils.time.infinity": "无限期",
-    "wiki.message.utils.wikilib.error.empty": "发生错误：API 未返回任何内容，请联系此站点管理员获取原因。",
+    "wiki.message.utils.wikilib.error.empty": "发生错误：API 未返回任何内容，这可能是该wiki采取了某些保护措施。请联系wiki管理员详询。",
     "wiki.message.utils.wikilib.error.empty_title": "发生错误：请求的页面标题为空，或只包含命名空间名称。",
     "wiki.message.utils.wikilib.error.invalid_character": "发生错误：请求的页面标题包含无效字符：“${char}”。",
     "wiki.message.utils.wikilib.get_failed.api": "从 API 获取信息时出错：",
