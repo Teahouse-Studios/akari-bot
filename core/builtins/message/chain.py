@@ -134,7 +134,7 @@ class MessageChain(MessageChainT):
             elif isinstance(x, I18NContext):
                 t_value = msg.locale.t(x.key, **x.kwargs)
                 if isinstance(t_value, str):
-                    value.append(t_value)
+                    value.append(Plain(t_value))
                 elif isinstance(t_value, list):
                     value += MessageChain(t_value).as_sendable(msg)
             else:
