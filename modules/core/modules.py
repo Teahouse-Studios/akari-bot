@@ -132,7 +132,7 @@ async def config_modules(msg: Bot.MessageSession):
                         recommend_modules_help_doc_list.append(msg.locale.tl_str(modules_[m].desc))
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
-                    if hdoc == '':
+                    if not hdoc:
                         hdoc = msg.locale.t('core.help.none')
                     recommend_modules_help_doc_list.append(hdoc)
                 except InvalidHelpDocTypeError:
@@ -177,14 +177,14 @@ async def config_modules(msg: Bot.MessageSession):
                 reload_count = ModulesManager.reload_module(module)
                 if reload_count > 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
-                           ('\n' if len(extra_modules) != 0 else '') + \
-                           '\n'.join(extra_modules) + \
-                           '\n' + msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)
+                        ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + \
+                        '\n' + msg.locale.t('core.message.module.reload.with', reloadCnt=reload_count - 1)
                 elif reload_count == 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
-                           ('\n' if len(extra_modules) != 0 else '') + \
-                           '\n'.join(extra_modules) + \
-                           '\n' + msg.locale.t('core.message.module.reload.no_more')
+                        ('\n' if len(extra_modules) != 0 else '') + \
+                        '\n'.join(extra_modules) + \
+                        '\n' + msg.locale.t('core.message.module.reload.no_more')
                 else:
                     return msg.locale.t("core.message.module.reload.failed")
 

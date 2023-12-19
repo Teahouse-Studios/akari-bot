@@ -57,7 +57,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 count = str(count)
             t.append(f"{title_checked_map[x['title']]}（{count}）")
             comment = x['comment']
-            if comment == '':
+            if not comment:
                 comment = '（无摘要内容）'
             t.append(comment)
             t.append(
@@ -70,7 +70,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
                 r = '（新重定向）'
             t.append(f"{title_checked_map[x['title']]}{r}")
             comment = x['comment']
-            if comment == '':
+            if not comment:
                 comment = '（无摘要内容）'
             t.append(comment)
         if x['type'] == 'log':

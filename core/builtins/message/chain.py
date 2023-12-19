@@ -184,7 +184,7 @@ site_whitelist = ['http.cat']
 def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
     split_all = re.split(r'(\[Ke:.*?])', text)
     for x in split_all:
-        if x == '':
+        if not x:
             split_all.remove('')
     elements = []
     for e in split_all:
@@ -196,7 +196,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
             element_type = match.group(1).lower()
             args = re.split(r',|,.\s', match.group(2))
             for x in args:
-                if x == '':
+                if not x:
                     args.remove('')
             if element_type == 'plain':
                 for a in args:

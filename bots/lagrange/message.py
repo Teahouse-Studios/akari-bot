@@ -218,7 +218,7 @@ class MessageSession(MessageSessionT):
         spl = re.split(r'(\[CQ:.*?])', m)
         lst = []
         for s in spl:
-            if s == '':
+            if not s:
                 continue
             if s.startswith('[CQ:'):
                 if s.startswith('[CQ:image'):

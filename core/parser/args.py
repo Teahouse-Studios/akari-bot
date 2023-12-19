@@ -130,7 +130,7 @@ def parse_template(argv: List[str]) -> List[Template]:
         patterns = filter(None, re.split(r'(\[.*?])|(<.*?>)|(\{.*})| ', a))
         for p in patterns:
             strip_pattern = p.strip()
-            if strip_pattern == '':
+            if not strip_pattern:
                 continue
             if strip_pattern.startswith('['):
                 if not strip_pattern.endswith(']'):

@@ -18,15 +18,15 @@ def remove_ineffective_text(prefix: str, lst: list) -> list:
         for y in lst:
             split_list = y.split(x)
             for _ in split_list:
-                if split_list[0] == '':
+                if not split_list[0]:
                     del split_list[0]
                 if len(split_list) > 0:
-                    if split_list[-1] == '':
+                    if not split_list[-1]:
                         del split_list[-1]
             for _ in split_list:
                 if len(split_list) > 0:
                     spl0 = split_list[0]
-                    if spl0.startswith(prefix) and spl0 != '':
+                    if spl0.startswith(prefix) and spl0:
                         split_list[0] = re.sub(r'^' + prefix, '', split_list[0])
             list_cache.append(x.join(split_list))
         lst = list_cache

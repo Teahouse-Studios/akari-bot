@@ -296,7 +296,7 @@ class WikiLib:
             return WikiStatus(available=False, value=False, message='')
 
     async def fixup_wiki_info(self):
-        if self.wiki_info.api == '':
+        if not self.wiki_info.api:
             wiki_info = await self.check_wiki_available()
             if wiki_info.available:
                 self.wiki_info = wiki_info.value
@@ -333,7 +333,7 @@ class WikiLib:
             ell = True
         split_desc = desc.split('\n')
         for d in split_desc:
-            if d == '':
+            if not d:
                 split_desc.remove('')
         if len(split_desc) > 5:
             split_desc = split_desc[0:5]
@@ -441,10 +441,7 @@ class WikiLib:
             if Config('enable_tos'):
                 raise WhatAreUDoingError
         selected_section = None
-        if title is not None:
-            if title == '':
-                return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
-                                interwiki_prefix=_prefix, templates=[])
+        if title:
             if inline:
                 split_name = re.split(r'(#)', title)
             else:
@@ -484,12 +481,13 @@ class WikiLib:
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
-        elif pageid is not None:
+        elif pageid:
             page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
         else:
-            raise ValueError('title and pageid cannot be both None')
+            return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
+                            interwiki_prefix=_prefix, templates=[])
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
         if use_textextracts and selected_section is None:
             query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
@@ -497,7 +495,7 @@ class WikiLib:
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
-        if query is None:
+        if not query:
             return PageInfo(title=title, link=None, desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                             info=self.wiki_info)
 
@@ -708,7 +706,7 @@ class WikiLib:
                             page_info.link = full_url
                             page_info.file = file
                             page_info.desc = page_desc
-                            if not _iw and page_info.args == '':
+                            if not _iw and not page_info.args:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                         else:
                             page_info.title = query_langlinks.title
@@ -732,12 +730,12 @@ class WikiLib:
                                          _iw=_iw)
                     before_page_info = page_info
                     page_info = iw_query
-                    if iw_query.title == '':
+                    if not iw_query.title:
                         page_info.title = ''
                     else:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
-                        if t != '' and t is not None:
+                        if t:
                             if before_page_info.args is not None:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)

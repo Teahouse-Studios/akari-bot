@@ -6,6 +6,7 @@ from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser, ctx_to_session
 from modules.wiki import WikiLib, WikiTargetInfo
 
+
 @client.slash_command(description="Get recent abuse logs for the default wiki.")
 async def ab(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "legacy")
@@ -14,12 +15,12 @@ async def ab(ctx: discord.ApplicationContext):
 @client.slash_command(description="Get recent newbie logs for the default wiki.")
 async def newbie(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "")
-    
+
 
 @client.slash_command(description="Get recent changes for the default wiki.")
 async def rc(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "legacy")
-    
+
 
 wiki = client.create_group("wiki", "Query information from Mediawiki-based websites.")
 
@@ -54,7 +55,7 @@ async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):
-    if ctx.options["link"] == '':
+    if not ctx.options["link"]:
         return ['https://zh.minecraft.wiki/']
 
 
@@ -99,7 +100,7 @@ async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
 
 
 @iw.command(name="list", description="Lists the currently configured Interwiki.")
-@discord.option(name="legacy", choices=[('true', 'legacy'), ('false', '')], description="Whether to use legacy mode." )
+@discord.option(name="legacy", choices=[('true', 'legacy'), ('false', '')], description="Whether to use legacy mode.")
 async def iw_list(ctx: discord.ApplicationContext, legacy: str):
     await slash_parser(ctx, f'iw list {legacy}')
 
@@ -126,7 +127,7 @@ async def set_headers(ctx: discord.ApplicationContext, headerkey: str):
 
 
 @headers.command(name='show', description="View the currently set request headers.")
-async def show_headers(ctx: discord.ApplicationContext): 
+async def show_headers(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'headers show')
 
 
@@ -147,7 +148,7 @@ async def set_prefix(ctx: discord.ApplicationContext, prefix: str):
 @p.command(name="reset", description="Reset custom wiki prefix.")
 async def reset_prefix(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'prefix reset')
-    
+
 
 @wiki.command(description="Toggle whether to use Fandom global Interwiki queries.")
 async def fandom(ctx: discord.ApplicationContext):
