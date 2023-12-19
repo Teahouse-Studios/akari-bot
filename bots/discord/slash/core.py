@@ -2,10 +2,28 @@ import discord
 
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
+from core.loader import ModulesManager
+from core.utils.i18n import get_available_locales
+
+async def auto_get_module_list(ctx: discord.AutocompleteContext):
+    module_ = []
+    module_list = ModulesManager.return_modules_list()
+
+    for x in module_list:
+    if x not (module_list[x].required_superuser or module_list[x].required_base_superuser):
+        module_.append(x)
+
+    return module_
+
+
+async def auto_get_lang(ctx: discord.AutocompleteContext):
+
+    if not ctx.options["lang"]:
+        return get_available_locales()
 
 
 @client.slash_command(name="locale", description="Set the bot running languages.")
-@discord.option(name="lang", default="", description="Supported language codes.")
+@discord.option(name="lang", default="", description="Supported language codes.", autocomplete=auto_get_lang)
 async def locale(ctx: discord.ApplicationContext, lang: str):
     await slash_parser(ctx, lang)
 
@@ -84,8 +102,10 @@ async def remove(ctx: discord.ApplicationContext, alias: str):
 
 
 @ali.command(name="list", description="View custom command alias.")
-async def lst(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "list")
+@discord.option(name="legacy", choices=['true', 'false'], description="Whether to use legacy mode.")
+async def lst(ctx: discord.ApplicationContext, legacy: str):
+    legacy = "legacy" if legacy == "true" else ""
+    await slash_parser(ctx, f"list {legacy}")
 
 
 @ali.command(name="reset", description="Reset custom command alias.")
@@ -104,7 +124,7 @@ async def lst(ctx: discord.ApplicationContext, legacy: str):
 
 
 @hlp.command(name="detail", description="View details of a module.")
-@discord.option(name="module", default="", description="The module you want to know about.")
+@discord.option(name="module", description="The module you want to know about.", autocomplete=auto_get_module_list)
 async def detail(ctx: discord.ApplicationContext, module: str):
     await slash_parser(ctx, module)
 
@@ -112,21 +132,23 @@ async def detail(ctx: discord.ApplicationContext, module: str):
 m = client.create_group("module", "Set about modules.")
 
 
-@m.command(name="enable", description="Enable module.")
-@discord.option(name="module", description="The module name.")
+@m.command(name="enable", description="Enable module(s).")
+@discord.option(name="module", description="The modules you want to enable.", autocomplete=auto_get_module_list)
 async def add(ctx: discord.ApplicationContext, module: str):
     await slash_parser(ctx, f"enable {module}")
 
 
-@m.command(name="disable", description="Disable module.")
-@discord.option(name="module", description="The module name.")
+@m.command(name="disable", description="Disable module(s).")
+@discord.option(name="module", description="The modules you want to disable.", autocomplete=auto_get_module_list)
 async def add(ctx: discord.ApplicationContext, module: str):
     await slash_parser(ctx, f"disable {module}")
 
 
 @m.command(name="list", description="View all available modules.")
-async def lst(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "list")
+@discord.option(name="legacy", choices=['true', 'false'], description="Whether to use legacy mode.")
+async def lst(ctx: discord.ApplicationContext, legacy: str):
+    legacy = "legacy" if legacy == "true" else ""
+    await slash_parser(ctx, f"list {legacy}")
 
 
 p = client.create_group("prefix", "Set custom command prefix.")
