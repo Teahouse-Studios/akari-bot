@@ -10,14 +10,13 @@ async def auto_get_module_list(ctx: discord.AutocompleteContext):
     module_list = ModulesManager.return_modules_list()
 
     for x in module_list:
-    if x not (module_list[x].required_superuser or module_list[x].required_base_superuser):
-        module_.append(x)
+        if x not (module_list[x].required_superuser or module_list[x].required_base_superuser):
+            module_.append(x)
 
     return module_
 
 
 async def auto_get_lang(ctx: discord.AutocompleteContext):
-
     if not ctx.options["lang"]:
         return get_available_locales()
 
