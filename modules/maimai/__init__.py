@@ -2,7 +2,7 @@
 import traceback
 
 from config import Config
-from core.builtins import Bot, command_prefix, Plain, Image as BImage
+from core.builtins import Bot, Plain, Image as BImage
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.maimai_best_50 import generate
@@ -454,7 +454,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
               b2t_2000_great=b2t_2000_great,
               b2t_2000_great_prop=b2t_2000_great_prop)}''')
     except ValueError:
-        await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=command_prefix[0]))
+        await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=msg.prefixes[0]))
 
 
 @mai.command('rating <base> <score> {{maimai.help.rating}}')
