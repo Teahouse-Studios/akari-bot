@@ -59,25 +59,25 @@ async def default_wiki(ctx: discord.AutocompleteContext):
         return ['https://zh.minecraft.wiki/']
 
 
-@wiki.command(description="Query a wiki page.")
+@wiki.command(name="query", description="Query a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 async def query(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, pagename)
 
 
-@wiki.command(name="id", description="Query a Wiki page based on page ID.")
+@wiki.command(name="id", name="id", description="Query a Wiki page based on page ID.")
 @discord.option(name="pageid", description="The wiki page ID.")
 async def byid(ctx: discord.ApplicationContext, pageid: str):
     await slash_parser(ctx, f'id {pageid}')
 
 
-@wiki.command(description="Search a wiki page.")
+@wiki.command(name="search", description="Search a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 async def search(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, f'search {pagename}')
 
 
-@wiki.command(name="set", description="Set up start wiki.")
+@wiki.command(name="set", name="set", description="Set up start wiki.")
 @discord.option(name="wikiurl", description="The URL of wiki.", autocomplete=default_wiki)
 async def set_base(ctx: discord.ApplicationContext, wikiurl: str):
     await slash_parser(ctx, f'set {wikiurl}')
@@ -150,11 +150,11 @@ async def reset_prefix(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'prefix reset')
 
 
-@wiki.command(description="Toggle whether to use Fandom global Interwiki queries.")
+@wiki.command(name="fandom", description="Toggle whether to use Fandom global Interwiki queries.")
 async def fandom(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'fandom')
 
 
-@wiki.command(description="Toggle whether to return the edit link when the page does not exist.")
+@wiki.command(name="redlink", description="Toggle whether to return the edit link when the page does not exist.")
 async def redlink(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'redlink')
