@@ -72,6 +72,57 @@ async def unban(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"unban {userid}")
     
 
+ali = client.create_group("alias", "Set custom command alias.")
+
+
+@ali.command(description="Add custom command alias.")
+@discord.option(name="alias", description="The custom alias.")
+@discord.option(name="command", description="The command you want to refer to.")
+async def add(ctx: discord.ApplicationContext, alias: str, command: str):
+    await slash_parser(ctx, f"add {alias} {command}")
+
+
+@ali.command(description="Remove custom command alias.")
+@discord.option(name="alias", description="The custom alias.")
+async def remove(ctx: discord.ApplicationContext, alias: str):
+    await slash_parser(ctx, f"remove {alias}")
+
+
+@ali.command(description="View custom command alias.")
+async def list(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "list")
+
+
+@ali.command(description="Reset custom command alias.")
+async def reset(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "reset")
+
+
+p = client.create_group("prefix", "Set custom command prefix.")
+
+
+@p.command(description="Add custom command prefix.")
+@discord.option(name="prefix", description="The custom prefix.")
+async def add(ctx: discord.ApplicationContext, prefix: str):
+    await slash_parser(ctx, f"add {prefix}")
+
+
+@p.command(description="Remove custom command prefix.")
+@discord.option(name="prefix", description="The custom prefix.")
+async def remove(ctx: discord.ApplicationContext, prefix: str):
+    await slash_parser(ctx, f"remove {prefix}")
+
+
+@p.command(description="View custom command prefix.")
+async def list(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "list")
+
+
+@p.command(description="Reset custom command prefix.")
+async def reset(ctx: discord.ApplicationContext):
+    await slash_parser(ctx, "reset")
+
+
 setup = client.create_group("setup", "Set up bot actions.")
 
 
