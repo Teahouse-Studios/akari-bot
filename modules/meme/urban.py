@@ -11,6 +11,7 @@ from core.utils.i18n import Locale
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
+
 async def urban(term: str, locale: Locale):
     '''查询urban dictionary。
 
@@ -29,7 +30,7 @@ async def urban(term: str, locale: Locale):
                                                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 Edg/96.0.1054.62'})
         Logger.debug(text)
         data = json.loads(text)['list']
-        if data == []:
+        if not data:
             return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.not_found")}'
         else:
             count = data.__len__()
