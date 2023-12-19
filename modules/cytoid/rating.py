@@ -37,7 +37,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         profile_level = profile_json['exp']['currentLevel']
         profile_uid = profile_json['user']['uid']
         nick = profile_json['user']['name']
-        if nick is None:
+        if not nick:
             nick = profile_uid
         if 'avatar' in profile_json['user']:
             avatar_img = profile_json['user']['avatar']['medium']

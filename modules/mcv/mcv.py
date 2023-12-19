@@ -82,10 +82,10 @@ async def mcbv(msg):
     msg2 = f'Beta: {fix.join(beta)}\nPreview: {fix.join(preview)}\nRelease: {fix.join(release)}'
     return \
         (f"""{msg.locale.t("mcv.message.mcbv.play_store")}
-{play_store_version if play_store_version is not None else msg.locale.t('mcv.message.mcbv.get_failed')}
+{play_store_version if play_store_version else msg.locale.t('mcv.message.mcbv.get_failed')}
 """ if IP.country != 'China' else '') + \
         f"""{msg.locale.t("mcv.message.mcbv.ms_store")}
-{ms_store_version if ms_store_version is not None else msg.locale.t('mcv.message.mcbv.get_failed')}
+{ms_store_version if ms_store_version else msg.locale.t('mcv.message.mcbv.get_failed')}
 """ + \
         msg.locale.t("mcv.message.mcbv", jira_ver=msg2)
 

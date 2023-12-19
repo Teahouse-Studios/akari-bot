@@ -27,11 +27,11 @@ css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 @c.command('[<color>] {{color.help}}')
 @c.command()
 async def _(msg: Bot.MessageSession, color: str = None):
-    if color is None:
+    if not color:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
-    elif css_names_to_hex.get(color) is not None:
+    elif css_names_to_hex.get(color):
         color = webcolors.html5_parse_simple_color(css_names_to_hex[color])
-    elif material_colors_names_to_hex.get(color) is not None:
+    elif material_colors_names_to_hex.get(color):
         color = webcolors.html5_parse_simple_color(material_colors_names_to_hex[color])
     elif re.match(r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$', color):
         # add hash if missing
@@ -79,7 +79,7 @@ async def _(msg: Bot.MessageSession, color: str = None):
         css_color_name = f'\n{msg.locale.t("color.message.css")}{css_color_name_raw[0]}'
         if css_color_name_raw[0] != 'black' and css_color_name_raw[0] != 'white':
             css_color_name_short = f'{css_color_name_raw[0]}\n'
-    elif css_color_name_raw[0] is not None:
+    elif css_color_name_raw[0]:
         css_color_name = f'\n{msg.locale.t("color.message.css.approximate")}{css_color_name_raw[0]}'
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
@@ -88,7 +88,7 @@ async def _(msg: Bot.MessageSession, color: str = None):
     if material_color_name_raw[1]:
         material_color_name = f'\n{msg.locale.t("color.message.md")}{material_color_name_raw[0]}'
         material_color_name_short = f'{material_color_name_raw[0]}\n'
-    elif material_color_name_raw[0] is not None:
+    elif material_color_name_raw[0]:
         material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{material_color_name_raw[0]}'
 
     draw.multiline_text(

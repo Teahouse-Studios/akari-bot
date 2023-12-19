@@ -51,9 +51,9 @@ class DirtyWordCache:
         self.query_word = query_word
         self.query = session.query(DirtyFilterTable).filter_by(desc=self.query_word).first()
         self.need_insert = False
-        if self.query is None:
+        if not self.query:
             self.need_insert = True
-        if self.query is not None and datetime.datetime.now().timestamp() - self.query.timestamp.timestamp() > 86400:
+        if self.query and datetime.datetime.now().timestamp() - self.query.timestamp.timestamp() > 86400:
             session.delete(self.query)
             session.commit()
             self.need_insert = True

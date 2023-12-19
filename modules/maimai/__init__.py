@@ -47,7 +47,7 @@ mai = module('maimai',
 
 @mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
-    if constant_max is not None:
+    if constant_max:
         if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
         result_set = await base_level_q(constant, constant_max)
@@ -73,7 +73,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
 async def base_level_q(ds1, ds2=None):
     result_set = []
-    if ds2 is not None:
+    if ds2:
         music_data = (await total_list.get()).filter(ds=(ds1, ds2))
     else:
         music_data = (await total_list.get()).filter(ds=ds1)
@@ -195,7 +195,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if diff is not None:
+    if diff:
         diff_index = get_diff(diff)
         if not diff_index or (len(music['ds']) == 4 and diff_index == 4):
             await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
@@ -229,9 +229,9 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     else:
         message = msg.locale.t(
             "maimai.message.song",
-            artist=music['basic_info']['artist'], 
+            artist=music['basic_info']['artist'],
             genre=music['basic_info']['genre'],
-            bpm=music['basic_info']['bpm'], 
+            bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
         await msg.finish(await get_info(msg, music, Plain(message)))
@@ -259,10 +259,10 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -461,6 +461,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
 async def _(msg: Bot.MessageSession, base: float, score: float):
     if score:
         await msg.finish([Plain(max(0, computeRa(base, score)))])
+
 
 def computeRa(base: float, achievement: float) -> int:
     if achievement < 50:

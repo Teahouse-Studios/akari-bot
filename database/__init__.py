@@ -41,7 +41,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def init(self):
-            if self.query is None:
+            if not self.query:
                 session.add_all([TargetInfo(targetId=self.target_id)])
                 session.commit()
                 return self.query_data
@@ -50,7 +50,7 @@ class BotDBUtil:
 
         @property
         def enabled_modules(self) -> list:
-            if self.query is None:
+            if not self.query:
                 return []
             return json.loads(self.query.enabledModules)
 
@@ -60,7 +60,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def enable(self, module_name) -> bool:
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             enabled_modules = self.enabled_modules.copy()
             if isinstance(module_name, str):
@@ -78,7 +78,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def disable(self, module_name) -> bool:
-            if self.query is not None:
+            if self.query:
                 enabled_modules = self.enabled_modules.copy()
                 if isinstance(module_name, str):
                     if module_name in enabled_modules:
@@ -94,14 +94,14 @@ class BotDBUtil:
 
         @property
         def is_muted(self):
-            if self.query is None:
+            if not self.query:
                 return False
             return self.query.muted
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def switch_mute(self) -> bool:
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             self.query.muted = not self.query.muted
             session.commit()
@@ -109,16 +109,16 @@ class BotDBUtil:
 
         @property
         def options(self):
-            if self.query is None:
+            if not self.query:
                 return {}
             return json.loads(self.query.options)
 
         def get_option(self, k=None):
-            if self.query is None and k is None:
+            if not self.query and not k:
                 return {}
-            elif self.query is None and k is not None:
+            elif not self.query and k:
                 return None
-            if k is None:
+            if not k:
                 return self.options
             else:
                 return self.options.get(k)
@@ -126,7 +126,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def edit_option(self, k, v) -> bool:
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             self.query.options = json.dumps({**json.loads(self.query.options), k: v})
             session.commit()
@@ -135,7 +135,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def remove_option(self, k) -> bool:
-            if self.query is not None:
+            if self.query:
                 options = self.options.copy()
                 if k in options:
                     options.pop(k)
@@ -146,7 +146,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def edit(self, column: str, value):
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             query = self.query
             setattr(query, column, value)
@@ -156,7 +156,7 @@ class BotDBUtil:
 
         @property
         def custom_admins(self):
-            if self.query is None:
+            if not self.query:
                 return []
             return json.loads(self.query.custom_admins)
 
@@ -166,7 +166,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def add_custom_admin(self, sender_id) -> bool:
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             custom_admins = self.custom_admins.copy()
             if sender_id not in custom_admins:
@@ -178,7 +178,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def remove_custom_admin(self, sender_id) -> bool:
-            if self.query is not None:
+            if self.query:
                 custom_admins = self.custom_admins.copy()
                 if sender_id in custom_admins:
                     custom_admins.remove(sender_id)
@@ -187,27 +187,27 @@ class BotDBUtil:
 
         @property
         def locale(self):
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             return self.query.locale
 
         @staticmethod
         def get_enabled_this(module_name, id_prefix=None) -> List[TargetInfo]:
             filter_ = [TargetInfo.enabledModules.like(f'%"{module_name}"%')]
-            if id_prefix is not None:
+            if id_prefix:
                 filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
             return session.query(TargetInfo).filter(*filter_).all()
 
         @property
         def petal(self):
-            if self.query is None:
+            if not self.query:
                 return 0
             return self.query.petal
 
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def modify_petal(self, amount: int) -> bool:
-            if self.query is None:
+            if not self.query:
                 self.query = self.init()
             petal = self.petal
             new_petal = petal + amount
@@ -221,7 +221,7 @@ class BotDBUtil:
         def __init__(self, sender_id):
             self.sender_id = sender_id
             self.query = self.query_SenderInfo
-            if self.query is None:
+            if not self.query:
                 session.add_all([SenderInfo(id=sender_id)])
                 session.commit()
                 self.query = session.query(SenderInfo).filter_by(id=sender_id).first()
@@ -249,7 +249,7 @@ class BotDBUtil:
             self.name = name
             self.query = session.query(CommandTriggerTime).filter_by(targetId=str(msg.target.sender_id),
                                                                      commandName=name).first()
-            self.need_insert = True if self.query is None else False
+            self.need_insert = True if not self.query else False
 
         def check(self, delay):
             if not self.need_insert:
@@ -275,7 +275,7 @@ class BotDBUtil:
     def isGroupInAllowList(target_id):
         session.expire_all()
         query = session.query(GroupAllowList).filter_by(targetId=target_id).first()
-        if query is not None:
+        if query:
             return True
         return False
 
@@ -303,7 +303,7 @@ class BotDBUtil:
         @auto_rollback_error
         def update(self, name, value: str):
             exists = self.get(name)
-            if exists is None:
+            if not exists:
                 self.add(name=name, value=value)
             else:
                 exists.value = value
@@ -334,14 +334,14 @@ class BotDBUtil:
         @staticmethod
         def get_data_by_times(new, old, module_name=None):
             filter_ = [AnalyticsData.timestamp <= new, AnalyticsData.timestamp >= old]
-            if module_name is not None:
+            if module_name:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).all()
 
         @staticmethod
         def get_count_by_times(new, old, module_name=None):
             filter_ = [AnalyticsData.timestamp < new, AnalyticsData.timestamp > old]
-            if module_name is not None:
+            if module_name:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).count()
 

@@ -40,7 +40,7 @@ def load_modules():
             elif os.path.isfile(file_path):
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
-            if fun_file is not None:
+            if fun_file:
                 Logger.debug(f'Loading modules.{fun_file}...')
                 all_modules.append(fun_file)
                 if fun_file in unloaded_modules:
@@ -155,7 +155,7 @@ class ModulesManager:
     @classmethod
     def return_modules_list(cls, target_from: str = None) -> \
             Dict[str, Module]:
-        if target_from is not None:
+        if target_from:
             if target_from in cls._return_cache:
                 return cls._return_cache[target_from]
             returns = {}

@@ -385,7 +385,7 @@ class FetchTarget(FetchTargetT):
             except Exception:
                 Logger.error(traceback.format_exc())
 
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 await post_(x)
         else:

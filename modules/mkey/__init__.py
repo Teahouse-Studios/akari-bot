@@ -25,7 +25,7 @@ async def mkey(msg: Bot.MessageSession, device: str, month: int, day: int, inqui
     if len(inquiry_num) not in [6, 8, 10]:
         await msg.finish(msg.locale.t('mkey.message.error.inquiry_num'))
     device_code = device_codes[device.lower()]
-    if device_id is None and device_code == "HAC":
+    if not device_id and device_code == "HAC":
         await msg.finish(msg.locale.t('mkey.message.error.hal'))
 
     result = get_mkey(inquiry_num, month, day, device_id, device_code)

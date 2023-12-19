@@ -128,7 +128,7 @@ async def mcv_rss():
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=180))
 async def mcbv_rss():
-    if IP.country == 'China' or IP.country is None:
+    if IP.country == 'China' or not IP.country:
         return  # 中国大陆无法访问Google Play商店
     try:
         verlist = get_stored_list('scheduler', 'mcbv_rss')

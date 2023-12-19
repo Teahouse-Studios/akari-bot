@@ -8,7 +8,7 @@ from database import BotDBUtil
 
 def get_stored_list(bot: Union[FetchTarget, str], name: str) -> list:
     get = BotDBUtil.Data(bot).get(name=name)
-    if get is None:
+    if not get:
         return []
     else:
         return json.loads(get.value)

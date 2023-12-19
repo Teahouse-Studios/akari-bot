@@ -78,7 +78,7 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
-        if module_ is None:
+        if not module_:
             result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.message.analytics.days", module=module_,
@@ -116,7 +116,7 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
-        if module_ is None:
+        if not module_:
             result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.message.analytics.year", module=module_,
@@ -185,7 +185,7 @@ async def _(msg: Bot.MessageSession):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
-    if target_data.query is None:
+    if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
@@ -203,7 +203,7 @@ async def _(msg: Bot.MessageSession):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
-    if target_data.query is None:
+    if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return

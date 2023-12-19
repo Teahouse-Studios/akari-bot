@@ -417,9 +417,9 @@ class MkeyGenerator:
         if not inquiry.isdigit():
             raise ValueError("Inquiry string must represent a decimal number.")
 
-        if month is None:
+        if not month:
             month = datetime.date.today().month
-        if day is None:
+        if not day:
             day = datetime.date.today().day
 
         if month < 1 or month > 12:

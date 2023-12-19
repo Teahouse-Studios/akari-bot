@@ -14,7 +14,7 @@ async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
     alias = msg.parsed_msg.get('<alias>', False)
     command = msg.parsed_msg.get('<command>', False)
-    if aliases is None:
+    if not aliases:
         aliases = {}
     if 'add' in msg.parsed_msg:
         if alias not in aliases:
@@ -55,7 +55,7 @@ async def set_alias(msg: Bot.MessageSession):
                 await msg.finish([msg.locale.t("core.message.alias.list"), Image(img)])
             else:
                 pass
-        
+
         if legacy:
-                await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
-                                       + '\n'.join([f'{k} -> {aliases[k]}' for k in aliases]))
+            await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
+                             + '\n'.join([f'{k} -> {aliases[k]}' for k in aliases]))

@@ -24,7 +24,7 @@ def to_async_func(func: Callable):
 def with_args(func: Callable, *args, **kwargs):
     async def wrapper(*a, **k):
         # if a is tuple with empty string
-        if len(a) == 1 and a[0] == '':
+        if len(a) == 1 and not a[0]:
             return await func(*args, **kwargs, **k)
         return await func(*args, *a, **kwargs, **k)
 

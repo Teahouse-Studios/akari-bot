@@ -11,18 +11,18 @@ async def repo(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
         rlicense = 'Unknown'
-        if 'license' in result and result['license'] is not None:
+        if 'license' in result and result['license']:
             if 'spdx_id' in result['license']:
                 rlicense = result['license']['spdx_id']
         is_fork = result['fork']
         parent = False
 
-        if result['homepage'] is not None:
+        if result['homepage']:
             website = 'Website: ' + str(Url(result['homepage'])) + '\n'
         else:
             website = ''
 
-        if result['mirror_url'] is not None:
+        if result['mirror_url']:
             mirror = f' (This is a mirror of {str(Url(result["mirror_url"]))} )'
         else:
             mirror = ''
@@ -32,7 +32,7 @@ async def repo(msg: Bot.MessageSession):
             parent = f' (This is a fork of {parent_name} )'
 
         desc = result['description']
-        if desc is None:
+        if not desc:
             desc = ''
         else:
             desc = '\n' + result['description']

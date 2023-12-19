@@ -39,7 +39,7 @@ def drawb19(username, rks_acc, b19data):
             song_acc = song_[1]['accuracy']
             song_base_rks = song_[1]['base_rks']
 
-            if song_id == '':
+            if not song_id:
                 cardimg = Image.new('RGBA', (384, 240), 'black')
             else:
                 imgpath = os.path.abspath(f'{assets_path}/illustration/{song_id.split(".")[0].lower()}')

@@ -91,7 +91,7 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
                     data["project"] = fields['project']['name']
                 if 'resolution' in fields:
                     data["resolution"] = fields['resolution']['name'] if fields[
-                        'resolution'] is not None else 'Unresolved'
+                        'resolution'] else 'Unresolved'
                 if 'versions' in load_json['fields']:
                     versions = fields['versions']
                     verlist = []

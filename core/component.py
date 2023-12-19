@@ -34,7 +34,7 @@ class Bind:
                     help_doc = [help_doc]
                 if help_docs:
                     help_doc += help_docs
-                if help_doc is None:
+                if not help_doc:
                     help_doc = []
 
                 ModulesManager.bind_to_module(

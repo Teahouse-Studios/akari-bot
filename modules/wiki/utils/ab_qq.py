@@ -44,7 +44,7 @@ async def ab_qq(msg: MessageSession, wiki_url):
         t.append(f"过滤器名：{x['filter']}")
         t.append(f"操作：{x['action']}")
         result = x['result']
-        if result == '':
+        if not result:
             result = 'pass'
         t.append(f"处理结果：{result}")
         t.append(msg.ts2strftime(strptime2ts(x['timestamp'])))

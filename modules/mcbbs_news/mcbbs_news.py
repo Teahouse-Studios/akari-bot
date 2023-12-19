@@ -10,6 +10,7 @@ from core.utils.http import get_url
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
+
 async def news(msg):
     api = 'https://www.mcbbs.net/forum-news-1.html'
     if web_render:
@@ -20,7 +21,7 @@ async def news(msg):
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.select('#threadlisttableid > tbody[id^="normalthread_"]')
     res = []
-    if results is not None:
+    if results:
         for i in results:
             if len(res) == 5:
                 break

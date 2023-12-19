@@ -40,7 +40,7 @@ async def _():
                     f'过滤器名：{y["filter"]}\n' \
                     f'操作：{y["action"]}\n'
                 result = y['result']
-                if result == '':
+                if not result:
                     result = 'pass'
                 s += '处理结果：' + result
 

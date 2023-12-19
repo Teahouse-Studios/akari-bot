@@ -53,10 +53,10 @@ class WhatAreUDoingError(Exception):
 class QueryInfo:
     def __init__(self, api, headers=None, prefix=None, locale=None):
         self.api = api
-        self.headers = headers if headers is not None else {
+        self.headers = headers if headers else {
             'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6'}
         self.prefix = prefix
-        self.locale = Locale(locale if locale is not None else default_locale)
+        self.locale = Locale(locale if locale else default_locale)
 
 
 class WikiInfo:
@@ -74,9 +74,9 @@ class WikiInfo:
                  in_blocklist=False,
                  script: str = '',
                  logo_url: str = ''):
-        if extensions is None:
+        if not extensions:
             extensions = []
-        if interwiki is None:
+        if not interwiki:
             interwiki = {}
         self.api = api
         self.articlepath = articlepath
@@ -157,7 +157,7 @@ class WikiLib:
     async def get_json_from_api(self, api, **kwargs) -> dict:
         if api in redirect_list:
             api = redirect_list[api]
-        if kwargs is not None:
+        if kwargs:
             api = api + '?' + urllib.parse.urlencode(kwargs) + '&format=json'
             Logger.debug(api)
         else:
@@ -287,7 +287,7 @@ class WikiLib:
         """检查wiki信息是否已记录在数据库缓存（由于部分wiki通过path区分语言，此处仅模糊查询域名部分，返回结果可能不准确）"""
         parse_url = urllib.parse.urlparse(self.url)
         get = DBSiteInfo.get_like_this(parse_url.netloc)
-        if get is not None:
+        if get:
             api_link = get.apiLink
             if api_link in redirect_list:
                 api_link = redirect_list[api_link]
@@ -296,7 +296,7 @@ class WikiLib:
             return WikiStatus(available=False, value=False, message='')
 
     async def fixup_wiki_info(self):
-        if self.wiki_info.api == '':
+        if not self.wiki_info.api:
             wiki_info = await self.check_wiki_available()
             if wiki_info.available:
                 self.wiki_info = wiki_info.value
@@ -333,7 +333,7 @@ class WikiLib:
             ell = True
         split_desc = desc.split('\n')
         for d in split_desc:
-            if d == '':
+            if not d:
                 split_desc.remove('')
         if len(split_desc) > 5:
             split_desc = split_desc[0:5]
@@ -351,7 +351,7 @@ class WikiLib:
         h.ignore_tables = True
         h.single_line_break = True
         t = h.handle(get_parse['parse']['text']['*'])
-        if section is not None:
+        if section:
             for i in range(1, 7):
                 s = re.split(r'(.*' + '#' * i + r'[^#].*\[.*?])', t, re.M | re.S)
                 ls = len(s)
@@ -432,7 +432,7 @@ class WikiLib:
             link = None
             if self.url.find('$1') != -1:
                 link = self.url.replace('$1', title)
-            return PageInfo(title=title if title is not None else pageid, id=pageid,
+            return PageInfo(title=title if title else pageid, id=pageid,
                             link=link, desc=self.locale.t("error") + str(e), info=self.wiki_info, templates=[])
         ban = False
         if self.wiki_info.in_blocklist and not self.wiki_info.in_allowlist:
@@ -441,10 +441,7 @@ class WikiLib:
             if Config('enable_tos'):
                 raise WhatAreUDoingError
         selected_section = None
-        if title is not None:
-            if title == '':
-                return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
-                                interwiki_prefix=_prefix, templates=[])
+        if title:
             if inline:
                 split_name = re.split(r'(#)', title)
             else:
@@ -484,38 +481,39 @@ class WikiLib:
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url',
                             'redirects': 'True', 'titles': title}
-        elif pageid is not None:
+        elif pageid:
             page_info = PageInfo(info=self.wiki_info, title=title, args='', interwiki_prefix=_prefix)
             query_string = {'action': 'query', 'prop': 'info|imageinfo|langlinks|templates', 'llprop': 'url',
                             'inprop': 'url', 'iiprop': 'url', 'redirects': 'True', 'pageids': pageid}
         else:
-            raise ValueError('title and pageid cannot be both None')
+            return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
+                            interwiki_prefix=_prefix, templates=[])
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
-        if use_textextracts and selected_section is None:
+        if use_textextracts and not selected_section:
             query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
         get_page = await self.get_json(**query_string)
         query = get_page.get('query')
-        if query is None:
+        if not query:
             return PageInfo(title=title, link=None, desc=self.locale.t("wiki.message.utils.wikilib.error.empty"),
                             info=self.wiki_info)
 
         redirects_: List[Dict[str, str]] = query.get('redirects')
-        if redirects_ is not None:
+        if redirects_:
             for r in redirects_:
                 if r['from'] == title:
                     page_info.before_title = r['from']
                     page_info.title = r['to']
         normalized_: List[Dict[str, str]] = query.get('normalized')
-        if normalized_ is not None:
+        if normalized_:
             for n in normalized_:
                 if n['from'] == title:
                     page_info.before_title = n['from']
                     page_info.title = n['to']
         pages: Dict[str, dict] = query.get('pages')
         # print(pages)
-        if pages is not None:
+        if pages:
             for page_id in pages:
                 page_info.status = False
                 page_info.id = int(page_id)
@@ -593,10 +591,10 @@ class WikiLib:
                                     searches.append(search_something(srwhat))
                                 gather_search = await asyncio.gather(*searches)
                                 for search in gather_search:
-                                    if search[0] is not None and search[0] not in searched_result:
+                                    if search[0] and search[0] not in searched_result:
                                         searched_result.append(search[0])
 
-                                if preferred is None and searched_result:
+                                if not preferred and searched_result:
                                     preferred = searched_result[0]
 
                                 page_info.before_title = page_info.title
@@ -625,7 +623,7 @@ class WikiLib:
                         page_info.status = True
                     else:
                         query_langlinks = False
-                        if lang is not None:
+                        if lang:
                             langlinks_ = {}
                             for x in page_raw['langlinks']:
                                 langlinks_[x['lang']] = x['url']
@@ -690,13 +688,13 @@ class WikiLib:
                                     get_desc = False
                                     get_doc_desc = await self.parse_page_info(get_doc, _doc=True)
                                     page_desc = get_doc_desc.desc
-                                    if page_desc is not None:
+                                    if page_desc:
                                         page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = 'template'
                             if get_desc:
-                                if use_textextracts and (selected_section is None or page_info.invalid_section):
+                                if use_textextracts and (not selected_section or page_info.invalid_section):
                                     raw_desc = page_raw.get('extract')
-                                    if raw_desc is not None:
+                                    if raw_desc:
                                         page_desc = self.parse_text(raw_desc)
                                 else:
                                     page_desc = self.parse_text(await self.get_html_to_text(title, selected_section))
@@ -708,7 +706,7 @@ class WikiLib:
                             page_info.link = full_url
                             page_info.file = file
                             page_info.desc = page_desc
-                            if not _iw and page_info.args == '':
+                            if not _iw and not page_info.args:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                         else:
                             page_info.title = query_langlinks.title
@@ -718,7 +716,7 @@ class WikiLib:
                             page_info.file = query_langlinks.file
                             page_info.desc = query_langlinks.desc
         interwiki_: List[Dict[str, str]] = query.get('interwiki')
-        if interwiki_ is not None:
+        if interwiki_:
             for i in interwiki_:
                 if i['title'] == page_info.title:
                     iw_title = re.match(r'^' + i['iw'] + ':(.*)', i['title'])
@@ -732,38 +730,38 @@ class WikiLib:
                                          _iw=_iw)
                     before_page_info = page_info
                     page_info = iw_query
-                    if iw_query.title == '':
+                    if not iw_query.title:
                         page_info.title = ''
                     else:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
-                        if t != '' and t is not None:
-                            if before_page_info.args is not None:
+                        if t:
+                            if before_page_info.args:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
-                                if page_info.link is not None:
+                                if page_info.link:
                                     page_info.link += before_page_info.args
                             else:
                                 page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
                             if _tried == 0:
-                                if lang is not None and page_info.status:
+                                if lang and page_info.status:
                                     page_info.before_title = page_info.title
                                 else:
                                     page_info.title = page_info.interwiki_prefix + t
-                                    if page_info.possible_research_title is not None:
+                                    if page_info.possible_research_title:
                                         page_info.possible_research_title = [page_info.interwiki_prefix + possible_title
                                                                              for possible_title in
                                                                              page_info.possible_research_title]
 
-                                if before_page_info.selected_section is not None:
+                                if before_page_info.selected_section:
                                     page_info.selected_section = before_page_info.selected_section
         if not self.wiki_info.in_allowlist:
             checklist = []
-            if page_info.title is not None:
+            if page_info.title:
                 checklist.append(page_info.title)
-            if page_info.before_title is not None:
+            if page_info.before_title:
                 checklist.append(page_info.before_title)
-            if page_info.desc is not None:
+            if page_info.desc:
                 checklist.append(page_info.desc)
             chk = await check(*checklist)
             for x in chk:
@@ -773,7 +771,7 @@ class WikiLib:
             page_info.status = False
             page_info.title = page_info.before_title = None
             page_info.id = -1
-            if page_info.link is not None:
+            if page_info.link:
                 page_info.desc = str(Url(page_info.link, use_mm=True))
             page_info.link = None
         return page_info

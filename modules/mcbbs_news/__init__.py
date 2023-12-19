@@ -15,7 +15,7 @@ mcbbs_news = module(
 async def main(msg: Bot.MessageSession):
     res = await news(msg)
     Logger.debug('res' + str(res))
-    if res is None:
+    if not res:
         message = msg.locale.t('mcbbs_news.message.not_found')
     else:
         lst = []

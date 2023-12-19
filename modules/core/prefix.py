@@ -11,7 +11,7 @@ p = module('prefix', required_admin=True, base=True)
 async def set_prefix(msg: Bot.MessageSession):
     prefixes = msg.options.get('command_prefix')
     prefix = msg.parsed_msg.get('<prefix>', False)
-    if prefixes is None:
+    if not prefixes:
         prefixes = []
     if 'add' in msg.parsed_msg:
         if prefix:

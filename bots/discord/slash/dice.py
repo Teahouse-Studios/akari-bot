@@ -5,7 +5,7 @@ from bots.discord.slash_parser import slash_parser
 
 
 async def auto_complete(ctx: discord.AutocompleteContext):
-    if ctx.options["dices"] == '':
+    if not ctx.options["dices"]:
         return ['d4', 'd6', 'd8', 'd12', 'd20']
 
 

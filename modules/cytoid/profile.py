@@ -11,7 +11,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
         query_id = pat.lower()
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
-        if query_id is None:
+        if not query_id:
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     profile_url = 'http://services.cytoid.io/profile/' + query_id
     try:
@@ -22,8 +22,6 @@ async def cytoid_profile(msg: Bot.MessageSession):
         raise e
     uid = profile['user']['uid']
     nick = profile['user']['name']
-    if nick is None:
-        nick = False
     avatar = profile['user']['avatar']['large']
     basic_exp = profile['exp']['basicExp']
     level_exp = profile['exp']['levelExp']
@@ -34,34 +32,34 @@ async def cytoid_profile(msg: Bot.MessageSession):
     grade: dict = profile['grade']
     grade_t = []
     max = grade.get('MAX')
-    if max is not None:
+    if max:
         grade_t.append(f'MAX: {max}')
     sss = grade.get('SSS')
-    if sss is not None:
+    if sss:
         grade_t.append(f'SSS: {sss}')
     ss = grade.get('SS')
-    if ss is not None:
+    if ss:
         grade_t.append(f'SS: {ss}')
     s = grade.get('S')
-    if s is not None:
+    if s:
         grade_t.append(f'S: {s}')
     aa = grade.get('AA')
-    if aa is not None:
+    if aa:
         grade_t.append(f'AA: {aa}')
     a = grade.get('A')
-    if a is not None:
+    if a:
         grade_t.append(f'A: {a}')
     b = grade.get('B')
-    if b is not None:
+    if b:
         grade_t.append(f'B: {b}')
     c = grade.get('C')
-    if c is not None:
+    if c:
         grade_t.append(f'C: {c}')
     d = grade.get('D')
-    if d is not None:
+    if d:
         grade_t.append(f'D: {d}')
     f = grade.get('F')
-    if f is not None:
+    if f:
         grade_t.append(f'F: {f}')
     text = f'UID: {uid}\n' + \
            (f'Nickname: {nick}\n' if nick else '') + \

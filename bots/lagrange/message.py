@@ -218,7 +218,7 @@ class MessageSession(MessageSessionT):
         spl = re.split(r'(\[CQ:.*?])', m)
         lst = []
         for s in spl:
-            if s == '':
+            if not s:
                 continue
             if s.startswith('[CQ:'):
                 if s.startswith('[CQ:image'):
@@ -354,7 +354,7 @@ class FetchTarget(FetchTargetT):
             except Exception:
                 Logger.error(traceback.format_exc())
 
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 await post_(x)
         else:
