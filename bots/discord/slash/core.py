@@ -104,12 +104,6 @@ async def lst(ctx: discord.ApplicationContext, legacy: str):
 
 @hlp.command(name="detail", description="View details of a module.")
 @discord.option(name="module", default="", description="The module you want to know about.")
-async def detail(ctx: discord.ApplicationContext, legacy: str):
-    await slash_parser(ctx, legacy)
-
-
-@hlp.command(name="detail", description="View details of a module.")
-@discord.option(name="module", default="", description="The module you want to know about.")
 async def detail(ctx: discord.ApplicationContext, module: str):
     await slash_parser(ctx, module)
 
