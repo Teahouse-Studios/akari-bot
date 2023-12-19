@@ -138,8 +138,8 @@ async def add(ctx: discord.ApplicationContext, prefix: str):
     await slash_parser(ctx, f"add {prefix}")
 
 
-@p.command(description="Remove custom command prefix.")
-@discord.option(name="remove", name="prefix", description="The custom prefix.")
+@p.command(name="remove", description="Remove custom command prefix.")
+@discord.option(name="prefix", description="The custom prefix.")
 async def remove(ctx: discord.ApplicationContext, prefix: str):
     await slash_parser(ctx, f"remove {prefix}")
 

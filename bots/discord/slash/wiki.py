@@ -65,7 +65,7 @@ async def query(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, pagename)
 
 
-@wiki.command(name="id", name="id", description="Query a Wiki page based on page ID.")
+@wiki.command(name="id", description="Query a Wiki page based on page ID.")
 @discord.option(name="pageid", description="The wiki page ID.")
 async def byid(ctx: discord.ApplicationContext, pageid: str):
     await slash_parser(ctx, f'id {pageid}')
@@ -77,7 +77,7 @@ async def search(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, f'search {pagename}')
 
 
-@wiki.command(name="set", name="set", description="Set up start wiki.")
+@wiki.command(name="set", description="Set up start wiki.")
 @discord.option(name="wikiurl", description="The URL of wiki.", autocomplete=default_wiki)
 async def set_base(ctx: discord.ApplicationContext, wikiurl: str):
     await slash_parser(ctx, f'set {wikiurl}')
@@ -105,7 +105,7 @@ async def iw_list(ctx: discord.ApplicationContext, legacy: str):
     await slash_parser(ctx, f'iw list {legacy}')
 
 
-@iw.command(name="show", description="Get the API address corresponding to the set Interwiki.")
+@iw.command(name="get", description="Get the API address corresponding to the set Interwiki.")
 @discord.option(name="interwiki", description="The custom Interwiki.", autocomplete=auto_get_custom_iw_list)
 async def get(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f'iw get {interwiki}')
