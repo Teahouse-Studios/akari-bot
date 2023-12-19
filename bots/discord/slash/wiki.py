@@ -156,5 +156,5 @@ async def fandom(ctx: discord.ApplicationContext):
 
 
 @wiki.command(description="Toggle whether to return the edit link when the page does not exist.")
-async def fandom(ctx: discord.ApplicationContext):
+async def redlink(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'redlink')
