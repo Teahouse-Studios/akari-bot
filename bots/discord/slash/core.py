@@ -97,8 +97,9 @@ hlp = client.create_group("help", "Get bot help.")
 
 
 @hlp.command(name="list", description="View help list.")
-@discord.option(name="legacy", choices=[('true', 'legacy'), ('false', '')], description="Whether to use legacy mode.")
+@discord.option(name="legacy", choices=['true', 'false'], description="Whether to use legacy mode.")
 async def lst(ctx: discord.ApplicationContext, legacy: str):
+    legacy = "legacy" if legacy == "true" else ""
     await slash_parser(ctx, legacy)
 
 
