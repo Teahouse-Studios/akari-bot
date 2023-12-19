@@ -85,27 +85,26 @@ async def set_base(ctx: discord.ApplicationContext, wikiurl: str):
 iw = wiki.create_subgroup("iw", "Set up commands for custom Interwiki.")
 
 
-@iw.command(description="Add custom Interwiki.")
+@iw.command(name="add", description="Add custom Interwiki.")
 @discord.option(name="interwiki", description="The custom Interwiki.")
 @discord.option(name="wikiurl", description="The URL of wiki.")
 async def add(ctx: discord.ApplicationContext, interwiki: str, wikiurl: str):
     await slash_parser(ctx, f'iw add {interwiki} {wikiurl}')
 
 
-@iw.command(description="Remove custom Interwiki.")
+@iw.command(name="remove", description="Remove custom Interwiki.")
 @discord.option(name="interwiki", description="The custom Interwiki.", autocomplete=auto_get_custom_iw_list)
-async def iw_remove(ctx: discord.ApplicationContext, interwiki: str):
+async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f'iw remove {interwiki}')
 
 
 @iw.command(name="list", description="Lists the currently configured Interwiki.")
-@discord.option(name="legacy", choices=['True', 'False'], description="Whether to use legacy mode")
+@discord.option(name="legacy", choices=[('true', 'legacy'), ('false', '')], description="Whether to use legacy mode." )
 async def iw_list(ctx: discord.ApplicationContext, legacy: str):
-    legacy = "legacy" if legacy == "True" else ""  
     await slash_parser(ctx, f'iw list {legacy}')
 
 
-@iw.command(description="Get the API address corresponding to the set Interwiki.")
+@iw.command(name="show", description="Get the API address corresponding to the set Interwiki.")
 @discord.option(name="interwiki", description="The custom Interwiki.", autocomplete=auto_get_custom_iw_list)
 async def get(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f'iw get {interwiki}')
@@ -156,5 +155,5 @@ async def fandom(ctx: discord.ApplicationContext):
 
 
 @wiki.command(description="Toggle whether to return the edit link when the page does not exist.")
-async def fandom(ctx: discord.ApplicationContext):
+async def redlink(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'redlink')
