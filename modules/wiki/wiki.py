@@ -27,26 +27,24 @@ wiki = module('wiki',
 
 @wiki.command('<PageName> [-l <lang>] {{wiki.help}}',
               options_desc={'-l': '{wiki.help.option.l}'})
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, PageName: str):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
     else:
         lang = None
-    await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
+    await query_pages(msg, PageName, lang=lang)
 
 
 @wiki.command('id <PageID> {{wiki.help.id}}')
-async def _(msg: Bot.MessageSession):
-    page_id: str = msg.parsed_msg['<PageID>']
+async def _(msg: Bot.MessageSession, PageID: str):
     iw = None
-    if match_iw := re.match(r'(.*?):(.*)', page_id):
+    if match_iw := re.match(r'(.*?):(.*)', PageID):
         iw = match_iw.group(1)
-        page_id = match_iw.group(2)
-    if not page_id.isdigit():
+        PageID = match_iw.group(2)
+    if not PageID.isdigit():
         await msg.finish(msg.locale.t('wiki.message.id.error'))
-    Logger.debug(msg.parsed_msg)
-    await query_pages(msg, pageid=page_id, iw=iw)
+    await query_pages(msg, pageid=PageID, iw=iw)
 
 
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
