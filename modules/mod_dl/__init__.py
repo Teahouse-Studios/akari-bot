@@ -25,7 +25,7 @@ else:
 @mod_dl.handle('<mod_name> [<version>] {{mod_dl.help}}')
 async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
     ver = version
-    if version is not None:
+    if version:
         match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', version)
         if not match_ver:
             mod_name += ' ' + version
@@ -38,7 +38,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         else:
             url += f'&facets=[["project_type:mod"]]'
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3)
-        if resp is not None:
+        if resp:
             results = []
             if len(resp["hits"]) == 0:
                 return None
@@ -63,7 +63,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         results = []
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-            if resp is not None:
+            if resp:
                 if not enable_mirror:  # 没提供 pagination
                     if resp["pagination"]["resultCount"] == 0:
                         return None
@@ -76,7 +76,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
     async def get_modrinth_project_version(project_id: str, ver: str):
         url = f'https://api.modrinth.com/v2/project/{project_id}/version?game_versions=["{ver}"]&featured=true'
         resp = (await get_url(url, 200, fmt="json", timeout=5, attempt=3))[0]
-        if resp is not None:
+        if resp:
             return resp
 
     async def get_curseforge_mod_version_index(modid: str):
@@ -91,7 +91,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             }
             url = f'https://api.curseforge.com/v1/mods/{modid}'
         resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-        if resp is not None:
+        if resp:
             return resp["data"]['latestFilesIndexes']
 
     async def get_curseforge_mod_file(modid: str, ver: str):
@@ -107,7 +107,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
 
         try:
             resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-            if resp is not None:
+            if resp:
                 return resp["data"][0]
         except Exception:
             traceback.print_exc()
@@ -160,14 +160,14 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 replied2 = reply2.as_display(text_only=True)
                 if replied2 in mod_info[3]:
                     version_info = await get_modrinth_project_version(mod_info[2], replied2)
-                    if version_info is not None:
+                    if version_info:
                         await msg.finish(
                             f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
             elif ver not in mod_info[3]:
                 await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:
                 version_info = await get_modrinth_project_version(mod_info[2], ver)
-                if version_info is not None:
+                if version_info:
                     await msg.finish(
                         f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
         else:  # curseforge mod
@@ -175,7 +175,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             for version in version_index:
                 if version["gameVersion"] not in ver_list:
                     ver_list.append(version["gameVersion"])
-            if version_index is not None:
+            if version_index:
                 if not ver:
                     reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +
                                                   '\n'.join(ver_list) +
@@ -186,7 +186,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
 
                 if ver in ver_list:
                     file_info = await get_curseforge_mod_file(mod_info[2], ver)
-                    if file_info is not None:
+                    if file_info:
                         await msg.finish(f'{" ".join(file_info["gameVersions"])} \
                                          \n{msg.locale.t("mod_dl.message.download_url")}{file_info["downloadUrl"]} \
                                          \n{msg.locale.t("mod_dl.message.filename")}{file_info["fileName"]}')

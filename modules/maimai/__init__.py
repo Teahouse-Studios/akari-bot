@@ -47,7 +47,7 @@ mai = module('maimai',
 
 @mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
-    if constant_max is not None:
+    if constant_max:
         if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
         result_set = await base_level_q(constant, constant_max)
@@ -73,7 +73,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
 
 async def base_level_q(ds1, ds2=None):
     result_set = []
-    if ds2 is not None:
+    if ds2:
         music_data = (await total_list.get()).filter(ds=(ds1, ds2))
     else:
         music_data = (await total_list.get()).filter(ds=ds1)
@@ -195,7 +195,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if diff is not None:
+    if diff:
         diff_index = get_diff(diff)
         if not diff_index or (len(music['ds']) == 4 and diff_index == 4):
             await msg.finish(msg.locale.t("maimai.message.chart_not_found"))

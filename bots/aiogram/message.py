@@ -176,7 +176,7 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 try:
                     msgchain = message

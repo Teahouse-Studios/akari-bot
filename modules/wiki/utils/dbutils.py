@@ -37,8 +37,8 @@ class WikiTargetInfo:
         return True
 
     def get_start_wiki(self) -> Union[str, None]:
-        if self.query is not None:
-            return self.query.link if self.query.link is not None else None
+        if self.query:
+            return self.query.link if self.query.link else None
 
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
@@ -56,7 +56,7 @@ class WikiTargetInfo:
 
     def get_interwikis(self) -> dict:
         q = self.query.iws
-        if q is not None:
+        if q:
             iws = json.loads(q)
             return iws
         else:
@@ -82,7 +82,7 @@ class WikiTargetInfo:
             return False
 
     def get_headers(self):
-        if self.query is not None:
+        if self.query:
             q = self.query.headers
             headers = json.loads(q)
         else:
@@ -115,7 +115,7 @@ class WikiSiteInfo:
         self.query = session.query(WikiInfo).filter_by(apiLink=api_link).first()
 
     def get(self):
-        if self.query is not None:
+        if self.query:
             return self.query.siteInfo, self.query.timestamp
         return False
 
@@ -170,7 +170,7 @@ class Audit:
     def remove_from_AllowList(self) -> Union[bool, None]:
         if not self.inAllowList:
             return False
-        if (query := session.query(WikiAllowList).filter_by(apiLink=self.api_link).first()) is not None:
+        if query := session.query(WikiAllowList).filter_by(apiLink=self.api_link).first():
             session.delete(query)
             session.commit()
             session.expire_all()

@@ -77,7 +77,7 @@ async def rc_qq(msg: MessageSession, wiki_url):
             log = x['logaction'] + '了' + title_checked_map[x['title']]
             if x['logtype'] in action:
                 a = action[x['logtype']].get(x['logaction'])
-                if a is not None:
+                if a:
                     log = a % title_checked_map[x['title']]
             t.append(log)
             params = x['logparams']

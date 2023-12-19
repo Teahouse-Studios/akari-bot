@@ -3323,7 +3323,7 @@ def construct_result(ret, mod, summary, level, desc, is_legacy):
     ret.add_field(ConsoleErrorField('Module', message_str=module.name, supplementary_value=mod))
     if is_legacy:
         ret.extra_description = "Legacy result"
-    if is_legacy and summary is not None:
+    if is_legacy and summary:
         ret.add_field(
             ConsoleErrorField('Summary', message_str=legacy_summary.get(summary, ''), supplementary_value=summary))
     ret.add_field(ConsoleErrorField('Level', message_str=(legacy_levels if is_legacy else levels).get(level, ''),

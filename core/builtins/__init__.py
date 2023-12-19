@@ -56,7 +56,7 @@ class Bot:
             if '.' in module_or_hook_name:
                 hook_mode = True
             if not hook_mode:
-                if module_or_hook_name is not None:
+                if module_or_hook_name:
                     modules = ModulesManager.modules
                     if module_or_hook_name in modules:
                         for hook in modules[module_or_hook_name].hooks_list.set:
@@ -65,7 +65,7 @@ class Bot:
 
                 raise ValueError("Invalid module name")
             else:
-                if module_or_hook_name is not None:
+                if module_or_hook_name:
                     if module_or_hook_name in ModulesManager.modules_hooks:
                         await asyncio.create_task(ModulesManager.modules_hooks[module_or_hook_name](Bot.FetchTarget,
                                                                                                     ModuleHookContext(
@@ -90,7 +90,7 @@ class FetchedSession(FetchedSessionT):
                               reply_id=None)
         self.session = Session(message=False, target=target_id, sender=sender_id)
         self.parent = Bot.MessageSession(self.target, self.session)
-        if sender_id is not None:
+        if sender_id:
             self.parent.target.sender_info = BotDBUtil.SenderInfo(f'{sender_from}|{sender_id}')
 
 

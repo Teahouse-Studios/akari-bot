@@ -78,7 +78,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def disable(self, module_name) -> bool:
-            if self.query is not None:
+            if self.query:
                 enabled_modules = self.enabled_modules.copy()
                 if isinstance(module_name, str):
                     if module_name in enabled_modules:
@@ -114,9 +114,9 @@ class BotDBUtil:
             return json.loads(self.query.options)
 
         def get_option(self, k=None):
-            if not self.query and k is None:
+            if not self.query and not k:
                 return {}
-            elif not self.query and k is not None:
+            elif not self.query and k:
                 return None
             if not k:
                 return self.options
@@ -135,7 +135,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def remove_option(self, k) -> bool:
-            if self.query is not None:
+            if self.query:
                 options = self.options.copy()
                 if k in options:
                     options.pop(k)
@@ -178,7 +178,7 @@ class BotDBUtil:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
         def remove_custom_admin(self, sender_id) -> bool:
-            if self.query is not None:
+            if self.query:
                 custom_admins = self.custom_admins.copy()
                 if sender_id in custom_admins:
                     custom_admins.remove(sender_id)
@@ -194,7 +194,7 @@ class BotDBUtil:
         @staticmethod
         def get_enabled_this(module_name, id_prefix=None) -> List[TargetInfo]:
             filter_ = [TargetInfo.enabledModules.like(f'%"{module_name}"%')]
-            if id_prefix is not None:
+            if id_prefix:
                 filter_.append(TargetInfo.targetId.like(f'{id_prefix}%'))
             return session.query(TargetInfo).filter(*filter_).all()
 
@@ -275,7 +275,7 @@ class BotDBUtil:
     def isGroupInAllowList(target_id):
         session.expire_all()
         query = session.query(GroupAllowList).filter_by(targetId=target_id).first()
-        if query is not None:
+        if query:
             return True
         return False
 
@@ -334,14 +334,14 @@ class BotDBUtil:
         @staticmethod
         def get_data_by_times(new, old, module_name=None):
             filter_ = [AnalyticsData.timestamp <= new, AnalyticsData.timestamp >= old]
-            if module_name is not None:
+            if module_name:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).all()
 
         @staticmethod
         def get_count_by_times(new, old, module_name=None):
             filter_ = [AnalyticsData.timestamp < new, AnalyticsData.timestamp > old]
-            if module_name is not None:
+            if module_name:
                 filter_.append(AnalyticsData.moduleName == module_name)
             return session.query(AnalyticsData).filter(*filter_).count()
 

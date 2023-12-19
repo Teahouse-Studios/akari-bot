@@ -46,33 +46,34 @@ class MessageSession(MessageSessionT):
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {image_path}')
         return FinishedSession(self, [0], ['Should be a callable here... hmm...'])
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True):
+    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
         send = None
-        if message_chain is not None:
+        if message_chain:
             send = await self.send_message(message_chain)
             print(self.locale.t("message.wait.confirm.prompt.type1"))
 
         c = await aioconsole.ainput('Confirm: ')
         print(c)
-        if message_chain is not None and delete:
+        if message_chain and delete:
             await send.delete()
         if c in confirm_command:
             return True
 
         return False
 
-    async def wait_anyone(self, message_chain=None, quote=True, delete=True):
+    async def wait_anyone(self, message_chain=None, quote=True, delete=True, timeout=120):
         send = None
-        if message_chain is not None:
+        if message_chain:
             send = await self.send_message(message_chain)
         c = await aioconsole.ainput('Confirm: ')
         print(c)
-        if message_chain is not None and delete:
+        if message_chain and delete:
             await send.delete()
         self.session.message = c
         return self
 
-    async def wait_reply(self, message_chain, quote=True, all_=False, append_instruction=True):
+    async def wait_reply(self, message_chain, quote=True, delete=False, timeout=120,
+                         all_=False, append_instruction=True):
         message_chain = MessageChain(message_chain)
         if append_instruction:
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))

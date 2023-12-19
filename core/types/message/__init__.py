@@ -119,7 +119,7 @@ class MessageSession:
         """
         ...
         f = None
-        if message_chain is not None:
+        if message_chain:
             f = await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=quote,
                                         allow_split_image=allow_split_image, callback=callback)
         raise FinishedException(f)

@@ -99,7 +99,7 @@ async def config_modules(msg: Bot.MessageSession):
                     else:
                         enable_list.append(module_)
                         recommend = modules_[module_].recommend_modules
-                        if recommend is not None:
+                        if recommend:
                             for r in recommend:
                                 if r not in enable_list and r not in enabled_modules_list:
                                     recommend_modules_list.append(r)
@@ -118,7 +118,7 @@ async def config_modules(msg: Bot.MessageSession):
                     else:
                         msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
                         support_lang = modules_[x].support_languages
-                        if support_lang is not None:
+                        if support_lang:
                             if msg.locale.locale not in support_lang:
                                 msglist.append(msg.locale.t("core.message.module.unsupported_language",
                                                             module=x))
@@ -128,7 +128,7 @@ async def config_modules(msg: Bot.MessageSession):
                     recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.module.help", module=m
                                                                         ))
 
-                    if modules_[m].desc is not None:
+                    if modules_[m].desc:
                         recommend_modules_help_doc_list.append(msg.locale.tl_str(modules_[m].desc))
                     hdoc = CommandParser(modules_[m], msg=msg, bind_prefix=modules_[m].bind_prefix,
                                          command_prefixes=msg.prefixes).return_formatted_help_doc()
@@ -267,7 +267,7 @@ async def config_modules(msg: Bot.MessageSession):
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
 
-    if msglist is not None:
+    if msglist:
         if not recommend_modules_help_doc_list:
             await msg.finish('\n'.join(msglist))
         else:
@@ -294,14 +294,14 @@ async def bot_help(msg: Bot.MessageSession):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     alias = ModulesManager.modules_aliases
-    if msg.parsed_msg is not None:
+    if msg.parsed_msg:
         msgs = []
         help_name = msg.parsed_msg['<module>']
         if help_name in alias:
             help_name = alias[help_name]
         if help_name in module_list:
             module_ = module_list[help_name]
-            if module_.desc is not None:
+            if module_.desc:
                 desc = module_.desc
                 if locale_str := re.match(r'\{(.*)}', desc):
                     if locale_str:
@@ -333,7 +333,7 @@ async def bot_help(msg: Bot.MessageSession):
             if module_alias:
                 for a in module_alias:
                     malias.append(f'{a} -> {module_alias[a]}')
-            if module_.developers is not None:
+            if module_.developers:
                 devs = msg.locale.t('message.delimiter').join(module_.developers)
                 devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
@@ -378,7 +378,7 @@ async def _(msg: Bot.MessageSession):
                 help_ = CommandParser(module_, msg=msg, bind_prefix=module_.bind_prefix,
                                       command_prefixes=msg.prefixes)
 
-                if module_.desc is not None:
+                if module_.desc:
                     doc_.append(msg.locale.tl_str(module_.desc))
                 if help_.args:
                     doc_.append(help_.return_formatted_help_doc())
@@ -473,7 +473,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                 doc_ = []
                 help_ = CommandParser(
                     module_, bind_prefix=module_.bind_prefix, command_prefixes=msg.prefixes, msg=msg)
-                if module_.desc is not None:
+                if module_.desc:
                     doc_.append(msg.locale.tl_str(module_.desc))
                 if help_.args:
                     doc_.append(help_.return_formatted_help_doc())

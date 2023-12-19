@@ -51,7 +51,7 @@ def load_slashcommands():
             elif os.path.isfile(file_path):
                 if file_name[0] != '_' and file_name.endswith('.py'):
                     fun_file = file_name[:-3]
-            if fun_file is not None:
+            if fun_file:
                 Logger.info(f'Loading slash.{fun_file}...')
                 modules = 'bots.discord.slash.' + fun_file
                 importlib.import_module(modules)
@@ -75,7 +75,7 @@ async def on_message(message):
         target = "Discord|DM|Channel"
     target_id = f"{target}|{message.channel.id}"
     reply_id = None
-    if message.reference is not None:
+    if message.reference:
         reply_id = message.reference.message_id
     prefix = None
     if match_at := re.match(r'^<@(.*?)>', message.content):

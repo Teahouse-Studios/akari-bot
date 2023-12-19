@@ -320,7 +320,7 @@ def construct_support(ret, mod, desc):
     else:
         ret.add_field(ConsoleErrorField('分类', supplementary_value=mod))
     description = category.get_error(desc)
-    if description is not None and description.description:
+    if description and description.description:
         ret.add_field(ConsoleErrorField('描述', message_str=description.description))
         if description.support_url:
             ret.add_field(ConsoleErrorField('更多描述', message_str=description.support_url))
@@ -349,7 +349,7 @@ def nim_handler(ret, description):
     # If we have a specific description for it in our knowledgebase,
     # show it instead of doing the rest of the processing.
     error = nim.get_error(description)
-    if error is not None and error.description:
+    if error and error.description:
         return construct_support(ret, 5, description)
 
     elif 2000 <= description < 3024:

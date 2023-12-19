@@ -237,26 +237,26 @@ class Embed(EmbedT):
 
     def to_message_chain(self):
         text_lst = []
-        if self.title is not None:
+        if self.title:
             text_lst.append(self.title)
-        if self.description is not None:
+        if self.description:
             text_lst.append(self.description)
-        if self.url is not None:
+        if self.url:
             text_lst.append(self.url)
-        if self.fields is not None:
+        if self.fields:
             for f in self.fields:
                 if f.inline:
                     text_lst.append(f"{f.name}: {f.value}")
                 else:
                     text_lst.append(f"{f.name}:\n{f.value}")
-        if self.author is not None:
+        if self.author:
             text_lst.append("作者：" + self.author)
-        if self.footer is not None:
+        if self.footer:
             text_lst.append(self.footer)
         message_chain = []
         if text_lst:
             message_chain.append(Plain('\n'.join(text_lst)))
-        if self.image is not None:
+        if self.image:
             message_chain.append(self.image)
         return message_chain
 

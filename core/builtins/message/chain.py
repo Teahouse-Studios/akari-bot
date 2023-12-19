@@ -87,23 +87,23 @@ class MessageChain(MessageChainT):
                 for secret in Secret.list:
                     if secret in ["", None, True, False]:
                         continue
-                    if v.title is not None:
+                    if v.title:
                         if v.title.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.title', secret, v.title))
                             return False
-                    if v.description is not None:
+                    if v.description:
                         if v.description.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.description', secret, v.description))
                             return False
-                    if v.footer is not None:
+                    if v.footer:
                         if v.footer.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.footer', secret, v.footer))
                             return False
-                    if v.author is not None:
+                    if v.author:
                         if v.author.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.author', secret, v.author))
                             return False
-                    if v.url is not None:
+                    if v.url:
                         if v.url.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.url', secret, v.url))
                             return False
@@ -219,7 +219,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                                 img = Image(path=ma.group(2))
                         if ma.group(1) == 'headers':
                             img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
-                        if img is not None:
+                        if img:
                             elements.append(img)
                     else:
                         elements.append(Image(a))

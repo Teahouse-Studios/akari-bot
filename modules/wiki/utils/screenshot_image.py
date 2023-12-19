@@ -23,7 +23,7 @@ assets_path = os.path.abspath('./assets/')
 async def generate_screenshot_v2(page_link, section=None, allow_special_page=False, content_mode=False, use_local=True,
                                  element=None):
     elements_ = elements.copy()
-    if element is not None and isinstance(element, List):
+    if element and isinstance(element, List):
         elements_ += element
     if not web_render_local:
         if not web_render:
@@ -152,7 +152,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
             find_diff = None
             if allow_special_page:
                 find_diff = soup.find('table', class_=re.compile('diff'))
-                if find_diff is not None:
+                if find_diff:
                     Logger.info('Found diff...')
                     for x in soup.find_all('body'):
                         if x.has_attr('class'):
@@ -185,7 +185,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
                 find_infobox = None
                 for i in infoboxes:
                     find_infobox = soup.find(class_=i[1:])
-                    if find_infobox is not None:
+                    if find_infobox:
                         break
                 if not find_infobox:
                     Logger.info('Found nothing...')

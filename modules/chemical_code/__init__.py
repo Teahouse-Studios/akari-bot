@@ -61,7 +61,7 @@ def parse_elements(formula: str) -> dict:
 
 @retry(stop=stop_after_attempt(3), reraise=True)
 async def search_csr(id=None):
-    if id is not None:
+    if id:
         answer_id = id
     else:
         answer_id = random.randint(1, CSID_RANGE_MAX)

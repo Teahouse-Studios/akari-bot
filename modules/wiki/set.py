@@ -69,19 +69,20 @@ async def _(msg: Bot.MessageSession):
     query = target.get_interwikis()
     start_wiki = target.get_start_wiki()
     base_interwiki_link = None
-    if start_wiki is not None:
+    if start_wiki:
         base_interwiki_link_ = await WikiLib(start_wiki, target.get_headers()).parse_page_info('Special:Interwiki')
         if base_interwiki_link_.status:
             base_interwiki_link = base_interwiki_link_.link
+    result = ''
     if query != {}:
         if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             columns = [[x, query[x]] for x in query]
             img = await image_table_render(ImageTable(columns, ['Interwiki', 'Url']))
         else:
-            img = False
+            img = None
         if img:
             mt = msg.locale.t("wiki.message.iw.list", prefix=msg.prefixes[0])
-            if base_interwiki_link is not None:
+            if base_interwiki_link:
                 mt += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
             await msg.finish([Image(img), Plain(mt)])
         else:
@@ -89,7 +90,7 @@ async def _(msg: Bot.MessageSession):
                 '\n'.join([f'{x}: {query[x]}' for x in query])
     else:
         result = msg.locale.t("wiki.message.iw.list.none", prefix=msg.prefixes[0])
-    if base_interwiki_link is not None:
+    if base_interwiki_link:
         result += '\n' + msg.locale.t("wiki.message.iw.list.prompt", url=str(Url(base_interwiki_link)))
     await msg.finish(result)
 
@@ -161,7 +162,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki.command('fandom {{wiki.help.fandom}}',
-             required_admin=True)
+              required_admin=True)
 async def _(msg: Bot.MessageSession):
     fandom_addon_state = msg.data.options.get('wiki_fandom_addon')
 
@@ -174,7 +175,7 @@ async def _(msg: Bot.MessageSession):
 
 
 @wiki.command('redlink {{wiki.help.redlink}}',
-             required_admin=True)
+              required_admin=True)
 async def _(msg: Bot.MessageSession):
     redlink_state = msg.data.options.get('wiki_redlink')
 

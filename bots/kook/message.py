@@ -186,7 +186,7 @@ class FetchedSession(Bot.FetchedSession):
 
         message_chain = MessageChain(message_chain)
 
-        for x in message_chain.as_sendable(self, embed=False):
+        for x in message_chain.as_sendable(self.parent, embed=False):
             if isinstance(x, Plain):
                 await get_channel.send(x.text)
 
@@ -234,7 +234,7 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 try:
                     msgchain = message

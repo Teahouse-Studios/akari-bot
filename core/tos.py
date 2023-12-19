@@ -10,10 +10,14 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
         warn_template = [msg.locale.t("tos.warning")]
-        if reason is not None:
+        if reason:
             warn_template.append(msg.locale.t("tos.reason") + reason)
         if current_warns < WARNING_COUNTS:
-            warn_template.append(msg.locale.t('tos.warning.count', current_warns=current_warns, warn_counts=WARNING_COUNTS))
+            warn_template.append(
+                msg.locale.t(
+                    'tos.warning.count',
+                    current_warns=current_warns,
+                    warn_counts=WARNING_COUNTS))
         if current_warns <= 2:
             warn_template.append(msg.locale.t('tos.warning.appeal', issue_url=Config('issue_url')))
         if current_warns == WARNING_COUNTS:

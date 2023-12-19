@@ -171,10 +171,10 @@ def templates_to_str(templates: List[Template], with_desc=False, simplify=True) 
                 sub_arg_text.append(arg.name)
             elif isinstance(arg, OptionalPattern):
                 t = '['
-                if arg.flag is not None:
+                if arg.flag:
                     t += arg.flag
                 if arg.args:
-                    if arg.flag is not None:
+                    if arg.flag:
                         t += ' '
                     t += ' '.join(templates_to_str(arg.args, simplify=False))
                 t += ']'

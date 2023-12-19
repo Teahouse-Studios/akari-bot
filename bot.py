@@ -45,7 +45,7 @@ def enqueue_output(out, queue):
 
 def init_bot():
     base_superuser = Config('base_superuser')
-    if base_superuser is not None:
+    if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
         for bu in base_superuser:
@@ -143,7 +143,7 @@ def run_bot():
                 raise RestartBot
 
         # break when all processes are done.
-        if all(p.poll() is not None for p in runlst):
+        if all(p.poll() for p in runlst):
             break
 
         sleep(0.0001)
