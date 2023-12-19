@@ -102,7 +102,7 @@ async def remove(ctx: discord.ApplicationContext, alias: str):
 
 
 @ali.command(name="list", description="View custom command alias.")
-@discord.option(name="legacy", choices=['true', 'false'], description="Whether to use legacy mode.")
+@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def lst(ctx: discord.ApplicationContext, legacy: str):
     legacy = "legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
@@ -117,7 +117,7 @@ hlp = client.create_group("help", "Get bot help.")
 
 
 @hlp.command(name="list", description="View help list.")
-@discord.option(name="legacy", choices=['true', 'false'], description="Whether to use legacy mode.")
+@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def lst(ctx: discord.ApplicationContext, legacy: str):
     legacy = "legacy" if legacy == "true" else ""
     await slash_parser(ctx, legacy)
@@ -145,7 +145,7 @@ async def add(ctx: discord.ApplicationContext, module: str):
 
 
 @m.command(name="list", description="View all available modules.")
-@discord.option(name="legacy", choices=['true', 'false'], description="Whether to use legacy mode.")
+@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def lst(ctx: discord.ApplicationContext, legacy: str):
     legacy = "legacy" if legacy == "true" else ""
     await slash_parser(ctx, f"list {legacy}")
