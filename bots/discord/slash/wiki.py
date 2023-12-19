@@ -99,9 +99,8 @@ async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
 
 
 @iw.command(name="list", description="Lists the currently configured Interwiki.")
-@discord.option(name="legacy", description="Whether to use legacy mode")
+@discord.option(name="legacy", choices=[('true', 'legacy'), ('false', '')], description="Whether to use legacy mode." )
 async def iw_list(ctx: discord.ApplicationContext, legacy: str):
-    legacy = "legacy" if legacy == "True" else ""  
     await slash_parser(ctx, f'iw list {legacy}')
 
 
