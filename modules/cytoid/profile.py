@@ -11,7 +11,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
         query_id = pat.lower()
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
-        if query_id is None:
+        if not query_id:
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     profile_url = 'http://services.cytoid.io/profile/' + query_id
     try:
@@ -22,8 +22,6 @@ async def cytoid_profile(msg: Bot.MessageSession):
         raise e
     uid = profile['user']['uid']
     nick = profile['user']['name']
-    if nick is None:
-        nick = False
     avatar = profile['user']['avatar']['large']
     basic_exp = profile['exp']['basicExp']
     level_exp = profile['exp']['levelExp']

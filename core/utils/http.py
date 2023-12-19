@@ -178,7 +178,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
                                   logging_err_resp=logging_err_resp)
 
         if data is not None:
-            if filename is None:
+            if not filename:
                 ftt = ft.match(data).extension
                 path = f'{random_cache_path()}.{ftt}'
             else:

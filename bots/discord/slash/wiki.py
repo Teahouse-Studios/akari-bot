@@ -36,7 +36,7 @@ async def auto_search(ctx: discord.AutocompleteContext):
             query_wiki = iws[match_iw.group(1)]
             iw = match_iw.group(1) + ':'
             title = match_iw.group(2)
-    if query_wiki is None:
+    if not query_wiki:
         return []
     wiki = WikiLib(query_wiki)
     if title != "":

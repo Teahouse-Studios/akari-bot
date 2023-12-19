@@ -65,7 +65,7 @@ class MessageChain(MessageChainT):
                     Logger.error(f'Unexpected message type: {elements}')
         elif isinstance(elements, MessageChain):
             self.value = elements.value
-        elif elements is None:
+        elif not elements:
             pass
         else:
             Logger.error(f'Unexpected message type: {elements}')

@@ -57,8 +57,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         headers = target.get_headers()
         prefix = target.get_prefix()
         enabled_fandom_addon = session.options.get('wiki_fandom_addon')
-        if enabled_fandom_addon is None:
-            enabled_fandom_addon = False
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
@@ -68,7 +66,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
     else:
         raise TypeError('session must be Bot.MessageSession or QueryInfo.')
 
-    if start_wiki is None:
+    if not start_wiki:
         if isinstance(session, Bot.MessageSession):
             await session.send_message(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
         start_wiki = 'https://zh.minecraft.wiki/api.php'
@@ -218,7 +216,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         dl_list.append(r.file)
                         plain_slice.append(session.locale.t('wiki.message.flies') + r.file)
                     else:
-                        if r.link is not None and r.selected_section is None:
+                        if r.link is not None and not r.selected_section:
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or

@@ -19,6 +19,7 @@ diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']
 diff_label_zht = ['綠', '黃', '紅']
 
+
 def get_diff(diff):
     diff = diff.lower()
     diff_label_lower = [label.lower() for label in diff_label]
@@ -65,11 +66,11 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     await msg.finish(await get_info(msg, music, Plain(msg.locale.t("maimai.message.song",
-                                                artist=music['basic_info']['artist'], 
-                                                genre=music['basic_info']['genre'],
-                                                bpm=music['basic_info']['bpm'], 
-                                                version=music['basic_info']['from'],
-                                                level='/'.join((str(ds) for ds in music['ds']))))))
+                                                                   artist=music['basic_info']['artist'],
+                                                                   genre=music['basic_info']['genre'],
+                                                                   bpm=music['basic_info']['bpm'],
+                                                                   version=music['basic_info']['from'],
+                                                                   level='/'.join((str(ds) for ds in music['ds']))))))
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
@@ -95,10 +96,10 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -154,10 +155,10 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -198,10 +199,10 @@ async def _(msg: Bot.MessageSession):
     username = msg.matched_msg.groups()[2]
     if not goal:
         return
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 

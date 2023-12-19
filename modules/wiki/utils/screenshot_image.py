@@ -30,7 +30,7 @@ async def generate_screenshot_v2(page_link, section=None, allow_special_page=Fal
             Logger.warn('[Webrender] Webrender is not configured.')
             return False
         use_local = False
-    if section is None:
+    if not section:
         if allow_special_page and content_mode:
             elements_.insert(0, '.mw-body-content')
         if allow_special_page and not content_mode:
@@ -148,7 +148,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
         for x in soup.find_all('style'):
             open_file.write(str(x))
 
-        if section is None:
+        if not section:
             find_diff = None
             if allow_special_page:
                 find_diff = soup.find('table', class_=re.compile('diff'))
@@ -180,14 +180,14 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
                         open_file.write(f'<main {" ".join(fl)}>')
                     open_file.write(str(find_diff))
                     w = 2000
-            if find_diff is None:
+            if not find_diff:
                 infoboxes = elements.copy()
                 find_infobox = None
                 for i in infoboxes:
                     find_infobox = soup.find(class_=i[1:])
                     if find_infobox is not None:
                         break
-                if find_infobox is None:
+                if not find_infobox:
                     Logger.info('Found nothing...')
                     return False
                 else:
@@ -275,7 +275,7 @@ async def generate_screenshot_v1(link, page_link, headers, section=None, allow_s
             bl = []
             while True:
                 b = b.next_sibling
-                if b is None:
+                if not b:
                     break
 
                 if b.name == selected_hx:

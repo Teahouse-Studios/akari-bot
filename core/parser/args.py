@@ -210,7 +210,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                 continue
             for a in args:  # optional first
                 if isinstance(a, OptionalPattern):
-                    if a.flag is None:
+                    if not a.flag:
                         afters.append(a.args[0])
                         continue
                     parsed_argv[a.flag] = Optional({}, flagged=False)

@@ -7,7 +7,7 @@ from .rating import get_rating
 from .utils import get_profile_name
 
 ctd = module('cytoid', desc='{cytoid.help.desc}',
-                developers=['OasisAkari'], alias='ctd')
+             developers=['OasisAkari'], alias='ctd')
 
 
 @ctd.handle('profile [<UserID>] {{cytoid.help.profile}}')
@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession):
         query_id = pat
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
-        if query_id is None:
+        if not query_id:
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     if query:
         if msg.target.target_from == 'TEST|Console':
@@ -48,7 +48,8 @@ async def _(msg: Bot.MessageSession):
                 if img['status']:
                     qc.reset()
         else:
-            res = msg.locale.t('message.cooldown', time=int(c), cd_time='150') + msg.locale.t('cytoid.message.b30.cooldown')
+            res = msg.locale.t('message.cooldown', time=int(c), cd_time='150') + \
+                msg.locale.t('cytoid.message.b30.cooldown')
             await msg.finish(res)
 
 

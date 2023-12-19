@@ -24,7 +24,7 @@ async def user(msg: Bot.MessageSession):
             optional.append('Location · ' + result['location'])
 
         bio = result['bio']
-        if bio is None:
+        if not bio:
             bio = ''
         else:
             bio = '\n' + result['bio']

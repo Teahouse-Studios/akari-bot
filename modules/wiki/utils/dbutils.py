@@ -23,7 +23,7 @@ class WikiTargetInfo:
         else:
             target_id = msg
         self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
-        if self.query is None:
+        if not self.query:
             session.add_all([WikiTargetSetInfo(targetId=target_id, iws='{}', headers='{}')])
             session.commit()
             self.query = session.query(WikiTargetSetInfo).filter_by(targetId=target_id).first()
@@ -71,14 +71,14 @@ class WikiTargetInfo:
                 headers = json.loads(headers)
                 for x in headers:
                     headers_[x] = headers[x]
-            elif let_it is None:
+            elif not let_it:
                 headers_ = {}
             else:
                 headers_ = {k: v for k, v in headers_.items() if k not in headers}
             self.query.headers = json.dumps(headers_)
             session.commit()
             return True
-        except:
+        except BaseException:
             return False
 
     def get_headers(self):
@@ -122,7 +122,7 @@ class WikiSiteInfo:
     @retry(stop=stop_after_attempt(3), reraise=True)
     @auto_rollback_error
     def update(self, info: dict):
-        if self.query is None:
+        if not self.query:
             session.add_all([WikiInfo(apiLink=self.api_link, siteInfo=json.dumps(info))])
         else:
             self.query.siteInfo = json.dumps(info)

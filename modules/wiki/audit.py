@@ -40,7 +40,7 @@ async def _(msg: Bot.MessageSession):
     api = msg.parsed_msg['<apiLink>']  # 已关闭的站点无法验证有效性
     if msg.parsed_msg.get('distrust', False):
         res = Audit(api).remove_from_AllowList()
-        if res is None:
+        if not res:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed.other') + api)
         list_name = msg.locale.t('wiki.message.wiki_audit.list_name.allowlist')
     else:

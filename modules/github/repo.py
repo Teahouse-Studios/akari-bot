@@ -32,7 +32,7 @@ async def repo(msg: Bot.MessageSession):
             parent = f' (This is a fork of {parent_name} )'
 
         desc = result['description']
-        if desc is None:
+        if not desc:
             desc = ''
         else:
             desc = '\n' + result['description']

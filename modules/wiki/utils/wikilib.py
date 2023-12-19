@@ -74,9 +74,9 @@ class WikiInfo:
                  in_blocklist=False,
                  script: str = '',
                  logo_url: str = ''):
-        if extensions is None:
+        if not extensions:
             extensions = []
-        if interwiki is None:
+        if not interwiki:
             interwiki = {}
         self.api = api
         self.articlepath = articlepath
@@ -489,7 +489,7 @@ class WikiLib:
             return PageInfo(title='', link=self.wiki_info.articlepath.replace("$1", ""), info=self.wiki_info,
                             interwiki_prefix=_prefix, templates=[])
         use_textextracts = True if 'TextExtracts' in self.wiki_info.extensions else False
-        if use_textextracts and selected_section is None:
+        if use_textextracts and not selected_section:
             query_string.update({'prop': 'info|imageinfo|langlinks|templates|extracts|pageprops',
                                  'ppprop': 'description|displaytitle|disambiguation|infoboxes', 'explaintext': 'true',
                                  'exsectionformat': 'plain', 'exchars': '200'})
@@ -594,7 +594,7 @@ class WikiLib:
                                     if search[0] is not None and search[0] not in searched_result:
                                         searched_result.append(search[0])
 
-                                if preferred is None and searched_result:
+                                if not preferred and searched_result:
                                     preferred = searched_result[0]
 
                                 page_info.before_title = page_info.title
@@ -692,7 +692,7 @@ class WikiLib:
                                         page_info.has_template_doc = True
                                     page_info.before_page_property = page_info.page_property = 'template'
                             if get_desc:
-                                if use_textextracts and (selected_section is None or page_info.invalid_section):
+                                if use_textextracts and (not selected_section or page_info.invalid_section):
                                     raw_desc = page_raw.get('extract')
                                     if raw_desc is not None:
                                         page_desc = self.parse_text(raw_desc)

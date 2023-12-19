@@ -27,7 +27,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
     ver = version
     if version is not None:
         match_ver = re.match(r'^\d+\.\d+\.\d+$|^\d+\.\d+$|\d+w\d+[abcd]', version)
-        if match_ver is None:
+        if not match_ver:
             mod_name += ' ' + version
             ver = False
 
@@ -115,14 +115,14 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
     # 搜索 Mod
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
     cache_result = []
-    if result[0] is None and result[1] is None:
+    if not result[0] and not result[1]:
         await msg.finish(msg.locale.t("mod_dl.message.not_found"))
     else:
         # 合并搜索结果
         reply_text, count = [], 0
 
         # 先显示 CurseForge 的结果
-        if result[1] is None:
+        if not result[1]:
             reply_text.append(msg.locale.t("mod_dl.message.curseforge.not_found"))
         else:
             reply_text.append(msg.locale.t("mod_dl.message.curseforge.result"))
@@ -131,7 +131,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 reply_text.append(f"{count}. {mod[1]}")
                 cache_result.append(mod)
 
-        if result[0] is None:
+        if not result[0]:
             reply_text.append(msg.locale.t("mod_dl.message.modrinth.not_found"))
         reply_text.append(msg.locale.t("mod_dl.message.modrinth.result"))
         for mod in result[0]:
@@ -153,7 +153,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             await msg.finish(msg.locale.t("mod_dl.message.invalid.non_digital"))
 
         if mod_info[0] == "modrinth":  # modrinth mod
-            if ver is None:
+            if not ver:
                 reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n'
                                               + "\n".join(mod_info[3])
                                               + f'\n{msg.locale.t("mod_dl.message.version.prompt")}', delete=True)
@@ -176,7 +176,7 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                 if version["gameVersion"] not in ver_list:
                     ver_list.append(version["gameVersion"])
             if version_index is not None:
-                if ver is None:
+                if not ver:
                     reply2 = await msg.wait_reply(f'{msg.locale.t("mod_dl.message.version")}\n' +
                                                   '\n'.join(ver_list) +
                                                   f'\n{msg.locale.t("mod_dl.message.version.prompt")}', delete=True)

@@ -83,7 +83,7 @@ class MessageSession(MessageSessionT):
                         filename = os.path.basename(path)
                         filesize = os.path.getsize(path)
                         (content_type, content_encoding) = mimetypes.guess_type(path)
-                        if content_type is None or content_encoding is None:
+                        if not content_type or not content_encoding:
                             content_type = 'image'
                             content_encoding = 'png'
                         mimetype = f"{content_type}/{content_encoding}"
@@ -112,7 +112,7 @@ class MessageSession(MessageSessionT):
                 filename = os.path.basename(path)
                 filesize = os.path.getsize(path)
                 (content_type, content_encoding) = mimetypes.guess_type(path)
-                if content_type is None or content_encoding is None:
+                if not content_type or not content_encoding:
                     content_type = 'audio'
                     content_encoding = 'ogg'
                 mimetype = f"{content_type}/{content_encoding}"

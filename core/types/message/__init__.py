@@ -294,9 +294,9 @@ class MessageSession:
 
 class FetchedSession:
     def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
-        if sender_from is None:
+        if not sender_from:
             sender_from = target_from
-        if sender_id is None:
+        if not sender_id:
             sender_id = target_id
         self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
                               sender_id=f'{target_from}|{sender_id}',

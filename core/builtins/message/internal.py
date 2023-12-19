@@ -103,7 +103,7 @@ class I18NContext:
         self.kwargs = kwargs
 
     def __str__(self):
-        return self.key
+        return str(self.to_dict())
 
     def __repr__(self):
         return f'I18NContext(key="{self.key}", kwargs={self.kwargs})'

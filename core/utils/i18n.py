@@ -107,7 +107,7 @@ def load_locale_file():
 class Locale:
     def __init__(self, locale: str, fallback_lng=None):
         """创建一个本地化对象"""
-        if fallback_lng is None:
+        if not fallback_lng:
             fallback_lng = ['zh_cn', 'zh_tw', 'en_us']
         self.locale = locale
         self.data: LocaleNode = locale_root.query_node(locale)
