@@ -31,6 +31,7 @@ debug = false
 cache_path = "./cache/"
 command_prefix = ["~", "～",]
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y",]
+quick_confirm = true
 disabled_bots = 
 locale = "zh_cn"
 timezone_offset = "+8"

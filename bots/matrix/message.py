@@ -201,7 +201,7 @@ class MessageSession(MessageSessionT):
 
     async def delete(self):
         try:
-            await bot.room_redact(self.session.target, self.session.message['event_id'])
+            await bot.room_redact(self.session.target, self.target.message_id)
         except Exception:
             Logger.error(traceback.format_exc())
 
@@ -222,6 +222,37 @@ class MessageSession(MessageSessionT):
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             await bot.room_typing(self.msg.session.target, False)
             pass
+
+
+class ReactionMessageSession(MessageSession):
+    class Feature(MessageSession.Feature):
+        pass
+
+    class Typing(MessageSession.Typing):
+        pass
+
+    def as_display(self, text_only=False):
+        if text_only:
+            return ''
+        return self.session.message['content']['m.relates_to']['key']
+
+    async def to_message_chain(self):
+        return MessageChain([])
+
+    def is_quick_confirm(self, target: Union[MessageSession, FinishedSession]) -> bool:
+        content = self.session.message['content']['m.relates_to']
+        if content['rel_type'] == 'm.annotation':
+            if content['key'] in ['👍️', '✔️', '🎉']:  # todo: move to config
+                if target is None:
+                    return True
+                else:
+                    msg = [target.target.message_id] if isinstance(target, MessageSession) else target.message_id
+                    if content['event_id'] in msg:
+                        return True
+        return False
+
+    asDisplay = as_display
+    toMessageChain = to_message_chain
 
 
 class FetchedSession(Bot.FetchedSession):

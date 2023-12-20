@@ -9,7 +9,7 @@ import nio
 from bots.matrix import client
 from bots.matrix.client import bot
 from bots.matrix.info import client_name
-from bots.matrix.message import MessageSession, FetchTarget
+from bots.matrix.message import MessageSession, FetchTarget, ReactionMessageSession
 from core.builtins import PrivateAssets, Url
 from core.logger import Logger
 from core.parser.message import parser
@@ -50,14 +50,14 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
             Logger.info(f"Left empty room {room.room_id}")
 
 
-async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
+async def on_message(room: nio.MatrixRoom, event: nio.Event):
     if event.sender != bot.user_id and bot.olm:
         for device_id, olm_device in bot.device_store[event.sender].items():
             if bot.olm.is_device_verified(olm_device):
                 continue
             bot.verify_device(olm_device)
             Logger.info(f"trust olm device for device id {event.sender} -> {device_id}")
-    if event.source['content']['msgtype'] == 'm.notice':
+    if isinstance(event, nio.RoomMessageFormatted) and event.source['content']['msgtype'] == 'm.notice':
         # https://spec.matrix.org/v1.7/client-server-api/#mnotice
         return
     is_room = room.member_count != 2 or room.join_rule != 'invite'
@@ -65,21 +65,30 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
     reply_id = None
     if 'm.relates_to' in event.source['content'] and 'm.in_reply_to' in event.source['content']['m.relates_to']:
         reply_id = event.source['content']['m.relates_to']['m.in_reply_to']['event_id']
+
     resp = await bot.get_displayname(event.sender)
     if isinstance(resp, nio.ErrorResponse):
         Logger.error(f"Failed to get display name for {event.sender}")
         return
     sender_name = resp.displayname
 
-    msg = MessageSession(MsgInfo(target_id=f'Matrix|{target_id}',
-                                 sender_id=f'Matrix|{event.sender}',
-                                 target_from=f'Matrix',
-                                 sender_from='Matrix',
-                                 sender_name=sender_name,
-                                 client_name=client_name,
-                                 message_id=event.event_id,
-                                 reply_id=reply_id),
-                         Session(message=event.source, target=room.room_id, sender=event.sender))
+    target = MsgInfo(target_id=f'Matrix|{target_id}',
+                     sender_id=f'Matrix|{event.sender}',
+                     target_from=f'Matrix',
+                     sender_from='Matrix',
+                     sender_name=sender_name,
+                     client_name=client_name,
+                     message_id=event.event_id,
+                     reply_id=reply_id)
+    session = Session(message=event.source, target=room.room_id, sender=event.sender)
+
+    msg = None
+    if isinstance(event, nio.RoomMessageFormatted):
+        msg = MessageSession(target, session)
+    elif isinstance(event, nio.ReactionEvent):
+        msg = ReactionMessageSession(target, session)
+    else:
+        raise NotImplemented
     asyncio.create_task(parser(msg))
 
 
@@ -141,6 +150,7 @@ async def start():
     bot.add_event_callback(on_invite, nio.InviteEvent)
     bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     bot.add_event_callback(on_message, nio.RoomMessageFormatted)
+    bot.add_event_callback(on_message, nio.ReactionEvent)
     bot.add_to_device_callback(on_verify, nio.KeyVerificationEvent)
     bot.add_event_callback(on_in_room_verify, nio.RoomMessageUnknown)
 

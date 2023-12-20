@@ -32,8 +32,8 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 f"{' / '.join(artist['name'] for artist in song['artists'])}",
                 f"{song['album']['name']}" + (f" ({' / '.join(song['album']['transNames'])})" if 'transNames' in song['album'] else ''),
                 f"{song['id']}"
-            ] for i, song in enumerate(songs, start=1)
-        ]
+                ] for i, song in enumerate(songs, start=1)
+                ]
 
         tables = ImageTable(data, [
             msg.locale.t('ncmusic.message.search.table.header.id'),
@@ -41,7 +41,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             msg.locale.t('ncmusic.message.search.table.header.artists'),
             msg.locale.t('ncmusic.message.search.table.header.album'),
             'ID'
-            ])
+        ])
 
         img = await image_table_render(tables)
         if img:
@@ -62,7 +62,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
 
         else:
             send_msg.append(Plain(msg.locale.t('ncmusic.message.search.prompt')))
-            query = await msg.wait_reply(send_msg)
+            query, _ = await msg.wait_next_message(send_msg)
             query = query.as_display(text_only=True)
 
             if query.isdigit():
@@ -89,21 +89,20 @@ async def search(msg: Bot.MessageSession, keyword: str):
             if 'transNames' in song['album']:
                 send_msg += f"（{' / '.join(song['album']['transNames'])}）"
             send_msg += f"（{song['id']}）\n"
-
         if song_count > 10:
             song_count = 10
             send_msg += msg.locale.t("message.collapse", amount="10")
 
         if song_count == 1:
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.confirm')
-            query = await msg.wait_confirm(send_msg, delete=False)
+            query, _ = await msg.wait_next_message(send_msg)
             if query:
                 sid = result['result']['songs'][0]['id']
             else:
                 return
         else:
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.prompt')
-            query = await msg.wait_reply(send_msg)
+            query, _ = await msg.wait_next_message(send_msg)
             query = query.as_display(text_only=True)
         
             if query.isdigit():

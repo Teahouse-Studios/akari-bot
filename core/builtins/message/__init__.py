@@ -7,9 +7,9 @@ from core.builtins.message.chain import *
 from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager
 from core.builtins.temp import ExecutionLockList
-from core.builtins.utils import confirm_command
+from core.builtins.utils import confirm_command, quick_confirm
 from core.exceptions import WaitCancelException
-from core.types.message import MessageSession as MessageSessionT, MsgInfo, Session
+from core.types.message import MessageSession as MessageSessionT, FinishedSession, MsgInfo, Session
 from core.utils.i18n import Locale
 from core.utils.text import parse_time_string
 from database import BotDBUtil
@@ -56,12 +56,14 @@ class MessageSession(MessageSessionT):
                 await send.delete()
             if result.as_display(text_only=True) in confirm_command:
                 return True
+            if quick_confirm and result.is_quick_confirm(send):
+                return True
             return False
         else:
             raise WaitCancelException
 
     async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
-                                append_instruction=True) -> MessageSessionT:
+                                append_instruction=True) -> (MessageSessionT, FinishedSession):
         sent = None
         ExecutionLockList.remove(self)
         if message_chain:
@@ -79,7 +81,7 @@ class MessageSession(MessageSessionT):
         if delete and sent:
             await sent.delete()
         if result:
-            return result
+            return (result, sent)
         else:
             raise WaitCancelException
 
