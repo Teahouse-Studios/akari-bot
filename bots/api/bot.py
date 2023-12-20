@@ -54,7 +54,7 @@ async def auth(token: str):
 @app.get('/target/{target_id}')
 async def get_target(target_id: str):
     target = BotDBUtil.TargetInfo(target_id)
-    if target.query is None:
+    if not target.query:
         return JSONResponse(status_code=404, content={
             'target_id': target_id,
             'notFound': True,

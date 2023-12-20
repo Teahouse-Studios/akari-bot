@@ -5,8 +5,8 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
-from modules.maimai.libraries.maimaidx_api_data import get_alias, search_by_alias
-from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, Music, TotalList
+from modules.maimai.libraries.maimaidx_api_data import get_alias, get_info, search_by_alias
+from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, TotalList
 from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score
 
 total_list = TotalList()
@@ -18,12 +18,6 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']
 diff_label_zht = ['綠', '黃', '紅']
-
-
-def song_txt(music: Music):
-    return [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-            BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"),
-            Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")]
 
 
 def get_diff(diff):
@@ -64,20 +58,19 @@ async def _(msg: Bot.MessageSession):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{msg.locale.t('message.brackets', msg='DX') if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             music = (await total_list.get()).by_id(str(sid_list[0]))
             if not music:
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    await msg.finish(
-        [Plain(f"{music['id']}\u200B. {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
-         BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
-         Plain(msg.locale.t("maimai.message.song",
-                            artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
-                            bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                            level='/'.join((str(ds) for ds in music['ds']))))])
+    await msg.finish(await get_info(msg, music, Plain(msg.locale.t("maimai.message.song",
+                                                                   artist=music['basic_info']['artist'],
+                                                                   genre=music['basic_info']['genre'],
+                                                                   bpm=music['basic_info']['bpm'],
+                                                                   version=music['basic_info']['from'],
+                                                                   level='/'.join((str(ds) for ds in music['ds']))))))
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
@@ -94,7 +87,7 @@ async def _(msg: Bot.MessageSession):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{msg.locale.t('message.brackets', msg='DX') if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
@@ -103,18 +96,16 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
     output = await get_player_score(msg, payload, sid)
 
-    await msg.finish(
-        [Plain(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"),
-         BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"), Plain(output)])
+    await msg.finish(await get_info(msg, music, Plain(output)))
 
 
 @mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
@@ -123,7 +114,7 @@ async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).by_id(sid)
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    title = f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}"
+    title = f"{music['id']}\u200B. {music['title']}{msg.locale.t('message.brackets', msg='DX') if music['type'] == 'DX' else ''}"
     alias = await get_alias(msg, sid)
     if len(alias) == 0:
         await msg.finish(msg.locale.t("maimai.message.alias.alias_not_found"))
@@ -131,14 +122,6 @@ async def _(msg: Bot.MessageSession):
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
         await msg.finish([Plain(result.strip())])
-
-    await msg.finish(
-        [Plain(f"{music['id']}\u200B. {music['title']} {' (DX)' if music['type'] == 'DX' else ''}\n"),
-         BImage(f"https://www.diving-fish.com/covers/{get_cover_len5_id(music['id'])}.png"),
-         Plain(msg.locale.t("maimai.message.song",
-                            artist=music['basic_info']['artist'], genre=music['basic_info']['genre'],
-                            bpm=music['basic_info']['bpm'], version=music['basic_info']['from'],
-                            level='/'.join((str(ds) for ds in music['ds']))))])
 
 
 @mai_regex.regex(re.compile(r"(?:随个|隨個)\s?((?:dx|DX|sd|SD|标准|標準)\s?)?([绿綠黄黃红紅紫白]?)\s?([0-9]+\+?)"),
@@ -160,12 +143,11 @@ async def _(msg: Bot.MessageSession):
                 music_data = (await total_list.get()).filter(level=level, diff=[get_diff(res.groups()[1])],
                                                              type=tp)
             if len(music_data) == 0:
-                rand_result = msg.locale.t("maimai.message.music_not_found")
+                await msg.finish(msg.locale.t("maimai.message.music_not_found"))
             else:
-                rand_result = song_txt(music_data.random())
-            await msg.finish(rand_result)
-        except Exception as e:
-            Logger.error(traceback.format_exc())
+                music = music_data.random()
+                await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+        except ValueError:
             await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 
@@ -173,10 +155,10 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -217,10 +199,10 @@ async def _(msg: Bot.MessageSession):
     username = msg.matched_msg.groups()[2]
     if not goal:
         return
-    if username is None and msg.target.sender_from == "QQ":
+    if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
-        if username is None:
+        if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
@@ -232,7 +214,7 @@ async def _(msg: Bot.MessageSession):
         return
 
     if goal.upper() not in goal_list:
-        await msg.finish(msg.locale.t("maimai.message.process.error.goal_invalid"))
+        await msg.finish(msg.locale.t("maimai.message.goal_invalid"))
 
     output, get_img = await get_level_process(msg, payload, level, goal)
 

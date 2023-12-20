@@ -14,9 +14,9 @@ excr = module('exchange_rate',
 
 
 @excr.command('<base> <target> {{exchange_rate.help}}')
-async def _(msg: Bot.MessageSession):
-    base = msg.parsed_msg['<base>'].upper()
-    target = msg.parsed_msg['<target>'].upper()
+async def _(msg: Bot.MessageSession, base: str, target: str):
+    base = base.upper()
+    target = target.upper()
 
     amount_str = base[:-3]
     base_currency = base[-3:]
@@ -54,18 +54,22 @@ async def exchange(base_currency, target_currency, amount: float, msg):
         else:
             unsupported_currencies.append(target_currency)
         if unsupported_currencies:
-            await msg.finish(f"{msg.locale.t('exchange_rate.message.error.invalid')}{' '.join(unsupported_currencies)}")
+            await msg.finish(f"{msg.locale.t('exchange_rate.message.error.unit')}{' '.join(unsupported_currencies)}")
     else:
         raise Exception(data['error-type'])
 
     url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/{base_currency}/{target_currency}/{amount}'
     data = await get_url(url, 200, fmt='json')
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d")
+    time = msg.ts2strftime(datetime.datetime.now().timestamp(), time=False, timezone=False)
     if data['result'] == "success":
         exchange_rate = data['conversion_result']
         await msg.finish(
-            msg.locale.t('exchange_rate.message', amount=amount, base=base_currency, exchange_rate=exchange_rate,
-                         target=target_currency, time=current_time))
+            msg.locale.t('exchange_rate.message', 
+                         amount=amount,
+                         base=base_currency, 
+                         exchange_rate=exchange_rate,
+                         target=target_currency, 
+                         time=time))
     else:
         raise Exception(data['error-type'])
 

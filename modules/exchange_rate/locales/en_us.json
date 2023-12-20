@@ -1,9 +1,9 @@
 {
     "exchange_rate.help": "Convert currency prices according to the exchange rate of the day.",
     "exchange_rate.help.desc": "Exchange rate conversion tool.",
-    "exchange_rate.help.regex.desc": "[<acount>] <base>(兑|换)<target>",
+    "exchange_rate.help.regex.desc": "[<acount>] <base>(兑|换)<target> Convert currency prices.",
     "exchange_rate.message": "${amount} ${base} = ${exchange_rate} ${target}\n(${time}, for reference only)",
-    "exchange_rate.message.error.invalid": "发生错误：无效的货币单位：",
-    "exchange_rate.message.error.non_digital": "An error occurred: Invalid amount, must be numeric.",
-    "exchange_rate.message.error.non_positive": "An error occurred: The amount must be positive."
+    "exchange_rate.message.invalid.unit": "Invalid currency unit: ",
+    "exchange_rate.message.invalid.non_digital": "Invalid amount, must be numeric.",
+    "exchange_rate.message.invalid.non_positive": "The amount must be positive."
 }

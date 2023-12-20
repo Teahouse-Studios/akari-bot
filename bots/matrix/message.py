@@ -9,7 +9,7 @@ import nio
 from bots.matrix.client import bot, homeserver_host
 from bots.matrix.info import client_name
 from config import Config
-from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage
+from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.logger import Logger
 from core.types import FetchTarget as FetchedTargetT, \
@@ -43,7 +43,8 @@ class MessageSession(MessageSessionT):
         wait = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True,
+                           callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
             return await self.send_message(Plain(ErrorMessage(self.locale.t("error.message.chain.unsafe"))))
@@ -82,7 +83,7 @@ class MessageSession(MessageSessionT):
                         filename = os.path.basename(path)
                         filesize = os.path.getsize(path)
                         (content_type, content_encoding) = mimetypes.guess_type(path)
-                        if content_type is None or content_encoding is None:
+                        if not content_type or not content_encoding:
                             content_type = 'image'
                             content_encoding = 'png'
                         mimetype = f"{content_type}/{content_encoding}"
@@ -111,7 +112,7 @@ class MessageSession(MessageSessionT):
                 filename = os.path.basename(path)
                 filesize = os.path.getsize(path)
                 (content_type, content_encoding) = mimetypes.guess_type(path)
-                if content_type is None or content_encoding is None:
+                if not content_type or not content_encoding:
                     content_type = 'audio'
                     content_encoding = 'ogg'
                 mimetype = f"{content_type}/{content_encoding}"
@@ -154,7 +155,9 @@ class MessageSession(MessageSessionT):
                 Logger.error(f"Error in sending message: {str(resp)}")
             else:
                 send.append(resp)
-
+        if callback:
+            for x in send:
+                MessageTaskManager.add_callback(x.event_id, callback)
         return FinishedSession(self, [resp.event_id for resp in send], self.session.target)
 
     async def check_native_permission(self):
@@ -163,7 +166,7 @@ class MessageSession(MessageSessionT):
         # https://spec.matrix.org/v1.7/client-server-api/#permissions
         power_levels = (await bot.room_get_state_event(self.session.target, 'm.room.power_levels')).content
         level = power_levels['users'][self.session.sender] if self.session.sender in power_levels['users'] else power_levels['users_default']
-        if level is not None and int(level) >= 50:
+        if level and int(level) >= 50:
             return True
         return False
 
@@ -181,7 +184,7 @@ class MessageSession(MessageSessionT):
             msgtype = 'm.text'
         if msgtype == 'm.text':  # compatible with py38
             text = str(content['body'])
-            if self.target.reply_id is not None:
+            if self.target.reply_id:
                 # redact the fallback line for rich reply
                 # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
                 while text.startswith('> '):
@@ -314,14 +317,16 @@ class FetchTarget(FetchedTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[FetchedSession] = None, i18n=False, **kwargs):
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 try:
-                    if i18n:
-                        await x.send_direct_message(x.parent.locale.t(message, **kwargs))
-
-                    else:
-                        await x.send_direct_message(message)
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain([Plain(x.parent.locale.t(message, **kwargs))])
+                        else:
+                            msgchain = MessageChain([Plain(message)])
+                    await x.send_direct_message(msgchain)
                     if enable_analytics:
                         BotDBUtil.Analytics(x).add('', module_name, 'schedule')
                 except Exception:
@@ -332,10 +337,13 @@ class FetchTarget(FetchedTargetT):
                 fetch = await FetchTarget.fetch_target(x.targetId)
                 if fetch:
                     try:
-                        if i18n:
-                            await fetch.send_direct_message(fetch.parent.locale.t(message, **kwargs))
-                        else:
-                            await fetch.send_direct_message(message)
+                        msgchain = message
+                        if isinstance(message, str):
+                            if i18n:
+                                msgchain = MessageChain([Plain(fetch.parent.locale.t(message, **kwargs))])
+                            else:
+                                msgchain = MessageChain([Plain(message)])
+                        await fetch.send_direct_message(msgchain)
                         if enable_analytics:
                             BotDBUtil.Analytics(fetch).add('', module_name, 'schedule')
                     except Exception:

@@ -130,7 +130,7 @@ def parse_template(argv: List[str]) -> List[Template]:
         patterns = filter(None, re.split(r'(\[.*?])|(<.*?>)|(\{.*})| ', a))
         for p in patterns:
             strip_pattern = p.strip()
-            if strip_pattern == '':
+            if not strip_pattern:
                 continue
             if strip_pattern.startswith('['):
                 if not strip_pattern.endswith(']'):
@@ -171,10 +171,10 @@ def templates_to_str(templates: List[Template], with_desc=False, simplify=True) 
                 sub_arg_text.append(arg.name)
             elif isinstance(arg, OptionalPattern):
                 t = '['
-                if arg.flag is not None:
+                if arg.flag:
                     t += arg.flag
                 if arg.args:
-                    if arg.flag is not None:
+                    if arg.flag:
                         t += ' '
                     t += ' '.join(templates_to_str(arg.args, simplify=False))
                 t += ']'
@@ -210,7 +210,7 @@ def parse_argv(argv: List[str], templates: List[Template]) -> MatchedResult:
                 continue
             for a in args:  # optional first
                 if isinstance(a, OptionalPattern):
-                    if a.flag is None:
+                    if not a.flag:
                         afters.append(a.args[0])
                         continue
                     parsed_argv[a.flag] = Optional({}, flagged=False)

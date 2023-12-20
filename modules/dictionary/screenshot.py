@@ -97,7 +97,7 @@ async def get_pic(link, source, use_local=True) -> Union[str, bool]:
                 '.dictionaries > .dictionary, .dictionaries.dictionary')
             trash = content.select(
                 '.hwd_sound, .cobuild-logo, .pronIPASymbol, .title_frequency_container')
-            if trash is not None:
+            if trash:
                 for x in trash:
                     x.decompose()
         elif source == 'yd':

@@ -74,7 +74,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
                             Logger.error(await req.read())
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
-                    if fmt is not None:
+                    if fmt:
                         if hasattr(req, fmt):
                             return await getattr(req, fmt)()
                         else:
@@ -125,7 +125,7 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
                             Logger.error(await req.read())
                         raise ValueError(
                             f'{str(req.status)}[Ke:Image,path=https://http.cat/{str(req.status)}.jpg]')
-                    if fmt is not None:
+                    if fmt:
                         if hasattr(req, fmt):
                             return await getattr(req, fmt)()
                         else:
@@ -177,8 +177,8 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
                                   timeout=timeout, attempt=1, request_private_ip=request_private_ip,
                                   logging_err_resp=logging_err_resp)
 
-        if data is not None:
-            if filename is None:
+        if data:
+            if not filename:
                 ftt = ft.match(data).extension
                 path = f'{random_cache_path()}.{ftt}'
             else:

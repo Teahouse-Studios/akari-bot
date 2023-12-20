@@ -14,7 +14,7 @@ from aiocqhttp import MessageSegment
 from bots.aiocqhttp.client import bot
 from bots.aiocqhttp.info import client_name
 from config import Config
-from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice
+from core.builtins import Bot, base_superuser_list, command_prefix, ErrorMessage, Image, Plain, Temp, Voice, MessageTaskManager
 from core.builtins.message import MessageSession as MessageSessionT
 from core.builtins.message.chain import MessageChain
 from core.exceptions import SendMessageFailed
@@ -88,26 +88,30 @@ class MessageSession(MessageSessionT):
         quote = True
 
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
-                           allow_split_image=True) -> FinishedSession:
+                           allow_split_image=True,
+                           callback=None) -> FinishedSession:
 
         message_chain = MessageChain(message_chain)
         message_chain_assendable = message_chain.as_sendable(self, embed=False)
+
         if (self.target.target_from == 'QQ|Group' and Temp.data.get('lagrange_status', False) and not
-                self.tmp.get('enforce_send_by_master_client', False)):
+                self.tmp.get('enforce_send_by_master_client', False) and not callback):
             lagrange_available_groups = Temp.data.get('lagrange_available_groups', [])
             if int(self.session.target) in lagrange_available_groups:
                 choose = random.randint(0, 1)
                 Logger.debug(f'choose: {choose}')
                 if choose:
-                    can_sends = []
+                    cant_sends = []
                     for x in message_chain_assendable:
-                        if isinstance(x, (Plain, Image)):
-                            can_sends.append(x)
+                        if isinstance(x, Voice):
+                            cant_sends.append(x)
                             message_chain_assendable.remove(x)
-                    if can_sends:
+                    if message_chain_assendable:
                         await JobQueue.send_message('Lagrange', self.target.target_id,
-                                                    MessageChain(can_sends).to_list())
-                    if not message_chain_assendable:
+                                                    MessageChain(message_chain_assendable).to_list())
+                        if cant_sends:
+                            self.tmp['enforce_send_by_master_client'] = True
+                            await self.send_message(MessageChain(cant_sends))
                         return FinishedSession(self, 0, [{}])
         else:
             Logger.debug(f'Do not use lagrange since some conditions are not met.\n{self.target.target_from} '
@@ -124,12 +128,12 @@ class MessageSession(MessageSessionT):
             if isinstance(x, Plain):
                 msg = msg + MessageSegment.text(('\n' if count != 0 else '') + x.text)
             elif isinstance(x, Image):
-                msg = msg + MessageSegment.image(Path(await x.get()).as_uri())
+                msg = msg + MessageSegment.image('base64://' + await x.get_base64())
             elif isinstance(x, Voice):
                 if self.target.target_from != 'QQ|Guild':
                     msg = msg + MessageSegment.record(file=Path(x.path).as_uri())
             count += 1
-        Logger.info(f'[Bot] -> [{self.target.target_id}]: {msg}')
+        Logger.info(f'[Bot] -> [{self.target.target_id}]: {message_chain_assendable}')
         if self.target.target_from == 'QQ|Group':
             try:
                 send = await bot.send_group_msg(group_id=self.session.target, message=msg)
@@ -170,6 +174,8 @@ class MessageSession(MessageSessionT):
                     return FinishedSession(self, 0, [{}])
                 else:
                     raise e
+        if callback:
+            MessageTaskManager.add_callback(send['message_id'], callback)
         return FinishedSession(self, send['message_id'], [send])
 
     async def check_native_permission(self):
@@ -343,11 +349,14 @@ class FetchTarget(FetchTargetT):
                     Temp.data['waiting_for_send_group_message'].append({'fetch': fetch_, 'message': message,
                                                                         'i18n': i18n, 'kwargs': kwargs})
                 else:
-                    if i18n:
-                        await fetch_.send_direct_message(fetch_.parent.locale.t(message, **kwargs))
+                    msgchain = message
+                    if isinstance(message, str):
+                        if i18n:
+                            msgchain = MessageChain([Plain(fetch_.parent.locale.t(message, **kwargs))])
+                        else:
+                            msgchain = MessageChain([Plain(message)])
 
-                    else:
-                        await fetch_.send_direct_message(message)
+                    await fetch_.send_direct_message(msgchain)
                     if _tsk:
                         _tsk = []
                 if enable_analytics:
@@ -376,7 +385,7 @@ class FetchTarget(FetchTargetT):
             except Exception:
                 Logger.error(traceback.format_exc())
 
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 await post_(x)
         else:

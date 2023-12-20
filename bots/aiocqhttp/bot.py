@@ -107,7 +107,7 @@ class GuildAccountInfo:
 
 @bot.on_message('guild')
 async def _(event):
-    if GuildAccountInfo.tiny_id is None:
+    if not GuildAccountInfo.tiny_id:
         profile = await bot.call_action('get_guild_service_profile')
         GuildAccountInfo.tiny_id = profile['tiny_id']
     tiny_id = event.user_id
@@ -144,7 +144,7 @@ async def _(event: Event):
     if not Config('allow_bot_auto_approve_group_invite'):
         await bot.send_private_msg(user_id=event.user_id,
                                    message='你好！本机器人暂时不主动同意入群请求。\n'
-                                           f'请至{Config("qq_join_group_application_link")}申请入群。')
+                                           f'请至https://github.com/Teahouse-Studios/bot/issues/new?assignees=OasisAkari&labels=New&template=add_new_group.yaml&title=%5BNEW%5D%3A+申请入群。')
     else:
         return {'approve': True}
 

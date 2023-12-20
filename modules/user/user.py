@@ -52,7 +52,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username, pic=False):
             data['global_users_groups'].append(groups[g] if g in groups else g)
     data['registration_time'] = base_user_info['registration']
     data['registration_time'] = msg.ts2strftime(strptime2ts(data['registration_time'])) if data[
-        'registration_time'] is not None else msg.locale.t(
+        'registration_time'] else msg.locale.t(
         'unknown')
     data['edited_count'] = str(base_user_info['editcount'])
     data['gender'] = base_user_info['gender']
@@ -87,17 +87,17 @@ async def get_user_info(msg: MessageSession, wikiurl, username, pic=False):
             data['blocked_time'] = '无限期'
         else:
             data['blocked_time'] = msg.ts2strftime(strptime2ts(data['blocked_time'])) \
-                if data['blocked_time'] is not None else msg.locale.t(
+                if data['blocked_time'] else msg.locale.t(
                 'unknown')
         data['blocked_expires'] = base_user_info.get('blockexpiry', None)
         if data['blocked_expires'] in ['infinity', 'infinite']:
             data['blocked_expires'] = '无限期'
         else:
             data['blocked_expires'] = msg.ts2strftime(strptime2ts(data['blocked_expires'])) if data[
-                'blocked_expires'] is not None else msg.locale.t(
+                'blocked_expires'] else msg.locale.t(
                 'unknown')
         data['blocked_reason'] = base_user_info['blockreason']
-        data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] is not None else msg.locale.t(
+        data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] else msg.locale.t(
             'unknown')
 
     if pic:

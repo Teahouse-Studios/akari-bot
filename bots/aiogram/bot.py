@@ -21,7 +21,7 @@ Url.disable_mm = True
 async def msg_handler(message: types.Message):
     target_id = f'Telegram|{message.chat.type}|{message.chat.id}'
     reply_id = None
-    if message.reply_to_message is not None:
+    if message.reply_to_message:
         reply_id = message.reply_to_message.message_id
     msg = MessageSession(MsgInfo(target_id=target_id,
                                  sender_id=f'Telegram|User|{message.from_user.id}',

@@ -1,4 +1,4 @@
-from core.builtins import Bot, Image, Plain, command_prefix
+from core.builtins import Bot, Image, Plain, command_prefix, I18NContext
 from core.component import module
 from core.logger import Logger
 from core.utils.i18n import Locale
@@ -19,7 +19,7 @@ async def weekly_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
         weekly_cn = Image(await msgchain2image(weekly_cn))
         weekly_tw = Image(await msgchain2image(weekly_tw))
     post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
-    await fetch.post_message('weekly_rss', post_msg, i18n=True)
+    await fetch.post_message('weekly_rss', I18NContext(post_msg), i18n=True)
     Logger.info('Weekly checked.')
 
 
@@ -50,7 +50,7 @@ async def weekly_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
         weekly_cn = Image(await msgchain2image(weekly_cn))
         weekly_tw = Image(await msgchain2image(weekly_tw))
         post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
-        await fetch.post_message('teahouse_weekly_rss', post_msg, i18n=True)
+        await fetch.post_message('teahouse_weekly_rss', I18NContext(post_msg), i18n=True)
     else:
         await fetch.post_message('teahouse_weekly_rss', weekly)
     Logger.info('Teahouse Weekly checked.')

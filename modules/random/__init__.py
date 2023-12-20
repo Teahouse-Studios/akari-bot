@@ -36,31 +36,6 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(', '.join(x))
 
 
-@r.command('password <length> [-u] [-l] [-n] [-s] {{random.help.password}}',
-          options_desc={'-u': '{random.help.option.password.u}',
-                        '-l': '{random.help.option.password.l}',
-                        '-n': '{random.help.option.password.n}',
-                        '-s': '{random.help.option.password.s}'})
-async def _(msg: Bot.MessageSession, length: int):
-    if length < 1 or length > 100:
-        return await msg.finish(msg.locale.t('random.message.password.error.invalid'))
-    characters = ""
-    if msg.parsed_msg.get('-u', False):
-        characters += string.ascii_uppercase
-    if msg.parsed_msg.get('-l', False):
-        characters += string.ascii_lowercase
-    if msg.parsed_msg.get('-n', False):
-        characters += string.digits
-    if msg.parsed_msg.get('-s', False):
-        characters += "!@#$%^&*-_+=?"
-
-    if not characters:
-        characters = string.ascii_letters + string.digits
-
-    random = ''.join(secrets.choice(characters) for _ in range(length))
-    await msg.finish(random)
-
-
 @r.command('uuid {{random.help.uuid}}', )
 async def _(msg: Bot.MessageSession):
     await msg.finish(str(uuid.uuid4()))

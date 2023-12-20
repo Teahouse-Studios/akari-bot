@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession, sessiontoken: str):
         'Discord|Channel',
         'Telegram|group',
         'Telegram|supergroup',
-        'Kook|GROUP']:
+            'Kook|GROUP']:
         send_msg.append(await msg.send_message(msg.locale.t("phigros.message.bind.warning"), quote=False))
         need_revoke = True
     headers = p_headers.copy()
@@ -50,7 +50,7 @@ async def _(msg: Bot.MessageSession):
 
 @phi.command('b19 {{phigros.help.b19}}')
 async def _(msg: Bot.MessageSession):
-    if (bind := PgrBindInfoManager(msg).get_bind_info()) is None:
+    if not (bind := PgrBindInfoManager(msg).get_bind_info()):
         await msg.finish(msg.locale.t("phigros.message.user_unbound", prefix=msg.prefixes[0]))
     else:
         try:

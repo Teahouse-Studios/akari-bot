@@ -27,7 +27,7 @@ class DiceValueError(Exception):
     """骰子参数值错误"""
 
     def __init__(self, session, message, value=None):
-        if value is not None:
+        if value:
             self.message = session.locale.t("dice.message.error.value.invalid", value=value) + message
         else:
             self.message = session.locale.t("dice.message.error.value") + message

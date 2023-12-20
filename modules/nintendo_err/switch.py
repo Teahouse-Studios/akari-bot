@@ -1783,7 +1783,7 @@ def get(error):
     if summary:
         ret.add_field(ConsoleErrorField('Summary', message_str=summary))
     description = module.get_error(code)
-    if description is None or not description.description:
+    if not description or not description.description:
         ret.add_field(ConsoleErrorField('Description', supplementary_value=code))
     else:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description, supplementary_value=code))

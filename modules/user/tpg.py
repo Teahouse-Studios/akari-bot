@@ -12,7 +12,7 @@ def tpg(msg, favicon, wikiname, username, gender, registertime, contributionwiki
         blockreason='0', bantype=None):
     font = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 40)
     font1 = ImageFont.truetype(abspath('./assets/SourceHanSansCN-Normal.ttf'), 70)
-    if bantype is None:
+    if not bantype:
         img = Image.open(abspath('./assets/user/base.png'))
     elif bantype == 'Y' or bantype == 'YN':
         img = Image.open(abspath('./assets/user/ban.png'))

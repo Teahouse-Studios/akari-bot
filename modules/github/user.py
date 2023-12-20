@@ -10,21 +10,21 @@ async def user(msg: Bot.MessageSession):
     try:
         result = await get_url('https://api.github.com/users/' + msg.parsed_msg['<name>'], 200, fmt='json')
         optional = []
-        if 'hireable' in result and result['hireable'] is True:
+        if 'hireable' in result and result['hireable']:
             optional.append('Hireable')
-        if 'is_staff' in result and result['is_staff'] is True:
+        if 'is_staff' in result and result['is_staff']:
             optional.append('GitHub Staff')
-        if 'company' in result and result['company'] is not None:
+        if 'company' in result and result['company']:
             optional.append('Work · ' + result['company'])
-        if 'twitter_username' in result and result['twitter_username'] is not None:
+        if 'twitter_username' in result and result['twitter_username']:
             optional.append('Twitter · ' + result['twitter_username'])
-        if 'blog' in result and result['blog'] is not None:
+        if 'blog' in result and result['blog']:
             optional.append('Site · ' + result['blog'])
-        if 'location' in result and result['location'] is not None:
+        if 'location' in result and result['location']:
             optional.append('Location · ' + result['location'])
 
         bio = result['bio']
-        if bio is None:
+        if not bio:
             bio = ''
         else:
             bio = '\n' + result['bio']

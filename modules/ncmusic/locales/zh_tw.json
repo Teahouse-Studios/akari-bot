@@ -1,16 +1,18 @@
 {
+    "ncmusic.help.desc": "網易云音樂相關工具。",
+    "ncmusic.help.info": "取得音樂詳細資訊。",
     "ncmusic.help.search": "搜尋網易雲音樂。",
     "ncmusic.help.search.legacy": "搜尋網易雲音樂。（舊版）",
-    "ncmusic.help.info": "取得音樂詳細資訊。",
-    "ncmusic.message.info": "歌名：${name}（${id}）\n專輯名：${album}（${album_id}）\n歌手：${artists}\n歌曲詳情頁：${detail}",
-    "ncmusic.message.search.collapse": "…僅顯示前 10 條內容。",
+    "ncmusic.message.info": "歌名：${name}（${id}）\n歌手：${artists}\n專輯名：${album}（${album_id}）",
+    "ncmusic.message.info.not_found": "未找到對應的音樂。",
+    "ncmusic.message.search.confirm": "是否檢視音樂詳細資訊？",
     "ncmusic.message.search.invalid.non_digital": "無效的編號，必須為數字。",
     "ncmusic.message.search.invalid.out_of_range": "編號超出範圍。",
     "ncmusic.message.search.not_found": "未找到結果。",
-    "ncmusic.message.search.prompt": "輸入對應編號取得歌曲資訊。",
+    "ncmusic.message.search.prompt": "回覆對應編號取得歌曲資訊。",
+    "ncmusic.message.search.result": "搜尋結果：",
     "ncmusic.message.search.table.header.album": "專輯名稱",
     "ncmusic.message.search.table.header.artists": "歌手",
     "ncmusic.message.search.table.header.id": "編號",
-    "ncmusic.message.search.table.header.name": "歌名",
-    "ncmusic.message.search.result": "搜尋結果："
+    "ncmusic.message.search.table.header.name": "歌名"
 }

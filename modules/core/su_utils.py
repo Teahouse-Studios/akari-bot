@@ -11,17 +11,18 @@ import ujson as json
 from dateutil.relativedelta import relativedelta
 
 from config import Config, CFG
-from core.builtins import Bot, Image, Plain, Temp
+from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
+from core.exceptions import TestException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import remove_temp_ban
-from core.scheduler import CronTrigger
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from core.utils.info import Info
 from core.utils.storedata import get_stored_list, update_stored_list
 from database import BotDBUtil
+
 
 su = module('superuser', alias='su', required_superuser=True, base=True)
 
@@ -76,7 +77,7 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
-        if module_ is None:
+        if not module_:
             result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.message.analytics.days", module=module_,
@@ -114,7 +115,7 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
-        if module_ is None:
+        if not module_:
             result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.message.analytics.year", module=module_,
@@ -165,15 +166,6 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
-@purge.schedule(CronTrigger.from_crontab('0 0 * * *'))
-async def _():
-    cache_path = os.path.abspath(Config('cache_path'))
-    Logger.info('Start purging cache...')
-    if os.path.exists(cache_path):
-        shutil.rmtree(cache_path)
-    os.mkdir(cache_path)
-
-
 set_ = module('set', required_superuser=True, base=True)
 
 
@@ -183,7 +175,7 @@ async def _(msg: Bot.MessageSession):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
-    if target_data.query is None:
+    if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
@@ -201,7 +193,7 @@ async def _(msg: Bot.MessageSession):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
-    if target_data.query is None:
+    if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
@@ -283,6 +275,97 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
+upd = module('update', required_superuser=True, base=True)
+
+
+def pull_repo():
+    return os.popen('git pull', 'r').read()[:-1]
+
+
+def update_dependencies():
+    poetry_install = os.popen('poetry install').read()[:-1]
+    if poetry_install != '':
+        return poetry_install
+    pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
+    if len(pip_install) > 500:
+        return '...' + pip_install[-500:]
+    return pip_install
+
+
+@upd.command()
+async def update_bot(msg: Bot.MessageSession):
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+    if confirm:
+        pull_repo_result = pull_repo()
+        if pull_repo_result != '':
+            await msg.send_message(pull_repo_result)
+        else:
+            await msg.send_message(msg.locale.t("core.message.update.failed"))
+        await msg.send_message(update_dependencies())
+
+if Info.subprocess:
+    rst = module('restart', required_superuser=True, base=True)
+
+    def restart():
+        sys.exit(233)
+
+    def write_version_cache(msg: Bot.MessageSession):
+        update = os.path.abspath(PrivateAssets.path + '/cache_restart_author')
+        write_version = open(update, 'w')
+        write_version.write(json.dumps({'From': msg.target.target_from, 'ID': msg.target.target_id}))
+        write_version.close()
+
+    restart_time = []
+
+    async def wait_for_restart(msg: Bot.MessageSession):
+        get = ExecutionLockList.get()
+        if datetime.now().timestamp() - restart_time[0] < 60:
+            if len(get) != 0:
+                await msg.send_message(msg.locale.t("core.message.restart.wait", count=len(get)))
+                await asyncio.sleep(10)
+                return await wait_for_restart(msg)
+            else:
+                await msg.send_message(msg.locale.t("core.message.restart.restarting"))
+                get_wait_list = MessageTaskManager.get()
+                for x in get_wait_list:
+                    for y in get_wait_list[x]:
+                        for z in get_wait_list[x][y]:
+                            if get_wait_list[x][y][z]['active']:
+                                await z.send_message(z.locale.t("core.message.restart.prompt"))
+
+        else:
+            await msg.send_message(msg.locale.t("core.message.restart.timeout"))
+
+    @rst.command()
+    async def restart_bot(msg: Bot.MessageSession):
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+        if confirm:
+            restart_time.append(datetime.now().timestamp())
+            await wait_for_restart(msg)
+            write_version_cache(msg)
+            restart()
+
+
+if Info.subprocess:
+    upds = module('update&restart', required_superuser=True, alias='u&r', base=True)
+
+    @upds.command()
+    async def update_and_restart_bot(msg: Bot.MessageSession):
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+        if confirm:
+            restart_time.append(datetime.now().timestamp())
+            await wait_for_restart(msg)
+            write_version_cache(msg)
+            pull_repo_result = pull_repo()
+            if pull_repo_result != '':
+                await msg.send_message(pull_repo_result)
+                await msg.send_message(update_dependencies())
+            else:
+                Logger.warn(f'Failed to get Git repository result.')
+                await msg.send_message(msg.locale.t("core.message.update.failed"))
+            restart()
+
+
 if Bot.FetchTarget.name == 'QQ':
     resume = module('resume', required_base_superuser=True)
 
@@ -342,6 +425,7 @@ if Bot.FetchTarget.name == 'QQ':
         else:
             await msg.finish(msg.locale.t('core.message.forward_msg.disable'))
 
+
 echo = module('echo', required_superuser=True, base=True)
 
 
@@ -357,13 +441,14 @@ say = module('say', required_superuser=True, base=True)
 async def _(msg: Bot.MessageSession):
     await msg.finish(msg.parsed_msg['<display_msg>'], quote=False)
 
+
 rse = module('raise', required_superuser=True, base=True)
 
 
 @rse.command()
 async def _(msg: Bot.MessageSession):
     e = msg.locale.t("core.message.raise")
-    raise Exception(e)
+    raise TestException(e)
 
 
 if Config('enable_eval'):

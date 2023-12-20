@@ -46,12 +46,12 @@ async def get_weekly(with_img=False, zh_tw=False):
         Plain(
             locale.t(
                 "weekly.message.link",
-                img=imglink if imglink is not None else locale.t("none"),
+                img=imglink if imglink else locale.t("none"),
                 article=str(
                     Url(f'https://zh.minecraft.wiki{page[0]}')),
                 link=str(
                     Url(f'https://zh.minecraft.wiki/wiki/?oldid={str(result["parse"]["revid"])}')))))
-    if imglink is not None and with_img:
+    if imglink and with_img:
         msg_list.append(Image(path=imglink))
 
     return msg_list

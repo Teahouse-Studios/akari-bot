@@ -26,6 +26,6 @@
     "calc.help.option.str": "转换为字符串：str(1) -> \"1\"",
     "calc.help.option.xor": "Bitwise xor: 1 ^ 1 -> 0",
     "calc.message.invalid": "Invalid expression: ${expr}",
-    "calc.message.running_time": "Calculating time: ${time} ms / 10000 ms. ",
+    "calc.message.running_time": "Calculating time: ${time}ms / 10000ms. ",
     "calc.message.time_out": "Calculation timeout."
 }

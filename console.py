@@ -3,7 +3,7 @@ import sys
 
 from config import Config
 
-if Config('db_path') is None:
+if not Config('db_path'):
     raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path" field\n'
                          'Example: \ndb_path = sqlite:///database/save.db\n'
                          '(Also you can fill in the above example directly,'
@@ -26,7 +26,7 @@ from core.utils.bot import init_async
 from core.logger import Logger
 
 query_dbver = session.query(DBVersion).first()
-if query_dbver is None:
+if not query_dbver:
     session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
     session.commit()
     query_dbver = session.query(DBVersion).first()
