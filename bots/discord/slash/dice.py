@@ -12,13 +12,13 @@ async def auto_complete(ctx: discord.AutocompleteContext):
 dice = client.create_group("dice", "Random dice.")
 
 
-@dice.command(description="Roll the specified dice.")
+@dice.command(name="roll", description="Roll the specified dice.")
 @discord.option(name="dices", autocomplete=auto_complete, description="Dice expression.")
 @discord.option(name="dc", default="", description="Difficulty class.")
 async def roll(ctx: discord.ApplicationContext, dices: str, dc: str):
     await slash_parser(ctx, f'{dices} {dc}')
 
 
-@dice.command(description="Modify the checking rule of dc.")
+@dice.command(name="rule", description="Modify the checking rule of dc.")
 async def rule(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'rule')

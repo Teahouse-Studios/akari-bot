@@ -59,7 +59,7 @@ async def default_wiki(ctx: discord.AutocompleteContext):
         return ['https://zh.minecraft.wiki/']
 
 
-@wiki.command(description="Query a wiki page.")
+@wiki.command(name="query", description="Query a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 async def query(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, pagename)
@@ -71,7 +71,7 @@ async def byid(ctx: discord.ApplicationContext, pageid: str):
     await slash_parser(ctx, f'id {pageid}')
 
 
-@wiki.command(description="Search a wiki page.")
+@wiki.command(name="search", description="Search a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 async def search(ctx: discord.ApplicationContext, pagename: str):
     await slash_parser(ctx, f'search {pagename}')
@@ -100,12 +100,13 @@ async def iwremove(ctx: discord.ApplicationContext, interwiki: str):
 
 
 @iw.command(name="list", description="Lists the currently configured Interwiki.")
-@discord.option(name="legacy", choices=[('true', 'legacy'), ('false', '')], description="Whether to use legacy mode.")
+@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
 async def iw_list(ctx: discord.ApplicationContext, legacy: str):
+    legacy = "legacy" if legacy == "true" else ""
     await slash_parser(ctx, f'iw list {legacy}')
 
 
-@iw.command(name="show", description="Get the API address corresponding to the set Interwiki.")
+@iw.command(name="get", description="Get the API address corresponding to the set Interwiki.")
 @discord.option(name="interwiki", description="The custom Interwiki.", autocomplete=auto_get_custom_iw_list)
 async def get(ctx: discord.ApplicationContext, interwiki: str):
     await slash_parser(ctx, f'iw get {interwiki}')
@@ -150,11 +151,11 @@ async def reset_prefix(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'prefix reset')
 
 
-@wiki.command(description="Toggle whether to use Fandom global Interwiki queries.")
+@wiki.command(name="fandom", description="Toggle whether to use Fandom global Interwiki queries.")
 async def fandom(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'fandom')
 
 
-@wiki.command(description="Toggle whether to return the edit link when the page does not exist.")
+@wiki.command(name="redlink", description="Toggle whether to return the edit link when the page does not exist.")
 async def redlink(ctx: discord.ApplicationContext):
     await slash_parser(ctx, 'redlink')
