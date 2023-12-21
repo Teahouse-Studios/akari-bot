@@ -160,7 +160,7 @@ class TotalList:
         self.total_list = None
 
     async def get(self):
-        if self.total_list is None:
+        if not self.total_list:
             obj = await get_url('https://www.diving-fish.com/api/maimaidxprober/music_data', 200, fmt='json')
             total_list: MusicList = MusicList(obj)
             for __i in range(len(total_list)):

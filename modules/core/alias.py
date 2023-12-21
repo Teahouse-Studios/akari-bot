@@ -1,4 +1,4 @@
-from core.builtins import Bot, Image, command_prefix
+from core.builtins import Bot, Image
 from core.component import module
 from core.utils.image_table import image_table_render, ImageTable
 
@@ -14,7 +14,7 @@ async def set_alias(msg: Bot.MessageSession):
     aliases = msg.options.get('command_alias')
     alias = msg.parsed_msg.get('<alias>', False)
     command = msg.parsed_msg.get('<command>', False)
-    if aliases is None:
+    if not aliases:
         aliases = {}
     if 'add' in msg.parsed_msg:
         if alias not in aliases:
@@ -25,7 +25,7 @@ async def set_alias(msg: Bot.MessageSession):
                     break
             if not has_prefix:
                 await msg.finish(msg.locale.t("core.message.alias.add.invalid_prefix"))
-            command = command_prefix[0] + command[1:]
+            command = msg.prefixes[0] + command[1:]
             aliases[alias] = command
             msg.data.edit_option('command_alias', aliases)
             await msg.finish(msg.locale.t("core.message.alias.add.success", alias=alias, command=command))
@@ -55,7 +55,7 @@ async def set_alias(msg: Bot.MessageSession):
                 await msg.finish([msg.locale.t("core.message.alias.list"), Image(img)])
             else:
                 pass
-        
+
         if legacy:
-                await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
-                                       + '\n'.join([f'{k} -> {aliases[k]}' for k in aliases]))
+            await msg.finish(f'{msg.locale.t("core.message.alias.list")}\n'
+                             + '\n'.join([f'{k} -> {aliases[k]}' for k in aliases]))

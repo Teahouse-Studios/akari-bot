@@ -17,7 +17,7 @@ rc_ = module('rc', developers=['OasisAkari'])
              'legacy {{wiki.help.rc.legacy}}'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
-    if start_wiki is None:
+    if not start_wiki:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
@@ -40,7 +40,7 @@ a = module('ab', developers=['OasisAkari'])
            'legacy {{wiki.help.ab.legacy}}'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
-    if start_wiki is None:
+    if not start_wiki:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     legacy = True
     if not msg.parsed_msg and msg.Feature.forward and msg.target.target_from == 'QQ|Group':
@@ -62,7 +62,7 @@ n = module('newbie', desc='{wiki.help.newbie.desc}', developers=['OasisAkari'])
 @n.command()
 async def newbie_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
-    if start_wiki is None:
+    if not start_wiki:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
     res = await newbie(msg, start_wiki)
     await msg.finish(res)

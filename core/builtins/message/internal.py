@@ -97,16 +97,16 @@ class FormattedTime:
                                                    'timezone': self.timezone}}
 
 
-class I18NText:
+class I18NContext:
     def __init__(self, key, **kwargs):
         self.key = key
         self.kwargs = kwargs
 
     def __str__(self):
-        return self.key
+        return str(self.to_dict())
 
     def __repr__(self):
-        return f'I18NText(key="{self.key}", kwargs={self.kwargs})'
+        return f'I18NContext(key="{self.key}", kwargs={self.kwargs})'
 
     def to_dict(self):
         return {'type': 'i18n', 'data': {'key': self.key, 'kwargs': self.kwargs}}
@@ -237,26 +237,26 @@ class Embed(EmbedT):
 
     def to_message_chain(self):
         text_lst = []
-        if self.title is not None:
+        if self.title:
             text_lst.append(self.title)
-        if self.description is not None:
+        if self.description:
             text_lst.append(self.description)
-        if self.url is not None:
+        if self.url:
             text_lst.append(self.url)
-        if self.fields is not None:
+        if self.fields:
             for f in self.fields:
                 if f.inline:
                     text_lst.append(f"{f.name}: {f.value}")
                 else:
                     text_lst.append(f"{f.name}:\n{f.value}")
-        if self.author is not None:
+        if self.author:
             text_lst.append("作者：" + self.author)
-        if self.footer is not None:
+        if self.footer:
             text_lst.append(self.footer)
         message_chain = []
         if text_lst:
             message_chain.append(Plain('\n'.join(text_lst)))
-        if self.image is not None:
+        if self.image:
             message_chain.append(self.image)
         return message_chain
 
@@ -285,4 +285,4 @@ class Embed(EmbedT):
                 'fields': self.fields}}
 
 
-__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime", "I18NText"]
+__all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime", "I18NContext"]

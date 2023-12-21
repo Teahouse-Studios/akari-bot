@@ -2,10 +2,10 @@ from core.builtins import Bot
 from core.component import module
 from modules.github import repo, user, search
 
-github = module('github', alias='gh', developers=['Dianliang233'])
+github = module('github', alias='gh', developers=['Dianliang233'], desc='{github.help.desc}')
 
 
-@github.handle('<name> {{github.help}}')
+@github.command('<name> {{github.help}}')
 async def _(msg: Bot.MessageSession, name: str):
     if '/' in name:
         await repo.repo(msg)
@@ -13,16 +13,16 @@ async def _(msg: Bot.MessageSession, name: str):
         await user.user(msg)
 
 
-@github.handle('repo <name> {{github.help.repo}}')
+@github.command('repo <name> {{github.help.repo}}')
 async def _(msg: Bot.MessageSession):
     await repo.repo(msg)
 
 
-@github.handle(('user <name> {{github.help.user}}'))
+@github.command('user <name> {{github.help.user}}')
 async def _(msg: Bot.MessageSession):
     await user.user(msg)
 
 
-@github.handle('search <query> {{github.help.search}}')
+@github.command('search <query> {{github.help.search}}')
 async def _(msg: Bot.MessageSession):
     await search.search(msg)

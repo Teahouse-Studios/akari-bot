@@ -10,17 +10,18 @@ from core.utils.http import get_url
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
+
 async def news(msg):
     api = 'https://www.mcbbs.net/forum-news-1.html'
     if web_render:
         use_local = True if web_render_local else False
         api = (web_render_local if use_local else web_render) + 'source?url=' + api
-    html = await get_url(api, 200)
+    html = await get_url(api, 200, request_private_ip=True)
     Logger.debug(html)
     bs = BeautifulSoup(html, 'html.parser')
     results = bs.select('#threadlisttableid > tbody[id^="normalthread_"]')
     res = []
-    if results is not None:
+    if results:
         for i in results:
             if len(res) == 5:
                 break

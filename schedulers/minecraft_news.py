@@ -6,7 +6,7 @@ from urllib.parse import quote
 import ujson as json
 
 from config import Config, CFG
-from core.builtins import Url
+from core.builtins import Url, I18NContext
 from core.logger import Logger
 from core.queue import JobQueue
 from core.scheduler import Scheduler, IntervalTrigger
@@ -70,9 +70,8 @@ async def start_check_news(use_local=True):
                     publish_date = datetime.strptime(o_article['publish_date'], '%d %B %Y %H:%M:%S %Z')
                     now = datetime.now()
                     if now - publish_date < timedelta(days=2):
-                        await JobQueue.trigger_hook_all('minecraft_news',
-                                                        message='minecraft_news.message.minecraft_news', i18n=True,
-                                                        title=title, desc=desc, link=str(Url(link)))
+                        await JobQueue.trigger_hook_all('minecraft_news', message=[I18NContext('minecraft_news.message.minecraft_news',
+                                                                                               title=title, desc=desc, link=link).to_dict()])
                     alist.append(title)
                     update_stored_list('scheduler', 'mcnews', alist)
     except Exception:
@@ -100,9 +99,8 @@ async def feedback_news():
                     link = article['html_url']
                     Logger.info(f'huh, we find {name}.')
                     await JobQueue.trigger_hook_all('feedback_news',
-                                                    message='minecraft_news.message.feedback_news',
-                                                    i18n=True,
-                                                    name=name, link=str(Url(link)))
+                                                    message=[I18NContext('minecraft_news.message.feedback_news',
+                                                                         name=name, link=str(Url(link))).to_dict()])
                     alist.append(name)
                     update_stored_list('scheduler', 'mcfeedbacknews', alist)
         except Exception:

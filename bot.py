@@ -45,7 +45,7 @@ def enqueue_output(out, queue):
 
 def init_bot():
     base_superuser = Config('base_superuser')
-    if base_superuser is not None:
+    if base_superuser:
         if isinstance(base_superuser, str):
             base_superuser = [base_superuser]
         for bu in base_superuser:
@@ -143,7 +143,7 @@ def run_bot():
                 raise RestartBot
 
         # break when all processes are done.
-        if all(p.poll() is not None for p in runlst):
+        if all(p.poll() for p in runlst):
             break
 
         sleep(0.0001)
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     logger.remove()
     logger.add(sys.stderr, format='{message}', level="INFO")
     query_dbver = session.query(DBVersion).first()
-    if query_dbver is None:
+    if not query_dbver:
         session.add_all([DBVersion(value=str(BotDBUtil.database_version))])
         session.commit()
         query_dbver = session.query(DBVersion).first()
@@ -168,7 +168,7 @@ if __name__ == '__main__':
         while True:
             try:
                 run_bot()  # Process will block here so
-                logger.error('All bots exited unexpectedly, please check the output')
+                logger.critical('All bots exited unexpectedly, please check the output')
                 break
             except RestartBot:
                 for x in pidlst:

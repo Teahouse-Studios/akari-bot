@@ -503,7 +503,7 @@ def construct_support(ret, mod, desc):
     if summary:
         ret.add_field(ConsoleErrorField('Summary', message_str=summary))
     description = category.get_error(desc)
-    if description is not None and description.description:
+    if description and description.description:
         ret.add_field(ConsoleErrorField('Description', message_str=description.description))
         if description.support_url:
             ret.add_field(ConsoleErrorField('Further information', message_str=description.support_url))

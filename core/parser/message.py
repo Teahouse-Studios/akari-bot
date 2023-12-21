@@ -31,13 +31,13 @@ temp_ban_counter = {}  # 临时限制计数
 
 async def remove_temp_ban(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
-    if is_temp_banned is not None:
+    if is_temp_banned:
         del temp_ban_counter[msg.target.sender_id]
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
     same = counter_same.get(msg.target.sender_id)
-    if same is None or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
+    if not same or datetime.now().timestamp() - same['ts'] > 300 or same['command'] != command:
         # 检查是否滥用（5分钟内重复使用同一命令10条）
         counter_same[msg.target.sender_id] = {'command': command, 'count': 1,
                                               'ts': datetime.now().timestamp()}
@@ -46,7 +46,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
         if same['count'] > 10:
             raise AbuseWarning(msg.locale.t("tos.reason.cooldown"))
     all_ = counter_all.get(msg.target.sender_id)
-    if all_ is None or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
+    if not all_ or datetime.now().timestamp() - all_['ts'] > 300:  # 检查是否滥用（5分钟内使用20条命令）
         counter_all[msg.target.sender_id] = {'count': 1,
                                              'ts': datetime.now().timestamp()}
     else:
@@ -58,7 +58,7 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
 async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
     is_superuser = msg.check_super_user()
-    if is_temp_banned is not None and not is_superuser:
+    if is_temp_banned and not is_superuser:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
@@ -96,16 +96,16 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
             return
         msg.prefixes = command_prefix.copy()  # 复制一份作为基础命令前缀
         get_custom_alias = msg.options.get('command_alias')
-        if get_custom_alias is not None:
+        if get_custom_alias:
             get_display_alias = get_custom_alias.get(msg.trigger_msg)
-            if get_display_alias is not None:
+            if get_display_alias:
                 msg.trigger_msg = get_display_alias
         get_custom_prefix = msg.options.get('command_prefix')  # 获取自定义命令前缀
-        if get_custom_prefix is not None:
+        if get_custom_prefix:
             msg.prefixes = get_custom_prefix + msg.prefixes  # 混合
 
         disable_prefix = False
-        if prefix is not None:  # 如果上游指定了命令前缀，则使用指定的命令前缀
+        if prefix:  # 如果上游指定了命令前缀，则使用指定的命令前缀
             if '' in prefix:
                 disable_prefix = True
             msg.prefixes.clear()
@@ -186,7 +186,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                     module: Module = modules[command_first_word]
                     if not module.command_list.set:  # 如果没有可用的命令，则展示模块简介
-                        if module.desc is not None:
+                        if module.desc:
                             desc = msg.locale.t("parser.module.desc", desc=msg.locale.tl_str(module.desc))
 
                             if command_first_word not in msg.enabled_modules:
@@ -254,7 +254,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
 
                                     kwargs = {}
                                     func_params = inspect.signature(submodule.function).parameters
-                                    if len(func_params) > 1 and msg.parsed_msg is not None:
+                                    if len(func_params) > 1 and msg.parsed_msg:
                                         parsed_msg_ = msg.parsed_msg.copy()
                                         for param_name, param_obj in func_params.items():
                                             if param_obj.annotation == Bot.MessageSession:
@@ -405,11 +405,11 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             matched = False
                             if rfunc.mode.upper() in ['M', 'MATCH']:
                                 msg.matched_msg = re.match(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
-                                if msg.matched_msg is not None:
+                                if msg.matched_msg:
                                     matched = True
                             elif rfunc.mode.upper() in ['A', 'FINDALL']:
                                 msg.matched_msg = re.findall(rfunc.pattern, msg.trigger_msg, flags=rfunc.flags)
-                                if msg.matched_msg and msg.matched_msg is not None:
+                                if msg.matched_msg:
                                     matched = True
 
                             if matched and not (msg.target.target_from in regex_module.exclude_from or

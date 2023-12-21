@@ -1,6 +1,6 @@
 import asyncio
 from config import Config
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 from core.builtins.message.chain import *
@@ -35,23 +35,24 @@ class MessageSession(MessageSessionT):
             'timezone_offset', Config('timezone_offset', '+8'))
         self.timezone_offset = parse_time_string(self._tz_offset)
 
-    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True) -> bool:
+    async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True) \
+            -> bool:
         send = None
         ExecutionLockList.remove(self)
-        if message_chain is not None:
+        if message_chain:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(Plain(self.locale.t("message.wait.confirm.prompt.type1")))
             send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag)
+        MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if result is not None:
-            if message_chain is not None and delete:
+        if result:
+            if message_chain and delete:
                 await send.delete()
             if result.as_display(text_only=True) in confirm_command:
                 return True
@@ -63,21 +64,21 @@ class MessageSession(MessageSessionT):
                                 append_instruction=True) -> MessageSessionT:
         sent = None
         ExecutionLockList.remove(self)
-        if message_chain is not None:
+        if message_chain:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(Plain(self.locale.t("message.wait.confirm.prompt.type2")))
             sent = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag)
+        MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if delete and sent is not None:
+        if delete and sent:
             await sent.delete()
-        if result is not None:
+        if result:
             return result
         else:
             raise WaitCancelException
@@ -92,15 +93,15 @@ class MessageSession(MessageSessionT):
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))
         send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, reply=send.message_id, all_=all_)
+        MessageTaskManager.add_task(self, flag, reply=send.message_id, all_=all_, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if delete and send is not None:
+        if delete and send:
             await send.delete()
-        if result is not None:
+        if result:
             return result
         else:
             raise WaitCancelException
@@ -108,18 +109,18 @@ class MessageSession(MessageSessionT):
     async def wait_anyone(self, message_chain=None, quote=False, delete=False, timeout=120) -> MessageSessionT:
         send = None
         ExecutionLockList.remove(self)
-        if message_chain is not None:
+        if message_chain:
             message_chain = MessageChain(message_chain)
             send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
-        MessageTaskManager.add_task(self, flag, all_=True)
+        MessageTaskManager.add_task(self, flag, all_=True, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             raise WaitCancelException
         result = MessageTaskManager.get()[self.target.target_id]['all'][self]
         if 'result' in result:
-            if send is not None and delete:
+            if send and delete:
                 await send.delete()
             return MessageTaskManager.get()[self.target.target_id]['all'][self]['result']
         else:

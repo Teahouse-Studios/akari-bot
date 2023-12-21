@@ -44,7 +44,7 @@ async def load_secret():
     for x in CFG.value:
         if x == 'secret':
             for y in CFG().value[x]:
-                if CFG().value[x][y] is not None:
+                if CFG().value[x][y]:
                     Secret.add(str(CFG().value[x][y]).upper())
 
 

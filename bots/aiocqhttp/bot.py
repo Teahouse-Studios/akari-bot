@@ -107,7 +107,7 @@ class GuildAccountInfo:
 
 @bot.on_message('guild')
 async def _(event):
-    if GuildAccountInfo.tiny_id is None:
+    if not GuildAccountInfo.tiny_id:
         profile = await bot.call_action('get_guild_service_profile')
         GuildAccountInfo.tiny_id = profile['tiny_id']
     tiny_id = event.user_id

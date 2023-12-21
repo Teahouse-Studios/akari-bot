@@ -27,26 +27,24 @@ wiki = module('wiki',
 
 @wiki.command('<PageName> [-l <lang>] {{wiki.help}}',
               options_desc={'-l': '{wiki.help.option.l}'})
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, PageName: str):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
     else:
         lang = None
-    await query_pages(msg, msg.parsed_msg['<PageName>'], lang=lang)
+    await query_pages(msg, PageName, lang=lang)
 
 
 @wiki.command('id <PageID> {{wiki.help.id}}')
-async def _(msg: Bot.MessageSession):
-    page_id: str = msg.parsed_msg['<PageID>']
+async def _(msg: Bot.MessageSession, PageID: str):
     iw = None
-    if match_iw := re.match(r'(.*?):(.*)', page_id):
+    if match_iw := re.match(r'(.*?):(.*)', PageID):
         iw = match_iw.group(1)
-        page_id = match_iw.group(2)
-    if not page_id.isdigit():
+        PageID = match_iw.group(2)
+    if not PageID.isdigit():
         await msg.finish(msg.locale.t('wiki.message.id.error'))
-    Logger.debug(msg.parsed_msg)
-    await query_pages(msg, pageid=page_id, iw=iw)
+    await query_pages(msg, pageid=PageID, iw=iw)
 
 
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
@@ -59,8 +57,6 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         headers = target.get_headers()
         prefix = target.get_prefix()
         enabled_fandom_addon = session.options.get('wiki_fandom_addon')
-        if enabled_fandom_addon is None:
-            enabled_fandom_addon = False
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
@@ -70,21 +66,21 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
     else:
         raise TypeError('session must be Bot.MessageSession or QueryInfo.')
 
-    if start_wiki is None:
+    if not start_wiki:
         if isinstance(session, Bot.MessageSession):
             await session.send_message(session.locale.t('wiki.message.set.default', prefix=session.prefixes[0]))
         start_wiki = 'https://zh.minecraft.wiki/api.php'
     if lang in interwiki_list:
         start_wiki = interwiki_list[lang]
         lang = None
-    if title is not None:
+    if title:
         if isinstance(title, str):
             title = [title]
         if len(title) > 15:
             raise AbuseWarning(session.locale.t('tos.reason.wiki_abuse'))
         query_task = {start_wiki: {'query': [], 'iw_prefix': ''}}
         for t in title:
-            if prefix is not None and use_prefix:
+            if prefix and use_prefix:
                 t = prefix + t
             if not t:
                 continue
@@ -126,8 +122,8 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     matched = True
                 if not matched:
                     query_task[start_wiki]['query'].append(t)
-    elif pageid is not None:
-        if iw == '':
+    elif pageid:
+        if not iw:
             query_task = {start_wiki: {'queryid': [pageid], 'iw_prefix': ''}}
         else:
             if iw in interwiki_list:
@@ -151,7 +147,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
     render_infobox_list = []
     render_section_list = []
     dl_list = []
-    if preset_message is not None:
+    if preset_message:
         msg_list.append(Plain(preset_message))
     for q in query_task:
         current_task = query_task[q]
@@ -183,18 +179,18 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 r: PageInfo = result
                 display_title = None
                 display_before_title = None
-                if r.title is not None:
+                if r.title:
                     display_title = iw_prefix + r.title
-                if r.before_title is not None:
+                if r.before_title:
                     display_before_title = iw_prefix + r.before_title
                 new_possible_title_list = []
-                if r.possible_research_title is not None:
+                if r.possible_research_title:
                     for possible in r.possible_research_title:
                         new_possible_title_list.append(iw_prefix + possible)
                 r.possible_research_title = new_possible_title_list
                 if r.status:
                     plain_slice = []
-                    if display_before_title is not None and display_before_title != display_title:
+                    if display_before_title and display_before_title != display_title:
                         if r.before_page_property == 'template' and r.page_property == 'page':
                             plain_slice.append(session.locale.t('wiki.message.redirect.template_to_page',
                                                                 title=display_before_title,
@@ -202,29 +198,29 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         else:
                             plain_slice.append(session.locale.t('wiki.message.redirect', title=display_before_title,
                                                                 redirected_title=display_title))
-                    if (r.link is not None and r.selected_section is not None and r.info.in_allowlist and
+                    if (r.link and r.selected_section and r.info.in_allowlist and
                             not r.invalid_section):
                         render_section_list.append(
                             {r.link: {'url': r.info.realurl, 'section': r.selected_section,
                                       'in_allowlist': r.info.in_allowlist}})
                         plain_slice.append(session.locale.t("wiki.message.section.rendering"))
                     else:
-                        if r.desc is not None and r.desc != '':
+                        if r.desc:
                             plain_slice.append(r.desc)
 
-                    if r.link is not None:
+                    if r.link:
                         plain_slice.append(
                             str(Url(r.link, use_mm=not r.info.in_allowlist)))
 
-                    if r.file is not None:
+                    if r.file:
                         dl_list.append(r.file)
                         plain_slice.append(session.locale.t('wiki.message.flies') + r.file)
                     else:
-                        if r.link is not None and r.selected_section is None:
+                        if r.link and not r.selected_section:
                             render_infobox_list.append(
                                 {r.link: {'url': r.info.realurl, 'in_allowlist': r.info.in_allowlist,
                                           'content_mode': r.has_template_doc or r.title.split(':')[0] in ['User'] or
-                                          (r.templates is not None and
+                                          (r.templates and
                                            ('Template:Disambiguation' in r.templates or
                                             'Template:Version disambiguation' in r.templates))}})
                     if plain_slice:
@@ -256,7 +252,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 else:
                     plain_slice = []
                     wait_plain_slice = []
-                    if display_title is not None and display_before_title is not None:
+                    if display_title and display_before_title:
                         if isinstance(session, Bot.MessageSession) and session.Feature.wait:
                             if not session.options.get('wiki_redlink', False):
                                 if len(r.possible_research_title) > 1:
@@ -279,7 +275,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                                                              redirected_title=display_title))
                                     wait_plain_slice.append(session.locale.t("message.wait.confirm.prompt.type1"))
                             else:
-                                if r.edit_link is not None:
+                                if r.edit_link:
                                     plain_slice.append(r.edit_link + session.locale.t('wiki.message.redlink.not_found'))
                                 else:
                                     plain_slice.append(session.locale.t('wiki.message.redlink.not_found.uneditable',
@@ -290,13 +286,13 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                                  redirected_title=display_title))
                         if len(r.possible_research_title) == 1:
                             wait_list.append({display_title: display_before_title})
-                    elif r.before_title is not None:
+                    elif r.before_title:
                         plain_slice.append(session.locale.t('wiki.message.not_found', title=display_before_title))
                     elif r.id != -1:
                         plain_slice.append(session.locale.t('wiki.message.id.not_found', id=str(r.id)))
-                    if r.desc is not None and r.desc != '':
+                    if r.desc:
                         plain_slice.append(r.desc)
-                    if r.invalid_namespace and r.before_title is not None:
+                    if r.invalid_namespace and r.before_title:
                         plain_slice.append(
                             session.locale.t('wiki.message.invalid_namespace', namespace=r.invalid_namespace))
                     if r.before_page_property == 'template':
@@ -371,7 +367,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 for f in dl_list:
                     dl = await download_to_cache(f)
                     guess_type = filetype.guess(dl)
-                    if guess_type is not None:
+                    if guess_type:
                         if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                             if session.Feature.image:
                                 await session.send_message(Image(dl), quote=False)
@@ -417,10 +413,10 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     await query_pages(session, wait_list_, use_prefix=False, preset_message='\n'.join(preset_message),
                                       lang=lang)
 
-        asyncio.create_task(infobox())
-        asyncio.create_task(section())
-        asyncio.create_task(image_and_voice())
-        asyncio.create_task(wait_confirm())
+        await asyncio.create_task(infobox())
+        await asyncio.create_task(section())
+        await asyncio.create_task(image_and_voice())
+        await asyncio.create_task(wait_confirm())
     else:
         return {'msg_list': msg_list, 'web_render_list': render_infobox_list, 'dl_list': dl_list,
                 'wait_list': wait_list, 'wait_msg_list': wait_msg_list}

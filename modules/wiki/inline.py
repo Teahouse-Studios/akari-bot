@@ -95,11 +95,11 @@ async def _(msg: Bot.MessageSession):
                                 if not result['status']:
                                     return
                         get_page = await wiki_.parse_page_info(title)
-                    if get_page is not None:
-                        if get_page.status and get_page.file is not None:
+                    if get_page:
+                        if get_page.status and get_page.file:
                             dl = await download_to_cache(get_page.file)
                             guess_type = filetype.guess(dl)
-                            if guess_type is not None:
+                            if guess_type:
                                 if guess_type.extension in ["png", "gif", "jpg", "jpeg", "webp", "bmp", "ico"]:
                                     if msg.Feature.image:
                                         await msg.send_message(
@@ -176,4 +176,4 @@ async def _(msg: Bot.MessageSession):
                                 if get_section:
                                     await msg.send_message(Image(get_section))
 
-    asyncio.create_task(bgtask())
+    await asyncio.create_task(bgtask())

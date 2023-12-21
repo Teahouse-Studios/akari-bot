@@ -119,7 +119,7 @@ class MessageSession:
         """
         ...
         f = None
-        if message_chain is not None:
+        if message_chain:
             f = await self.send_message(message_chain, disable_secret_check=disable_secret_check, quote=quote,
                                         allow_split_image=allow_split_image, callback=callback)
         raise FinishedException(f)
@@ -227,11 +227,13 @@ class MessageSession:
         """
         raise NotImplementedError
 
-    def ts2strftime(self, timestamp: float, date=True, seconds=True, timezone=True):
+    def ts2strftime(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
         """
         用于将时间戳转换为可读的时间格式。
         :param timestamp: 时间戳
         :param date: 是否显示日期
+        :param iso: 是否以ISO格式显示
+        :param time: 是否显示时间
         :param seconds: 是否显示秒
         :param timezone: 是否显示时区
         """
@@ -292,9 +294,9 @@ class MessageSession:
 
 class FetchedSession:
     def __init__(self, target_from, target_id, sender_from=None, sender_id=None):
-        if sender_from is None:
+        if not sender_from:
             sender_from = target_from
-        if sender_id is None:
+        if not sender_id:
             sender_id = target_id
         self.target = MsgInfo(target_id=f'{target_from}|{target_id}',
                               sender_id=f'{target_from}|{sender_id}',

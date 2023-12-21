@@ -15,7 +15,7 @@ async def bugtracker(msg: Bot.MessageSession):
         if q:
             result = await bugtracker_get(msg, q.group(1))
             await msg.send_message(result[0])
-            if result[1] is not None:
+            if result[1]:
                 screenshot = await make_screenshot(result[1])
                 if screenshot:
                     await msg.send_message(Image(screenshot))
@@ -28,7 +28,7 @@ async def regex_bugtracker(msg: Bot.MessageSession):
     if len(matched_msg.group(1)) < 10:
         result = await bugtracker_get(msg, matched_msg.group(1) + '-' + matched_msg.group(2))
         await msg.send_message(result[0])
-        if result[1] is not None:
+        if result[1]:
             screenshot = await make_screenshot(result[1])
             if screenshot:
                 await msg.send_message(Image(screenshot))
@@ -44,7 +44,7 @@ async def _(msg: Bot.MessageSession):
                 if t != '':
                     get_ = await bugtracker_get(msg, t.split('?')[0], nolink=True)
                     await msg.send_message(get_[0])
-                    if get_[1] is not None:
+                    if get_[1]:
                         screenshot = await make_screenshot(get_[1])
                         if screenshot:
                             await msg.send_message(Image(screenshot))

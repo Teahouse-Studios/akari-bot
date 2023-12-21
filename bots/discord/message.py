@@ -23,25 +23,25 @@ enable_analytics = Config('enable_analytics')
 async def convert_embed(embed: Embed):
     if isinstance(embed, Embed):
         files = []
-        embeds = discord.Embed(title=embed.title if embed.title is not None else discord.Embed.Empty,
-                               description=embed.description if embed.description is not None else discord.Embed.Empty,
-                               color=embed.color if embed.color is not None else discord.Embed.Empty,
-                               url=embed.url if embed.url is not None else discord.Embed.Empty,
+        embeds = discord.Embed(title=embed.title if embed.title else discord.Embed.Empty,
+                               description=embed.description if embed.description else discord.Embed.Empty,
+                               color=embed.color if embed.color else discord.Embed.Empty,
+                               url=embed.url if embed.url else discord.Embed.Empty,
                                timestamp=datetime.datetime.fromtimestamp(
-                                   embed.timestamp) if embed.timestamp is not None else discord.Embed.Empty, )
-        if embed.image is not None:
+                                   embed.timestamp) if embed.timestamp else discord.Embed.Empty, )
+        if embed.image:
             upload = discord.File(await embed.image.get(), filename="image.png")
             files.append(upload)
             embeds.set_image(url="attachment://image.png")
-        if embed.thumbnail is not None:
+        if embed.thumbnail:
             upload = discord.File(await embed.thumbnail.get(), filename="thumbnail.png")
             files.append(upload)
             embeds.set_thumbnail(url="attachment://thumbnail.png")
-        if embed.author is not None:
+        if embed.author:
             embeds.set_author(name=embed.author)
-        if embed.footer is not None:
+        if embed.footer:
             embeds.set_footer(text=embed.footer)
-        if embed.fields is not None:
+        if embed.fields:
             for field in embed.fields:
                 embeds.add_field(name=field.name, value=field.value, inline=field.inline)
         return embeds, files
@@ -212,7 +212,7 @@ class FetchTarget(FetchTargetT):
 
     @staticmethod
     async def post_message(module_name, message, user_list: List[Bot.FetchedSession] = None, i18n=False, **kwargs):
-        if user_list is not None:
+        if user_list:
             for x in user_list:
                 try:
                     msgchain = message

@@ -3,7 +3,7 @@ import os
 import time
 import traceback
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from os.path import abspath
 
 import aiohttp
@@ -18,6 +18,7 @@ from core.builtins import Bot
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.html2text import html2text
+from core.utils.text import parse_time_string
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
@@ -36,7 +37,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         profile_level = profile_json['exp']['currentLevel']
         profile_uid = profile_json['user']['uid']
         nick = profile_json['user']['name']
-        if nick is None:
+        if not nick:
             nick = profile_uid
         if 'avatar' in profile_json['user']:
             avatar_img = profile_json['user']['avatar']['medium']
@@ -98,7 +99,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             rt = x['rating']
             details = x['details']
             _date = datetime.strptime(x['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            local_time = _date + timedelta(hours=int(msg.options.get('timezone_offset', Config('timezone_offset', '+8'))))
+            local_time = _date + parse_time_string(msg.options.get('timezone_offset', Config('timezone_offset', '+8')))
             playtime = local_time.timestamp()
             nowtime = time.time()
             playtime = playtime - nowtime
@@ -210,7 +211,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             # shutil.rmtree(workdir)
             return {'status': True, 'path': savefilename}
     except Exception as e:
-        if str(e).startswith('404'):
+        if e.args == (404,):
             await msg.finish(msg.locale.t("cytoid.message.user_not_found"))
         traceback.print_exc()
         return {'status': False, 'text': msg.locale.t("error") + str(e)}

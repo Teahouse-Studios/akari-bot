@@ -4,7 +4,7 @@ import discord
 
 from bots.discord.message import convert_embed
 from config import Config
-from core.builtins import Plain, Image, MessageSession as MessageSessionT
+from core.builtins import Plain, Image, MessageSession as MessageSessionT, MessageTaskManager
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Embed, ErrorMessage
 from core.logger import Logger
@@ -37,7 +37,8 @@ class MessageSession(MessageSessionT):
         quote = False
         wait = True
 
-    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True
+    async def send_message(self, message_chain, quote=True, disable_secret_check=False, allow_split_image=True,
+                           callback=None
                            ) -> FinishedSession:
         message_chain = MessageChain(message_chain)
         if not message_chain.is_safe and not disable_secret_check:
@@ -67,7 +68,7 @@ class MessageSession(MessageSessionT):
                     send_ = await self.session.message.send(embed=embeds)
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Embed: {str(x.__dict__)}')
             else:
-                send_ = False
+                send_ = None
             if send_:
                 send.append(send_)
             count += 1
@@ -75,6 +76,8 @@ class MessageSession(MessageSessionT):
         msg_ids = []
         for x in send:
             msg_ids.append(x.id)
+            if callback:
+                MessageTaskManager.add_callback(x.id, callback)
 
         return FinishedSession(self, msg_ids, send)
 

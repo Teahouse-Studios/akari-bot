@@ -15,9 +15,8 @@ from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, T
 from core.component import module
 from core.exceptions import TestException
 from core.loader import ModulesManager
-from core.logger import logger
+from core.logger import Logger
 from core.parser.message import remove_temp_ban
-from core.scheduler import CronTrigger
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from core.utils.info import Info
@@ -78,7 +77,7 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
-        if module_ is None:
+        if not module_:
             result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.message.analytics.days", module=module_,
@@ -116,7 +115,7 @@ async def _(msg: Bot.MessageSession):
         module_ = None
         if '<name>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<name>']
-        if module_ is None:
+        if not module_:
             result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
         else:
             result = msg.locale.t("core.message.analytics.year", module=module_,
@@ -167,15 +166,6 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("core.message.purge.empty"))
 
 
-@purge.schedule(CronTrigger.from_crontab('0 0 * * *'))
-async def _():
-    cache_path = os.path.abspath(Config('cache_path'))
-    Logger.info('Start purging cache...')
-    if os.path.exists(cache_path):
-        shutil.rmtree(cache_path)
-    os.mkdir(cache_path)
-
-
 set_ = module('set', required_superuser=True, base=True)
 
 
@@ -185,7 +175,7 @@ async def _(msg: Bot.MessageSession):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
-    if target_data.query is None:
+    if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
@@ -203,7 +193,7 @@ async def _(msg: Bot.MessageSession):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
-    if target_data.query is None:
+    if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             return
@@ -299,7 +289,7 @@ def update_dependencies():
     pip_install = os.popen('pip install -r requirements.txt').read()[:-1]
     if len(pip_install) > 500:
         return '...' + pip_install[-500:]
-    return
+    return pip_install
 
 
 @upd.command()

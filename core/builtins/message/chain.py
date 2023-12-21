@@ -5,22 +5,22 @@ from urllib.parse import urlparse
 
 import ujson as json
 
-from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime, I18NText
+from core.builtins.message.internal import Plain, Image, Voice, Embed, Url, ErrorMessage, FormattedTime, I18NContext
 from core.builtins.utils import Secret
 from core.logger import Logger
 from core.types.message import MessageChain as MessageChainT, MessageSession
 
 
 class MessageChain(MessageChainT):
-    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url, FormattedTime]],
-                                       Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime]],
-                                       Plain, Image, Voice, Embed, Url, FormattedTime] = None):
+    def __init__(self, elements: Union[str, List[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
+                                       Tuple[Union[Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext]],
+                                       Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext] = None):
         self.value = []
         if isinstance(elements, ErrorMessage):
             elements = str(elements)
         if isinstance(elements, str):
             elements = Plain(elements)
-        if isinstance(elements, (Plain, Image, Voice, Embed, Url, FormattedTime)):
+        if isinstance(elements, (Plain, Image, Voice, Embed, Url, FormattedTime, I18NContext)):
             if isinstance(elements, Plain):
                 if elements.text != '':
                     elements = match_kecode(elements.text)
@@ -57,7 +57,7 @@ class MessageChain(MessageChainT):
                         self.value.append(FormattedTime(e['data']['time'], e['data']['date'], e['data']['seconds'],
                                                         e['data']['timezone']))
                     elif e['type'] == 'i18n':
-                        self.value.append(I18NText(e['data']['key'], **e['data']['kwargs']))
+                        self.value.append(I18NContext(e['data']['key'], **e['data']['kwargs']))
                 elif isinstance(e, str):
                     if e != '':
                         self.value += match_kecode(e)
@@ -65,7 +65,7 @@ class MessageChain(MessageChainT):
                     Logger.error(f'Unexpected message type: {elements}')
         elif isinstance(elements, MessageChain):
             self.value = elements.value
-        elif elements is None:
+        elif not elements:
             pass
         else:
             Logger.error(f'Unexpected message type: {elements}')
@@ -87,23 +87,23 @@ class MessageChain(MessageChainT):
                 for secret in Secret.list:
                     if secret in ["", None, True, False]:
                         continue
-                    if v.title is not None:
+                    if v.title:
                         if v.title.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.title', secret, v.title))
                             return False
-                    if v.description is not None:
+                    if v.description:
                         if v.description.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.description', secret, v.description))
                             return False
-                    if v.footer is not None:
+                    if v.footer:
                         if v.footer.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.footer', secret, v.footer))
                             return False
-                    if v.author is not None:
+                    if v.author:
                         if v.author.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.author', secret, v.author))
                             return False
-                    if v.url is not None:
+                    if v.url:
                         if v.url.upper().find(secret.upper()) != -1:
                             Logger.warn(unsafeprompt('Embed.url', secret, v.url))
                             return False
@@ -131,8 +131,12 @@ class MessageChain(MessageChainT):
                     value.append(Plain(ErrorMessage('{error.message.chain.plain.empty}', locale=locale)))
             elif isinstance(x, FormattedTime):
                 value.append(Plain(x.to_str(msg=msg)))
-            elif isinstance(x, I18NText):
-                value.append(Plain(msg.locale.t(x.key, **x.kwargs)))
+            elif isinstance(x, I18NContext):
+                t_value = msg.locale.t(x.key, **x.kwargs)
+                if isinstance(t_value, str):
+                    value.append(Plain(t_value))
+                elif isinstance(t_value, list):
+                    value += MessageChain(t_value).as_sendable(msg)
             else:
                 value.append(x)
         if not value:
@@ -180,7 +184,7 @@ site_whitelist = ['http.cat']
 def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
     split_all = re.split(r'(\[Ke:.*?])', text)
     for x in split_all:
-        if x == '':
+        if not x:
             split_all.remove('')
     elements = []
     for e in split_all:
@@ -192,7 +196,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
             element_type = match.group(1).lower()
             args = re.split(r',|,.\s', match.group(2))
             for x in args:
-                if x == '':
+                if not x:
                     args.remove('')
             if element_type == 'plain':
                 for a in args:
@@ -215,7 +219,7 @@ def match_kecode(text: str) -> List[Union[Plain, Image, Voice, Embed]]:
                                 img = Image(path=ma.group(2))
                         if ma.group(1) == 'headers':
                             img.headers = json.loads(str(base64.b64decode(ma.group(2)), "UTF-8"))
-                        if img is not None:
+                        if img:
                             elements.append(img)
                     else:
                         elements.append(Image(a))
