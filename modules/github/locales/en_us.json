@@ -6,8 +6,8 @@
     "github.help.user": "Get GitHub user or organization information.",
     "github.message.repo.not_found": "The repository does not exist. Please check your input.",
     "github.message.search": "Successfully to search for ${result} results:",
-    "github.message.search.none": "No results found.",
     "github.message.search.more_information": "Truncated due to chat limits; ${more_result} more results may not be shown.",
+    "github.message.search.none": "No results found.",
     "github.message.search.not_found": "The repository cannot be found. Please check your input.",
     "github.message.user.not_found": "The user cannot be found. Please check your input."
 }
