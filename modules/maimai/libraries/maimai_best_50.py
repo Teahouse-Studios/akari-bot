@@ -186,14 +186,19 @@ class DrawBest(object):
     def _drawRating(self, ratingBaseImg: Image.Image):
         COLOUMS_RATING = [86, 100, 115, 130, 145]
         theRa = self.playerRating
-        i = 4
-        while theRa:
-            digit = theRa % 10
-            theRa = theRa // 10
-            digitImg = Image.open(self.pic_dir + f'UI_NUM_Drating_{digit}.png').convert('RGBA')
+        if theRa == 0:
+            digitImg = Image.open(self.pic_dir + 'UI_NUM_Drating_0.png').convert('RGBA')
             digitImg = self._resizePic(digitImg, 0.6)
-            ratingBaseImg.paste(digitImg, (COLOUMS_RATING[i] - 2, 9), mask=digitImg.split()[3])
-            i = i - 1
+            ratingBaseImg.paste(digitImg, (COLOUMS_RATING[4] - 2, 9), mask=digitImg.split()[3])
+        else:
+            i = 4
+            while theRa:
+                digit = theRa % 10
+                theRa = theRa // 10
+                digitImg = Image.open(self.pic_dir + f'UI_NUM_Drating_{digit}.png').convert('RGBA')
+                digitImg = self._resizePic(digitImg, 0.6)
+                ratingBaseImg.paste(digitImg, (COLOUMS_RATING[i] - 2, 9), mask=digitImg.split()[3])
+                i = i - 1
         return ratingBaseImg
 
     def _drawBestList(self, img: Image.Image, sdBest: BestList, dxBest: BestList):
@@ -413,12 +418,11 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
 
     sd_best = BestList(35)
     dx_best = BestList(15)
-    obj = resp
-    dx: List[Dict] = obj["charts"]["dx"]
-    sd: List[Dict] = obj["charts"]["sd"]
+    dx: List[Dict] = resp["charts"]["dx"]
+    sd: List[Dict] = resp["charts"]["sd"]
     for c in sd:
         sd_best.push(await ChartInfo.from_json(c))
     for c in dx:
         dx_best.push(await ChartInfo.from_json(c))
-    pic = DrawBest(sd_best, dx_best, obj["nickname"]).getDir()
+    pic = DrawBest(sd_best, dx_best, resp["nickname"]).getDir()
     return pic
