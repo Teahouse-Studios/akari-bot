@@ -26,7 +26,7 @@ wiki = client.create_group("wiki", "Query information from Mediawiki-based websi
 
 
 async def auto_search(ctx: discord.AutocompleteContext):
-    title = ctx.options["title"]
+    title = ctx.options["pagename"]
     iw = ''
     target = WikiTargetInfo(ctx_to_session(ctx))
     iws = target.get_interwikis()
@@ -55,7 +55,7 @@ async def auto_get_custom_iw_list(ctx: discord.AutocompleteContext):
 
 
 async def default_wiki(ctx: discord.AutocompleteContext):
-    if not ctx.options["link"]:
+    if not ctx.options["wikiurl"]:
         return ['https://zh.minecraft.wiki/']
 
 
