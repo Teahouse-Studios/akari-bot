@@ -5,6 +5,7 @@ from typing import Union
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.types import MessageSession
 from core.utils.image_table import image_table_render, ImageTable
 from core.component import module
 from core.exceptions import AbuseWarning
@@ -50,7 +51,7 @@ async def _(msg: Bot.MessageSession, PageID: str):
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
-    if isinstance(session, Bot.MessageSession):
+    if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
         interwiki_list = target.get_interwikis()
