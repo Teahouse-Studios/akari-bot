@@ -40,11 +40,13 @@ async def _(msg: Bot.MessageSession):
     if check.available:
         if not check.value.in_blocklist or check.value.in_allowlist:
             result = target.config_interwikis(iw, check.value.api, let_it=True)
-            if result:
-                await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=iw, name=check.value.name) +
-                                 (('\n' + msg.locale.t("wiki.message.wiki_audit.untrust") + Config(
-                                     "wiki_whitelist_url"))
-                                  if enable_urlmanager and not check.value.in_allowlist else ''))
+            if result and enable_urlmanager
+            and not (check.value.in_allowlist and msg.target.sender_from in ['QQ', 'Kook']):
+                prompt = '\n' + msg.locale.t("wiki.message.wiki_audit.untrust") + Config(
+                                     "wiki_whitelist_url")
+            else:
+                prompt = ''
+                await msg.finish(msg.locale.t("wiki.message.iw.add.success", iw=iw, name=check.value.name) + prompt)
         else:
             await msg.finish(msg.locale.t("wiki.message.error.blocked", name=check.value.name))
     else:
