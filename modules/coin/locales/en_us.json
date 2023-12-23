@@ -5,7 +5,7 @@
     "coin.message.all.head": "...\n... They are all heads!",
     "coin.message.all.stand": "...\n... ALL STAND UP?!",
     "coin.message.all.tail": "...\n... They are all tails!",
-    "coin.message.error.amount": "An error occurred: Invalid number of coins: ",
+    "coin.message.error.amount": "An error occurred: Invalid number of coins.",
     "coin.message.error.nocoin": "An error occurred: You toss no coin, and nothing happened...",
     "coin.message.error.out_of_range": "An error occurred: You can only toss up to ${max} coins.",
     "coin.message.head": "...\n... It is heads!",
