@@ -1,0 +1,5 @@
+{
+    "stone.help.desc": "打水漂。",
+    "stone.message.skip": "你扔了一块石头，漂了 ${count} 下。",
+    "stone.message.skip.nothing": "你扔了一块石头，什么也没有发生。"
+}
