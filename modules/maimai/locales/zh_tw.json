@@ -29,7 +29,7 @@
     "maimai.message.base": "以下為定數 ${constant} 的曲目列表：",
     "maimai.message.base.range": "以下為定數 ${constant}-${constant_max} 的曲目列表：",
     "maimai.message.chart_not_found": "未找到符合要求的譜面。",
-    "maimai.message.error.non_digital": "發生錯誤：歌曲 ID 必須為數字！",
+    "maimai.message.error.non_digital": "发生错误：歌曲 ID 必须为数字。",
     "maimai.message.forbidden": "此使用者禁止了其他人取得資料。",
     "maimai.message.goal_invalid": "無效的目標評級，請校對輸入。",
     "maimai.message.info.no_record": "未遊玩過此譜面",
