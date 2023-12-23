@@ -11,6 +11,12 @@ async def auto_get_lang(ctx: discord.AutocompleteContext):
         return get_available_locales()
 
 
+@client.slash_command.command(name="help", description="View details of a module.")
+@discord.option(name="module", description="The module you want to know about.")
+async def hlp(ctx: discord.ApplicationContext, module: str):
+    await slash_parser(ctx, module)
+
+
 @client.slash_command(name="locale", description="Set the bot running languages.")
 @discord.option(name="lang", description="Supported language codes.", autocomplete=auto_get_lang)
 async def locale(ctx: discord.ApplicationContext, lang: str=None):
@@ -102,35 +108,7 @@ async def reset(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "reset")
 
 
-hlp = client.create_group("help", "Get bot help.")
-
-
-@hlp.command(name="list", description="View help list.")
-@discord.option(name="legacy", choices=['false', 'true'], description="Whether to use legacy mode.")
-async def lst(ctx: discord.ApplicationContext, legacy: str):
-    legacy = "legacy" if legacy == "true" else ""
-    await slash_parser(ctx, legacy)
-
-
-@hlp.command(name="detail", description="View details of a module.")
-@discord.option(name="module", description="The module you want to know about.")
-async def detail(ctx: discord.ApplicationContext, module: str):
-    await slash_parser(ctx, module)
-
-
 m = client.create_group("module", "Set about modules.")
-
-
-@m.command(name="enable", description="Enable module(s).")
-@discord.option(name="module", description="The modules you want to enable.")
-async def add(ctx: discord.ApplicationContext, module: str):
-    await slash_parser(ctx, f"enable {module}")
-
-
-@m.command(name="disable", description="Disable module(s).")
-@discord.option(name="module", description="The modules you want to disable.")
-async def add(ctx: discord.ApplicationContext, module: str):
-    await slash_parser(ctx, f"disable {module}")
 
 
 @m.command(name="list", description="View all available modules.")
