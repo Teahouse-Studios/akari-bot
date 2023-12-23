@@ -13,8 +13,9 @@ ccode = client.create_group("chemical_code", "A game about chemical formulas.")
 
 
 @ccode.command(name="default", description="Default mode (Time limits, multiple)")
-async def default(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "")
+@discord.option(name="csid", description="Chemspider ID.")
+async def default(ctx: discord.ApplicationContext, csid: str=None):
+    await slash_parser(ctx, csid)
 
 
 @ccode.command(name="captcha", description="Captcha mode (Only once, single)")
