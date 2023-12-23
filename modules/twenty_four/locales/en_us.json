@@ -1,9 +1,9 @@
 {
     "twenty_four.help": "Start a new game.",
-    "twenty_four.help.desc": "24 点小游戏。",
-    "twenty_four.message": "给出的数字组合：${numbers}\n请输入表达式使其结果为 24。（若无解，请输入“无解”）",
-    "twenty_four.message.correct": "回答正确。",
-    "twenty_four.message.incorrect.have_solution": "Incorrect. Solution exists.",
-    "twenty_four.message.incorrect.error": "Incorrect. Invalid expression.",
+    "twenty_four.help.desc": "24 puzzle game.",
+    "twenty_four.message": "Given combination of numbers: ${numbers}\nEnter an expression so that the result as 24. (If no solution, enter \"N/A\")",
+    "twenty_four.message.correct": "Correct.",
+    "twenty_four.message.incorrect.have_solution": "Incorrect: Solution exists.",
+    "twenty_four.message.incorrect.error": "Incorrect: Invalid expression.",
     "twenty_four.message.incorrect": "Incorrect."
 }
