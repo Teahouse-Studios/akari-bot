@@ -11,7 +11,7 @@ async def auto_get_lang(ctx: discord.AutocompleteContext):
         return get_available_locales()
 
 
-@client.slash_command.command(name="help", description="View details of a module.")
+@client.slash_command(name="help", description="View details of a module.")
 @discord.option(name="module", description="The module you want to know about.")
 async def hlp(ctx: discord.ApplicationContext, module: str):
     await slash_parser(ctx, module)
