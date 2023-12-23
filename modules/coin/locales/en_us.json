@@ -16,8 +16,5 @@
     "coin.message.mix.tail2": " ${tail} are tails",
     "coin.message.prompt": "You toss ${count} coin(s)",
     "coin.message.stand": "...\n...It is standing up!",
-    "coin.message.tail": "...\n... It is tails!",
-    "stone.help.desc": "Stone Skipping.",
-    "stone.message.skip": "You throw a stone, and it floated ${count} time(s).",
-    "stone.message.skip.nothing": "You throw a stone, and nothing happened."
+    "coin.message.tail": "...\n... It is tails!"
 }
