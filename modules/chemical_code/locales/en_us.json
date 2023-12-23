@@ -11,7 +11,7 @@
     "chemical_code.message.incorrect": "Incorrect. The correct answer is ${answer}.",
     "chemical_code.message.incorrect.remind1": "Hint: Incorrect. Please Try again.",
     "chemical_code.message.incorrect.remind2": "Hint: The number of ${elements} may be incorrect. Please check again.",
-    "chemical_code.message.incorrect.remind3": "Hint: It's Almost there! Please Try again.",
+    "chemical_code.message.incorrect.remind3": "Hint: It's Almost there! Please try again.",
     "chemical_code.message.incorrect.remind4": "Hint: There may be elements missing. Please check again.",
     "chemical_code.message.incorrect.remind5": "Hint: The elements are in incorrect order. Please check again.",
     "chemical_code.message.showid": "ID: ${id}",
