@@ -59,7 +59,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         result_set = await base_level_q(constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
     for elem in result_set:
-        s += f"{elem[0]}\u200B. {elem[1]}{msg.locale.t('message.brackets', msg='DX') if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) > 200:
@@ -94,7 +94,7 @@ async def _(msg: Bot.MessageSession, level: str):
     result_set = await diff_level_q(level)
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set:
-        s += f"{elem[0]}\u200B. {elem[1]}{msg.locale.t('message.brackets', msg='DX') if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= 10:
@@ -130,7 +130,7 @@ async def _(msg: Bot.MessageSession, keyword: str):
     else:
         search_result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
         for music in sorted(res, key=lambda i: int(i['id'])):
-            search_result += f"{music['id']}\u200B. {music['title']}{msg.locale.t('message.brackets', msg='DX') if music['type'] == 'DX' else ''}\n"
+            search_result += f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"
         if len(res) <= 10:
             await msg.finish([Plain(search_result.strip())])
         else:
@@ -187,7 +187,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{msg.locale.t('message.brackets', msg='DX') if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
@@ -250,7 +250,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
             res = msg.locale.t("maimai.message.song.prompt") + "\n"
             for sid in sorted(sid_list, key=int):
                 s = (await total_list.get()).by_id(sid)
-                res += f"{s['id']}\u200B. {s['title']}{msg.locale.t('message.brackets', msg='DX') if s['type'] == 'DX' else ''}\n"
+                res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
             sid = str(sid_list[0])
@@ -443,7 +443,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
         b2t_2550_great_prop = "{:.4f}".format(break_2550_reduce / total_score * 100)
         b2t_2000_great = "{:.3f}".format(break_2000_reduce / 100)  # 一个 TAP GREAT 减少 100 分
         b2t_2000_great_prop = "{:.4f}".format(break_2000_reduce / total_score * 100)
-        await msg.finish(f'''{music['title']}{msg.locale.t('message.brackets', msg='DX') if music['type'] == 'DX' else ''} {diff_label[diff_index]}
+        await msg.finish(f'''{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diff_label[diff_index]}
 {msg.locale.t('maimai.message.scoreline',
               scoreline=score,
               tap_great=tap_great,

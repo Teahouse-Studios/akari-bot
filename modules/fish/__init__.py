@@ -2,6 +2,7 @@ import asyncio
 import random
 from datetime import datetime
 
+from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.logger import Logger
@@ -156,7 +157,7 @@ async def _(msg: Bot.MessageSession):
         return await finish_fish(msg)
     else:
         rand_result = random.randint(1, 100)
-        if rand_result < 98:
+        if Config('enable_get_petal') or rand_result < 90:
             send = msg.locale.t('fish.message.not_started.1', prefix=msg.prefixes[0])
         else:
             send = msg.locale.t('fish.message.not_started.2')

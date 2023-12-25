@@ -5,7 +5,7 @@
     "coin.message.all.head": "...\n... They are all heads!",
     "coin.message.all.stand": "...\n... ALL STAND UP?!",
     "coin.message.all.tail": "...\n... They are all tails!",
-    "coin.message.error.amount": "An error occurred: Invalid number of coins: ",
+    "coin.message.error.amount": "An error occurred: Invalid number of coins.",
     "coin.message.error.nocoin": "An error occurred: You toss no coin, and nothing happened...",
     "coin.message.error.out_of_range": "An error occurred: You can only toss up to ${max} coins.",
     "coin.message.head": "...\n... It is heads!",
@@ -16,8 +16,5 @@
     "coin.message.mix.tail2": " ${tail} are tails",
     "coin.message.prompt": "You toss ${count} coin(s)",
     "coin.message.stand": "...\n...It is standing up!",
-    "coin.message.tail": "...\n... It is tails!",
-    "stone.help.desc": "Stone Skipping.",
-    "stone.message.skip": "You throw a stone, and it floated ${count} time(s).",
-    "stone.message.skip.nothing": "You throw a stone, and nothing happened."
+    "coin.message.tail": "...\n... It is tails!"
 }

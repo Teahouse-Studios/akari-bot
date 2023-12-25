@@ -61,14 +61,22 @@ async def default_wiki(ctx: discord.AutocompleteContext):
 
 @wiki.command(name="query", description="Query a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
-async def query(ctx: discord.ApplicationContext, pagename: str):
-    await slash_parser(ctx, pagename)
+@discord.option(name="lang", description="Find the corresponding language version of this page.")
+async def query(ctx: discord.ApplicationContext, pagename: str, lang: str=None):
+    if lang:
+        await slash_parser(ctx, f'{pagename} -l {lang}')
+    else:
+        await slash_parser(ctx, pagename)
 
 
 @wiki.command(name="id", description="Query a Wiki page based on page ID.")
 @discord.option(name="pageid", description="The wiki page ID.")
-async def byid(ctx: discord.ApplicationContext, pageid: str):
-    await slash_parser(ctx, f'id {pageid}')
+@discord.option(name="lang", description="Find the corresponding language version of this page.")
+async def byid(ctx: discord.ApplicationContext, pageid: str, lang: str=None):
+    if lang:
+        await slash_parser(ctx, f'id {pageid} -l {lang}')
+    else:
+        await slash_parser(ctx, f'id {pageid}')
 
 
 @wiki.command(name="search", description="Search a wiki page.")

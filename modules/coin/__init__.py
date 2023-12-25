@@ -81,28 +81,3 @@ async def flipCoins(count: int, msg):
         else:
             output += msg.locale.t("message.end")
         return output
-
-
-stone = module('stone', developers=['OasisAkari'], desc='{stone.help.desc}')
-
-@stone.command()
-@stone.regex(r'打水漂')
-async def _(msg: Bot.MessageSession):
-    '''
-    if msg.target.target_from != 'TEST|Console':
-        qc = CoolDown('stone', msg)
-        c = qc.check(30)
-        if c != 0:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
-        qc.reset()
-    '''
-    count = secrets.randbelow(11)
-    if count == 0:
-        send = msg.locale.t('stone.message.skip.nothing')
-    else:
-        send = msg.locale.t('stone.message.skip', count=count)
-
-    if count == 10:
-        if g := (g_msg := await gained_petal(msg, 1)):
-            send += '\n' + g
-    await msg.finish(send)
