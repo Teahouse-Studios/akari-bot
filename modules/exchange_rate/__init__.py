@@ -4,6 +4,7 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.utils.http import get_url
+from core.exceptions import NoReportException
 
 api_key = Config('exchange_rate_api_key')
 
@@ -22,7 +23,7 @@ async def _(msg: Bot.MessageSession, base: str, target: str):
     base_currency = base[-3:]
 
     if not api_key:
-        raise ConfigError(msg.locale.t('error.config.secret.not_found'))
+        raise NoReportException(msg.locale.t('error.config.secret.not_found'))
 
     try:
         if amount_str:
@@ -64,11 +65,11 @@ async def exchange(base_currency, target_currency, amount: float, msg):
     if data['result'] == "success":
         exchange_rate = data['conversion_result']
         await msg.finish(
-            msg.locale.t('exchange_rate.message', 
+            msg.locale.t('exchange_rate.message',
                          amount=amount,
-                         base=base_currency, 
+                         base=base_currency,
                          exchange_rate=exchange_rate,
-                         target=target_currency, 
+                         target=target_currency,
                          time=time))
     else:
         raise Exception(data['error-type'])
