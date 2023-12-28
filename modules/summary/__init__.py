@@ -8,7 +8,7 @@ from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
-from core.exceptions import NoReportException
+from core.exceptions import ConfigValueError
 
 openai.api_key = Config('openai_api_key')
 
@@ -22,7 +22,7 @@ s = module('summary',
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
-        raise NoReportException(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     if not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 

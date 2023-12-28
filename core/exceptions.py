@@ -6,6 +6,10 @@ class ConfigFileNotFound(Exception):
     pass
 
 
+class ConfigValueError(Exception):
+    pass
+
+
 class InvalidHelpDocTypeError(Exception):
     pass
 

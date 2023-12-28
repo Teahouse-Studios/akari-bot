@@ -9,7 +9,7 @@ from core.component import module
 from core.dirty_check import check_bool, rickroll
 from core.utils.http import download_to_cache, get_url
 
-from core.exceptions import NoReportException
+from core.exceptions import ConfigValueError
 
 appid = Config('wolfram_alpha_appid')
 
@@ -28,7 +28,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise NoReportException(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     url = f"http://api.wolframalpha.com/v1/simple?appid={appid}&i={url_query}&units=metric"
 
     try:
@@ -51,7 +51,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(query)
     if not appid:
-        raise NoReportException(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)
