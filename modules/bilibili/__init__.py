@@ -66,7 +66,7 @@ async def _(msg: Bot.MessageSession):
     else:
         url = await parse_shorturl(f"https://b23.tv/{video}")
         if not url:
-            await msg.finish(msg.locale.t("bilibili.message.error.invalid"))
+            return
 
     await get_info(msg, url, get_detail=False)
 
