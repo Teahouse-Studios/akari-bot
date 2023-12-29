@@ -1,13 +1,12 @@
 import math
 import os
 from typing import Optional, Dict, List, Tuple
-
 import ujson as json
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import ErrorMessage
 from core.utils.http import post_url
-from .maimaidx_music import get_cover_len5_id, TotalList
+from .music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
 

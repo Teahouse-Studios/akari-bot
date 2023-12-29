@@ -5,8 +5,8 @@ import numpy as np
 
 from core.utils.http import get_url
 from core.utils.cache import random_cache_path
-from .maimaidx_api_data import get_record, get_plate
-from .maimaidx_music import TotalList
+from .apidata import get_record, get_plate
+from .music import TotalList
 
 JINGLEBELL_SONG_ID = 70
 

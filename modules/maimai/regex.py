@@ -5,36 +5,10 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
-from modules.maimai.libraries.maimaidx_api_data import get_alias, get_info, search_by_alias
-from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, TotalList
-from modules.maimai.libraries.maimaidx_project import get_level_process, get_plate_process, get_player_score
-
-total_list = TotalList()
-
-level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
-              '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
-
-diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
-diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
-diff_label_zhs = ['绿', '黄', '红', '紫', '白']
-diff_label_zht = ['綠', '黃', '紅']
-
-
-def get_diff(diff):
-    diff = diff.lower()
-    diff_label_lower = [label.lower() for label in diff_label]
-
-    if diff in diff_label_zhs:
-        level = diff_label_zhs.index(diff)
-    elif diff in diff_label_zht:
-        level = diff_label_zht.index(diff)
-    elif diff in diff_label_abbr:
-        level = diff_label_abbr.index(diff)
-    elif diff in diff_label_lower:
-        level = diff_label_lower.index(diff)
-    else:
-        level = None
-    return level
+from modules.maimai import get_diff, total_list
+from modules.maimai.rating import goal_list, level_list
+from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias
+from modules.maimai.libraries.utils import get_level_process, get_plate_process, get_player_score
 
 
 mai_regex = module('maimai_regex',
@@ -176,24 +150,6 @@ async def _(msg: Bot.MessageSession):
 
 @mai_regex.regex(re.compile(r"([0-9]+\+?)\s?(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
 async def _(msg: Bot.MessageSession):
-    goal_list = [
-        "A",
-        "AA",
-        "AAA",
-        "S",
-        "S+",
-        "SS",
-        "SS+",
-        "SSS",
-        "SSS+",
-        "FC",
-        "FC+",
-        "AP",
-        "AP+",
-        "FS",
-        "FS+",
-        "FDX",
-        "FDX+"]
     level = msg.matched_msg.groups()[0]
     goal = msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
