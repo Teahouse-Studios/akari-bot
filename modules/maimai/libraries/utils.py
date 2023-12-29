@@ -517,7 +517,5 @@ async def get_grade_info(msg, grade):
             level = chart['level_index']
             chart_info.append(f"{music.title}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
-        condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
-
-        res = f"以下为{grade}段位列表：\n{'\n'.join(chart_info)}\n血量上限：{life}\n{condition_info}"
+        res = f"以下为{grade}段位列表：\n{'\n'.join(chart_info)}\n血量上限：{life}\nGREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
         return res
