@@ -38,6 +38,34 @@ plate_to_version = {
     '祝': 'maimai でらっくす FESTiVAL'
 }
 
+grade_conversion = {
+    '初段': 'grade1',
+    '二段': 'grade2',
+    '三段': 'grade3',
+    '四段': 'grade4',
+    '五段': 'grade5',
+    '六段': 'grade6',
+    '七段': 'grade7',
+    '八段': 'grade8',
+    '九段': 'grade9',
+    '十段': 'grade10',
+    '真初段': 'tgrade1',
+    '真二段': 'tgrade2',
+    '真三段': 'tgrade3',
+    '真四段': 'tgrade4',
+    '真五段': 'tgrade5',
+    '真六段': 'tgrade6',
+    '真七段': 'tgrade7',
+    '真八段': 'tgrade8',
+    '真九段': 'tgrade9',
+    '真十段': 'tgrade10',
+    '真皆传': 'tgrade11',
+    '真皆傳': 'tgrade11',
+    '里皆传': 'tgrade12',
+    '裡皆傳': 'tgrade12',
+    '裏皆傳': 'tgrade12',
+}
+
 score_to_rank = {
     (0.0, 50.0): "D",
     (50.0, 60.0): "C",
@@ -455,3 +483,6 @@ async def get_plate_process(msg, payload, plate):
         output += msg.locale.t('maimai.message.plate.completed', plate=plate)
 
     return output, get_img
+
+
+async def get_grade_info(msg, payload, process, goal):
