@@ -513,7 +513,7 @@ async def get_grade_info(msg, grade):
         life = grade_data["life"]
 
         for chart in charts:
-            music = await total_list.get().by_id(chart['song_id'])
+            music = (await total_list.get()).by_id(chart['song_id'])
             level = chart['level_index']
             chart_info.append(f"{music.title}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
