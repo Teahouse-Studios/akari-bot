@@ -3,6 +3,7 @@ import traceback
 
 from config import Config
 from core.builtins import Bot, Plain, Image as BImage
+from core.component import module
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
