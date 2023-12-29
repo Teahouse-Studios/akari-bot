@@ -1,8 +1,8 @@
 from core.builtins import Bot, Plain, Image as BImage
 from core.utils.image import msgchain2image
+from modules.maimai import total_list, mai
 from modules.maimai.libraries.apidata import get_info, search_by_alias
 from modules.maimai.libraries.best50 import generate
-from modules.maimai.libraries.music import TotalList
 from modules.maimai.libraries.utils import get_level_process, get_plate_process, get_player_score, get_rank, \
     get_score_list
 
@@ -10,7 +10,6 @@ goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
              "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
 level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
               '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
-total_list = TotalList()
 
 
 @mai.command('b50 [<username>] {{maimai.help.b50}}')

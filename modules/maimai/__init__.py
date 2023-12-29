@@ -8,8 +8,6 @@ from core.utils.image import msgchain2image
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from modules.maimai.libraries.best50 import computeRa
 from modules.maimai.libraries.music import TotalList
-from .rating import *
-from .regex import *
 
 total_list = TotalList()
 
