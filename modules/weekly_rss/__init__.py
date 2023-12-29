@@ -34,23 +34,21 @@ async def weekly_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
     Logger.info('Checking teahouse weekly...')
 
     weekly = ctx.args['weekly']
+    weekly_cn = [
+        Plain(
+            Locale('zh_cn').t(
+                'weekly_rss.message.teahouse_weekly_rss',
+                prefix=command_prefix[0]) +
+            weekly)]
+    weekly_tw = [
+        Plain(
+            Locale('zh_tw').t(
+                'weekly_rss.message.teahouse_weekly_rss',
+                prefix=command_prefix[0]) +
+            weekly)]
     if Bot.FetchTarget.name == 'QQ':
-        weekly_cn = [
-            Plain(
-                Locale('zh_cn').t(
-                    'weekly_rss.message.teahouse_weekly_rss',
-                    prefix=command_prefix[0]) +
-                weekly)]
-        weekly_tw = [
-            Plain(
-                Locale('zh_tw').t(
-                    'weekly_rss.message.teahouse_weekly_rss',
-                    prefix=command_prefix[0]) +
-                weekly)]
         weekly_cn = Image(await msgchain2image(weekly_cn))
         weekly_tw = Image(await msgchain2image(weekly_tw))
-        post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
-        await fetch.post_message('teahouse_weekly_rss', I18NContext(post_msg), i18n=True)
-    else:
-        await fetch.post_message('teahouse_weekly_rss', weekly)
+    post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}
+    await fetch.post_message('teahouse_weekly_rss', I18NContext(post_msg), i18n=True)
     Logger.info('Teahouse Weekly checked.')

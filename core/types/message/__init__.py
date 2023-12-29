@@ -1,5 +1,6 @@
+from __future__ import annotations
 import asyncio
-from typing import List, Union, Dict, Coroutine
+from typing import List, Union, Dict, Coroutine, Awaitable
 
 from core.exceptions import FinishedException
 from .chain import MessageChain
@@ -107,7 +108,7 @@ class MessageSession:
                      quote=True,
                      disable_secret_check=False,
                      allow_split_image=True,
-                     callback: Coroutine = None):
+                     callback: Awaitable = None):
         """
         用于向消息发送者回复消息并终结会话（模块后续代码不再执行）。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链

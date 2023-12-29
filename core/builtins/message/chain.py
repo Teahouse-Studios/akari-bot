@@ -32,7 +32,7 @@ class MessageChain(MessageChainT):
                     self.value.append(Plain(str(e)))
                 elif isinstance(e, Url):
                     self.value.append(Plain(e.url))
-                elif isinstance(e, (Plain, Image, Voice, Embed, FormattedTime)):
+                elif isinstance(e, (Plain, Image, Voice, Embed, FormattedTime, I18NContext)):
                     if isinstance(e, Plain):
                         if e.text != '':
                             self.value += match_kecode(e.text)

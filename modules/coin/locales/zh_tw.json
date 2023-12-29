@@ -16,8 +16,5 @@
     "coin.message.mix.tail2": "…有 ${tail} 枚是反面",
     "coin.message.prompt": "你拋了 ${count} 枚硬幣",
     "coin.message.stand": "…\n…它立起來了！",
-    "coin.message.tail": "…\n…是反面！",
-    "stone.help.desc": "打水漂。",
-    "stone.message.skip": "你扔了一塊石頭，漂了 ${count} 下。",
-    "stone.message.skip.nothing": "你扔了一塊石頭，什麼也沒有發生。"
+    "coin.message.tail": "…\n…是反面！"
 }

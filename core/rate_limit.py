@@ -1,5 +1,5 @@
 import time
-from typing import Literal, Self
+from typing import Literal, Self, List
 
 from attr import define
 
@@ -18,7 +18,7 @@ class RateLimiter:
     period_s: int
     '''Period in seconds'''
 
-    usages: list[Usage]
+    usages: List[Usage]
 
     limit_type: Literal['sender', 'target'] = 'target'
 

@@ -28,4 +28,4 @@ async def user(ctx: discord.ApplicationContext, name: str):
 @github.command(name="search", description="Search repositories on GitHub.")
 @discord.option(name="query", description="Search keywords.")
 async def search(ctx: discord.ApplicationContext, query: str):
-    await slash_parser(ctx, f'search {keyword}')
+    await slash_parser(ctx, f'search {query}')

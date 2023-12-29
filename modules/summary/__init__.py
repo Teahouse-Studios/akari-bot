@@ -8,20 +8,21 @@ from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
+from core.exceptions import ConfigValueError
 
 openai.api_key = Config('openai_api_key')
 
-s = module('summary', 
-    developers=['Dianliang233', 'OasisAkari'],
-    desc='{summary.help.desc}',
-    available_for=['QQ', 'QQ|Group'])
+s = module('summary',
+           developers=['Dianliang233', 'OasisAkari'],
+           desc='{summary.help.desc}',
+           available_for=['QQ', 'QQ|Group'])
 
 
 @s.handle('{{summary.help}}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
-        raise ConfigError(msg.locale.t('error.config.secret.not_found'))
+        raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     if not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
 
@@ -31,9 +32,10 @@ async def _(msg: Bot.MessageSession):
         f_msg = await msg.wait_next_message(msg.locale.t('summary.message'), append_instruction=False)
         try:
             f = re.search(r'\[Ke:forward,id=(.*?)\]', f_msg.as_display()).group(1)
+            Logger.info(f)
         except AttributeError:
             await msg.finish(msg.locale.t('summary.message.not_found'))
-        Logger.info(f)
+
         data = await f_msg.call_api('get_forward_msg', message_id=f)
         msgs = data['messages']
         texts = [f'\n{m["sender"]["nickname"]}：{m["content"]}' for m in msgs]
@@ -86,5 +88,3 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output, disable_secret_check=True)
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
-
-

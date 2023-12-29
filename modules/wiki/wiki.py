@@ -5,6 +5,7 @@ from typing import Union
 import filetype
 
 from core.builtins import Bot, Plain, Image, Voice, Url, confirm_command
+from core.types import MessageSession
 from core.utils.image_table import image_table_render, ImageTable
 from core.component import module
 from core.exceptions import AbuseWarning
@@ -36,7 +37,8 @@ async def _(msg: Bot.MessageSession, PageName: str):
     await query_pages(msg, PageName, lang=lang)
 
 
-@wiki.command('id <PageID> {{wiki.help.id}}')
+@wiki.command('id <PageID> [-l <lang>] {{wiki.help.id}}',
+              options_desc={'-l': '{wiki.help.option.l}'})
 async def _(msg: Bot.MessageSession, PageID: str):
     iw = None
     if match_iw := re.match(r'(.*?):(.*)', PageID):
@@ -44,13 +46,18 @@ async def _(msg: Bot.MessageSession, PageID: str):
         PageID = match_iw.group(2)
     if not PageID.isdigit():
         await msg.finish(msg.locale.t('wiki.message.id.error'))
-    await query_pages(msg, pageid=PageID, iw=iw)
+    get_lang = msg.parsed_msg.get('-l', False)
+    if get_lang:
+        lang = get_lang['<lang>']
+    else:
+        lang = None
+    await query_pages(msg, pageid=PageID, iw=iw, lang=lang)
 
 
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,
                       pageid: str = None, iw: str = None, lang: str = None,
                       template=False, mediawiki=False, use_prefix=True, inline_mode=False, preset_message=None):
-    if isinstance(session, Bot.MessageSession):
+    if isinstance(session, MessageSession):
         target = WikiTargetInfo(session)
         start_wiki = target.get_start_wiki()
         interwiki_list = target.get_interwikis()
