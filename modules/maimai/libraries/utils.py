@@ -1,3 +1,5 @@
+import os
+import ujson as json
 from datetime import datetime
 
 from core.utils.http import get_url
@@ -7,6 +9,7 @@ from .music import TotalList
 
 JINGLEBELL_SONG_ID = 70
 
+assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
 
 plate_to_version = {
@@ -256,7 +259,7 @@ async def get_level_process(msg, payload, process, goal):
                     elif goal in syncRank:
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{msg.locale.t('message.brackets', msg='DX') if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
             if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
         else:
@@ -283,7 +286,7 @@ async def get_score_list(msg, payload, level):
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         music = (await total_list.get()).by_id(str(s[1]['id']))
-        output = f"{music.id}\u200B. {music.title}{msg.locale.t('message.brackets', msg='DX') if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
+        output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
         if s[1]["fc"] and s[1]["fs"]:
             output += f" {combo_conversion.get(s[1]['fc'], '')} {sync_conversion.get(s[1]['fs'], '')}"
         elif s[1]["fc"] or s[1]["fs"]:
@@ -448,7 +451,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{msg.locale.t('message.brackets', msg='DX') if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
         else:
@@ -473,7 +476,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{m.id}\u200B. {m.title}{msg.locale.t('message.brackets', msg='DX') if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
+                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
                 ) + '\n'
             if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
@@ -485,4 +488,3 @@ async def get_plate_process(msg, payload, plate):
     return output, get_img
 
 
-async def get_grade_info(msg, payload, process, goal):

@@ -1,7 +1,6 @@
 import os
 import shutil
 import traceback
-
 import ujson as json
 
 from core.builtins import Bot, Plain, Image
@@ -10,8 +9,8 @@ from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
 from .music import get_cover_len5_id, Music, TotalList
 
-total_list = TotalList()
 assets_path = os.path.abspath('./assets/maimai')
+total_list = TotalList()
 
 
 async def update_alias():
