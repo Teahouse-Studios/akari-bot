@@ -1,8 +1,5 @@
 from datetime import datetime
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 from core.utils.http import get_url
 from core.utils.cache import random_cache_path
 from .apidata import get_record, get_plate
