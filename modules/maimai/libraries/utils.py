@@ -496,7 +496,7 @@ async def get_grade_info(msg, grade):
     if grade in list(grade_conversion.keys()):
         grade_key = grade_conversion[grade]
     else:
-        await msg.finish(无效的段位)
+        await msg.finish("无效的段位")
 
     if grade_key.startswith('tgrade'):
         grade_type = 'tgrade'
@@ -513,7 +513,7 @@ async def get_grade_info(msg, grade):
         life = grade_data["life"]
 
         for chart in charts:
-            music = total_list.get().by_id(chart['song_id'])
+            music = await total_list.get().by_id(chart['song_id'])
             level = chart['level_index']
             chart_info.append(f"{music.title}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
