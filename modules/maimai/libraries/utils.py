@@ -496,7 +496,7 @@ async def get_grade_info(msg, grade):
     if grade in list(grade_conversion.keys()):
         grade_key = grade_conversion[grade]
     else:
-        await msg.finish(无效的)
+        await msg.finish(无效的段位)
 
     if grade_key.startswith('tgrade'):
         grade_type = 'tgrade'
@@ -517,7 +517,8 @@ async def get_grade_info(msg, grade):
             level = chart['level_index']
             chart_info.append(f"{music.title}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
-        condition_info = f"GREAT{condition[0]}\/GOOD{condition[1]}\/MISS{condition[2]}\/CLEAR{condition[3]}"
+        output_lines = '\n'.join(chart_info)
+        condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
 
-        res = f"以下为{grade}段位列表：\n{'\n'.join(chart_info)}\n血量上限：{life}\n{condition_info}"
+        res = f"以下为{grade}段位列表：\n{output_lines}\n血量上限：{life}\n{condition_info}"
         return res
