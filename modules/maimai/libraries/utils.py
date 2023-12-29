@@ -488,3 +488,36 @@ async def get_plate_process(msg, payload, plate):
     return output, get_img
 
 
+async def get_grade_info(msg, grade):
+    file_path = os.path.join(assets_path, "mai_grade_info.json")
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    if grade in list(grade_conversion.keys()):
+        grade_key = grade_conversion[grade]
+    else:
+        await msg.finish(无效的段位名称)
+
+    if grade_key.startswith('tgrade'):
+        grade_type = 'tgrade'
+    elif grade_key.startswith('grade'):
+        grade_type = 'grade'
+    else:
+        grade_type = 'rgrade'
+
+    chart_info = []
+    if grade_type != 'rgrade':
+        grade_data = data[grade_type].get(grade_key)
+        charts = grade_data["charts"]
+        condition = grade_data["condition"]
+        life = grade_data["life"]
+
+        for chart in charts:
+            music = total_list.get().by_id(chart['song_id'])
+            level = chart['level_index']
+            chart_info.append(f"{music.title}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+
+        condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
+
+        res = f"以下为{grade}段位列表：\n{'\n'.join(chart_info)}\n血量上限：{life}\n{condition_info}"
+        return res

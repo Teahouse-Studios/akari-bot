@@ -445,6 +445,12 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
         await msg.finish([Plain(max(0, computeRa(base, score)))])
 
 
+@mai.command('grade <grade> {{maimai.help.grade}}')
+async def _(msg: Bot.MessageSession, grade: str):
+    res = await get_grade_info(msg, grade)
+    await msg.finish(res)
+
+
 @mai.command('update', required_superuser=True)
 async def _(msg: Bot.MessageSession):
     if await update_alias() and await update_covers():
