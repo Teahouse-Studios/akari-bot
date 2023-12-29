@@ -13,7 +13,6 @@ from .regex import *
 
 total_list = TotalList()
 
-
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
 diff_label_zhs = ['绿', '黄', '红', '紫', '白']

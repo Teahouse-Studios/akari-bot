@@ -5,11 +5,34 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.utils.image import msgchain2image
-from modules.maimai import get_diff, total_list
 from modules.maimai.rating import goal_list, level_list
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias
+from modules.maimai.libraries.music import TotalList
 from modules.maimai.libraries.utils import get_level_process, get_plate_process, get_player_score
 
+total_list = TotalList()
+
+diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
+diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
+diff_label_zhs = ['绿', '黄', '红', '紫', '白']
+diff_label_zht = ['綠', '黃', '紅']
+
+
+def get_diff(diff):
+    diff = diff.lower()
+    diff_label_lower = [label.lower() for label in diff_label]
+
+    if diff in diff_label_zhs:
+        level = diff_label_zhs.index(diff)
+    elif diff in diff_label_zht:
+        level = diff_label_zht.index(diff)
+    elif diff in diff_label_abbr:
+        level = diff_label_abbr.index(diff)
+    elif diff in diff_label_lower:
+        level = diff_label_lower.index(diff)
+    else:
+        level = None
+    return level
 
 mai_regex = module('maimai_regex',
                    desc='{maimai.help.maimai_regex.desc}', recommend_modules=['maimai'],
