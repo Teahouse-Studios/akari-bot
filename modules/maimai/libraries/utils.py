@@ -537,7 +537,7 @@ async def get_grade_info(msg, grade):
         condition = grade_data["condition"]
         level = grade_data["level_index"]
         life = grade_data["life"]
-        music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[diffs[level]])
+        music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[level])
 
         for i in range(4):
             music = music_data.random()
