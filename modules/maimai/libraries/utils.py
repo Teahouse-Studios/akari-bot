@@ -12,7 +12,7 @@ JINGLEBELL_SONG_ID = 70
 assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
 
-plate_to_version = {
+plate_conversion = {
     '初': 'maimai',
     '真': 'maimai PLUS',
     '超': 'maimai GreeN',
@@ -168,7 +168,7 @@ async def get_rank(msg, payload):
 
 
 async def get_player_score(msg, payload, input_id):
-    payload['version'] = list(set(version for version in plate_to_version.values()))  # 全版本
+    payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
     res = await get_plate(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
@@ -215,7 +215,7 @@ async def get_level_process(msg, payload, process, goal):
     song_played = []
     song_remain = []
 
-    payload['version'] = list(set(version for version in plate_to_version.values()))  # 全版本
+    payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
     res = await get_plate(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
@@ -290,7 +290,7 @@ async def get_score_list(msg, payload, level):
     player_data = await get_record(msg, payload)
     username = player_data['username']
 
-    payload['version'] = list(set(version for version in plate_to_version.values()))  # 全版本
+    payload['version'] = list(set(version for version in plate_conversion.values()))  # 全版本
     res = await get_plate(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
@@ -335,9 +335,9 @@ async def get_plate_process(msg, payload, plate):
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
     elif version in ['霸', '舞']:  # 霸者和舞牌需要全版本
-        payload['version'] = list(set(version for version in list(plate_to_version.values())[:-9]))
-    elif version in plate_to_version and version != '初':  # “初”不是版本名称
-        payload['version'] = [plate_to_version[version]]
+        payload['version'] = list(set(version for version in list(plate_conversion.values())[:-9]))
+    elif version in plate_conversion and version != '初':  # “初”不是版本名称
+        payload['version'] = [plate_conversion[version]]
     else:
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
@@ -508,8 +508,9 @@ async def get_grade_info(msg, grade):
         data = json.load(file)
 
     if grade.lower() in [key.lower() for key in grade_conversion.keys()]:
-        grade_key = grade_conversion[grade.lower()]
-        grade = next(k for k, v in grade_conversion.items() if v == grade_key)
+        lowerconv = {k.lower(): v for k, v in grade_conversion.items()}  # 将字典的所有键转为小写
+        grade_key = lowerconv.get(grade.lower(), None)  # 获取json内的键名
+        grade = next(k for k, v in grade_conversion.items() if v == grade_key)  # 获取原始段位名
     else:
         await msg.finish(msg.locale.t('maimai.message.grade.grade_not_found'))
 
