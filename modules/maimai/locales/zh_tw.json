@@ -1,6 +1,6 @@
 {
     "maimai.help.alias": "查詢歌曲的別名。",
-    "maimai.help.b50": "查詢 Maimai 使用者的 B50 資訊。",
+    "maimai.help.b50": "查詢 Maimai 使用者的 B50 列表。",
     "maimai.help.base": "依據定數或定數範圍內搜尋歌曲。",
     "maimai.help.desc": "查詢 Maimai 相關的內容。",
     "maimai.help.id": "依據 ID 查詢歌曲或譜面資訊。",

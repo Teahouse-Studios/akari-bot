@@ -206,3 +206,9 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([BImage(img)])
     else:
         await msg.finish(output.strip())
+
+
+@mai_regex.regex(re.compile(r"(.+)\s?段位[认認]定表"), desc='{maimai.help.maimai_regex.grade}')
+async def _(msg: Bot.MessageSession):
+    grade = msg.matched_msg.groups()[0]
+    await get_grade_info(msg, grade)
