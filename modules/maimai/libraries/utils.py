@@ -507,7 +507,7 @@ async def get_grade_info(msg, grade):
 
     chart_info = []
     if grade_type != 'rgrade':
-        grade_data = data[grade_type].get(grade_key)
+        grade_data = data[grade_type][grade_key].get(grade_key)
         charts = grade_data["charts"]
         condition = grade_data["condition"]
         life = grade_data["life"]
@@ -515,7 +515,7 @@ async def get_grade_info(msg, grade):
         for chart in charts:
             music = (await total_list.get()).by_id(chart['song_id'])
             level = chart['level_index']
-            chart_info.append(f"{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+            chart_info.append(f"{music.title}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
         output_lines = '\n'.join(chart_info)
         condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
