@@ -529,18 +529,19 @@ async def get_grade_info(msg, grade):
         for chart in charts:
             music = (await total_list.get()).by_id(str(chart['song_id']))
             level = chart['level_index']
-            chart_info.append(f"{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+            chart_info.append(f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
             
     else:
         grade_data = data[grade_type][grade_key]
         base = grade_data["base"]
         condition = grade_data["condition"]
-        level = grade_data['level_index']
+        level = grade_data["level_index"]
         life = grade_data["life"]
+        music_data = (await total_list.get()).filter(ds=(base[0], base[1]), diff=[diffs[level]])
 
         for i in range(4):
-            music = (await total_list.get()).filter(ds=(base[0], base[1]))
-            chart_info.append(f"{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+            music = music_data.random()
+            chart_info.append(f"music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
 
     output_lines = '\n'.join(chart_info)
     condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
