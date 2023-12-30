@@ -62,25 +62,27 @@ grade_conversion = {
     '真八段': 'tgrade8',
     '真九段': 'tgrade9',
     '真十段': 'tgrade10',
+    '真皆伝': 'tgrade11',
     '真皆传': 'tgrade11',
     '真皆傳': 'tgrade11',
     '里皆传': 'tgrade12',
+    '裏皆伝': 'tgrade12',
     '裡皆傳': 'tgrade12',
     '裏皆傳': 'tgrade12',
-    'Expert初级': 'expert1',
-    'Expert初級': 'expert1',
-    'Expert中级': 'expert2',
-    'Expert中級': 'expert2',
-    'Expert上级': 'expert3',
-    'Expert上級': 'expert3',
-    'Master初级': 'master1',
-    'Master初級': 'master1',
-    'Master中级': 'master2',
-    'Master中級': 'master2',
-    'Master上级': 'master3',
-    'Master上級': 'master3',
-    'Master超上级': 'master4',
-    'Master超上級': 'master4',
+    'EXPERT初級': 'expert1',
+    'EXPERT初级': 'expert1',
+    'EXPERT中級': 'expert2',
+    'EXPERT中级': 'expert2',
+    'EXPERT上級': 'expert3',
+    'EXPERT上级': 'expert3',
+    'MASTER初級': 'master1',
+    'MASTER初级': 'master1',
+    'MASTER中級': 'master2',
+    'MASTER中级': 'master2',
+    'MASTER上級': 'master3',
+    'MASTER上级': 'master3',
+    'MASTER超上級': 'master4',
+    'MASTER超上级': 'master4',
 }
 
 score_to_rank = {
@@ -128,6 +130,16 @@ comboRank = list(combo_conversion.values())  # Combo字典的值（文本显示�
 syncRank = list(sync_conversion.values())  # Sync字典的值（文本显示）
 combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示）
 sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
+
+
+def key_process(input_key, conv_dict):
+    key = next((k for k, v in conv_dict.items() if input_key == k), None)
+    if key is not None:
+        value = conv_dict[key]
+        new_key = next((k for k, v in conv_dict.items() if v == value), None)
+        return value, new_key
+    else:
+        return None, input_key
 
 
 async def get_rank(msg, payload):
@@ -328,14 +340,23 @@ async def get_plate_process(msg, payload, plate):
     song_remain_remaster = []
     song_remain_difficult = []
 
+    version_mapping = {'霸': '覇', '晓': '暁', '樱': '櫻', '堇': '菫', '辉': '輝', '华': '華'}
+    goal_mapping = {'将': '將', '极': '極'}
+
     version = plate[0]
     goal = plate[1:]
     get_img = False
 
+    if version in version_mapping:
+        version = version_mapping[version]
+        
+    if goal in goal_mapping:
+        goal = goal_mapping[goal]
+
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
-    elif version in ['霸', '舞']:  # 霸者和舞牌需要全版本
-        payload['version'] = list(set(version for version in list(plate_conversion.values())[:-9]))
+    elif version in ['覇', '舞']:  # 霸者和舞牌需要全版本
+        payload['version'] = list(set(ver for ver in list(plate_conversion.values())[:-9]))
     elif version in plate_conversion and version != '初':  # “初”不是版本名称
         payload['version'] = [plate_conversion[version]]
     else:
@@ -344,7 +365,7 @@ async def get_plate_process(msg, payload, plate):
     res = await get_plate(msg, payload)  # 获取用户成绩信息
     verlist = res["verlist"]
 
-    if goal in ['将', '者']:
+    if goal in ['將', '者']:
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
             if song['level_index'] == 0 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_basic.append([song['id'], song['level_index']])
@@ -354,12 +375,11 @@ async def get_plate_process(msg, payload, plate):
                 song_remain_expert.append([song['id'], song['level_index']])
             if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '将' else 80.0):
                 song_remain_master.append([song['id'], song['level_index']])
-            if version in [
-                    '舞', '霸'] and song['level_index'] == 4 and song['achievements'] < (
-                    100.0 if goal == '将' else 80.0):
+            if version in ['舞', '覇'] and song['level_index'] == 4 and song['achievements'] < (
+                    100.0 if goal == '將' else 80.0):
                 song_remain_remaster.append([song['id'], song['level_index']])  # 霸者和舞牌需要Re:MASTER难度
             song_played.append([song['id'], song['level_index']])
-    elif goal in ['極', '极']:
+    elif goal == '極':
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
             if song['level_index'] == 0 and not song['fc']:
                 song_remain_basic.append([song['id'], song['level_index']])
@@ -411,7 +431,7 @@ async def get_plate_process(msg, payload, plate):
                 song_remain_expert.append([int(music.id), 2])
             if [int(music.id), 3] not in song_played:
                 song_remain_master.append([int(music.id), 3])
-            if version in ['舞', '霸'] and len(music.level) == 5 and [int(music.id), 4] not in song_played:
+            if version in ['舞', '覇'] and len(music.level) == 5 and [int(music.id), 4] not in song_played:
                 song_remain_remaster.append([int(music.id), 4])
     song_remain_basic = sorted(song_remain_basic, key=lambda i: int(i[0]))  # 根据ID排序结果
     song_remain_advanced = sorted(song_remain_advanced, key=lambda i: int(i[0]))
@@ -441,7 +461,7 @@ async def get_plate_process(msg, payload, plate):
                           song_remain_expert=len(song_remain_expert),
                           song_remain_master=len(song_remain_master))
 
-    if version in ['舞', '霸']:  # 霸者和舞牌需要Re:MASTER难度
+    if version in ['舞', '覇']:  # 霸者和舞牌需要Re:MASTER难度
         prompt += msg.locale.t('maimai.message.plate.remaster', song_remain_remaster=len(song_remain_remaster))
 
     prompt += msg.locale.t('message.end')
@@ -457,9 +477,9 @@ async def get_plate_process(msg, payload, plate):
                 self_record = ''
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余13+以上歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
-                    if goal in ['将', '者']:
+                    if goal in ['將', '者']:
                         self_record = str(verlist[record_index]['achievements']) + '%'
-                    elif goal in ['極', '极', '神']:
+                    elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
                     elif goal == '舞舞':
@@ -482,9 +502,9 @@ async def get_plate_process(msg, payload, plate):
                 self_record = ''
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
-                    if goal in ['将', '者']:
+                    if goal in ['將', '者']:
                         self_record = str(verlist[record_index]['achievements']) + '%'
-                    elif goal in ['極', '极', '神']:
+                    elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
                     elif goal == '舞舞':
@@ -507,14 +527,12 @@ async def get_grade_info(msg, grade):
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-    if grade.lower() in [key.lower() for key in grade_conversion.keys()]:
-        lowerconv = {k.lower(): v for k, v in grade_conversion.items()}  # 将字典的所有键转为小写
-        grade_key = lowerconv.get(grade.lower(), None)  # 获取json内的键名
-        grade = next(k for k, v in grade_conversion.items() if v == grade_key)  # 获取原始段位名
-    else:
-        await msg.finish(msg.locale.t('maimai.message.grade.grade_not_found'))
+    grade = grade.upper()  # 输入强制转换为大写以适配字典
+    grade_key, grade = key_process(grade, grade_conversion)
 
-    if grade_key.startswith('tgrade'):
+    if not grade_key:
+        await msg.finish(msg.locale.t('maimai.message.grade.grade_not_found'))
+    elif grade_key.startswith('tgrade'):
         grade_type = 'tgrade'
     elif grade_key.startswith('grade'):
         grade_type = 'grade'
