@@ -349,9 +349,9 @@ async def get_plate_process(msg, payload, plate):
 
     if version in version_mapping:
         version = version_mapping[version]
-        
     if goal in goal_mapping:
         goal = goal_mapping[goal]
+    plate = version + goal
 
     if version == '真':  # 真代为无印版本
         payload['version'] = ['maimai', 'maimai PLUS']
