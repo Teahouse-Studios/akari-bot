@@ -507,7 +507,8 @@ async def get_grade_info(msg, grade):
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-    if grade.lower() in list(grade_conversion.keys()):
+    grade = grade.lower()
+    if grade in list(grade_conversion.keys()):
         grade_key = grade_conversion[grade]
     else:
         await msg.finish("无效的段位")
