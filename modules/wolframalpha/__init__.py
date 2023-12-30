@@ -1,15 +1,14 @@
 import os
 import urllib.parse
-
 from PIL import Image
 
 from config import Config
 from core.builtins import Bot, Image as BImage
 from core.component import module
 from core.dirty_check import check_bool, rickroll
+from core.exceptions import ConfigValueError
 from core.utils.http import download_to_cache, get_url
 
-from core.exceptions import ConfigValueError
 
 appid = Config('wolfram_alpha_appid')
 

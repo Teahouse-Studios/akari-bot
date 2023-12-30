@@ -1,15 +1,15 @@
+import os
+import ujson as json
 from datetime import datetime
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 from core.utils.http import get_url
 from core.utils.cache import random_cache_path
-from .maimaidx_api_data import get_record, get_plate
-from .maimaidx_music import TotalList
+from .apidata import get_record, get_plate
+from .music import TotalList
 
 JINGLEBELL_SONG_ID = 70
 
+assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
 
 plate_to_version = {
@@ -39,6 +39,34 @@ plate_to_version = {
     '星': 'maimai でらっくす UNiVERSE',
     '祭': 'maimai でらっくす FESTiVAL',
     '祝': 'maimai でらっくす FESTiVAL'
+}
+
+grade_conversion = {
+    '初段': 'grade1',
+    '二段': 'grade2',
+    '三段': 'grade3',
+    '四段': 'grade4',
+    '五段': 'grade5',
+    '六段': 'grade6',
+    '七段': 'grade7',
+    '八段': 'grade8',
+    '九段': 'grade9',
+    '十段': 'grade10',
+    '真初段': 'tgrade1',
+    '真二段': 'tgrade2',
+    '真三段': 'tgrade3',
+    '真四段': 'tgrade4',
+    '真五段': 'tgrade5',
+    '真六段': 'tgrade6',
+    '真七段': 'tgrade7',
+    '真八段': 'tgrade8',
+    '真九段': 'tgrade9',
+    '真十段': 'tgrade10',
+    '真皆传': 'tgrade11',
+    '真皆傳': 'tgrade11',
+    '里皆传': 'tgrade12',
+    '裡皆傳': 'tgrade12',
+    '裏皆傳': 'tgrade12',
 }
 
 score_to_rank = {
@@ -231,7 +259,7 @@ async def get_level_process(msg, payload, process, goal):
                     elif goal in syncRank:
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{msg.locale.t('message.brackets', msg='DX') if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}\n"
             if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
         else:
@@ -258,7 +286,7 @@ async def get_score_list(msg, payload, level):
     output_lines = []
     for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         music = (await total_list.get()).by_id(str(s[1]['id']))
-        output = f"{music.id}\u200B. {music.title}{msg.locale.t('message.brackets', msg='DX') if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
+        output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
         if s[1]["fc"] and s[1]["fs"]:
             output += f" {combo_conversion.get(s[1]['fc'], '')} {sync_conversion.get(s[1]['fs'], '')}"
         elif s[1]["fc"] or s[1]["fs"]:
@@ -423,7 +451,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{s[0]}\u200B. {s[1]}{msg.locale.t('message.brackets', msg='DX') if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
+                output += f"{s[0]}\u200B. {s[1]}{' (DX)' if s[5] == 'DX' else ''} {s[2]} {s[3]} {self_record}".strip() + '\n'
             if len(song_remain_difficult) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
         else:
@@ -448,7 +476,7 @@ async def get_plate_process(msg, payload, plate):
                     elif goal == '舞舞':
                         if verlist[record_index]['fs']:
                             self_record = syncRank[sync_rank.index(verlist[record_index]['fs'])]
-                output += f"{m.id}\u200B. {m.title}{msg.locale.t('message.brackets', msg='DX') if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
+                output += f"{m.id}\u200B. {m.title}{' (DX)' if m.type == 'DX' else ''} {diffs[s[1]]} {m.ds[s[1]]} {self_record}".strip(
                 ) + '\n'
             if len(song_remain) > 10:  # 若剩余歌曲大于10个则使用图片形式
                 get_img = True
@@ -458,3 +486,39 @@ async def get_plate_process(msg, payload, plate):
         output += msg.locale.t('maimai.message.plate.completed', plate=plate)
 
     return output, get_img
+
+
+async def get_grade_info(msg, grade):
+    file_path = os.path.join(assets_path, "mai_grade_info.json")
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    if grade in list(grade_conversion.keys()):
+        grade_key = grade_conversion[grade]
+    else:
+        await msg.finish("无效的段位")
+
+    if grade_key.startswith('tgrade'):
+        grade_type = 'tgrade'
+    elif grade_key.startswith('grade'):
+        grade_type = 'grade'
+    else:
+        grade_type = 'rgrade'
+
+    chart_info = []
+    if grade_type != 'rgrade':
+        grade_data = data[grade_type].get(grade_key)
+        charts = grade_data["charts"]
+        condition = grade_data["condition"]
+        life = grade_data["life"]
+
+        for chart in charts:
+            music = (await total_list.get()).by_id(chart['song_id'])
+            level = chart['level_index']
+            chart_info.append(f"{music['title']}{' (DX)' if music['type'] == 'DX' else ''} {diffs[level]} {music['level'][level]}")
+
+        output_lines = '\n'.join(chart_info)
+        condition_info = f"GREAT{condition[0]}/GOOD{condition[1]}/MISS{condition[2]}/CLEAR{condition[3]}"
+
+        res = f"以下为{grade}段位列表：\n{output_lines}\n血量上限：{life}\n{condition_info}"
+        return res

@@ -3,8 +3,8 @@ import datetime
 from config import Config
 from core.builtins import Bot
 from core.component import module
-from core.utils.http import get_url
 from core.exceptions import ConfigValueError
+from core.utils.http import get_url
 
 api_key = Config('exchange_rate_api_key')
 

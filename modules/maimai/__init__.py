@@ -5,17 +5,18 @@ from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
-from modules.maimai.libraries.maimai_best_50 import generate
-from modules.maimai.libraries.maimaidx_api_data import get_alias, get_info, search_by_alias, update_alias, update_covers
-from modules.maimai.libraries.maimaidx_music import get_cover_len5_id, TotalList
-from modules.maimai.libraries.maimaidx_project import get_level_process, \
+from modules.maimai.libraries.best50 import computeRa, generate
+from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
+from modules.maimai.libraries.music import get_cover_len5_id, TotalList
+from modules.maimai.libraries.utils import get_grade_info, get_level_process, \
     get_plate_process, get_player_score, get_rank, get_score_list
 from .regex import *
 
-total_list = TotalList()
-
+goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", 
+             "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
 level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
               '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
+total_list = TotalList()
 
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
@@ -294,25 +295,6 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
 
 @mai.command('process <level> <goal> [<username>] {{maimai.help.process}}')
 async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
-    goal_list = [
-        "A",
-        "AA",
-        "AAA",
-        "S",
-        "S+",
-        "SS",
-        "SS+",
-        "SSS",
-        "SSS+",
-        "FC",
-        "FC+",
-        "AP",
-        "AP+",
-        "FS",
-        "FS+",
-        "FDX",
-        "FDX+"]
-
     if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
@@ -463,37 +445,10 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
         await msg.finish([Plain(max(0, computeRa(base, score)))])
 
 
-def computeRa(base: float, achievement: float) -> int:
-    if achievement < 50:
-        baseRa = 7.0
-    elif achievement < 60:
-        baseRa = 8.0
-    elif achievement < 70:
-        baseRa = 9.6
-    elif achievement < 75:
-        baseRa = 11.2
-    elif achievement < 80:
-        baseRa = 12.0
-    elif achievement < 90:
-        baseRa = 13.6
-    elif achievement < 94:
-        baseRa = 15.2
-    elif achievement < 97:
-        baseRa = 16.8
-    elif achievement < 98:
-        baseRa = 20.0
-    elif achievement < 99:
-        baseRa = 20.3
-    elif achievement < 99.5:
-        baseRa = 20.8
-    elif achievement < 100:
-        baseRa = 21.1
-    elif achievement < 100.5:
-        baseRa = 21.6
-    else:
-        baseRa = 22.4
-
-    return math.floor(base * (min(100.5, achievement) / 100) * baseRa)
+@mai.command('grade <grade> {{maimai.help.grade}}')
+async def _(msg: Bot.MessageSession, grade: str):
+    res = await get_grade_info(msg, grade)
+    await msg.finish(res)
 
 
 @mai.command('update', required_superuser=True)

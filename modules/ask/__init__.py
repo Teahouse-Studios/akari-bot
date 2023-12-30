@@ -8,9 +8,9 @@ from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
+from core.exceptions import ConfigValueError
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
-from core.exceptions import ConfigValueError
 
 os.environ['LANGCHAIN_TRACING_V2'] = str(Config('enable_langsmith'))
 if Config('enable_langsmith'):
