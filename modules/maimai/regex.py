@@ -7,7 +7,7 @@ from core.logger import Logger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias
 from modules.maimai.libraries.music import get_cover_len5_id, TotalList
-from modules.maimai.libraries.utils import get_level_process, get_plate_process, get_player_score
+from modules.maimai.libraries.utils import get_grade_info, get_level_process, get_plate_process, get_player_score
 
 goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", 
              "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
@@ -206,3 +206,9 @@ async def _(msg: Bot.MessageSession):
         await msg.finish([BImage(img)])
     else:
         await msg.finish(output.strip())
+
+
+@mai_regex.regex(re.compile(r"(.+)\s?段位[认認]定表"), desc='{maimai.help.maimai_regex.grade}')
+async def _(msg: Bot.MessageSession):
+    grade = msg.matched_msg.groups()[0]
+    await get_grade_info(msg, grade)

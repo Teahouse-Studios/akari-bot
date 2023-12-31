@@ -447,8 +447,7 @@ async def _(msg: Bot.MessageSession, base: float, score: float):
 
 @mai.command('grade <grade> {{maimai.help.grade}}')
 async def _(msg: Bot.MessageSession, grade: str):
-    res = await get_grade_info(msg, grade)
-    await msg.finish(res)
+    await get_grade_info(msg, grade)
 
 
 @mai.command('update', required_superuser=True)
