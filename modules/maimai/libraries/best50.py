@@ -1,13 +1,12 @@
 import math
 import os
 from typing import Optional, Dict, List, Tuple
-
 import ujson as json
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import ErrorMessage
 from core.utils.http import post_url
-from .maimaidx_music import get_cover_len5_id, TotalList
+from .music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
 
@@ -412,7 +411,10 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith('403'):
-            await msg.finish(msg.locale.t("maimai.message.forbidden"))
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             raise
 

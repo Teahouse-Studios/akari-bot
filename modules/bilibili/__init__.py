@@ -65,6 +65,8 @@ async def _(msg: Bot.MessageSession):
         url = f"{api_url}?aid={video[2:]}"
     else:
         url = await parse_shorturl(f"https://b23.tv/{video}")
+        if not url:
+            return
 
     await get_info(msg, url, get_detail=False)
 
@@ -75,5 +77,8 @@ async def parse_shorturl(shorturl):
             target_url = response.headers.get('Location')
     
     video = re.search(r'/video/([^/?]+)', target_url)
-    url = f"{api_url}?bvid={video.group(1)}"
-    return url
+    if video:
+        url = f"{api_url}?bvid={video.group(1)}"
+        return url
+    else:
+        return False

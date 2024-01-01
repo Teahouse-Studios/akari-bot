@@ -89,6 +89,7 @@ async def search_csr(id=None):
 
 
 ccode = module('chemical_code', alias={'cc': 'chemical_code',
+                                       'cca': 'chemical_code captcha',
                                        'chemicalcode': 'chemical_code',
                                        'chemical_captcha': 'chemical_code captcha',
                                        'chemicalcaptcha': 'chemical_code captcha',
