@@ -1,4 +1,3 @@
-﻿import math
 import traceback
 
 from config import Config
@@ -159,6 +158,11 @@ async def _(msg: Bot.MessageSession, sid: str):
         result = msg.locale.t("maimai.message.alias", title=title) + "\n"
         result += "\n".join(alias)
         await msg.finish([Plain(result.strip())])
+
+
+@mai.command('grade <grade> {{maimai.help.grade}}')
+async def _(msg: Bot.MessageSession, grade: str):
+    await get_grade_info(msg, grade)
 
 
 @mai.command('b50 [<username>] {{maimai.help.b50}}')
@@ -443,11 +447,6 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
 async def _(msg: Bot.MessageSession, base: float, score: float):
     if score:
         await msg.finish([Plain(max(0, computeRa(base, score)))])
-
-
-@mai.command('grade <grade> {{maimai.help.grade}}')
-async def _(msg: Bot.MessageSession, grade: str):
-    await get_grade_info(msg, grade)
 
 
 @mai.command('update', required_superuser=True)
