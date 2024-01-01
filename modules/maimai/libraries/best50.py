@@ -411,7 +411,10 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith('403'):
-            await msg.finish(msg.locale.t("maimai.message.forbidden"))
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
             raise
 
