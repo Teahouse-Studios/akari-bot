@@ -136,8 +136,9 @@ async def get_plate(msg, payload):
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith('403'):
-            await msg.finish(msg.locale.t("maimai.message.forbidden"))
-        else:
-            traceback.print_exc()
+            if "qq" in payload:
+                await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
+            else:
+                await msg.finish(msg.locale.t("maimai.message.forbidden"))
             
     return data
