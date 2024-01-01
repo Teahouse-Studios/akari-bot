@@ -33,6 +33,7 @@
     "maimai.message.chart_not_found": "未找到符合要求的谱面。",
     "maimai.message.error.non_digital": "发生错误：歌曲 ID 必须为数字。",
     "maimai.message.forbidden": "此用户禁止了其他人获取数据。",
+    "maimai.message.forbidden.eula": "无法获取数据，请前往查分器并同意用户协议。\n查分器地址：https://www.diving-fish.com/maimaidx/prober",
     "maimai.message.goal_invalid": "无效的目标评级，请检查输入。",
     "maimai.message.grade": "以下为 ${grade} 段位认定列表：\n${content}\n生命上限：${life}\n${condition}",
     "maimai.message.grade.grade_not_found": "无效的段位，请检查输入。",

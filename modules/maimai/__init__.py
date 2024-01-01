@@ -1,4 +1,3 @@
-﻿import math
 import traceback
 
 from config import Config
@@ -161,6 +160,11 @@ async def _(msg: Bot.MessageSession, sid: str):
         await msg.finish([Plain(result.strip())])
 
 
+@mai.command('grade <grade> {{maimai.help.grade}}')
+async def _(msg: Bot.MessageSession, grade: str):
+    await get_grade_info(msg, grade)
+
+
 @mai.command('b50 [<username>] {{maimai.help.b50}}')
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username and msg.target.sender_from == "QQ":
@@ -281,7 +285,7 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    if plate == '真将' or (plate[1] == '者' and plate[0] != '霸'):
+    if plate in ['真将', '真將'] or (plate[1] == '者' and plate[0] != '霸'):
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
     output, get_img = await get_plate_process(msg, payload, plate)
@@ -443,11 +447,6 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
 async def _(msg: Bot.MessageSession, base: float, score: float):
     if score:
         await msg.finish([Plain(max(0, computeRa(base, score)))])
-
-
-@mai.command('grade <grade> {{maimai.help.grade}}')
-async def _(msg: Bot.MessageSession, grade: str):
-    await get_grade_info(msg, grade)
 
 
 @mai.command('update', required_superuser=True)
