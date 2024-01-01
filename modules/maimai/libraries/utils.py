@@ -367,13 +367,13 @@ async def get_plate_process(msg, payload, plate):
 
     if goal in ['將', '者']:
         for song in verlist:  # 将剩余歌曲ID和难度加入目标列表
-            if song['level_index'] == 0 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+            if song['level_index'] == 0 and song['achievements'] < (100.0 if goal == '將' else 80.0):
                 song_remain_basic.append([song['id'], song['level_index']])
-            if song['level_index'] == 1 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+            if song['level_index'] == 1 and song['achievements'] < (100.0 if goal == '將' else 80.0):
                 song_remain_advanced.append([song['id'], song['level_index']])
-            if song['level_index'] == 2 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+            if song['level_index'] == 2 and song['achievements'] < (100.0 if goal == '將' else 80.0):
                 song_remain_expert.append([song['id'], song['level_index']])
-            if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '将' else 80.0):
+            if song['level_index'] == 3 and song['achievements'] < (100.0 if goal == '將' else 80.0):
                 song_remain_master.append([song['id'], song['level_index']])
             if version in ['舞', '覇'] and song['level_index'] == 4 and song['achievements'] < (
                     100.0 if goal == '將' else 80.0):
