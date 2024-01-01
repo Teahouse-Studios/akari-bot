@@ -163,7 +163,7 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    if plate == '真将' or (plate[1] == '者' and plate[0] != '霸'):
+    if plate in ['真将', '真將'] or (plate[1] == '者' and plate[0] != '霸'):
         return
 
     output, get_img = await get_plate_process(msg, payload, plate)
@@ -208,7 +208,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(output.strip())
 
 
-@mai_regex.regex(re.compile(r"(.+)\s?段位[认認]定表"), desc='{maimai.help.maimai_regex.grade}')
+@mai_regex.regex(re.compile(r"(.+)\s?段位[认認]定列?表"), desc='{maimai.help.maimai_regex.grade}')
 async def _(msg: Bot.MessageSession):
     grade = msg.matched_msg.groups()[0]
     await get_grade_info(msg, grade)

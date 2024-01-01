@@ -285,7 +285,7 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    if plate == '真将' or (plate[1] == '者' and plate[0] != '霸'):
+    if plate in ['真将', '真將'] or (plate[1] == '者' and plate[0] != '霸'):
         await msg.finish(msg.locale.t('maimai.message.plate.plate_not_found'))
 
     output, get_img = await get_plate_process(msg, payload, plate)
