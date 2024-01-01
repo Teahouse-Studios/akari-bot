@@ -16,14 +16,15 @@ diffs = 'Basic Advanced Expert Master Re:Master'.split(' ')
 
 
 class ChartInfo(object):
-    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, scoreId: int,
-                 title: str, ds: float, lv: str):
+    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int, 
+    scoreId: int, title: str, ds: float, lv: str):
         self.idNum = idNum
         self.diff = diff
         self.tp = tp
         self.achievement = achievement
         self.ra = computeRa(ds, achievement)
         self.comboId = comboId
+        self.syncId = syncId
         self.scoreId = scoreId
         self.title = title
         self.ds = ds
@@ -44,6 +45,8 @@ class ChartInfo(object):
         ri = rate.index(data["rate"])
         fc = ['', 'fc', 'fcp', 'ap', 'app']
         fi = fc.index(data["fc"])
+        fs = ['', 'fs', 'fsp', 'fsd', 'fsdp']
+        si = fs.index(data["fs"])
         return cls(
             idNum=(await total_list.get()).by_title(data["title"]).id,
             title=data["title"],
@@ -51,6 +54,7 @@ class ChartInfo(object):
             ra=data["ra"],
             ds=data["ds"],
             comboId=fi,
+            syncId=si,
             scoreId=ri,
             lv=data["level"],
             achievement=data["achievements"],
@@ -207,6 +211,7 @@ class DrawBest(object):
         levelTriagle = [(itemW, 0), (itemW - 27, 0), (itemW, 27)]
         rankPic = 'D C B BB BBB A AA AAA S Sp SS SSp SSS SSSp'.split(' ')
         comboPic = ' FC FCp AP APp'.split(' ')
+        syncPic = ' FS FSp FSD FSDp'.split(' ')
         imgDraw = ImageDraw.Draw(img)
         titleFontName = 'assets/SourceHanSansCN-Normal.ttf'
         for num in range(0, len(sdBest)):
@@ -226,25 +231,29 @@ class DrawBest(object):
             tempDraw.polygon(levelTriagle, Color[chartInfo.diff])
             font = ImageFont.truetype(titleFontName, 16, encoding='utf-8')
             title = chartInfo.title
-            if self._coloumWidth(title) > 15:
+            if self._coloumWidth(title) > 12:
                 title = self._changeColumnWidth(title, 12) + '...'
-            tempDraw.text((8, 8), title, 'white', font)
+            tempDraw.text((7, 7), title, 'white', font)
+            font = ImageFont.truetype(titleFontName, 10, encoding='utf-8')
+            tempDraw.text((7, 28), f'ID: {chartInfo.idNum}', 'white', font)
             font = ImageFont.truetype(titleFontName, 12, encoding='utf-8')
-
-            tempDraw.text((7, 28), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
+            tempDraw.text((7, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
             rankImg = Image.open(self.pic_dir + f'UI_GAM_Rank_{rankPic[chartInfo.scoreId]}.png').convert('RGBA')
             rankImg = self._resizePic(rankImg, 0.3)
-            temp.paste(rankImg, (72, 28), rankImg.split()[3])
+            temp.paste(rankImg, (85, 42), rankImg.split()[3])
             if chartInfo.comboId:
                 comboImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{comboPic[chartInfo.comboId]}_S.png').convert(
                     'RGBA')
                 comboImg = self._resizePic(comboImg, 0.45)
-                temp.paste(comboImg, (103, 27), comboImg.split()[3])
+                temp.paste(comboImg, (78, 62), comboImg.split()[3])
+            if chartInfo.syncId:
+                syncImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{syncPic[chartInfo.syncId]}_S.png').convert(
+                    'RGBA')
+                syncImg = self._resizePic(syncImg, 0.45)
+                temp.paste(syncImg, (102, 62), syncImg.split()[3])
             font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 12, encoding='utf-8')
-            tempDraw.text((8, 44), f'Base: {chartInfo.ds} -> {computeRa(chartInfo.ds, chartInfo.achievement)}', 'white',
+            tempDraw.text((7, 64), f'{chartInfo.ds} -> {computeRa(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
-            font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 18, encoding='utf-8')
-            tempDraw.text((8, 60), f'#{num + 1}', 'white', font)
 
             recBase = Image.new('RGBA', (itemW, itemH), 'black')
             recBase = recBase.point(lambda p: int(p * 0.8))
@@ -273,26 +282,30 @@ class DrawBest(object):
 
             tempDraw = ImageDraw.Draw(temp)
             tempDraw.polygon(levelTriagle, Color[chartInfo.diff])
-            font = ImageFont.truetype(titleFontName, 14, encoding='utf-8')
+            font = ImageFont.truetype(titleFontName, 16, encoding='utf-8')
             title = chartInfo.title
-            if self._coloumWidth(title) > 13:
-                title = self._changeColumnWidth(title, 10) + '...'
-            tempDraw.text((8, 8), title, 'white', font)
+            if self._coloumWidth(title) > 12:
+                title = self._changeColumnWidth(title, 12) + '...'
+            tempDraw.text((7, 7), title, 'white', font)
+            font = ImageFont.truetype(titleFontName, 10, encoding='utf-8')
+            tempDraw.text((7, 28), f'ID: {chartInfo.idNum}', 'white', font)
             font = ImageFont.truetype(titleFontName, 12, encoding='utf-8')
-
-            tempDraw.text((7, 28), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
+            tempDraw.text((7, 42), f'{"%.4f" % chartInfo.achievement}%', 'white', font)
             rankImg = Image.open(self.pic_dir + f'UI_GAM_Rank_{rankPic[chartInfo.scoreId]}.png').convert('RGBA')
             rankImg = self._resizePic(rankImg, 0.3)
-            temp.paste(rankImg, (72, 28), rankImg.split()[3])
+            temp.paste(rankImg, (85, 42), rankImg.split()[3])
             if chartInfo.comboId:
                 comboImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{comboPic[chartInfo.comboId]}_S.png').convert(
                     'RGBA')
                 comboImg = self._resizePic(comboImg, 0.45)
-                temp.paste(comboImg, (103, 27), comboImg.split()[3])
+                temp.paste(comboImg, (78, 62), comboImg.split()[3])
+            if chartInfo.syncId:
+                syncImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{syncPic[chartInfo.syncId]}_S.png').convert(
+                    'RGBA')
+                syncImg = self._resizePic(syncImg, 0.45)
+                temp.paste(syncImg, (102, 62), syncImg.split()[3])
             font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 12, encoding='utf-8')
-            tempDraw.text((8, 44), f'Base: {chartInfo.ds} -> {chartInfo.ra}', 'white', font)
-            font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 18, encoding='utf-8')
-            tempDraw.text((8, 60), f'#{num + 1}', 'white', font)
+            tempDraw.text((7, 64), f'{chartInfo.ds} -> {chartInfo.ra}', 'white', font)
 
             recBase = Image.new('RGBA', (itemW, itemH), 'black')
             recBase = recBase.point(lambda p: int(p * 0.8))
