@@ -10,19 +10,19 @@ from modules.wiki import WikiLib, WikiTargetInfo
 @client.slash_command(description="Get recent abuse logs for the default wiki.")
 @discord.option(name="count", description="The count of results to show.")
 async def ab(ctx: discord.ApplicationContext, count: int = None):
-    await slash_parser(ctx, "")
+    await slash_parser(ctx, count)
 
 
 @client.slash_command(description="Get recent newbie logs for the default wiki.")
 @discord.option(name="count", description="The count of results to show.")
 async def newbie(ctx: discord.ApplicationContext, count: int = None):
-    await slash_parser(ctx, "")
+    await slash_parser(ctx, count)
 
 
 @client.slash_command(description="Get recent changes for the default wiki.")
 @discord.option(name="count", description="The count of results to show.")
 async def rc(ctx: discord.ApplicationContext, count: int = None):
-    await slash_parser(ctx, "")
+    await slash_parser(ctx, count)
 
 
 wiki = client.create_group("wiki", "Query information from Mediawiki-based websites.")
