@@ -14,7 +14,7 @@ async def newbie(msg: Bot.MessageSession, wiki_url):
             d.append(x['title'])
     y = await check(*d)
     y = '\n'.join(z['content'] for z in y)
-    g = f'{pageurl}\n{y}\n{msg.locale.t("message.collapse", amount='10')}'
+    g = f'{pageurl}\n{y}\n{msg.locale.t("message.collapse", amount="10")}'
     if g.find("<吃掉了>") != -1 or g.find("<全部吃掉了>") != -1:
         g = g.replace("<吃掉了>", msg.locale.t("check.redacted"))
         g = g.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
