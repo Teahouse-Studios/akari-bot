@@ -8,17 +8,20 @@ from modules.wiki import WikiLib, WikiTargetInfo
 
 
 @client.slash_command(description="Get recent abuse logs for the default wiki.")
-async def ab(ctx: discord.ApplicationContext):
+@discord.option(name="count", description="The count of results to show.")
+async def ab(ctx: discord.ApplicationContext, count: int = None):
     await slash_parser(ctx, "")
 
 
 @client.slash_command(description="Get recent newbie logs for the default wiki.")
-async def newbie(ctx: discord.ApplicationContext):
+@discord.option(name="count", description="The count of results to show.")
+async def newbie(ctx: discord.ApplicationContext, count: int = None):
     await slash_parser(ctx, "")
 
 
 @client.slash_command(description="Get recent changes for the default wiki.")
-async def rc(ctx: discord.ApplicationContext):
+@discord.option(name="count", description="The count of results to show.")
+async def rc(ctx: discord.ApplicationContext, count: int = None):
     await slash_parser(ctx, "")
 
 
@@ -62,7 +65,7 @@ async def default_wiki(ctx: discord.AutocompleteContext):
 @wiki.command(name="query", description="Query a wiki page.")
 @discord.option(name="pagename", description="The title of wiki page.", autocomplete=auto_search)
 @discord.option(name="lang", description="Find the corresponding language version of this page.")
-async def query(ctx: discord.ApplicationContext, pagename: str, lang: str=None):
+async def query(ctx: discord.ApplicationContext, pagename: str, lang: str = None):
     if lang:
         await slash_parser(ctx, f'{pagename} -l {lang}')
     else:
@@ -72,7 +75,7 @@ async def query(ctx: discord.ApplicationContext, pagename: str, lang: str=None):
 @wiki.command(name="id", description="Query a Wiki page based on page ID.")
 @discord.option(name="pageid", description="The wiki page ID.")
 @discord.option(name="lang", description="Find the corresponding language version of this page.")
-async def byid(ctx: discord.ApplicationContext, pageid: str, lang: str=None):
+async def byid(ctx: discord.ApplicationContext, pageid: str, lang: str = None):
     if lang:
         await slash_parser(ctx, f'id {pageid} -l {lang}')
     else:
