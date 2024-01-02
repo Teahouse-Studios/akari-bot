@@ -233,29 +233,27 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     if plain_slice:
                         msg_list.append(Plain('\n'.join(plain_slice)))
                     if r.invalid_section and r.info.in_allowlist:
-                        if isinstance(session, Bot.MessageSession):
+                        if isinstance(session, Bot.MessageSession) and session.Feature.image and r.sections:
+                            i_msg_lst = []
+                            session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
+                            i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section')))
+                            i_msg_lst.append(Image(await
+                                                   image_table_render(
+                                                       ImageTable(session_data,
+                                                                  ['ID',
+                                                                   session.locale.t('wiki.message.section')]))))
 
-                            if session.Feature.image:
-                                i_msg_lst = []
-                                session_data = [[str(i + 1), r.sections[i]] for i in range(len(r.sections))]
-                                i_msg_lst.append(Plain(session.locale.t('wiki.message.invalid_section')))
-                                i_msg_lst.append(Image(await
-                                                       image_table_render(
-                                                           ImageTable(session_data,
-                                                                      ['ID',
-                                                                       session.locale.t('wiki.message.section')]))))
+                            async def _callback(msg: Bot.MessageSession):
+                                display = msg.as_display(text_only=True)
+                                if display.isdigit():
+                                    display = int(display)
+                                    if display <= len(r.sections):
+                                        r.selected_section = display - 1
+                                        await query_pages(session, title=r.title + '#' + r.sections[display - 1])
 
-                                async def _callback(msg: Bot.MessageSession):
-                                    display = msg.as_display(text_only=True)
-                                    if display.isdigit():
-                                        display = int(display)
-                                        if display <= len(r.sections):
-                                            r.selected_section = display - 1
-                                            await query_pages(session, title=r.title + '#' + r.sections[display - 1])
-
-                                await session.send_message(i_msg_lst, callback=_callback)
-                            else:
-                                msg_list.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
+                            await session.send_message(i_msg_lst, callback=_callback)
+                        else:
+                            msg_list.append(Plain(session.locale.t('wiki.message.invalid_section.prompt')))
                 else:
                     plain_slice = []
                     wait_plain_slice = []
