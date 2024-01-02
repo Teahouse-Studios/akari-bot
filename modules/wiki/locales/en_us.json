@@ -15,7 +15,7 @@
     "wiki.help.iw.list": "Lists the currently configured Interwiki.",
     "wiki.help.iw.list.legacy": "Lists the currently configured Interwiki. (Legacy)",
     "wiki.help.iw.remove": "Remove custom Interwiki.",
-    "wiki.help.newbie.desc": "Get recent newbie logs for the default wiki.",
+    "wiki.help.newbie": "Get recent newbie logs for the default wiki.",
     "wiki.help.option.l": "Find the corresponding language version of this page, and return the current language if no result.",
     "wiki.help.prefix.reset": "Reset custom wiki prefix.",
     "wiki.help.prefix.set": "Set custom wiki prefix.",

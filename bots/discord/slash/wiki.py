@@ -9,7 +9,7 @@ from modules.wiki import WikiLib, WikiTargetInfo
 
 @client.slash_command(description="Get recent abuse logs for the default wiki.")
 async def ab(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "legacy")
+    await slash_parser(ctx, "")
 
 
 @client.slash_command(description="Get recent newbie logs for the default wiki.")
@@ -19,7 +19,7 @@ async def newbie(ctx: discord.ApplicationContext):
 
 @client.slash_command(description="Get recent changes for the default wiki.")
 async def rc(ctx: discord.ApplicationContext):
-    await slash_parser(ctx, "legacy")
+    await slash_parser(ctx, "")
 
 
 wiki = client.create_group("wiki", "Query information from Mediawiki-based websites.")

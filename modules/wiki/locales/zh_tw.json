@@ -15,7 +15,7 @@
     "wiki.help.iw.list": "列出目前設定的 Interwiki。",
     "wiki.help.iw.list.legacy": "列出目前設定的 Interwiki。（舊版）",
     "wiki.help.iw.remove": "刪除自訂 Interwiki。",
-    "wiki.help.newbie.desc": "取得預設 Wiki 的最新使用者日誌。",
+    "wiki.help.newbie": "取得預設 Wiki 的最新使用者日誌。",
     "wiki.help.option.l": "查找本頁面的對應語言版本，若無結果則返回目前語言。",
     "wiki.help.prefix.reset": "重設自訂前綴。",
     "wiki.help.prefix.set": "設定自訂前綴。",
