@@ -21,4 +21,4 @@ async def ab(msg: Bot.MessageSession, wiki_url):
         y = y.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount='10')}\n{msg.locale.t("wiki.message.utils.banned")}'
     else:
-        return f'{str(Url(pageurl))}\n{y}\n' + msg.locale.t("message.collapse", amount='10')}'
+        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount='10')}'
