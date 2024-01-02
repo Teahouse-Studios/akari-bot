@@ -71,7 +71,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
         prefix = session.prefix
         enabled_fandom_addon = False
     else:
-        raise TypeError('session must be Bot.MessageSession or QueryInfo.')
+        raise TypeError('Session must be Bot.MessageSession or QueryInfo.')
 
     if not start_wiki:
         if isinstance(session, Bot.MessageSession):
@@ -145,7 +145,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 else:
                     raise ValueError(f'iw_prefix "{iw}" not found.')
     else:
-        raise ValueError('title or pageid must be specified.')
+        raise ValueError('Title or pageid must be specified.')
     Logger.debug(query_task)
     msg_list = []
     wait_msg_list = []

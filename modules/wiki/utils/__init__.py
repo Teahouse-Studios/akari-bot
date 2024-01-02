@@ -13,9 +13,9 @@ from .rc_qq import rc_qq
 rc_ = module('rc', developers=['OasisAkari'])
 
 
-@rc_.command(['{{wiki.help.rc}}',
-             'legacy {{wiki.help.rc.legacy}}'])
-async def rc_loader(msg: Bot.MessageSession):
+@rc_.command([ '[<count>] {{wiki.help.rc}}',
+             'legacy [<count>] {{wiki.help.rc.legacy}}'])
+async def rc_loader(msg: Bot.MessageSession, count: int=5):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
@@ -29,16 +29,16 @@ async def rc_loader(msg: Bot.MessageSession):
             traceback.print_exc()
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
-        res = await rc(msg, start_wiki)
+        res = await rc(msg, start_wiki, count)
         await msg.finish(res)
 
 
 a = module('ab', developers=['OasisAkari'])
 
 
-@a.command(['{{wiki.help.ab}}',
-           'legacy {{wiki.help.ab.legacy}}'])
-async def ab_loader(msg: Bot.MessageSession):
+@a.command(['[<count>] {{wiki.help.ab}}',
+           'legacy [<count>] {{wiki.help.ab.legacy}}'])
+async def ab_loader(msg: Bot.MessageSession, count: int=5):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
@@ -52,17 +52,17 @@ async def ab_loader(msg: Bot.MessageSession):
             traceback.print_exc()
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
-        res = await ab(msg, start_wiki)
+        res = await ab(msg, start_wiki, count)
         await msg.finish(res)
 
 
-n = module('newbie', desc='{wiki.help.newbie.desc}', developers=['OasisAkari'])
+n = module('newbie', developers=['OasisAkari'])
 
 
-@n.command()
-async def newbie_loader(msg: Bot.MessageSession):
+@n.command('[<count>] {{wiki.help.newbie}}')
+async def newbie_loader(msg: Bot.MessageSession, count: int=5):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         return await msg.finish(msg.locale.t('wiki.message.not_set'))
-    res = await newbie(msg, start_wiki)
+    res = await newbie(msg, start_wiki, count)
     await msg.finish(res)
