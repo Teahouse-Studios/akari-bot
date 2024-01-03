@@ -82,7 +82,7 @@
     "wiki.message.search.prompt": "Reply with the number to query the corresponding page.",
     "wiki.message.set.default": "There is no start wiki set. Defaulted to the Chinese Minecraft Wiki. Use \"${prefix}wiki set\" to set a custom start wiki.\nExample: ${prefix}wiki set https://zh.minecraft.wiki/",
     "wiki.message.set.success": "Successfully set up start wiki: ${name}",
-    "wiki.message.utils.banned": "检测到外来信息介入，请前往滥用日志查看所有消息。",
+    "wiki.message.utils.redacted": "检测到外来信息介入，请前往滥用日志查看所有消息。",
     "wiki.message.utils.qq.prompt": "Tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。",
     "wiki.message.utils.time.infinity": "Infinity",
     "wiki.message.utils.wikilib.error.empty": "An error occurred: API returned no contents. Please contact the site administrator for reasons.",
