@@ -559,6 +559,17 @@ files = [
 cffi = ">=1.0.0"
 
 [[package]]
+name = "cachetools"
+version = "5.3.2"
+description = "Extensible memoizing collections and decorators"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "cachetools-5.3.2-py3-none-any.whl", hash = "sha256:861f35a13a451f94e301ce2bec7cac63e881232ccce7ed67fab9b5df4d3beaa1"},
+    {file = "cachetools-5.3.2.tar.gz", hash = "sha256:086ee420196f7b2ab9ca2db2520aca326318b68fe5ba8bc4d49cca91add450f2"},
+]
+
+[[package]]
 name = "caio"
 version = "0.9.13"
 description = "Asynchronous file IO for Linux MacOS or Windows."
@@ -1029,6 +1040,21 @@ aiofiles = ">=23.1.0"
 click = ">=8.1.3"
 httpx = {version = ">=0.24.1", extras = ["brotli", "http2", "socks"]}
 lxml = ">=4.9.2"
+
+[[package]]
+name = "enkanetwork-py"
+version = "1.4.5"
+description = "Library for fetching JSON data from site https://enka.network/"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "enkanetwork.py-1.4.5.tar.gz", hash = "sha256:bdc99679bec55017bcf951f636e31793e8cf1fdb040315a430adedb890c0a34d"},
+]
+
+[package.dependencies]
+aiohttp = "*"
+cachetools = "*"
+pydantic = "*"
 
 [[package]]
 name = "exceptiongroup"

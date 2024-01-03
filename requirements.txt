@@ -284,6 +284,9 @@ brotlicffi==1.0.9.2 ; platform_python_implementation != "CPython" and python_ful
     --hash=sha256:ba4a00263af40e875ec3d6c7f623cbf8c795b55705da18c64ec36b6bf0848bc5 \
     --hash=sha256:df78aa47741122b0d5463f1208b7bb18bc9706dee5152d9f56e0ead4865015cd \
     --hash=sha256:feb942814285bdc5e97efc77a04e48283c17dfab9ea082d79c0a7b9e53ef1eab
+cachetools==5.3.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:086ee420196f7b2ab9ca2db2520aca326318b68fe5ba8bc4d49cca91add450f2 \
+    --hash=sha256:861f35a13a451f94e301ce2bec7cac63e881232ccce7ed67fab9b5df4d3beaa1
 caio==0.9.13 ; python_full_version >= "3.8.1" and python_version < "4" \
     --hash=sha256:0a04bcac15b0c18057ec57dd9666c4d5c1058958a8db5191b46a1e54931c4a6e \
     --hash=sha256:114d6c158dc592849532fd0992cbfb85430f4f6e48323a3990c39e4741f81a25 \
@@ -546,6 +549,8 @@ distro==1.9.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0"
 duckduckgo-search==3.8.5 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:584ea097fa0475cebc278ee464ccd54ba78019dec15a0243723923dc40bc3939 \
     --hash=sha256:9c85190c439f29e95d0cc9509a77d63dbcdbda49a4f9bdf8ff4b567f4a10a44d
+enkanetwork-py==1.4.5 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:bdc99679bec55017bcf951f636e31793e8cf1fdb040315a430adedb890c0a34d
 exceptiongroup==1.1.3 ; python_full_version >= "3.8.1" and python_version < "3.11" \
     --hash=sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9 \
     --hash=sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3
