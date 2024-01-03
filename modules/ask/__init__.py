@@ -39,12 +39,12 @@ assistant = sync_client.beta.assistants.create(
     model="gpt-3.5-turbo-1106"
 )
 
-assistant_gpt4 = sync_client.beta.assistants.create(
-    name="AkariBot",
-    instructions=INSTRUCTIONS,
-    tools=[{"type": "code_interpreter"}],
-    model="gpt-4-1106-preview"
-)
+# assistant_gpt4 = sync_client.beta.assistants.create(
+#     name="AkariBot",
+#     instructions=INSTRUCTIONS,
+#     tools=[{"type": "code_interpreter"}],
+#     model="gpt-4-1106-preview"
+# )
 
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
@@ -78,7 +78,7 @@ async def _(msg: Bot.MessageSession):
         ])
         run = await client.beta.threads.runs.create(
             thread_id=thread.id,
-            assistant_id=assistant_gpt4.id if gpt4 else assistant.id,
+            assistant_id=assistant.id,
         )
         while True:
             run = await client.beta.threads.runs.retrieve(
@@ -87,6 +87,8 @@ async def _(msg: Bot.MessageSession):
             )
             if run.status == 'completed':
                 break
+            elif run.status == 'failed':
+                raise RuntimeError(run.json())
             await asyncio.sleep(1)
 
         messages = await client.beta.threads.messages.list(
