@@ -39,10 +39,17 @@ assistant = sync_client.beta.assistants.create(
     model="gpt-3.5-turbo-1106"
 )
 
+assistant_gpt4 = sync_client.beta.assistants.create(
+    name="AkariBot",
+    instructions=INSTRUCTIONS,
+    tools=[{"type": "code_interpreter"}],
+    model="gpt-4-1106-preview"
+)
+
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
 
-@a.command('[--verbose] <question> {{ask.help}}')
+@a.command('[-4] <question> {{ask.help}}')
 @a.regex(r'^(?:question||问|問)[\:：]\s?(.+?)[?？]$', flags=re.I, desc='{ask.help.regex}')
 async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
@@ -56,8 +63,10 @@ async def _(msg: Bot.MessageSession):
     if c == 0 or msg.target.target_from == 'TEST|Console' or is_superuser:
         if hasattr(msg, 'parsed_msg'):
             question = msg.parsed_msg['<question>']
+            gpt4 = bool(msg.parsed_msg['-4'])
         else:
             question = msg.matched_msg[0]
+            gpt4 = False
         if await check_bool(question):
             await msg.finish(rickroll(msg))
 
@@ -69,7 +78,7 @@ async def _(msg: Bot.MessageSession):
         ])
         run = await client.beta.threads.runs.create(
             thread_id=thread.id,
-            assistant_id=assistant.id,
+            assistant_id=assistant_gpt4.id if gpt4 else assistant.id,
         )
         while True:
             run = await client.beta.threads.runs.retrieve(
@@ -88,7 +97,7 @@ async def _(msg: Bot.MessageSession):
         tokens = count_token(res)
 
         if not is_superuser:
-            petal = await count_petal(tokens)
+            petal = await count_petal(tokens, gpt4)
             msg.data.modify_petal(-petal)
         else:
             petal = 0

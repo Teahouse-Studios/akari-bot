@@ -12,11 +12,13 @@ from core.utils.storedata import get_stored_list, update_stored_list
 
 ONE_K = Decimal('1000')
 # https://openai.com/pricing
-BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo： $0.002 / 1K tokens
+BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo-1106: $0.002 / 1K tokens
+BASE_COST_GPT_4 = Decimal('0.03')  # gpt-4-1106-preview: $0.03 / 1K tokens
 # We are not tracking specific tool usage like searches b/c I'm too lazy, use a universal multiplier
 THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
+PRICE_PER_1K_TOKEN_GPT4 = BASE_COST_GPT_4 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 USD_TO_CNY = Decimal('7.1')  # Assuming 1 USD = 7.1 CNY
 CNY_TO_PETAL = 100  # 100 petal = 1 CNY
 
@@ -51,7 +53,7 @@ async def load_or_refresh_cache():
         return exchanged_petal_data["exchanged_petal"]
 
 
-async def count_petal(tokens: int):
+async def count_petal(tokens: int, gpt4: bool = False):
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
     petal_exchange_rate = await load_or_refresh_cache()
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
