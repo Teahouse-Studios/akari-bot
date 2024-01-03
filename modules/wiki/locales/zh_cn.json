@@ -15,7 +15,7 @@
     "wiki.help.iw.list": "列出当前设置的 Interwiki。",
     "wiki.help.iw.list.legacy": "列出当前设置的 Interwiki。（旧版）",
     "wiki.help.iw.remove": "删除自定义 Interwiki。",
-    "wiki.help.newbie.desc": "获取默认 Wiki 的新用户日志。",
+    "wiki.help.newbie": "获取默认 Wiki 的新用户日志。",
     "wiki.help.option.l": "查找本页面的对应语言版本，若无结果则返回当前语言。",
     "wiki.help.prefix.reset": "重置自定义前缀。",
     "wiki.help.prefix.set": "设置自定义前缀。",
