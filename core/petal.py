@@ -17,7 +17,7 @@ BASE_COST_GPT_3_5 = Decimal('0.002')  # gpt-3.5-turbo： $0.002 / 1K tokens
 THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
-USD_TO_CNY = Decimal('7.3')  # Assuming 1 USD = 7.3 CNY
+USD_TO_CNY = Decimal('7.1')  # Assuming 1 USD = 7.1 CNY
 CNY_TO_PETAL = 100  # 100 petal = 1 CNY
 
 
@@ -51,7 +51,7 @@ async def load_or_refresh_cache():
         return exchanged_petal_data["exchanged_petal"]
 
 
-async def count_petal(tokens):
+async def count_petal(tokens: int):
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
     petal_exchange_rate = await load_or_refresh_cache()
     price = tokens / ONE_K * PRICE_PER_1K_TOKEN
