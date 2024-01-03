@@ -246,12 +246,12 @@ class DrawBest(object):
                 comboImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{comboPic[chartInfo.comboId]}_S.png').convert(
                     'RGBA')
                 comboImg = self._resizePic(comboImg, 0.45)
-                temp.paste(comboImg, (68, 62), comboImg.split()[3])
+                temp.paste(comboImg, (69, 62), comboImg.split()[3])
             if chartInfo.syncId:
                 syncImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{syncPic[chartInfo.syncId]}_S.png').convert(
                     'RGBA')
                 syncImg = self._resizePic(syncImg, 0.45)
-                temp.paste(syncImg, (84, 62), syncImg.split()[3])
+                temp.paste(syncImg, (86, 62), syncImg.split()[3])
             font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 12, encoding='utf-8')
             tempDraw.text((7, 64), f'{chartInfo.ds} -> {computeRa(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
@@ -300,12 +300,12 @@ class DrawBest(object):
                 comboImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{comboPic[chartInfo.comboId]}_S.png').convert(
                     'RGBA')
                 comboImg = self._resizePic(comboImg, 0.45)
-                temp.paste(comboImg, (68, 62), comboImg.split()[3])
+                temp.paste(comboImg, (69, 62), comboImg.split()[3])
             if chartInfo.syncId:
                 syncImg = Image.open(self.pic_dir + f'UI_MSS_MBase_Icon_{syncPic[chartInfo.syncId]}_S.png').convert(
                     'RGBA')
                 syncImg = self._resizePic(syncImg, 0.45)
-                temp.paste(syncImg, (84, 62), syncImg.split()[3])
+                temp.paste(syncImg, (86, 62), syncImg.split()[3])
             font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 12, encoding='utf-8')
             tempDraw.text((7, 64), f'{chartInfo.ds} -> {chartInfo.ra}', 'white', font)
             tempDraw.text((105, 64), f'#{num + 1}', 'white', font)

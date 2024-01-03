@@ -1,4 +1,4 @@
-import openai
+from openai import AsyncOpenAI
 import re
 
 from config import Config
@@ -10,7 +10,9 @@ from core.logger import Logger
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
 
-openai.api_key = Config('openai_api_key')
+client = AsyncOpenAI(
+    api_key=Config('openai_api_key'),
+)
 
 s = module('summary',
            developers=['Dianliang233', 'OasisAkari'],
@@ -61,7 +63,7 @@ async def _(msg: Bot.MessageSession):
                     nth += 1
                 else:
                     break
-        completion = openai.ChatCompletion.create(
+        completion = await client.chat.completions.create(
             model='gpt-3.5-turbo',
             messages=[
                 {'role': 'system', "content": "You are a helpful assistants who summarizes chat logs."},
@@ -70,8 +72,8 @@ async def _(msg: Bot.MessageSession):
     {post_texts}'''},
             ]
         )
-        output = completion['choices'][0]['message']['content']
-        tokens = completion['usage']['total_tokens']
+        output = completion.choices[0].message.content
+        tokens = completion.usage.total_tokens
         if not is_superuser:
             petal = await count_petal(tokens)
             msg.data.modify_petal(-petal)

@@ -9,7 +9,7 @@ async def ab(msg: Bot.MessageSession, wiki_url):
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp')
     pageurl = wiki.wiki_info.articlepath.replace('$1', 'Special:AbuseLog')
     d = []
-    for x in query['query']['abuselog'][:10]:
+    for x in query['query']['abuselog'][:5]:
         if 'title' in x:
             d.append(msg.locale.t("wiki.message.ab.slice", title=x['title'], user=x['user'],
                                   time=msg.ts2strftime(strptime2ts(x['timestamp']), date=False, timezone=False),
@@ -19,6 +19,6 @@ async def ab(msg: Bot.MessageSession, wiki_url):
     if y.find("<吃掉了>") != -1 or y.find("<全部吃掉了>") != -1:
         y = y.replace("<吃掉了>", msg.locale.t("check.redacted"))
         y = y.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}\n{msg.locale.t("wiki.message.utils.banned")}'
+        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="5")}\n{msg.locale.t("wiki.message.utils.redacted")}'
     else:
-        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="10")}'
+        return f'{str(Url(pageurl))}\n{y}\n{msg.locale.t("message.collapse", amount="5")}'

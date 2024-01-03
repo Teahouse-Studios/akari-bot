@@ -18,5 +18,5 @@ async def newbie(msg: Bot.MessageSession, wiki_url):
     if g.find("<吃掉了>") != -1 or g.find("<全部吃掉了>") != -1:
         g = g.replace("<吃掉了>", msg.locale.t("check.redacted"))
         g = g.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        g += f'\n{msg.locale.t("wiki.message.utils.banned")}'
+        g += f'\n{msg.locale.t("wiki.message.utils.redacted")}'
     return g
