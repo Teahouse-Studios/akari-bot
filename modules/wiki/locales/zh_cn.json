@@ -82,7 +82,7 @@
     "wiki.message.search.prompt": "回复编号以查询对应的页面。",
     "wiki.message.set.default": "没有设置起始 Wiki，已默认为中文 Minecraft Wiki，使用“${prefix}wiki set”设置自定义起始 Wiki。\n示例：${prefix}wiki set https://zh.minecraft.wiki/",
     "wiki.message.set.success": "成功设置起始 Wiki：${name}",
-    "wiki.message.utils.banned": "检测到外来信息介入，请前往滥用日志查看所有消息。",
+    "wiki.message.utils.redacted": "检测到外来信息介入，请前往滥用日志查看所有消息。",
     "wiki.message.utils.qq.prompt": "Tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。",
     "wiki.message.utils.time.infinity": "无限期",
     "wiki.message.utils.wikilib.error.empty": "发生错误：API 未返回任何内容，请联系此站点管理员获取原因。",
