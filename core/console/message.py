@@ -3,6 +3,7 @@ from typing import List, Union
 from PIL import Image
 import aioconsole
 
+from config import Config
 from core.builtins import (Plain, Image as BImage, confirm_command, Bot, FetchTarget as FetchTargetT,
                            FetchedSession as FetchedSessionT)
 from core.builtins.message import MessageSession as MessageSessionT
@@ -48,6 +49,8 @@ class MessageSession(MessageSessionT):
 
     async def wait_confirm(self, message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True):
         send = None
+        if Config('no_confirm'):
+            return True
         if message_chain:
             send = await self.send_message(message_chain)
             print(self.locale.t("message.wait.confirm.prompt.type1"))

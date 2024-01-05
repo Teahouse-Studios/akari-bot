@@ -1,8 +1,8 @@
 import asyncio
-from config import Config
 from datetime import datetime
 from typing import List
 
+from config import Config
 from core.builtins.message.chain import *
 from core.builtins.message.internal import *
 from core.builtins.tasks import MessageTaskManager
@@ -39,6 +39,8 @@ class MessageSession(MessageSessionT):
             -> bool:
         send = None
         ExecutionLockList.remove(self)
+        if Config('no_confirm'):
+            return True
         if message_chain:
             message_chain = MessageChain(message_chain)
             if append_instruction:

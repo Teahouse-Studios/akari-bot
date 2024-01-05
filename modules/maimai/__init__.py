@@ -390,7 +390,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         else:
             music = music_data.random()
             await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
-    except ValueError:
+    except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
 

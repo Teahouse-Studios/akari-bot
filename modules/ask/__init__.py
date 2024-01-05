@@ -7,10 +7,11 @@ from openai import OpenAI, AsyncOpenAI
 import tiktoken
 
 from config import Config
+from core.logger import logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
-from core.exceptions import ConfigValueError
+from core.exceptions import ConfigValueError, NoReportException
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
 
@@ -88,8 +89,11 @@ async def _(msg: Bot.MessageSession):
             if run.status == 'completed':
                 break
             elif run.status == 'failed':
-                raise RuntimeError(run.json())
-            await asyncio.sleep(1)
+                if run.last_error.code == 'rate_limit_exceeded':
+                    logger.warning(run.last_error.json())
+                    raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
+                raise RuntimeError(run.last_error.json())
+            await asyncio.sleep(4)
 
         messages = await client.beta.threads.messages.list(
             thread_id=thread.id
@@ -99,7 +103,8 @@ async def _(msg: Bot.MessageSession):
         tokens = count_token(res)
 
         if not is_superuser:
-            petal = await count_petal(tokens, gpt4)
+            petal = await count_petal(tokens)
+            # petal = await count_petal(tokens, gpt4)
             msg.data.modify_petal(-petal)
         else:
             petal = 0
@@ -138,7 +143,7 @@ async def _(msg: Bot.MessageSession):
 
 
 def parse_markdown(md: str):
-    regex = r'(```[\s\S]*?\n```|\$[\s\S]*?\$|[^\n]+)'
+    regex = r'(```[\s\S]*?\n```|\\\[[\s\S]*?\\\]|[^\n]+)'
 
     blocks = []
     for match in re.finditer(regex, md):
@@ -151,9 +156,9 @@ def parse_markdown(md: str):
             except AttributeError:
                 raise ValueError('Code block is missing language or code')
             content = {'language': language, 'code': code}
-        elif content.startswith('$'):
+        elif content.startswith('\\['):
             block = 'latex'
-            content = content[1:-1].strip()
+            content = content[2:-2].strip()
         else:
             block = 'text'
         blocks.append({'type': block, 'content': content})
