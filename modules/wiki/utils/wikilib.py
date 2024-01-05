@@ -608,10 +608,11 @@ class WikiLib:
                         parse_section_string = {'action': 'parse', 'page': title, 'prop': 'sections'}
                         parse_section = await self.get_json(**parse_section_string)
                         section_list = []
-                        sections = parse_section['parse']['sections']
-                        for s in sections:
-                            section_list.append(s['anchor'])
-                        page_info.sections = section_list
+                        if 'parse' in parse_section:
+                            sections = parse_section['parse']['sections']
+                            for s in sections:
+                                section_list.append(s['anchor'])
+                            page_info.sections = section_list
                         if selected_section:
                             if urllib.parse.unquote(selected_section) not in section_list:
                                 page_info.invalid_section = True
