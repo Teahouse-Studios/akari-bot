@@ -7,6 +7,7 @@ from openai import OpenAI, AsyncOpenAI
 import tiktoken
 
 from config import Config
+from core.logger import logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
@@ -89,8 +90,9 @@ async def _(msg: Bot.MessageSession):
                 break
             elif run.status == 'failed':
                 if run.last_error.code == 'rate_limit_exceeded':
+                    logger.warning(run.last_error.json())
                     raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
-                raise RuntimeError(run.last_error)
+                raise RuntimeError(run.last_error.json())
             await asyncio.sleep(4)
 
         messages = await client.beta.threads.messages.list(
