@@ -359,6 +359,7 @@ async def _(msg: Bot.MessageSession, level: str, username: str = None):
 @mai.command('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession, dx_type: str = None):
     input_ = msg.parsed_msg['<diff+level>']
+    
     pattern = re.compile(r'(?P<diff>[a-zA-Z*]+)(?P<level>\d+[+]?)')
     match = pattern.match(input_)
     if match:
@@ -372,12 +373,6 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             dx_type = ["SD"]
         else:
             dx_type = ["SD", "DX"]
-
-        for char in filter:
-            if char.isdigit() or char == '+':
-                level += char
-            else:
-                diff += char
 
         if level == "":
             if diff == "*":
