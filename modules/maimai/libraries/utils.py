@@ -313,7 +313,7 @@ async def get_score_list(msg, payload, level, page):
             song_list.append(song)  # 将符合难度的成绩加入列表
 
     output_lines = []
-    total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+    total_pages = (len(song_list) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     page = max(min(int(page), total_pages), 1)
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
