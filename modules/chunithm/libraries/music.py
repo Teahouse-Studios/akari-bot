@@ -46,6 +46,18 @@ def in_or_equal(checker: Any, elem: Optional[Union[Any, List[Any]]]):
     else:
         return checker == elem
 
+    
+class Chart(Dict):
+    combo: Optional[int] = None
+    charter: Optional[int] = None
+
+    def __getattribute__(self, item):
+        if item == 'combo':
+            return self['combo']
+        elif item == 'charter':
+            return self['charter']
+        return super().__getattribute__(item)
+
 
 class Music(Dict):
     id: Optional[str] = None
