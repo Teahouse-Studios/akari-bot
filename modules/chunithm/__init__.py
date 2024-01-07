@@ -2,7 +2,7 @@ import traceback
 
 from core.builtins import Bot, Plain
 from core.utils.image import msgchain2image
-from modules.chunithm.libraries.music import TotalList
+from modules.chunithm.libraries.music import Music, TotalList
 
 total_list = TotalList()
 
