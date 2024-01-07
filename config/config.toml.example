@@ -25,6 +25,7 @@ wolfram_alpha_appid =
 jwt_secret =
 
 [cfg]
+api_port = 5000
 base_superuser = "QQ|2596322644"
 debug = false
 cache_path = "./cache/"
@@ -72,4 +73,4 @@ dice_output_count = 50
 dice_output_len = 200
 dice_detail_count = 5
 dice_count_limit = 10
-api_port = 5000
+maimai_songs_per_page = 25

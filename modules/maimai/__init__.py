@@ -8,10 +8,8 @@ from modules.maimai.libraries.best50 import computeRa, generate
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from modules.maimai.libraries.music import get_cover_len5_id, TotalList
 from modules.maimai.libraries.utils import get_grade_info, get_level_process, \
-    get_plate_process, get_player_score, get_rank, get_score_list
+    get_plate_process, get_player_score, get_rank, get_score_list, SONGS_PER_PAGE
 from .regex import *
-
-SONGS_PER_PAGE = 25
 
 goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", 
              "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
