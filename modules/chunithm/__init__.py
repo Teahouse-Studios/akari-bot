@@ -2,7 +2,7 @@ import traceback
 
 from core.builtins import Bot, Plain
 from core.utils.image import msgchain2image
-from modules.maimai.libraries.music import get_cover_len4_id, TotalList
+from modules.chunithm.libraries.music import get_cover_len4_id, TotalList
 
 total_list = TotalList()
 
