@@ -94,7 +94,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str=None):
     result_set = await diff_level_q(level)
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
-    page = max(min(int(page), total_pages), 1) if page else 1
+    page = max(min(int(page), total_pages), 1) if page.isdigit() else 1
     start_index = (page - 1) * SONGS_PER_PAGE
     end_index = page * SONGS_PER_PAGE
 
