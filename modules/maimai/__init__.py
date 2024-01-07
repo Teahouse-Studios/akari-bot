@@ -215,7 +215,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
         if len(chart['notes']) == 4:
-            message = msg.locale.t(
+            res = msg.locale.t(
                 "maimai.message.song.sd",
                 diff=diff_label[diff_index],
                 level=level,
@@ -226,7 +226,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 brk=chart['notes'][3],
                 charter=chart['charter'])
         else:
-            message = msg.locale.t(
+            res = msg.locale.t(
                 "maimai.message.song.dx",
                 diff=diff_label[diff_index],
                 level=level,
@@ -237,16 +237,16 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await msg.finish(await get_info(msg, music, Plain(message)))
+        await msg.finish(await get_info(msg, music, Plain(res)))
     else:
-        message = msg.locale.t(
+        res = msg.locale.t(
             "maimai.message.song",
             artist=music['basic_info']['artist'],
             genre=music['basic_info']['genre'],
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(msg, music, Plain(message)))
+        await msg.finish(await get_info(msg, music, Plain(res)))
 
 
 @mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
@@ -364,7 +364,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str, username: str = None
 
 @mai.command('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession, dx_type: str = None):
-    filter = msg.parsed_msg['<diff+level>']
+    condit = msg.parsed_msg['<diff+level>']
     level = ''
     diff = ''
     try:
@@ -375,7 +375,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         else:
             dx_type = ["SD", "DX"]
 
-        for char in filter:
+        for char in condit:
             if char.isdigit() or char == '+':
                 level += char
             else:
