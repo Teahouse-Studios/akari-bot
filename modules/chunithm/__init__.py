@@ -42,7 +42,7 @@ chu = module('chunithm',
              alias='chu', support_languages=['zh_cn'], desc='{chunithm.help.desc}')
 
 
-@chu.command('base <constant> [<constant_max>] {{maimai.help.base}}')
+@chu.command('base <constant> [<constant_max>] {{chunithm.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
     if constant_max:
         if constant > constant_max:
@@ -140,8 +140,8 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish([BImage(img)])
 
 
-@mai.command('id <id> [<diff>] {{maimai.help.id}}')
-@mai.command('song <song> [<diff>] {{maimai.help.song}}')
+@chu.command('id <id> [<diff>] {{chunithm.help.id}}')
+@chu.command('song <song> [<diff>] {{chunithm.help.song}}')
 async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
