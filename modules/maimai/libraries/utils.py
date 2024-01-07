@@ -313,7 +313,7 @@ async def get_score_list(msg, payload, level, page):
             song_list.append(song)  # 将符合难度的成绩加入列表
 
     output_lines = []
-    total_pages = len(song_list) // SONGS_PER_PAGE
+    total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     page = max(min(int(page), total_pages), 1)
     for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
         if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
@@ -324,7 +324,6 @@ async def get_score_list(msg, payload, level, page):
             elif s["fc"] or s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
             output_lines.append(output)
-    output_lines.append(msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages))
 
     outputs = '\n'.join(output_lines)
     res = f"{msg.locale.t('maimai.message.scorelist', user=username, level=level)}\n{outputs}"
@@ -333,6 +332,7 @@ async def get_score_list(msg, payload, level, page):
     if len(output_lines) == 0:
         await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
     elif len(output_lines) > 10:
+        res += f"\n{msg.locale.t('maimai.message.pages', page=page, total_pages=total_pages)}"
         get_img = True
 
     return res, get_img

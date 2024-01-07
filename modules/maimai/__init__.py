@@ -101,13 +101,13 @@ async def _(msg: Bot.MessageSession, level: str, page: str=None):
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
     for elem in result_set[start_index:end_index]:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
-    s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
 
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
+        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
