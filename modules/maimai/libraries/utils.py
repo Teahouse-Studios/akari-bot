@@ -323,7 +323,7 @@ async def get_score_list(msg, payload, level, page):
             elif s["fc"] or s["fs"]:
                 output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
             output_lines.append(output)
-    output_lines.append(msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+    output_lines.append(msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages))
 
     outputs = '\n'.join(output_lines)
     res = f"{msg.locale.t('maimai.message.scorelist', user=username, level=level)}\n{outputs}"
