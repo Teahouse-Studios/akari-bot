@@ -1,5 +1,5 @@
 from config import Config
-from core.builtins import Bot, Plain
+from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from modules.chunithm.libraries.music import Music, TotalList
@@ -38,7 +38,7 @@ def get_info(msg: Bot.MessageSession, music: Music, *details):
 
 
 chu = module('chunithm',
-             developers=['DoroWolf'],
+             developers=['DoroWolf'], required_superuser=True,
              alias='chu', support_languages=['zh_cn'], desc='{chunithm.help.desc}')
 
 
@@ -148,6 +148,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         music = (await total_list.get()).by_id(sid)
     elif song[:2].lower() == "id":
         sid = song[2:]
+        music = (await total_list.get()).by_id(sid)
     else:
         song = song.replace("_", " ").strip().lower()
         music = (await total_list.get()).filter(title=song)
@@ -172,12 +173,12 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         await msg.finish(get_info(msg, music, Plain(res)))
     else:
         res = msg.locale.t(
-            "chunithm.message.song",
-            artist=music['basic_info']['artist'],
-            genre=music['basic_info']['genre'],
-            bpm=music['basic_info']['bpm'],
-            version=music['basic_info']['from'],
-            level='/'.join((str(ds) for ds in music['ds'])))
+                "chunithm.message.song",
+                artist=music['basic_info']['artist'],
+                genre=music['basic_info']['genre'],
+                bpm=music['basic_info']['bpm'],
+                version=music['basic_info']['from'],
+                level='/'.join((str(ds) for ds in music['ds'])))
         await msg.finish(get_info(msg, music, Plain(res)))
 
 

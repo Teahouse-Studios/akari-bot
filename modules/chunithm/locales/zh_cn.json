@@ -14,6 +14,7 @@
     "chunithm.message.level_invalid": "无效的等级，请检查输入。",
     "chunithm.message.music_not_found": "未找到符合要求的歌曲。",
     "chunithm.message.pages": "（第 ${page} 页，共 ${total_pages} 页）",
+    "chunithm.message.random.error": "发生错误：随机歌曲失败，请检查输入。",
     "chunithm.message.search": "“${keyword}”的搜索结果：",
     "chunithm.message.song": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}\n难度：${level}",
     "chunithm.message.song.diff": "${diff} ${level} (${ds})\n连击：${combo}\n谱师：${charter}",

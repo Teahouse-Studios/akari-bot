@@ -17,5 +17,6 @@
     "chunithm.message.search": "「${keyword}」的搜尋結果：",
     "chunithm.message.song": "藝術家：${artist}\n分類：${genre}\nBPM：${bpm}\n版本：${version}\n難度：${level}",
     "chunithm.message.song.diff": "${diff} ${level} (${ds})\n連擊：${combo}\n譜師：${charter}",
-    "chunithm.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。"
+    "chunithm.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
+    "chunitm.message.random.error": "發生錯誤：無法隨機歌曲，請校對輸入。"
 }
