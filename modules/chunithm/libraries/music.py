@@ -5,11 +5,6 @@ from typing import Dict, List, Optional, Union, Tuple, Any
 from core.utils.http import get_url
 
 
-def get_cover_len4_id(mid) -> str:
-    mid = int(mid)
-    return f'{mid:04d}'
-
-
 def cross(checker: List[Any], elem: Optional[Union[Any, List[Any]]], diff):
     ret = False
     diff_ret = []
