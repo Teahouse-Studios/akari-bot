@@ -2,6 +2,7 @@ import traceback
 
 from config import Config
 from core.builtins import Bot, Plain, Image as BImage
+from core.component import module
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.best50 import computeRa, generate

@@ -1,6 +1,6 @@
-import traceback
-
+from config import Config
 from core.builtins import Bot, Plain
+from core.component import module
 from core.utils.image import msgchain2image
 from modules.chunithm.libraries.music import Music, TotalList
 
@@ -11,6 +11,7 @@ diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'ult']
 diff_label_zhs = ['绿', '黄', '红', '紫', '黑']
 diff_label_zht = ['綠', '黃', '紅']
 
+SONGS_PER_PAGE = Config('maimai_songs_per_page', 20)
 
 def get_diff(diff):
     diff = diff.lower()
