@@ -23,9 +23,9 @@ curseforge_api_key =
 exchange_rate_api_key =
 wolfram_alpha_appid =
 jwt_secret =
-langsmith_api_key =
 
 [cfg]
+api_port = 5000
 base_superuser = "QQ|2596322644"
 debug = false
 cache_path = "./cache/"
@@ -69,11 +69,8 @@ dice_limit = 100
 dice_roll_limit = 10
 dice_mod_max = 10000
 dice_mod_min = -10000
-dice_output_cnt = 50
+dice_output_count = 50
 dice_output_len = 200
-dice_detail_cnt = 5
+dice_detail_count = 5
 dice_count_limit = 10
-api_port = 5000
-enable_langsmith = false
-langsmith_endpoint = "https://api.smith.langchain.com"
-langsmith_project =
+maimai_songs_per_page = 25

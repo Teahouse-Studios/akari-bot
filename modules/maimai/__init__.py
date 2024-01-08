@@ -2,13 +2,14 @@ import traceback
 
 from config import Config
 from core.builtins import Bot, Plain, Image as BImage
+from core.component import module
 from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from modules.maimai.libraries.best50 import computeRa, generate
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from modules.maimai.libraries.music import get_cover_len5_id, TotalList
 from modules.maimai.libraries.utils import get_grade_info, get_level_process, \
-    get_plate_process, get_player_score, get_rank, get_score_list
+    get_plate_process, get_player_score, get_rank, get_score_list, SONGS_PER_PAGE
 from .regex import *
 
 goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", 
@@ -89,20 +90,27 @@ async def base_level_q(ds1, ds2=None):
     return result_set
 
 
-@mai.command('level <level> {{maimai.help.level}}')
-async def _(msg: Bot.MessageSession, level: str):
+@mai.command('level <level> [<page>] {{maimai.help.level}}')
+async def _(msg: Bot.MessageSession, level: str, page: str=None):
     result_set = await diff_level_q(level)
+
+    total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+    page = max(min(int(page), total_pages), 1) if page and page.isdigit() else 1
+    start_index = (page - 1) * SONGS_PER_PAGE
+    end_index = page * SONGS_PER_PAGE
+
     s = msg.locale.t("maimai.message.level", level=level) + "\n"
-    for elem in result_set:
+    for elem in result_set[start_index:end_index]:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
+
     if len(result_set) == 0:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
-    elif len(result_set) <= 10:
+    elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
+        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
-
 
 async def diff_level_q(level):
     result_set = []
@@ -208,7 +216,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
         if len(chart['notes']) == 4:
-            message = msg.locale.t(
+            res = msg.locale.t(
                 "maimai.message.song.sd",
                 diff=diff_label[diff_index],
                 level=level,
@@ -219,7 +227,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 brk=chart['notes'][3],
                 charter=chart['charter'])
         else:
-            message = msg.locale.t(
+            res = msg.locale.t(
                 "maimai.message.song.dx",
                 diff=diff_label[diff_index],
                 level=level,
@@ -230,16 +238,16 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
                 touch=chart['notes'][3],
                 brk=chart['notes'][4],
                 charter=chart['charter'])
-        await msg.finish(await get_info(msg, music, Plain(message)))
+        await msg.finish(await get_info(msg, music, Plain(res)))
     else:
-        message = msg.locale.t(
+        res = msg.locale.t(
             "maimai.message.song",
             artist=music['basic_info']['artist'],
             genre=music['basic_info']['genre'],
             bpm=music['basic_info']['bpm'],
             version=music['basic_info']['from'],
             level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(msg, music, Plain(message)))
+        await msg.finish(await get_info(msg, music, Plain(res)))
 
 
 @mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
@@ -337,8 +345,8 @@ async def _(msg: Bot.MessageSession, username: str = None):
     await get_rank(msg, payload)
 
 
-@mai.command('scorelist <level> [<username>] {{maimai.help.scorelist}}')
-async def _(msg: Bot.MessageSession, level: str, username: str = None):
+@mai.command('scorelist <level> <page> [<username>] {{maimai.help.scorelist}}')
+async def _(msg: Bot.MessageSession, level: str, page: str, username: str = None):
     if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender}
     else:
@@ -346,7 +354,7 @@ async def _(msg: Bot.MessageSession, level: str, username: str = None):
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username}
 
-    res, get_img = await get_score_list(msg, payload, level)
+    res, get_img = await get_score_list(msg, payload, level, page)
 
     if get_img:
         img = await msgchain2image([Plain(res)])
@@ -357,7 +365,7 @@ async def _(msg: Bot.MessageSession, level: str, username: str = None):
 
 @mai.command('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
 async def _(msg: Bot.MessageSession, dx_type: str = None):
-    filter = msg.parsed_msg['<diff+level>']
+    condit = msg.parsed_msg['<diff+level>']
     level = ''
     diff = ''
     try:
@@ -368,7 +376,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
         else:
             dx_type = ["SD", "DX"]
 
-        for char in filter:
+        for char in condit:
             if char.isdigit() or char == '+':
                 level += char
             else:

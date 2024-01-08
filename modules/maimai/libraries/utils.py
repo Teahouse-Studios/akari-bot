@@ -2,11 +2,13 @@ import os
 import ujson as json
 from datetime import datetime
 
+from config import Config
 from core.utils.http import get_url
 from core.utils.cache import random_cache_path
 from .apidata import get_record, get_plate
 from .music import TotalList
 
+SONGS_PER_PAGE = Config('maimai_songs_per_page', 20)
 JINGLEBELL_SONG_ID = 70
 
 assets_path = os.path.abspath('./assets/maimai')
@@ -296,7 +298,7 @@ async def get_level_process(msg, payload, process, goal):
     return output, get_img
 
 
-async def get_score_list(msg, payload, level):
+async def get_score_list(msg, payload, level, page):
     song_list = []
 
     player_data = await get_record(msg, payload)
@@ -309,15 +311,19 @@ async def get_score_list(msg, payload, level):
     for song in verlist:
         if song['level'] == level:
             song_list.append(song)  # 将符合难度的成绩加入列表
+
     output_lines = []
-    for s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
-        music = (await total_list.get()).by_id(str(s[1]['id']))
-        output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s[1]['level_index']]} {music.ds[s[1]['level_index']]} {s[1]['achievements']}%"
-        if s[1]["fc"] and s[1]["fs"]:
-            output += f" {combo_conversion.get(s[1]['fc'], '')} {sync_conversion.get(s[1]['fs'], '')}"
-        elif s[1]["fc"] or s[1]["fs"]:
-            output += f" {combo_conversion.get(s[1]['fc'], '')}{sync_conversion.get(s[1]['fs'], '')}"
-        output_lines.append(output)
+    total_pages = (len(song_list) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+    page = max(min(int(page), total_pages), 1) if page.isdigit() else 1
+    for i, s in enumerate(sorted(song_list, key=lambda i: i['achievements'], reverse=True)):  # 根据成绩排序
+        if (page - 1) * SONGS_PER_PAGE <= i < page * SONGS_PER_PAGE:
+            music = (await total_list.get()).by_id(str(s['id']))
+            output = f"{music.id}\u200B. {music.title}{' (DX)' if music.type == 'DX' else ''} {diffs[s['level_index']]} {music.ds[s['level_index']]} {s['achievements']}%"
+            if s["fc"] and s["fs"]:
+                output += f" {combo_conversion.get(s['fc'], '')} {sync_conversion.get(s['fs'], '')}"
+            elif s["fc"] or s["fs"]:
+                output += f" {combo_conversion.get(s['fc'], '')}{sync_conversion.get(s['fs'], '')}"
+            output_lines.append(output)
 
     outputs = '\n'.join(output_lines)
     res = f"{msg.locale.t('maimai.message.scorelist', user=username, level=level)}\n{outputs}"
@@ -326,6 +332,7 @@ async def get_score_list(msg, payload, level):
     if len(output_lines) == 0:
         await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
     elif len(output_lines) > 10:
+        res += f"\n{msg.locale.t('maimai.message.pages', page=page, total_pages=total_pages)}"
         get_img = True
 
     return res, get_img
@@ -478,7 +485,7 @@ async def get_plate_process(msg, payload, plate):
                 if [int(s[0]), s[-2]] in song_record:  # 显示剩余13+以上歌曲信息
                     record_index = song_record.index([int(s[0]), s[-2]])
                     if goal in ['將', '者']:
-                        self_record = str(verlist[record_index]['achievements']) + '%'
+                        self_record = f"{str(verlist[record_index]['achievements'])}%"
                     elif goal in ['極', '神']:
                         if verlist[record_index]['fc']:
                             self_record = comboRank[combo_rank.index(verlist[record_index]['fc'])]
