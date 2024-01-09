@@ -150,7 +150,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
     else:
         if not username:
             await msg.finish(msg.locale.t("chunithm.message.no_username"))
-        payload = {'username': username=}
+        payload = {'username': username}
 
     img = await generate_best30_text(msg, payload)
     await msg.finish([BImage(img)])
