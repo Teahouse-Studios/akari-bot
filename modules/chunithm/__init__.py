@@ -198,7 +198,7 @@ async def _(msg: Bot.MessageSession):
         if level == "":
             if diff == "":
                 music_data = (await total_list.get()).random()
-                await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
+                await msg.finish(await get_info(msg, music_data, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
             else:
                 raise ValueError
         else:
