@@ -39,7 +39,7 @@ async def get_info(msg: Bot.MessageSession, music: Music, *details):
 
 
 chu = module('chunithm',
-             developers=['DoroWolf'], required_superuser=True,
+             developers=['DoroWolf'],
              alias='chu', support_languages=['zh_cn'], desc='{chunithm.help.desc}')
 
 
@@ -152,7 +152,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         music = (await total_list.get()).by_id(sid)
     else:
         song = song.replace("_", " ").strip().lower()
-        music = (await total_list.get()).filter(title=song)
+        music = (await total_list.get()).by_title(song)
 
     if not music:
         await msg.finish(msg.locale.t("chunithm.message.music_not_found"))
@@ -197,8 +197,8 @@ async def _(msg: Bot.MessageSession):
 
         if level == "":
             if diff == "":
-                music_data = (await total_list.get()).random()
-                await msg.finish(await get_info(msg, music_data, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
+                music = (await total_list.get()).random()
+                await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
             else:
                 raise ValueError
         else:
