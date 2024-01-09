@@ -22,6 +22,6 @@ async def _(msg: Bot.MessageSession):
         f"玩家签名: {data.player.signature}\n"
         f"玩家等级：{data.player.level}\n"
         f"深境螺旋: {data.player.abyss_floor} 层 {data.player.abyss_room} 间\n"
-        f"下次查询剩余：{data.ttl} s"
+        f"缓存过期时间：{data.ttl} s"
         )
     
