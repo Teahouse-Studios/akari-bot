@@ -1,4 +1,5 @@
 {
+    "chunithm.help.b50": "查询 CHUNITHM 用户的 B30 列表。",
     "chunithm.help.base": "根据定数或定数范围搜索歌曲。",
     "chunithm.help.desc": "查询 CHUNITHM 相关内容。（Beta 版）",
     "chunithm.help.id": "根据 ID 查询歌曲或谱面信息。",
@@ -6,17 +7,23 @@
     "chunithm.help.random": "随机一首指定条件的歌曲，留空则完全随机。",
     "chunithm.help.search": "根据歌名（或一部分）搜索歌曲。",
     "chunithm.help.song": "查询 CHUNITHM 歌曲或谱面信息，ID 需要加入前缀“id”，空格用“_”替代。",
+    "chunithm.message.b30.text_prompt": "以下为 ${user}（Ra ${rating}）的 Best30 列表：",
     "chunithm.message.base": "以下为定数 ${constant} 的曲目列表：",
     "chunithm.message.base.range": "以下为定数 ${constant}-${constant_max} 的曲目列表：",
     "chunithm.message.chart_not_found": "未找到符合要求的谱面。",
     "chunithm.message.error.non_digital": "发生错误：歌曲 ID 必须为数字。",
+    "chunithm.message.forbidden": "此用户禁止了其他人获取数据。",
+    "chunithm.message.forbidden.eula": "无法获取数据，请前往查分器并同意用户协议。\n查分器地址：https://www.diving-fish.com/maimaidx/prober",
     "chunithm.message.level": "以下为 ${level} 级的曲目列表：",
     "chunithm.message.level_invalid": "无效的等级，请检查输入。",
     "chunithm.message.music_not_found": "未找到符合要求的歌曲。",
+    "chunithm.message.no_username": "请提供用户名！",
     "chunithm.message.pages": "（第 ${page} 页，共 ${total_pages} 页）",
     "chunithm.message.random.error": "发生错误：随机歌曲失败，请检查输入。",
     "chunithm.message.search": "“${keyword}”的搜索结果：",
     "chunithm.message.song": "艺术家：${artist}\n分类：${genre}\nBPM：${bpm}\n版本：${version}\n难度：${level}",
     "chunithm.message.song.diff": "${diff} ${level} (${ds})\n连击：${combo}\n谱师：${charter}",
-    "chunithm.message.too_much": "结果过多（${length} 条），请缩小搜索范围。"
+    "chunithm.message.too_much": "结果过多（${length} 条），请缩小搜索范围。",
+    "chunithm.message.user_not_found": "未找到此玩家，请确保此玩家的用户名和查分器中的用户名相同。",
+    "chunithm.message.user_unbound": "未绑定用户，请前往查分器并绑定你的 QQ 号。\n查分器地址：https://www.diving-fish.com/maimaidx/prober"
 }

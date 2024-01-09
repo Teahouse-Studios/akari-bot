@@ -143,14 +143,14 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish([BImage(img)])
 
 
-@mai.command('b30 [<username>] {{maimai.help.b50}}')
+@chu.command('b30 [<username>] {{chunithm.help.b30}}')
 async def _(msg: Bot.MessageSession, username: str = None):
     if not username and msg.target.sender_from == "QQ":
-        payload = {'qq': msg.session.sender, 'b50': True}
+        payload = {'qq': msg.session.sender}
     else:
         if not username:
-            await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username, 'b50': True}
+            await msg.finish(msg.locale.t("chunithm.message.no_username"))
+        payload = {'username': username=}
 
     img = await generate_best30_text(msg, payload)
     await msg.finish([BImage(img)])
