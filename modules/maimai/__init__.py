@@ -397,7 +397,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         else:
             music = music_data.random()
-            await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+            await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.error"))
 
@@ -405,7 +405,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 @mai.command('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).random()
-    await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+    await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
 
 
 @mai.command('scoreline <sid> <diff> <score> {{maimai.help.scoreline}}')

@@ -30,8 +30,9 @@ def get_diff(diff):
     return level
 
 
-def get_info(msg: Bot.MessageSession, music: Music, *details):
+async def get_info(msg: Bot.MessageSession, music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}")]
+    # 此处未来会添加图片
     if details:
         info.extend(details)
     return info
@@ -170,7 +171,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
                 ds=ds,
                 combo=chart['combo'],
                 charter=chart['charter'])
-        await msg.finish(get_info(msg, music, Plain(res)))
+        await msg.finish(await get_info(msg, music, Plain(res)))
     else:
         res = msg.locale.t(
                 "chunithm.message.song",
@@ -179,7 +180,7 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
                 bpm=music['basic_info']['bpm'],
                 version=music['basic_info']['from'],
                 level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(get_info(msg, music, Plain(res)))
+        await msg.finish(await get_info(msg, music, Plain(res)))
 
 
 @chu.command('random [<diff+level>] {{chunithm.help.random}}')
@@ -197,6 +198,7 @@ async def _(msg: Bot.MessageSession):
         if level == "":
             if diff == "":
                 music_data = (await total_list.get()).random()
+                await msg.finish(await get_info(msg, music_data, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
             else:
                 raise ValueError
         else:
@@ -209,6 +211,6 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("chunithm.message.music_not_found"))
         else:
             music = music_data.random()
-            await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+            await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("chunithm.message.random.error"))
