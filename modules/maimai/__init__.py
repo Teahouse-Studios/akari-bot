@@ -48,6 +48,8 @@ mai = module('maimai',
 
 @mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+    if constant <= 0:
+        await msg.finish(msg.locale.t('maimai.message.level_invalid'))
     if constant_max:
         if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))

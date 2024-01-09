@@ -73,4 +73,3 @@ dice_output_count = 50
 dice_output_len = 200
 dice_detail_count = 5
 dice_count_limit = 10
-maimai_songs_per_page = 25

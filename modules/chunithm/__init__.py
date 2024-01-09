@@ -1,4 +1,3 @@
-from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
@@ -11,7 +10,7 @@ diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'ult']
 diff_label_zhs = ['绿', '黄', '红', '紫', '黑']
 diff_label_zht = ['綠', '黃', '紅']
 
-SONGS_PER_PAGE = Config('maimai_songs_per_page', 20)
+SONGS_PER_PAGE = 20
 
 def get_diff(diff):
     diff = diff.lower()
@@ -45,6 +44,8 @@ chu = module('chunithm',
 
 @chu.command('base <constant> [<constant_max>] {{chunithm.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+    if constant <= 0:
+        await msg.finish(msg.locale.t('chunithm.message.level_invalid'))
     if constant_max:
         if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
