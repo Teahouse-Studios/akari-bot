@@ -142,46 +142,6 @@ def key_process(input_key, conv_dict):
     else:
         return None, input_key
 
-
-async def get_best50_text(msg, payload):
-    time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
-
-    data = await get_record(msg, payload)
-    username = data['username']
-    rating = data['username']
-    dx_charts = data["charts"]["dx"]
-    sd_charts = data["charts"]["sd"]
-
-    html_output = "<pre>\n"
-    
-    for chart in ds_charts:
-        line = "{:<6} {:<30} {:<10} {:<10} {:<10}->{:<5} {:<10} {:<10} {:<10}".format(
-            chart["song_id"],
-            f"{chart['title']} ({chart['type']})",
-            chart["level_label"],
-            chart["achievements"],
-            f"{chart['ds']}->{chart['ra']}",
-            chart["rate"],
-            chart["fc"],
-            chart["fs"]
-        )
-        html_output += line + "\n"
-    html_output += "\n"
-    for chart in dx_charts:
-        line = "{:<6} {:<30} {:<10} {:<10} {:<10}->{:<5} {:<10} {:<10} {:<10}".format(
-            chart["song_id"],
-            f"{chart['title']} ({chart['type']})",
-            chart["level_label"],
-            chart["achievements"],
-            f"{chart['ds']}->{chart['ra']}",
-            chart["rate"],
-            chart["fc"],
-            chart["fs"]
-        )
-        html_output += line + "\n"
-    
-    html_output += "</pre>"
-
 async def get_rank(msg, payload):
     time = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
 

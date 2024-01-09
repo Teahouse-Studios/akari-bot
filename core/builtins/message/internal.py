@@ -62,9 +62,11 @@ class Url(UrlT):
 
 
 class FormattedTime:
-    def __init__(self, timestamp: float, date=True, seconds=True, timezone=True):
+    def __init__(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
         self.timestamp = timestamp
         self.date = date
+        self.iso = iso
+        self.time = time
         self.seconds = seconds
         self.timezone = timezone
 
@@ -72,13 +74,20 @@ class FormattedTime:
         ftime_template = []
         if msg:
             if self.date:
-                ftime_template.append(msg.locale.t("time.date.format"))
-            if self.seconds:
-                ftime_template.append(msg.locale.t("time.time.format"))
-            else:
-                ftime_template.append(msg.locale.t("time.time.nosec.format"))
+                if self.iso:
+                    ftime_template.append(msg.locale.t("time.date.iso.format"))
+                else:
+                    ftime_template.append(msg.locale.t("time.date.format"))
+            if self.time:
+                if self.seconds:
+                    ftime_template.append(msg.locale.t("time.time.format"))
+                else:
+                    ftime_template.append(msg.locale.t("time.time.nosec.format"))
             if self.timezone:
-                ftime_template.append(f"(UTC{msg._tz_offset})")
+                if self._tz_offset == "+0":
+                    ftime_template.append("(UTC)")
+                else:
+                    ftime_template.append(f"(UTC{self._tz_offset})")
         else:
             ftime_template.append('%Y-%m-%d %H:%M:%S')
         if not msg:
@@ -93,8 +102,8 @@ class FormattedTime:
         return f'FormattedTime(time={self.timestamp})'
 
     def to_dict(self):
-        return {'type': 'formatted_time', 'data': {'time': self.timestamp, 'date': self.date, 'seconds': self.seconds,
-                                                   'timezone': self.timezone}}
+        return {'type': 'formatted_time', 'data': {'timestamp': self.timestamp, 'date': self.date, 'iso': self.iso,
+                                                   'time': self.time, 'seconds': self.seconds, 'timezone': self.timezone}}
 
 
 class I18NContext:
