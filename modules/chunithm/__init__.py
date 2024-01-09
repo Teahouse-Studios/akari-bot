@@ -2,6 +2,7 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from modules.chunithm.libraries.music import Music, TotalList
+from modules.chunithm.libraries.utils import generate_best30_text, SONGS_PER_PAGE
 
 total_list = TotalList()
 
@@ -140,6 +141,19 @@ async def _(msg: Bot.MessageSession, keyword: str):
         else:
             img = await msgchain2image([Plain(search_result)])
             await msg.finish([BImage(img)])
+
+
+@mai.command('b30 [<username>] {{maimai.help.b50}}')
+async def _(msg: Bot.MessageSession, username: str = None):
+    if not username and msg.target.sender_from == "QQ":
+        payload = {'qq': msg.session.sender, 'b50': True}
+    else:
+        if not username:
+            await msg.finish(msg.locale.t("maimai.message.no_username"))
+        payload = {'username': username, 'b50': True}
+
+    img = await generate_best30_text(msg, payload)
+    await msg.finish([BImage(img)])
 
 
 @chu.command('id <id> [<diff>] {{chunithm.help.id}}')

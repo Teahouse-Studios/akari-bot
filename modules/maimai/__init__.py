@@ -8,7 +8,7 @@ from core.utils.image import msgchain2image
 from modules.maimai.libraries.best50 import computeRa, generate
 from modules.maimai.libraries.apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from modules.maimai.libraries.music import get_cover_len5_id, TotalList
-from modules.maimai.libraries.utils import get_grade_info, get_level_process, \
+from modules.maimai.libraries.utils import generate_best50_text, get_grade_info, get_level_process, \
     get_plate_process, get_player_score, get_rank, get_score_list, SONGS_PER_PAGE
 from .regex import *
 
@@ -183,7 +183,10 @@ async def _(msg: Bot.MessageSession, username: str = None):
         if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
-    img = await generate(msg, payload)
+    try:
+        img = await generate(msg, payload)
+    except Exception:
+        img = await generate_best50_text(msg, payload)
     await msg.finish([BImage(img)])
 
 
