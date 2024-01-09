@@ -85,7 +85,7 @@ class Music(Dict):
 class MusicList(List[Music]):
     def by_id(self, music_id: str) -> Optional[Music]:
         for music in self:
-            if music.id == music_id:
+            if music.id == int(music_id):
                 return music
         return None
 
