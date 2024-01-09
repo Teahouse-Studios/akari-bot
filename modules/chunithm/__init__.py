@@ -198,6 +198,7 @@ async def _(msg: Bot.MessageSession):
         if level == "":
             if diff == "":
                 music_data = (await total_list.get()).random()
+                await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
             else:
                 raise ValueError
         else:
@@ -210,6 +211,6 @@ async def _(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("chunithm.message.music_not_found"))
         else:
             music = music_data.random()
-            await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
+            await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("chunithm.message.random.error"))
