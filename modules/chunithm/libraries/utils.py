@@ -32,12 +32,12 @@ combo_conversion = {
 
 async def generate_best30_text(msg, payload):
     data = await get_record(msg, payload)
-    b30_charts = data["charts"]["b30"]
-    r10_charts = data["charts"]["r10"]
+    b30_records = data["records"]["b30"]
+    r10_records = data["records"]["r10"]
     
     html = "<style>pre { font-size: 15px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
-    html += f"{msg.locale.t('chunithm.message.b30.text_prompt', user=data['username'], rating=data['rating'])}\n<pre>"
-    for idx, chart in enumerate(b30_charts, start=1):
+    html += f"{msg.locale.t('chunithm.message.b30.text_prompt', user=data['username'], rating=round(data['rating'], 2))}\n<pre>"
+    for idx, chart in enumerate(b30_records, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()
         rank = next(
                 rank for interval, rank in score_to_rank.items() if interval[0] <= chart["score"] < interval[1]  # 根据成绩获得等级
@@ -57,7 +57,7 @@ async def generate_best30_text(msg, payload):
         )
         html += line
     html += "\n"
-    for idx, chart in enumerate(r10, start=1):
+    for idx, chart in enumerate(r10_records, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()
         rank = next(
                 rank for interval, rank in score_to_rank.items() if interval[0] <= chart["score"] < interval[1]  # 根据成绩获得等级
