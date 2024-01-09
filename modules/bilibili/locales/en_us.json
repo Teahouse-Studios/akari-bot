@@ -7,7 +7,7 @@
     "bilibili.help.regex.shorturl": "Enter b23.tv short url for video info.",
     "bilibili.help.regex.url": "Enter URL for video info.",
     "bilibili.message": "Title: ${title}\nCategory: ${tname}\nUploader: ${owner}\nDate: ${time}",
-    "bilibili.message.detail": "Title: ${title}${pages} | Category: ${tname}\nUploader: ${owner} | Fan: ${fans}\nView: ${view} | Danmuku: ${danmaku} | Comments: ${reply}\nLike: ${like} | Coin: ${coin} | Favorite: ${favorite} | Share: ${share}\nDate: ${time}",
+    "bilibili.message.detail": "Title: ${title}${pages} | Category: ${tname}\nUploader: ${owner} | Fans: ${fans}\nDescription: ${desc}\nView: ${view} | Danmuku: ${danmaku} | Comments: ${reply}\nLike: ${like} | Coin: ${coin} | Favorite: ${favorite} | Share: ${share}\nDate: ${time}",
     "bilibili.message.error.invalid": "An error occurred: Invalid video id, please check your input.",
     "bilibili.message.not_found": "No corresponding video is found."
 }
