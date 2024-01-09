@@ -17,7 +17,7 @@ from core.utils.cooldown import CoolDown
 
 from .formatting import generate_latex, generate_code_snippet  # noqa: E402
 
-if not Config('openai_api_key'):
+if Config('openai_api_key'):
     client = AsyncOpenAI(
         api_key=Config('openai_api_key'),
     )
