@@ -3,6 +3,7 @@ from datetime import datetime
 from core.builtins import Bot, Image, Plain, Url
 from core.utils.http import get_url
 
+DESC_LENGTH = 100
 
 async def get_info(msg: Bot.MessageSession, url, get_detail):
     res = await get_url(url, 200, fmt='json')
@@ -19,6 +20,8 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
     video_url = f"https://www.bilibili.com/video/{view['bvid']}"
     title = view['title']
     tname = view['tname']
+    desc = view['desc']
+    desc = (desc[:100] + '...') if len(desc) > 100 else desc
     time = msg.ts2strftime(view['ctime'], iso=True, timezone=False)
 
     if len(view['pages']) > 1:
@@ -44,7 +47,7 @@ async def get_info(msg: Bot.MessageSession, url, get_detail):
                                           owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
                                           reply=stat_reply,
                                           like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
-                                          time=time)
+                                          desc=desc, time=time)
 
     await msg.finish([Image(pic), Url(video_url), Plain(output)])
 

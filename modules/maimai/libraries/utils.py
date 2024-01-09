@@ -2,13 +2,12 @@ import os
 import ujson as json
 from datetime import datetime
 
-from config import Config
 from core.utils.http import get_url
 from core.utils.cache import random_cache_path
 from .apidata import get_record, get_plate
 from .music import TotalList
 
-SONGS_PER_PAGE = Config('maimai_songs_per_page', 20)
+SONGS_PER_PAGE = 20
 JINGLEBELL_SONG_ID = 70
 
 assets_path = os.path.abspath('./assets/maimai')
