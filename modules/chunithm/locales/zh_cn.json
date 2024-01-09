@@ -1,6 +1,6 @@
 {
     "chunithm.help.base": "根据定数或定数范围搜索歌曲。",
-    "chunithm.help.desc": "查询 CHUNITHM 相关内容。",
+    "chunithm.help.desc": "查询 CHUNITHM 相关内容。（Beta 版）",
     "chunithm.help.id": "根据 ID 查询歌曲或谱面信息。",
     "chunithm.help.level": "根据等级搜索歌曲。",
     "chunithm.help.random": "随机一首指定条件的歌曲，留空则完全随机。",
