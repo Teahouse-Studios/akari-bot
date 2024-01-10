@@ -220,6 +220,8 @@ async def start():
             await bot.export_keys(backup_path, client.megolm_backup_passphrase)
             Logger.info(f"megolm backup exported")
 
+    await bot.set_presence('offline')
+
 
 if bot:
     if 'subprocess' in sys.argv:
