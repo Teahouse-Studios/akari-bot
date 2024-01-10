@@ -201,7 +201,8 @@ async def start():
     await load_prompt(FetchTarget)
 
     Logger.info(f"starting sync loop")
-    await bot.sync_forever(timeout=30000, full_state=False, set_presence='online')
+    await bot.set_presence('online', f"akari-bot {Info.version}")
+    await bot.sync_forever(timeout=30000, full_state=False)
     Logger.info(f"sync loop stopped")
 
     if bot.olm:
