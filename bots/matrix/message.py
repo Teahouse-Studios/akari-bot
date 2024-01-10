@@ -177,6 +177,33 @@ class MessageSession(MessageSessionT):
                     'user_ids': [reply_to_user]
                 }
 
+            if 'm.relates_to' in self.session.message['content']:
+                relates_to = self.session.message['content']['m.relates_to']
+                if 'rel_type' in relates_to and relates_to['rel_type'] == 'm.thread':
+                    # replying in thread
+                    thread_root = relates_to['event_id']
+                    if reply_to:
+                        # reply to msg replying in thread
+                        content['m.relates_to'] = {
+                            'rel_type': 'm.thread',
+                            'event_id': thread_root,
+                            'is_falling_back': False,
+                            'm.in_reply_to': {
+                                'event_id': reply_to
+                            }
+                        }
+                        pass
+                    else:
+                        # reply in thread
+                        content['m.relates_to'] = {
+                            'rel_type': 'm.thread',
+                            'event_id': thread_root,
+                            'is_falling_back': True,
+                            'm.in_reply_to': {
+                                'event_id': self.target.message_id
+                            }
+                        }
+
             resp = await bot.room_send(self.session.target, 'm.room.message', content, ignore_unverified_devices=True)
             if 'status_code' in resp.__dict__:
                 Logger.error(f"Error in sending message: {str(resp)}")
