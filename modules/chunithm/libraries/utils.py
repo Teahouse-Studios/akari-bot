@@ -44,7 +44,7 @@ async def generate_best30_text(msg, payload):
             )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:<4} {:<3} {:<7} {:<4} {:<2} {:<4}->{:<3} {:<20}\n".format(
+        line = "#{:<2} {:<4} {:<3} {:<7} {:<4} {:<2} {:>4}->{:<5.2f} {:<20}\n".format(
             idx,
             chart["mid"],
             level,
@@ -64,7 +64,7 @@ async def generate_best30_text(msg, payload):
             )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:<4} {:<3} {:<7} {:<4} {:<2} {:<4}->{:<3} {:<20}\n".format(
+        line = "#{:<2} {:<4} {:<3} {:<7} {:<4} {:<2} {:>4}->{:<5.2f} {:<20}\n".format(
             idx,
             chart["mid"],
             level,

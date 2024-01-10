@@ -175,17 +175,24 @@ async def _(msg: Bot.MessageSession, grade: str):
     await get_grade_info(msg, grade)
 
 
-@mai.command('b50 [<username>] {{maimai.help.b50}}')
+@mai.command(['b50 [<username>] {{maimai.help.b50}}',
+             'b50 beta [<username>] {{maimai.help.b50.beta}}'])
 async def _(msg: Bot.MessageSession, username: str = None):
+    beta = True
     if not username and msg.target.sender_from == "QQ":
         payload = {'qq': msg.session.sender, 'b50': True}
     else:
         if not username:
             await msg.finish(msg.locale.t("maimai.message.no_username"))
         payload = {'username': username, 'b50': True}
-    try:
-        img = await generate(msg, payload)
-    except Exception:
+
+    if not msg.parsed_msg.get('beta', False):
+        try:
+            img = await generate(msg, payload)
+            beta = False
+        except Exception:
+            traceback.print_exc()
+    if beta:
         img = await generate_best50_text(msg, payload)
     await msg.finish([BImage(img)])
 

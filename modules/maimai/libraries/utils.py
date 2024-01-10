@@ -159,7 +159,7 @@ async def generate_best50_text(msg, payload):
             )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:<5} {:<3} {:<8.4f}% {:<4} {:<3} {:<4} {:<4}->{:<3} {:<20}\n".format(
+        line = "#{:<2} {:<5} {:<3} {:<8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:<20}\n".format(
             idx,
             chart["song_id"],
             level,
@@ -180,7 +180,7 @@ async def generate_best50_text(msg, payload):
             )
         title = chart["title"]
         title = title[:17] + '...' if len(title) > 20 else title
-        line = "#{:<2} {:<5} {:<3} {:<8.4f}% {:<4} {:<3} {:<4} {:<4}->{:<3} {:<20}\n".format(
+        line = "#{:<2} {:<5} {:<3} {:<8.4f}% {:<4} {:<3} {:<4} {:>4}->{:<3} {:<20}\n".format(
             idx,
             chart["song_id"],
             level,

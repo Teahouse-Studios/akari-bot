@@ -1,6 +1,7 @@
 {
     "maimai.help.alias": "查询歌曲的别名。",
     "maimai.help.b50": "查询 Maimai 用户的 B50 列表。",
+    "maimai.help.b50.beta": "查询 Maimai 用户的 B50 列表。（Beta 版） ",
     "maimai.help.base": "根据定数或定数范围搜索歌曲。",
     "maimai.help.desc": "查询 Maimai 相关内容。",
     "maimai.help.grade": "查询段位认定列表。",
