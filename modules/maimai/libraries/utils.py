@@ -152,6 +152,7 @@ async def generate_best50_text(msg, payload):
     
     html = "<style>pre { font-size: 15px; }</style><div style='margin-left: 30px; margin-right: 20px;'>\n"
     html += f"{msg.locale.t('maimai.message.b50.text_prompt', user=data['username'], rating=data['rating'])}\n<pre>"
+    html += f"Standard ({sum(chart['ra'] for chart in sd_charts)})\n"
     for idx, chart in enumerate(sd_charts, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()
         rank = next(
@@ -172,7 +173,7 @@ async def generate_best50_text(msg, payload):
             title
         )
         html += line
-    html += "\n"
+    html += f"New ({sum(chart['ra'] for chart in dx_charts)})\n"
     for idx, chart in enumerate(dx_charts, start=1):
         level = ''.join(filter(str.isalpha, chart["level_label"]))[:3].upper()
         rank = next(
