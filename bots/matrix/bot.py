@@ -164,7 +164,7 @@ async def start():
                     resp,
                     nio.KeysUploadError) and "One time key" in resp.message and "already exists." in resp.message:
                 Logger.warn(
-                    f"matrix E2EE keys have been uploaded for this session, we are going to force claim it down: {resp}")
+                    f"matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}")
                 keys = 0
                 while True:
                     resp = await bot.keys_claim({client.user: [client.device_id]})
