@@ -12,7 +12,7 @@ from core.utils.cooldown import CoolDown
 
 client = AsyncOpenAI(
     api_key=Config('openai_api_key'),
-)
+) if Config('openai_api_key') else None
 
 s = module('summary',
            developers=['Dianliang233', 'OasisAkari'],

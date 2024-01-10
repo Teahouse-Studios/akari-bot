@@ -1,6 +1,7 @@
 {
     "maimai.help.alias": "查詢歌曲的別名。",
     "maimai.help.b50": "查詢 Maimai 使用者的 B50 列表。",
+    "maimai.help.b50.beta": "查詢 Maimai 使用者的 B50 列表。（Beta 版）",
     "maimai.help.base": "依據定數或定數範圍內搜尋歌曲。",
     "maimai.help.desc": "查詢 Maimai 相關的內容。",
     "maimai.help.grade": "查詢段位認定列表。",
@@ -28,6 +29,7 @@
     "maimai.message.alias": "${title} 的別名：",
     "maimai.message.alias.alias_not_found": "未找到符合要求的別名。",
     "maimai.message.alias.file_not_found": "未找到別名檔案，請使用「${prefix}maimai update」初始化檔案。",
+    "maimai.message.b50.text_prompt": "以下為 ${user}（Ra ${rating}）的 Best50 列表：",
     "maimai.message.base": "以下為定數 ${constant} 的曲目列表：",
     "maimai.message.base.range": "以下為定數 ${constant}-${constant_max} 的曲目列表：",
     "maimai.message.chart_not_found": "未找到符合要求的譜面。",

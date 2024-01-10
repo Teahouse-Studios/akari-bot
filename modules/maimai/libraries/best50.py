@@ -1,5 +1,6 @@
 import math
 import os
+import traceback
 from typing import Optional, Dict, List, Tuple
 import ujson as json
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -432,7 +433,7 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            raise
+            traceback.print_exc()
 
     sd_best = BestList(35)
     dx_best = BestList(15)
