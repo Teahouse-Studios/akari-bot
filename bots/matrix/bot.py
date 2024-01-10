@@ -58,7 +58,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
             bot.verify_device(olm_device)
             Logger.info(f"trust olm device for device id {event.sender} -> {device_id}")
     if event.source['content']['msgtype'] == 'm.notice':
-        # https://spec.matrix.org/v1.7/client-server-api/#mnotice
+        # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
     is_room = room.member_count != 2 or room.join_rule != 'invite'
     target_id = room.room_id if is_room else event.sender
@@ -72,7 +72,7 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
             if relType == 'm.replace':  # skip edited message
                 return
             elif relType == 'm.thread':  # reply in thread
-                # https://spec.matrix.org/v1.7/client-server-api/#fallback-for-unthreaded-clients
+                # https://spec.matrix.org/v1.9/client-server-api/#fallback-for-unthreaded-clients
                 if 'is_falling_back' in relatesTo and relatesTo['is_falling_back']:
                     # we regard thread roots as reply target rather than last message in threads
                     reply_id = relatesTo['event_id']

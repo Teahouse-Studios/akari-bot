@@ -63,7 +63,7 @@ class MessageSession(MessageSessionT):
                     'body': x.text
                 }
                 if reply_to:
-                    # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                    # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                     # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                     reply_to_type = self.session.message['content']['msgtype']
                     content[
@@ -217,7 +217,7 @@ class MessageSession(MessageSessionT):
     async def check_native_permission(self):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
-        # https://spec.matrix.org/v1.7/client-server-api/#permissions
+        # https://spec.matrix.org/v1.9/client-server-api/#permissions
         power_levels = (await bot.room_get_state_event(self.session.target, 'm.room.power_levels')).content
         level = power_levels['users'][self.session.sender] if self.session.sender in power_levels['users'] else power_levels['users_default']
         if level and int(level) >= 50:
@@ -240,7 +240,7 @@ class MessageSession(MessageSessionT):
             text = str(content['body'])
             if self.target.reply_id:
                 # redact the fallback line for rich reply
-                # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                 while text.startswith('> '):
                     text = ''.join(text.splitlines(keepends=True)[1:])
             return MessageChain(Plain(text.strip()))
@@ -272,7 +272,7 @@ class MessageSession(MessageSessionT):
     toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
-    # https://spec.matrix.org/v1.7/client-server-api/#typing-notifications
+    # https://spec.matrix.org/v1.9/client-server-api/#typing-notifications
     class Typing:
         def __init__(self, msg: MessageSessionT):
             self.msg = msg

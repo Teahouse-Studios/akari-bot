@@ -310,7 +310,7 @@ pip install -r requirements.txt
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括`@`与`:`）。
 
 `matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
 
