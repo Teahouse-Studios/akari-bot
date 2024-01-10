@@ -130,25 +130,39 @@ class MessageSession(MessageSessionT):
                     content_encoding = 'ogg'
                 mimetype = f"{content_type}/{content_encoding}"
 
+                encrypted = self.session.target in bot.encrypted_rooms
                 with open(path, 'rb') as audio:
                     (upload, upload_encryption) = await bot.upload(
                         audio,
                         content_type=mimetype,
                         filename=filename,
-                        encrypt=False,
+                        encrypt=encrypted,
                         filesize=filesize)
                 Logger.info(
-                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}")
+                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                 # todo: provide audio duration info
-                content = {
-                    'msgtype': 'm.audio',
-                    'url': upload.content_uri,
-                    'body': filename,
-                    'info': {
-                        'size': filesize,
-                        'mimetype': mimetype,
+                if not encrypted:
+                    content = {
+                        'msgtype': 'm.audio',
+                        'url': upload.content_uri,
+                        'body': filename,
+                        'info': {
+                            'size': filesize,
+                            'mimetype': mimetype,
+                        }
                     }
-                }
+                else:
+                    upload_encryption['url'] = upload.content_uri
+                    content = {
+                        'msgtype': 'm.audio',
+                        'body': filename,
+                        'file': upload_encryption,
+                        'info': {
+                            'size': filesize,
+                            'mimetype': mimetype,
+                        }
+                    }
+
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
 
             if reply_to:
