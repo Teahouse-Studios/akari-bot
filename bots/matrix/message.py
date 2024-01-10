@@ -88,24 +88,37 @@ class MessageSession(MessageSessionT):
                             content_encoding = 'png'
                         mimetype = f"{content_type}/{content_encoding}"
 
+                        encrypted = self.session.target in bot.encrypted_rooms
                         (upload, upload_encryption) = await bot.upload(
                             image,
                             content_type=mimetype,
                             filename=filename,
-                            encrypt=False,
+                            encrypt=encrypted,
                             filesize=filesize)
                         Logger.info(
-                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}")
+                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                         # todo: provide more image info
-                        content = {
-                            'msgtype': 'm.image',
-                            'url': upload.content_uri,
-                            'body': filename,
-                            'info': {
-                                'size': filesize,
-                                'mimetype': mimetype,
+                        if not encrypted:
+                            content = {
+                                'msgtype': 'm.image',
+                                'url': upload.content_uri,
+                                'body': filename,
+                                'info': {
+                                    'size': filesize,
+                                    'mimetype': mimetype,
+                                }
                             }
-                        }
+                        else:
+                            upload_encryption['url'] = upload.content_uri
+                            content = {
+                                'msgtype': 'm.image',
+                                'body': filename,
+                                'file': upload_encryption,
+                                'info': {
+                                    'size': filesize,
+                                    'mimetype': mimetype,
+                                }
+                            }
                         Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}')
             elif isinstance(x, Voice):
                 path = x.path
@@ -191,7 +204,15 @@ class MessageSession(MessageSessionT):
                     text = ''.join(text.splitlines(keepends=True)[1:])
             return MessageChain(Plain(text.strip()))
         elif msgtype == 'm.image':
-            url = str(content['url'])
+            url = None
+            if 'url' in content:
+                url = str(content['url'])
+            elif 'file' in content:
+                # todo: decrypt image
+                # url = str(content['file']['url'])
+                return MessageChain([])
+            else:
+                Logger.error(f"Got invalid m.image message from {self.session.target}")
             return MessageChain(Image(await bot.mxc_to_http(url)))
         elif msgtype == 'm.audio':
             url = str(content['url'])
@@ -259,7 +280,7 @@ class FetchTarget(FetchedTargetT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> Union[FetchedSession]:
+    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
         match_channel = re.match(r'^(Matrix)\|(.*)', target_id)
         if match_channel:
             target_from = sender_from = match_channel.group(1)
