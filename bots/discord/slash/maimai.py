@@ -13,7 +13,7 @@ async def b50(ctx: discord.ApplicationContext, beta: str, username: str = None):
     if beta == "true":
         await slash_parser(ctx, f"b50 beta {username}")
     else:
-        await slash_parser(ctx, f"b50{username}")
+        await slash_parser(ctx, f"b50 {username}")
 
 
 @mai.command(name="bind", description="Bind user.")
