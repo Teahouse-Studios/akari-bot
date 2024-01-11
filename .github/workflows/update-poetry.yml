@@ -1,4 +1,4 @@
-name: Update Dependencies
+name: Update Poetry Dependencies
 
 on:
   workflow_dispatch:
@@ -64,4 +64,4 @@ jobs:
           ref: update-deps
       - name: Create Pull Request
         run: |
-          gh pr create --title "Poetry依赖自动更新" --body "本Pull Request为手动运行的用于更新由Poetry管理的依赖。" --base master --head update-deps
+          gh pr create --title "Poetry依赖自动更新" --body "本Pull Request为手动运行的用于更新由Poetry管理的依赖。<br/>**注意：请在合并后同时删除update-deps分支，否则下次的自动更新依赖将不会运行。**" --base master --head update-deps
