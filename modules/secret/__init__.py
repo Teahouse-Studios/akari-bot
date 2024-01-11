@@ -14,7 +14,7 @@ bot = Bot.FetchTarget
 ca = module('__check_abuse__', required_superuser=True, developers=['OasisAkari'])
 
 
-@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=30)))
+@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=60)))
 async def _():
     if bot.name not in ['QQ', 'TEST']:
         return
@@ -60,7 +60,7 @@ async def _():
 cn = module('__check_newbie__', required_superuser=True, developers=['OasisAkari'])
 
 
-@cn.handle(DateTrigger(datetime.now() + timedelta(seconds=30)))
+@cn.handle(DateTrigger(datetime.now() + timedelta(seconds=60)))
 async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return

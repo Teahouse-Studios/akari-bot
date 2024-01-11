@@ -32,6 +32,8 @@ def load_modules():
 
     for file_name in dir_list:
         try:
+            if file_name == 'secret' and not Config('enable_secret_module', False):
+                continue
             file_path = os.path.join(load_dir_path, file_name)
             fun_file = None
             if os.path.isdir(file_path):
