@@ -11,9 +11,6 @@ jobs:
   check-branch-exists:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       - name: Check if update-deps branch exists
         id: check_branch
         run: |
