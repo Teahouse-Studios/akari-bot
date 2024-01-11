@@ -7,7 +7,7 @@ from core.builtins import Bot, Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
-from .music import get_cover_len5_id, Music, TotalList
+from .maimaidx_music import get_cover_len5_id, Music, TotalList
 
 assets_path = os.path.abspath('./assets/maimai')
 total_list = TotalList()
@@ -108,7 +108,7 @@ async def get_record(msg, payload):
     except ValueError as e:
         if str(e).startswith('400'):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound"))
+                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith('403'):
@@ -132,7 +132,7 @@ async def get_plate(msg, payload):
     except ValueError as e:
         if str(e).startswith('400'):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound"))
+                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith('403'):

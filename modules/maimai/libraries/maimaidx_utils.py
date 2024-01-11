@@ -6,8 +6,8 @@ from core.builtins import Plain
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from core.utils.cache import random_cache_path
-from .apidata import get_record, get_plate
-from .music import TotalList
+from .maimaidx_apidata import get_record, get_plate
+from .maimaidx_music import TotalList
 
 SONGS_PER_PAGE = 20
 JINGLEBELL_SONG_ID = 70
@@ -135,14 +135,26 @@ combo_rank = list(combo_conversion.keys())  # Combo字典的键（API内显示�
 sync_rank = list(sync_conversion.keys())  # Sync字典的键（API内显示）
 
 
-def key_process(input_key, conv_dict):
-    key = next((k for k, v in conv_dict.items() if input_key == k), None)
-    if key is not None:
-        value = conv_dict[key]
-        new_key = next((k for k, v in conv_dict.items() if v == value), None)
-        return value, new_key
+def get_diff(diff):
+    diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
+    diff_label_abbr = ['bas', 'adv', 'exp', 'mas', 'rem']
+    diff_label_zhs = ['绿', '黄', '红', '紫', '白']
+    diff_label_zht = ['綠', '黃', '紅']
+    
+    diff = diff.lower()
+    diff_label_lower = [label.lower() for label in diff_label]
+
+    if diff in diff_label_zhs:
+        level = diff_label_zhs.index(diff)
+    elif diff in diff_label_zht:
+        level = diff_label_zht.index(diff)
+    elif diff in diff_label_abbr:
+        level = diff_label_abbr.index(diff)
+    elif diff in diff_label_lower:
+        level = diff_label_lower.index(diff)
     else:
-        return None, input_key
+        level = None
+    return level
 
 
 async def generate_best50_text(msg, payload):
@@ -590,6 +602,15 @@ async def get_grade_info(msg, grade):
     file_path = os.path.join(assets_path, "mai_grade_info.json")
     with open(file_path, 'r') as file:
         data = json.load(file)
+
+    def key_process(input_key, conv_dict):
+        key = next((k for k, v in conv_dict.items() if input_key == k), None)
+        if key is not None:
+            value = conv_dict[key]
+            new_key = next((k for k, v in conv_dict.items() if v == value), None)
+            return value, new_key
+        else:
+            return None, input_key
 
     grade = grade.upper()  # 输入强制转换为大写以适配字典
     grade_key, grade = key_process(grade, grade_conversion)

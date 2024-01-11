@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import ErrorMessage
 from core.utils.http import post_url
-from .music import get_cover_len5_id, TotalList
+from .maimaidx_music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
 
@@ -424,7 +424,7 @@ async def generate(msg, payload) -> Tuple[Optional[Image.Image], bool]:
     except ValueError as e:
         if str(e).startswith('400'):
             if "qq" in payload:
-                await msg.finish(msg.locale.t("maimai.message.user_unbound"))
+                await msg.finish(msg.locale.t("maimai.message.user_unbound.qq"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.user_not_found"))
         elif str(e).startswith('403'):
