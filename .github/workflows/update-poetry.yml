@@ -18,7 +18,7 @@ jobs:
         id: check_branch
         run: |
           echo "Checking for 'update-deps' branch..."
-          if git ls-remote --heads origin update-deps; then
+          if git ls-remote --heads origin update-deps !=''; then
             echo "分支 'update-deps' 已存在，请删除后执行本工作流。" && exit 1
           else
             echo "Branch 'update-deps' does not exist. Continuing workflow."
