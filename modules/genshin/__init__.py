@@ -11,7 +11,7 @@ genshin = module('genshin', alias='yuanshen', desc='原神角色信息查询。'
 
 client = EnkaNetworkAPI()
 
-ENKA_URL = Config('enka_url') #预引入enka节点在config自定义
+ENKA_URL = Config('enka_url') #预引入enka节点在config可自定义
 
 @genshin.handle('uid <number> {{genshin.help.uid}}')
 async def _(msg: Bot.MessageSession):
