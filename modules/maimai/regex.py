@@ -48,9 +48,6 @@ async def _(msg: Bot.MessageSession):
     name = msg.matched_msg.groups()[0]
     if name[:2].lower() == "id":
         sid = name[2:]
-        music = (await total_list.get()).by_id(sid)
-        if not music:
-            await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     else:
         sid_list = await search_by_alias(msg, name)
         if len(sid_list) == 0:
@@ -62,9 +59,10 @@ async def _(msg: Bot.MessageSession):
                 res += f"{s['id']}\u200B. {s['title']}{' (DX)' if s['type'] == 'DX' else ''}\n"
             await msg.finish(res.strip())
         else:
-            music = (await total_list.get()).by_id(str(sid_list[0]))
-            if not music:
-                await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+            sid = str(sid_list[0])
+    music = (await total_list.get()).by_id(sid)
+    if not music:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     await msg.finish(await get_info(msg, music, Plain(msg.locale.t("maimai.message.song",
                                                                    artist=music['basic_info']['artist'],
@@ -167,39 +165,6 @@ async def _(msg: Bot.MessageSession):
         return
 
     output, get_img = await get_plate_process(msg, payload, plate)
-
-    if get_img:
-        img = await msgchain2image([Plain(output)], msg)
-        await msg.finish([BImage(img)])
-    else:
-        await msg.finish(output.strip())
-
-
-@mai_regex.regex(re.compile(r"([0-9]+\+?)\s?(.+)\s?[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.process}')
-async def _(msg: Bot.MessageSession):
-    level = msg.matched_msg.groups()[0]
-    goal = msg.matched_msg.groups()[1]
-    username = msg.matched_msg.groups()[2]
-    if not goal:
-        return
-    if not username and msg.target.sender_from == "QQ":
-        payload = {'qq': msg.session.sender}
-    else:
-        if not username:
-            await msg.finish(msg.locale.t("maimai.message.no_username"))
-        payload = {'username': username}
-
-    if level in level_list:
-        level_num = int(level.split('+')[0])
-        if level_num < 8:
-            return
-    else:
-        return
-
-    if goal.upper() not in goal_list:
-        await msg.finish(msg.locale.t("maimai.message.goal_invalid"))
-
-    output, get_img = await get_level_process(msg, payload, level, goal)
 
     if get_img:
         img = await msgchain2image([Plain(output)], msg)
