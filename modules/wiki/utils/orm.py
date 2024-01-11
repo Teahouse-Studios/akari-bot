@@ -42,4 +42,12 @@ class WikiBlockList(Base):
     operator = Column(String(512))
 
 
+class WikiBotAccountList(Base):
+    __tablename__ = table_prefix + 'WikiBotAccountList'
+    __table_args__ = {'extend_existing': True}
+    apiLink = Column(String(512), primary_key=True)
+    botAccount = Column(String(512))
+    botPassword = Column(String(512))
+
+
 Session.create()

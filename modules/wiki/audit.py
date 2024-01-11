@@ -1,11 +1,15 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
+from core.scheduler import DateTrigger
+from core.logger import Logger
 from core.utils.image_table import image_table_render, ImageTable
+from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
+from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 
 
 aud = module('wiki_audit', required_superuser=True,
@@ -117,3 +121,37 @@ async def _(msg: Bot.MessageSession):
         for bl in block_list:
             wikis.append(f'{bl[0]} ({bl[1]})')
         await msg.finish('\n'.join(wikis))
+
+
+@aud.handle('bot add <apiLink> <account> <password>')
+async def _(msg: Bot.MessageSession):
+    api_link = msg.parsed_msg['<apiLink>']
+    account = msg.parsed_msg['<account>']
+    password = msg.parsed_msg['<password>']
+    check = await WikiLib(api_link).check_wiki_available()
+    if check.available:
+        try:
+            await BotAccount._login(api_link, account, password)
+        except LoginFailed as e:
+            Logger.error(f'Login failed: {e}')
+            await msg.finish(f'Login failed: {e}')
+        else:
+            await msg.finish('Login success')
+            BotAccountDB.add(api_link, account, password)
+    else:
+        result = msg.locale.t('wiki.message.error.query') + \
+            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
+        await msg.finish(result)
+
+
+@aud.handle('bot remove <apiLink>')
+async def _(msg: Bot.MessageSession):
+    api_link = msg.parsed_msg['<apiLink>']
+    BotAccountDB.remove(api_link)
+    await msg.finish('Done')
+
+
+@aud.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
+async def login_bots():
+    Logger.info('Start login wiki bot account...')
+    await BotAccount.login()
