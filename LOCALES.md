@@ -2,7 +2,8 @@
 -   [简介](#简介)
 -   [文件位置](#文件位置)
 -   [语言文件格式](#语言文件格式)
--   [排版](#排版)
+-   [使用例](#使用例)
+-   [排版规范](#排版规范)
     -   [空格](#空格)
         - [中英文之间需要增加空格](#中英文之间需要增加空格)
         - [中文与数字之间需要增加空格](#中文与数字之间需要增加空格)
@@ -39,11 +40,29 @@
 
 **全局字符串的命名方式**：`字符串类别.用途`
 
-**模块字符串的命名方式**：`模块名称.字符串类别.命令名称.用途`
+**模块字符串的命名方式**：`模块名称.字符串类别.(命令名称.)用途`
 
-使用 `${变量名}` 表示变量，变量名必须使用英文，不能使用空格和特殊符号，如需分隔则使用下划线代替。
+使用 `${变量名}` 可表示变量，变量名须使用英文，不建议使用 Python 语句，禁止使用空格和特殊符号，如需分隔则请使用下划线代替。
 
-# 排版
+# 使用例
+在模块帮助中调用多语言字符串的示例：
+```
+from core.component import module
+
+test = module('test', desc='{test.help.desc}')
+
+@test.command('say <word> {{test.help.say}}')
+...
+```
+在代码中调用多语言字符串的示例：
+```
+from core.builtins import Bot
+
+await Bot.MessageSession.locale.t("test.message.say.prompt")
+...
+```
+
+# 排版规范
 > 本文部分参照[中文文案排版指北](https://github.com/sparanoid/chinese-copywriting-guidelines)，内容可能有出入。
 
 太长不看：半角符号和全角符号（标点除外）之间用空格隔开，正确使用对应语言的标点符号
@@ -89,7 +108,7 @@
 > 刚刚买了一部 iPhone ，好开心！
 
 ### 变量与中文之间需要增加空格
-一般情况下，变量的输入为英文或数字，故变量与中文之间加入空格。
+变量的输入一般为英文或数字，故变量与中文之间须加入空格。
 
 正确：
 > 你扔了一块石头，漂了 ${count} 下。
@@ -97,11 +116,11 @@
 错误：
 > 你扔了一块石头，漂了${count}下。
 
-例外：如果变量的输入一定为中文，则不加空格。
+例外：如果变量的输入确保为中文，则可以不加空格。
 
 ## 标点符号
 ### 不要重复使用标点符号
-虽然重复使用标点符号是被允许的行为，但是请别这样做。
+虽然重复使用标点符号在规范中是被允许的行为，但是请不要这样做。
 
 正确：
 > 德国队竟然战胜了巴西队！
@@ -119,7 +138,7 @@
 > 「老师，『有条不紊』的『紊』是什么意思？」
 
 ### 英文不要使用弯引号
-中文弯引号和英文弯引号属于同一个字符，如果使用弯引号反而会造成阅读问题，请使用直引号 `"`。
+中文弯引号和英文弯引号属于同一个字符，如果使用弯引号反而会造成阅读问题。请使用直引号 `"`。
 
 正确：
 > "Success is not final, failure is not fatal: It is the courage to continue that counts."
@@ -128,7 +147,7 @@
 > “Success is not final, failure is not fatal: It is the courage to continue that counts.”
 
 ### 英文省略号使用三个点
-同上，请使用三个点 `...`。
+原因同上。请使用三个点 `...`。
 
 正确：
 > In the serene moonlit night, whispers of ancient tales lingered, echoing through the stillness of time...
@@ -158,7 +177,7 @@
 > 乔布斯那句话是怎么说的？“Stay hungry, stay foolish.”
 
 错误：
-> 乔布斯那句话是怎么说的？“Stay hungry, stay foolish。”
+> 乔布斯那句话是怎么说的？“Stay hungry，stay foolish。”
 
 ## 名词
 ### 专有名词使用正确的大小写
@@ -183,7 +202,7 @@
 
 
 ### 不同地区的中文使用对应的地区词
-不要在繁体中文中使用“视频”等错误的地区词，认真的。
+不要在繁体中文中使用“视频”等错误的地区词，这不是玩笑。
 
 正确：
 > 輸入影片編號取得對應資訊。
@@ -191,7 +210,9 @@
 错误：
 > 輸入視頻編號獲得相應信息。
 
+例外：专有名词、商品名等词语，按照约定俗成的格式书写。
+
 # 报告问题
-与简体中文翻译有关的问题可直接使用 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 报告。
+与简体中文相关的问题可直接使用 [Issue](https://github.com/Teahouse-Studios/akari-bot/issues/new) 报告。
 
 简体中文以外的所有语言由机器人 @Hldbot 维护，相关问题请移步 [Crowdin](https://crowdin.com/project/akari-bot) 报告。

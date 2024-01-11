@@ -52,7 +52,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
-    :param cookies: 使用的 cookies
+    :param cookies: 使用的 cookies。
     :returns: 指定url的内容（字符串）。
     """
 
