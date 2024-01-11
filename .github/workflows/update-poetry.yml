@@ -58,11 +58,6 @@ jobs:
         with:
           ref: update-deps
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-          base: update-deps
-          title: Update dependencies
-          body: |
-            This pull request updates the project dependencies based on the latest versions available in the Poetry repository.
+        run: |
+          gh pr create --title "Update dependencies" --body "本Pull Request为手动运行的用于更新由Poetry管理的依赖。"
+          gh pr create --base master --update-deps
