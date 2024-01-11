@@ -1,7 +1,9 @@
 import traceback
 import ujson as json
 
+from core.builtins import Bot, Plain
 from core.utils.http import post_url
+from .chunithm_music import Music
 
 
 async def get_info(msg: Bot.MessageSession, music: Music, *details):

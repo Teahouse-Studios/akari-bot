@@ -1,9 +1,11 @@
+import re
 import traceback
 
 from core.builtins import Bot, Plain, Image as BImage
 from core.utils.image import msgchain2image
 from .chunithm import chu
 from .dbutils import DivingProberBindInfoManager
+from .libraries.maimaidx_apidata import get_alias, search_by_alias
 from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
@@ -43,17 +45,17 @@ async def _(msg: Bot.MessageSession):
 
 @mai.command('info <id_or_alias> [<username>] {{maimai.help.info}}')
 async def _(msg: Bot.MessageSession, id_or_alias: str, username: str = None):
-    await query_song_info(id_or_alias, username)
+    await query_song_info(msg, id_or_alias, username)
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?有什[么麼]分\s?(.+)?"), desc='{maimai.help.maimai_regex.info}')
 async def _(msg: Bot.MessageSession):
     songname = msg.matched_msg.groups()[0]
     username = msg.matched_msg.groups()[1]
-    await query_song_info(songname, username)
+    await query_song_info(msg, songname, username)
 
 
-async def query_song_info(query, username)
+async def query_song_info(msg, query, username):
     if query[:2].lower() == "id":
         sid = query[2:]
     else:
@@ -91,17 +93,17 @@ async def query_song_info(query, username)
 
 @mai.command('plate <plate> [<username>] {{maimai.help.plate}}')
 async def _(msg: Bot.MessageSession, plate: str, username: str = None):
-    await query_plate(plate, username)
+    await query_plate(msg, plate, username)
 
 
 @mai_regex.regex(re.compile(r"(.?)([極极将舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
-    await query_plate(plate, username)
+    await query_plate(msg, plate, username)
 
 
-async def query_plate(plate, username)
+async def query_plate(msg, plate, username):
     if not username:
         if msg.target.sender_from == "QQ":
             payload = {'qq': msg.session.sender}

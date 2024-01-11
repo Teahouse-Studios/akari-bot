@@ -2,9 +2,9 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
-from .libraries.apidata import get_info
-from .libraries.music import TotalList
-from .libraries.utils import generate_best30_text, SONGS_PER_PAGE
+from .libraries.chunithm_apidata import get_info
+from .libraries.chunithm_music import TotalList
+from .libraries.chunithm_utils import generate_best30_text, SONGS_PER_PAGE
 
 total_list = TotalList()
 
