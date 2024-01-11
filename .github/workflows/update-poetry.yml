@@ -19,6 +19,7 @@ jobs:
       - name: Checking for branch
         id: check_branch
         run: |
+          git checkout update-deps
           if [ `git branch --list update-deps` ]; then
             echo "相关分支已存在，请删除update-deps分支后再执行本工作流"
             echo "Branch exists." && exit 1
