@@ -3,15 +3,15 @@ import discord
 from bots.discord.client import client
 from bots.discord.slash_parser import slash_parser
 
-arcaea = client.create_group("arcaea", "Queries about Arcaea.")
+arc = client.create_group("arcaea", "Queries about Arcaea.")
 
 
-@arcaea.command(name="download", description="Get the latest version of game apk.")
+@arc.command(name="download", description="Get the latest version of game apk.")
 async def download(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "download")
 
 
-@arcaea.command(name="random", description="Random a song.")
+@arc.command(name="random", description="Random a song.")
 async def random(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "random")
 
