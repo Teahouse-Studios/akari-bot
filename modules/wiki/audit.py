@@ -6,6 +6,7 @@ from core.component import module
 from core.scheduler import DateTrigger
 from core.logger import Logger
 from core.utils.image_table import image_table_render, ImageTable
+from database import BotDBUtil
 from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import Audit
 from modules.wiki.utils.wikilib import WikiLib
@@ -131,13 +132,13 @@ async def _(msg: Bot.MessageSession):
     check = await WikiLib(api_link).check_wiki_available()
     if check.available:
         try:
-            await BotAccount._login(api_link, account, password)
+            login = await BotAccount._login(check.value.api, account, password)
+            BotAccountDB.add(check.value.api, account, password)
+            BotAccount.cookies[check.value.api] = login
+            await msg.finish('Login success')
         except LoginFailed as e:
             Logger.error(f'Login failed: {e}')
             await msg.finish(f'Login failed: {e}')
-        else:
-            await msg.finish('Login success')
-            BotAccountDB.add(api_link, account, password)
     else:
         result = msg.locale.t('wiki.message.error.query') + \
             ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
@@ -148,10 +149,23 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     api_link = msg.parsed_msg['<apiLink>']
     BotAccountDB.remove(api_link)
-    await msg.finish('Done')
+    await msg.finish(msg.locale.t("success"))
 
 
-@aud.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
-async def login_bots():
-    Logger.info('Start login wiki bot account...')
-    await BotAccount.login()
+@aud.handle('bot use')
+async def _(msg: Bot.MessageSession):
+    target_data = BotDBUtil.TargetInfo(msg)
+    target_data.edit_option('use_bot_account', True)
+    await msg.finish(msg.locale.t("success"))
+
+
+@aud.handle('bot unuse')
+async def _(msg: Bot.MessageSession):
+    target_data = BotDBUtil.TargetInfo(msg)
+    target_data.edit_option('use_bot_account', False)
+    await msg.finish(msg.locale.t("success"))
+
+
+@aud.hook('login_wiki_bots')
+async def mcbv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+    BotAccount.cookies.update(ctx.args['cookies'])
