@@ -144,14 +144,14 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish([BImage(img)])
 
 
-@mai.handle('bind <username> {{maimai.help.bind}}', exclude_from=['QQ', 'QQ|Group'])
+@chu.handle('bind <username> {{maimai.help.bind}}', exclude_from=['QQ', 'QQ|Group'])
 async def _(msg: Bot.MessageSession, username: str):
     bind = DivingProberBindInfoManager(msg).set_bind_info(username=username)
     if bind:
         await msg.finish(msg.locale.t('maimai.message.bind.success') + username)
 
 
-@mai.handle('unbind {{maimai.help.unbind}}', exclude_from=['QQ', 'QQ|Group'])
+@chu.handle('unbind {{maimai.help.unbind}}', exclude_from=['QQ', 'QQ|Group'])
 async def _(msg: Bot.MessageSession):
     unbind = DivingProberBindInfoManager(msg).remove_bind_info()
     if unbind:
