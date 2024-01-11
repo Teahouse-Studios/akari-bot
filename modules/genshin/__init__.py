@@ -10,7 +10,6 @@ from enkanetwork import Assets
 genshin = module('genshin', alias='yuanshen', desc='原神角色信息查询。', developers=['ZoruaFox'])
 
 client = EnkaNetworkAPI()
-client.headers['User-Agent'] = 'Akaribot-GenshinModule'  # Set User-Agent
 
 ENKA_URL = Config('enka_url') #预引入enka节点自定义
 
