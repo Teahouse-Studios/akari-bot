@@ -64,5 +64,4 @@ jobs:
           ref: update-deps
       - name: Create Pull Request
         run: |
-          gh pr create --title "Poetry依赖自动更新" --body "本Pull Request为手动运行的用于更新由Poetry管理的依赖。"
-          gh pr create --base master --head update-deps
+          gh pr create --title "Poetry依赖自动更新" --body "本Pull Request为手动运行的用于更新由Poetry管理的依赖。" --base master --head update-deps
