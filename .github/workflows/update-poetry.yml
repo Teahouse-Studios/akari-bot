@@ -40,6 +40,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: update-deps
+          base: master
           title: Update dependencies
           body: |
             This pull request updates the project dependencies based on the latest versions available in the Poetry repository.
