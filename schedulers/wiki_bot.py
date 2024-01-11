@@ -7,7 +7,7 @@ from core.scheduler import DateTrigger, Scheduler
 from modules.wiki import BotAccount
 
 
-@Scheduler.scheduled_job(DateTrigger(datetime.now() + timedelta(seconds=10)))
+@Scheduler.scheduled_job(DateTrigger(datetime.now() + timedelta(seconds=30)))
 async def login_bots():
     Logger.info('Start login wiki bot account...')
     await BotAccount.login()
