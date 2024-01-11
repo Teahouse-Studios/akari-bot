@@ -10,8 +10,10 @@ mai = client.create_group("maimai", "Queries about Maimai DX.")
 @discord.option(name="beta", choices=['false', 'true'], description="Whether to use Beta mode.")
 @discord.option(name="username", description="Your MaimaiDX-prober username.")
 async def b50(ctx: discord.ApplicationContext, beta: str, username: str = None):
-    beta = "beta " if beta == "true" else ""
-    await slash_parser(ctx, f"b50 {beta}{username}")
+    if beta == "true":
+        await slash_parser(ctx, f"b50 beta {username}")
+    else:
+        await slash_parser(ctx, f"b50{username}")
 
 
 @mai.command(name="bind", description="Bind user.")
