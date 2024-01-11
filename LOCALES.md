@@ -46,7 +46,7 @@
 
 # 使用例
 在模块帮助中调用多语言字符串的示例：
-```
+```python3
 from core.component import module
 
 test = module('test', desc='{test.help.desc}')
@@ -55,7 +55,7 @@ test = module('test', desc='{test.help.desc}')
 ...
 ```
 在代码中调用多语言字符串的示例：
-```
+```python3
 from core.builtins import Bot
 
 async def test(msg: Bot.MessageSession):
