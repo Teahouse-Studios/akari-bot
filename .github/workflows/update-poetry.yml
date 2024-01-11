@@ -3,27 +3,28 @@ name: Update Dependencies
 on:
   workflow_dispatch:
 
+permissions:  
+  contents: write
+
 jobs:
   update-dependencies:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Install Poetry
         run: |
           curl -sSL "https://install.python-poetry.org" | python3 -
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Update Dependencies
         run: |
           poetry update
-          poetry export --format requirements.txt --output requirements.txt
+
+      - name: Update requirements.txt
+        run: |
+          poetry export -f requirements.txt --output requirements.txt
 
       - name: Commit and Push Changes
         run: |
