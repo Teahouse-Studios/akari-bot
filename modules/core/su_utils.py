@@ -297,11 +297,10 @@ async def update_bot(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
     if confirm:
         pull_repo_result = pull_repo()
-        if pull_repo_result != '':
-            if "CONFLICT" in pull_repo_result:
-                await msg.send_message("Branch conflict. Please resolve the conflict and try again.")
-            else:
-                await msg.send_message(pull_repo_result)
+        if 'Your local changes to the following files would be overwritten by merge:' in pull_repo_result:
+            await msg.send_message(msg.locale.t("core.message.update.branch_conflict"))
+        elif pull_repo_result != '':
+            await msg.send_message(pull_repo_result)
         else:
             await msg.send_message(msg.locale.t("core.message.update.failed"))
         await msg.send_message(update_dependencies())
