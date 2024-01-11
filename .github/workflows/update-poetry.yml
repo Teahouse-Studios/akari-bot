@@ -8,9 +8,22 @@ permissions:
   pull-requests: write
 
 jobs:
+  check-branch-exists:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking for branch
+        id: check_branch
+        run: |
+          if git ls-remote --heads origin update-deps &> /dev/null; then
+            echo "相关分支已存在，请删除update-deps分支后再执行本工作流"
+            echo "Branch exists." && exit 1
+          else
+            echo "Branch does not exist. Continuing workflow."
+          fi
+
   update-dependencies:
     runs-on: ubuntu-latest
-
+    needs: check-branch-exists
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -48,8 +61,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: update-deps
-          base: master
+          branch: master
+          base: update-deps
           title: Update dependencies
           body: |
             This pull request updates the project dependencies based on the latest versions available in the Poetry repository.
