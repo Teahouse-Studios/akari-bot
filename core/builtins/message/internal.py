@@ -84,10 +84,10 @@ class FormattedTime:
                 else:
                     ftime_template.append(msg.locale.t("time.time.nosec.format"))
             if self.timezone:
-                if self._tz_offset == "+0":
+                if msg._tz_offset == "+0":
                     ftime_template.append("(UTC)")
                 else:
-                    ftime_template.append(f"(UTC{self._tz_offset})")
+                    ftime_template.append(f"(UTC{msg._tz_offset})")
         else:
             ftime_template.append('%Y-%m-%d %H:%M:%S')
         if not msg:
@@ -102,8 +102,15 @@ class FormattedTime:
         return f'FormattedTime(time={self.timestamp})'
 
     def to_dict(self):
-        return {'type': 'formatted_time', 'data': {'timestamp': self.timestamp, 'date': self.date, 'iso': self.iso,
-                                                   'time': self.time, 'seconds': self.seconds, 'timezone': self.timezone}}
+        return {
+            'type': 'formatted_time',
+            'data': {
+                'timestamp': self.timestamp,
+                'date': self.date,
+                'iso': self.iso,
+                'time': self.time,
+                'seconds': self.seconds,
+                'timezone': self.timezone}}
 
 
 class I18NContext:

@@ -15,7 +15,8 @@ async def rc_qq(msg: MessageSession, wiki_url):
     query = await wiki.get_json(action='query', list='recentchanges',
                                 rcprop='title|user|timestamp|loginfo|comment|redirect|flags|sizes|ids',
                                 rclimit=99,
-                                rctype='edit|new|log'
+                                rctype='edit|new|log',
+                                _no_login=not msg.options.get("use_bot_account", False)
                                 )
     pageurl = wiki.wiki_info.articlepath
 

@@ -8,7 +8,7 @@ from tenacity import retry, stop_after_attempt
 
 from core.builtins import MessageSession
 from database import session, auto_rollback_error
-from modules.wiki.utils.orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList
+from modules.wiki.utils.orm import WikiTargetSetInfo, WikiInfo, WikiAllowList, WikiBlockList, WikiBotAccountList
 
 
 class WikiTargetInfo:
@@ -208,3 +208,28 @@ class Audit:
     @auto_rollback_error
     def get_block_list() -> list:
         return session.query(WikiBlockList.apiLink, WikiBlockList.operator)
+
+
+class BotAccount:
+    @staticmethod
+    @retry(stop=stop_after_attempt(3), reraise=True)
+    @auto_rollback_error
+    def add(api_link, bot_account, bot_password):
+        session.add_all([WikiBotAccountList(apiLink=api_link, botAccount=bot_account, botPassword=bot_password)])
+        session.commit()
+        session.expire_all()
+        return True
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3), reraise=True)
+    @auto_rollback_error
+    def remove(api_link):
+        session.delete(session.query(WikiBotAccountList).filter_by(apiLink=api_link).first())
+        session.commit()
+        session.expire_all()
+        return True
+
+    @staticmethod
+    @retry(stop=stop_after_attempt(3), reraise=True)
+    def get_all():
+        return session.query(WikiBotAccountList).all()
