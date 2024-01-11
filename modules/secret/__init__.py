@@ -14,7 +14,7 @@ bot = Bot.FetchTarget
 ca = module('__check_abuse__', required_superuser=True, developers=['OasisAkari'])
 
 
-@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
+@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=20)))
 async def _():
     if bot.name not in ['QQ', 'TEST']:
         return

@@ -39,7 +39,7 @@ def private_ip_check(url: str):
 
 async def get_url(url: str, status_code: int = False, headers: dict = None, params: dict = None, fmt=None, timeout=20,
                   attempt=3,
-                  request_private_ip=False, logging_err_resp=True):
+                  request_private_ip=False, logging_err_resp=True, cookies=None):
     """利用AioHttp获取指定url的内容。
 
     :param url: 需要获取的url。
@@ -51,6 +51,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
+    :param cookies: 使用的 cookies
     :returns: 指定url的内容（字符串）。
     """
 
@@ -63,6 +64,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
 
         async with aiohttp.ClientSession(headers=headers,
                                          connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
+            if cookies:
+                session.cookie_jar.update_cookies(cookies)
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
                                        proxy=proxy, params=params) as req:
@@ -92,7 +95,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
 
 
 async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt=None, timeout=20,
-                   attempt=3, request_private_ip=False, logging_err_resp=True):
+                   attempt=3, request_private_ip=False, logging_err_resp=True, cookies=None):
     '''发送POST请求。
     :param url: 需要发送的url。
     :param data: 需要发送的数据。
@@ -113,6 +116,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
 
         async with aiohttp.ClientSession(headers=headers,
                                          connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
+            if cookies:
+                session.cookie_jar.update_cookies(cookies)
             try:
                 async with session.post(url, data=data, headers=headers,
                                         timeout=aiohttp.ClientTimeout(total=timeout),
