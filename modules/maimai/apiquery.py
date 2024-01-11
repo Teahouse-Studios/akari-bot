@@ -96,7 +96,7 @@ async def _(msg: Bot.MessageSession, plate: str, username: str = None):
     await query_plate(msg, plate, username)
 
 
-@mai_regex.regex(re.compile(r"(.?)([極极将舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
+@mai_regex.regex(re.compile(r"(.?)([極极将將舞神者]舞?)[进進]度\s?(.+)?"), desc='{maimai.help.maimai_regex.plate}')
 async def _(msg: Bot.MessageSession):
     plate = msg.matched_msg.groups()[0] + msg.matched_msg.groups()[1]
     username = msg.matched_msg.groups()[2]
