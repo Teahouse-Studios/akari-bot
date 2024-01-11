@@ -8,35 +8,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
 
       - name: Install Poetry
         run: |
           curl -sSL "https://install.python-poetry.org" | python3 -
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Update Dependencies
         run: |
           poetry update
+          poetry export --format requirements.txt --output requirements.txt
 
-      - name: Update requirements.txt
-        run: |
-          poetry export -f requirements.txt --output requirements.txt
-
-      - name: Commit changes
+      - name: Commit and Push Changes
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
+          git checkout -b update-deps
           git add .
           git commit -m "Update dependencies"
-          git push
+          git push origin update-deps
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: Update dependencies
-          branch: update-dependencies
+          branch: update-deps
           title: Update dependencies
           body: |
-            This pull request updates the project dependencies based on the latest versions available in the poetry repository.
+            This pull request updates the project dependencies based on the latest versions available in the Poetry repository.
