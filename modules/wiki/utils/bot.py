@@ -29,9 +29,7 @@ class BotAccount:
                 if req.status != 200:
                     raise LoginFailed(f'Login failed: {await req.text()}')
                 Logger.info(f'Logged in to {api_link} as {account}')
-                output = req.cookies.output()
-                Logger.debug(f'Cookies: {output}')
-                return output
+                return req.cookies
 
     @classmethod
     async def login(cls):
