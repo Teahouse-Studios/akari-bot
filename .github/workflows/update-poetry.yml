@@ -40,6 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: update-dependencies
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: update-deps
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
