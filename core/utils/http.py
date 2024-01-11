@@ -2,6 +2,7 @@ import asyncio.exceptions
 import re
 import socket
 import urllib.parse
+from http.cookies import SimpleCookie
 from typing import Union
 
 import aiohttp
@@ -65,7 +66,10 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
         async with aiohttp.ClientSession(headers=headers,
                                          connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
             if cookies:
-                session.cookie_jar.update_cookies(cookies)
+                ck = SimpleCookie()
+                ck.load(cookies)
+                session.cookie_jar.update_cookies(ck)
+                Logger.info(f'Using cookies: {ck}')
             try:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout), headers=headers,
                                        proxy=proxy, params=params) as req:
@@ -117,7 +121,9 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
         async with aiohttp.ClientSession(headers=headers,
                                          connector=TCPConnector(verify_ssl=False) if debug else None, ) as session:
             if cookies:
-                session.cookie_jar.update_cookies(cookies)
+                ck = SimpleCookie()
+                ck.load(cookies)
+                session.cookie_jar.update_cookies(ck)
             try:
                 async with session.post(url, data=data, headers=headers,
                                         timeout=aiohttp.ClientTimeout(total=timeout),

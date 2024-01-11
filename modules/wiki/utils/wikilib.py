@@ -156,6 +156,8 @@ class WikiLib:
         self.locale = Locale(locale)
 
     async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:
+        Logger.debug('no_login:' + str(_no_login))
+        Logger.debug("cookies:" + str(BotAccount.cookies))
         cookies = None
         if api in BotAccount.cookies and not _no_login:
             cookies = BotAccount.cookies[api]

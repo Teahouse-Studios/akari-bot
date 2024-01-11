@@ -166,6 +166,8 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("success"))
 
 
-@aud.hook('login_wiki_bots')
-async def mcbv_jira_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
-    BotAccount.cookies.update(ctx.args['cookies'])
+@aud.handle(DateTrigger(datetime.now() + timedelta(seconds=30)))
+async def login_bots():
+    Logger.info('Start login wiki bot account...')
+    await BotAccount.login()
+    Logger.info('Login wiki bot account done')
