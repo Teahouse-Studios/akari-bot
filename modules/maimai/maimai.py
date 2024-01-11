@@ -1,9 +1,7 @@
 import traceback
 
-from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
-from core.scheduler import CronTrigger
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
@@ -339,13 +337,3 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("success"))
     else:
         await msg.finish(msg.locale.t("failed"))
-
-
-@mai.schedule(CronTrigger.from_crontab('0 0 * * *'))
-async def _():
-    Logger.info('Updating maimai alias...')
-    try:
-        await update_alias()
-    except Exception:
-        if Config('debug'):
-            Logger.error(traceback.format_exc())

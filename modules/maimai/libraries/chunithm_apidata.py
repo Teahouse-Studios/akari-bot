@@ -2,6 +2,7 @@ import traceback
 import ujson as json
 
 from core.builtins import Bot, Plain
+from core.logger import Logger
 from core.utils.http import post_url
 from .chunithm_music import Music
 
@@ -33,6 +34,6 @@ async def get_record(msg, payload):
             else:
                 await msg.finish(msg.locale.t("chunithm.message.forbidden"))
         else:
-            traceback.print_exc()
-
-    return data
+            Logger.error(traceback.format_exc())
+    if data:
+        return data

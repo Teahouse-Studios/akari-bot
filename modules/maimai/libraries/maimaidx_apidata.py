@@ -14,34 +14,40 @@ total_list = TotalList()
 
 
 async def update_alias():
-    url = "https://download.fanyu.site/maimai/alias.json"
-    data = await get_url(url, 200, fmt='json')
+    try:
+        url = "https://download.fanyu.site/maimai/alias.json"
+        data = await get_url(url, 200, fmt='json')
     
-    file_path = os.path.join(assets_path, "mai_alias.json")
-    with open(file_path, 'w') as file:
-        json.dump(data, file)
-        
+        file_path = os.path.join(assets_path, "mai_alias.json")
+        with open(file_path, 'w') as file:
+            json.dump(data, file)
+    except:
+        Logger.error(traceback.format_exc())
+        return False
     return True
 
 
 async def update_covers():
-    cover_dir = f"{assets_path}/static/mai/cover"
-    url = f"https://www.diving-fish.com/maibot/static.zip"
-    download_file = await download_to_cache(url, timeout=60)
+    try:
+        cover_dir = f"{assets_path}/static/mai/cover"
+        url = f"https://www.diving-fish.com/maibot/static.zip"
+        download_file = await download_to_cache(url, timeout=60)
 
-    Logger.info('Maimai covers download completed.')
-    ca = random_cache_path()
-    shutil.unpack_archive(download_file, ca)
+        Logger.info('Maimai covers download completed.')
+        ca = random_cache_path()
+        shutil.unpack_archive(download_file, ca)
 
-    if os.path.exists(cover_dir):
-        shutil.rmtree(cover_dir)
+        if os.path.exists(cover_dir):
+            shutil.rmtree(cover_dir)
         
-    static_cover_dir = os.path.join(ca, 'mai/cover')
-    if os.path.exists(static_cover_dir):
-        shutil.move(static_cover_dir, cover_dir)
+        static_cover_dir = os.path.join(ca, 'mai/cover')
+        if os.path.exists(static_cover_dir):
+            shutil.move(static_cover_dir, cover_dir)
+    except:
+        Logger.error(traceback.format_exc())
+        return False
 
     os.remove(download_file)
-
     return True
 
 
@@ -117,9 +123,9 @@ async def get_record(msg, payload):
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            traceback.print_exc()
-
-    return data
+            Logger.error(traceback.format_exc())
+    if data:
+        return data
 
 
 async def get_plate(msg, payload):
@@ -140,5 +146,5 @@ async def get_plate(msg, payload):
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
-            
-    return data
+    if data:
+        return data
