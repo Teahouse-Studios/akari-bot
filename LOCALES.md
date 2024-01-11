@@ -46,7 +46,7 @@
 
 # 使用例
 在模块帮助中调用多语言字符串的示例：
-```
+```python3
 from core.component import module
 
 test = module('test', desc='{test.help.desc}')
@@ -55,11 +55,16 @@ test = module('test', desc='{test.help.desc}')
 ...
 ```
 在代码中调用多语言字符串的示例：
-```
+```python3
 from core.builtins import Bot
 
-await Bot.MessageSession.locale.t("test.message.say.prompt")
+async def test(msg: Bot.MessageSession):
 ...
+    await msg.send_message(msg.locale.t("test.message.say.prompt"))
+# 没有变量时可直接输出
+    await msg.send_message(msg.locale.t("test.message.say.reply", sender=msg.target.sender_id))
+# 若存在变量，则须将变量赋值后输出
+# 如此处在字符串内的变量为 ${sender}，并被赋值为 Bot.MessageSession.target.sender_id
 ```
 
 # 排版规范
