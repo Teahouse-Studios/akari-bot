@@ -4,6 +4,14 @@ import ujson as json
 from core.utils.http import post_url
 
 
+async def get_info(msg: Bot.MessageSession, music: Music, *details):
+    info = [Plain(f"{music.id}\u200B. {music.title}")]
+    # 此处未来会添加图片
+    if details:
+        info.extend(details)
+    return info
+
+
 async def get_record(msg, payload):
     url = f"https://www.diving-fish.com/api/chunithmprober/query/player"
     try:
