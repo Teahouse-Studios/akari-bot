@@ -79,7 +79,7 @@ class MessageSession(MessageSessionT):
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if message_chain and delete:
-                await send.delete()
+                await sent.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if delete and sent:

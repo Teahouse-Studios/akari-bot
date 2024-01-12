@@ -7,9 +7,11 @@ from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from .libraries.maimaidx_best50 import generate, computeRa
 from .libraries.maimaidx_music import TotalList
-from .libraries.maimaidx_utils import generate_best50_text, get_diff
+from .libraries.maimaidx_utils import generate_best50_text, get_diff, SONGS_PER_PAGE
 
 total_list = TotalList()
+
+diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 
 
 mai = module('maimai',
@@ -19,6 +21,7 @@ mai = module('maimai',
 
 @mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
 async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None):
+    result_set = []
     if constant <= 0:
         await msg.finish(msg.locale.t('maimai.message.level_invalid'))
     if constant_max:
@@ -30,7 +33,20 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
                 constant, 1), constant_max=round(
                 constant_max, 1)) + "\n"
     else:
-        result_set = await base_level_q(constant)
+        if constant_max:
+            data = (await total_list.get()).filter(ds=(constant, constant_max))
+        else:
+            data = (await total_list.get()).filter(ds=constant)
+
+        for music in sorted(data, key=lambda i: int(i['id'])):
+            for i in music.diff:
+                result_set.append((music['id'],
+                                   music['title'],
+                                   music['ds'][i], 
+                                   diff_label[i],
+                                   music['level'][i],
+                                   music['type']))
+
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
@@ -38,34 +54,25 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
     elif len(result_set) > 200:
         await msg.finish(msg.locale.t("maimai.message.too_much", length=len(result_set)))
-    elif len(result_set) <= 10:
+    elif len(result_set) <= SONGS_PER_PAGE:
         await msg.finish(s.strip())
     else:
         img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
 
-async def base_level_q(ds1, ds2=None):
-    result_set = []
-    if ds2:
-        music_data = (await total_list.get()).filter(ds=(ds1, ds2))
-    else:
-        music_data = (await total_list.get()).filter(ds=ds1)
-    for music in sorted(music_data, key=lambda i: int(i['id'])):
-        for i in music.diff:
-            result_set.append(
-                (music['id'],
-                 music['title'],
-                 music['ds'][i],
-                 diff_label[i],
-                 music['level'][i],
-                 music['type']))
-    return result_set
-
-
 @mai.command('level <level> [<page>] {{maimai.help.level}}')
-async def _(msg: Bot.MessageSession, level: str, page: str=None):
-    result_set = await diff_level_q(level)
+async def _(msg: Bot.MessageSession, level: str, page: str = None):
+    result_set = []
+    data = (await total_list.get()).filter(level=level)
+    for music in sorted(data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'],
+                               music['title'],
+                               music['ds'][i], 
+                               diff_label[i], 
+                               music['level'][i], 
+                               music['type']))
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
     page = max(min(int(page), total_pages), 1) if page and page.isdigit() else 1
@@ -85,19 +92,34 @@ async def _(msg: Bot.MessageSession, level: str, page: str=None):
         img = await msgchain2image([Plain(s)])
         await msg.finish([BImage(img)])
 
-async def diff_level_q(level):
+
+@mai.command('new [<page>] {{maimai.help.new}}')
+async def _(msg: Bot.MessageSession, page: str = None):
     result_set = []
-    music_data = (await total_list.get()).filter(level=level)
-    for music in sorted(music_data, key=lambda i: int(i['id'])):
-        for i in music.diff:
-            result_set.append(
-                (music['id'],
-                 music['title'],
-                 music['ds'][i],
-                 diff_label[i],
-                 music['level'][i],
-                 music['type']))
-    return result_set
+    data = (await total_list.get()).new()
+    
+    for music in sorted(data, key=lambda i: int(i['id'])):
+        result_set.append((music['id'],
+                           music['title'],
+                           music['type']))
+
+    total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
+    page = max(min(int(page), total_pages), 1) if page and page.isdigit() else 1
+    start_index = (page - 1) * SONGS_PER_PAGE
+    end_index = page * SONGS_PER_PAGE
+
+    s = msg.locale.t("maimai.message.new") + "\n"
+    for elem in result_set[start_index:end_index]:
+        s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[2] == 'DX' else ''}\n"
+
+    if len(result_set) == 0:
+        await msg.finish(msg.locale.t("maimai.message.music_not_found"))
+    elif len(result_set) <= SONGS_PER_PAGE:
+        await msg.finish(s.strip())
+    else:
+        s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
+        img = await msgchain2image([Plain(s)])
+        await msg.finish([BImage(img)])
 
 
 @mai.command('search <keyword> {{maimai.help.search}}')
@@ -109,13 +131,13 @@ async def _(msg: Bot.MessageSession, keyword: str):
     elif len(res) > 200:
         await msg.finish(msg.locale.t("maimai.message.too_much", length=len(res)))
     else:
-        search_result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
+        result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
         for music in sorted(res, key=lambda i: int(i['id'])):
-            search_result += f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"
-        if len(res) <= 10:
-            await msg.finish([Plain(search_result.strip())])
+            result += f"{music['id']}\u200B. {music['title']}{' (DX)' if music['type'] == 'DX' else ''}\n"
+        if len(res) <= SONGS_PER_PAGE:
+            await msg.finish([Plain(result.strip())])
         else:
-            img = await msgchain2image([Plain(search_result)])
+            img = await msgchain2image([Plain(result)])
             await msg.finish([BImage(img)])
 
 
