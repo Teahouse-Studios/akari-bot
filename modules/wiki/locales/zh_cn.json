@@ -112,6 +112,7 @@
     "wiki.message.wiki_audit.remove.failed": "失败，此 Wiki 不存在于${list_name}中：",
     "wiki.message.wiki_audit.remove.failed.other": "失败，此 Wiki 不存在于白名单中，此 Wiki 的白名单可能来自其他同一域名的 Wiki：",
     "wiki.message.wiki_audit.remove.success": "成功从${list_name}删除：",
-    "wiki.message.wiki_audit.untrust": "注意：此 Wiki 当前没有加入机器人的白名单列表中，查询此 Wiki 时将会对返回内容进行限制。\n如需取消限制，请在此处申请白名单：\n",
+    "wiki.message.wiki_audit.untrust": "注意：此 Wiki 当前没有加入机器人的白名单列表中，查询此 Wiki 时将会对返回内容进行限制。",
+    "wiki.message.wiki_audit.untrust.address": "如需取消限制，请在此处申请白名单：\n${url}",
     "wiki.message.wiki_inline.flies": "此页面包括以下文件：${file}"
 }

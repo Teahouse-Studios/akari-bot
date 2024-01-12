@@ -127,8 +127,7 @@ class Locale:
             elif 'fallback' in key:
                 return key['fallback']
             else:
-                return str(key) + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
-                                         fallback=self.locale)
+                return str(key) + self.t("i18n.prompt.fallback.failed", fallback=self.locale)
         localized = self.get_string_with_fallback(key, fallback_failed_prompt)
         return Template(localized).safe_substitute(*args, **kwargs)
 
@@ -148,8 +147,7 @@ class Locale:
                 if node:
                     return node.value  # 2. 如果在 fallback 语言中本地化字符串存在，直接返回
         if fallback_failed_prompt:
-            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", url=Config('bug_report_url'),
-                                         fallback_failed_prompt=False)
+            return f'{{{key}}}' + self.t("i18n.prompt.fallback.failed", fallback_failed_prompt=False)
         else:
             return key
         # 3. 如果在 fallback 语言中本地化字符串不存在，返回 key

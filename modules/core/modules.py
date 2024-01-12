@@ -338,8 +338,11 @@ async def bot_help(msg: Bot.MessageSession):
                 devs_msg = '\n' + msg.locale.t("core.message.help.author.type1") + devs
             else:
                 devs_msg = ''
-            wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                           help_url=Config('help_url')) + '/' + help_name
+            if Config('help_url'):
+                wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
+                                           url=Config('help_url')) + '/' + help_name
+            else:
+                wiki_msg = ''
             if len(doc) > 500 and msg.Feature.image:
                 try:
                     tables = [ImageTable([[doc, '\n'.join(malias), devs]],
@@ -354,7 +357,11 @@ async def bot_help(msg: Bot.MessageSession):
                     traceback.print_exc()
             if malias:
                 doc += f'\n{msg.locale.t("core.help.alias")}\n' + '\n'.join(malias)
-            await msg.finish((doc + devs_msg + wiki_msg).lstrip())
+            doc_msg = (doc + devs_msg + wiki_msg).lstrip()
+            if doc_msg != '':
+                await msg.finish(doc_msg)
+            else:
+                await msg.finish(msg.locale.t("core.help.none"))
         else:
             await msg.finish(msg.locale.t("core.message.help.not_found"))
 
@@ -426,10 +433,15 @@ async def _(msg: Bot.MessageSession):
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    await msg.finish([Image(render),
-                                      Plain(msg.locale.t("core.message.help.more_information",
-                                                         prefix=msg.prefixes[0], help_url=Config('help_url'),
-                                                         donate_url=Config('donate_url')))])
+                    help_msg_list = [Image(render), Plain(msg.locale.t("core.message.help.more_information",
+                                                         prefix=msg.prefixes[0]))]
+                    if Config('help_url'):
+                        help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.address",
+                                                         url=Config('help_url'))))
+                    if Config('donate_url'):
+                        help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.donate",
+                                                         url=Config('donate_url'))))
+                    await msg.finish(msg_list)
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -450,8 +462,12 @@ async def _(msg: Bot.MessageSession):
         help_msg.append(
             msg.locale.t(
                 "core.message.help.legacy.more_information",
-                prefix=msg.prefixes[0],
-                help_url=Config('help_url')))
+                prefix=msg.prefixes[0]))
+        if Config('help_url'):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.address",
+                    url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))
 
 
@@ -528,6 +544,10 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         help_msg.append(
             msg.locale.t(
                 "core.message.help.legacy.more_information",
-                prefix=msg.prefixes[0],
-                help_url=Config('help_url')))
+                prefix=msg.prefixes[0]))
+        if Config('help_url'):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.address",
+                    url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))

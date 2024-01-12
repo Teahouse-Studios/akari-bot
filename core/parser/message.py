@@ -357,8 +357,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
-                    await msg.send_message(msg.locale.t('error.prompt.report', err_msg=str(e)) +
-                                           str(Url(Config('bug_report_url'))))
+                    errmsg = msg.locale.t('error.prompt', err_msg=str(e))
+                    if Config('bug_report_url'):
+                        errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+                    await msg.send_message(errmsg)
                     if bug_report_targets:
                         for target in bug_report_targets:
                             if f := await Bot.FetchTarget.fetch_target(target):
@@ -468,8 +470,10 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
-                            await msg.send_message(msg.locale.t('error.prompt.report', err_msg=str(e)) +
-                                                   str(Url(Config('bug_report_url'))))
+                            errmsg = msg.locale.t('error.prompt', err_msg=str(e))
+                            if Config('bug_report_url'):
+                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+                            await msg.send_message(errmsg)
                             if bug_report_targets:
                                 for target in bug_report_targets:
                                     if f := await Bot.FetchTarget.fetch_target(target):
