@@ -1,6 +1,6 @@
 {
-    "github.help.desc": "Github query tool.",
     "github.help": "Trying to automatically identifying and distinguishing repo/user.",
+    "github.help.desc": "Github query tool.",
     "github.help.repo": "Get GitHub repository information.",
     "github.help.search": "Search repositories on GitHub.",
     "github.help.user": "Get GitHub user or organization information.",
