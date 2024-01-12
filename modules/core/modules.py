@@ -441,7 +441,7 @@ async def _(msg: Bot.MessageSession):
                     if Config('donate_url'):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.donate",
                                                          url=Config('donate_url'))))
-                    await msg.finish(msg_list)
+                    await msg.finish(help_msg_list)
         except Exception:
             traceback.print_exc()
     if legacy_help:
