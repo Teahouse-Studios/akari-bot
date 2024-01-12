@@ -467,7 +467,7 @@ async def _(msg: Bot.MessageSession):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.more_information.address",
-                    url=Config('help_url'))
+                    url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))
 
 
