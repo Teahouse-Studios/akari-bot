@@ -40,7 +40,7 @@
     "wiki.message.error.query": "An error occurred: Unable to query this wiki.",
     "wiki.message.error.set": "An error occurred: Unable to set up this wiki.",
     "wiki.message.error.fetch_log": "发生错误：无法获取日志，可能是此 Wiki 设置了日志的查看权限。",
-    "wiki.message.error.unable_to_render_section": "（章节渲染失败，请联系开发者检查原因。）",
+    "wiki.message.error.unable_to_render_section": "（章节渲染失败，请联系开发者检查原因）",
     "wiki.message.fandom.disable": "Disabled to use Fandom global Interwiki queries.",
     "wiki.message.fandom.enable": "Enabled to use Fandom global Interwiki queries.",
     "wiki.message.flies": "This page includes the following files:",
