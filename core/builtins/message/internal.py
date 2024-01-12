@@ -136,8 +136,9 @@ class ErrorMessage(EMsg):
             if locale_str := re.findall(r'\{(.*)}', error_message):
                 for l in locale_str:
                     error_message = error_message.replace(f'{{{l}}}', locale.t(l))
-            self.error_message = locale.t('error.prompt', error_msg=error_message) + \
-                str(Url(Config('bug_report_url')))
+            self.error_message = locale.t('error') + error_message
+            if Config('bug_report_url'):
+                self.error_message += '\n' + locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
 
     def __str__(self):
         return self.error_message

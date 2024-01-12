@@ -18,7 +18,7 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
                     'tos.warning.count',
                     current_warns=current_warns,
                     warn_counts=WARNING_COUNTS))
-        if current_warns <= 2:
+        if current_warns <= 2 and Config('issue_url'):
             warn_template.append(msg.locale.t('tos.warning.appeal', issue_url=Config('issue_url')))
         if current_warns == WARNING_COUNTS:
             warn_template.append(msg.locale.t('tos.warning.last'))
