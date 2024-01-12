@@ -2383,13 +2383,13 @@ iso639-lang = ">=2.1.0,<3.0.0"
 
 [[package]]
 name = "langsmith"
-version = "0.0.79"
+version = "0.0.80"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "langsmith-0.0.79-py3-none-any.whl", hash = "sha256:be0374e913c36d9f6a13dd6b6e20a506066d5a0f3abfd476f9cf9e0b086ed744"},
-    {file = "langsmith-0.0.79.tar.gz", hash = "sha256:d32639ccd18a92533b302f6f482255619afc8eb007fff91e37ee699d947c5e29"},
+    {file = "langsmith-0.0.80-py3-none-any.whl", hash = "sha256:dee1c6ef9e8241b82a8851926624269954d0ff8e22d82e32e73455f387f4e245"},
+    {file = "langsmith-0.0.80.tar.gz", hash = "sha256:6d22ee07eb41c65b3f5166b20041a026714952497d9e80d5be6879d3a5c14d84"},
 ]
 
 [package.dependencies]
@@ -4589,13 +4589,13 @@ sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
 name = "starlette"
-version = "0.35.0"
+version = "0.35.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "starlette-0.35.0-py3-none-any.whl", hash = "sha256:521234a99a5b5a11de1d0e2e8cea775cf2eeb081ad9dec3d9cecc8aed5ea11a7"},
-    {file = "starlette-0.35.0.tar.gz", hash = "sha256:9948a414f77f20177d9f54ff00a5c50bc86f5048fc473e63457362ee345ae9ae"},
+    {file = "starlette-0.35.1-py3-none-any.whl", hash = "sha256:50bbbda9baa098e361f398fda0928062abbaf1f54f4fadcbe17c092a01eb9a25"},
+    {file = "starlette-0.35.1.tar.gz", hash = "sha256:3e2639dac3520e4f58734ed22553f950d3f3cb1001cd2eaac4d57e8cdc5f66bc"},
 ]
 
 [package.dependencies]
