@@ -171,7 +171,7 @@ async def _(msg: Bot.MessageSession):
         disable_secret_check=True)
 
 
-setup = module('setup', base=True, required_admin=True, desc='{core.help.setup.desc}')
+setup = module('setup', base=True, required_admin=True, desc='{core.help.setup.desc}', alias='toggle')
 
 
 @setup.command('typing {{core.help.setup.typing}}')
@@ -213,7 +213,8 @@ async def _(msg: Bot.MessageSession, offset: str):
     except ValueError:
         await msg.finish(msg.locale.t('core.message.setup.timeoffset.invalid'))
     msg.data.edit_option('timezone_offset', offset)
-    await msg.finish(msg.locale.t('core.message.setup.timeoffset.success', offset=offset))
+    await msg.finish(msg.locale.t('core.message.setup.timeoffset.success',
+                                   offset='' if offset=='+0' else offset))
 
 
 mute = module('mute', base=True, required_admin=True)
