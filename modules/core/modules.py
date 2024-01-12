@@ -434,7 +434,7 @@ async def _(msg: Bot.MessageSession):
                 if render:
                     legacy_help = False
                     help_msg_list = [Image(render), Plain(msg.locale.t("core.message.help.more_information",
-                                                         prefix=msg.prefixes[0])]
+                                                         prefix=msg.prefixes[0]))]
                     if Config('help_url'):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.address",
                                                          url=Config('help_url'))))
