@@ -157,6 +157,7 @@ class WikiLib:
 
     async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:
         cookies = None
+        Logger.debug(BotAccount.cookies)
         if api in BotAccount.cookies and not _no_login:
             cookies = BotAccount.cookies[api]
         if api in redirect_list:

@@ -1,7 +1,6 @@
 import aiohttp
 from core.logger import Logger
 from .dbutils import BotAccount as BotAccountDB
-import base64
 
 
 class LoginFailed(Exception):
@@ -29,7 +28,7 @@ class BotAccount:
                 if req.status != 200:
                     raise LoginFailed(f'Login failed: {await req.text()}')
                 Logger.info(f'Logged in to {api_link} as {account}')
-                return req.cookies
+                return req.cookies.output(attrs=[], header='', sep=';')
 
     @classmethod
     async def login(cls):

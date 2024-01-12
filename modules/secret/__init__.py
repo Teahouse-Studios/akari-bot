@@ -80,7 +80,7 @@ async def newbie():
             if 'title' in xz:
                 if xz['title'] not in qq:
                     send_msg.append(FormattedTime(strptime2ts(xz['timestamp']), date=False, seconds=False))
-                    prompt = '新增新人：\n' + xz['title']
+                    prompt = '新增用户：\n' + xz['title']
                     s = await check(prompt)
                     Logger.debug(s)
                     for z in s:

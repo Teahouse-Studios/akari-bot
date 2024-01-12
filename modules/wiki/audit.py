@@ -1,17 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.scheduler import DateTrigger
 from core.logger import Logger
 from core.utils.image_table import image_table_render, ImageTable
 from database import BotDBUtil
 from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import Audit
-from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
-
+from modules.wiki.utils.wikilib import WikiLib
 
 aud = module('wiki_audit', required_superuser=True,
              alias='wau')
@@ -166,8 +163,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("success"))
 
 
-@aud.handle(DateTrigger(datetime.now() + timedelta(seconds=30)))
-async def login_bots():
-    Logger.info('Start login wiki bot account...')
-    await BotAccount.login()
-    Logger.info('Login wiki bot account done')
+@aud.hook('login_wiki_bots')
+async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
+    Logger.debug('received login_wiki_bots hook: ' + str(ctx.args['cookies']))
+    BotAccount.cookies.update(ctx.args['cookies'])
