@@ -549,5 +549,5 @@ async def modules_help(msg: Bot.MessageSession, legacy):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.more_information.address",
-                    url=Config('help_url'))
+                    url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))
