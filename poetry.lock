@@ -1234,21 +1234,6 @@ lxml = ">=4.9.3"
 dev = ["pytest (>=7.4.2)", "pytest-asyncio (>=0.21.1)", "ruff (>=0.1.6)"]
 
 [[package]]
-name = "enkanetwork-py"
-version = "1.4.5"
-description = "Library for fetching JSON data from site https://enka.network/"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "enkanetwork.py-1.4.5.tar.gz", hash = "sha256:bdc99679bec55017bcf951f636e31793e8cf1fdb040315a430adedb890c0a34d"},
-]
-
-[package.dependencies]
-aiohttp = "*"
-cachetools = "*"
-pydantic = "*"
-
-[[package]]
 name = "exceptiongroup"
 version = "1.2.0"
 description = "Backport of PEP 654 (exception groups)"
@@ -5605,4 +5590,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "f06101c0f267794901059cff80a061a4d25f04eb02f2c18beb08ea45496e2c38"
+content-hash = "624b50f9d011096f64051ceea563ba33495c1525474d6b1cb323ae729c03d869"

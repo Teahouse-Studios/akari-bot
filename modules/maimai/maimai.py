@@ -7,7 +7,7 @@ from .dbutils import DivingProberBindInfoManager
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias, update_alias, update_covers
 from .libraries.maimaidx_best50 import generate, computeRa
 from .libraries.maimaidx_music import TotalList
-from .libraries.maimaidx_utils import generate_best50_text, get_diff, SONGS_PER_PAGE
+from .libraries.maimaidx_utils import generate_best50_text, get_diff, get_grade_info, SONGS_PER_PAGE
 
 total_list = TotalList()
 
@@ -218,8 +218,8 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if diff:
-        diff_index = get_diff(diff)
-        if not diff_index or (len(music['ds']) == 4 and diff_index == 4):
+        diff_index = get_diff(diff)  # diff_index 的输出结果可能为 0
+        if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
             await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]

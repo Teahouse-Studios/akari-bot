@@ -4,7 +4,7 @@ from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
 from .libraries.chunithm_apidata import get_info
 from .libraries.chunithm_music import TotalList
-from .libraries.chunithm_utils import generate_best30_text, SONGS_PER_PAGE
+from .libraries.chunithm_utils import generate_best30_text, get_diff, SONGS_PER_PAGE
 
 total_list = TotalList()
 diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
@@ -140,8 +140,8 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
     if diff:
-        diff_index = get_diff(diff)
-        if not diff_index or (len(music['ds']) == 4 and diff_index == 4):
+        diff_index = get_diff(diff)  # diff_index 的结果可能为 0
+        if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
             await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
