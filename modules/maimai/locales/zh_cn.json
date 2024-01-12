@@ -8,7 +8,7 @@
     "chunithm.message.user_unbound": "未绑定用户，请使用“${prefix}chunithm bind”绑定一个用户。",
     "maimai.help.alias": "查询歌曲的别名。",
     "maimai.help.b50": "查询 Maimai 用户的 B50 列表。",
-    "maimai.help.b50.beta": "查询 Maimai 用户的 B50 列表。（Beta 版） ",
+    "maimai.help.b50.beta": "查询 Maimai 用户的 B50 列表。（Beta 版）",
     "maimai.help.base": "根据定数或定数范围搜索歌曲。",
     "maimai.help.bind": "绑定 Diving-Fish 查分器用户。",
     "maimai.help.desc": "查询 Maimai 相关内容。",
