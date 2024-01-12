@@ -1,0 +1,69 @@
+name: Update Poetry Dependencies
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:  
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-branch-exists:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Check if update-deps branch exists
+        id: check_branch
+        run: |
+          echo "Checking for 'update-deps' branch..."
+          if [ -z "$(git ls-remote --heads origin update-deps)" ]; then
+            echo "Branch 'update-deps' does not exist. Continuing workflow."
+          else
+            echo "分支 'update-deps' 已存在，请删除后执行本工作流。" && exit 1
+          fi
+
+  update-dependencies:
+    runs-on: ubuntu-latest
+    needs: check-branch-exists
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Poetry
+        run: |
+          curl -sSL "https://install.python-poetry.org" | python3 -
+
+      - name: Update Dependencies
+        run: |
+          poetry update
+
+      - name: Update requirements.txt
+        run: |
+          poetry export -f requirements.txt --output requirements.txt
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git checkout -b update-deps
+          git add .
+          git commit -m "Update dependencies"
+          git push origin update-deps
+
+  create-pull-request:
+    runs-on: ubuntu-latest
+    needs: update-dependencies
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: update-deps
+      - name: Create Pull Request
+        run: |
+          gh pr create --title "Poetry依赖自动更新" --body "本Pull Request为手动运行的用于更新由Poetry管理的依赖。<br/>**注意：请在合并后同时删除update-deps分支，否则下次的自动更新依赖将不会运行。**" --base master --head update-deps
