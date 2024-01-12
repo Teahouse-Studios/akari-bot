@@ -219,7 +219,7 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
 
     if diff:
         diff_index = get_diff(diff)  # diff_index 的输出结果可能为 0
-        if (not diff_index and diff_index ！= 0) or (len(music['ds']) == 4 and diff_index == 4):
+        if (not diff_index and diff_index != 0) or (len(music['ds']) == 4 and diff_index == 4):
             await msg.finish(msg.locale.t("maimai.message.chart_not_found"))
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
