@@ -17,7 +17,8 @@ async def ab_qq(msg: MessageSession, wiki_url):
         "data": {
             "name": f"滥用过滤器日志地址",
             "uin": qq_account,
-            "content": []
+            "content": [
+                {"type": "text", "data": {"text": pageurl}}]
         }
     }]
     ablist = []
