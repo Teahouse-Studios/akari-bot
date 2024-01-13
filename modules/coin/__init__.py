@@ -71,7 +71,7 @@ async def flipCoins(count: int, msg):
             return prompt + "\n" + msg.locale.t("coin.message.all.tail")
         if not (face_up or face_down):
             return prompt + "\n" + msg.locale.t("coin.message.all.stand")
-        prompt = msg.locale.t("coin.message.mix.prompt", count=count) + "\n"
+        output = msg.locale.t("coin.message.mix.prompt", count=count) + "\n"
         if face_up and face_down:
             output += msg.locale.t("coin.message.mix.head_and_tail", head=face_up, tail=face_down)
         elif face_up:
