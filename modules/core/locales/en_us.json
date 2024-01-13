@@ -91,7 +91,7 @@
     "core.message.help.table.header.external": "Extended Module List",
     "core.message.help.table.header.help": "Help",
     "core.message.leave.success": "Goodbye.",
-    "core.message.locale": "Current language: ",
+    "core.message.locale": "Current language: ${lang}",
     "core.message.locale.reload.failed": "Failed to reload the following string: ${detail}.",
     "core.message.locale.set.invalid": "Invalid language code. Supported language code(s): ${langlist}",
     "core.message.locale.set.prompt": "Use \"${prefix}locale <language code>\" to set the language.\nSupported language code(s): ${langlist}\nGo to Crowdin and help with translation:\nhttps://www.crowdin.com/project/akari-bot",
