@@ -3,8 +3,8 @@
     "ncmusic.help.info": "获取音乐详细信息。",
     "ncmusic.help.search": "搜索网易云音乐。",
     "ncmusic.help.search.legacy": "搜索网易云音乐。（旧版）",
-    "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}",
-    "ncmusic.message.info.not_found": "未找到对应的音乐。",
+    "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}",
+    "ncmusic.message.info.not_found": "找不到对应的音乐。",
     "ncmusic.message.search.confirm": "是否查看音乐详细信息？",
     "ncmusic.message.search.invalid.non_digital": "无效的编号，必须为数字。",
     "ncmusic.message.search.invalid.out_of_range": "编号超出范围。",
@@ -13,6 +13,6 @@
     "ncmusic.message.search.result": "搜索结果：",
     "ncmusic.message.search.table.header.album": "专辑名",
     "ncmusic.message.search.table.header.artists": "歌手",
-    "ncmusic.message.search.table.header.id": "序号",
+    "ncmusic.message.search.table.header.id": "编号",
     "ncmusic.message.search.table.header.name": "歌名"
 }

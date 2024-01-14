@@ -1,6 +1,6 @@
 {
     "summary.help": "开始发送聊天摘要。",
-    "summary.help.desc": "使用 ChatGPT（gpt-3.5-turbo）生成合并转发信息的聊天记录摘要。",
+    "summary.help.desc": "使用 ChatGPT（GPT-3.5 Turbo）生成合并转发信息的聊天记录摘要。",
     "summary.message": "接下来，请发送要生成摘要的合并转发消息。",
     "summary.message.not_found": "未检测到合并转发消息。",
     "summary.message.waiting": "正在生成摘要。您的聊天记录共 ${count} 个字符，大约需要 ${time} 秒。请稍候……"

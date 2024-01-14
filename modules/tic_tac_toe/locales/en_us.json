@@ -6,6 +6,6 @@
     "tic_tac_toe.noob.help": "和菜鸟级机器人下井字棋。",
     "tic_tac_toe.duo.help": "双人对战井字棋。",
     "tic_tac_toe.message.turn": "请 ${player} 落子。\n（发送数字以确定要落子的位置）",
-    "tic_tac_toe.message.draw": "游戏结束，平局。",
-    "tic_tac_toe.message.winner": "游戏结束，${winner} 赢了。"
+    "tic_tac_toe.message.draw": "游戏已结束，平局。",
+    "tic_tac_toe.message.winner": "游戏已结束，${winner} 赢了。"
 }
