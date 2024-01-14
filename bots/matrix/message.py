@@ -62,7 +62,7 @@ class MessageSession(MessageSessionT):
                     'msgtype': 'm.notice',
                     'body': x.text
                 }
-                if reply_to:
+                if reply_to and self.session.message:
                     # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                     # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                     reply_to_type = self.session.message['content']['msgtype']
@@ -177,7 +177,7 @@ class MessageSession(MessageSessionT):
                     'user_ids': [reply_to_user]
                 }
 
-            if 'm.relates_to' in self.session.message['content']:
+            if self.session.message and 'm.relates_to' in self.session.message['content']:
                 relates_to = self.session.message['content']['m.relates_to']
                 if 'rel_type' in relates_to and relates_to['rel_type'] == 'm.thread':
                     # replying in thread
@@ -225,6 +225,8 @@ class MessageSession(MessageSessionT):
         return False
 
     def as_display(self, text_only=False):
+        if not self.session.message:
+            return ''
         if not text_only or self.session.message['content']['msgtype'] == 'm.text':
             return str(self.session.message['content']['body'])
         if not text_only and 'format' in self.session.message['content']:
@@ -232,6 +234,8 @@ class MessageSession(MessageSessionT):
         return ''
 
     async def to_message_chain(self):
+        if not self.session.message:
+            return MessageChain([])
         content = self.session.message['content']
         msgtype = content['msgtype']
         if msgtype == 'm.emote':
