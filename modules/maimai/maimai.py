@@ -27,7 +27,6 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     if constant_max:
         if constant > constant_max:
             await msg.finish(msg.locale.t('error.range.invalid'))
-        result_set = await base_level_q(constant, constant_max)
         s = msg.locale.t(
             "maimai.message.base.range", constant=round(
                 constant, 1), constant_max=round(
