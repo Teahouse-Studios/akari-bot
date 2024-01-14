@@ -13,6 +13,6 @@
     "ncmusic.message.search.result": "搜索结果：",
     "ncmusic.message.search.table.header.album": "专辑名",
     "ncmusic.message.search.table.header.artists": "歌手",
-    "ncmusic.message.search.table.header.id": "序号",
+    "ncmusic.message.search.table.header.id": "编号",
     "ncmusic.message.search.table.header.name": "歌名"
 }
