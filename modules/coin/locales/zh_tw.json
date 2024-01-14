@@ -14,8 +14,8 @@
     "coin.message.mix.stand": "……還有 ${stand} 枚立起來了！",
     "coin.message.mix.tail": "…有 ${tail} 枚是反面",
     "coin.message.nocoin": "你拋了 0 枚硬幣，什麼也沒有發生……",
-    "coin.message.single.head": "...是正面！",
+    "coin.message.single.head": "…是正面！",
     "coin.message.single.prompt": "你拋了 1 枚硬幣…",
     "coin.message.single.stand": "…它立起來了！",
-    "coin.message.single.tail": "...是反面！"
+    "coin.message.single.tail": "…是反面！"
 }
