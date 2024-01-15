@@ -50,7 +50,7 @@ if Config('enable_urlmanager'):
         else:
             res = Audit(api).remove_from_BlockList()
             list_name = msg.locale.t('wiki.message.wiki_audit.list_name.blocklist')
-         if not res:
+        if not res:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed', list_name=list_name) + api)
         else:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + api)
