@@ -10,10 +10,7 @@ from config import Config
 from .text import remove_suffix
 
 
-default_locale = Config('locale')
-if not default_locale:
-    default_locale = 'zh_cn'
-
+default_locale = Config('locale', 'zh_cn')
 
 # Load all locale files into memory
 
