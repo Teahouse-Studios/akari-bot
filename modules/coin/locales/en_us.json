@@ -11,7 +11,7 @@
     "coin.message.mix.head": "${head} are heads",
     "coin.message.mix.head_and_tail": "${head} are heads, ${tail} are tails",
     "coin.message.mix.prompt": "You toss ${count} coins...",
-    "coin.message.mix.stand": "...and ${stand} are standing up!",
+    "coin.message.mix.stand": "... and ${stand} are standing up!",
     "coin.message.mix.tail": "${tail} are tails",
     "coin.message.nocoin": "You toss no coin and nothing happened.",
     "coin.message.single.head": "It is heads!",
