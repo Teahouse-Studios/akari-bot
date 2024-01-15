@@ -1,5 +1,5 @@
 {
-    "stone.help.desc": "Stone Skipping.",
-    "stone.message.skip": "You throw a stone, and it floated ${count} time(s).",
-    "stone.message.skip.nothing": "You throw a stone, and nothing happened."
+    "stone.help.desc": "Stone skipping.",
+    "stone.message.skip": "You threw a stone and it floated ${count} time(s).",
+    "stone.message.skip.nothing": "You threw a stone and nothing happened."
 }

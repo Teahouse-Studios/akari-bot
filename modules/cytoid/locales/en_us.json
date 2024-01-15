@@ -7,7 +7,7 @@
     "cytoid.help.unbind": "Unbind user.",
     "cytoid.message.b30.cooldown": "（据官方人员所述，此 API 的调用十分昂贵，故手动做出此限制，请谅解。）",
     "cytoid.message.b30.level": "Level",
-    "cytoid.message.bind.failed": "Binding failed. Please check input.",
+    "cytoid.message.bind.failed": "Binding failed. Please check your input.",
     "cytoid.message.bind.success": "Binding successful: ",
     "cytoid.message.unbind.success": "Unbinding successful.",
     "cytoid.message.user_not_found": "User not found.",

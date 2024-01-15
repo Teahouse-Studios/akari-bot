@@ -3,7 +3,7 @@
     "ncmusic.help.info": "取得音樂詳細資訊。",
     "ncmusic.help.search": "搜尋網易雲音樂。",
     "ncmusic.help.search.legacy": "搜尋網易雲音樂。（舊版）",
-    "ncmusic.message.info": "歌名：${name}（${id}）\n歌手：${artists}\n專輯名：${album}（${album_id}）",
+    "ncmusic.message.info": "歌名：${name}（${id}）\n歌手：${artists}\n專輯名稱：${album}（${album_id}）",
     "ncmusic.message.info.not_found": "未找到對應的音樂。",
     "ncmusic.message.search.confirm": "是否檢視音樂詳細資訊？",
     "ncmusic.message.search.invalid.non_digital": "無效的編號，必須為數字。",
