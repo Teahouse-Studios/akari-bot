@@ -70,7 +70,7 @@
     "core.message.analytics.year.total": "Last year for all command calls (from ${first_record}): ",
     "core.message.config.write.failed": "Failed. Try to use escaped quotes or check the input.",
     "core.message.forward_msg.disable": "Forward message disabled.",
-    "core.message.forward_msg.disabled": "Forward message has been disabled.",
+    "core.message.forward_msg.disabled": "Forward message disabled.",
     "core.message.forward_msg.enable": "Forward message enabled.",
     "core.message.help.author.type1": "Module author: ",
     "core.message.help.author.type2": "Module Author",
