@@ -132,14 +132,14 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}')
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
     await msg.finish(
-        f"{msg.locale.t('core.message.locale', lang=msg.locale.t('language'))}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=msg.prefixes[0])}")
+        f"{msg.locale.t('core.message.locale')}{msg.locale.t('language')}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=msg.prefixes[0])}")
 
 
 @locale.command('<lang> {{core.help.locale.set}}', required_admin=True)
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
-        await msg.finish(Locale(lang).t('success'))
+        await msg.send_message(Locale(lang).t('success'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
@@ -149,9 +149,9 @@ async def config_gu(msg: Bot.MessageSession):
 async def reload_locale(msg: Bot.MessageSession):
     err = load_locale_file()
     if len(err) == 0:
-        await msg.finish(msg.locale.t("success"))
+        await msg.send_message(msg.locale.t("success"))
     else:
-        await msg.finish(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
+        await msg.send_message(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(err)))
 
 
 whoami = module('whoami', base=True)

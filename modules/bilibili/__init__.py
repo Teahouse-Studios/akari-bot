@@ -5,7 +5,7 @@ import aiohttp
 
 from core.builtins import Bot
 from core.component import module
-from .bilibili import get_video_info
+from .bilibili import get_info
 
 api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
 
@@ -24,21 +24,21 @@ async def _(msg: Bot.MessageSession, video: str, get_detail=False):
         url = f"{api_url}?aid={video[2:]}"
     else:
         return await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
-    await get_video_info(msg, url, get_detail)
+    await get_info(msg, url, get_detail)
 
 
 @bili.handle(re.compile(r"AV(\d+)", flags=re.I), mode='M', desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     url = f"{api_url}?aid={res.groups()[0]}"
-    await get_video_info(msg, url)
+    await get_info(msg, url, get_detail=False)
 
 
 @bili.handle(re.compile(r"BV[a-zA-Z0-9]{10}"), mode='M', desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
     res = msg.matched_msg
     url = f"{api_url}?bvid={res.group()}"
-    await get_video_info(msg, url)
+    await get_info(msg, url, get_detail=False)
 
 
 @bili.handle(
@@ -52,7 +52,7 @@ async def _(msg: Bot.MessageSession):
     else:
         url = f"{api_url}?aid={video[2:]}"
 
-    await get_video_info(msg, url)
+    await get_info(msg, url, get_detail=False)
 
 
 @bili.handle(re.compile(r"https?://b23\.tv/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)$"), mode="M",
@@ -68,7 +68,7 @@ async def _(msg: Bot.MessageSession):
         if not url:
             return
 
-    await get_video_info(msg, url)
+    await get_info(msg, url, get_detail=False)
 
 
 async def parse_shorturl(shorturl):
