@@ -1,14 +1,14 @@
 from datetime import datetime
 import traceback
 
-from core.builtins import Bot, ErrorMessage, Image, Plain, Url
+from core.builtins import Bot, Image, Plain, Url
 from core.utils.http import get_url
 
 DESC_LENGTH = 100
 
-#headers = {
-#    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53736 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69"
-#}
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53736 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69"
+}
 
 async def get_video_info(msg: Bot.MessageSession, url, get_detail=False):
     try:
@@ -20,7 +20,7 @@ async def get_video_info(msg: Bot.MessageSession, url, get_detail=False):
                 await msg.finish(msg.locale.t('bilibili.message.not_found'))
     except ValueError as e:
         if str(e).startswith('412'):
-            await msg.finish(ErrorMessage(msg, "bilibili.message.error.rejected"))
+            await msg.finish(msg.locale.t('bilibili.message.error.rejected'))
         else:
             traceback.print_exc()
 
