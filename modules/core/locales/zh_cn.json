@@ -91,7 +91,7 @@
     "core.message.help.table.header.external": "扩展模块列表",
     "core.message.help.table.header.help": "帮助信息",
     "core.message.leave.success": "已执行，再见。",
-    "core.message.locale": "当前使用的语言：",
+    "core.message.locale": "当前使用的语言：${lang}",
     "core.message.locale.reload.failed": "以下字符串重载失败：${detail}。",
     "core.message.locale.set.invalid": "语言代码无效，支持的语言代码：${langlist}",
     "core.message.locale.set.prompt": "可使用“${prefix}locale <语言代码>”设置语言。\n支持的语言代码：${langlist}\n欢迎前往 Crowdin 协助翻译：\nhttps://www.crowdin.com/project/akari-bot",

@@ -1,17 +1,28 @@
 from datetime import datetime
+import traceback
 
 from core.builtins import Bot, Image, Plain, Url
 from core.utils.http import get_url
 
 DESC_LENGTH = 100
 
-async def get_info(msg: Bot.MessageSession, url, get_detail):
-    res = await get_url(url, 200, fmt='json')
-    if res['code'] != 0:
-        if res['code'] == -400:
-            await msg.finish(msg.locale.t("bilibili.message.error.invalid"))
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53736 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69"
+}
+
+async def get_video_info(msg: Bot.MessageSession, url, get_detail=False):
+    try:
+        res = await get_url(url, 200, fmt='json')
+        if res['code'] != 0:
+            if res['code'] == -400:
+                await msg.finish(msg.locale.t("bilibili.message.error.invalid"))
+            else:
+                await msg.finish(msg.locale.t('bilibili.message.not_found'))
+    except ValueError as e:
+        if str(e).startswith('412'):
+            await msg.finish(msg.locale.t('bilibili.message.error.rejected'))
         else:
-            await msg.finish(msg.locale.t('bilibili.message.not_found'))
+            traceback.print_exc()
 
     view = res['data']['View']
     stat = view['stat']
