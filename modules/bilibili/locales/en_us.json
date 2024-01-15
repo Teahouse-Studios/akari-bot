@@ -4,10 +4,11 @@
     "bilibili.help.option.i": "Get detailed info.",
     "bilibili.help.regex.av": "Input AV id for video info.",
     "bilibili.help.regex.bv": "Input BV id for video info.",
-    "bilibili.help.regex.shorturl": "Input b23.tv short url for video info.",
+    "bilibili.help.regex.shorturl": "Input short URL for video info.",
     "bilibili.help.regex.url": "Input URL for video info.",
     "bilibili.message": "Title: ${title}\nCategory: ${tname}\nUploader: ${owner}\nDate: ${time}",
     "bilibili.message.detail": "Title: ${title}${pages} | Category: ${tname}\nUploader: ${owner} | Fans: ${fans}\nDescription: ${desc}\nView: ${view} | Danmuku: ${danmaku} | Comments: ${reply}\nLike: ${like} | Coin: ${coin} | Favorite: ${favorite} | Share: ${share}\nDate: ${time}",
     "bilibili.message.error.invalid": "An error occurred: Invalid video id. Please check your input.",
+    "bilibili.message.error.rejected": "An error occurred: The request was rejected because of the Bilibili security control policy. Please try again later.\nIf the error persists, please contact the developers to resolve the issue.",
     "bilibili.message.not_found": "No corresponding video is found."
 }
