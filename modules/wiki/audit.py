@@ -89,7 +89,7 @@ if Config('enable_urlmanager'):
         if not msg.parsed_msg.get('legacy', False) and msg.Feature.image:
             send_msgs = []
             allow_columns = [[x[0], x[1]] for x in allow_list]
-           if allow_columns:
+            if allow_columns:
                 allow_table = ImageTable(data=allow_columns, headers=[
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.apilink'),
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.date')
@@ -104,7 +104,7 @@ if Config('enable_urlmanager'):
                 block_table = ImageTable(data=block_columns, headers=[
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.apilink'),
                     msg.locale.t('wiki.message.wiki_audit.list.table.header.date')
-                 ])
+                ])
                 if block_table:
                     block_image = await image_table_render(block_table)
                     if block_image:
