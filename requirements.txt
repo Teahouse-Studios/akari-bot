@@ -599,8 +599,6 @@ distro==1.9.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0"
 duckduckgo-search==3.9.11 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:3636df4c5eec383c1c02f89c9693b6c5bbaeda38952e467a2fa930132f632ed4 \
     --hash=sha256:4d07a02647da58f1e46e35f11719265f0ce06eed60e2c9c2b00b1105b9084d07
-enkanetwork-py==1.4.5 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
-    --hash=sha256:bdc99679bec55017bcf951f636e31793e8cf1fdb040315a430adedb890c0a34d
 exceptiongroup==1.2.0 ; python_full_version >= "3.8.1" and python_version < "3.11" \
     --hash=sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14 \
     --hash=sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68
