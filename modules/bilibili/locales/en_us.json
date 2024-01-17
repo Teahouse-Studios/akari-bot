@@ -4,7 +4,7 @@
     "bilibili.help.option.i": "Get detailed info.",
     "bilibili.help.regex.av": "Input AV id for video info.",
     "bilibili.help.regex.bv": "Input BV id for video info.",
-    "bilibili.help.regex.shorturl": "Input short URL for video info.",
+    "bilibili.help.regex.shorturl": "Input b23.tv short url for video info.",
     "bilibili.help.regex.url": "Input URL for video info.",
     "bilibili.message": "Title: ${title}\nCategory: ${tname}\nUploader: ${owner}\nDate: ${time}",
     "bilibili.message.detail": "Title: ${title}${pages} | Category: ${tname}\nUploader: ${owner} | Fans: ${fans}\nDescription: ${desc}\nView: ${view} | Danmuku: ${danmaku} | Comments: ${reply}\nLike: ${like} | Coin: ${coin} | Favorite: ${favorite} | Share: ${share}\nDate: ${time}",
