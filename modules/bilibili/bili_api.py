@@ -73,7 +73,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
             qc.reset()
         await msg.finish([Image(pic), Url(video_url), Plain(output)])
     else:
-        return None
+        return c
 
 
 def format_num(number):
