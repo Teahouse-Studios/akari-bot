@@ -21,9 +21,11 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
                 await msg.finish(msg.locale.t('bilibili.message.not_found'))
     except ValueError as e:
         if str(e).startswith('412'):
-            await msg.finish(msg.locale.t('bilibili.message.error.rejected'))
-        else:
-            traceback.print_exc()
+            errmsg = msg.locale.t('bilibili.message.error.rejected')
+            if Config('bug_report_url'):
+                errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+            await msg.finish(errmsg)
+        traceback.print_exc()
 
     view = res['data']['View']
     stat = view['stat']
