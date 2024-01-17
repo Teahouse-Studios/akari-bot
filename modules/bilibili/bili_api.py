@@ -10,8 +10,9 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53736 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69"
 }
 
-async def get_video_info(msg: Bot.MessageSession, url, get_detail=False):
+async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
     try:
+        url = f'https://api.bilibili.com/x/web-interface/view/detail{query}'
         res = await get_url(url, 200, fmt='json')
         if res['code'] != 0:
             if res['code'] == -400:
