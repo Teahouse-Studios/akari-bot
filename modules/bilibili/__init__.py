@@ -7,8 +7,6 @@ from core.builtins import Bot
 from core.component import module
 from .bili_api import get_video_info
 
-api_url = f'https://api.bilibili.com/x/web-interface/view/detail'
-
 bili = module('bilibili', alias='bili', developers=['DoroWolf'],
               desc='{bilibili.help.desc}', support_languages=['zh_cn'])
 
@@ -24,7 +22,9 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
         query = f"?aid={bid[2:]}"
     else:
         return await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
-    await get_video_info(msg, query, get_detail)
+    res = await get_video_info(msg, query, get_detail)
+    if not res:
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
 
 
 @bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='M', desc="{bilibili.help.regex.av}")
