@@ -2,6 +2,7 @@ from datetime import datetime
 import traceback
 
 from core.builtins import Bot, Image, Plain, Url
+from core.utils.cooldown import CoolDown
 from core.utils.http import get_url
 
 DESC_LENGTH = 100
@@ -72,7 +73,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
             qc.reset()
         await msg.finish([Image(pic), Url(video_url), Plain(output)])
     else:
-        return None
+        return c
 
 
 def format_num(number):

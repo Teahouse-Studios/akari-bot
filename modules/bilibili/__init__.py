@@ -23,8 +23,8 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     else:
         return await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
     res = await get_video_info(msg, query, get_detail)
-    if not res:
-        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
+    if res:
+        await msg.finish(msg.locale.t('message.cooldown', time=int(res), cd_time='30'))
 
 
 @bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='M', desc="{bilibili.help.regex.av}")
@@ -75,7 +75,7 @@ async def parse_shorturl(shorturl):
             target_url = response.headers.get('Location')
     
     video = re.search(r'/video/([^/?]+)', target_url)
-    if video:
+    if video: 
         url = f"{api_url}?bvid={video.group(1)}"
         return url
     else:
