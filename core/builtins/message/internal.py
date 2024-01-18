@@ -99,7 +99,7 @@ class FormattedTime:
         return self.to_str()
 
     def __repr__(self):
-        return f'FormattedTime(time={self.timestamp})'
+        return f'FormattedTime(timestamp={self.timestamp})'
 
     def to_dict(self):
         return {
