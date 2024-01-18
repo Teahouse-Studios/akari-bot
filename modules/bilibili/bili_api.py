@@ -20,7 +20,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
     if c == 0:
         try:
             url = f'https://api.bilibili.com/x/web-interface/view/detail{query}'
-            res = await get_url(url, 200, fmt='json')
+            res = await get_url(url, 200, headers=headers, fmt='json')
             if res['code'] != 0:
                 if res['code'] == -400:
                     await msg.finish(msg.locale.t("bilibili.message.error.invalid"))
