@@ -75,8 +75,7 @@ async def parse_shorturl(shorturl):
             target_url = response.headers.get('Location')
     
     video = re.search(r'/video/([^/?]+)', target_url)
-    if video: 
-        url = f"{api_url}?bvid={video.group(1)}"
-        return url
+    if video:
+        return f"?bvid={video.group(1)}"
     else:
         return False
