@@ -15,7 +15,7 @@ client = EnkaNetworkAPI()
 
 @genshin.handle('uid <number> {{genshin.help.uid}}')
 async def _(msg: Bot.MessageSession):
-    data = await client.fetch_user(msg.parsed_msg['<number>'])
+    data = await client.fetch_user(msg.parsed_msg[<number>])
     player_level = {data.player.level}
     await msg.send_message(
         f"玩家昵称：{data.player.nickname}\n"
