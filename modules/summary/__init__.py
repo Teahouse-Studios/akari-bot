@@ -78,6 +78,7 @@ async def _(msg: Bot.MessageSession):
             petal = await count_petal(tokens)
             msg.data.modify_petal(-petal)
         else:
+            Logger.info(f'{tokens} tokens have been consumed while calling AI.')
             petal = 0
 
         if petal != 0:
