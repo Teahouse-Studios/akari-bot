@@ -10,7 +10,7 @@ from config import Config
 from core.logger import Logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.dirty_check import check, check_bool, rickroll
+from core.dirty_check import check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
@@ -131,7 +131,8 @@ if Config('openai_api_key'):
                     except Exception as e:
                         chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
-            chain = await check_output(msg, chain)
+            if await check_bool(res):
+                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
             await msg.send_message(chain)
@@ -170,11 +171,3 @@ if Config('openai_api_key'):
 
     def count_token(text: str):
         return len(enc.encode(text, allowed_special="all")) + SPECIAL_TOKEN_LENGTH + INSTRUCTIONS_LENGTH
-
-    async def check_output(msg: Bot.MessageSession, output: list):
-        output = await check(*output)
-        output = [block['content'] for block in output]
-        for content in output:
-            if isinstance(content, Plain):
-                content.text = content.text.replace("<吃掉了>", msg.locale.t("check.redacted"))
-        return output
