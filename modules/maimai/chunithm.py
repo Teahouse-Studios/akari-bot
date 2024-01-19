@@ -53,7 +53,10 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         await msg.finish(s.strip())
     else:
         img = await msgchain2image([Plain(s)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(s)
 
 
 @chu.command('level <level> [<page>] {{maimai.help.level}}')
@@ -84,7 +87,10 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
     else:
         s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(s)
 
 
 @chu.command('search <keyword> {{maimai.help.search}}')
@@ -96,14 +102,17 @@ async def _(msg: Bot.MessageSession, keyword: str):
     elif len(res) > 200:
         await msg.finish(msg.locale.t("maimai.message.too_much", length=len(res)))
     else:
-        search_result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
+        result = msg.locale.t("maimai.message.search", keyword=name) + "\n"
         for music in sorted(res, key=lambda i: int(i['id'])):
-            search_result += f"{music['id']}\u200B. {music['title']}\n"
+            result += f"{music['id']}\u200B. {music['title']}\n"
         if len(res) <= SONGS_PER_PAGE:
-            await msg.finish([Plain(search_result.strip())])
+            await msg.finish([Plain(result.strip())])
         else:
-            img = await msgchain2image([Plain(search_result)])
-            await msg.finish([BImage(img)])
+            img = await msgchain2image([Plain(result)])
+            if img:
+                await msg.finish([BImage(img)])
+            else:
+                await msg.finish(result)
 
 
 @chu.command('b30 [<username>] {{chunithm.help.b30}}')

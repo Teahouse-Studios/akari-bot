@@ -2,7 +2,9 @@ import os
 import ujson as json
 from datetime import datetime
 
+from config import CFG
 from core.builtins import Plain
+from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from core.utils.cache import random_cache_path
@@ -13,6 +15,8 @@ SONGS_PER_PAGE = 20
 JINGLEBELL_SONG_ID = 70
 
 assets_path = os.path.abspath('./assets/maimai')
+web_render = CFG.get_url('web_render')
+web_render_local = CFG.get_url('web_render_local')
 total_list = TotalList()
 
 plate_conversion = {
@@ -212,7 +216,10 @@ async def generate_best50_text(msg, payload):
     html += "</div>"
     
     img = await msgchain2image([Plain(html)])
-    return img
+    if img:
+        return img
+    else:
+        await msg.finish(msg.locale.t("error.config.webrender.invalid"))
 
 
 async def get_rank(msg, payload):
