@@ -388,7 +388,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 if confirm.as_display(text_only=True) in confirm_command:
                     auto_index = True
                 elif confirm.as_display(text_only=True).isdigit():
-                    index = int(confirm.as_display()) - 1
+                    index = int(confirm.as_display(text_only=True)) - 1
                 else:
                     return
                 preset_message = []
