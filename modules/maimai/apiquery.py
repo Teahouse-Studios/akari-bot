@@ -122,7 +122,10 @@ async def query_plate(msg, plate, username):
 
     if get_img:
         img = await msgchain2image([Plain(output)], msg)
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(output.strip())
     else:
         await msg.finish(output.strip())
 
@@ -159,7 +162,10 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 
     if get_img:
         img = await msgchain2image([Plain(output)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(output.strip())
     else:
         await msg.finish(output.strip())
 
@@ -197,6 +203,9 @@ async def _(msg: Bot.MessageSession, level: str, page: str, username: str = None
 
     if get_img:
         img = await msgchain2image([Plain(res)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(output.strip())
     else:
         await msg.finish([Plain(res.strip())])

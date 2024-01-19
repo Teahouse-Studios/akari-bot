@@ -106,5 +106,7 @@ async def generate_best30_text(msg, payload):
     html += "</div>"
     
     img = await msgchain2image([Plain(html)])
-    return img
-
+    if img:
+        return img
+    else:
+        await msg.finish(msg.locale.t("error.config.webrender.invalid"))
