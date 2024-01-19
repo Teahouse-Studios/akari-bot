@@ -16,7 +16,7 @@
 
 # 使用 Docker 镜像部署
 
-若不想使用 Docker 部署，请转到[正常部署](./DEPLOY.md)。
+若不想使用 Docker 部署，请转到[正常部署](./docs/DEPLOY.md)。
 
 ## 准备
 

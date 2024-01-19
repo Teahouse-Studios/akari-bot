@@ -17,7 +17,7 @@
 
 # 正常部署
 
-若想使用 Docker 部署，请转到[使用 Docker 部署](./DEPLOY_Docker.md)。
+若想使用 Docker 部署，请转到[使用 Docker 部署](./docs/DEPLOY_Docker.md)。
 
 ## 准备
 
