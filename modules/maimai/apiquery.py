@@ -199,13 +199,13 @@ async def _(msg: Bot.MessageSession, level: str, page: str, username: str = None
     else:
         payload = {'username': username}
 
-    res, get_img = await get_score_list(msg, payload, level, page)
+    output, get_img = await get_score_list(msg, payload, level, page)
 
     if get_img:
-        img = await msgchain2image([Plain(res)])
+        img = await msgchain2image([Plain(output)])
         if img:
             await msg.finish([BImage(img)])
         else:
             await msg.finish(output.strip())
     else:
-        await msg.finish([Plain(res.strip())])
+        await msg.finish([Plain(output.strip())])
