@@ -4,7 +4,6 @@ from datetime import datetime
 
 from config import CFG
 from core.builtins import Plain
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import msgchain2image
 from core.utils.cache import random_cache_path

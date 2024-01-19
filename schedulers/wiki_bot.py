@@ -11,4 +11,4 @@ async def login_bots():
     Logger.info('Start login wiki bot account...')
     await BotAccount.login()
     await JobQueue.trigger_hook_all('wiki_audit.login_wiki_bots', cookies=BotAccount.cookies)
-    Logger.info('Login wiki bot account done')
+    Logger.info('Successfully login wiki bot account.')

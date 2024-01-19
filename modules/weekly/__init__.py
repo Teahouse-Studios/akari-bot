@@ -6,7 +6,6 @@ import ujson as json
 
 from core.builtins import Bot, Plain, Image, Url
 from core.component import module
-from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale
 from core.utils.image import msgchain2image

@@ -62,7 +62,7 @@ def parse_game_record(file_path):
                             record[name_]['rks'] = ((((record[name_]['accuracy'] - 55) / 45) ** 2)
                                                     * float(rating[n][name_])) if record[name_]['accuracy'] >= 70 else 0
                     else:
-                        Logger.warn(f'No rating value for {n}')
+                        Logger.warn(f'No rating value for {n}.')
                         record[name_]['base_rks'] = 0
                         record[name_]['rks'] = 0
                     score_pos += 8

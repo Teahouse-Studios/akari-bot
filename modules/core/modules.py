@@ -124,7 +124,7 @@ async def config_modules(msg: Bot.MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.module.help", module=m
+                    recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.recommends.help", module=m
                                                                         ))
 
                     if modules_[m].desc:
@@ -194,7 +194,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                     msglist.append(module_reload(module_, []))
                 elif module_ not in modules_:
-                    msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
+                    msglist.append(msg.locale.t("core.message.module.reload.not_found", module=module_))
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
@@ -229,7 +229,7 @@ async def config_modules(msg: Bot.MessageSession):
 
             for module_ in wait_config_list:
                 if module_ not in current_unloaded_modules:
-                    msglist.append(msg.locale.t("core.message.module.load.error"))
+                    msglist.append(msg.locale.t("core.message.module.load.not_found"))
                     continue
                 if ModulesManager.load_module(module_):
                     msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
@@ -260,7 +260,7 @@ async def config_modules(msg: Bot.MessageSession):
                             err_modules.remove(module_)
                             current_unloaded_modules.append(module_)
                     else:
-                        msglist.append(msg.locale.t("core.message.module.unload.error"))
+                        msglist.append(msg.locale.t("core.message.module.unload.not_found"))
                     continue
                 if modules_[module_].base:
                     msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
