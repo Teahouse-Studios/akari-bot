@@ -59,7 +59,7 @@
 
 你可以前往 [Crowdin](https://crowdin.com/project/akari-bot) 参与改进小可的多语言支持。
 
-关于多语言的详细规范说明，请见[这里](./docs/LOCALES.md)。
+关于多语言规范的详细说明，请见[此处](./docs/LOCALES.md)。
 
 ### 贡献
 
