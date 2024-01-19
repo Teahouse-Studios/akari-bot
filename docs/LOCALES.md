@@ -125,11 +125,11 @@ async def test(msg: Bot.MessageSession):
 > 刚刚买了一部 iPhone ，好开心！
 
 ### 半角标点相关的空格
-在半角标点（左引号、左括号等引用标点除外）之后如果有其他字符，请在标点之后用空格隔开。
+在半角标点（左引号、左括号等引用标点除外）之后如果有其他字符，请增加空格隔开。
 
-左引号、左括号等引用标点如果其之前有内容则增加空格。
+左引号、左括号等引用标点如果其之前有其他字符，请增加空格隔开。
 
-撇号和破折号前后不加空格。
+撇号和连接号（hyphen）前后不加空格。破折号（dash）前后需增加空格。
 
 多个半角标点连在一起需看成一个标点，不要用空格将它们分开。
 
@@ -138,22 +138,22 @@ async def test(msg: Bot.MessageSession):
 > 
 > The mysterious treasure was said to be hidden deep within the ancient cavern... guarded by mythical creatures and protected by an ancient spell.
 > 
-> The storm—with its strong winds, torrential rain, and relentless thunder—lasted for hours, leaving behind a trail of destruction.
+> The storm — with its strong winds, torrential rain, and relentless thunder — lasted for hours, leaving behind a trail of destruction.
 > 
 > "Life is what happens when you're busy making other plans." people always said.
 > 
 > I went to the bookstore yesterday and bought a new novel (the one I've been wanting to read for months).
 
 错误：
-> The sun set over the horizon,casting a warm glow on the city.As night fell,the lights began to twinkle,creating a captivating skyline.
+> The sun set over the horizon,casting a warm glow on the city.As night fell,the lights began to twinkle,creating a captivating skyline. 
 >
-> The mysterious treasure was said to be hidden deep within the ancient cavern ... guarded by mythical creatures and protected by an ancient spell.
+> The mysterious treasure was said to be hidden deep within the ancient cavern . . . guarded by mythical creatures and protected by an ancient spell. 
 > 
-> The storm — with its strong winds, torrential rain, and relentless thunder — lasted for hours, leaving behind a trail of destruction. 
+> The storm—with its strong winds,torrential rain,and relentless thunder—lasted for hours,leaving behind a trail of destruction. 
 >
 > " Life is what happens when you' re busy making other plans. " people always said. 
 > 
-> I went to the bookstore yesterday and bought a new novel( the one I' ve been wanting to read for months) .
+> I went to the bookstore yesterday and bought a new novel( the one I' ve been wanting to read for months) . 
 
 ## 标点符号
 ### 不要重复使用标点符号
