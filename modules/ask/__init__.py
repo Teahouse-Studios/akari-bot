@@ -7,10 +7,10 @@ from openai import OpenAI, AsyncOpenAI
 import tiktoken
 
 from config import Config
-from core.logger import logger
+from core.logger import Logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.dirty_check import check_bool, rickroll
+from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
@@ -90,7 +90,7 @@ if Config('openai_api_key'):
                     break
                 elif run.status == 'failed':
                     if run.last_error.code == 'rate_limit_exceeded':
-                        logger.warning(run.last_error.json())
+                        Logger.warning(run.last_error.json())
                         raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
                     raise RuntimeError(run.last_error.json())
                 await asyncio.sleep(4)
@@ -107,6 +107,7 @@ if Config('openai_api_key'):
                 # petal = await count_petal(tokens, gpt4)
                 msg.data.modify_petal(-petal)
             else:
+                Logger.info(f'{tokens} tokens have been consumed while calling AI.')
                 petal = 0
 
             blocks = parse_markdown(res)
@@ -130,8 +131,7 @@ if Config('openai_api_key'):
                     except Exception as e:
                         chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
-            if await check_bool(res):
-                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
+            chain = await check_output(msg, chain)
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
             await msg.send_message(chain)
@@ -170,3 +170,11 @@ if Config('openai_api_key'):
 
     def count_token(text: str):
         return len(enc.encode(text, allowed_special="all")) + SPECIAL_TOKEN_LENGTH + INSTRUCTIONS_LENGTH
+
+    async def check_output(msg: Bot.MessageSession, output: list):
+        output = await check(*output)
+        output = [block['content'] for block in output]
+        for content in output:
+            if isinstance(content, Plain):
+                content.text = content.text.replace("<吃掉了>", msg.locale.t("check.redacted"))
+        return output
