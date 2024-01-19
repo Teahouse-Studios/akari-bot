@@ -123,10 +123,10 @@ async def _(msg: Bot.MessageSession, page: str = None):
     else:
         s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
-            if img:
-                await msg.finish([BImage(img)])
-            else:
-                await msg.finish(s)
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(s)
 
 
 @mai.command('search <keyword> {{maimai.help.search}}')
