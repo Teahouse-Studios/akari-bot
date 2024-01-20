@@ -58,13 +58,24 @@ async def on_message(room: nio.MatrixRoom, event: nio.RoomMessageFormatted):
             bot.verify_device(olm_device)
             Logger.info(f"Trust olm device for device id: {event.sender} -> {device_id}")
     if event.source['content']['msgtype'] == 'm.notice':
-        # https://spec.matrix.org/v1.7/client-server-api/#mnotice
+        # https://spec.matrix.org/v1.9/client-server-api/#mnotice
         return
     is_room = room.member_count != 2 or room.join_rule != 'invite'
     target_id = room.room_id if is_room else event.sender
     reply_id = None
-    if 'm.relates_to' in event.source['content'] and 'm.in_reply_to' in event.source['content']['m.relates_to']:
-        reply_id = event.source['content']['m.relates_to']['m.in_reply_to']['event_id']
+    if 'm.relates_to' in event.source['content']:
+        relatesTo = event.source['content']['m.relates_to']
+        if 'm.in_reply_to' in relatesTo:  # rich reply
+            reply_id = relatesTo['m.in_reply_to']['event_id']
+        if 'rel_type' in relatesTo:
+            relType = relatesTo['rel_type']
+            if relType == 'm.replace':  # skip edited message
+                return
+            elif relType == 'm.thread':  # reply in thread
+                # https://spec.matrix.org/v1.9/client-server-api/#fallback-for-unthreaded-clients
+                if 'is_falling_back' in relatesTo and relatesTo['is_falling_back']:
+                    # we regard thread roots as reply target rather than last message in threads
+                    reply_id = relatesTo['event_id']
     resp = await bot.get_displayname(event.sender)
     if isinstance(resp, nio.ErrorResponse):
         Logger.error(f"Failed to get display name for {event.sender}")
@@ -153,7 +164,7 @@ async def start():
                     resp,
                     nio.KeysUploadError) and "One time key" in resp.message and "already exists." in resp.message:
                 Logger.warn(
-                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim it down: {resp}")
+                    f"Matrix E2EE keys have been uploaded for this session, we are going to force claim them down, although this is very dangerous and should never happen for a clean session: {resp}")
                 keys = 0
                 while True:
                     resp = await bot.keys_claim({client.user: [client.device_id]})
@@ -189,9 +200,10 @@ async def start():
     await init_async()
     await load_prompt(FetchTarget)
 
-    Logger.info(f"Starting sync loop...")
-    await bot.sync_forever(timeout=30000, full_state=False, set_presence='online')
-    Logger.info(f"Sync loop stopped.")
+    Logger.info(f"starting sync loop")
+    await bot.set_presence('online', f"akari-bot {Info.version}")
+    await bot.sync_forever(timeout=30000, full_state=False)
+    Logger.info(f"sync loop stopped")
 
     if bot.olm:
         if client.megolm_backup_passphrase:
@@ -207,6 +219,8 @@ async def start():
             Logger.info(f"Saving megolm keys backup to {backup_path}")
             await bot.export_keys(backup_path, client.megolm_backup_passphrase)
             Logger.info(f"Megolm backup exported.")
+
+    await bot.set_presence('offline')
 
 
 if bot:
