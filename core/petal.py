@@ -18,7 +18,7 @@ BASE_COST_GPT_4 = Decimal('0.03')  # gpt-4-1106-preview: $0.03 / 1K tokens
 THIRD_PARTY_MULTIPLIER = Decimal('1.5')
 PROFIT_MULTIPLIER = Decimal('1.1')  # At the time we are really just trying to break even
 PRICE_PER_1K_TOKEN = BASE_COST_GPT_3_5 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
-PRICE_PER_1K_TOKEN_GPT4 = BASE_COST_GPT_4 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
+PRICE_PER_1K_TOKEN_GPT_4 = BASE_COST_GPT_4 * THIRD_PARTY_MULTIPLIER * PROFIT_MULTIPLIER
 USD_TO_CNY = Decimal('7.1')  # Assuming 1 USD = 7.1 CNY
 CNY_TO_PETAL = 100  # 100 petal = 1 CNY
 
@@ -56,13 +56,16 @@ async def load_or_refresh_cache():
 async def count_petal(tokens: int, gpt4: bool = False):
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
     petal_exchange_rate = await load_or_refresh_cache()
-    price = tokens / ONE_K * PRICE_PER_1K_TOKEN
+    if gpt4:
+        price = tokens / ONE_K * PRICE_PER_1K_TOKEN_GPT_4
+    else:
+        price = tokens / ONE_K * PRICE_PER_1K_TOKEN
     if petal_exchange_rate:
         petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
     else:
         Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
         petal = price * USD_TO_CNY * CNY_TO_PETAL
-    return petal
+    return round(petal, 2)
 
 
 async def gained_petal(msg: Bot.MessageSession, amount):

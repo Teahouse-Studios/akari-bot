@@ -20,7 +20,10 @@ async def hlp(ctx: discord.ApplicationContext, module: str):
 @client.slash_command(name="locale", description="Set the bot running languages.")
 @discord.option(name="lang", description="Supported language codes.", autocomplete=auto_get_lang)
 async def locale(ctx: discord.ApplicationContext, lang: str=None):
-    await slash_parser(ctx, lang)
+    if lang:
+        await slash_parser(ctx, lang)
+    else:
+        await slash_parser(ctx, "")
 
 
 @client.slash_command(name="mute", description="Make the bot stop sending message.")

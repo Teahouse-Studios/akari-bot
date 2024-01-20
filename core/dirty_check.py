@@ -52,7 +52,7 @@ async def check(*text) -> list:
     '''检查字符串是否合规
 
     :param text: 字符串（List/Union）。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'，结构为[{'审核后的字符串': 处理结果（True/False，默认为True）}]
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'
     '''
     access_key_id = Config("check_accessKeyId")
     access_key_secret = Config("check_accessKeySecret")
@@ -160,7 +160,7 @@ async def check_bool(*text):
 
 
 def rickroll(msg):
-    if Config("enable_rickroll") and Config("rickroll_url"):
-        return Config("rickroll_url")
+    if Config("enable_rickroll") and Config("rickroll_msg"):
+        return Config("rickroll_msg")
     else:
         return msg.locale.t("error.message.chain.unsafe")

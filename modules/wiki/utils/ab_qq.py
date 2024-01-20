@@ -10,7 +10,7 @@ async def ab_qq(msg: MessageSession, wiki_url):
     wiki = WikiLib(wiki_url)
     qq_account = Config("qq_account")
     query = await wiki.get_json(action='query', list='abuselog', aflprop='user|title|action|result|filter|timestamp',
-                                afllimit=99)
+                                afllimit=99, _no_login=not msg.options.get("use_bot_account", False))
     pageurl = wiki.wiki_info.articlepath.replace("$1", 'Special:AbuseLog')
     nodelist = [{
         "type": "node",
@@ -18,8 +18,7 @@ async def ab_qq(msg: MessageSession, wiki_url):
             "name": f"滥用过滤器日志地址",
             "uin": qq_account,
             "content": [
-                {"type": "text", "data": {"text": pageurl + ('\n tips：复制粘贴下面的任一消息到聊天窗口发送可获取此次改动详细信息的截图。'
-                                                             if wiki.wiki_info.in_allowlist else '')}}]
+                {"type": "text", "data": {"text": pageurl}}]
         }
     }]
     ablist = []

@@ -7,7 +7,7 @@ from openai import OpenAI, AsyncOpenAI
 import tiktoken
 
 from config import Config
-from core.logger import logger
+from core.logger import Logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
 from core.dirty_check import check_bool, rickroll
@@ -17,7 +17,7 @@ from core.utils.cooldown import CoolDown
 
 from .formatting import generate_latex, generate_code_snippet  # noqa: E402
 
-if not Config('openai_api_key'):
+if Config('openai_api_key'):
     client = AsyncOpenAI(
         api_key=Config('openai_api_key'),
     )
@@ -57,7 +57,7 @@ if not Config('openai_api_key'):
         if not Config('openai_api_key'):
             raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
         if not is_superuser and msg.data.petal <= 0:  # refuse
-            await msg.finish(msg.locale.t('core.message.petal.no_petals') + Config('issue_url'))
+            await msg.finish(msg.locale.t('core.message.petal.no_petals'))
 
         qc = CoolDown('call_openai', msg)
         c = qc.check(60)
@@ -90,7 +90,7 @@ if not Config('openai_api_key'):
                     break
                 elif run.status == 'failed':
                     if run.last_error.code == 'rate_limit_exceeded':
-                        logger.warning(run.last_error.json())
+                        Logger.warning(run.last_error.json())
                         raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
                     raise RuntimeError(run.last_error.json())
                 await asyncio.sleep(4)
@@ -107,6 +107,7 @@ if not Config('openai_api_key'):
                 # petal = await count_petal(tokens, gpt4)
                 msg.data.modify_petal(-petal)
             else:
+                Logger.info(f'{tokens} tokens have been consumed while calling AI.')
                 petal = 0
 
             blocks = parse_markdown(res)

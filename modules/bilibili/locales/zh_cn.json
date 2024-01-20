@@ -4,10 +4,11 @@
     "bilibili.help.option.i": "获取详细信息。",
     "bilibili.help.regex.av": "发送 AV 号获取视频信息。",
     "bilibili.help.regex.bv": "发送 BV 号获取视频信息。",
-    "bilibili.help.regex.shorturl": "发送 b23.tv 短连接获取视频信息。",
+    "bilibili.help.regex.shorturl": "发送 URL 短连接获取视频信息。",
     "bilibili.help.regex.url": "发送 URL 获取视频信息。",
     "bilibili.message": "标题：${title}\n类型：${tname}\nUP主：${owner}\n日期：${time}",
     "bilibili.message.detail": "标题：${title}${pages} | 类型：${tname}\nUP主：${owner} | 粉丝：${fans}\n简介：${desc}\n观看：${view} | 弹幕：${danmaku} | 评论：${reply}\n喜欢：${like} | 投币：${coin} | 收藏：${favorite} | 分享：${share}\n日期：${time}",
     "bilibili.message.error.invalid": "发生错误：视频编号无效，请检查输入。",
+    "bilibili.message.error.rejected": "发生错误：由于触发哔哩哔哩安全风控策略，此次访问请求已被拒绝，请稍后重试。\n如果错误持续存在，请联系开发者解决问题。",
     "bilibili.message.not_found": "未找到对应的视频。"
 }

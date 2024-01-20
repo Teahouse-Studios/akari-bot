@@ -14,7 +14,7 @@ bot = Bot.FetchTarget
 ca = module('__check_abuse__', required_superuser=True, developers=['OasisAkari'])
 
 
-@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
+@ca.handle(DateTrigger(datetime.now() + timedelta(seconds=60)))
 async def _():
     if bot.name not in ['QQ', 'TEST']:
         return
@@ -60,7 +60,7 @@ async def _():
 cn = module('__check_newbie__', required_superuser=True, developers=['OasisAkari'])
 
 
-@cn.handle(DateTrigger(datetime.now() + timedelta(seconds=10)))
+@cn.handle(DateTrigger(datetime.now() + timedelta(seconds=60)))
 async def newbie():
     if bot.name not in ['QQ', 'TEST']:
         return
@@ -80,7 +80,7 @@ async def newbie():
             if 'title' in xz:
                 if xz['title'] not in qq:
                     send_msg.append(FormattedTime(strptime2ts(xz['timestamp']), date=False, seconds=False))
-                    prompt = '新增新人：\n' + xz['title']
+                    prompt = '新增用户：\n' + xz['title']
                     s = await check(prompt)
                     Logger.debug(s)
                     for z in s:
