@@ -5,7 +5,7 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.utils.image import msgchain2image
 from .chunithm import chu
 from .dbutils import DivingProberBindInfoManager
-from .libraries.maimaidx_apidata import get_alias, search_by_alias
+from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_best50 import generate
 from .libraries.maimaidx_music import TotalList
 from .libraries.maimaidx_utils import *
@@ -122,7 +122,10 @@ async def query_plate(msg, plate, username):
 
     if get_img:
         img = await msgchain2image([Plain(output)], msg)
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(output.strip())
     else:
         await msg.finish(output.strip())
 
@@ -159,7 +162,10 @@ async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None
 
     if get_img:
         img = await msgchain2image([Plain(output)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(output.strip())
     else:
         await msg.finish(output.strip())
 
@@ -193,10 +199,13 @@ async def _(msg: Bot.MessageSession, level: str, page: str, username: str = None
     else:
         payload = {'username': username}
 
-    res, get_img = await get_score_list(msg, payload, level, page)
+    output, get_img = await get_score_list(msg, payload, level, page)
 
     if get_img:
-        img = await msgchain2image([Plain(res)])
-        await msg.finish([BImage(img)])
+        img = await msgchain2image([Plain(output)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(output.strip())
     else:
-        await msg.finish([Plain(res.strip())])
+        await msg.finish([Plain(output.strip())])

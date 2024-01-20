@@ -3,7 +3,8 @@
 -   [简介](#简介)
 -   [正常部署](#正常部署)
     -   [准备](#准备)
-    -   [拉取镜像](#拉取镜像)
+    -   [下载源代码](#下载源代码)
+    -   [安装依赖](#安装依赖)
     -   [配置](#配置)
     -   [运行机器人](#运行机器人)
 -   [获取帮助](#获取帮助)
@@ -12,39 +13,119 @@
 
 # 简介
 
-本文将会教您如何使用 Docker 搭建自己的小可机器人。
+本文将会教您如何搭建自己的小可机器人。
 
-# 使用 Docker 镜像部署
+# 正常部署
 
-若不想使用 Docker 部署，请转到[正常部署](./DEPLOY.md)。
+若想使用 Docker 部署，请转到[使用 Docker 部署](./docs/DEPLOY_Docker.md)。
 
 ## 准备
 
-1. 一台已经安装好 [Docker](https://www.docker.com/) 的设备。
+1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 
-2. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
+2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
 
-请善用搜索引擎来获取详细安装教程。
+3. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
 
-## 拉取镜像
+## 下载源代码
 
-输入下面的指令拉取镜像。
+**方式一：使用 [Git](https://git-scm.com/) 克隆**
 
-> 注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64。
+1. 请在要放置小可的文件夹中右键打开终端，并输入以下指令：
+
+    ```sh
+    git clone https://github.com/Teahouse-studios/akari-bot.git
+    ```
+
+    直连 GitHub 的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
+
+    ```sh
+    git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
+    ```
+
+    ```sh
+    git clone https://gh-proxy.com/github.com/Teahouse-studios/akari-bot.git
+    ```
+
+    镜像站会在每天晚上进行仓库更新，所以若想在镜像站更新之前获取最新版本的代码，请使用原 GitHub 地址。
+
+2. 在文件夹内打开终端。
+
+    ```sh
+    cd akari-bot
+    ```
+
+**方式二：直接下载代码**
+
+1. 您可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+
+    > 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
+
+    > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
+
+2. 解压源代码，并在文件夹中打开终端。
+
+## 安装依赖
+
+**方式一：使用 [Poetry](https://python-poetry.org/)**
+
+如果您已经安装了 Poetry，您可以跳过以下安装步骤。
+
+1. 打开 Powershell，并执行以下指令来安装 Poetry：
+
+    **Windows**
+
+    ```powershell
+    (Invoke-WebRequest -Uri "https://install.python-poetry.org" -UseBasicParsing).Content | py -
+    ```
+
+    **Linux**
+
+    ```sh
+    curl -sSL "https://install.python-poetry.org" | python3 -
+    ```
+
+    > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+
+    > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
+
+2. 安装完成后，请将以下目录添加到 PATH 环境变量，方便调用：
+
+    **Windows**
+
+    ```
+    %APPDATA%\Python\Scripts
+    ```
+
+    **Linux**
+
+    ```
+    $HOME/.local/bin
+    ```
+
+    请善用搜索引擎寻找更改 PATH 的方法。
+
+    在添加到 PATH 之后，您通常需要重启终端，甚至整个电脑才能使其生效。
+
+    您可以通过 `poetry --version` 确认安装是否有效。
+
+3. 在安装完 Poetry 后，请执行以下指令：
+
+    ```sh
+    poetry install
+    ```
+
+**方式二：使用 pip**
+
+如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
 
 ```sh
-docker pull bakabaka9/akari-bot:latest
+pip install -r requirements.txt
 ```
 
-> 该镜像的作者长期未更新，建议使用以下镜像
-
-```sh
-docker pull silianz/akari-bot:dev-docker
-```
+> 在安装依赖时若出现报错，请转到[疑难解答](#疑难解答)
 
 ## 配置
-
-从小可的 GitHub 仓库中下载 `config` 文件夹，并放到事先准备好的目录下。
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
 
@@ -105,7 +186,11 @@ docker pull silianz/akari-bot:dev-docker
     | arm64 Windows  | `go-cqhttp_windows_arm64.exe` | `go-cqhttp_windows_arm64.zip`   |
     | armv7 Windows  | `go-cqhttp_windows_armv7.exe` | `go-cqhttp_windows_armv7.zip`   |
 
-2. 解压下载好的文件到一个已经预先准备好的文件夹中。
+2. 解压下载好的文件到一个已经预先准备好的文件夹中：
+
+    **Windows** - 请使用自己熟悉的解压软件自行解压。
+
+    **Linux** - 请在命令行中输入 `tar -xzvf [文件名]`。
 
 3. 运行 go-cqhttp。
 
@@ -225,7 +310,7 @@ docker pull silianz/akari-bot:dev-docker
 
 `matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
-`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.7/appendices/#user-identifiers)（包括`@`与`:`）。
+`matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括`@`与`:`）。
 
 `matrix_device_id =` - 填写机器人的设备 ID（即 Element 的会话 ID）
 
@@ -410,21 +495,35 @@ pip3 install matrix-nio[e2e] ; PIP
 
 ## 运行机器人
 
-配置完成后，使用 `docker run` 开启小可：
+小可机器人主要由平台机器人构成，为了让开发者更好地测试模块，我们还提供了测试控制台，接下来我们将逐步讲解如何运行机器人。
 
-```sh
-docker run \
-> -d \
-> -v /path/to/akari-bot/config/config.toml:/akari-bot/config/config.toml \ # 请将路径修改成对应的位置。
-> -p 11451:11451  \ # WebSocket 服务器的端口，请根据您的配置文件更改。
-> -p 3306:3306  \ # 用于对接 mysql 数据库。（可选）
-> --name=akari-bot  \ # 指定容器名称。
-> bakabaka9/akari-bot
-```
+### 运行平台机器人
 
-如果终端中返回了 `long_tag` 类型的容器 `ID`, 证明容器已创建完毕，这时我们可以执行 `docker logs akari-bot` 查看小可的日志。
+**Windows**
 
-如果没有任何报错，恭喜您！您的小可机器人已经搭建成功！
+我们不推荐双击运行 `start.bat` 来启动程序。
+
+建议在启动机器人之前，先打开终端（cmd 或 Powershell）再运行 `start.bat`。
+
+1. 于 `start.bat` 所在目录，按下 `Shift` + `右键` 来打开右键菜单。
+2. 选择 `在此处打开 Powershell 窗口` 或 `在此处打开命令窗口`。
+3. 于终端内输入 `.\start.bat` （Powershell） 或 `start.bat` （cmd）来启动机器人。
+
+**Linux**
+
+1. 于终端内，设置 `start` 脚本的执行权限：`chmod +x start`
+2. 启动脚本：`./start`
+
+### 运行测试控制台
+
+测试控制台包括一个基础的运行环境，您可以在测试控制台内使用命令进行基础的机器人交互。
+
+测试控制台仅支持回复文本消息和图片，其它消息元素将被忽略或转换为文本或图片来显示。
+
+您可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
+
+1. 于 `console.py` 所在目录，打开终端。
+2. 在终端内输入 `python console.py` 来启动测试控制台。
 
 # 获取帮助
 
@@ -446,3 +545,27 @@ docker run \
 在排错之前，请确保您已经详细地阅读了文档内所有的注释说明。
 
 疑难解答将会分为不同方面，如果您有更好的疑难解答欢迎提交 PR。
+
+## 安装依赖
+
+### 在安装依赖时遇到跟 `hnswlib` 有关的问题导致无法正常安装依赖
+
+该情况可能只会发生在 Windows 系统下。
+
+您可能没有安装好 Microsoft C++ 生成工具。
+
+1. 下载 [Microsoft C++ 生成工具](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)。
+
+2. 在下载文件夹中打开安装程序，等待片刻会出现一个名为“Visual Studio Installer”的窗口。
+
+3. 在“工作负荷”板块中，选择“使用 C++ 的桌面开发”，然后点击右下角的“安装”。
+
+4. 等待安装完成后即可关闭窗口。
+
+5. 尝试重新安装依赖。
+
+### 在使用 pip 安装依赖时遇到依赖冲突
+
+尝试在安装依赖时加上 `--no-deps` 参数。
+
+例：`pip install --no-deps -r requirements.txt`。

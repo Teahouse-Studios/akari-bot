@@ -7,7 +7,6 @@ from core.component import module
 from core.exceptions import InvalidHelpDocTypeError
 from core.loader import ModulesManager, current_unloaded_modules, err_modules
 from core.parser.command import CommandParser
-from .utils import reload_locale
 from core.utils.i18n import load_locale_file
 from core.utils.image_table import ImageTable, image_table_render
 from database import BotDBUtil
@@ -125,7 +124,7 @@ async def config_modules(msg: Bot.MessageSession):
         if recommend_modules_list:
             for m in recommend_modules_list:
                 try:
-                    recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.module.help", module=m
+                    recommend_modules_help_doc_list.append(msg.locale.t("core.message.module.recommends.help", module=m
                                                                         ))
 
                     if modules_[m].desc:
@@ -175,7 +174,9 @@ async def config_modules(msg: Bot.MessageSession):
         if msg.check_super_user():
             def module_reload(module, extra_modules, base_mode=False):
                 reload_count = ModulesManager.reload_module(module)
-                if reload_count > 1:
+                if base_mode and reload_count >= 1:
+                    return msg.locale.t("core.message.module.reload.base.success")
+                elif reload_count > 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
                         ('\n' if len(extra_modules) != 0 else '') + \
                         '\n'.join(extra_modules) + \
@@ -193,23 +194,34 @@ async def config_modules(msg: Bot.MessageSession):
                 if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                     msglist.append(module_reload(module_, []))
                 elif module_ not in modules_:
-                    msglist.append(msg.locale.t("core.message.module.reload.unbound", module=module_))
+                    msglist.append(msg.locale.t("core.message.module.reload.not_found", module=module_))
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        await msg.finish(msg.locale.t("core.message.module.reload.base", module=module_))
+                        if Config('debug'):
+                            confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
+                                                                          append_instruction=False)
+                            if confirm:
+                                base_mode = True
+                            else:
+                                return
+                        else:
+                            await msg.finish(msg.locale.t("core.message.module.reload.base.failed", module=module_))
 
                     elif len(extra_reload_modules):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
                                                                       modules='\n'.join(extra_reload_modules)), append_instruction=False)
                         if not confirm:
-                            await msg.finish()
+                            return
                     unloaded_list = CFG.get('unloaded_modules')
                     if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                     msglist.append(module_reload(module_, extra_reload_modules, base_mode))
-            await reload_locale(msg)
+
+            locale_err = load_locale_file()
+            if len(locale_err) != 0:
+                msglist.append(msg.locale.t("core.message.locale.reload.failed", detail='\n'.join(locale_err)))
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
     elif msg.parsed_msg.get('load', False):
@@ -217,7 +229,7 @@ async def config_modules(msg: Bot.MessageSession):
 
             for module_ in wait_config_list:
                 if module_ not in current_unloaded_modules:
-                    msglist.append(msg.locale.t("core.message.module.load.error"))
+                    msglist.append(msg.locale.t("core.message.module.load.not_found"))
                     continue
                 if ModulesManager.load_module(module_):
                     msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
@@ -248,7 +260,7 @@ async def config_modules(msg: Bot.MessageSession):
                             err_modules.remove(module_)
                             current_unloaded_modules.append(module_)
                     else:
-                        msglist.append(msg.locale.t("core.message.module.unload.error"))
+                        msglist.append(msg.locale.t("core.message.module.unload.not_found"))
                     continue
                 if modules_[module_].base:
                     msglist.append(msg.locale.t("core.message.module.unload.base", module=module_))
@@ -262,7 +274,7 @@ async def config_modules(msg: Bot.MessageSession):
                         unloaded_list.append(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                 else:
-                    await msg.finish()
+                    return
 
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
@@ -274,7 +286,7 @@ async def config_modules(msg: Bot.MessageSession):
             await msg.send_message('\n'.join(msglist))
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
-                                                      msgs='\n'.join(recommend_modules_list) + '\n\n' +
+                                                      modules='\n'.join(recommend_modules_list) + '\n\n' +
                                                            '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):
@@ -283,7 +295,7 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
                 await msg.finish('\n'.join(msglist))
     else:
-        await msg.finish()
+        return
 
 
 hlp = module('help', base=True)
@@ -436,7 +448,7 @@ async def _(msg: Bot.MessageSession):
                     help_msg_list = [Image(render), Plain(msg.locale.t("core.message.help.more_information",
                                                          prefix=msg.prefixes[0]))]
                     if Config('help_url'):
-                        help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.address",
+                        help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.document",
                                                          url=Config('help_url'))))
                     if Config('donate_url'):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.donate",
@@ -466,7 +478,7 @@ async def _(msg: Bot.MessageSession):
         if Config('help_url'):
             help_msg.append(
                 msg.locale.t(
-                    "core.message.help.more_information.address",
+                    "core.message.help.more_information.document",
                     url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))
 
@@ -548,6 +560,6 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         if Config('help_url'):
             help_msg.append(
                 msg.locale.t(
-                    "core.message.help.more_information.address",
+                    "core.message.help.more_information.document",
                     url=Config('help_url')))
         await msg.finish('\n'.join(help_msg))

@@ -16,7 +16,7 @@ async def random(ctx: discord.ApplicationContext):
     await slash_parser(ctx, "random")
 
 
-rank = arcaea.create_subgroup("rank", "View the current daily rank of Arcaea songs.")
+rank = arc.create_subgroup("rank", "View the current daily rank of Arcaea songs.")
 
 
 @rank.command(name="free", description="View the current rank of the free packs.")

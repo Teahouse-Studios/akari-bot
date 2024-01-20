@@ -56,7 +56,10 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         await msg.finish(s.strip())
     else:
         img = await msgchain2image([Plain(s)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(s)
 
 
 @mai.command('level <level> [<page>] {{maimai.help.level}}')
@@ -88,7 +91,10 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
     else:
         s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(s)
 
 
 @mai.command('new [<page>] {{maimai.help.new}}')
@@ -117,7 +123,10 @@ async def _(msg: Bot.MessageSession, page: str = None):
     else:
         s += msg.locale.t("maimai.message.pages", page=page, total_pages=total_pages)
         img = await msgchain2image([Plain(s)])
-        await msg.finish([BImage(img)])
+        if img:
+            await msg.finish([BImage(img)])
+        else:
+            await msg.finish(s)
 
 
 @mai.command('search <keyword> {{maimai.help.search}}')
@@ -136,7 +145,10 @@ async def _(msg: Bot.MessageSession, keyword: str):
             await msg.finish([Plain(result.strip())])
         else:
             img = await msgchain2image([Plain(result)])
-            await msg.finish([BImage(img)])
+            if img:
+                await msg.finish([BImage(img)])
+            else:
+                await msg.finish(result)
 
 
 @mai.command('alias <sid> {{maimai.help.alias}}')
