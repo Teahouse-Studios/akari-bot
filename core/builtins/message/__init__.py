@@ -51,8 +51,6 @@ class MessageSession(MessageSessionT):
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
-                await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if result:
@@ -78,8 +76,6 @@ class MessageSession(MessageSessionT):
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
-                await sent.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if delete and sent:
@@ -103,13 +99,9 @@ class MessageSession(MessageSessionT):
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
-                await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
         if delete and send:
-            if message_chain and delete:
-                await send.delete()
             await send.delete()
         if result:
             return result
@@ -127,8 +119,6 @@ class MessageSession(MessageSessionT):
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
-            if message_chain and delete:
-                await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get()[self.target.target_id]['all'][self]
         if 'result' in result:

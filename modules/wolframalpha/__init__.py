@@ -21,7 +21,8 @@ w = module(
 
 
 @w.handle('<query> {{wolframalpha.help}}')
-async def _(msg: Bot.MessageSession, query: str):
+async def _(msg: Bot.MessageSession):
+    query = msg.parsed_msg['<query>']
     if await check_bool(query):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(query)
@@ -43,10 +44,11 @@ async def _(msg: Bot.MessageSession, query: str):
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
-async def _(msg: Bot.MessageSession, question: str):
-    if await check_bool(question):
+async def _(msg: Bot.MessageSession):
+    query = msg.parsed_msg['<question>']
+    if await check_bool(query):
         await msg.finish(rickroll(msg))
-    url_query = urllib.parse.quote(question)
+    url_query = urllib.parse.quote(query)
     if not appid:
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"

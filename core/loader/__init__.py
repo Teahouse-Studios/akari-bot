@@ -32,8 +32,6 @@ def load_modules():
 
     for file_name in dir_list:
         try:
-            if file_name == 'secret' and not Config('enable_secret_module', False):
-                continue
             file_path = os.path.join(load_dir_path, file_name)
             fun_file = None
             if os.path.isdir(file_path):
@@ -51,7 +49,7 @@ def load_modules():
                     continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
-                Logger.debug(f'Successfully loaded modules. {fun_file}!')
+                Logger.debug(f'Succeeded loaded modules.{fun_file}!')
         except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'
@@ -89,11 +87,11 @@ class ModulesManager:
     def remove_modules(cls, modules):
         for module in modules:
             if module in cls.modules:
-                Logger.info(f'Removing... {module}')
+                Logger.info(f'Removing...{module}')
                 cls.modules.pop(module)
                 cls.modules_origin.pop(module)
             else:
-                raise ValueError(f'Module "{module}" is not exist.')
+                raise ValueError(f'Module "{module}" is not exist')
 
     @classmethod
     def refresh_modules_aliases(cls):
@@ -236,7 +234,7 @@ class ModulesManager:
                 if mod.startswith(f'{module_name}.'):
                     cnt += cls.reload_py_module(mod)
             importlib.reload(module)
-            Logger.info(f'Successfully reloaded {module_name}.')
+            Logger.info(f'Succeeded reloaded {module_name}')
             if (m := re.match(r'^modules(\.[a-zA-Z0-9_]*)?', module_name)) and m.group(1) in err_modules:
                 err_modules.remove(m.group(1))
             return cnt + 1

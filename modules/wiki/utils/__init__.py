@@ -14,8 +14,8 @@ rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
 
 
 @rc_.command(['{{wiki.help.rc}}',
-              'legacy {{wiki.help.rc.legacy}}'],
-             available_for=['QQ', 'QQ|Group'])
+             'legacy {{wiki.help.rc.legacy}}'],
+           available_for=['QQ', 'QQ|Group'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -35,7 +35,7 @@ async def rc_loader(msg: Bot.MessageSession):
 
 
 @rc_.command('{{wiki.help.rc}}',
-             exclude_from=['QQ', 'QQ|Group'])
+           exclude_from=['QQ', 'QQ|Group'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -48,7 +48,7 @@ a = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
 
 
 @a.command(['{{wiki.help.ab}}',
-            'legacy {{wiki.help.ab.legacy}}'],
+           'legacy {{wiki.help.ab.legacy}}'],
            available_for=['QQ', 'QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -64,12 +64,8 @@ async def ab_loader(msg: Bot.MessageSession):
             traceback.print_exc()
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
-        try:
-            res = await ab(msg, start_wiki)
-            await msg.finish(res)
-        except Exception:
-            traceback.print_exc()
-            await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+        res = await ab(msg, start_wiki)
+        await msg.finish(res)
 
 
 @a.command('{{wiki.help.ab}}',
@@ -78,12 +74,8 @@ async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t('wiki.message.not_set'))
-    try:
-        res = await ab(msg, start_wiki)
-        await msg.finish(res)
-    except Exception:
-        traceback.print_exc()
-        await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+    res = await ab(msg, start_wiki)
+    await msg.finish(res)
 
 
 n = module('newbie', developers=['OasisAkari'], recommend_modules='wiki')
@@ -94,9 +86,5 @@ async def newbie_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
         await msg.finish(msg.locale.t('wiki.message.not_set'))
-    try:
-        res = await newbie(msg, start_wiki)
-        await msg.finish(res)
-    except Exception:
-        traceback.print_exc()
-        await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+    res = await newbie(msg, start_wiki)
+    await msg.finish(res)

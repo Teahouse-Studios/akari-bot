@@ -14,6 +14,6 @@
     "mcv.message.mclgv": "The latest version: ${version}\n(The data from Mojira may be earlier than the official release. Information is for reference purposes only).",
     "mcv.message.mcv": "The latest version in the launcher is: \n${launcher_ver}\nThe latest version recorded on Mojira is: \n${jira_ver}\n(The latest version in the launcher shall prevail, Mojira is only for previewing the version)",
     "mcv.message.mcv.jira.failed": "Failed to get Mojira information.",
-    "mcv.message.mcv.launcher": "The latest release: ${release}, the latest snapshot: ${snapshot},",
+    "mcv.message.mcv.launcher": "The latest release: ${release}\nRelease time: ${release_time}\nThe latest snapshot: ${snapshot}\nRelease time: ${snapshot_time}",
     "mcv.message.mcv.launcher.failed": "Failed to get manifest.json."
 }

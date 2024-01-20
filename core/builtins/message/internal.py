@@ -62,11 +62,9 @@ class Url(UrlT):
 
 
 class FormattedTime:
-    def __init__(self, timestamp: float, date=True, iso=False, time=True, seconds=True, timezone=True):
+    def __init__(self, timestamp: float, date=True, seconds=True, timezone=True):
         self.timestamp = timestamp
         self.date = date
-        self.iso = iso
-        self.time = time
         self.seconds = seconds
         self.timezone = timezone
 
@@ -74,20 +72,13 @@ class FormattedTime:
         ftime_template = []
         if msg:
             if self.date:
-                if self.iso:
-                    ftime_template.append(msg.locale.t("time.date.iso.format"))
-                else:
-                    ftime_template.append(msg.locale.t("time.date.format"))
-            if self.time:
-                if self.seconds:
-                    ftime_template.append(msg.locale.t("time.time.format"))
-                else:
-                    ftime_template.append(msg.locale.t("time.time.nosec.format"))
+                ftime_template.append(msg.locale.t("time.date.format"))
+            if self.seconds:
+                ftime_template.append(msg.locale.t("time.time.format"))
+            else:
+                ftime_template.append(msg.locale.t("time.time.nosec.format"))
             if self.timezone:
-                if msg._tz_offset == "+0":
-                    ftime_template.append("(UTC)")
-                else:
-                    ftime_template.append(f"(UTC{msg._tz_offset})")
+                ftime_template.append(f"(UTC{msg._tz_offset})")
         else:
             ftime_template.append('%Y-%m-%d %H:%M:%S')
         if not msg:
@@ -99,18 +90,11 @@ class FormattedTime:
         return self.to_str()
 
     def __repr__(self):
-        return f'FormattedTime(timestamp={self.timestamp})'
+        return f'FormattedTime(time={self.timestamp})'
 
     def to_dict(self):
-        return {
-            'type': 'formatted_time',
-            'data': {
-                'timestamp': self.timestamp,
-                'date': self.date,
-                'iso': self.iso,
-                'time': self.time,
-                'seconds': self.seconds,
-                'timezone': self.timezone}}
+        return {'type': 'formatted_time', 'data': {'time': self.timestamp, 'date': self.date, 'seconds': self.seconds,
+                                                   'timezone': self.timezone}}
 
 
 class I18NContext:
@@ -136,9 +120,8 @@ class ErrorMessage(EMsg):
             if locale_str := re.findall(r'\{(.*)}', error_message):
                 for l in locale_str:
                     error_message = error_message.replace(f'{{{l}}}', locale.t(l))
-            self.error_message = locale.t('error') + error_message
-            if Config('bug_report_url'):
-                self.error_message += '\n' + locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+            self.error_message = locale.t('error.prompt', error_msg=error_message) + \
+                str(Url(Config('bug_report_url')))
 
     def __str__(self):
         return self.error_message

@@ -5,6 +5,7 @@ from whois import whois
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
+from core.utils.image import msgchain2image
 from core.utils.text import parse_time_string
 
 
@@ -29,6 +30,10 @@ w = module('whois', developers=['DoroWolf'])
 async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     output = await msg.finish(res)
+
+    img = await msgchain2image([Plain(output)], msg)
+    await msg.finish([Image(img)])
+
 
 async def get_whois(msg, domain):
     try:

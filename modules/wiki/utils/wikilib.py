@@ -16,7 +16,6 @@ from core.utils.http import get_url
 from core.utils.i18n import Locale, default_locale
 from core.exceptions import NoReportException
 from modules.wiki.utils.dbutils import WikiSiteInfo as DBSiteInfo, Audit
-from modules.wiki.utils.bot import BotAccount
 
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
@@ -155,11 +154,7 @@ class WikiLib:
         self.headers = headers
         self.locale = Locale(locale)
 
-    async def get_json_from_api(self, api, _no_login=False, **kwargs) -> dict:
-        cookies = None
-        Logger.debug(BotAccount.cookies)
-        if api in BotAccount.cookies and not _no_login:
-            cookies = BotAccount.cookies[api]
+    async def get_json_from_api(self, api, **kwargs) -> dict:
         if api in redirect_list:
             api = redirect_list[api]
         if kwargs:
@@ -175,11 +170,8 @@ class WikiLib:
                     api = (web_render_local if use_local else web_render) + 'source?url=' + urllib.parse.quote(api)
                 request_local = True
                 break
-
         try:
-            return await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local,
-                                 cookies=cookies)
-
+            return await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local)
         except Exception as e:
             if api.find('moegirl.org.cn') != -1:
                 raise InvalidWikiError(self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl"))
@@ -311,10 +303,10 @@ class WikiLib:
             else:
                 raise InvalidWikiError(wiki_info.message if wiki_info.message != '' else '')
 
-    async def get_json(self, _no_login=False, **kwargs) -> dict:
+    async def get_json(self, **kwargs) -> dict:
         await self.fixup_wiki_info()
         api = self.wiki_info.api
-        return await self.get_json_from_api(api, _no_login=_no_login, **kwargs)
+        return await self.get_json_from_api(api, **kwargs)
 
     @staticmethod
     def parse_text(text):
