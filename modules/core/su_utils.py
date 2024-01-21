@@ -530,7 +530,8 @@ if Config('openai_api_key'):
             await msg.finish(
                 msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
         else:
-            msg.data.modify_petal(int(petal))
+            target = msg.data
+            target.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
 
     @petal.command('clear [<target>]', required_superuser=True)
