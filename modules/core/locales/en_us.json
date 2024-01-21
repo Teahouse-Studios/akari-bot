@@ -128,6 +128,8 @@
     "core.message.mute.disable": "Successfully unmuted.",
     "core.message.mute.enable": "Successfully muted.",
     "core.message.petal": "${petal} petal(s) remain in the target ${target}.",
+    "core.message.petal.clear": "已清除对话 ${target} 的所有花瓣。",
+    "core.message.petal.clear.self": "已清除所有花瓣。",
     "core.message.petal.modify": " Successfully modified ${add_petal} petal(s) for target ${target}. Now target ${target} have ${petal} petal(s).",
     "core.message.petal.modify.self": "Successfully modified ${add_petal} petal(s) for this target. Now this target have ${petal} petal(s).",
     "core.message.petal.no_petals": "There are not enough petals in the target. ",
