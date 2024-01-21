@@ -128,6 +128,8 @@
     "core.message.mute.disable": "Successfully unmuted.",
     "core.message.mute.enable": "Successfully muted.",
     "core.message.petal": "${petal} petal(s) remain in the group ${group}.",
+    "core.message.petal.clear": "已清除群组 ${group} 的所有花瓣。",
+    "core.message.petal.clear.self": "已清除所有花瓣。",
     "core.message.petal.modify": " Successfully modified ${add_petal} petals for target group ${group}, now ${group} has ${petal} petals.",
     "core.message.petal.modify.self": " Successfully modified ${add_petal} petals for this group, now this group has ${petal} petals.",
     "core.message.petal.no_petals": "There are not enough petals in the group. ",
