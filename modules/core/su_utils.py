@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
             os.mkdir(cache_path)
-            await msg.finish(msg.locale.t("core.message.purge.success"))
+            await msg.finish(msg.locale.t("success"))
         else:
             await msg.finish(msg.locale.t("core.message.purge.empty"))
     else:
@@ -459,7 +459,7 @@ if Config('enable_eval'):
         await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
 
 
-_config = module('config', required_superuser=True, alias='cfg', base=True)
+cfg_ = module('config', required_superuser=True, alias='cfg', base=True)
 
 
 def isfloat(num):
@@ -478,7 +478,7 @@ def isint(num):
         return False
 
 
-@_config.command('write <k> <v> [-s]')
+@cfg_.command('write <k> <v> [-s]')
 async def _(msg: Bot.MessageSession):
     value = msg.parsed_msg['<v>']
     if value.lower() == 'true':
@@ -499,7 +499,7 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(msg.locale.t("success"))
 
 
-@_config.command('delete <k>')
+@cfg_.command('delete <k>')
 async def _(msg: Bot.MessageSession):
     if CFG.delete(msg.parsed_msg['<k>']):
         await msg.finish(msg.locale.t("success"))
@@ -518,7 +518,7 @@ if Config('openai_api_key'):
     async def _(msg: Bot.MessageSession):
         group = msg.parsed_msg['<target>']
         target = BotDBUtil.TargetInfo(group)
-        await msg.finish(msg.locale.t('core.message.petal', group=group, petal=target.petal))
+        await msg.finish(msg.locale.t('core.message.petal', target=group, petal=target.petal))
 
     @petal.command('modify <petal> [<target>]', required_superuser=True)
     async def _(msg: Bot.MessageSession):
@@ -528,11 +528,23 @@ if Config('openai_api_key'):
             target = BotDBUtil.TargetInfo(group)
             target.modify_petal(int(petal))
             await msg.finish(
-                msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
+                msg.locale.t('core.message.petal.modify', target=group, add_petal=petal, petal=target.petal))
         else:
             target = msg.data
             target.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
+
+    @petal.command('clear [<target>]', required_superuser=True)
+    async def _(msg: Bot.MessageSession):
+        if '<target>' in msg.parsed_msg:
+            group = msg.parsed_msg['<target>']
+            target = BotDBUtil.TargetInfo(group)
+            target.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear', target=group))
+        else:
+            msg.data.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear.self'))
+            
 
 if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)

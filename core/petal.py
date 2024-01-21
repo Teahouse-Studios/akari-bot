@@ -2,7 +2,7 @@ import os
 import json
 import traceback
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from config import Config
 from core.builtins import Bot
@@ -27,7 +27,7 @@ async def get_petal_exchange_rate():
     api_key = Config('exchange_rate_api_key')
     api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY'
     try:
-        data = await get_url(api_url, 200, fmt='json')
+        data = await get_url(api_url, 200, attempt=1, fmt='json', logging_err_resp=False)
         if data['result'] == "success":
             exchange_rate = data['conversion_rate']
             petal_value = exchange_rate * CNY_TO_PETAL
@@ -53,7 +53,7 @@ async def load_or_refresh_cache():
         return exchanged_petal_data["exchanged_petal"]
 
 
-async def count_petal(tokens: int, gpt4: bool = False):
+async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
     petal_exchange_rate = await load_or_refresh_cache()
     if gpt4:
@@ -65,6 +65,12 @@ async def count_petal(tokens: int, gpt4: bool = False):
     else:
         Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
         petal = price * USD_TO_CNY * CNY_TO_PETAL
+
+    if Config('db_path').startswith('sqlite'):
+        amount = petal.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+        msg.data.modify_petal(-int(amount))
+    else:
+        msg.data.modify_petal(petal)
     return round(petal, 2)
 
 

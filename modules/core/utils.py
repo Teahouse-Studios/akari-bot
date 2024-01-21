@@ -30,7 +30,6 @@ ping = module('ping', base=True)
 
 started_time = datetime.now()
 
-
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
     checkpermisson = msg.check_super_user()

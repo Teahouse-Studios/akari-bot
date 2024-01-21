@@ -55,7 +55,7 @@ async def get_info(msg: Bot.MessageSession, music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
-        await get_url(img, 200, attempt=1, fmt='read')
+        await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
         info.append(Image(img))
     except:
         info.append(Image("https://www.diving-fish.com/covers/00000.png"))

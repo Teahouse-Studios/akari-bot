@@ -215,6 +215,15 @@ class BotDBUtil:
             session.commit()
             return True
 
+        @retry(stop=stop_after_attempt(3))
+        @auto_rollback_error
+        def clear_petal(self) -> bool:
+            if not self.query:
+                self.query = self.init()
+            self.query.petal = 0
+            session.commit()
+            return True
+
     class SenderInfo:
         @retry(stop=stop_after_attempt(3))
         @auto_rollback_error
