@@ -110,7 +110,8 @@ async def post_url(url: str, data: any = None, status_code: int = False, headers
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
-    :returns: 发送请求后的响应。'''
+    :param cookies: 使用的 cookies。
+    :returns: 指定url的内容（字符串）。'''
 
     @retry(stop=stop_after_attempt(attempt), wait=wait_fixed(3), reraise=True)
     async def _post():

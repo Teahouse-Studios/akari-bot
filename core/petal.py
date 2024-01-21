@@ -27,7 +27,7 @@ async def get_petal_exchange_rate():
     api_key = Config('exchange_rate_api_key')
     api_url = f'https://v6.exchangerate-api.com/v6/{api_key}/pair/USD/CNY'
     try:
-        data = await get_url(api_url, 200, attempt=1, fmt='json')
+        data = await get_url(api_url, 200, attempt=1, fmt='json', logging_err_resp=False)
         if data['result'] == "success":
             exchange_rate = data['conversion_rate']
             petal_value = exchange_rate * CNY_TO_PETAL
