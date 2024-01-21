@@ -1,11 +1,11 @@
 {
-    "tic_tac_toe.help.desc": "下井字棋。",
-    "tic_tac_toe.help": "和机器人下井字棋。",
-    "tic_tac_toe.expert.help": "和专家级机器人下井字棋。",
-    "tic_tac_toe.master.help": "和大师级机器人下井字棋。",
-    "tic_tac_toe.noob.help": "和菜鸟级机器人下井字棋。",
-    "tic_tac_toe.duo.help": "双人对战井字棋。",
-    "tic_tac_toe.message.turn": "请 ${player} 落子。\n（发送数字以确定要落子的位置）",
-    "tic_tac_toe.message.draw": "游戏已结束，平局。",
-    "tic_tac_toe.message.winner": "游戏已结束，${winner} 赢了。"
+    "tic_tac_toe.help.desc": "Play Tic-tac-toe.",
+    "tic_tac_toe.help": "Play Tic-tac-toe with robot.",
+    "tic_tac_toe.expert.help": "Play Tic-tac-toe with an expert robot.",
+    "tic_tac_toe.master.help": "Play Tic-tac-toe with a master robot.",
+    "tic_tac_toe.noob.help": "Play Tic-tac-toe with a noob robot.",
+    "tic_tac_toe.duo.help": "Tic-tac-toe duo.",
+    "tic_tac_toe.message.turn": "${player}'s turn.\n(Send numbers to determine where to drop)",
+    "tic_tac_toe.message.draw": "Game over, tie.",
+    "tic_tac_toe.message.winner": "Game over, ${winner} wins."
 }
