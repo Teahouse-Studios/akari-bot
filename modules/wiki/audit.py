@@ -167,5 +167,5 @@ async def _(msg: Bot.MessageSession):
 
 @aud.hook('login_wiki_bots')
 async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
-    Logger.debug('received login_wiki_bots hook: ' + str(ctx.args['cookies']))
+    Logger.debug('Received login_wiki_bots hook: ' + str(ctx.args['cookies']))
     BotAccount.cookies.update(ctx.args['cookies'])

@@ -97,7 +97,7 @@ async def feedback_news():
                 if article['name'] not in alist:
                     name = article['name']
                     link = article['html_url']
-                    Logger.info(f'huh, we find {name}.')
+                    Logger.info(f'Huh, we find {name}.')
                     await JobQueue.trigger_hook_all('feedback_news',
                                                     message=[I18NContext('minecraft_news.message.feedback_news',
                                                                          name=name, link=str(Url(link))).to_dict()])

@@ -87,7 +87,7 @@ async def image_table_render(table: Union[ImageTable, List[ImageTable]], save_so
                     }
                 )
     except Exception:
-        Logger.exception("error at image_table_render")
+        Logger.exception("Error at image_table_render.")
 
     return pic
 

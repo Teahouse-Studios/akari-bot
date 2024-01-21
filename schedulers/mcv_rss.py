@@ -85,7 +85,7 @@ async def mcv_rss():
                 time_snapshot = datetime.datetime.fromisoformat(v['releaseTime']).timestamp()
 
         if release not in verlist:
-            Logger.info(f'huh, we find {release}.')
+            Logger.info(f'Huh, we find {release}.')
 
             await JobQueue.trigger_hook_all('mcv_rss',
                                             message=[I18NContext('mcv_rss.message.mcv_rss.release',
@@ -105,7 +105,7 @@ async def mcv_rss():
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
         if snapshot not in verlist:
-            Logger.info(f'huh, we find {snapshot}.')
+            Logger.info(f'Huh, we find {snapshot}.')
             await JobQueue.trigger_hook_all('mcv_rss', message=[I18NContext('mcv_rss.message.mcv_rss.snapshot',
                                                                             version=file['latest'][
                                                                                 'snapshot']).to_dict(),
@@ -134,7 +134,7 @@ async def mcbv_rss():
         verlist = get_stored_list('scheduler', 'mcbv_rss')
         version = google_play_scraper('com.mojang.minecraftpe')['version']
         if version not in verlist:
-            Logger.info(f'huh, we find bedrock {version}.')
+            Logger.info(f'Huh, we find Bedrock {version}.')
             await JobQueue.trigger_hook_all('mcbv_rss', message=[I18NContext('mcv_rss.message.mcbv_rss',
                                                                              version=version).to_dict()])
             verlist.append(version)
@@ -157,7 +157,7 @@ async def mcv_jira_rss():
                     verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
-                Logger.info(f'huh, we find {release}.')
+                Logger.info(f'Huh, we find {release}.')
                 if release.lower().find('future version') != -1:
                     await JobQueue.trigger_hook_all('mcv_jira_rss',
                                                     message=[I18NContext('mcv_rss.message.mcv_jira_rss.future',
@@ -186,7 +186,7 @@ async def mcbv_jira_rss():
                     verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
-                Logger.info(f'huh, we find {release}.')
+                Logger.info(f'Huh, we find {release}.')
 
                 await JobQueue.trigger_hook_all('mcbv_jira_rss', message=[I18NContext('mcv_rss.message.mcbv_jira_rss',
                                                                                       version=release).to_dict()])
@@ -210,7 +210,7 @@ async def mcdv_jira_rss():
                     verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
-                Logger.info(f'huh, we find {release}.')
+                Logger.info(f'Huh, we find {release}.')
 
                 await JobQueue.trigger_hook_all('mcdv_jira_rss', message=[I18NContext('mcv_rss.message.mcdv_jira_rss',
                                                                                       version=release).to_dict()])
@@ -234,7 +234,7 @@ async def mclgv_jira_rss():
                     verlist.append(v['name'])
         for release in releases:
             if release not in verlist:
-                Logger.info(f'huh, we find {release}.')
+                Logger.info(f'Huh, we find {release}.')
 
                 await JobQueue.trigger_hook_all('mclgv_jira_rss', message=[I18NContext('mcv_rss.message.mclgv_jira_rss',
                                                                                        version=release).to_dict()])

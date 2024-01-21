@@ -75,8 +75,7 @@ async def _(msg: Bot.MessageSession):
         output = completion.choices[0].message.content
         tokens = completion.usage.total_tokens
         if not is_superuser:
-            petal = await count_petal(tokens)
-            msg.data.modify_petal(-petal)
+            petal = await count_petal(msg, tokens)
         else:
             Logger.info(f'{tokens} tokens have been consumed while calling AI.')
             petal = 0

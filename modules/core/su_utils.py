@@ -530,9 +530,20 @@ if Config('openai_api_key'):
             await msg.finish(
                 msg.locale.t('core.message.petal.modify', group=group, add_petal=petal, petal=target.petal))
         else:
-            target = msg.data
-            target.modify_petal(int(petal))
+            msg.data.modify_petal(int(petal))
             await msg.finish(msg.locale.t('core.message.petal.modify.self', add_petal=petal, petal=target.petal))
+
+    @petal.command('clear [<target>]', required_superuser=True)
+    async def _(msg: Bot.MessageSession):
+        if '<target>' in msg.parsed_msg:
+            group = msg.parsed_msg['<target>']
+            target = BotDBUtil.TargetInfo(group)
+            target.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear', group=group))
+        else:
+            msg.data.clear_petal()
+            await msg.finish(msg.locale.t('core.message.petal.clear.self'))
+            
 
 if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)

@@ -62,8 +62,8 @@ class MessageSession(MessageSessionT):
                     'msgtype': 'm.notice',
                     'body': x.text
                 }
-                if reply_to:
-                    # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                if reply_to and self.session.message:
+                    # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                     # todo: standardize fallback for m.image, m.video, m.audio, and m.file
                     reply_to_type = self.session.message['content']['msgtype']
                     content[
@@ -88,24 +88,37 @@ class MessageSession(MessageSessionT):
                             content_encoding = 'png'
                         mimetype = f"{content_type}/{content_encoding}"
 
+                        encrypted = self.session.target in bot.encrypted_rooms
                         (upload, upload_encryption) = await bot.upload(
                             image,
                             content_type=mimetype,
                             filename=filename,
-                            encrypt=False,
+                            encrypt=encrypted,
                             filesize=filesize)
                         Logger.info(
-                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}")
+                            f"Uploaded image {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                         # todo: provide more image info
-                        content = {
-                            'msgtype': 'm.image',
-                            'url': upload.content_uri,
-                            'body': filename,
-                            'info': {
-                                'size': filesize,
-                                'mimetype': mimetype,
+                        if not encrypted:
+                            content = {
+                                'msgtype': 'm.image',
+                                'url': upload.content_uri,
+                                'body': filename,
+                                'info': {
+                                    'size': filesize,
+                                    'mimetype': mimetype,
+                                }
                             }
-                        }
+                        else:
+                            upload_encryption['url'] = upload.content_uri
+                            content = {
+                                'msgtype': 'm.image',
+                                'body': filename,
+                                'file': upload_encryption,
+                                'info': {
+                                    'size': filesize,
+                                    'mimetype': mimetype,
+                                }
+                            }
                         Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}')
             elif isinstance(x, Voice):
                 path = x.path
@@ -117,25 +130,39 @@ class MessageSession(MessageSessionT):
                     content_encoding = 'ogg'
                 mimetype = f"{content_type}/{content_encoding}"
 
+                encrypted = self.session.target in bot.encrypted_rooms
                 with open(path, 'rb') as audio:
                     (upload, upload_encryption) = await bot.upload(
                         audio,
                         content_type=mimetype,
                         filename=filename,
-                        encrypt=False,
+                        encrypt=encrypted,
                         filesize=filesize)
                 Logger.info(
-                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}")
+                    f"Uploaded audio {filename} to media repo, uri: {upload.content_uri}, mime: {mimetype}, encrypted: {encrypted}")
                 # todo: provide audio duration info
-                content = {
-                    'msgtype': 'm.audio',
-                    'url': upload.content_uri,
-                    'body': filename,
-                    'info': {
-                        'size': filesize,
-                        'mimetype': mimetype,
+                if not encrypted:
+                    content = {
+                        'msgtype': 'm.audio',
+                        'url': upload.content_uri,
+                        'body': filename,
+                        'info': {
+                            'size': filesize,
+                            'mimetype': mimetype,
+                        }
                     }
-                }
+                else:
+                    upload_encryption['url'] = upload.content_uri
+                    content = {
+                        'msgtype': 'm.audio',
+                        'body': filename,
+                        'file': upload_encryption,
+                        'info': {
+                            'size': filesize,
+                            'mimetype': mimetype,
+                        }
+                    }
+
                 Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
 
             if reply_to:
@@ -150,6 +177,33 @@ class MessageSession(MessageSessionT):
                     'user_ids': [reply_to_user]
                 }
 
+            if self.session.message and 'm.relates_to' in self.session.message['content']:
+                relates_to = self.session.message['content']['m.relates_to']
+                if 'rel_type' in relates_to and relates_to['rel_type'] == 'm.thread':
+                    # replying in thread
+                    thread_root = relates_to['event_id']
+                    if reply_to:
+                        # reply to msg replying in thread
+                        content['m.relates_to'] = {
+                            'rel_type': 'm.thread',
+                            'event_id': thread_root,
+                            'is_falling_back': False,
+                            'm.in_reply_to': {
+                                'event_id': reply_to
+                            }
+                        }
+                        pass
+                    else:
+                        # reply in thread
+                        content['m.relates_to'] = {
+                            'rel_type': 'm.thread',
+                            'event_id': thread_root,
+                            'is_falling_back': True,
+                            'm.in_reply_to': {
+                                'event_id': self.target.message_id
+                            }
+                        }
+
             resp = await bot.room_send(self.session.target, 'm.room.message', content, ignore_unverified_devices=True)
             if 'status_code' in resp.__dict__:
                 Logger.error(f"Error in sending message: {str(resp)}")
@@ -163,7 +217,7 @@ class MessageSession(MessageSessionT):
     async def check_native_permission(self):
         if self.session.target.startswith('@') or self.session.sender.startswith('!'):
             return True
-        # https://spec.matrix.org/v1.7/client-server-api/#permissions
+        # https://spec.matrix.org/v1.9/client-server-api/#permissions
         power_levels = (await bot.room_get_state_event(self.session.target, 'm.room.power_levels')).content
         level = power_levels['users'][self.session.sender] if self.session.sender in power_levels['users'] else power_levels['users_default']
         if level and int(level) >= 50:
@@ -171,6 +225,8 @@ class MessageSession(MessageSessionT):
         return False
 
     def as_display(self, text_only=False):
+        if not self.session.message:
+            return ''
         if not text_only or self.session.message['content']['msgtype'] == 'm.text':
             return str(self.session.message['content']['body'])
         if not text_only and 'format' in self.session.message['content']:
@@ -178,6 +234,8 @@ class MessageSession(MessageSessionT):
         return ''
 
     async def to_message_chain(self):
+        if not self.session.message:
+            return MessageChain([])
         content = self.session.message['content']
         msgtype = content['msgtype']
         if msgtype == 'm.emote':
@@ -186,12 +244,20 @@ class MessageSession(MessageSessionT):
             text = str(content['body'])
             if self.target.reply_id:
                 # redact the fallback line for rich reply
-                # https://spec.matrix.org/v1.7/client-server-api/#fallbacks-for-rich-replies
+                # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
                 while text.startswith('> '):
                     text = ''.join(text.splitlines(keepends=True)[1:])
             return MessageChain(Plain(text.strip()))
         elif msgtype == 'm.image':
-            url = str(content['url'])
+            url = None
+            if 'url' in content:
+                url = str(content['url'])
+            elif 'file' in content:
+                # todo: decrypt image
+                # url = str(content['file']['url'])
+                return MessageChain([])
+            else:
+                Logger.error(f"Got invalid m.image message from {self.session.target}")
             return MessageChain(Image(await bot.mxc_to_http(url)))
         elif msgtype == 'm.audio':
             url = str(content['url'])
@@ -210,7 +276,7 @@ class MessageSession(MessageSessionT):
     toMessageChain = to_message_chain
     checkNativePermission = check_native_permission
 
-    # https://spec.matrix.org/v1.7/client-server-api/#typing-notifications
+    # https://spec.matrix.org/v1.9/client-server-api/#typing-notifications
     class Typing:
         def __init__(self, msg: MessageSessionT):
             self.msg = msg
@@ -240,7 +306,7 @@ class FetchedSession(Bot.FetchedSession):
                     elif resp.content['membership'] in ['join', 'leave', 'invite']:
                         self.session.target = room.room_id
                         return
-            Logger.info(f"Could not find any exist private room for {target_id}, trying to create one")
+            Logger.info(f"Could not find any exist private room for {target_id}, trying to create one.")
             resp = await bot.room_create(visibility=nio.RoomVisibility.private,
                                          is_direct=True,
                                          preset=nio.RoomPreset.trusted_private_chat,
@@ -259,7 +325,7 @@ class FetchTarget(FetchedTargetT):
     name = client_name
 
     @staticmethod
-    async def fetch_target(target_id, sender_id=None) -> Union[FetchedSession]:
+    async def fetch_target(target_id, sender_id=None) -> FetchedSession:
         match_channel = re.match(r'^(Matrix)\|(.*)', target_id)
         if match_channel:
             target_from = sender_from = match_channel.group(1)
