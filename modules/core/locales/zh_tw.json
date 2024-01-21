@@ -128,6 +128,8 @@
     "core.message.mute.disable": "成功取消靜音。",
     "core.message.mute.enable": "成功靜音。",
     "core.message.petal": "目前群組 ${group} 的花瓣數為：${petal}。",
+    "core.message.petal.clear": "已清除群組 ${group} 的所有花瓣。",
+    "core.message.petal.clear.self": "已清除所有花瓣。",
     "core.message.petal.modify": "已為群組 ${group} 修改了 ${add_petal} 花瓣，目前花瓣數為：${petal}。",
     "core.message.petal.modify.self": "已為本群組修改了 ${add_petal} 花瓣，目前花瓣數為：${petal}。",
     "core.message.petal.no_petals": "群組內的花瓣不足。",

@@ -128,6 +128,8 @@
     "core.message.mute.disable": "成功取消禁言。",
     "core.message.mute.enable": "成功禁言。",
     "core.message.petal": "当前群组 ${group} 的花瓣数为：${petal}。",
+    "core.message.petal.clear": "已清除群组 ${group} 的所有花瓣。",
+    "core.message.petal.clear.self": "已清除所有花瓣。",
     "core.message.petal.modify": "已为群组 ${group} 修改了 ${add_petal} 花瓣，当前花瓣数为：${petal}。",
     "core.message.petal.modify.self": "已为本群组修改了 ${add_petal} 花瓣，当前花瓣数为：${petal}。",
     "core.message.petal.no_petals": "群组内的花瓣不足。",

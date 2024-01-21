@@ -103,9 +103,9 @@ if Config('openai_api_key'):
             tokens = count_token(res)
 
             if not is_superuser:
-                petal = await count_petal(tokens)
-                # petal = await count_petal(tokens, gpt4)
-                msg.data.modify_petal(-petal)
+                petal = await count_petal(msg, tokens)
+                # petal = await count_petal(msg, tokens, gpt4)
+
             else:
                 Logger.info(f'{tokens} tokens have been consumed while calling AI.')
                 petal = 0
@@ -154,7 +154,7 @@ if Config('openai_api_key'):
                 try:
                     language, code = re.match(r'```(.*)\n([\s\S]*?)\n```', content).groups()
                 except AttributeError:
-                    raise ValueError('Code block is missing language or code')
+                    raise ValueError('Code block is missing language or code.')
                 content = {'language': language, 'code': code}
             elif content.startswith('\\['):
                 block = 'latex'
