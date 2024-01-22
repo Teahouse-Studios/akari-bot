@@ -233,7 +233,7 @@ leave = module('leave', base=True, required_admin=True, available_for='QQ|Group'
 
 @leave.command('{{core.help.leave}}')
 async def _(msg: Bot.MessageSession):
-    confirm = await msg.wait_confirm(msg.locale.t('core.message.confirm'))
+    confirm = await msg.wait_confirm(msg.locale.t('core.message.leave.confirm'))
     if confirm:
         await msg.send_message(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)

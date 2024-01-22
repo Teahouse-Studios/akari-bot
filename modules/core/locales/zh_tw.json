@@ -90,6 +90,7 @@
     "core.message.help.table.header.base": "基礎模組列表",
     "core.message.help.table.header.external": "擴充模組列表",
     "core.message.help.table.header.help": "說明資訊",
+    "core.message.leave.confirm": "此行為不可逆，你確定嗎？",
     "core.message.leave.success": "已執行，再見。",
     "core.message.locale": "目前使用的語言：${lang}",
     "core.message.locale.reload.failed": "以下字串重新加載失敗：${detail}",

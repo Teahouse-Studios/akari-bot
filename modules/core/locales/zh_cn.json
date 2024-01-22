@@ -90,6 +90,7 @@
     "core.message.help.table.header.base": "基础模块列表",
     "core.message.help.table.header.external": "扩展模块列表",
     "core.message.help.table.header.help": "帮助信息",
+    "core.message.leave.confirm": "此操作不可逆，你确定吗？",
     "core.message.leave.success": "已执行，再见。",
     "core.message.locale": "当前使用的语言：${lang}",
     "core.message.locale.reload.failed": "以下字符串重载失败：${detail}",

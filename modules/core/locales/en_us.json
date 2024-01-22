@@ -90,6 +90,7 @@
     "core.message.help.table.header.base": "Base Module List",
     "core.message.help.table.header.external": "Extended Module List",
     "core.message.help.table.header.help": "Help",
+    "core.message.leave.confirm": "This operation is irreversible. Are you sure?",
     "core.message.leave.success": "Goodbye.",
     "core.message.locale": "Current language: ${lang}",
     "core.message.locale.reload.failed": "Failed to reload the following string: ${detail}",
