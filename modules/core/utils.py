@@ -136,7 +136,7 @@ async def config_gu(msg: Bot.MessageSession):
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         await msg.finish(f"{msg.locale.t('core.message.locale.set.invalid')}\n\
-                           {msg.locale.t('core.message.locale.langlist', langlist=avaliable_lang)})"
+                           {msg.locale.t('core.message.locale.langlist', langlist=avaliable_lang)}")
 
 
 @locale.command('reload', required_superuser=True)
