@@ -96,7 +96,7 @@
     "core.message.locale.contribute": "歡迎前往 Crowdin 協助翻譯：\n${url}",
     "core.message.locale.langlist": "已支援的語言碼：${langlist}",
     "core.message.locale.reload.failed": "以下字串重新加載失敗：${detail}",
-    "core.message.locale.set.invalid": "無效的語言碼。",
+    "core.message.locale.set.invalid": "語言碼無效。",
     "core.message.locale.set.prompt": "可使用「${prefix}locale <語言碼>」設定語言。",
     "core.message.module.disable.already": "失敗：「${module}」模組已停用。",
     "core.message.module.disable.base": "失敗：「${module}」為基礎模組，無法停用。",
