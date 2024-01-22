@@ -44,16 +44,6 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
-        """
-        try:
-            GroupList = len(await app.groupList())
-        except Exception:
-            GroupList = msg.locale.t('core.message.ping.failed')
-        try:
-            FriendList = len(await app.friendList())
-        except Exception:
-            FriendList = msg.locale.t('core.message.ping.failed')
-        """
         result += '\n' + msg.locale.t("core.message.ping.detail",
                                       system_boot_time=boot_start,
                                       bot_running_time=timediff,
@@ -130,8 +120,12 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}')
 @locale.command()
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    await msg.finish(
-        f"{msg.locale.t('core.message.locale', lang=msg.locale.t('language'))}\n{msg.locale.t('core.message.locale.set.prompt', langlist=avaliable_lang, prefix=msg.prefixes[0])}")
+    res = f"{msg.locale.t('core.message.locale', lang=msg.locale.t('language'))}\n\
+            {msg.locale.t('core.message.locale.set.prompt', prefix=msg.prefixes[0])}\n\
+            {msg.locale.t('core.message.locale.langlist', langlist=avaliable_lang)}"
+    if Config("locale_url"):
+        res += f"\n{msg.locale.t('core.message.locale.contribute', url=Config("locale_url"))}"
+    await msg.finish(res)
 
 
 @locale.command('<lang> {{core.help.locale.set}}', required_admin=True)
@@ -141,7 +135,8 @@ async def config_gu(msg: Bot.MessageSession):
         await msg.finish(Locale(lang).t('success'))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-        await msg.finish(msg.locale.t("core.message.locale.set.invalid", langlist=avaliable_lang))
+        await msg.finish(f"{msg.locale.t('core.message.locale.set.invalid')}\n\
+                           {msg.locale.t('core.message.locale.langlist', langlist=avaliable_lang)})"
 
 
 @locale.command('reload', required_superuser=True)
