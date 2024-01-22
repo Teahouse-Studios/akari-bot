@@ -120,7 +120,7 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}')
 @locale.command()
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-    res = msg.locale.t("core.message.locale", lang=msg.locale.t('language')) + '\n' + \
+    res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
           msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
           msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     if Config('locale_url'):
@@ -132,11 +132,11 @@ async def _(msg: Bot.MessageSession):
 async def config_gu(msg: Bot.MessageSession):
     lang = msg.parsed_msg['<lang>']
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
-        await msg.finish(Locale(lang).t('success'))
+        await msg.finish(Locale(lang).t("success"))
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
-        res = msg.locale.t('core.message.locale.set.invalid')} + '\n' + \
-              msg.locale.t('core.message.locale.langlist', langlist=avaliable_lang)
+        res = msg.locale.t("core.message.locale.set.invalid") + '\n' + \
+              msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
         await msg.finish(res)
 
 
