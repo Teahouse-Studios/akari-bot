@@ -39,6 +39,7 @@ bug_report_targets = ["",]
 donate_url = "https://afdian.net/@teahouse"
 help_url = "https://bot.teahouse.team"
 issue_url = "https://github.com/Teahouse-Studios/bot/issues/new/choose"
+locale_url = "https://www.crowdin.com/project/akari-bot"
 wiki_whitelist_url = "https://s.wd-ljt.com/botwhitelist"
 web_render_local =
 qq_account = 2314163511

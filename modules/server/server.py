@@ -41,7 +41,10 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
                                     extra = description['extra']
                                     text = []
                                     for item in extra[:]:
-                                        text.append(str(item['text']))
+                                        if isinstance(item, dict):
+                                            text.append(str(item['text']))
+                                        else:
+                                            text.append(item)
                                     servers.append(''.join(text))
 
                             if 'players' in jejson:
