@@ -83,7 +83,7 @@ async def config_gu(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.already"))
     if 'remove' in msg.parsed_msg:
         if user == msg.target.sender_id:
-            confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"))
+            confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"))
             if not confirm:
                 return
         if user:
