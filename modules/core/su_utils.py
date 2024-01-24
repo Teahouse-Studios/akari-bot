@@ -43,7 +43,7 @@ async def del_su(msg: Bot.MessageSession):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.superuser.invalid", target=msg.target.sender_from))
     if user == msg.target.sender_id:
-        confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+        confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"), append_instruction=False)
         if not confirm:
             return
     if user:
@@ -158,7 +158,7 @@ async def _(msg: Bot.MessageSession):
         if os.listdir(cache_path):
             shutil.rmtree(cache_path)
             os.mkdir(cache_path)
-            await msg.finish(msg.locale.t("success"))
+            await msg.finish(msg.locale.t("core.message.purge.success"))
         else:
             await msg.finish(msg.locale.t("core.message.purge.empty"))
     else:
