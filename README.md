@@ -35,7 +35,7 @@
 
 ~~QQ 频道的测试版支持也请在上方链接申请。~~
 
-你也可以加入我们的 QQ 官方实例测试群：[738829671](http://qm.qq.com/cgi-bin/qm/qr?k=nXkV2SUP_WWlCuSzzpnKJK_uYkG7n1im)
+你也可以加入我们的 QQ 公共实例测试群：[738829671](http://qm.qq.com/cgi-bin/qm/qr?k=nXkV2SUP_WWlCuSzzpnKJK_uYkG7n1im)
 
 我们正在进行 QQ 频道官方机器人入驻，未来可能会成为官方认证的机器人。
 
