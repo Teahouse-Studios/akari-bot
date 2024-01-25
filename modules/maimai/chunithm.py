@@ -12,7 +12,9 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
 
 chu = module('chunithm',
              developers=['DoroWolf'],
-             alias='chu', support_languages=['zh_cn'], desc='{chunithm.help.desc}')
+             alias='chu', 
+             support_languages=['zh_cn'], 
+             desc='{chunithm.help.desc}')
 
 
 @chu.command('base <constant> [<constant_max>] {{maimai.help.base}}')

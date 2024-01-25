@@ -6,7 +6,7 @@ from core.builtins import Bot
 from core.component import module
 
 r = module('random', alias=['rand', 'rng'],
-           developers=['Dianliang233', 'DoroWolf'], desc='{random.help.desc}', )
+           developers=['Dianliang233'], desc='{random.help.desc}', )
 
 
 @r.command('number <min> <max> {{random.help.number}}', )
@@ -19,15 +19,15 @@ async def _(msg: Bot.MessageSession, min: int, max: int):
     await msg.finish('' + str(random))
 
 
-@r.command('choice ... {{random.help.choice}}', )
+@r.command('choice <choices> ... {{random.help.choice}}', )
 async def _(msg: Bot.MessageSession):
-    choices = msg.parsed_msg['...']
+    choices = [msg.parsed_msg.get('<choices>')] + msg.parsed_msg.get('...', [])
     await msg.finish(secrets.choice(choices))
 
 
-@r.command('shuffle ... {{random.help.shuffle}}', )
+@r.command('shuffle <cards> ... {{random.help.shuffle}}', )
 async def _(msg: Bot.MessageSession):
-    cards: list = msg.parsed_msg['...']
+    cards = [msg.parsed_msg.get('<cards>')] + msg.parsed_msg.get('...', [])
     x = cards.copy()
     for i in reversed(range(1, len(x))):
         # pick an element in x[:i+1] with which to exchange x[i]
