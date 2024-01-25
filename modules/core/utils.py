@@ -83,7 +83,7 @@ async def config_gu(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.already"))
     if 'remove' in msg.parsed_msg:
         if user == msg.target.sender_id:
-            confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"))
+            confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"))
             if not confirm:
                 return
         if user:
@@ -168,7 +168,7 @@ async def _(msg: Bot.MessageSession):
 
 setup = module('setup', base=True, required_admin=True, desc='{core.help.setup.desc}', alias='toggle')
 
-
+"""
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.sender_id)
@@ -179,6 +179,7 @@ async def _(msg: Bot.MessageSession):
     else:
         target.edit('disable_typing', False)
         await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
+"""
 
 
 @setup.command('check {{core.help.setup.check}}')

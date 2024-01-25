@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 from core.builtins import Bot
 from core.component import module
+from core.logger import Logger
 from core.utils.http import get_url
 
 ip = module('ip', developers=['Dianliang233'])
@@ -82,11 +83,16 @@ async def check_ip(ip: str):
     }
     if not skip_geoip:
         data = json.loads(await get_url('https://api.ip.sb/geoip/' + ip))
-        reverse = socket.getnameinfo((ip, 0), 0)
-        res['reverse'] = reverse[0]
         for key in res:
             if key in data:
                 res[key] = data[key]
+
+        try:
+            reverse = socket.getnameinfo((ip, 0), 0)
+            res['reverse'] = reverse[0]
+        except:
+            Logger.warn("Unable to fetch reverse DNS.")
+
     return res
 
 

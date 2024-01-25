@@ -480,6 +480,11 @@ async def _(msg: Bot.MessageSession):
                 msg.locale.t(
                     "core.message.help.more_information.document",
                     url=Config('help_url')))
+        if Config('donate_url'):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.donate",
+                    url=Config('donate_url')))
         await msg.finish('\n'.join(help_msg))
 
 
@@ -562,4 +567,9 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                 msg.locale.t(
                     "core.message.help.more_information.document",
                     url=Config('help_url')))
+        if Config('donate_url'):
+            help_msg.append(
+                msg.locale.t(
+                    "core.message.help.more_information.donate",
+                    url=Config('donate_url')))
         await msg.finish('\n'.join(help_msg))

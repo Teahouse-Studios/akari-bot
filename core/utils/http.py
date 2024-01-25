@@ -192,6 +192,7 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
         if data:
             if not filename:
                 ftt = ft.match(data).extension
+                ftt = '.txt' if not ftt else ftt
                 path = f'{random_cache_path()}.{ftt}'
             else:
                 path = Config("cache_path") + f'/{filename}'
