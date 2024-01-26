@@ -4,6 +4,7 @@ import secrets
 import numpy as np
 
 from config import Config
+from core.exceptions import ConfigValueError
 from core.utils.text import remove_prefix
 
 MAX_DICE_COUNT = Config('dice_limit', 100)  # 一次摇动最多的骰子数量
@@ -80,6 +81,7 @@ class Dice(DiceItemBase):
     """骰子项"""
 
     def __init__(self, session, dice_code: str, positive: bool):
+
         dice_code = dice_code.replace(' ', '')
         super().__init__(dice_code, positive)
         args = self.GetArgs(session)
@@ -136,6 +138,7 @@ class Dice(DiceItemBase):
         return (int(dice_count), int(dice_type), int(advantage))
 
     def Roll(self, session):
+        use_markdown = True if session.target.sender_from in ['Discord', 'Kook'] else False
         output = ''
         result = 0
         dice_results = []
@@ -148,23 +151,27 @@ class Dice(DiceItemBase):
             new_results = []
             indexes = np.array(dice_results).argsort()
             indexes = indexes[-adv:] if adv > 0 else indexes[:-adv]
-            output += '( '
+            output += '('
             output_buffer = ''
             for i in range(self.count):
-                output_buffer += str(dice_results[i])
+                if use_markdown:
+                    output_buffer += f"**{str(dice_results[i])}**"
+                else:
+                    output_buffer += str(dice_results[i])
                 if i in indexes:
                     new_results.append(dice_results[i])
-                    output_buffer += '*'
+                    if not use_markdown:
+                        output_buffer += '*'
                 if i < self.count - 1:
-                    output_buffer += ','
+                    output_buffer += ', '
             if self.count >= MAX_OUTPUT_CNT:
                 output_buffer = session.locale.t("dice.message.output.too_long", length=self.count)
-            output += output_buffer + ' ) = '
+            output += output_buffer + ') = '
             dice_results = new_results
         # 公用加法
         length = len(dice_results)
         if (length > 1):
-            output += '[ '
+            output += '['
             if length > MAX_OUTPUT_CNT:  # 显示数据含100
                 output += session.locale.t("dice.message.output.too_long", length=length)
             for i in range(length):
@@ -172,20 +179,20 @@ class Dice(DiceItemBase):
                 if length <= MAX_OUTPUT_CNT:  # 显示数据含100
                     output += str(dice_results[i])
                     if i < length - 1:
-                        output += '+'
-            output += ' ] = '
+                        output += ' + '
+            output += '] = '
         else:
             result = dice_results[0]
         if len(output) > MAX_OUTPUT_LEN:
             output = session.locale.t("dice.message.too_long")
-        self.detail = output + f"{result} "
+        self.detail = output + f"{result}"
         self.result = result
 
 
 async def GenerateMessage(msg, dices: str, times: int, dc: int):
     if not all([MAX_DICE_COUNT > 0, MAX_ROLL_TIMES > 0, MAX_MOD_NUMBER >= MIN_MOD_NUMBER, MAX_OUTPUT_CNT > 0,
                 MAX_OUTPUT_LEN > 0, MAX_DETAIL_CNT > 0, MAX_ITEM_COUNT > 0]):
-        raise OverflowError(msg.locale.t("error.config.invalid"))
+        raise ConfigValueError(msg.locale.t("error.config.invalid"))
     if re.search(r'[^0-9+\-DKL]', dices.upper()):
         return DiceSyntaxError(msg, msg.locale.t('dice.message.error.syntax.invalid')).message
     if times > MAX_ROLL_TIMES or times < 1:
@@ -231,7 +238,7 @@ async def GenerateMessage(msg, dices: str, times: int, dc: int):
             dice.Roll(msg)
             output_line += '+' if dice.positive else '-'
             if isinstance(dice, Dice) and times * dice_count < MAX_DETAIL_CNT:
-                output_line += f'( {dice.GetDetail()})'
+                output_line += f'({dice.GetDetail()})'
             else:
                 output_line += str(dice.GetResult())
             result += dice.GetResult(False)

@@ -10,58 +10,53 @@ from core.petal import gained_petal, lost_petal
 no_solution = ['无解', '無解', 'none', 'n/a']
 
 
-def calc(expression):
+def calc(expr):
+    expr = expr.replace("\\", "")
     try:
-        return simple_eval(expression)
+        return simple_eval(expr)
     except BaseException:
         return None
 
 
-def is_valid(expression):
-    operators = ['+', '-', '*', '/', '(', ')']
+def is_valid(expr):
+    operators = ['+', '-', '*', '/', '(', ')', '\\']
     numbers = [str(i) for i in range(1, 14)]
     valid_chars = numbers + operators
     valid_chars_set = set(valid_chars)
 
     i = 0
     num_numbers = 0
-    while i < len(expression):
-        char = expression[i]
-
+    while i < len(expr):
+        char = expr[i]
         if char.isdigit():
-            while i < len(expression) and expression[i].isdigit():
+            while i < len(expr) and expr[i].isdigit():
                 i += 1
             num_numbers += 1
-
         elif char in valid_chars_set:
             i += 1
-            if i < len(expression) and expression[i] == ' ':
+            if i < len(expr) and expr[i] == ' ':
                 i += 1
-                if i < len(expression) and expression[i] == ' ':
+                if i < len(expr) and expr[i] == ' ':
                     return False
             continue
-
         elif char == ' ':
             i += 1
-            if i < len(expression) and expression[i] == ' ':
+            if i < len(expr):
                 return False
-
         else:
             return False
-
     if num_numbers > 9:
         return False
-
     return True
 
 
 async def has_solution(numbers):
-    permutations = list(itertools.permutations(numbers))
+    perms = list(itertools.perms(numbers))
     operators = ['+', '-', '*', '/']
-    expressions = list(itertools.product(operators, repeat=3))
+    exprs = list(itertools.product(operators, repeat=3))
 
-    for perm in permutations:
-        for expr in expressions:  # 穷举就完事了
+    for perm in perms:
+        for expr in exprs:  # 穷举就完事了
             exp = '((( {} {} {} ) {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return True
@@ -77,15 +72,15 @@ async def has_solution(numbers):
     return False
 
 
-def contains_all_numbers(expression, numbers):
+def contains_all_numbers(expr, numbers):
     used_numbers = [str(num) for num in numbers]
     i = 0
-    while i < len(expression):
-        char = expression[i]
+    while i < len(expr):
+        char = expr[i]
         if char.isdigit():
             number = char
-            while i + 1 < len(expression) and expression[i + 1].isdigit():
-                number += expression[i + 1]
+            while i + 1 < len(expr) and expr[i + 1].isdigit():
+                number += expr[i + 1]
                 i += 1
             if number in used_numbers:
                 used_numbers.remove(number)
@@ -109,9 +104,9 @@ async def _(msg: Bot.MessageSession):
     has_solution_flag = await has_solution(numbers)
 
     answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=3600, append_instruction=False)
-    expression = answer.as_display(text_only=True)
+    expr = answer.as_display(text_only=True)
     if play_state[msg.target.target_id]['active']:
-        if expression.lower() in no_solution:
+        if expr.lower() in no_solution:
             if has_solution_flag:
                 send = msg.locale.t('twenty_four.message.incorrect.have_solution')
                 if g_msg := (g_msg := await lost_petal(msg, 1)):
@@ -121,9 +116,9 @@ async def _(msg: Bot.MessageSession):
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
             await answer.send_message(send)
-        elif is_valid(expression):
-            result = calc(expression)
-            if result == 24 and contains_all_numbers(expression, numbers):
+        elif is_valid(expr):
+            result = calc(expr)
+            if result == 24 and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
