@@ -61,7 +61,7 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
                 download_pic = await download_to_cache(
                     f'https://opengraph.githubassets.com/c9f4179f4d560950b2355c82aa2b7750bffd945744f9b8ea3f93cc24779745a0/{result["full_name"]}')
                 if download_pic:
-                    await msg.finish([Image(download_pic)])
+                    await msg.finish([Image(download_pic)], quote=False)
 
             asyncio.create_task(download())
 
