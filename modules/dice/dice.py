@@ -156,12 +156,15 @@ class Dice(DiceItemBase):
             output_buffer = ''
             for i in range(self.count):
                 if use_markdown:
-                    output_buffer += f"**{str(dice_results[i])}**"
+                    if i in indexes:
+                        new_results.append(dice_results[i])
+                        output_buffer += f"**{str(dice_results[i])}**"
+                    else:                
+                        output_buffer += f"{str(dice_results[i])}"
                 else:
                     output_buffer += str(dice_results[i])
-                if i in indexes:
-                    new_results.append(dice_results[i])
-                    if not use_markdown:
+                    if i in indexes:
+                        new_results.append(dice_results[i])
                         output_buffer += '*'
                 if i < self.count - 1:
                     output_buffer += ', '
