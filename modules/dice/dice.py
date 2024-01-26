@@ -137,8 +137,9 @@ class Dice(DiceItemBase):
                                  advantage)
         return (int(dice_count), int(dice_type), int(advantage))
 
-    def Roll(self, session):
-        use_markdown = True if session.target.sender_from in ['Discord', 'Kook'] else False
+    def Roll(self, session, use_markdown=False):
+        if session.target.sender_from in ['Discord', 'Kook']:
+            use_markdown = True
         output = ''
         result = 0
         dice_results = []
