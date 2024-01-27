@@ -2,7 +2,7 @@
     "server.help": "Get Minecraft: Java/Bedrock Edition server motd.",
     "server.help.option.p": "Show Players List",
     "server.help.option.r": "Show Raw Info",
-    "server.message.error": "An error occurred while querying for the API.",
+    "server.message.error": "调用 API 时发生错误。",
     "server.message.error.local_ip": "An error occurred: Invalid domain name or IP address.",
     "server.message.gamemode": "Game mode: ",
     "server.message.not_found": "Does not find any type of Minecraft server.",
