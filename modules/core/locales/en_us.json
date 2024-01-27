@@ -122,7 +122,7 @@
     "core.message.module.reload.no_more": "No remaining files were found.",
     "core.message.module.reload.not_found": "Failed: Module \"${module}\" does not exist.",
     "core.message.module.reload.success": "Successfully reloaded module(s):\n${module}",
-    "core.message.module.reload.with": "And ${reloadCnt} files under these module(s).",
+    "core.message.module.reload.with": "And ${reloadCnt} file(s) under these module(s).",
     "core.message.module.unload.base": "Failed: \"${module}\" is a base module, thus cannot be unloaded.",
     "core.message.module.unload.confirm": "This operation will unload all modules related to it and disable them completely after the next restart (not including cross-reference). Continue?",
     "core.message.module.unload.not_found": "Failed: This module does not exist.",
