@@ -8,7 +8,7 @@ from core.builtins import ErrorMessage
 from core.logger import Logger
 
 
-async def server(msg, address, raw=False, showplayer=False, mode='j'):
+async def server(msg, address, raw=False, showplayer=False, mode='JE'):
     match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
     servers = []
     n = '\n'
@@ -22,7 +22,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
         port1 = '25565'
         port2 = '19132'
 
-    if mode == 'j':
+    if mode == 'JE':
         try:
             url = 'http://motd.wd-api.com/v1/java?host=' + serip + '&port=' + port1
             async with aiohttp.ClientSession() as session:
@@ -73,7 +73,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='j'):
         if raw:
             return n.join(servers)
         return re.sub(r'§\w', "", n.join(servers))
-    if mode == 'b':
+    if mode == 'BE':
         try:
             beurl = 'http://motd.wd-api.com/v1/bedrock?host=' + serip + '&port=' + port2
             async with aiohttp.ClientSession() as session2:

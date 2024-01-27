@@ -10,7 +10,7 @@ from config import Config
 from core.logger import Logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.dirty_check import check_bool, rickroll
+from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
@@ -131,11 +131,13 @@ if Config('openai_api_key'):
                     except Exception as e:
                         chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
-            if await check_bool(res):
-                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
-            await msg.send_message(chain)
+            chain = await check(chain)
+            if chain != []:
+                for x in chain:
+                    m = x['content']
+                    await msg.send_message(m)
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()

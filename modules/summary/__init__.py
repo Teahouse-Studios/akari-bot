@@ -4,7 +4,7 @@ import re
 from config import Config
 from core.builtins import Bot
 from core.component import module
-from core.dirty_check import check_bool, rickroll
+from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError
 from core.logger import Logger
 from core.petal import count_petal
@@ -83,8 +83,13 @@ async def _(msg: Bot.MessageSession):
         if petal != 0:
             output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()
-        if await check_bool(output):
-            await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
+
+        output = await check(output)
+        if output != '':
+            for x in output:
+                m = x['content']
+                await msg.send_message(m)
+
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
         await msg.finish(output, disable_secret_check=True)

@@ -21,7 +21,6 @@ async def main(msg: Bot.MessageSession):
 
     if server_address == 'localhost':
         is_local_ip = True
-
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
     if matchserip:
         if matchserip.group(1) == '192':
@@ -42,18 +41,18 @@ async def main(msg: Bot.MessageSession):
     if is_local_ip:
         await msg.finish(msg.locale.t('server.message.error.local_ip'))
 
-    sm = ['j', 'b']
-    for x in sm:
-        gather_list.append(asyncio.ensure_future(s(
-            msg, f'{msg.parsed_msg["<address:port>"]}', msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False
-                                                                                                             ), x)))
+    mode_list = ['JE', 'BE']
+    for mode in mode_list:
+        gather_list.append(asyncio.ensure_future(check_msg(
+            msg, msg.parsed_msg["<address:port>"], msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False), mode
+            )))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
         message = msg.locale.t('server.message.not_found')
         await msg.finish(message)
 
 
-async def s(msg: Bot.MessageSession, address, raw, showplayer, mode):
+async def check_msg(msg: Bot.MessageSession, address, raw, showplayer, mode):
     sendmsg = await server(msg, address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
