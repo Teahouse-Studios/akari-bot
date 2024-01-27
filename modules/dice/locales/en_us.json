@@ -12,7 +12,7 @@
     "dice.help.option.polynomial.title": "Polynomial",
     "dice.help.option.y": "The polynomial can be an integer (adjustment value). e.g., \"d20+5\" will output the result of adding 5 to the number of a 20-sided die.",
     "dice.help.regex.desc": "(扔|投|掷|丢)<m>个[<n>面]骰子 Roll the specified dice.",
-    "dice.message.dc.check": "▷ Check success(es): ${success}  Check failure(s): ${failed}",
+    "dice.message.dc.check": "▷ Check Success: ${success}  Check Failure: ${failed}",
     "dice.message.dc.failed": "  Failed!",
     "dice.message.dc.success": "  Success!",
     "dice.message.error": "The following error occurred while parsing the dice polynomial: ",
