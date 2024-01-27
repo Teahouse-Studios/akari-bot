@@ -22,9 +22,12 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
         port2 = '19132'
 
     if mode == 'JE':
-        url = f'http://motd.wd-api.com/v1/java?host={serip}&port={port1}'
-        jemotd = await get_url(url, 200)
-        jejson = json.loads(jemotd)
+        try:
+            url = f'http://motd.wd-api.com/v1/java?host={serip}&port={port1}'
+            jemotd = await get_url(url, 200)
+            jejson = json.loads(jemotd)
+        except:
+            return ''
         try:
             servers.append('[JE]')
             if 'description' in jejson:
@@ -66,9 +69,12 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
         return re.sub(r'§\w', "", '\n'.join(servers))
 
     if mode == 'BE':
-        url = f'http://motd.wd-api.com/v1/bedrock?host={serip}&port={port2}'
-        bemotd = await get_url(url, 200)
-        bejson = json.loads(bemotd)
+        try:
+            url = f'http://motd.wd-api.com/v1/bedrock?host={serip}&port={port2}'
+            bemotd = await get_url(url, 200)
+            bejson = json.loads(bemotd)
+        except:
+            return ''
         try:
             unpack_data = bejson['data'].split(';')
             edition = unpack_data[0]
