@@ -110,7 +110,9 @@ if Config('openai_api_key'):
                 Logger.info(f'{tokens} tokens have been consumed while calling AI.')
                 petal = 0
 
-            res = await check(res)[0]['content']
+            res = await check(res)
+            for m in res:
+                output = m['content']
             blocks = parse_markdown(res)
 
             chain = []

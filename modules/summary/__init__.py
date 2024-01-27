@@ -87,7 +87,9 @@ async def _(msg: Bot.MessageSession):
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
 
-        output = await check(output)[0]['content']
+        output = await check(output)
+        for m in output:
+            output = m['content']
         await msg.finish(output, disable_secret_check=True)
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
