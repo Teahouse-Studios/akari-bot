@@ -19,7 +19,7 @@
     "dice.message.error.dc.invalid": "An error occurred: Invalid DC: ",
     "dice.message.error.N.invalid": "An error occurred: Invalid number of dice rolls: ",
     "dice.message.error.prompt": "Item ${i} occurs ",
-    "dice.message.error.syntax": "syntax error: ",
+    "dice.message.error.syntax": "Syntax error: ",
     "dice.message.error.syntax.invalid": "Unrecognized characters in dice polynomial.",
     "dice.message.error.syntax.missing_d": "Dice polynomial missing character \"D\".",
     "dice.message.error.value": "value error: ",
