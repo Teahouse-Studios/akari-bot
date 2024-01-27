@@ -55,10 +55,10 @@ async def get_info(msg: Bot.MessageSession, address, raw, showplayer, mode):
     sendmsg = await server(msg, address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
-        sendmsg = sendmsg.replace("<吃掉了>", msg.locale.t("check.redacted"))
-        sendmsg = sendmsg.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         for x in sendmsg:
             sendmsg = x['content']
+        sendmsg = sendmsg.replace("<吃掉了>", msg.locale.t("check.redacted"))
+        sendmsg = sendmsg.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         await msg.finish(sendmsg)
     else:
         return sendmsg
