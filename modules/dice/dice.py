@@ -63,13 +63,13 @@ class DiceMod(DiceItemBase):
         super().__init__(dice_code, positive)
         if not dice_code.isdigit():
             raise DiceValueError(msg,
-                                 msg.locale.t("dice.message.error.value.M.invalid"),
+                                 msg.locale.t("dice.message.error.value.y.invalid"),
                                  '+' if self.positive else '-' + dice_code)
         else:
             self.result = int(dice_code)
             if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
                 raise DiceValueError(msg,
-                                     msg.locale.t("dice.message.error.value.M.out_of_range", min=MIN_MOD_NUMBER,
+                                     msg.locale.t("dice.message.error.value.y.out_of_range", min=MIN_MOD_NUMBER,
                                                       max=MAX_MOD_NUMBER),
                                      self.result)
 

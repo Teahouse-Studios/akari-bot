@@ -56,7 +56,8 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
                             msg.locale.t('server.message.player.current') + '\n' + '\n'.join(playerlist))
                     else:
                         if jejson['players']['online'] == 0:
-                            servers.append(msg.locale.t('server.message.player.current.none'))
+                            servers.append(
+                                msg.locale.t('server.message.player.current') + '\n' + msg.locale.t('none'))
             if 'version' in jejson:
                 versions = msg.locale.t('server.message.version') + jejson['version']['name']
                 servers.append(versions)

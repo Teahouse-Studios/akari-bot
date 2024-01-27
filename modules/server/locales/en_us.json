@@ -1,13 +1,12 @@
 {
-    "server.help": "Get Minecraft: Java/Bedrock Edition server motd.",
-    "server.help.option.p": "Show Players List",
-    "server.help.option.r": "Show Raw Info",
+    "server.help": "Get Minecraft: Java/Bedrock Edition server MOTD.",
+    "server.help.option.p": "Show players list.",
+    "server.help.option.r": "Show raw info.",
     "server.message.error": "An error occurred while querying for the API.",
     "server.message.error.local_ip": "An error occurred: Invalid domain name or IP address.",
-    "server.message.gamemode": "Game mode: ",
+    "server.message.gamemode": "Game Mode: ",
     "server.message.not_found": "Does not find any type of Minecraft server.",
-    "server.message.player": "Online player: ",
-    "server.message.player.current": "Current online player: \n",
-    "server.message.player.current.none": "Current online player: \nNone",
-    "server.message.version": "Game version: "
+    "server.message.player": "Online Player: ",
+    "server.message.player.current": "Current Online Player: \n",
+    "server.message.version": "Game Version: "
 }
