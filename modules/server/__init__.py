@@ -21,6 +21,7 @@ async def main(msg: Bot.MessageSession):
 
     if server_address == 'localhost':
         is_local_ip = True
+
     matchserip = re.match(r'(.*?)\.(.*?)\.(.*?)\.(.*?)', server_address)
     if matchserip:
         if matchserip.group(1) == '192':
@@ -43,20 +44,21 @@ async def main(msg: Bot.MessageSession):
 
     mode_list = ['JE', 'BE']
     for mode in mode_list:
-        gather_list.append(asyncio.ensure_future(check_msg(
-            msg, msg.parsed_msg["<address:port>"], msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False), mode
-            )))
+        gather_list.append(asyncio.ensure_future(get_info(
+            msg, msg.parsed_msg["<address:port>"], msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False), mode)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
-        message = msg.locale.t('server.message.not_found')
-        await msg.finish(message)
+        await msg.finish(msg.locale.t('server.message.not_found'))
 
 
-async def check_msg(msg: Bot.MessageSession, address, raw, showplayer, mode):
+async def get_info(msg: Bot.MessageSession, address, raw, showplayer, mode):
     sendmsg = await server(msg, address, raw, showplayer, mode)
     if sendmsg != '':
         sendmsg = await check(sendmsg)
+        sendmsg = sendmsg.replace("<吃掉了>", msg.locale.t("check.redacted"))
+        sendmsg = sendmsg.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         for x in sendmsg:
-            m = x['content']
-            await msg.finish(m)
-    return sendmsg
+            sendmsg = x['content']
+        await msg.finish(sendmsg)
+    else:
+        return sendmsg

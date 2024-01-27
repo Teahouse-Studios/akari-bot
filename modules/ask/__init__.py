@@ -113,6 +113,8 @@ if Config('openai_api_key'):
             res = await check(res)
             for m in res:
                 res = m['content']
+            res = res.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            res = res.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
             blocks = parse_markdown(res)
 
             chain = []
