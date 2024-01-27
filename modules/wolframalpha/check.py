@@ -7,5 +7,5 @@ unsafe_word_list = [
 async def safe_check(query):
     for word in unsafe_word_list:
         if word in query.lower():
-            return False
-    return True
+            return True
+    return False
