@@ -84,14 +84,14 @@ async def _(msg: Bot.MessageSession):
             output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()
 
-        output = await check(output)
-        if output != '':
-            for x in output:
-                m = x['content']
-                await msg.send_message(m)
-
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
-        await msg.finish(output, disable_secret_check=True)
+
+        output = await check(output)
+        res = []
+        for blocks in output:
+            block = blocks['content']
+            res.append(block)
+        await msg.finish(res, disable_secret_check=True)
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))

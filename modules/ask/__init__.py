@@ -90,7 +90,7 @@ if Config('openai_api_key'):
                     break
                 elif run.status == 'failed':
                     if run.last_error.code == 'rate_limit_exceeded':
-                        Logger.warning(run.last_error.json())
+                        Logger.warn(run.last_error.json())
                         raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
                     raise RuntimeError(run.last_error.json())
                 await asyncio.sleep(4)
@@ -133,11 +133,14 @@ if Config('openai_api_key'):
 
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
+
             chain = await check(chain)
-            if chain != []:
-                for x in chain:
-                    m = x['content']
-                    await msg.send_message(m)
+            cchain = []
+            for blocks in chain:
+                    block = blocks['content']
+                    cchain.append(block)
+
+            await msg.send_message(cchain, disable_secret_check=True)
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()

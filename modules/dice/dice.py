@@ -138,7 +138,7 @@ class Dice(DiceItemBase):
         return (int(dice_count), int(dice_type), int(advantage))
 
     def Roll(self, msg, use_markdown=False):
-        if msg.target.sender_from in ['Discord|Client', 'Kook|User', 'Telegram|User']:
+        if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
             use_markdown = True
         output = ''
         result = 0
