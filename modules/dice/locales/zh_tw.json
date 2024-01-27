@@ -20,10 +20,10 @@
     "dice.message.error.dc.invalid": "發生錯誤：無效的 dc：",
     "dice.message.error.N.invalid": "發生錯誤：無效的投骰次數：",
     "dice.message.error.prompt": "第 ${i} 項發生",
-    "dice.message.error.syntax": "語法錯誤： ",
+    "dice.message.error.syntax": "語法錯誤：",
     "dice.message.error.syntax.invalid": "骰子語句中存在無法辨識的字元。",
     "dice.message.error.syntax.missing_d": "骰子語句缺失字元 D。",
-    "dice.message.error.value": "參數錯誤： ",
+    "dice.message.error.value": "參數錯誤：",
     "dice.message.error.value.invalid": "參數错误：輸入為「${value}」，",
     "dice.message.error.value.k.invalid": "無效的優劣勢。",
     "dice.message.error.value.k.out_of_range": "優劣势骰數大於總骰子數。",
@@ -38,7 +38,7 @@
     "dice.message.error.value.too_long": "骰子多項式項數超過限制。",
     "dice.message.output": "你掷得的結果是：",
     "dice.message.output.too_long": "數量過大，已省略 ${length} 個資料。",
-    "dice.message.rule.disable": "判定規則已更改為：DnD。",
-    "dice.message.rule.enable": "判定規則已更改為：CoC。",
+    "dice.message.rule.disable": "判定規則已更改為正向。",
+    "dice.message.rule.enable": "判定規則已更改為反向。",
     "dice.message.too_long": "輸出過長……"
 }

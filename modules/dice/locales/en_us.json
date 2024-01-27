@@ -38,7 +38,5 @@
     "dice.message.error.value.too_long": "骰子多项式项数超过限制。",
     "dice.message.output": "你掷得的结果是：",
     "dice.message.output.too_long": "数量过大，已省略 ${length} 个数据。",
-    "dice.message.rule.disable": "判定规则已更改为：DnD。",
-    "dice.message.rule.enable": "判定规则已更改为：CoC。",
     "dice.message.too_long": "输出过长……"
 }

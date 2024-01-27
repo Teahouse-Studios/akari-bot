@@ -10,7 +10,7 @@ from config import Config
 from core.logger import Logger
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.dirty_check import check_bool, rickroll
+from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError, NoReportException
 from core.petal import count_petal
 from core.utils.cooldown import CoolDown
@@ -90,7 +90,7 @@ if Config('openai_api_key'):
                     break
                 elif run.status == 'failed':
                     if run.last_error.code == 'rate_limit_exceeded':
-                        Logger.warning(run.last_error.json())
+                        Logger.warn(run.last_error.json())
                         raise NoReportException(msg.locale.t('ask.message.rate_limit_exceeded'))
                     raise RuntimeError(run.last_error.json())
                 await asyncio.sleep(4)
@@ -110,6 +110,11 @@ if Config('openai_api_key'):
                 Logger.info(f'{tokens} tokens have been consumed while calling AI.')
                 petal = 0
 
+            res = await check(res)
+            for m in res:
+                res = m['content']
+            res = res.replace("<吃掉了>", msg.locale.t("check.redacted"))
+            res = res.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
             blocks = parse_markdown(res)
 
             chain = []
@@ -131,11 +136,10 @@ if Config('openai_api_key'):
                     except Exception as e:
                         chain.append(Plain(msg.locale.t('ask.message.text2img.error', text=content)))
 
-            if await check_bool(res):
-                await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
-            await msg.send_message(chain)
+
+            await msg.send_message(chain, disable_secret_check=True)
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()
