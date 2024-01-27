@@ -29,11 +29,11 @@ async def _(msg: Bot.MessageSession, dices, dc='0'):
 
 
 @dice.regex(r"[扔投掷擲丢]([0-9]*)?[个個]([0-9]*面)?骰子?([0-9]*次)?", desc="{dice.help.regex.desc}")
-async def _(message: Bot.MessageSession):
-    groups = message.matched_msg.groups()
+async def _(msg: Bot.MessageSession):
+    groups = msg.matched_msg.groups()
     dice_type = groups[1][:-1] if groups[1] else '6'
     roll_time = groups[2][:-1] if groups[2] else '1'
-    await message.finish(await GenerateMessage(message, f'{groups[0]}D{dice_type}', int(roll_time), 0))
+    await msg.finish(await GenerateMessage(msg, f'{groups[0]}D{dice_type}', int(roll_time), 0))
 
 
 @dice.command('rule {{dice.help.rule}}', required_admin=True)

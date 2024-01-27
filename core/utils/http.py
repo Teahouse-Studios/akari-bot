@@ -52,7 +52,7 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
-    :param cookies: 使用的 cookies。
+    :param cookies: 使用的cookies。
     :returns: 指定url的内容（字符串）。
     """
 
@@ -100,7 +100,8 @@ async def get_url(url: str, status_code: int = False, headers: dict = None, para
 
 async def post_url(url: str, data: any = None, status_code: int = False, headers: dict = None, fmt=None, timeout=20,
                    attempt=3, request_private_ip=False, logging_err_resp=True, cookies=None):
-    '''发送POST请求。
+    '''利用AioHttp发送POST请求。
+
     :param url: 需要发送的url。
     :param data: 需要发送的数据。
     :param status_code: 指定请求到的状态码，若不符则抛出ValueError。
@@ -169,7 +170,8 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
     :param attempt: 指定请求尝试次数。
     :param request_private_ip: 是否允许请求私有IP。
     :param logging_err_resp: 是否记录错误响应。
-    :returns: 文件的相对路径，若获取失败则返回False。'''
+    :returns: 文件的相对路径，若获取失败则返回False。
+    '''
 
     if post_data is not None:
         method = 'POST'
@@ -191,7 +193,10 @@ async def download_to_cache(url: str, filename=None, status_code: int = False, m
 
         if data:
             if not filename:
-                ftt = ft.match(data).extension
+                try:
+                    ftt = ft.match(data).extension
+                except AttributeError:
+                    ftt = 'txt'
                 path = f'{random_cache_path()}.{ftt}'
             else:
                 path = Config("cache_path") + f'/{filename}'

@@ -24,7 +24,7 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
             warn_template.append(msg.locale.t('tos.warning.last'))
         if current_warns > WARNING_COUNTS:
             msg.target.sender_info.edit('isInBlockList', True)
-            return
+            return None
         await msg.send_message('\n'.join(warn_template))
 
 

@@ -52,16 +52,18 @@ async def check(*text) -> list:
     '''检查字符串是否合规
 
     :param text: 字符串（List/Union）。
-    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'
+    :returns: 经过审核后的字符串。不合规部分会被替换为'<吃掉了>'，全部不合规则是'<全部吃掉了>'。
     '''
     access_key_id = Config("check_accessKeyId")
     access_key_secret = Config("check_accessKeySecret")
     text = list(text)
+    text = text[0] if len(text) == 1 and isinstance(text[0], list) else text  # 检查是否为嵌套的消息链
     if not access_key_id or not access_key_secret or not EnableDirtyWordCheck.status:
         Logger.warn('Dirty words filter was disabled, skip.')
         query_list = []
         for t in text:
             query_list.append({'content': t, 'status': True, 'original': t})
+        Logger.debug(query_list)
         return query_list
     if not text:
         return []

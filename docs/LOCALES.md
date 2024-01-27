@@ -2,7 +2,7 @@
 -   [简介](#简介)
 -   [文件位置](#文件位置)
 -   [语言文件格式](#语言文件格式)
--   [使用例](#使用例)
+-   [示例](#示例)
 -   [排版规范](#排版规范)
     -   [空格](#空格)
         - [中英文之间需要增加空格](#中英文之间需要增加空格)
@@ -45,7 +45,7 @@
 
 使用 `${变量名}` 可表示变量，变量名须使用英文，不建议使用 Python 语句，禁止使用空格和特殊符号，如需分隔则请使用下划线代替。
 
-# 使用例
+# 示例
 在模块帮助中调用多语言字符串的示例：
 ```python3
 from core.component import module
@@ -94,14 +94,14 @@ async def test(msg: Bot.MessageSession):
 ### 数字与单位之间不加空格
 正确：
 > 我家的光纤入户宽带有 10Gbps，SSD 一共有 10TB。
-
+>
 > 这个城市每年平均降雨量为 1200mm。
 >
 > 角度为 90° 的角，就是直角。
 
 错误：
 >我家的光纤入户宽带有 10 Gbps，SSD 一共有 20 TB。
-
+>
 > 这个城市每年平均降雨量为 1200 mm。
 >
 > 角度为 90 ° 的角，就是直角。
@@ -136,20 +136,20 @@ async def test(msg: Bot.MessageSession):
 正确：
 > The sun set over the horizon, casting a warm glow on the city. As night fell, the lights began to twinkle, creating a captivating skyline.
 > 
-> The mysterious treasure was said to be hidden deep within the ancient cavern... guarded by mythical creatures and protected by an ancient spell.
-> 
 > The storm — with its strong winds, torrential rain, and relentless thunder — lasted for hours, leaving behind a trail of destruction.
+> 
+> The mysterious treasure was said to be hidden deep within the ancient cavern... guarded by mythical creatures and protected by an ancient spell.
 > 
 > "Life is what happens when you're busy making other plans." people always said.
 > 
 > I went to the bookstore yesterday and bought a new novel (the one I've been wanting to read for months).
 
 错误：
-> The sun set over the horizon,casting a warm glow on the city.As night fell,the lights began to twinkle,creating a captivating skyline. 
+> The sun set over the horizon,casting a warm glow on the city.As night fell,the lights began to twinkle,creating a captivating skyline.
+> 
+> The storm—with its strong winds,torrential rain,and relentless thunder—lasted for hours,leaving behind a trail of destruction.  
 >
 > The mysterious treasure was said to be hidden deep within the ancient cavern . . . guarded by mythical creatures and protected by an ancient spell. 
-> 
-> The storm—with its strong winds,torrential rain,and relentless thunder—lasted for hours,leaving behind a trail of destruction. 
 >
 > " Life is what happens when you' re busy making other plans. " people always said. 
 > 
@@ -157,7 +157,7 @@ async def test(msg: Bot.MessageSession):
 
 ## 标点符号
 ### 不要重复使用标点符号
-虽然重复使用标点符号在规范中是被允许的行为，但是这样会破坏句子的严肃性和美观性，请不要这样做。
+虽然重复使用标点符号在规范中是被允许的行为，但是这样会破坏句子的规范性和美观性，请不要这样做。
 
 正确：
 > 德国队竟然战胜了巴西队！

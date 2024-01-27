@@ -11,6 +11,7 @@ from core.component import module
 from core.exceptions import AbuseWarning
 from core.logger import Logger
 from core.utils.http import download_to_cache
+from core.utils.image import svg_render
 from modules.wiki.utils.dbutils import WikiTargetInfo
 from modules.wiki.utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
@@ -368,6 +369,14 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     await session.send_message(section_msg_list, quote=False)
 
         async def image_and_voice():
+            def check_svg(file_path):
+                try:
+                    with open(file_path, 'r') as file:
+                        check = file.read(1024)
+                        return '<svg' in check
+                except:
+                    return False
+
             if dl_list:
                 for f in dl_list:
                     dl = await download_to_cache(f)
@@ -379,6 +388,10 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                         elif guess_type.extension in ["oga", "ogg", "flac", "mp3", "wav"]:
                             if session.Feature.voice:
                                 await session.send_message(Voice(dl), quote=False)
+                    elif check_svg:
+                        dl = await svg_render(dl)
+                        if session.Feature.image:
+                            await session.send_message(Image(dl), quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.Feature.wait:

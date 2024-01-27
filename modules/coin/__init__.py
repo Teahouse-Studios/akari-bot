@@ -3,6 +3,7 @@
 from config import Config
 from core.builtins import Bot
 from core.component import module
+from core.exceptions import ConfigValueError
 from core.petal import gained_petal, lost_petal
 from core.utils.cooldown import CoolDown
 from .zhNum2Int import Zh2Int
@@ -35,8 +36,9 @@ async def _(message: Bot.MessageSession):
 
 
 async def flipCoins(count: int, msg):
-    if FACE_UP_RATE + FACE_DOWN_RATE > 10000 or FACE_UP_RATE < 0 or FACE_DOWN_RATE < 0 or MAX_COIN_NUM <= 0:
-        raise OverflowError(msg.locale.t("error.config.invalid"))
+    if not all([FACE_UP_RATE + FACE_DOWN_RATE <= MAX_COIN_NUM, FACE_UP_RATE >= 0, 
+                FACE_DOWN_RATE >= 0, MAX_COIN_NUM > 0]):
+        raise ConfigValueError(msg.locale.t("error.config.invalid"))
     elif count > MAX_COIN_NUM:
         return msg.locale.t("coin.message.error.out_of_range", max=MAX_COIN_NUM)
     elif count < 0:
@@ -48,7 +50,7 @@ async def flipCoins(count: int, msg):
     face_down = 0
     stand = 0
     for i in range(count):
-        rand_num = secrets.randbelow(10000)
+        rand_num = secrets.randbelow(MAX_COIN_NUM)
         if rand_num < FACE_UP_RATE:
             face_up += 1
         elif rand_num < FACE_UP_RATE + FACE_DOWN_RATE:
