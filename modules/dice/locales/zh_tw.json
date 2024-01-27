@@ -19,7 +19,7 @@
     "dice.message.error.dc.invalid": "發生錯誤：無效的 DC：",
     "dice.message.error.N.invalid": "發生錯誤：無效的投骰次數：",
     "dice.message.error.prompt": "第 ${i} 項發生",
-    "dice.message.error.syntax": "語法錯誤：",
+    "dice.message.error.syntax": "語法錯誤： ",
     "dice.message.error.syntax.invalid": "骰子語句中存在無法辨識的字元。",
     "dice.message.error.syntax.missing_d": "骰子語句缺失字元「D」。",
     "dice.message.error.value": "參數錯誤： ",
