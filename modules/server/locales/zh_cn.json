@@ -1,5 +1,5 @@
 {
-    "server.help": "获取 Minecraft：Java 版/基岩版服务器 motd。",
+    "server.help": "获取 Minecraft：Java 版/基岩版服务器 MOTD。",
     "server.help.option.p": "显示玩家列表。",
     "server.help.option.r": "显示原始信息。",
     "server.message.error": "调用 API 时发生错误。",
@@ -8,6 +8,5 @@
     "server.message.not_found": "没有找到任何类型的 Minecraft 服务器。",
     "server.message.player": "在线玩家：",
     "server.message.player.current": "当前在线玩家：\n",
-    "server.message.player.current.none": "当前在线玩家：\n无",
     "server.message.version": "游戏版本："
 }
