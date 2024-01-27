@@ -2,7 +2,7 @@
     "server.help": "取得 Minecraft：Java 版/基岩版伺服器 motd。",
     "server.help.option.p": "列出玩家列表",
     "server.help.option.r": "列出原始資訊",
-    "server.message.error": "查詢呼叫 API 時發生錯誤。",
+    "server.message.error": "呼叫 API 時發生錯誤。",
     "server.message.error.local_ip": "發生錯誤：無效的域名或 IP 位址。",
     "server.message.gamemode": "遊戲模式：",
     "server.message.not_found": "沒有找到任何類型的 Minecraft 伺服器。",
