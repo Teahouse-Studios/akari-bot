@@ -112,7 +112,7 @@ if Config('openai_api_key'):
 
             res = await check(res)
             for m in res:
-                output = m['content']
+                res = m['content']
             blocks = parse_markdown(res)
 
             chain = []
