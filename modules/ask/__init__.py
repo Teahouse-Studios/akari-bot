@@ -110,6 +110,7 @@ if Config('openai_api_key'):
                 Logger.info(f'{tokens} tokens have been consumed while calling AI.')
                 petal = 0
 
+            res = await check(res)[0]['content']
             blocks = parse_markdown(res)
 
             chain = []
@@ -134,13 +135,7 @@ if Config('openai_api_key'):
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
 
-            chain = await check(chain)
-            cchain = []
-            for blocks in chain:
-                    block = blocks['content']
-                    cchain.append(block)
-
-            await msg.send_message(cchain, disable_secret_check=True)
+            await msg.send_message(chain, disable_secret_check=True)
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()

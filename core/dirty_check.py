@@ -63,6 +63,7 @@ async def check(*text) -> list:
         query_list = []
         for t in text:
             query_list.append({'content': t, 'status': True, 'original': t})
+        Logger.debug(query_list)
         return query_list
     if not text:
         return []
