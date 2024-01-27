@@ -1,4 +1,5 @@
 unsafe_word_list = [
+                "current location"
                 "ip",
                 "where am i",
                 "where i am",
