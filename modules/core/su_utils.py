@@ -45,7 +45,7 @@ async def del_su(msg: Bot.MessageSession):
     if user == msg.target.sender_id:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"), append_instruction=False)
         if not confirm:
-            return
+            await msg.finish()
     if user:
         if BotDBUtil.SenderInfo(user).edit('isSuperUser', False):
             await msg.finish(msg.locale.t("success"))
@@ -178,7 +178,7 @@ async def _(msg: Bot.MessageSession):
     if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
-            return
+            await msg.finish()
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.target_from)]
     target_data.enable(modules)
@@ -196,7 +196,7 @@ async def _(msg: Bot.MessageSession):
     if not target_data.query:
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
-            return
+            await msg.finish()
     if v.startswith(('[', '{')):
         v = json.loads(v)
     elif v.upper() == 'TRUE':
@@ -301,7 +301,9 @@ async def update_bot(msg: Bot.MessageSession):
             await msg.send_message(pull_repo_result)
         else:
             await msg.send_message(msg.locale.t("core.message.update.failed"))
-        await msg.send_message(update_dependencies())
+        await msg.finish(update_dependencies())
+    else:
+        await msg.finish()
 
 if Info.subprocess:
     rst = module('restart', required_superuser=True, base=True)
@@ -344,6 +346,8 @@ if Info.subprocess:
             await wait_for_restart(msg)
             write_version_cache(msg)
             restart()
+        else:
+            await msg.finish()
 
 
 if Info.subprocess:
@@ -364,6 +368,8 @@ if Info.subprocess:
                 Logger.warn(f'Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))
             restart()
+        else:
+            await msg.finish()
 
 
 if Bot.FetchTarget.name == 'QQ':

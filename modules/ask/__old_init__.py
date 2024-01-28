@@ -76,10 +76,11 @@ if Config('enable_langsmith'):
                 await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
-            await msg.send_message(chain)
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()
+                
+            await msg.finish(chain)
         else:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 

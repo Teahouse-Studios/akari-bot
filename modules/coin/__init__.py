@@ -4,8 +4,6 @@ from config import Config
 from core.builtins import Bot
 from core.component import module
 from core.exceptions import ConfigValueError
-from core.petal import gained_petal, lost_petal
-from core.utils.cooldown import CoolDown
 from .zhNum2Int import Zh2Int
 
 MAX_COIN_NUM = Config('coin_limit', 10000)

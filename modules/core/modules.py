@@ -172,9 +172,9 @@ async def config_modules(msg: Bot.MessageSession):
                         msglist.append(msg.locale.t("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get('reload', False):
         if msg.check_super_user():
-            def module_reload(module, extra_modules, base_mode=False):
+            def module_reload(module, extra_modules, base_module=False):
                 reload_count = ModulesManager.reload_module(module)
-                if base_mode and reload_count >= 1:
+                if base_module and reload_count >= 1:
                     return msg.locale.t("core.message.module.reload.base.success")
                 elif reload_count > 1:
                     return msg.locale.t('core.message.module.reload.success', module=module) + \
@@ -190,7 +190,7 @@ async def config_modules(msg: Bot.MessageSession):
                     return msg.locale.t("core.message.module.reload.failed")
 
             for module_ in wait_config_list:
-                base_mode = False
+                base_module = False
                 if '-f' in msg.parsed_msg and msg.parsed_msg['-f']:
                     msglist.append(module_reload(module_, []))
                 elif module_ not in modules_:
@@ -202,9 +202,9 @@ async def config_modules(msg: Bot.MessageSession):
                             confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
                                                                           append_instruction=False)
                             if confirm:
-                                base_mode = True
+                                base_module = True
                             else:
-                                return
+                                await msg.finish()
                         else:
                             await msg.finish(msg.locale.t("core.message.module.reload.base.failed", module=module_))
 
@@ -212,12 +212,12 @@ async def config_modules(msg: Bot.MessageSession):
                         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.confirm",
                                                                       modules='\n'.join(extra_reload_modules)), append_instruction=False)
                         if not confirm:
-                            return
+                            await msg.finish()
                     unloaded_list = CFG.get('unloaded_modules')
                     if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
-                    msglist.append(module_reload(module_, extra_reload_modules, base_mode))
+                    msglist.append(module_reload(module_, extra_reload_modules, base_module))
 
             locale_err = load_locale_file()
             if len(locale_err) != 0:
@@ -259,6 +259,8 @@ async def config_modules(msg: Bot.MessageSession):
                             msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
                             err_modules.remove(module_)
                             current_unloaded_modules.append(module_)
+                        else:
+                            await msg.finish()
                     else:
                         msglist.append(msg.locale.t("core.message.module.unload.not_found"))
                     continue
@@ -274,7 +276,7 @@ async def config_modules(msg: Bot.MessageSession):
                         unloaded_list.append(module_)
                         CFG.write('unloaded_modules', unloaded_list)
                 else:
-                    return
+                    await msg.finish()
 
         else:
             msglist.append(msg.locale.t("parser.superuser.permission.denied"))
@@ -294,6 +296,8 @@ async def config_modules(msg: Bot.MessageSession):
                 for x in recommend_modules_list:
                     msglist.append(msg.locale.t("core.message.module.enable.success", module=x))
                 await msg.finish('\n'.join(msglist))
+        else:
+            await msg.finish()
     else:
         return
 

@@ -139,10 +139,9 @@ if Config('openai_api_key'):
             if petal != 0:
                 chain.append(Plain(msg.locale.t('petal.message.cost', count=petal)))
 
-            await msg.send_message(chain, disable_secret_check=True)
-
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()
+            await msg.finish(chain, disable_secret_check=True)
         else:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 

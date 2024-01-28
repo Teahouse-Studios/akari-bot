@@ -163,6 +163,8 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                     if version_info:
                         await msg.finish(
                             f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                else:
+                    await msg.finish()
             elif ver not in mod_info[3]:
                 await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:

@@ -154,7 +154,7 @@ async def _(msg: Bot.MessageSession):
 @fish.regex(r'^(?:收杆|收)$')
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        return await finish_fish(msg)
+        await finish_fish(msg)
     else:
         rand_result = random.randint(1, 100)
         if Config('enable_get_petal') or rand_result < 90:

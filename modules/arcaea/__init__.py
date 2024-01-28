@@ -24,7 +24,7 @@ async def _(msg: Bot.MessageSession):
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
     resp = await get_url('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
-                         fmt='json', request_private_ip=True)
+                         fmt='json')
     if resp:
         await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
                                              url=resp['value']['url']))])
@@ -35,7 +35,7 @@ async def _(msg: Bot.MessageSession):
 @arc.command('random {{arcaea.help.random}}')
 async def _(msg: Bot.MessageSession):
     resp = await get_url('https://webapi.lowiro.com/webapi/song/showcase/',
-                         200, fmt='json', request_private_ip=True)
+                         200, fmt='json')
     if resp:
         value = resp["value"][0]
         image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
@@ -52,10 +52,10 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('free', False):
         resp = await get_url('https://webapi.lowiro.com/webapi/song/rank/free/',
-                             200, fmt='json', request_private_ip=True)
+                             200, fmt='json')
     else:
         resp = await get_url('https://webapi.lowiro.com/webapi/song/rank/paid/',
-                             200, fmt='json', request_private_ip=True)
+                             200, fmt='json')
     if resp:
         r = []
         rank = 0

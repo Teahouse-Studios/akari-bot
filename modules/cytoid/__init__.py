@@ -40,13 +40,13 @@ async def _(msg: Bot.MessageSession):
             c = qc.check(150)
         if c == 0:
             img = await get_rating(msg, query_id, query)
-            if 'path' in img:
-                await msg.send_message([Image(path=img['path'])], allow_split_image=False)
-            if 'text' in img:
-                await msg.send_message(img['text'])
             if msg.target.target_from != 'TEST|Console':
                 if img['status']:
                     qc.reset()
+            if 'path' in img:
+                await msg.finish([Image(path=img['path'])], allow_split_image=False)
+            elif 'text' in img:
+                await msg.finish(img['text'])
         else:
             res = msg.locale.t('message.cooldown', time=int(c), cd_time='150') + \
                 msg.locale.t('cytoid.message.b30.cooldown')
