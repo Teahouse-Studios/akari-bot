@@ -70,7 +70,7 @@
 
 ### 贡献
 
-如您想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)。
+如你想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)。
 
 ## 许可
 
