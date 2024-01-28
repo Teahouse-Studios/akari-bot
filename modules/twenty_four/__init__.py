@@ -51,7 +51,7 @@ def is_valid(expr):
 
 
 async def has_solution(numbers):
-    perms = list(itertools.perms(numbers))
+    perms = list(itertools.permutations(numbers))
     operators = ['+', '-', '*', '/']
     exprs = list(itertools.product(operators, repeat=3))
 
