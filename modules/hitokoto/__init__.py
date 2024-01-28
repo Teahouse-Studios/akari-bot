@@ -20,7 +20,7 @@ async def _(msg: Bot.MessageSession, msg_type: str = None):
         if msg_type in msg_types:
             url += "?c=" + msg_type
         else:
-            await msg.finish(msg.locale.t('hitokoto.message.error.type'))
+            await msg.finish(msg.locale.t('hitokoto.message.invalid'))
 
     data = await get_url(url, 200, fmt='json')
     from_who = data["from_who"] or ""

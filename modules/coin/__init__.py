@@ -38,9 +38,9 @@ async def flipCoins(count: int, msg):
                 FACE_DOWN_RATE >= 0, MAX_COIN_NUM > 0]):
         raise ConfigValueError(msg.locale.t("error.config.invalid"))
     elif count > MAX_COIN_NUM:
-        return msg.locale.t("coin.message.error.out_of_range", max=MAX_COIN_NUM)
+        return msg.locale.t("coin.message.invalid.out_of_range", max=MAX_COIN_NUM)
     elif count < 0:
-        return msg.locale.t("coin.message.error.amount")
+        return msg.locale.t("coin.message.invalid.amount")
     elif count == 0:
         return msg.locale.t("coin.message.nocoin")
 

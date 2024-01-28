@@ -16,7 +16,7 @@ async def _(msg: Bot.MessageSession, ip_address: str):
     try:
         ipaddress.ip_address(ip_address)
     except BaseException:
-        await msg.finish(msg.locale.t('ip.message.error.unknown'))
+        await msg.finish(msg.locale.t('ip.message.invalid'))
     res = await check_ip(ip_address)
     await msg.finish(await format_ip(msg, res), disable_secret_check=True)
 

@@ -40,7 +40,7 @@ async def main(msg: Bot.MessageSession):
                 if matchserip.group(3) == '0':
                     is_local_ip = True
     if is_local_ip:
-        await msg.finish(msg.locale.t('server.message.error.local_ip'))
+        await msg.finish(msg.locale.t('server.message.local_ip'))
 
     mode_list = ['JE', 'BE']
     for mode in mode_list:

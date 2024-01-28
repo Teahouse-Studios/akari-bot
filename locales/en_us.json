@@ -26,7 +26,6 @@
     "error.prompt.address": "Report this issue: ${url}",
     "error.prompt.noreport": "An error occurred while executing the command:\n${err_msg}\nThis error is not caused by the bot (e.g. the API request went wrong) and thus should not be reported to developers.",
     "error.prompt": "An error occurred while executing the command. Please report the following to developers:\n${err_msg}",
-    "error.range.invalid": "An error occurred: Invalid number range.",
     "example": "Hello world!",
     "failed": "Failed.",
     "game.help.stop": "Stop the current game.",

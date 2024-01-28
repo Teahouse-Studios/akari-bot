@@ -22,9 +22,9 @@ async def _(msg: Bot.MessageSession, dices, dc='0'):
         times = dices.partition('x')[0]
         dices = dices.partition('x')[2]
     if not times.isdigit():
-        await msg.finish(msg.locale.t('dice.message.error.N.invalid') + times)
+        await msg.finish(msg.locale.t('dice.message.N.invalid') + times)
     if not dc.isdigit():
-        await msg.finish(msg.locale.t('dice.message.error.dc.invalid') + dc)
+        await msg.finish(msg.locale.t('dice.message.dc.invalid') + dc)
     await msg.finish(await GenerateMessage(msg, dices, int(times), int(dc)))
 
 

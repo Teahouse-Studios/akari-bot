@@ -1,7 +1,7 @@
 {
     "hitokoto.help.desc": "取得一言。",
     "hitokoto.help.type": "取得一言，留空則隨機類型。",
-    "hitokoto.message.error.type": "發生錯誤：無效的類型。",
+    "hitokoto.message.invalid": "無效的類型。",
     "hitokoto.message.type": "類型：",
     "hitokoto.message.type.a": "動畫",
     "hitokoto.message.type.b": "漫畫",

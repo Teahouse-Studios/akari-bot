@@ -3,7 +3,7 @@
     "weekly.help.image": "获取中文 Minecraft Wiki 的每周页面（图片版）。",
     "weekly.help.teahouse": "获取茶馆周报。",
     "weekly.message": "本周页面：${text}",
-    "weekly.message.error.expired": "发生错误：本周页面已过期，请联系中文 Minecraft Wiki 更新。",
+    "weekly.message.expired": "提示：本周页面已过期，请联系中文 Minecraft Wiki 更新。",
     "weekly.message.image": "图片：${img}",
     "weekly.message.link": "\n图片：${img}\n\n页面链接：${article}\n每周页面：${link}"
 }

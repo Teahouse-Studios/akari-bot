@@ -3,7 +3,7 @@
     "color.help.desc": "取得色彩資訊。",
     "color.message.css": "CSS 色彩名稱：",
     "color.message.css.approximate": "最相似的 CSS 色彩名稱：",
-    "color.message.invalid": "發生錯誤：無法辨識的色彩格式。",
+    "color.message.invalid": "無法辨識的色彩格式。",
     "color.message.md": "Material Design 色彩名稱：",
     "color.message.md.approximate": "最相似的 Material Design 色彩名稱："
 }

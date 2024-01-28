@@ -46,7 +46,7 @@
     "wiki.message.headers.reset.success": "The request headers have been reset.",
     "wiki.message.headers.add.failed": "Fail to update the request headers. Please check your input.",
     "wiki.message.headers.add.success": "The request headers have been updated: ${headers}",
-    "wiki.message.id.error": "An error occurred: Page ID must be numeric.",
+    "wiki.message.id.invalid": "Page ID must be numeric.",
     "wiki.message.id.not_found": "Page with page ID ${id} not found.",
     "wiki.message.invalid_namespace": "There is no namespace named ${namespace} on this wiki. Please check your input.",
     "wiki.message.invalid_section": "This section does not exist. The following is the possible section you want (Reply to the corresponding number to select): ",

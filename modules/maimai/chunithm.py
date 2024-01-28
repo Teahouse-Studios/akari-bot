@@ -22,19 +22,22 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     result_set = []
     if constant <= 0:
         await msg.finish(msg.locale.t('maimai.message.level_invalid'))
-    if constant_max:
+    elif constant_max:
         if constant > constant_max:
-            await msg.finish(msg.locale.t('error.range.invalid'))
-        result_set = await base_level_q(constant, constant_max)
-        s = msg.locale.t(
+            data = (await total_list.get()).filter(ds=(constant_max, constant))
+            s = msg.locale.t(
+            "maimai.message.base.range", constant=round(
+                constant_max, 1), constant_max=round(
+                constant, 1)) + "\n"
+        else:
+            data = (await total_list.get()).filter(ds=(constant, constant_max))
+            s = msg.locale.t(
             "maimai.message.base.range", constant=round(
                 constant, 1), constant_max=round(
                 constant_max, 1)) + "\n"
     else:
-        if constant_max:
-            data = (await total_list.get()).filter(ds=(constant, constant_max))
-        else:
-            data = (await total_list.get()).filter(ds=constant)
+        data = (await total_list.get()).filter(ds=constant)
+        s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
 
         for music in sorted(data, key=lambda i: int(i['id'])):
             for i in music.diff:
@@ -206,4 +209,4 @@ async def _(msg: Bot.MessageSession):
             music = music_data.random()
             await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
-        await msg.finish(msg.locale.t("maimai.message.random.error"))
+        await msg.finish(msg.locale.t("maimai.message.random.failed"))

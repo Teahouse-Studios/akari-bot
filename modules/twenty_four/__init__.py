@@ -57,19 +57,19 @@ async def find_solution(numbers):
 
     for perm in perms:
         for expr in exprs:  # 穷举就完事了
-            exp = '((( {} {} {} ) {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '((({} {} {}) {} {}) {} {})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-            exp = '(( {} {} {} ) {} ( {} {} {} ))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '(({} {} {}) {} ({} {} {}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-            exp = '( {} {} ( {} {} ( {} {} {} )))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '({} {} ({} {} ({} {} {})))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-            exp = '( {} {} ( {} {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '({} {} ({} {} {}) {} {})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-    return None
+    return False
 
 
 def contains_all_numbers(expr, numbers):
@@ -96,6 +96,9 @@ play_state = {}
 
 @tf.command('{{twenty_four.help}}')
 async def _(msg: Bot.MessageSession):
+    use_markdown = False
+    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
+        use_markdown = True
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         await msg.finish(msg.locale.t('game.message.running'))
     play_state.update({msg.target.target_id: {'active': True}})
@@ -108,14 +111,16 @@ async def _(msg: Bot.MessageSession):
     if play_state[msg.target.target_id]['active']:
         play_state[msg.target.target_id]['active'] = False
         if expr.lower() in no_solution:
-            if solution is not None:
-                send = msg.locale.t('twenty_four.message.incorrect.have_solution',solution=solution)
+            if solution:
+                send = msg.locale.t('twenty_four.message.incorrect.have_solution', solution=solution)
                 if g_msg := (g_msg := await lost_petal(msg, 1)):
                     send += '\n' + g_msg
             else:
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
+            if use_markdown:
+                send.replace('*', '\*')
             await answer.finish(send)
         elif is_valid(expr):
             result = calc(expr)

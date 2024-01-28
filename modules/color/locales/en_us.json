@@ -3,7 +3,7 @@
     "color.help.desc": "Get color information.",
     "color.message.css": "CSS color name: ",
     "color.message.css.approximate": "Approximate CSS color name: ",
-    "color.message.invalid": "An error occurred: Unrecognized color format.",
+    "color.message.invalid": "Unrecognized color format.",
     "color.message.md": "Material Design color name: ",
     "color.message.md.approximate": "Approximate Material Design color name: "
 }

@@ -46,7 +46,7 @@
     "wiki.message.headers.reset.success": "已重設請求時所使用的請求標頭。",
     "wiki.message.headers.add.failed": "更新請求標頭失敗，请校對輸入。",
     "wiki.message.headers.add.success": "已更新請求時所使用的請求標頭：${headers}",
-    "wiki.message.id.error": "發生錯誤：頁面 ID 必須為數字。",
+    "wiki.message.id.invalid": "頁面 ID 必須為數字。",
     "wiki.message.id.not_found": "未找到頁面 ID 為 ${id} 的頁面。",
     "wiki.message.invalid_namespace": "此 Wiki 上沒有名為 ${namespace} 的命名空間，请校對輸入。",
     "wiki.message.invalid_section": "此章節不存在，以下是可能的章節（回覆對應序號以選中）：",

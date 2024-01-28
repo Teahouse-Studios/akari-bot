@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
     elif bid[:2].upper() == "AV":
         query = f"?aid={bid[2:]}"
     else:
-        return await msg.finish(msg.locale.t('bilibili.message.error.invalid'))
+        return await msg.finish(msg.locale.t('bilibili.message.invalid'))
     res = await get_video_info(msg, query, get_detail)
     if res:
         await msg.finish(msg.locale.t('message.cooldown', time=int(res), cd_time='30'))
