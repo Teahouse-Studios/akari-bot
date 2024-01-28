@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession, PageID: str):
         iw = match_iw.group(1)
         PageID = match_iw.group(2)
     if not PageID.isdigit():
-        await msg.finish(msg.locale.t('wiki.message.id.error'))
+        await msg.finish(msg.locale.t('wiki.message.id.invalid'))
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']

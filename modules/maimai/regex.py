@@ -86,7 +86,7 @@ async def _(msg: Bot.MessageSession):
                 music = music_data.random()
                 await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
         except ValueError:
-            await msg.finish(msg.locale.t("maimai.message.random.error"))
+            await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?段位[认認]定列?表"), desc='{maimai.help.maimai_regex.grade}')

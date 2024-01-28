@@ -8,7 +8,7 @@ from core.component import module
 from core.dirty_check import rickroll
 from core.exceptions import ConfigValueError
 from core.utils.http import download_to_cache, get_url
-from .check import safe_check
+from .check import secret_check
 
 
 appid = Config('wolfram_alpha_appid')
@@ -23,7 +23,7 @@ w = module(
 
 @w.handle('<query> {{wolframalpha.help}}')
 async def _(msg: Bot.MessageSession, query: str):
-    if await safe_check(query):
+    if await secret_check(query):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(query)
     if not appid:
@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession, query: str):
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
 async def _(msg: Bot.MessageSession, question: str):
-    if await safe_check(question):
+    if await secret_check(question):
         await msg.finish(rickroll(msg))
     url_query = urllib.parse.quote(question)
     if not appid:

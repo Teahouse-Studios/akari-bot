@@ -46,7 +46,7 @@
     "wiki.message.headers.reset.success": "已重置请求时所使用的请求标头。",
     "wiki.message.headers.add.failed": "更新请求标头失败，请检查输入。",
     "wiki.message.headers.add.success": "已更新请求时所使用的请求标头：${headers}",
-    "wiki.message.id.error": "发生错误：页面 ID 必须为数字。",
+    "wiki.message.id.invalid": "页面 ID 必须为数字。",
     "wiki.message.id.not_found": "未找到页面 ID 为 ${id} 的页面。",
     "wiki.message.invalid_namespace": "此 Wiki 上没有名为 ${namespace} 的命名空间，请检查输入。",
     "wiki.message.invalid_section": "此章节不存在，以下是可能的章节（回复对应序号以选中）：",

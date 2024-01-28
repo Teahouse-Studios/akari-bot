@@ -30,7 +30,7 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
         if match:
             tweet_id = match.group(1)
         else:
-            await msg.finish(msg.locale.t('tweet.message.error'))
+            await msg.finish(msg.locale.t('tweet.message.invalid'))
 
     if not web_render_local:
         if not web_render:

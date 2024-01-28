@@ -26,7 +26,6 @@
     "error.prompt.address": "错误汇报地址：${url}",
     "error.prompt.noreport": "执行命令时发生错误：\n${err_msg}\n此问题并非机器人程序错误（API 请求出错等），请勿将此消息报告给机器人开发者。",
     "error.prompt": "执行命令时发生错误，请报告机器人开发者：\n${err_msg}",
-    "error.range.invalid": "发生错误：无效的数字区间。",
     "example": "你好世界！",
     "failed": "失败。",
     "game.help.stop": "停止当前的游戏。",

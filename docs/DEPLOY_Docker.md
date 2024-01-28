@@ -346,7 +346,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `dice_detail_cnt= 5` - 多次投掷骰子的总数，超过则不再显示详细信息。
 
-`dice_count_limit = 10` - 多项式最多的项数。
+`dice_count_limit = 10` - 骰子表达式最多的项数。
 
 ##### maimai
 

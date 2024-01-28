@@ -3,7 +3,7 @@
     "color.help.desc": "获取颜色信息。",
     "color.message.css": "CSS 颜色名称：",
     "color.message.css.approximate": "最相似的 CSS 颜色名称：",
-    "color.message.invalid": "发生错误：无法识别的颜色格式。",
+    "color.message.invalid": "无法识别的颜色格式。",
     "color.message.md": "Material Design 颜色名称：",
     "color.message.md.approximate": "最相似的 Material Design 颜色名称："
 }

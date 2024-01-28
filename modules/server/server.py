@@ -26,7 +26,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             url = f'http://motd.wd-api.com/v1/java?host={serip}&port={port1}'
             jemotd = await get_url(url, 200)
             jejson = json.loads(jemotd)
-        except:
+        except ValueError:
             return ''
         try:
             servers.append('[JE]')
@@ -74,7 +74,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             url = f'http://motd.wd-api.com/v1/bedrock?host={serip}&port={port2}'
             bemotd = await get_url(url, 200)
             bejson = json.loads(bemotd)
-        except:
+        except ValueError:
             return ''
         try:
             unpack_data = bejson['data'].split(';')
