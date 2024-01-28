@@ -403,7 +403,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                 elif confirm.as_display(text_only=True).isdigit():
                     index = int(confirm.as_display(text_only=True)) - 1
                 else:
-                    await msg.finish()
+                    return
                 preset_message = []
                 wait_list_ = []
                 for w in wait_list:
