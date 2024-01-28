@@ -184,7 +184,9 @@ async def test(msg: Bot.MessageSession):
 > 我喜欢 GitHub。
 
 错误：
-> 我喜欢  GitHub。
+> 我喜欢··GitHub。
+>
+>（使用“·”代替空格）
 
 ## 标点符号
 ### 不要连用标点符号
