@@ -10,9 +10,9 @@ body:
       value: |
         为防止 AI 相关模块被滥用导致无法持续提供服务，故采用代币制。请填写以下表单来添加花瓣。
 
-        请注意，在申请成功后的 14 天内，若无特殊原因请勿再次申请，否则您的申请会被拒绝。
+        请注意，在申请成功后的 14 天内，若无特殊原因请勿再次申请，否则你的申请会被拒绝。
 
-        如果您认为这些模块对您用处很大，欢迎前往爱发电赞助，这些服务需要我们现实上的资金支持。
+        如果你认为这些模块对你用处很大，欢迎前往爱发电赞助，这些服务需要我们现实上的资金支持。
   - type: checkboxes
     id: preflight
     attributes:
@@ -27,7 +27,7 @@ body:
     id: platform
     attributes:
       label: 聊天平台
-      description: 您的账号所在平台。
+      description: 你的账号所在平台。
       options:
         - QQ 群
         - QQ 频道
@@ -40,7 +40,7 @@ body:
     id: user-id
     attributes:
       label: 用户 ID
-      description: 您的 QQ 号/Telegram ID/Discord handle。
+      description: 你的 QQ 号/Telegram ID/Discord handle。
       placeholder: e.g. QQ 10000/TG @Example/DC Example#1234
     validations:
       required: true
@@ -48,7 +48,7 @@ body:
     id: group-id
     attributes:
       label: 群组 ID
-      description: 您的对话 ID，可使用 `whoami` 命令查看。
+      description: 你的对话 ID，可使用 `whoami` 命令查看。
       placeholder: e.g. QQ|Group|1000000
     validations:
       required: true
@@ -56,14 +56,14 @@ body:
     id: request-petals
     attributes:
       label: 花瓣数量
-      description: 您估计想为群组申请的花瓣数量。
+      description: 你估计想为群组申请的花瓣数量。
     validations:
       required: true
   - type: textarea
     id: other
     attributes:
       label: 理由
-      description: 如果您需要较多的花瓣，请向我们说明理由，否则会被削减或拒绝。
+      description: 如果你需要较多的花瓣，请向我们说明理由，否则会被削减或拒绝。
       placeholder: 
     validations:
       required: false

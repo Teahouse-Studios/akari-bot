@@ -4,7 +4,7 @@
     "phigros.help.desc": "查询 Phigros 相关内容。",
     "phigros.help.unbind": "解绑用户。",
     "phigros.message.bind.success": "绑定成功。",
-    "phigros.message.bind.warning": "警告：您正在群组中绑定用户，这有可能会使您的云存档数据被他人篡改。请尽可能私聊绑定用户以避免这种情况。\n您可以通过重新登录来重置 SessionToken。此次命令产生的消息将在 15 秒后撤回。",
+    "phigros.message.bind.warning": "警告：你正在群组中绑定用户，这有可能会使你的云存档数据被他人篡改。请尽可能私聊绑定用户以避免这种情况。\n你可以通过重新登录来重置 SessionToken。此次命令产生的消息将在 15 秒后撤回。",
     "phigros.message.unbind.success": "解绑成功。",
     "phigros.message.user_unbound": "未绑定用户，请使用“${prefix}phigros bind”绑定一个用户。",
     "phigros.message.b19.get_failed": "获取失败，请尝试重新绑定 SessionToken 或报告开发者：\n${err}"

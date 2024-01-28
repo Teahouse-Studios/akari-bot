@@ -12,7 +12,7 @@
 
 # 简介
 
-本文将会教您如何使用 Docker 搭建自己的小可机器人。
+本文将会教你如何使用 Docker 搭建自己的小可机器人。
 
 # 使用 Docker 镜像部署
 
@@ -22,7 +22,7 @@
 
 1. 一台已经安装好 [Docker](https://www.docker.com/) 的设备。
 
-2. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
+2. 对应你需要运行的平台所需要的必要内容（环境、token 等）。
 
 请善用搜索引擎来获取详细安装教程。
 
@@ -46,9 +46,9 @@ docker pull silianz/akari-bot:dev-docker
 
 从小可的 GitHub 仓库中下载 `config` 文件夹，并放到事先准备好的目录下。
 
-进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
+进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
-> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若您拥有旧版 `cfg` 文件，机器人会自动帮您转换为 `toml` 格式。
+> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
 
 ### 配置数据库
 
@@ -66,9 +66,9 @@ docker pull silianz/akari-bot:dev-docker
 
 #### SQLite
 
-如果您不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
+如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
-如果您选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
+如果你选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
 **格式**：`db_path = "sqlite:///<相对路径>/<数据库文件名>.db"`
 
@@ -88,7 +88,7 @@ docker pull silianz/akari-bot:dev-docker
 
 ##### 基础配置
 
-如果您想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
+如果你想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
 
 1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest)。
 
@@ -159,10 +159,10 @@ docker pull silianz/akari-bot:dev-docker
 8. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
 
     ```sh
-    bin\unidbg-fetch-qsign --basePath=txlib\<您要使用的版本>
+    bin\unidbg-fetch-qsign --basePath=txlib\<你要使用的版本>
     ```
 
-    请替换 `<您要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
+    请替换 `<你要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
 
     例：`--basePath=txlib\8.9.73`
 
@@ -201,29 +201,29 @@ docker pull silianz/akari-bot:dev-docker
 
 我们在这里使用了 [Pycord](https://github.com/Pycord-Development/pycord) 来调用 Discord API。
 
-为了达到目的，您需要于 [Discord 开发者平台](https://discord.com/developers)创建一个机器人并获取 Token。
+为了达到目的，你需要于 [Discord 开发者平台](https://discord.com/developers)创建一个机器人并获取 Token。
 
-`dc_token =` - 填写您获取到的机器人 Token。
+`dc_token =` - 填写你获取到的机器人 Token。
 
 #### Telegram
 
 我们在这里使用了 [AIOGram](https://github.com/aiogram/aiogram) 来异步调用 Telegram API。
 
-为了达到目的，您需要在 Telegram 搜索 `@BotFather` 来创建机器人。
+为了达到目的，你需要在 Telegram 搜索 `@BotFather` 来创建机器人。
 
-`tg_token =` - 填写您获取到的机器人 Token。
+`tg_token =` - 填写你获取到的机器人 Token。
 
 #### Kook
 
-您需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
+你需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
 
-`kook_token =` - 填写您获取到的机器人 Token。
+`kook_token =` - 填写你获取到的机器人 Token。
 
 #### Matrix
 
-您需要自行完成账号注册与登录。
+你需要自行完成账号注册与登录。
 
-`matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
+`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
 `matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括`@`与`:`）。
 
@@ -291,7 +291,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 ##### 部署
 
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/)。
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，你需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/)。
 
 2. 下载[源代码文件](https://github.com/Teahouse-Studios/oa-web-render)，并在终端内使用 `npm install` 安装依赖。
 
@@ -306,7 +306,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 
-您亦可使用云服务产商的 Serverless 服务来部署本服务。
+你亦可使用云服务产商的 Serverless 服务来部署本服务。
 
 ##### 字段填写
 
@@ -376,7 +376,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `wolframalpha` 模块需要一些额外的参数才能正常工作。
 
-为了达到目的，您需要前往 [Wolfram|Alpha 开发者平台](https://developer.wolframalpha.com/) 注册一个账号并申请一个 Simple API，然后填写以下字段：
+为了达到目的，你需要前往 [Wolfram|Alpha 开发者平台](https://developer.wolframalpha.com/) 注册一个账号并申请一个 Simple API，然后填写以下字段：
 
 `wolfram_alpha_appid =` - Wolfram|Alpha 的 APPID。
 
@@ -404,7 +404,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 #### 自定义确认词及命令前缀
 
-您可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix` 来增加（或删除）可使用的默认命令前缀。
+你可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix` 来增加（或删除）可使用的默认命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
@@ -416,7 +416,7 @@ pip3 install matrix-nio[e2e] ; PIP
 docker run \
 > -d \
 > -v /path/to/akari-bot/config/config.toml:/akari-bot/config/config.toml \ # 请将路径修改成对应的位置。
-> -p 11451:11451  \ # WebSocket 服务器的端口，请根据您的配置文件更改。
+> -p 11451:11451  \ # WebSocket 服务器的端口，请根据你的配置文件更改。
 > -p 3306:3306  \ # 用于对接 mysql 数据库。（可选）
 > --name=akari-bot  \ # 指定容器名称。
 > bakabaka9/akari-bot
@@ -424,25 +424,25 @@ docker run \
 
 如果终端中返回了 `long_tag` 类型的容器 `ID`, 证明容器已创建完毕，这时我们可以执行 `docker logs akari-bot` 查看小可的日志。
 
-如果没有任何报错，恭喜您！您的小可机器人已经搭建成功！
+如果没有任何报错，恭喜你！你的小可机器人已经搭建成功！
 
 # 获取帮助
 
-到此，恭喜您成功部署了属于您的小可机器人！
+到此，恭喜你成功部署了属于你的小可机器人！
 
-如果您在部署的过程中还有其他疑问，您可以向我们发送 Issue 来请求帮助。
+如果你在部署的过程中还有其他疑问，你可以向我们发送 Issue 来请求帮助。
 
-> 请注意，您应该具备基本的提问技巧。
+> 请注意，你应该具备基本的提问技巧。
 > 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。
 
 # 开发
 
-如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` Git 钩子，它可以在提交 Commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 PEP8 格式化等。
+如果你想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` Git 钩子，它可以在提交 Commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 PEP8 格式化等。
 
 # 疑难解答
 
 以下的疑难解答部分可以解决小部分在自搭建时遇到的问题。
 
-在排错之前，请确保您已经详细地阅读了文档内所有的注释说明。
+在排错之前，请确保你已经详细地阅读了文档内所有的注释说明。
 
-疑难解答将会分为不同方面，如果您有更好的疑难解答欢迎提交 PR。
+疑难解答将会分为不同方面，如果你有更好的疑难解答欢迎提交 PR。

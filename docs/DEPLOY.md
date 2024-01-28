@@ -13,7 +13,7 @@
 
 # 简介
 
-本文将会教您如何搭建自己的小可机器人。
+本文将会教你如何搭建自己的小可机器人。
 
 # 正常部署
 
@@ -25,7 +25,7 @@
 
 2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
 
-3. 对应您需要运行的平台所需要的必要内容（环境、token 等）。
+3. 对应你需要运行的平台所需要的必要内容（环境、token 等）。
 
 ## 下载源代码
 
@@ -37,7 +37,7 @@
     git clone https://github.com/Teahouse-studios/akari-bot.git
     ```
 
-    直连 GitHub 的克隆速度较慢，在特殊情况下，您可以使用镜像站进行克隆：
+    直连 GitHub 的克隆速度较慢，在特殊情况下，你可以使用镜像站进行克隆：
 
     ```sh
     git clone https://gitclone.com/github.com/Teahouse-studios/akari-bot.git
@@ -57,11 +57,11 @@
 
 **方式二：直接下载代码**
 
-1. 您可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
+1. 你可以下载 [master 分支的最新代码](https://github.com/Teahouse-Studios/akari-bot/archive/refs/heads/master.zip)。
 
     > 由于无法保证 Release 版本的稳定性，我们不再提供 Release 版本的下载。
 
-    > 不建议直接下载代码部署，因为这样您将无法使用 git 或是使用机器人内置的命令更新代码。
+    > 不建议直接下载代码部署，因为这样你将无法使用 git 或是使用机器人内置的命令更新代码。
 
 2. 解压源代码，并在文件夹中打开终端。
 
@@ -69,7 +69,7 @@
 
 **方式一：使用 [Poetry](https://python-poetry.org/)**
 
-如果您已经安装了 Poetry，您可以跳过以下安装步骤。
+如果你已经安装了 Poetry，你可以跳过以下安装步骤。
 
 1. 打开 Powershell，并执行以下指令来安装 Poetry：
 
@@ -85,7 +85,7 @@
     curl -sSL "https://install.python-poetry.org" | python3 -
     ```
 
-    > 若您使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
+    > 若你使用了 Microsoft Store 或 pyenv-windows 安装 Python，请将 `py` 替换为 `python`。
 
     > 安装 Poetry 前请**务必**检查系统环境变量中是否存在多个 Python Executable Path（Python 可执行路径）并及时清除，否则安装 Poetry 后可能会出现 Python 环境混乱导致无法正常加载依赖的情况。
 
@@ -105,9 +105,9 @@
 
     请善用搜索引擎寻找更改 PATH 的方法。
 
-    在添加到 PATH 之后，您通常需要重启终端，甚至整个电脑才能使其生效。
+    在添加到 PATH 之后，你通常需要重启终端，甚至整个电脑才能使其生效。
 
-    您可以通过 `poetry --version` 确认安装是否有效。
+    你可以通过 `poetry --version` 确认安装是否有效。
 
 3. 在安装完 Poetry 后，请执行以下指令：
 
@@ -117,7 +117,7 @@
 
 **方式二：使用 pip**
 
-如果您不想使用 Poetry，您可以使用 pip 来安装依赖：
+如果你不想使用 Poetry，你可以使用 pip 来安装依赖：
 
 ```sh
 pip install -r requirements.txt
@@ -127,9 +127,9 @@ pip install -r requirements.txt
 
 ## 配置
 
-进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置您所需要的内容。
+进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
-> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若您拥有旧版 `cfg` 文件，机器人会自动帮您转换为 `toml` 格式。
+> 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
 
 ### 配置数据库
 
@@ -147,9 +147,9 @@ pip install -r requirements.txt
 
 #### SQLite
 
-如果您不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
+如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
-如果您选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
+如果你选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
 **格式**：`db_path = "sqlite:///<相对路径>/<数据库文件名>.db"`
 
@@ -169,7 +169,7 @@ pip install -r requirements.txt
 
 ##### 基础配置
 
-如果您想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
+如果你想使用 Docker 部署 go-cqhttp，请转到[使用 Docker](https://docs.go-cqhttp.org/guide/docker.html)。
 
 1. 从 go-cqhttp 的官方仓库上下载最新的 [Release](https://github.com/Mrs4s/go-cqhttp/releases/latest)。
 
@@ -244,10 +244,10 @@ pip install -r requirements.txt
 8. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
 
     ```sh
-    bin\unidbg-fetch-qsign --basePath=txlib\<您要使用的版本>
+    bin\unidbg-fetch-qsign --basePath=txlib\<你要使用的版本>
     ```
 
-    请替换 `<您要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
+    请替换 `<你要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
 
     例：`--basePath=txlib\8.9.73`
 
@@ -286,29 +286,29 @@ pip install -r requirements.txt
 
 我们在这里使用了 [Pycord](https://github.com/Pycord-Development/pycord) 来调用 Discord API。
 
-为了达到目的，您需要于 [Discord 开发者平台](https://discord.com/developers)创建一个机器人并获取 Token。
+为了达到目的，你需要于 [Discord 开发者平台](https://discord.com/developers)创建一个机器人并获取 Token。
 
-`dc_token =` - 填写您获取到的机器人 Token。
+`dc_token =` - 填写你获取到的机器人 Token。
 
 #### Telegram
 
 我们在这里使用了 [AIOGram](https://github.com/aiogram/aiogram) 来异步调用 Telegram API。
 
-为了达到目的，您需要在 Telegram 搜索 `@BotFather` 来创建机器人。
+为了达到目的，你需要在 Telegram 搜索 `@BotFather` 来创建机器人。
 
-`tg_token =` - 填写您获取到的机器人 Token。
+`tg_token =` - 填写你获取到的机器人 Token。
 
 #### Kook
 
-您需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
+你需要在 [Kook 开发者平台](https://developer.kookapp.cn/)创建一个机器人并获取 Token。
 
-`kook_token =` - 填写您获取到的机器人 Token。
+`kook_token =` - 填写你获取到的机器人 Token。
 
 #### Matrix
 
-您需要自行完成账号注册与登录。
+你需要自行完成账号注册与登录。
 
-`matrix_homeserver =` - 填写您使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
+`matrix_homeserver =` - 填写你使用的 Matrix server URL（只包括协议与主机，最后无需添加`/`）。
 
 `matrix_user =` - 填写机器人的[完全限定用户 ID](https://spec.matrix.org/v1.9/appendices/#user-identifiers)（包括`@`与`:`）。
 
@@ -376,7 +376,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 ##### 部署
 
-1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，您需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/)。
+1. 此服务使用 JavaScript 编写，由 `Puppeteer` 驱动，为此，你需要安装好 [Node.js](https://nodejs.org/) 环境，以及安装好 [Chrome](https://www.google.cn/intl/zh-CN/chrome/)。
 
 2. 下载[源代码文件](https://github.com/Teahouse-Studios/oa-web-render)，并在终端内使用 `npm install` 安装依赖。
 
@@ -391,7 +391,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 4. 于终端内，使用 `node ./src/index.js` 来开启服务。服务无任何内容输出。
 
-您亦可使用云服务产商的 Serverless 服务来部署本服务。
+你亦可使用云服务产商的 Serverless 服务来部署本服务。
 
 ##### 字段填写
 
@@ -461,7 +461,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 `wolframalpha` 模块需要一些额外的参数才能正常工作。
 
-为了达到目的，您需要前往 [Wolfram|Alpha 开发者平台](https://developer.wolframalpha.com/) 注册一个账号并申请一个 Simple API，然后填写以下字段：
+为了达到目的，你需要前往 [Wolfram|Alpha 开发者平台](https://developer.wolframalpha.com/) 注册一个账号并申请一个 Simple API，然后填写以下字段：
 
 `wolfram_alpha_appid =` - Wolfram|Alpha 的 APPID。
 
@@ -489,7 +489,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 #### 自定义确认词及命令前缀
 
-您可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix` 来增加（或删除）可使用的默认命令前缀。
+你可以通过编辑配置文件中的 `confirm_command` 来添加（或删除）机器人在部分场景下询问用户是否继续的确认词，编辑 `command_prefix` 来增加（或删除）可使用的默认命令前缀。
 
 `command_prefix` 首位将被用作帮助文档中默认展示的前缀。
 
@@ -516,35 +516,35 @@ pip3 install matrix-nio[e2e] ; PIP
 
 ### 运行测试控制台
 
-测试控制台包括一个基础的运行环境，您可以在测试控制台内使用命令进行基础的机器人交互。
+测试控制台包括一个基础的运行环境，你可以在测试控制台内使用命令进行基础的机器人交互。
 
 测试控制台仅支持回复文本消息和图片，其它消息元素将被忽略或转换为文本或图片来显示。
 
-您可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
+你可能需要使用 `poetry shell` 切换 poetry 的虚拟环境来调用先前安装的依赖。
 
 1. 于 `console.py` 所在目录，打开终端。
 2. 在终端内输入 `python console.py` 来启动测试控制台。
 
 # 获取帮助
 
-到此，恭喜您成功部署了属于您的小可机器人！
+到此，恭喜你成功部署了属于你的小可机器人！
 
-如果您在部署的过程中还有其他疑问，您可以向我们发送 Issue 来请求帮助。
+如果你在部署的过程中还有其他疑问，你可以向我们发送 Issue 来请求帮助。
 
-> 请注意，您应该具备基本的提问技巧。
+> 请注意，你应该具备基本的提问技巧。
 > 有关如何提问，请阅读[《提问的智慧》](https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md)。
 
 # 开发
 
-如果您想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` Git 钩子，它可以在提交 Commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 PEP8 格式化等。
+如果你想为小可开发模块，建议在开发之前执行 `pre-commit install` 来安装 `pre-commit` Git 钩子，它可以在提交 Commit 前执行一些操作。如：同步 poetry.lock 至 requirements.txt、自动 PEP8 格式化等。
 
 # 疑难解答
 
 以下的疑难解答部分可以解决小部分在自搭建时遇到的问题。
 
-在排错之前，请确保您已经详细地阅读了文档内所有的注释说明。
+在排错之前，请确保你已经详细地阅读了文档内所有的注释说明。
 
-疑难解答将会分为不同方面，如果您有更好的疑难解答欢迎提交 PR。
+疑难解答将会分为不同方面，如果你有更好的疑难解答欢迎提交 PR。
 
 ## 安装依赖
 
@@ -552,7 +552,7 @@ pip3 install matrix-nio[e2e] ; PIP
 
 该情况可能只会发生在 Windows 系统下。
 
-您可能没有安装好 Microsoft C++ 生成工具。
+你可能没有安装好 Microsoft C++ 生成工具。
 
 1. 下载 [Microsoft C++ 生成工具](https://visualstudio.microsoft.com/zh-hans/visual-cpp-build-tools/)。
 
