@@ -224,15 +224,16 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                 if random_mode:
                     if (g_msg := await gained_petal(wait, 1)):
                         send_ += '\n' + g_msg
-                await wait.send_message(send_)
                 play_state[msg.target.target_id]['active'] = False
+                await wait.finish(send_)
 
     async def timer(start):
         if play_state[msg.target.target_id]['active']:
             if datetime.now().timestamp() - start > 60 * set_timeout:
-                await msg.send_message(
-                    msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.target_id]["answer"]))
                 play_state[msg.target.target_id]['active'] = False
+                await msg.finish(
+                    msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.target_id]["answer"]))
+
             else:
                 await asyncio.sleep(1)  # 防冲突
                 await timer(start)
@@ -248,12 +249,12 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                                               Image(newpath), Plain(msg.locale.t('chemical_code.message.captcha',
                                                                                  times=set_timeout))], timeout=3600, append_instruction=False)
         if play_state[msg.target.target_id]['active']:
+            play_state[msg.target.target_id]['active'] = False
             if result.as_display(text_only=True) == csr['name']:
                 send_ = msg.locale.t('chemical_code.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send_ += '\n' + g_msg
-                await result.send_message(send_)
+                await result.finish(send_)
             else:
-                await result.send_message(
+                await result.finish(
                     msg.locale.t('chemical_code.message.incorrect', answer=play_state[msg.target.target_id]["answer"]))
-            play_state[msg.target.target_id]['active'] = False

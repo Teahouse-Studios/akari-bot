@@ -106,6 +106,7 @@ async def _(msg: Bot.MessageSession):
     answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=3600, append_instruction=False)
     expr = answer.as_display(text_only=True)
     if play_state[msg.target.target_id]['active']:
+        play_state[msg.target.target_id]['active'] = False
         if expr.lower() in no_solution:
             if has_solution_flag:
                 send = msg.locale.t('twenty_four.message.incorrect.have_solution')
@@ -115,19 +116,18 @@ async def _(msg: Bot.MessageSession):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
-            await answer.send_message(send)
+            await answer.finish(send)
         elif is_valid(expr):
             result = calc(expr)
             if result == 24 and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
-                await answer.send_message(send)
+                await answer.finish(send)
             else:
-                await answer.send_message(msg.locale.t('twenty_four.message.incorrect'))
+                await answer.finish(msg.locale.t('twenty_four.message.incorrect'))
         else:
-            await answer.send_message(msg.locale.t('twenty_four.message.incorrect.error'))
-        play_state[msg.target.target_id]['active'] = False
+            await answer.finish(msg.locale.t('twenty_four.message.incorrect.error'))
 
 
 @tf.command('stop {{game.help.stop}}')
@@ -136,8 +136,8 @@ async def s(msg: Bot.MessageSession):
     if state:
         if state['active']:
             play_state[msg.target.target_id]['active'] = False
-            await msg.send_message(msg.locale.t('game.message.stop'))
+            await msg.finish(msg.locale.t('game.message.stop'))
         else:
-            await msg.send_message(msg.locale.t('game.message.stop.none'))
+            await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
-        await msg.send_message(msg.locale.t('game.message.stop.none'))
+        await msg.finish(msg.locale.t('game.message.stop.none'))

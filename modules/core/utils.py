@@ -85,7 +85,7 @@ async def config_gu(msg: Bot.MessageSession):
         if user == msg.target.sender_id:
             confirm = await msg.wait_confirm(msg.locale.t("core.message.admin.remove.confirm"))
             if not confirm:
-                return
+                await msg.finish()
         if user:
             if msg.data.remove_custom_admin(user):
                 await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
@@ -234,6 +234,8 @@ async def _(msg: Bot.MessageSession):
     if confirm:
         await msg.send_message(msg.locale.t('core.message.leave.success'))
         await msg.call_api('set_group_leave', group_id=msg.session.target)
+    else:
+        await msg.finish()
 
 
 token = module('token', base=True)
