@@ -58,7 +58,8 @@ attrs = "^23.1.0"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 python-whois = "^0.8.0"
-
+enkanetwork-py = "^1.4.5"
+pydantic = "1.10.0"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
