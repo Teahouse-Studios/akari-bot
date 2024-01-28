@@ -50,7 +50,7 @@ def is_valid(expr):
     return True
 
 
-async def has_solution(numbers):
+async def find_solution(numbers):
     perms = list(itertools.permutations(numbers))
     operators = ['+', '-', '*', '/']
     exprs = list(itertools.product(operators, repeat=3))
@@ -59,17 +59,17 @@ async def has_solution(numbers):
         for expr in exprs:  # 穷举就完事了
             exp = '((( {} {} {} ) {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
-                return True
+                return exp
             exp = '(( {} {} {} ) {} ( {} {} {} ))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
-                return True
+                return exp
             exp = '( {} {} ( {} {} ( {} {} {} )))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
-                return True
+                return exp
             exp = '( {} {} ( {} {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
-                return True
-    return False
+                return exp
+    return None
 
 
 def contains_all_numbers(expr, numbers):
@@ -101,15 +101,15 @@ async def _(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
-    has_solution_flag = await has_solution(numbers)
+    solution = await find_solution(numbers)
 
     answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=3600, append_instruction=False)
     expr = answer.as_display(text_only=True)
     if play_state[msg.target.target_id]['active']:
         play_state[msg.target.target_id]['active'] = False
         if expr.lower() in no_solution:
-            if has_solution_flag:
-                send = msg.locale.t('twenty_four.message.incorrect.have_solution')
+            if solution is not None:
+                send = msg.locale.t('twenty_four.message.incorrect.have_solution',solution=solution)
                 if g_msg := (g_msg := await lost_petal(msg, 1)):
                     send += '\n' + g_msg
             else:

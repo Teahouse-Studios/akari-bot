@@ -53,8 +53,6 @@ async def _(msg: Bot.MessageSession, question: str):
     url = f"http://api.wolframalpha.com/v1/result?appid={appid}&i={url_query}&units=metric"
     try:
         data = await get_url(url, 200)
-        if await check_bool(data):
-            await msg.finish(rickroll(msg))
         await msg.finish(data)
     except ValueError as e:
         if str(e).startswith('501'):
