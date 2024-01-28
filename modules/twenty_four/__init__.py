@@ -53,20 +53,20 @@ def is_valid(expr):
 async def find_solution(numbers):
     perms = list(itertools.permutations(numbers))
     operators = ['+', '-', '*', '/']
-    exprs = list(itertools.product(operators, repeat=3))
+    exprs = list(itertools.product(operators, repeat=4))
 
     for perm in perms:
         for expr in exprs:  # 穷举就完事了
-            exp = '((({} {} {}) {} {}) {} {})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '(({}{}{}){}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-            exp = '(({} {} {}) {} ({} {} {}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '({}{}{}){}({}{}{})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-            exp = '({} {} ({} {} ({} {} {})))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '{}{}({}{}({}{}{}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-            exp = '({} {} ({} {} {}) {} {})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
     return False

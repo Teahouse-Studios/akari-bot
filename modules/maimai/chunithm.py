@@ -47,7 +47,6 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
                                    diff_label[i],
                                    music['level'][i]))
 
-        s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"
     if len(result_set) == 0:
@@ -138,7 +137,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
 
 
 @chu.command('id <id> [<diff>] {{maimai.help.id}}')
-@chu.command('song <song> [<diff>] {{chunithm.help.song}}')
+@chu.command('song <song> [<diff>] {{maimai.help.song}}')
 async def _(msg: Bot.MessageSession, song: str, diff: str = None):
     if '<id>' in msg.parsed_msg:
         sid = msg.parsed_msg['<id>']
