@@ -1,4 +1,4 @@
-﻿{
+{
     "chunithm.help.b30": "查询 CHUNITHM 用户的 B30 列表。（Beta 版）",
     "chunithm.help.desc": "查询 CHUNITHM 相关内容。",
     "chunithm.message.b30.text_prompt": "以下为 ${user} (Rating ${rating}) 的 Best30 列表：",
