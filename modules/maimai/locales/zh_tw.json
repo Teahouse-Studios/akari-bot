@@ -56,7 +56,7 @@
     "maimai.message.new": "以下為目前版本最新歌曲：",
     "maimai.message.pages": "（第 ${page} 頁，共 ${total_pages} 頁）",
     "maimai.message.plate": "你的 ${plate} 剩餘進度如下：\nBasic 剩餘 ${song_remain_basic} 首，\nAdvanced 剩餘 ${song_remain_advanced} 首，\nExpert 剩餘 ${song_remain_expert} 首，\nMaster 剩餘 ${song_remain_master} 首",
-    "maimai.message.plate.completed": "你已完成${plate}的所有進度。",
+    "maimai.message.plate.completed": "你已完成 ${plate} 的所有進度。",
     "maimai.message.plate.difficult": "你還有 ${song_remain} 首等級大於 13+ 的曲目。",
     "maimai.message.plate.difficult.completed": "你已完成所有等級大於 13+ 的曲目。",
     "maimai.message.plate.difficult.last": "剩餘等級大於 13+ 的曲目：",
