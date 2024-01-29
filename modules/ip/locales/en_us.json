@@ -1,6 +1,6 @@
 {
     "ip.message.asn": "ASN: ",
-    "ip.message.error.unknown": "An error occurred: Invalid IP address. Please check your input.",
+    "ip.message.invalid": "Invalid IP address. Please check your input.",
     "ip.message.ip_property": "Address",
     "ip.message.ip_property.global": "Global",
     "ip.message.ip_property.ipv4_mapped": "IPv4 mapping",
