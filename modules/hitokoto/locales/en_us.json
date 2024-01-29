@@ -1,7 +1,7 @@
 {
     "hitokoto.help.desc": "Get Hitokoto.",
     "hitokoto.help.type": "Get Hitokoto, leave empty to random type.",
-    "hitokoto.message.error.type": "An error occurred: Invalid type.",
+    "hitokoto.message.invalid": "Invalid type.",
     "hitokoto.message.type": "Type: ",
     "hitokoto.message.type.a": "Anime",
     "hitokoto.message.type.b": "Comic",
