@@ -1,5 +1,5 @@
 {
-    "dice.help": "投擲指定骰子，可指定投骰次數與 dc 判斷判定。",
+    "dice.help": "投擲指定骰子，可指定投骰次數與 DC 判斷判定。",
     "dice.help.desc": "隨機骰子。",
     "dice.help.option.dc": "在每一次投擲輸出結果時進行判定，若結果符合 DC 則判定成功，否則判定失敗。",
     "dice.help.option.klx": "表示輸出其最小之 x 個骰子點數之和。",
