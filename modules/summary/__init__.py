@@ -92,6 +92,6 @@ async def _(msg: Bot.MessageSession):
             output = m['content']
         output = output.replace("<吃掉了>", msg.locale.t("check.redacted"))
         output = output.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
-        await msg.finish(output, disable_secret_check=True)
+        await msg.finish(output)
     else:
         await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))

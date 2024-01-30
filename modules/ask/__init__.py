@@ -141,7 +141,7 @@ if Config('openai_api_key'):
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()
-            await msg.finish(chain, disable_secret_check=True)
+            await msg.finish(chain)
         else:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
 
