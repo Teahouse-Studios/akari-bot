@@ -6,6 +6,7 @@ import ujson as json
 
 from config import CFG
 from core.background_tasks import init_background_task
+from core.extra.scheduler import load_extra_schedulers
 from core.loader import load_modules, ModulesManager
 from core.logger import Logger, bot_name
 from core.queue import JobQueue
@@ -27,9 +28,8 @@ async def init_async(start_scheduler=True) -> None:
     init_background_task()
     if start_scheduler:
         if not Info.subprocess:
-            from core.extra.scheduler import load_extra_schedulers
             load_extra_schedulers()
-            await JobQueue.secret_append_ip()
+        await JobQueue.secret_append_ip()
         Scheduler.start()
     logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
     await load_secret()
