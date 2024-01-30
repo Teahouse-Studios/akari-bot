@@ -294,7 +294,10 @@ upd = module('update', required_superuser=True, base=True)
 
 
 def pull_repo():
-    return os.popen('git pull', 'r').read()[:-1]
+    pull_repo_result = os.popen('git pull', 'r').read()[:-1]
+    if pull_repo_result == '':
+        return False
+    return pull_repo_result
 
 
 def update_dependencies():
@@ -312,7 +315,7 @@ async def update_bot(msg: Bot.MessageSession):
     confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
     if confirm:
         pull_repo_result = pull_repo()
-        if pull_repo_result != '':
+        if pull_repo_result:
             await msg.send_message(pull_repo_result)
         else:
             await msg.send_message(msg.locale.t("core.message.update.failed"))

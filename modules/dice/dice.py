@@ -158,7 +158,7 @@ class Dice(DiceItemBase):
                 if use_markdown:
                     if i in indexes:
                         new_results.append(dice_results[i])
-                        output_buffer += f"**{str(dice_results[i])}**"
+                        output_buffer += f"*{str(dice_results[i])}*"
                     else:                
                         output_buffer += f"{str(dice_results[i])}"
                 else:

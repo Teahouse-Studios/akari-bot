@@ -1,29 +1,27 @@
 import os
 import sys
 
+import asyncio
+import traceback
+import aioconsole
+
+from bot import init_bot
 from config import Config
+from core.builtins import PrivateAssets, EnableDirtyWordCheck
+from core.console.message import MessageSession
+from core.extra.scheduler import load_extra_schedulers
+from core.logger import Logger
+from core.parser.message import parser
+from core.types import MsgInfo, Session
+from core.utils.bot import init_async
+from database import BotDBUtil, session
+from database.tables import DBVersion
 
 if not Config('db_path'):
     raise AttributeError('Wait! You need to fill a valid database address into the config.cfg "db_path" field\n'
                          'Example: \ndb_path = sqlite:///database/save.db\n'
                          '(Also you can fill in the above example directly,'
                          ' bot will automatically create a SQLite database in the "./database/save.db")')
-
-from database import BotDBUtil, session
-from database.tables import DBVersion
-
-import asyncio
-import traceback
-import aioconsole
-
-from bot import init_bot
-from core.extra.scheduler import load_extra_schedulers
-from core.builtins import PrivateAssets, EnableDirtyWordCheck
-from core.types import MsgInfo, Session
-from core.console.message import MessageSession
-from core.parser.message import parser
-from core.utils.bot import init_async
-from core.logger import Logger
 
 query_dbver = session.query(DBVersion).first()
 if not query_dbver:
