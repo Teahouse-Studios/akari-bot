@@ -72,7 +72,7 @@
     "wiki.message.redlink.enable": "Enabled to return the edit link if the page does not exist.",
     "wiki.message.redlink.not_found": "(Page does not exist)",
     "wiki.message.redlink.not_found.uneditable": "The page [${title}] does not exist.",
-    "wiki.message.rollback": "Unable to send forward message. Auto-rolled back to traditional style.",
+    "wiki.message.rollback": "Unable to send forward message. Automatically revert to traditional style.",
     "wiki.message.search": "Search results: ",
     "wiki.message.search.prompt": "Reply with the number to query the corresponding page.",
     "wiki.message.section": "Section",
