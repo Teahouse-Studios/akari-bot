@@ -88,7 +88,7 @@ async def feedback_news():
     for section in sections:
         try:
             alist = get_stored_list('scheduler', 'mcfeedbacknews')
-            get = await get_url(section['url'], 200, attempt=1, logging_err_resp=False)
+            get = await get_url(section['url'], 200, attempt=1, request_private_ip=True, logging_err_resp=False)
             res = json.loads(get)
             articles = []
             for i in res['articles']:

@@ -177,7 +177,7 @@ class WikiLib:
                 break
 
         try:
-            return await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local,
+            await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local,
                                  cookies=cookies)
 
         except Exception as e:
@@ -257,7 +257,8 @@ class WikiLib:
                 return WikiStatus(available=False, value=False, message=self.locale.t(
                     "wiki.message.utils.wikilib.get_failed.timeout"))
             except Exception as e:
-                Logger.debug(traceback.format_exc())
+                if Config('debug'):
+                    Logger.error(traceback.format_exc())
                 if e.args == (403,):
                     message = self.locale.t("wiki.message.utils.wikilib.get_failed.forbidden")
                 elif not re.match(r'^(https?://).*', self.url):
@@ -280,7 +281,8 @@ class WikiLib:
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
-            Logger.debug(traceback.format_exc())
+            if Config('debug'):
+                Logger.error(traceback.format_exc())
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
             if self.url.find('moegirl.org.cn') != -1:
                 message += '\n' + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
@@ -580,7 +582,6 @@ class WikiLib:
                                 invalid_namespace = False
 
                                 async def search_something(srwhat):
-                                    Logger.debug(traceback.format_exc())
                                     try:
                                         research = await self.research_page(page_info.title, namespace, srwhat=srwhat)
                                         if srwhat == 'text':
@@ -590,7 +591,8 @@ class WikiLib:
                                             invalid_namespace = research[1]
                                         return research
                                     except Exception:
-                                        Logger.debug(traceback.format_exc())
+                                        if Config('debug'):
+                                            Logger.error(traceback.format_exc())
                                         return None, False
 
                                 searches = []

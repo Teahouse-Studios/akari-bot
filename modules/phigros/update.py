@@ -40,7 +40,10 @@ async def update_assets():
     try:
         update = await get_url(json_url, 200)
     except TimeoutError:
-        update = await get_url(json_url_mirror, 200)
+        try:
+            update = await get_url(json_url_mirror, 200)
+        except:
+            return False
     update_json = json.loads(update)
     for song in update_json:
         diff = {}
@@ -76,6 +79,8 @@ async def update_assets():
                     data[row[0].lower()]['AT'] = row[4]
 
         os.remove(download_file)
+    else:
+        return False
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(json.dumps(data, indent=4, ensure_ascii=False))
     shutil.move(file_path, rating_path)
