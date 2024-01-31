@@ -13,7 +13,7 @@ no_solution = ['无解', '無解', 'none', 'n/a']
 def calc(expr):
     expr = expr.replace("\\", "")
     try:
-        return simple_eval(expr)
+        return round(simple_eval(expr))
     except BaseException:
         return None
 
