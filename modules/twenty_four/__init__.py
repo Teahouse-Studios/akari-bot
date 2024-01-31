@@ -13,7 +13,7 @@ no_solution = ['无解', '無解', 'none', 'n/a']
 def calc(expr):
     expr = expr.replace("\\", "")
     try:
-        return round(simple_eval(expr))
+        return simple_eval(expr)
     except Exception:
         return None
 
@@ -124,7 +124,8 @@ async def _(msg: Bot.MessageSession):
             await answer.finish(send)
         elif check_valid(expr):
             result = calc(expr)
-            if result == 24 and contains_all_numbers(expr, numbers):
+            if (result == 24 or 24 - result < 1e-13 ) \
+                and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
