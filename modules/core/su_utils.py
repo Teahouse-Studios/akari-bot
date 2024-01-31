@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from config import Config, CFG
 from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
-from core.exceptions import TestException
+from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
 from core.parser.message import remove_temp_ban
@@ -480,7 +480,10 @@ if Config('enable_eval'):
 
     @_eval.command('<display_msg>')
     async def _(msg: Bot.MessageSession):
-        await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
+        try:
+            await msg.finish(str(eval(msg.parsed_msg['<display_msg>'], {'msg': msg})))
+        except Exception as e:
+            raise NoReportException(e)
 
 
 cfg_ = module('config', required_superuser=True, alias='cfg', base=True)
