@@ -88,7 +88,7 @@ async def get_target(target_id: str):
         'commandPrefix': command_prefix,
         'ban': ban,
         'typoCheck': typo_check,
-        'diceDcReversed': dice_dc_reversed,
+        'diceDCReversed': dice_dc_reversed,
         'wiki': {
             'fandomAddon': wiki_fandom_addon,
             'headers': wiki_headers,
