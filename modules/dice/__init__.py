@@ -2,12 +2,12 @@ from core.builtins import Bot
 from core.component import module
 from .dice import GenerateMessage
 
-dice = module('dice', alias='rd', developers=['Light-Beacon'], desc='{dice.help.desc}', )
+dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon'], desc='{dice.help.desc}')
 
 
 @dice.command('<dices> [<dc>] {{dice.help}}',
               options_desc={
-                  '{dice.help.option.polynomial.title}': '{dice.help.option.polynomial}',
+                  '{dice.help.option.expression.title}': '{dice.help.option.expression}',
                   'n': '{dice.help.option.n}',
                   'm': '{dice.help.option.m}',
                   'kx': '{dice.help.option.kx}',

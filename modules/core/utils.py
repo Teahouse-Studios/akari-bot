@@ -167,7 +167,7 @@ async def _(msg: Bot.MessageSession):
 
 setup = module('setup', base=True, required_admin=True, desc='{core.help.setup.desc}', alias='toggle')
 
-"""
+
 @setup.command('typing {{core.help.setup.typing}}')
 async def _(msg: Bot.MessageSession):
     target = BotDBUtil.SenderInfo(msg.target.sender_id)
@@ -178,9 +178,8 @@ async def _(msg: Bot.MessageSession):
     else:
         target.edit('disable_typing', False)
         await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
-"""
 
-
+'''
 @setup.command('check {{core.help.setup.check}}')
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
@@ -190,7 +189,7 @@ async def _(msg: Bot.MessageSession):
     else:
         msg.data.edit_option('typo_check', True)
         await msg.finish(msg.locale.t('core.message.setup.check.disable'))
-
+'''
 
 @setup.command('timeoffset <offset> {{core.help.setup.timeoffset}}')
 async def _(msg: Bot.MessageSession, offset: str):
