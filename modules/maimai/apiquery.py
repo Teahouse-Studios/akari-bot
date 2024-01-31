@@ -1,5 +1,4 @@
 import re
-import traceback
 
 from core.builtins import Bot, Plain, Image as BImage
 from core.utils.image import msgchain2image

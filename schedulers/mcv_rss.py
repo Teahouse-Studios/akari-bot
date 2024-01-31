@@ -51,7 +51,7 @@ async def get_article(version, use_local=True):
     get = (web_render_local if use_local else web_render) + 'source?url=' + quote(link)
 
     try:
-        html = await get_url(get, attempt=1)
+        html = await get_url(get, attempt=1, request_private_ip=True, logging_err_resp=False)
 
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -61,7 +61,8 @@ async def get_article(version, use_local=True):
         else:
             return link, title.text
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
         return '', ''
 
 
@@ -73,7 +74,7 @@ async def mcv_rss():
     url = 'https://piston-meta.mojang.com/mc/game/version_manifest.json'
     try:
         verlist = get_stored_list('scheduler', 'mcv_rss')
-        file = json.loads(await get_url(url, attempt=1))
+        file = json.loads(await get_url(url, attempt=1, logging_err_resp=False))
         release = file['latest']['release']
         snapshot = file['latest']['snapshot']
         time_release = 0
@@ -123,7 +124,8 @@ async def mcv_rss():
                     get_stored_news_title.append(article[1])
                     update_stored_list('scheduler', 'mcnews', get_stored_news_title)
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=180))
@@ -140,14 +142,16 @@ async def mcbv_rss():
             verlist.append(version)
             update_stored_list('scheduler', 'mcbv_rss', verlist)
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcv_jira_rss():
     try:
+        url = 'https://bugs.mojang.com/rest/api/2/project/10400/versions'
         verlist = get_stored_list('scheduler', 'mcv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10400/versions', 200, attempt=1))
+        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v['archived']:
@@ -169,14 +173,16 @@ async def mcv_jira_rss():
                 update_stored_list('scheduler', 'mcv_jira_rss', verlist)
 
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcbv_jira_rss():
     try:
+        url = 'https://bugs.mojang.com/rest/api/2/project/10200/versions'
         verlist = get_stored_list('scheduler', 'mcbv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/10200/versions', 200, attempt=1))
+        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v['archived']:
@@ -193,14 +199,16 @@ async def mcbv_jira_rss():
                 verlist.append(release)
                 update_stored_list('scheduler', 'mcbv_jira_rss', verlist)
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mcdv_jira_rss():
     try:
+        url = 'https://bugs.mojang.com/rest/api/2/project/11901/versions'
         verlist = get_stored_list('scheduler', 'mcdv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/11901/versions', 200, attempt=1))
+        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v['archived']:
@@ -217,14 +225,16 @@ async def mcdv_jira_rss():
                 verlist.append(release)
                 update_stored_list('scheduler', 'mcdv_jira_rss', verlist)
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=trigger_times))
 async def mclgv_jira_rss():
     try:
+        url = 'https://bugs.mojang.com/rest/api/2/project/12200/versions'
         verlist = get_stored_list('scheduler', 'mclgv_jira_rss')
-        file = json.loads(await get_url('https://bugs.mojang.com/rest/api/2/project/12200/versions', 200, attempt=1))
+        file = json.loads(await get_url(url, 200, attempt=1, logging_err_resp=False))
         releases = []
         for v in file:
             if not v['archived']:
@@ -241,4 +251,5 @@ async def mclgv_jira_rss():
                 verlist.append(release)
                 update_stored_list('scheduler', 'mclgv_jira_rss', verlist)
     except Exception:
-        traceback.print_exc()
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
