@@ -165,7 +165,7 @@ async def _(msg: Bot.MessageSession):
         msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + perm)
 
 
-setup = module('setup', base=True, required_admin=True, desc='{core.help.setup.desc}', alias='toggle')
+setup = module('setup', base=True, desc='{core.help.setup.desc}', alias='toggle')
 
 
 @setup.command('typing {{core.help.setup.typing}}')
@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.setup.typing.enable'))
 
 '''
-@setup.command('check {{core.help.setup.check}}')
+@setup.command('check {{core.help.setup.check}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
     state = msg.options.get('typo_check')
     if state:
@@ -191,7 +191,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.setup.check.disable'))
 '''
 
-@setup.command('timeoffset <offset> {{core.help.setup.timeoffset}}')
+@setup.command('timeoffset <offset> {{core.help.setup.timeoffset}}', required_admin=True)
 async def _(msg: Bot.MessageSession, offset: str):
     try:
         tstr_split = [int(part) for part in offset.split(':')]

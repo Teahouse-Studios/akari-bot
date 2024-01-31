@@ -32,8 +32,8 @@ async def get_petal_exchange_rate():
             exchange_rate = data['conversion_rate']
             petal_value = exchange_rate * CNY_TO_PETAL
             return {"exchange_rate": exchange_rate, "exchanged_petal": petal_value}
-    except Exception:
-        Logger.error(traceback.format_exc())
+    except ValueError:
+        return None
 
 
 async def load_or_refresh_cache():
@@ -77,7 +77,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
         amount = petal.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
         msg.data.modify_petal(-int(amount))
     else:
-        msg.data.modify_petal(petal)
+        msg.data.modify_petal(-petal)
     return round(petal, 2)
 
 
