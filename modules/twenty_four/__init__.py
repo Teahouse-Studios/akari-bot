@@ -14,11 +14,11 @@ def calc(expr):
     expr = expr.replace("\\", "")
     try:
         return round(simple_eval(expr))
-    except BaseException:
+    except Exception:
         return None
 
 
-def is_valid(expr):
+def check_valid(expr):
     operators = ['+', '-', '*', '/', '(', ')', '\\']
     numbers = [str(i) for i in range(1, 14)]
     valid_chars = numbers + operators
@@ -69,7 +69,7 @@ async def find_solution(numbers):
             exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
             if calc(exp) == 24:
                 return exp
-    return False
+    return None
 
 
 def contains_all_numbers(expr, numbers):
@@ -122,7 +122,7 @@ async def _(msg: Bot.MessageSession):
             if use_markdown:
                 send.replace('*', '\*')
             await answer.finish(send)
-        elif is_valid(expr):
+        elif check_valid(expr):
             result = calc(expr)
             if result == 24 and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
@@ -132,7 +132,7 @@ async def _(msg: Bot.MessageSession):
             else:
                 await answer.finish(msg.locale.t('twenty_four.message.incorrect'))
         else:
-            await answer.finish(msg.locale.t('twenty_four.message.incorrect.error'))
+            await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
 
 
 @tf.command('stop {{game.help.stop}}')
