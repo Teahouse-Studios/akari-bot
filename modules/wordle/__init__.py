@@ -193,7 +193,7 @@ async def _(msg: Bot.MessageSession):
         if not play_state[msg.target.target_id]['active']:
             return
         word = wait.as_display(text_only=True).strip().lower()
-        if len(word) != 5 or any(char.isalpha() for char in word):
+        if len(word) != 5 or not any(char.isalpha() for char in word):
             continue
         if not board.verify_word(word):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
@@ -221,7 +221,7 @@ async def terminate(msg: Bot.MessageSession):
     if state:
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.target_id]['active'] = False
-            await msg.finish(msg.locale.t('wordle.message.stop', answer=board.word))
+            await msg.finish(msg.locale.t('game.message.stop'))
         else:
             await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
