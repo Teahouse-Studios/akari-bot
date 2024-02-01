@@ -176,7 +176,7 @@ async def _(msg: Bot.MessageSession):
 
     board = WordleBoard.from_random_word()
     board_image = WordleBoardImage()
-    path = f"{Config("cache_path")}/{msg.target.target_id}_wordle_board.png"
+    path = Config("cache_path") + f"/{msg.target.target_id}_wordle_board.png"
 
     board_image.save_image(path)
     await msg.send_message([Bimage(path), Plain(msg.locale.t('wordle.message.start'))])
