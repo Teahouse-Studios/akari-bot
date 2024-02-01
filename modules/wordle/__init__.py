@@ -11,8 +11,8 @@ import unicodedata
 from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
+from core.logger import Logger
 from core.petal import gained_petal
-from logger import Logger
 
 
 wordle = module('wordle',
