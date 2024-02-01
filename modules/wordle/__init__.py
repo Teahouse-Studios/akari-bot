@@ -230,7 +230,9 @@ async def terminate(msg: Bot.MessageSession):
     if state:
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.target_id]['active'] = False
-            await msg.finish(msg.locale.t('wordle.message.stop', answer=board.word))
+            answer = board.word
+            board.reset_board()
+            await msg.finish(msg.locale.t('wordle.message.stop', answer=answer))
         else:
             await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
