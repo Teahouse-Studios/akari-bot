@@ -123,7 +123,7 @@ async def _(msg: Bot.MessageSession):
         if len(word) != 5:
             continue
         if not board.verify_word(word):
-            await msg.send_message(msg.locale.t('wordle.message.not_a_word'))
+            await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
             continue
         board.add_word(word)
 
