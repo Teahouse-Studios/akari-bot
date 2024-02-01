@@ -193,8 +193,8 @@ async def _(msg: Bot.MessageSession):
         board_image = WordleBoardImage(msg.data.options.get('wordle_dark_theme'))
         path = os.path.join(Config('cache_path'), f'{msg.session.target}_wordle_board.png')
         board_image.save_image(path)
-        play_state.update({msg.target.target_id: {'active': True}})
-        play_state.update({msg.target.target_id: {'answer': board.word}})
+        play_state[msg.target.target_id] = {'answer': board.word}
+        play_state[msg.target.target_id].update({'active': True})
         Logger.info(f'Answer: {board.word}')
         await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
 
