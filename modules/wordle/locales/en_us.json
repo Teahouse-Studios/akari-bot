@@ -1,0 +1,7 @@
+{
+    "wordle.help.desc": "Play Wordle.",
+    "wordle.help": "Play Wordle.",
+    "wordle.message.start": "The game has started. You will guess a 5-letter word by testing up to 6 words. Green indicates the letter is in the word and is in its place; yellow indicates the letter is in the word but it is not at its current location; white indicates the letter is not in the word.",
+    "wordle.message.not_a_word": "This is not a valid word.",
+    "wordle.message.finish": "Game over. The answer is: ${answer}."
+}

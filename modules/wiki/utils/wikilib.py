@@ -177,7 +177,7 @@ class WikiLib:
                 break
 
         try:
-            await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local,
+            return await get_url(api, status_code=200, headers=self.headers, fmt="json", request_private_ip=request_local,
                                  cookies=cookies)
 
         except Exception as e:
