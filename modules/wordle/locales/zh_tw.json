@@ -1,0 +1,7 @@
+{
+    "wordle.help.desc": "玩 Wordle。",
+    "wordle.help": "玩 Wordle。",
+    "wordle.message.start": "游戏开始。你需要猜一个由 5 个字母组成的单词。你有六次机会。绿色表示字母和位置都正确；黄色代表字母正确但位置不正确；白色代表单词没有这个字母。",
+    "wordle.message.not_a_word": "这不是个词。",
+    "wordle.message.finish": "游戏结束。答案为：${answer}。"
+}
