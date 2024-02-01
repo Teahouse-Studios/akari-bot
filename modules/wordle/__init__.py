@@ -1,15 +1,19 @@
-from collections import Counter
-from enum import Enum
-from PIL import Image, ImageDraw, ImageFont
 import os
-import random
+from enum import Enum
 from typing import List
-import unicodedata
+
 from attr import define, field
+from collections import Counter
+from PIL import Image, ImageDraw, ImageFont
+import random
+import unicodedata
+
+from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
-from config import Config
 from core.petal import gained_petal
+from logger import Logger
+
 
 wordle = module('wordle',
                 desc='{wordle.help.desc}', developers=['Dianliang233', 'DoroWolf']
@@ -179,16 +183,17 @@ async def _(msg: Bot.MessageSession):
     path = Config("cache_path") + f"/{msg.target.target_id}_wordle_board.png"
 
     board_image.save_image(path)
+    Logger.info(f'Answer: {board.word}')
     await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
 
     while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
             return
-        wait = await msg.wait_reply(timeout=3600, all_=True)
+        wait = await msg.wait_anyone(timeout=3600)
         if not play_state[msg.target.target_id]['active']:
             return
         word = wait.as_display(text_only=True).strip().lower()
-        if len(word) != 5:
+        if len(word) != 5 or any(char.isalpha() for char in word):
             continue
         if not board.verify_word(word):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
@@ -198,6 +203,7 @@ async def _(msg: Bot.MessageSession):
         board_image.save_image(path)
 
         if not board.is_game_over():
+            Logger.info(f'{word} != {board.word}, attempt {board.get_trials}')
             await wait.send_message([BImage(path)])
             
     play_state[msg.target.target_id]['active'] = False
