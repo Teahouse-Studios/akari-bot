@@ -116,10 +116,11 @@ class WordleBoardImage:
     image: Image.Image
     wordle_board: WordleBoard
     dark_theme: bool
-    border_color: tuple[int, int, int]
+    outline_color: tuple[int, int, int]
     background_color: str
     cell_size = 50
     margin = 10
+    outline_width = 2
     rows = 6
     columns = 5
     green_color = (107, 169, 100)
@@ -130,7 +131,7 @@ class WordleBoardImage:
     def __init__(self, wordle_board: WordleBoard, dark_theme: bool):
         self.wordle_board = wordle_board
         self.dark_theme = dark_theme
-        self.border_color = (58, 58, 60) if dark_theme else (211, 214, 218)
+        self.outline_color = (58, 58, 60) if dark_theme else (211, 214, 218)
         self.background_color = 'black' if dark_theme else 'white'
 
         width = self.columns * (self.cell_size + self.margin) + self.margin
@@ -144,7 +145,8 @@ class WordleBoardImage:
                 x = col * (self.cell_size + self.margin) + self.margin
                 y = row * (self.cell_size + self.margin) + self.margin
 
-                draw.rectangle((x, y, x + self.cell_size, y + self.cell_size), fill=None, outline=self.border_color)
+                draw.rectangle((x, y, x + self.cell_size, y + self.cell_size),
+                               fill=None, outline=self.outline_color, width=self.outline_width)
 
         self.image = image
 
