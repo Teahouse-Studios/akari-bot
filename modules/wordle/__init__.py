@@ -120,7 +120,7 @@ class WordleBoardImage:
     background_color: str
     cell_size = 50
     margin = 10
-    outline_width = 2
+    outline_width = 3
     rows = 6
     columns = 5
     green_color = (107, 169, 100)
@@ -210,6 +210,7 @@ async def _(msg: Bot.MessageSession):
             continue
         board.add_word(word)
         board_image.update_board()
+        msg.sleep(1)  # 防冲突
 
         if not board.is_game_over() and board.get_trials() <= 6:
             Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
