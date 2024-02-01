@@ -220,7 +220,7 @@ async def _(msg: Bot.MessageSession):
         if reward := await gained_petal(msg, 1):
             g_msg += '\n' + reward
     qc.reset()
-    await msg.finish([BImage(path), Plain(g_msg)], quote=False)
+    await msg.finish([BImage(board_image.image), Plain(g_msg)], quote=False)
 
 
 @wordle.command('stop {{game.help.stop}}')
