@@ -30,6 +30,7 @@ ping = module('ping', base=True)
 
 started_time = datetime.now()
 
+
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
     checkpermisson = msg.check_super_user()
@@ -121,8 +122,8 @@ locale = module('locale', base=True, desc='{core.help.locale.desc}')
 async def _(msg: Bot.MessageSession):
     avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
     res = msg.locale.t("core.message.locale", lang=msg.locale.t("language")) + '\n' + \
-          msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
-          msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
+        msg.locale.t("core.message.locale.set.prompt", prefix=msg.prefixes[0]) + '\n' + \
+        msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
     if Config('locale_url'):
         res += '\n' + msg.locale.t("core.message.locale.contribute", url=Config('locale_url'))
     await msg.finish(res)
@@ -136,7 +137,7 @@ async def config_gu(msg: Bot.MessageSession):
     else:
         avaliable_lang = msg.locale.t("message.delimiter").join(get_available_locales())
         res = msg.locale.t("core.message.locale.set.invalid") + '\n' + \
-              msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
+            msg.locale.t("core.message.locale.langlist", langlist=avaliable_lang)
         await msg.finish(res)
 
 
@@ -191,6 +192,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('core.message.setup.check.disable'))
 '''
 
+
 @setup.command('timeoffset <offset> {{core.help.setup.timeoffset}}', required_admin=True)
 async def _(msg: Bot.MessageSession, offset: str):
     try:
@@ -208,7 +210,7 @@ async def _(msg: Bot.MessageSession, offset: str):
         await msg.finish(msg.locale.t('core.message.setup.timeoffset.invalid'))
     msg.data.edit_option('timezone_offset', offset)
     await msg.finish(msg.locale.t('core.message.setup.timeoffset.success',
-                                   offset='' if offset=='+0' else offset))
+                                  offset='' if offset == '+0' else offset))
 
 
 mute = module('mute', base=True, required_admin=True)

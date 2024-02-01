@@ -19,7 +19,8 @@ async def mcdv(ctx: discord.ApplicationContext):
     await slash_parser(ctx, '')
 
 
-@client.slash_command(name="mcev", description="Get the latest version of Minecraft: Education Edition in Windows Edition.")
+@client.slash_command(name="mcev",
+                      description="Get the latest version of Minecraft: Education Edition in Windows Edition.")
 async def mcev(ctx: discord.ApplicationContext):
     await slash_parser(ctx, '')
 

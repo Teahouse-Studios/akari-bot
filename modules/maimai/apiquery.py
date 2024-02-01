@@ -131,10 +131,10 @@ async def query_plate(msg, plate, username):
 
 @mai.command('process <level> <goal> [<username>] {{maimai.help.process}}')
 async def _(msg: Bot.MessageSession, level: str, goal: str, username: str = None):
-    goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+", 
-             "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
+    goal_list = ["A", "AA", "AAA", "S", "S+", "SS", "SS+", "SSS", "SSS+",
+                 "FC", "FC+", "AP", "AP+", "FS", "FS+", "FDX", "FDX+"]
     level_list = ['1', '2', '3', '4', '5', '6', '7', '7+', '8', '8+', '9', '9+',
-              '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
+                  '10', '10+', '11', '11+', '12', '12+', '13', '13+', '14', '14+', '15']
 
     if not username:
         if msg.target.sender_from == "QQ":

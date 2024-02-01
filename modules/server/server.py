@@ -8,6 +8,7 @@ from core.builtins import ErrorMessage
 from core.logger import Logger
 from core.utils.http import get_url
 
+
 async def server(msg, address, raw=False, showplayer=False, mode='JE'):
     match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
     servers = []

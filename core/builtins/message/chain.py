@@ -54,7 +54,7 @@ class MessageChain(MessageChainT):
                     elif e['type'] == 'url':
                         self.value.append(Url(e['data']['url']))
                     elif e['type'] == 'formatted_time':
-                        self.value.append(FormattedTime(e['data']['timestamp'], e['data']['date'], e['data']['iso'], 
+                        self.value.append(FormattedTime(e['data']['timestamp'], e['data']['date'], e['data']['iso'],
                                                         e['data']['time'], e['data']['seconds'], e['data']['timezone']))
                     elif e['type'] == 'i18n':
                         self.value.append(I18NContext(e['data']['key'], **e['data']['kwargs']))

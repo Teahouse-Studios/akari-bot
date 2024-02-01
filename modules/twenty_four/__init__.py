@@ -120,12 +120,12 @@ async def _(msg: Bot.MessageSession):
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
             if use_markdown:
-                send.replace('*', '\*')
+                send.replace('*', '\\*')
             await answer.finish(send)
         elif check_valid(expr):
             result = calc(expr)
-            if (result == 24 or 24 - result < 1e-13 ) \
-                and contains_all_numbers(expr, numbers):
+            if (result == 24 or 24 - result < 1e-13) \
+                    and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg

@@ -11,6 +11,7 @@ from core.utils.i18n import Locale
 web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
+
 async def jiki(term: str, locale: Locale):
     '''查询小鸡百科。
 

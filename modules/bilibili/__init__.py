@@ -53,8 +53,10 @@ async def _(msg: Bot.MessageSession):
     await get_video_info(msg, query)
 
 
-@bili.regex(re.compile(r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)$"), mode="M",
-             desc="{bilibili.help.regex.shorturl}")
+@bili.regex(
+    re.compile(r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)$"),
+    mode="M",
+    desc="{bilibili.help.regex.shorturl}")
 async def _(msg: Bot.MessageSession):
     video = msg.matched_msg.groups()[0]
     if video[:2] == "BV":
@@ -73,7 +75,7 @@ async def parse_shorturl(shorturl):
     async with aiohttp.ClientSession() as session:
         async with session.get(shorturl, allow_redirects=False) as response:
             target_url = response.headers.get('Location')
-    
+
     video = re.search(r'/video/([^/?]+)', target_url)
     if video:
         return f"?bvid={video.group(1)}"
