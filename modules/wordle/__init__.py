@@ -6,6 +6,7 @@ import random
 from typing import List
 import unicodedata
 from attr import define, field
+from sympy import false
 from core.builtins import Bot
 from core.component import module
 from core.petal import gained_petal
@@ -94,6 +95,9 @@ class WordleBoard:
 
         return '\n'.join(''.join(row) for row in formatted)
 
+    def is_game_over(self):
+        return True if all(self.word == self.board[-1]) else False
+
     @staticmethod
     def from_random_word():
         return WordleBoard(random.choice(answers_list))
@@ -109,7 +113,7 @@ async def _(msg: Bot.MessageSession):
 
     await msg.send_message(msg.locale.t('wordle.message.start'))
 
-    while board.get_trials() <= 6 and play_state[msg.target.target_id]['active']:
+    while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
             return
         wait = await msg.wait_next_message(timeout=3600)
@@ -123,7 +127,8 @@ async def _(msg: Bot.MessageSession):
             continue
         board.add_word(word)
 
-        await wait.send_message(board.format_board())
+        if not board.is_game_over():
+            await wait.send_message(board.format_board())
 
     play_state[msg.target.target_id]['active'] = False
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
