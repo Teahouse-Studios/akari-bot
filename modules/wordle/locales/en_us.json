@@ -1,0 +1,6 @@
+{
+    "wordle.help.desc": "Play Wordle.",
+    "wordle.help": "Play Wordle.",
+    "wordle.message.not_a_word": "This is not a valid word.",
+    "wordle.message.finish": "Game over. The answer is: ${answer}."
+}

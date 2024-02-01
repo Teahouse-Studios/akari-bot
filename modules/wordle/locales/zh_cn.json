@@ -1,0 +1,6 @@
+{
+    "wordle.help.desc": "玩 Wordle。",
+    "wordle.help": "玩 Wordle。",
+    "wordle.message.not_a_word": "这不是个词。",
+    "wordle.message.finish": "游戏结束。答案为：${answer}。"
+}
