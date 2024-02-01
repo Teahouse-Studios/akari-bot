@@ -234,6 +234,7 @@ async def _(msg: Bot.MessageSession):
 
 @wordle.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
+    board = WordleBoard.from_random_word()
     qc = CoolDown('wordle', msg, all=True)
     state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:
