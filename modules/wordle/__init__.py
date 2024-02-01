@@ -179,7 +179,7 @@ async def _(msg: Bot.MessageSession):
     path = Config("cache_path") + f"/{msg.target.target_id}_wordle_board.png"
 
     board_image.save_image(path)
-    await msg.send_message([Bimage(path), Plain(msg.locale.t('wordle.message.start'))])
+    await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
 
     while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
