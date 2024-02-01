@@ -1,18 +1,19 @@
 from collections import Counter
 from enum import Enum
 from itertools import count
+from PIL import Image, ImageDraw, ImageFont
 import os
 import random
 from typing import List
 import unicodedata
 from attr import define, field
-from sympy import false
-from core.builtins import Bot
+from core.builtins import Bot, Image as BImage
 from core.component import module
+from config import Config
 from core.petal import gained_petal
 
 wordle = module('wordle',
-                desc='{wordle.help.desc}', developers=['Dianliang233'],
+                desc='{wordle.help.desc}', developers=['Dianliang233'], required_superuser=True
                 )
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'), encoding='utf8') as handle:
     word_list = handle.read().splitlines()
@@ -100,7 +101,73 @@ class WordleBoard:
 
     @staticmethod
     def from_random_word():
-        return WordleBoard(random.choice(answers_list))
+        # return WordleBoard(random.choice(answers_list))
+        return WordleBoard('evade')
+
+
+class WordleBoardImage:
+    def __init__(self):
+        self.cell_size = 50
+        self.margin = 10
+        self.rows = 6
+        self.columns = 5
+        self.green_color = (107, 169, 100)
+        self.yellow_color = (201, 180, 88)
+        self.grey_color = (120, 124, 126)
+        self.border_color = (211, 214, 218)
+        self.background_color = "white"
+        self.wordle_board = None
+        self.image = self.create_empty_board()
+        self.font_path = "assets/SourceHanSansCN-Normal.ttf" 
+
+    def create_empty_board(self):
+        width = self.columns * (self.cell_size + self.margin) + self.margin
+        height = self.rows * (self.cell_size + self.margin) + self.margin
+
+        image = Image.new("RGB", (width, height), self.background_color)
+        draw = ImageDraw.Draw(image)
+
+        for row in range(self.rows):
+            for col in range(self.columns):
+                x = col * (self.cell_size + self.margin) + self.margin
+                y = row * (self.cell_size + self.margin) + self.margin
+
+                draw.rectangle([x, y, x + self.cell_size, y + self.cell_size], fill=None, outline=self.border_color)
+
+        return image
+
+    def update_board(self, wordle_board):
+        self.wordle_board = wordle_board
+        self.draw_wordle_board()
+
+    def draw_wordle_board(self):
+        draw = ImageDraw.Draw(self.image)
+        font_size = int(self.cell_size * 0.8)
+        font = ImageFont.truetype(self.font_path, font_size)
+
+        for row_index, row in enumerate(self.wordle_board.test_board()):
+            for col_index, square in enumerate(row):
+                x = col_index * (self.cell_size + self.margin) + self.margin
+                y = row_index * (self.cell_size + self.margin) + self.margin
+
+                if square != WordleState.GREY:
+                    if square == WordleState.GREEN:
+                        color = self.green_color
+                    elif square == WordleState.YELLOW:
+                        color = self.yellow_color
+
+                    draw.rectangle([x, y, x + self.cell_size, y + self.cell_size], fill=color, outline=None)
+                else:
+                    draw.rectangle([x, y, x + self.cell_size, y + self.cell_size], fill=self.grey_color, outline=None)
+
+                letter = self.wordle_board.board[row_index][col_index].upper()
+                text_size = draw.textsize(letter, font=font)
+                text_position = (x + (self.cell_size - text_size[0]) // 2, y + (self.cell_size - text_size[1]) // 2 - 3)
+
+                draw.text(text_position, letter, fill="white", font=font)
+
+    def save_image(self, filename):
+        self.image.save(filename)
 
 
 @wordle.command('{{wordle.help}}')
@@ -129,6 +196,11 @@ async def _(msg: Bot.MessageSession):
 
         if not board.is_game_over():
             await wait.send_message(board.format_board())
+
+        # board_image = WordleBoardImage()
+        # board_image.update_board(board)
+        # board_image.save_image(Config("cache_path") +"/wordle_board.png")
+        # await wait.send_message([BImage(Config("cache_path") +"/wordle_board.png")])
 
     play_state[msg.target.target_id]['active'] = False
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
