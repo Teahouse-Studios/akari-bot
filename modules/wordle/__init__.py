@@ -193,7 +193,7 @@ async def _(msg: Bot.MessageSession):
         if not play_state[msg.target.target_id]['active']:
             return
         word = wait.as_display(text_only=True).strip().lower()
-        if len(word) != 5 or not word.isalpha() or word.isascii():
+        if len(word) != 5 or not (word.isalpha() and word.isascii()):
             continue
         if not board.verify_word(word):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
