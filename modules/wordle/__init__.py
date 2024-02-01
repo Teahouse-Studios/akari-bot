@@ -1,6 +1,5 @@
 from collections import Counter
 from enum import Enum
-from itertools import count
 from PIL import Image, ImageDraw, ImageFont
 import os
 import random
@@ -97,12 +96,11 @@ class WordleBoard:
         return '\n'.join(''.join(row) for row in formatted)
 
     def is_game_over(self):
-        return True if len(self.board) != 0 and all(self.word == self.board[-1]) else False
+        return True if len(self.board) != 0 and self.word == self.board[-1] else False
 
     @staticmethod
     def from_random_word():
-        # return WordleBoard(random.choice(answers_list))
-        return WordleBoard('evade')
+        return WordleBoard(random.choice(answers_list))
 
 
 class WordleBoardImage:
@@ -118,7 +116,7 @@ class WordleBoardImage:
         self.background_color = "white"
         self.wordle_board = None
         self.image = self.create_empty_board()
-        self.font_path = "assets/SourceHanSansCN-Normal.ttf" 
+        self.font_path = "assets/SourceHanSansCN-Normal.ttf"
 
     def create_empty_board(self):
         width = self.columns * (self.cell_size + self.margin) + self.margin
