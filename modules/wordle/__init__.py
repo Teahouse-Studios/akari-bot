@@ -96,8 +96,7 @@ class WordleBoard:
 
     @staticmethod
     def from_random_word():
-        # return WordleBoard(random.choice(answers_list))
-        return WordleBoard('evade')
+        return WordleBoard(random.choice(answers_list))
 
 
 @wordle.command('{{wordle.help}}')
@@ -110,8 +109,12 @@ async def _(msg: Bot.MessageSession):
 
     await msg.send_message(msg.locale.t('wordle.message.start'))
 
-    while board.get_trials() <= 6:
+    while board.get_trials() <= 6 and play_state[msg.target.target_id]['active']:
+        if not play_state[msg.target.target_id]['active']:
+            return
         wait = await msg.wait_next_message(timeout=3600)
+        if not play_state[msg.target.target_id]['active']:
+            return
         word = wait.as_display(text_only=True).strip().lower()
         if len(word) != 5:
             continue
