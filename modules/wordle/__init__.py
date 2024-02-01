@@ -211,13 +211,13 @@ async def _(msg: Bot.MessageSession):
         board_image.save_image(path)
 
         if not board.is_game_over():
-            Logger.info(f'{word} != {board.word}, attempt {board.get_trials()}')
+            Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
             await wait.send_message([BImage(path)])
             
     play_state[msg.target.target_id]['active'] = False
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
     if board.board[-1] == board.word:
-        g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials())
+        g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials() - 1)
         if reward := await gained_petal(msg, 1):
             g_msg += '\n' + reward
     await msg.finish([BImage(path), Plain(g_msg)], quote=False)
