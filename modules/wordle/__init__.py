@@ -96,7 +96,7 @@ class WordleBoard:
         return '\n'.join(''.join(row) for row in formatted)
 
     def is_game_over(self):
-        return True if len(self.board) == 0 or all(self.word == self.board[-1]) else False
+        return True if len(self.board) != 0 and all(self.word == self.board[-1]) else False
 
     @staticmethod
     def from_random_word():
