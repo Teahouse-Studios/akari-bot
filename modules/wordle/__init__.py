@@ -243,7 +243,7 @@ async def terminate(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t('game.message.stop.none'))
 
 
-@wordle.command('theme {{wordle.help.theme}}', required_admin=True)
+@wordle.command('theme {{wordle.help.theme}}')
 async def _(msg: Bot.MessageSession):
     dark_theme = msg.data.options.get('wordle_dark_theme')
 
