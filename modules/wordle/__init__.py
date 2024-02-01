@@ -12,7 +12,7 @@ from config import Config
 from core.petal import gained_petal
 
 wordle = module('wordle',
-                desc='{wordle.help.desc}', developers=['Dianliang233']
+                desc='{wordle.help.desc}', developers=['Dianliang233', 'DoroWolf']
                 )
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'), encoding='utf8') as handle:
     word_list = handle.read().splitlines()
@@ -184,7 +184,7 @@ async def _(msg: Bot.MessageSession):
     while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
             return
-        wait = await msg.wait_next_message(timeout=3600)
+        wait = await msg.wait_reply(timeout=3600, all_=True)
         if not play_state[msg.target.target_id]['active']:
             return
         word = wait.as_display(text_only=True).strip().lower()
@@ -210,10 +210,10 @@ async def _(msg: Bot.MessageSession):
 @wordle.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
     state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
-    if state:  # 若有
+    if state:
         if state['active']:  # 检查是否为活跃状态
-            play_state[msg.target.target_id]['active'] = False  # 标记为非活跃状态
-            await msg.finish(msg.locale.t('game.message.stop'))
+            play_state[msg.target.target_id]['active'] = False
+            await msg.finish(msg.locale.t('wordle.message.stop', answer=board.word))
         else:
             await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
