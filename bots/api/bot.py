@@ -90,7 +90,7 @@ async def get_target(target_id: str):
         'ban': ban,
         'typoCheck': typo_check,
         'diceDCReversed': dice_dc_reversed,
-        'wordleDarkTheme': wordle_dark_theme
+        'wordleDarkTheme': wordle_dark_theme,
         'wiki': {
             'fandomAddon': wiki_fandom_addon,
             'headers': wiki_headers,

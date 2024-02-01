@@ -213,7 +213,7 @@ async def config_modules(msg: Bot.MessageSession):
                                                                       modules='\n'.join(extra_reload_modules)), append_instruction=False)
                         if not confirm:
                             await msg.finish()
-                    unloaded_list = CFG.get('unloaded_modules')
+                    unloaded_list = Config('unloaded_modules')
                     if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
@@ -233,7 +233,7 @@ async def config_modules(msg: Bot.MessageSession):
                     continue
                 if ModulesManager.load_module(module_):
                     msglist.append(msg.locale.t("core.message.module.load.success", module=module_))
-                    unloaded_list = CFG.get('unloaded_modules')
+                    unloaded_list = Config('unloaded_modules')
                     if unloaded_list and module_ in unloaded_list:
                         unloaded_list.remove(module_)
                         CFG.write('unloaded_modules', unloaded_list)
@@ -250,7 +250,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if module_ not in modules_:
                     if module_ in err_modules:
                         if await msg.wait_confirm(msg.locale.t("core.message.module.unload.unavailable.confirm"), append_instruction=False):
-                            unloaded_list = CFG.get('unloaded_modules')
+                            unloaded_list = Config('unloaded_modules')
                             if not unloaded_list:
                                 unloaded_list = []
                             if module_ not in unloaded_list:
@@ -270,7 +270,7 @@ async def config_modules(msg: Bot.MessageSession):
                 if await msg.wait_confirm(msg.locale.t("core.message.module.unload.confirm"), append_instruction=False):
                     if ModulesManager.unload_module(module_):
                         msglist.append(msg.locale.t("core.message.module.unload.success", module=module_))
-                        unloaded_list = CFG.get('unloaded_modules')
+                        unloaded_list = Config('unloaded_modules')
                         if not unloaded_list:
                             unloaded_list = []
                         unloaded_list.append(module_)
