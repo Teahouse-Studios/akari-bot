@@ -208,8 +208,10 @@ async def _(msg: Bot.MessageSession):
             
     play_state[msg.target.target_id]['active'] = False
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
-    if board.board[-1] == board.word and (reward := await gained_petal(msg, 1)):
-        g_msg = '\n' + reward
+    if board.board[-1] == board.word:
+        g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials)
+        if reward := await gained_petal(msg, 1):
+            g_msg += '\n' + reward
     await msg.finish([BImage(path), Plain(g_msg)], quote=False)
 
 
