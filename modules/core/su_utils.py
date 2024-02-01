@@ -493,7 +493,8 @@ def isint(num):
 async def _(msg: Bot.MessageSession):
     try:
         await msg.finish(str(Config(msg.parsed_msg['<k>'])))
-
+    except:
+        await msg.finish(msg.locale.t('none'))
 
 @cfg_.command('write <k> <v> [-s]')
 async def _(msg: Bot.MessageSession):
