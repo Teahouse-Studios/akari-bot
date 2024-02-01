@@ -189,7 +189,7 @@ async def _(msg: Bot.MessageSession):
     board = create_wordle_board()
     board_image = WordleBoardImage()
     cache_dir = Config('cache_path')
-    path = os.path.join(cache_dir, f'{msg.target.target_id}_wordle_board.png')
+    path = os.path.join(cache_dir, f'{msg.session.target}_wordle_board.png')
     board_image.save_image(path)
     Logger.info(f'Answer: {board.word}')
     await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
