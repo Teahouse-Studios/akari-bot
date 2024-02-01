@@ -180,7 +180,7 @@ async def _(msg: Bot.MessageSession):
 
     board = WordleBoard.from_random_word()
     board_image = WordleBoardImage()
-    path = Config("cache_path") + f"/{msg.target.target_id}_wordle_board.png"
+    path = os.path.abspath(Config("cache_path") + f"/{msg.target.target_id}_wordle_board.png")
 
     board_image.save_image(path)
     Logger.info(f'Answer: {board.word}')
