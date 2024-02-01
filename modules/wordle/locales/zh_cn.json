@@ -1,9 +1,12 @@
 {
-    "wordle.help.desc": "玩 Wordle。",
     "wordle.help": "开始新游戏。",
-    "wordle.message.start": "游戏开始。你需要猜一个由 5 个字母组成的单词，你有六次机会。\n绿色表示字母和位置都正确，黄色代表字母正确但位置不正确，灰色代表单词没有这个字母。",
-    "wordle.message.not_a_word": "这不是一个有效单词。",
-    "wordle.message.finish": "游戏结束。答案为：${answer}。",
+    "wordle.help.desc": "玩 Wordle。",
+    "wordle.help.theme": "设置是否开启深色主题。",
+    "wordle.message.finish": "游戏结束，答案为：${answer}。",
     "wordle.message.finish.success": "祝贺！你在 ${attempt} 回合内完成了游戏。",
-    "wordle.message.stop": "已停止。答案为：${answer}。"
+    "wordle.message.not_a_word": "这不是一个有效单词。",
+    "wordle.message.start": "游戏开始，你需要猜一个由 5 个字母组成的单词，你有 6 次机会。\n绿色表示字母和位置都正确，黄色代表字母正确但位置不正确，灰色代表单词没有这个字母。",
+    "wordle.message.stop": "已停止，答案为：${answer}。",
+    "wordle.message.theme.disable": "已关闭深色主题。",
+    "wordle.message.theme.enable": "已开启深色主题。"
 }

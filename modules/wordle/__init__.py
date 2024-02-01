@@ -13,6 +13,7 @@ from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
 from core.petal import gained_petal
+from core.utils.cooldown import CoolDown
 
 
 wordle = module('wordle',
@@ -23,7 +24,6 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'),
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt'), encoding='utf8') as handle:
     answers_list = handle.read().splitlines()
 play_state = {}
-attempts = Config('wordle_attempts', 6)
 
 
 class WordleState(Enum):
@@ -114,16 +114,16 @@ class WordleBoard:
 
 
 class WordleBoardImage:
-    def __init__(self):
+    def __init__(self, dark_theme=False):
         self.cell_size = 50
         self.margin = 10
-        self.rows = attempts
+        self.rows = 6
         self.columns = 5
         self.green_color = (107, 169, 100)
         self.yellow_color = (201, 180, 88)
         self.grey_color = (120, 124, 126)
-        self.border_color = (211, 214, 218)
-        self.background_color = Config('wordle_background_color', 'white')
+        self.border_color = (58, 58, 60) if dark_theme else (211, 214, 218)
+        self.background_color = 'black' if dark_theme else 'white'
         self.wordle_board = None
         self.image = self.create_empty_board()
         self.font_path = "assets/Noto Sans CJK Bold.otf"
@@ -185,58 +185,80 @@ def create_wordle_board():
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         await msg.finish(msg.locale.t('game.message.running'))
-    play_state.update({msg.target.target_id: {'active': True}})
+    if msg.target.target_from == 'TEST|Console':
+        c = 0
+    else:
+        qc = CoolDown('wordle', msg, all=True)
+        c = qc.check(30)
 
-    board = create_wordle_board()
-    board_image = WordleBoardImage()
-    cache_dir = Config('cache_path')
-    path = os.path.join(cache_dir, f'{msg.session.target}_wordle_board.png')
-    board_image.save_image(path)
-    Logger.info(f'Answer: {board.word}')
-    await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
-
-    while board.get_trials() <= attempts and play_state[msg.target.target_id]['active'] and not board.is_game_over():
-        if not play_state[msg.target.target_id]['active']:
-            return
-        wait = await msg.wait_anyone(timeout=3600)
-        if not play_state[msg.target.target_id]['active']:
-            return
-        word = wait.as_display(text_only=True).strip().lower()
-        if len(word) != 5 or not (word.isalpha() and word.isascii()):
-            continue
-        if not board.verify_word(word):
-            await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
-            continue
-        board.add_word(word)
-        board_image.update_board(board)
+    if c == 0:
+        play_state.update({msg.target.target_id: {'active': True}})
+        board = create_wordle_board()
+        board_image = WordleBoardImage(msg.data.options.get('wordle_dark_theme'))
+        path = os.path.join(Config('cache_path'), f'{msg.session.target}_wordle_board.png')
         board_image.save_image(path)
+        Logger.info(f'Answer: {board.word}')
+        await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
 
-        if not board.is_game_over() and board.get_trials() <= attempts:
-            Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
-            await wait.send_message([BImage(path)])
+        while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
+            if not play_state[msg.target.target_id]['active']:
+                return
+            wait = await msg.wait_anyone(timeout=3600)
+            if not play_state[msg.target.target_id]['active']:
+                return
+            word = wait.as_display(text_only=True).strip().lower()
+            if len(word) != 5 or not (word.isalpha() and word.isascii()):
+                continue
+            if not board.verify_word(word):
+                await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
+                continue
+            board.add_word(word)
+            board_image.update_board(board)
+            board_image.save_image(path)
+
+            if not board.is_game_over() and board.get_trials() <= 6:
+                Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
+                await wait.send_message([BImage(path)])
         
-        await msg.sleep(3)
+            await msg.sleep(3)
             
-    play_state[msg.target.target_id]['active'] = False
-    g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
-    if board.board[-1] == board.word:
-        g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials() - 1)
-        if reward := await gained_petal(msg, 1):
-            g_msg += '\n' + reward
-    await msg.finish([BImage(path), Plain(g_msg)], quote=False)
+        play_state[msg.target.target_id]['active'] = False
+        g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
+        if board.board[-1] == board.word:
+            g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials() - 1)
+            if reward := await gained_petal(msg, 1):
+                g_msg += '\n' + reward
+        qc.reset()
+        await msg.finish([BImage(path), Plain(g_msg)], quote=False)
+    else:
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
 
 
 @wordle.command('stop {{game.help.stop}}')
 async def terminate(msg: Bot.MessageSession):
     board = create_wordle_board()
+    qc = CoolDown('wordle', msg, all=True)
     state = play_state.get(msg.target.target_id, {})  # 尝试获取 play_state 中是否有此对象的游戏状态
     if state:
         if state['active']:  # 检查是否为活跃状态
             play_state[msg.target.target_id]['active'] = False
             answer = board.word
             board.reset_board()
+            qc.reset()
             await msg.finish(msg.locale.t('wordle.message.stop', answer=answer))
         else:
             await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
         await msg.finish(msg.locale.t('game.message.stop.none'))
+
+
+@wordle.command('theme {{wordle.help.theme}}', required_admin=True)
+async def _(msg: Bot.MessageSession):
+    darktheme = msg.data.options.get('wordle_dark_theme')
+
+    if darktheme:
+        msg.data.edit_option('wordle_dark_theme', False)
+        await msg.finish(msg.locale.t("wordle.message.theme.disable"))
+    else:
+        msg.data.edit_option('wordle_dark_theme', True)
+        await msg.finish(msg.locale.t("wordle.message.theme.enable"))
