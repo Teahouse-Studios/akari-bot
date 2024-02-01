@@ -71,6 +71,7 @@ async def get_target(target_id: str):
     typo_check = target.get_option('typo_check')
     dice_dc_reversed = target.get_option('dice_dc_reversed')
     wiki_fandom_addon = target.get_option('wiki_fandom_addon')
+    wordle_dark_theme = target.get_option('wordle_dark_theme')
 
     wiki_target = WikiTargetInfo(target_id)
     wiki_headers = wiki_target.get_headers()
@@ -89,6 +90,7 @@ async def get_target(target_id: str):
         'ban': ban,
         'typoCheck': typo_check,
         'diceDCReversed': dice_dc_reversed,
+        'wordleDarkTheme': wordle_dark_theme
         'wiki': {
             'fandomAddon': wiki_fandom_addon,
             'headers': wiki_headers,
