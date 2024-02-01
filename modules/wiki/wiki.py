@@ -374,7 +374,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                     with open(file_path, 'r') as file:
                         check = file.read(1024)
                         return '<svg' in check
-                except:
+                except BaseException:
                     return False
 
             if dl_list:

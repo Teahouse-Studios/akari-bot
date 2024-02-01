@@ -46,7 +46,7 @@ def in_or_equal(checker: Any, elem: Optional[Union[Any, List[Any]]]):
     else:
         return checker == elem
 
-    
+
 class Chart(Dict):
     combo: Optional[int] = None
     charter: Optional[int] = None

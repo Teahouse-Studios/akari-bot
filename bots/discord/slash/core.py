@@ -19,7 +19,7 @@ async def hlp(ctx: discord.ApplicationContext, module: str):
 
 @client.slash_command(name="locale", description="Set the bot running languages.")
 @discord.option(name="lang", description="Supported language codes.", autocomplete=auto_get_lang)
-async def locale(ctx: discord.ApplicationContext, lang: str=None):
+async def locale(ctx: discord.ApplicationContext, lang: str = None):
     if lang:
         await slash_parser(ctx, lang)
     else:
@@ -81,7 +81,7 @@ async def ban(ctx: discord.ApplicationContext, userid: str):
 @discord.option(name="userid", description="The user ID.")
 async def unban(ctx: discord.ApplicationContext, userid: str):
     await slash_parser(ctx, f"unban {userid}")
-    
+
 
 ali = client.create_group("alias", "Set custom command alias.")
 

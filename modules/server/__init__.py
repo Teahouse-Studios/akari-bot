@@ -10,7 +10,7 @@ s = module('server', alias='s', developers=['_LittleC_', 'OasisAkari'])
 
 
 @s.command('<address:port> [-r] [-p] {{server.help}}',
-          options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
+           options_desc={'-r': '{server.help.option.r}', '-p': '{server.help.option.p}'})
 async def main(msg: Bot.MessageSession):
     gather_list = []
     match_object = re.match(r'(.*)[\s:](.*)', msg.parsed_msg["<address:port>"], re.M | re.I)
@@ -44,8 +44,18 @@ async def main(msg: Bot.MessageSession):
 
     mode_list = ['JE', 'BE']
     for mode in mode_list:
-        gather_list.append(asyncio.ensure_future(get_info(
-            msg, msg.parsed_msg["<address:port>"], msg.parsed_msg.get('-r', False), msg.parsed_msg.get('-p', False), mode)))
+        gather_list.append(
+            asyncio.ensure_future(
+                get_info(
+                    msg,
+                    msg.parsed_msg["<address:port>"],
+                    msg.parsed_msg.get(
+                        '-r',
+                        False),
+                    msg.parsed_msg.get(
+                        '-p',
+                        False),
+                    mode)))
     g = await asyncio.gather(*gather_list)
     if g == ['', '']:
         await msg.finish(msg.locale.t('server.message.not_found'))

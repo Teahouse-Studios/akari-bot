@@ -8,7 +8,6 @@ from PIL import Image, ImageDraw, ImageFont
 import random
 import unicodedata
 
-from config import Config
 from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.logger import Logger
@@ -79,11 +78,11 @@ class WordleBoard:
         yellow = '🟨'
         grey = '⬜'
 
-        formatted = []
+        formatted: List[List[str]] = []
         board = self.test_board()
         for row_index, row in enumerate(board):
-            letters = []
-            squares = []
+            letters: List[str] = []
+            squares: List[str] = []
             for char_index, char in enumerate(row):
                 letters.append(
                     unicodedata.lookup(
@@ -107,32 +106,38 @@ class WordleBoard:
     def from_random_word():
         return WordleBoard(random.choice(answers_list))
 
-
     def reset_board(self):
         self.word = ""
         self.board = []
 
 
+@define
 class WordleBoardImage:
-    def __init__(self, dark_theme=False):
-        self.cell_size = 50
-        self.margin = 10
-        self.rows = 6
-        self.columns = 5
-        self.green_color = (107, 169, 100)
-        self.yellow_color = (201, 180, 88)
-        self.grey_color = (120, 124, 126)
-        self.border_color = (58, 58, 60) if dark_theme else (211, 214, 218)
-        self.background_color = 'black' if dark_theme else 'white'
-        self.wordle_board = None
-        self.image = self.create_empty_board()
-        self.font_path = "assets/Noto Sans CJK Bold.otf"
+    image: Image.Image
+    wordle_board: WordleBoard
+    dark_theme: bool
+    outline_color: tuple[int, int, int]
+    background_color: str
+    cell_size = 50
+    margin = 10
+    outline_width = 3
+    rows = 6
+    columns = 5
+    green_color = (107, 169, 100)
+    yellow_color = (201, 180, 88)
+    grey_color = (120, 124, 126)
+    font_path = 'assets/Noto Sans CJK Bold.otf'
 
-    def create_empty_board(self):
+    def __init__(self, wordle_board: WordleBoard, dark_theme: bool):
+        self.wordle_board = wordle_board
+        self.dark_theme = dark_theme
+        self.outline_color = (58, 58, 60) if dark_theme else (211, 214, 218)
+        self.background_color = 'black' if dark_theme else 'white'
+
         width = self.columns * (self.cell_size + self.margin) + self.margin
         height = self.rows * (self.cell_size + self.margin) + self.margin
 
-        image = Image.new("RGB", (width, height), self.background_color)
+        image = Image.new('RGB', (width, height), self.background_color)
         draw = ImageDraw.Draw(image)
 
         for row in range(self.rows):
@@ -140,15 +145,12 @@ class WordleBoardImage:
                 x = col * (self.cell_size + self.margin) + self.margin
                 y = row * (self.cell_size + self.margin) + self.margin
 
-                draw.rectangle([x, y, x + self.cell_size, y + self.cell_size], fill=None, outline=self.border_color)
+                draw.rectangle((x, y, x + self.cell_size, y + self.cell_size),
+                               fill=None, outline=self.outline_color, width=self.outline_width)
 
-        return image
+        self.image = image
 
-    def update_board(self, wordle_board):
-        self.wordle_board = wordle_board
-        self.draw_wordle_board()
-
-    def draw_wordle_board(self):
+    def update_board(self):
         draw = ImageDraw.Draw(self.image)
         font_size = int(self.cell_size * 0.8)
         font = ImageFont.truetype(self.font_path, font_size)
@@ -158,78 +160,70 @@ class WordleBoardImage:
                 x = col_index * (self.cell_size + self.margin) + self.margin
                 y = row_index * (self.cell_size + self.margin) + self.margin
 
-                if square != WordleState.GREY:
-                    if square == WordleState.GREEN:
-                        color = self.green_color
-                    elif square == WordleState.YELLOW:
-                        color = self.yellow_color
-
-                    draw.rectangle([x, y, x + self.cell_size, y + self.cell_size], fill=color, outline=None)
+                if square == WordleState.GREEN:
+                    color = self.green_color
+                elif square == WordleState.YELLOW:
+                    color = self.yellow_color
                 else:
-                    draw.rectangle([x, y, x + self.cell_size, y + self.cell_size], fill=self.grey_color, outline=None)
+                    color = self.grey_color
+
+                draw.rectangle((x, y, x + self.cell_size, y + self.cell_size), fill=color, outline=None)
 
                 letter = self.wordle_board.board[row_index][col_index].upper()
-                text_size = draw.textsize(letter, font=font)
-                text_position = (x + (self.cell_size - text_size[0]) // 2, y + (self.cell_size - text_size[1]) // 2 - 3)
+                _, _, width, height = draw.textbbox((0, 0), letter, font=font)
+                text_position = (x + (self.cell_size - width) // 2, y + (self.cell_size - height) // 2 - 3)
 
                 draw.text(text_position, letter, fill="white", font=font)
-
-    def save_image(self, filename):
-        self.image.save(filename)
 
 
 @wordle.command('{{wordle.help}}')
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         await msg.finish(msg.locale.t('game.message.running'))
-    if msg.target.target_from == 'TEST|Console':
-        c = 0
-    else:
-        qc = CoolDown('wordle', msg, all=True)
+
+    qc = CoolDown('wordle', msg, all=True)
+    if not msg.target.target_from == 'TEST|Console' and not msg.check_super_user():
         c = qc.check(30)
+        if c != 0:
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
 
-    if c == 0:
-        board = WordleBoard.from_random_word()
-        board_image = WordleBoardImage(msg.data.options.get('wordle_dark_theme'))
-        path = os.path.join(Config('cache_path'), f'{msg.session.target}_wordle_board.png')
-        board_image.save_image(path)
-        play_state[msg.target.target_id] = {'answer': board.word}
-        play_state[msg.target.target_id].update({'active': True})
-        Logger.info(f'Answer: {board.word}')
-        await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
+    board = WordleBoard.from_random_word()
+    board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
 
-        while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
-            if not play_state[msg.target.target_id]['active']:
-                return
-            wait = await msg.wait_anyone(timeout=3600)
-            if not play_state[msg.target.target_id]['active']:
-                return
-            word = wait.as_display(text_only=True).strip().lower()
-            if len(word) != 5 or not (word.isalpha() and word.isascii()):
-                continue
-            if not board.verify_word(word):
-                await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
-                continue
-            board.add_word(word)
-            board_image.update_board(board)
-            board_image.save_image(path)
+    play_state[msg.target.target_id] = {'answer': board.word, 'active': True}
 
-            if not board.is_game_over() and board.get_trials() <= 6:
-                Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
-                await wait.send_message([BImage(path)])
-        
-            await msg.sleep(3)
-            
-        play_state[msg.target.target_id]['active'] = False
-        g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
-        if board.board[-1] == board.word:
-            g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials() - 1)
-            if reward := await gained_petal(msg, 1):
-                g_msg += '\n' + reward
-        qc.reset()
-        await msg.finish([BImage(path), Plain(g_msg)], quote=False)
-    else:
-        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
+    Logger.info(f'Answer: {board.word}')
+
+    await msg.send_message([BImage(board_image.image), Plain(msg.locale.t('wordle.message.start'))])
+
+    while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
+        if not play_state[msg.target.target_id]['active']:
+            return
+        wait = await msg.wait_anyone(timeout=3600)
+        if not play_state[msg.target.target_id]['active']:
+            return
+        word = wait.as_display(text_only=True).strip().lower()
+        if len(word) != 5 or not (word.isalpha() and word.isascii()):
+            continue
+        if not board.verify_word(word):
+            await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
+            continue
+        board.add_word(word)
+        board_image.update_board()
+        msg.sleep(1)  # 防冲突
+
+        if not board.is_game_over() and board.get_trials() <= 6:
+            Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
+            await wait.send_message([BImage(board_image.image)])
+
+    play_state[msg.target.target_id]['active'] = False
+    g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
+    if board.board[-1] == board.word:
+        g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials() - 1)
+        if reward := await gained_petal(msg, 1):
+            g_msg += '\n' + reward
+    qc.reset()
+    await msg.finish([BImage(board_image.image), Plain(g_msg)], quote=False)
 
 
 @wordle.command('stop {{game.help.stop}}')
@@ -251,9 +245,9 @@ async def terminate(msg: Bot.MessageSession):
 
 @wordle.command('theme {{wordle.help.theme}}', required_admin=True)
 async def _(msg: Bot.MessageSession):
-    darktheme = msg.data.options.get('wordle_dark_theme')
+    dark_theme = msg.data.options.get('wordle_dark_theme')
 
-    if darktheme:
+    if dark_theme:
         msg.data.edit_option('wordle_dark_theme', False)
         await msg.finish(msg.locale.t("wordle.message.theme.disable"))
     else:

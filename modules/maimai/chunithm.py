@@ -12,8 +12,8 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima']
 
 chu = module('chunithm',
              developers=['DoroWolf'],
-             alias='chu', 
-             support_languages=['zh_cn'], 
+             alias='chu',
+             support_languages=['zh_cn'],
              desc='{chunithm.help.desc}')
 
 
@@ -26,15 +26,15 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         if constant > constant_max:
             data = (await total_list.get()).filter(ds=(constant_max, constant))
             s = msg.locale.t(
-            "maimai.message.base.range", constant=round(
-                constant_max, 1), constant_max=round(
-                constant, 1)) + "\n"
+                "maimai.message.base.range", constant=round(
+                    constant_max, 1), constant_max=round(
+                    constant, 1)) + "\n"
         else:
             data = (await total_list.get()).filter(ds=(constant, constant_max))
             s = msg.locale.t(
-            "maimai.message.base.range", constant=round(
-                constant, 1), constant_max=round(
-                constant_max, 1)) + "\n"
+                "maimai.message.base.range", constant=round(
+                    constant, 1), constant_max=round(
+                    constant_max, 1)) + "\n"
     else:
         data = (await total_list.get()).filter(ds=constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
@@ -160,21 +160,21 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
         res = msg.locale.t(
-                "chunithm.message.song.diff",
-                diff=diff_label[diff_index],
-                level=level,
-                ds=ds,
-                combo=chart['combo'],
-                charter=chart['charter'])
+            "chunithm.message.song.diff",
+            diff=diff_label[diff_index],
+            level=level,
+            ds=ds,
+            combo=chart['combo'],
+            charter=chart['charter'])
         await msg.finish(await get_info(msg, music, Plain(res)))
     else:
         res = msg.locale.t(
-                "chunithm.message.song",
-                artist=music['basic_info']['artist'],
-                genre=music['basic_info']['genre'],
-                bpm=music['basic_info']['bpm'],
-                version=music['basic_info']['from'],
-                level='/'.join((str(ds) for ds in music['ds'])))
+            "chunithm.message.song",
+            artist=music['basic_info']['artist'],
+            genre=music['basic_info']['genre'],
+            bpm=music['basic_info']['bpm'],
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
         await msg.finish(await get_info(msg, music, Plain(res)))
 
 

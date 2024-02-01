@@ -90,7 +90,7 @@ async def check_ip(ip: str):
         try:
             reverse = socket.getnameinfo((ip, 0), 0)
             res['reverse'] = reverse[0]
-        except:
+        except BaseException:
             Logger.warn("Unable to fetch reverse DNS.")
 
     return res

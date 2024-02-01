@@ -81,7 +81,7 @@ async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
     return round(petal, 2)
 
 
-async def gained_petal(msg: Bot.MessageSession, amount):
+async def gained_petal(msg: Bot.MessageSession, amount: int):
     '''增加花瓣。
 
     :param msg: 消息会话。

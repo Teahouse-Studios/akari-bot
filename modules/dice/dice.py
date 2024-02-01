@@ -52,7 +52,7 @@ class DiceItemBase(object):
     def GetDetail(self):
         return self.detail
 
-    def Roll(self, msg, use_markdown: bool=False):
+    def Roll(self, msg, use_markdown: bool = False):
         pass
 
 
@@ -70,7 +70,7 @@ class DiceMod(DiceItemBase):
             if self.result > MAX_MOD_NUMBER or self.result < MIN_MOD_NUMBER:
                 raise DiceValueError(msg,
                                      msg.locale.t("dice.message.error.value.y.out_of_range", min=MIN_MOD_NUMBER,
-                                                      max=MAX_MOD_NUMBER),
+                                                  max=MAX_MOD_NUMBER),
                                      self.result)
 
     def GetDetail(self):
@@ -159,7 +159,7 @@ class Dice(DiceItemBase):
                     if i in indexes:
                         new_results.append(dice_results[i])
                         output_buffer += f"*{str(dice_results[i])}*"
-                    else:                
+                    else:
                         output_buffer += f"{str(dice_results[i])}"
                 else:
                     output_buffer += str(dice_results[i])

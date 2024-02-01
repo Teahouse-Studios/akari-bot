@@ -506,10 +506,8 @@ def isint(num):
 
 @cfg_.command('get <k>')
 async def _(msg: Bot.MessageSession):
-    try:
-        await msg.finish(str(Config(msg.parsed_msg['<k>'])))
-    except:
-        await msg.finish(msg.locale.t('none'))
+    await msg.finish(str(Config(msg.parsed_msg['<k>'])))
+
 
 @cfg_.command('write <k> <v> [-s]')
 async def _(msg: Bot.MessageSession):
@@ -577,7 +575,7 @@ if Config('openai_api_key'):
         else:
             msg.data.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
-            
+
 
 if Bot.client_name == 'QQ':
     post_whitelist = module('post_whitelist', required_superuser=True, base=True)

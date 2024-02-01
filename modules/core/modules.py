@@ -200,7 +200,7 @@ async def config_modules(msg: Bot.MessageSession):
                     if modules_[module_].base:
                         if Config('debug'):
                             confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
-                                                                          append_instruction=False)
+                                                             append_instruction=False)
                             if confirm:
                                 base_module = True
                             else:
@@ -289,7 +289,7 @@ async def config_modules(msg: Bot.MessageSession):
     if recommend_modules_help_doc_list and ('-g' not in msg.parsed_msg or not msg.parsed_msg['-g']):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.module.recommends",
                                                       modules='\n'.join(recommend_modules_list) + '\n\n' +
-                                                           '\n'.join(recommend_modules_help_doc_list)))
+                                                      '\n'.join(recommend_modules_help_doc_list)))
         if confirm:
             if msg.data.enable(recommend_modules_list):
                 msglist = []
@@ -356,7 +356,7 @@ async def bot_help(msg: Bot.MessageSession):
                 devs_msg = ''
             if Config('help_url'):
                 wiki_msg = '\n' + msg.locale.t("core.message.help.helpdoc.address",
-                                           url=Config('help_url')) + '/' + help_name
+                                               url=Config('help_url')) + '/' + help_name
             else:
                 wiki_msg = ''
             if len(doc) > 500 and msg.Feature.image:
@@ -450,13 +450,13 @@ async def _(msg: Bot.MessageSession):
                 if render:
                     legacy_help = False
                     help_msg_list = [Image(render), Plain(msg.locale.t("core.message.help.more_information",
-                                                         prefix=msg.prefixes[0]))]
+                                                                       prefix=msg.prefixes[0]))]
                     if Config('help_url'):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.document",
-                                                         url=Config('help_url'))))
+                                                                url=Config('help_url'))))
                     if Config('donate_url'):
                         help_msg_list.append(Plain(msg.locale.t("core.message.help.more_information.donate",
-                                                         url=Config('donate_url'))))
+                                                                url=Config('donate_url'))))
                     await msg.finish(help_msg_list)
         except Exception:
             traceback.print_exc()

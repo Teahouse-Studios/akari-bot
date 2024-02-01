@@ -10,6 +10,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53736 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.69"
 }
 
+
 async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
     if msg.target.target_from == 'TEST|Console':
         c = 0
@@ -60,10 +61,10 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
             output = msg.locale.t("bilibili.message", title=title, tname=tname, owner=owner, time=time)
         else:
             output = msg.locale.t("bilibili.message.detail", title=title, pages=pages, tname=tname,
-                                              owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
-                                              reply=stat_reply,
-                                              like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
-                                              desc=desc, time=time)
+                                  owner=owner, fans=fans, view=stat_view, danmaku=stat_danmaku,
+                                  reply=stat_reply,
+                                  like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
+                                  desc=desc, time=time)
         if msg.target.target_from != 'TEST|Console':
             qc.reset()
         await msg.finish([Image(pic), Url(video_url), Plain(output)])

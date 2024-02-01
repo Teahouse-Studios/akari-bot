@@ -18,7 +18,7 @@ async def update_alias():
     try:
         url = "https://download.fanyu.site/maimai/alias.json"
         data = await get_url(url, 200, fmt='json', logging_err_resp=False)
-    
+
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(data, file)
@@ -41,7 +41,7 @@ async def update_covers():
 
         if os.path.exists(cover_dir):
             shutil.rmtree(cover_dir)
-        
+
         static_cover_dir = os.path.join(ca, 'mai/cover')
         if os.path.exists(static_cover_dir):
             shutil.move(static_cover_dir, cover_dir)
@@ -60,7 +60,7 @@ async def get_info(msg: Bot.MessageSession, music: Music, *details):
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
         await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
         info.append(Image(img))
-    except:
+    except BaseException:
         info.append(Image("https://www.diving-fish.com/covers/00000.png"))
     if details:
         info.extend(details)
@@ -77,8 +77,8 @@ async def get_alias(msg, sid):
 
     result = []
     if sid in data:
-        result = data[sid] # 此处的列表是歌曲别名列表
-    
+        result = data[sid]  # 此处的列表是歌曲别名列表
+
     return result
 
 
@@ -102,8 +102,8 @@ async def search_by_alias(msg, input_):
         if input_ in aliases:
             if sid in result:
                 result.remove(sid)
-            result.append(sid) # 此处的列表是歌曲 ID 列表
-    
+            result.append(sid)  # 此处的列表是歌曲 ID 列表
+
     return result
 
 

@@ -42,7 +42,7 @@ async def update_assets():
     except TimeoutError:
         try:
             update = await get_url(json_url_mirror, 200)
-        except:
+        except BaseException:
             return False
     update_json = json.loads(update)
     for song in update_json:

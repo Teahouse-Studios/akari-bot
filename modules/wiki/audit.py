@@ -38,7 +38,6 @@ if Config('enable_urlmanager'):
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
 
-
     @aud.command(['distrust <apiLink>', 'unblock <apiLink>'])
     async def _(msg: Bot.MessageSession):
         api = msg.parsed_msg['<apiLink>']  # 已关闭的站点无法验证有效性
@@ -55,7 +54,6 @@ if Config('enable_urlmanager'):
         else:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + api)
 
-
     @aud.command('query <apiLink>')
     async def _(msg: Bot.MessageSession):
         api = msg.parsed_msg['<apiLink>']
@@ -64,7 +62,7 @@ if Config('enable_urlmanager'):
             api = check.value.api
             audit = Audit(api)
             allow = audit.inAllowList
-            block = audit.inBlockList  
+            block = audit.inBlockList
             msg_list = []
             if allow:
                 msg_list.append(api + msg.locale.t('wiki.message.wiki_audit.query.allowlist'))
@@ -79,7 +77,6 @@ if Config('enable_urlmanager'):
             result = msg.locale.t('wiki.message.error.query') + \
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
             await msg.finish(result)
-
 
     @aud.command(['list', 'list legacy'])
     async def _(msg: Bot.MessageSession):

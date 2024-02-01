@@ -472,7 +472,8 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                             Logger.error(tb)
                             errmsg = msg.locale.t('error.prompt', err_msg=str(e))
                             if Config('bug_report_url'):
-                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+                                errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                              url=str(Url(Config('bug_report_url'))))
                             await msg.send_message(errmsg)
                             if bug_report_targets:
                                 for target in bug_report_targets:
