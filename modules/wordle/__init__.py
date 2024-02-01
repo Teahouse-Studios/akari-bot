@@ -1,4 +1,6 @@
+from collections import Counter
 from enum import Enum
+from itertools import count
 import os
 import random
 from typing import List
@@ -13,6 +15,8 @@ wordle = module('wordle',
                 )
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'), encoding='utf8') as handle:
     word_list = handle.read().splitlines()
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt'), encoding='utf8') as handle:
+    answers_list = handle.read().splitlines()
 play_state = {}
 
 
@@ -41,14 +45,24 @@ class WordleBoard:
         return state
 
     def test_word(self, word: str):
-        state: List[WordleState] = []
+        state: List[WordleState] = [
+            WordleState.GREY,
+            WordleState.GREY,
+            WordleState.GREY,
+            WordleState.GREY,
+            WordleState.GREY]
+        counter = Counter(self.word)
+
         for index, letter in enumerate(word):
             if letter == self.word[index]:
-                state.append(WordleState.GREEN)
-            elif letter in self.word:
-                state.append(WordleState.YELLOW)
-            else:
-                state.append(WordleState.GREY)
+                state[index] = WordleState.GREEN
+                counter[letter] -= 1
+
+        for index, letter in enumerate(word):
+            if letter != self.word[index] and letter in self.word and counter[letter] != 0:
+                state[index] = WordleState.YELLOW
+                counter[letter] -= 1
+
         return state
 
     def get_trials(self):
@@ -82,7 +96,8 @@ class WordleBoard:
 
     @staticmethod
     def from_random_word():
-        return WordleBoard(random.choice(word_list))
+        # return WordleBoard(random.choice(answers_list))
+        return WordleBoard('evade')
 
 
 @wordle.command('{{wordle.help}}')
@@ -92,6 +107,8 @@ async def _(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True}})
 
     board = WordleBoard.from_random_word()
+
+    await msg.send_message(msg.locale.t('wordle.message.start'))
 
     while board.get_trials() <= 6:
         wait = await msg.wait_next_message(timeout=3600)
@@ -109,7 +126,7 @@ async def _(msg: Bot.MessageSession):
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
     if board.board[-1] == board.word and (reward := await gained_petal(msg, 1)):
         g_msg = '\n' + reward
-    await msg.finish(board.format_board() + g_msg, quote=False)
+    await msg.finish(board.format_board() + '\n' + g_msg, quote=False)
 
 
 @wordle.command('stop {{game.help.stop}}')
