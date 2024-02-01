@@ -74,3 +74,5 @@ dice_output_count = 50
 dice_output_len = 200
 dice_detail_count = 5
 dice_count_limit = 10
+wordle_attempts = 6
+wordle_background_color = 'white'

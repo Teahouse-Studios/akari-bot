@@ -23,6 +23,7 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'words.txt'),
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'answers.txt'), encoding='utf8') as handle:
     answers_list = handle.read().splitlines()
 play_state = {}
+attempts = Config('wordle_attempts', 6)
 
 
 class WordleState(Enum):
@@ -116,13 +117,13 @@ class WordleBoardImage:
     def __init__(self):
         self.cell_size = 50
         self.margin = 10
-        self.rows = 6
+        self.rows = attempts
         self.columns = 5
         self.green_color = (107, 169, 100)
         self.yellow_color = (201, 180, 88)
         self.grey_color = (120, 124, 126)
         self.border_color = (211, 214, 218)
-        self.background_color = "white"
+        self.background_color = Config('wordle_background_color', 'white')
         self.wordle_board = None
         self.image = self.create_empty_board()
         self.font_path = "assets/Noto Sans CJK Bold.otf"
@@ -194,7 +195,7 @@ async def _(msg: Bot.MessageSession):
     Logger.info(f'Answer: {board.word}')
     await msg.send_message([BImage(path), Plain(msg.locale.t('wordle.message.start'))])
 
-    while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
+    while board.get_trials() <= attempts and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
             return
         wait = await msg.wait_anyone(timeout=3600)
@@ -210,9 +211,11 @@ async def _(msg: Bot.MessageSession):
         board_image.update_board(board)
         board_image.save_image(path)
 
-        if not board.is_game_over():
+        if not board.is_game_over() and board.get_trials() <= attempts:
             Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')
             await wait.send_message([BImage(path)])
+        
+        await msg.sleep(3)
             
     play_state[msg.target.target_id]['active'] = False
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)

@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession):
                         await msg.send_message(f'.' * wait_repeat, quote=False)
                     wait_time -= 0.25
 
-                await asyncio.sleep(0.25)
+                await msg.sleep(0.25)
 
                 await timer(start, wait_time, hooked_time, wait_repeat, hook_repeat)  # 重新调用计时器函数
 
