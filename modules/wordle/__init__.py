@@ -6,7 +6,7 @@ import random
 from typing import List
 import unicodedata
 from attr import define, field
-from core.builtins import Bot, Image as BImage
+from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from config import Config
 from core.petal import gained_petal
@@ -116,7 +116,7 @@ class WordleBoardImage:
         self.background_color = "white"
         self.wordle_board = None
         self.image = self.create_empty_board()
-        self.font_path = "assets/SourceHanSansCN-Normal.ttf"
+        self.font_path = "assets/Noto Sans CJK Bold.otf"
 
     def create_empty_board(self):
         width = self.columns * (self.cell_size + self.margin) + self.margin
@@ -175,8 +175,11 @@ async def _(msg: Bot.MessageSession):
     play_state.update({msg.target.target_id: {'active': True}})
 
     board = WordleBoard.from_random_word()
+    board_image = WordleBoardImage()
+    path = f"{Config("cache_path")}/{msg.target.target_id}_wordle_board.png"
 
-    await msg.send_message(msg.locale.t('wordle.message.start'))
+    board_image.save_image(path)
+    await msg.send_message([Bimage(path), Plain(msg.locale.t('wordle.message.start'))])
 
     while board.get_trials() <= 6 and play_state[msg.target.target_id]['active'] and not board.is_game_over():
         if not play_state[msg.target.target_id]['active']:
@@ -191,20 +194,17 @@ async def _(msg: Bot.MessageSession):
             await wait.send_message(msg.locale.t('wordle.message.not_a_word'))
             continue
         board.add_word(word)
+        board_image.update_board(board)
+        board_image.save_image(path)
 
         if not board.is_game_over():
-            await wait.send_message(board.format_board())
-
-        # board_image = WordleBoardImage()
-        # board_image.update_board(board)
-        # board_image.save_image(Config("cache_path") +"/wordle_board.png")
-        # await wait.send_message([BImage(Config("cache_path") +"/wordle_board.png")])
-
+            await wait.send_message([BImage(path)])
+            
     play_state[msg.target.target_id]['active'] = False
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
     if board.board[-1] == board.word and (reward := await gained_petal(msg, 1)):
         g_msg = '\n' + reward
-    await msg.finish(board.format_board() + '\n' + g_msg, quote=False)
+    await msg.finish([BImage(path), Plain(g_msg)], quote=False)
 
 
 @wordle.command('stop {{game.help.stop}}')
