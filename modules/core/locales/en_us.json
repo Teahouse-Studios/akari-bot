@@ -109,6 +109,7 @@
     "core.message.module.enable.not_found": "Failed: Module \"${module}\" does not exist.",
     "core.message.module.enable.qqchannel_global.success": "Success: Enabled module \"${module}\" for all text channels.",
     "core.message.module.enable.success": "Success: Enabled module \"${module}\".",
+    "core.message.module.list.prompt": "Use \"${prefix}help <module name>\" to view details.",
     "core.message.module.load.failed": "Failed to load module.",
     "core.message.module.load.not_found": "Failed: This module has been loaded or does not exist.",
     "core.message.module.load.success": "Successfully loaded module(s): ${module}",
