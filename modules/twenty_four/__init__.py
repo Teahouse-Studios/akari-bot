@@ -58,17 +58,29 @@ async def find_solution(numbers):
     for perm in perms:
         for expr in exprs:  # 穷举就完事了
             exp = '(({}{}{}){}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '({}{}{}){}({}{}{})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '{}{}({}{}({}{}{}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
     return None
 
 
@@ -126,7 +138,7 @@ async def _(msg: Bot.MessageSession):
             result = calc(expr)
             if not result:
                 await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
-            elif (result == 24 or 24 - result < 1e-13 ) \
+            elif (result == 24 or 0 < 24 - result < 1e-13 ) \
                 and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
