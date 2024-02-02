@@ -47,12 +47,7 @@ if Config('openai_api_key'):
     #     model="gpt-4-1106-preview"
     # )
 else:
-    client = None
-    sync_client = None
-    INSTRUCTIONS = None
-    assistant = None
-    # assistant_gpt4 = None
-    
+    INSTRUCTIONS = ''
 
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
@@ -62,7 +57,7 @@ async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
-    if not is_superuser and msg.data.petal <= 0:  # refuse
+    if Config('enable_petal') and not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals'))
 
     qc = CoolDown('call_openai', msg)
