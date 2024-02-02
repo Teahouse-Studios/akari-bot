@@ -58,17 +58,29 @@ async def find_solution(numbers):
     for perm in perms:
         for expr in exprs:  # 穷举就完事了
             exp = '(({}{}{}){}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '({}{}{}){}({}{}{})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '{}{}({}{}({}{}{}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13 ):
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
     return None
 
 
