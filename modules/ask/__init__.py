@@ -47,7 +47,12 @@ if Config('openai_api_key'):
     #     model="gpt-4-1106-preview"
     # )
 else:
-    pass
+    client = None
+    sync_client = None
+    INSTRUCTIONS = None
+    assistant = None
+    # assistant_gpt4 = None
+    
 
 a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 
