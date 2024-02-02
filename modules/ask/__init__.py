@@ -46,6 +46,8 @@ if Config('openai_api_key'):
     #     tools=[{"type": "code_interpreter"}],
     #     model="gpt-4-1106-preview"
     # )
+else:
+    pass
 
     a = module('ask', developers=['Dianliang233'], desc='{ask.help.desc}')
 

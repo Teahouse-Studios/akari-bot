@@ -198,7 +198,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        if Config('debug'):
+                        if Config('enable_reload_base'):
                             confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
                                                              append_instruction=False)
                             if confirm:
@@ -496,6 +496,11 @@ async def modules_help(msg: Bot.MessageSession, legacy):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     legacy_help = True
+    help_msg = [msg.locale.t("core.message.module.list.prompt")]
+    if Config('help_url'):
+        help_msg.append(msg.locale.t(
+                       "core.message.help.more_information.document",
+                        url=Config('help_url')))
     if msg.Feature.image and not legacy:
         try:
             tables = []
@@ -549,7 +554,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
                 render = await image_table_render(tables)
                 if render:
                     legacy_help = False
-                    await msg.finish([Image(render)])
+                    await msg.finish([Image(render), Plain('\n'.join(help_msg))])
         except Exception:
             traceback.print_exc()
     if legacy_help:
@@ -564,16 +569,11 @@ async def modules_help(msg: Bot.MessageSession, legacy):
         help_msg.append(' | '.join(module_))
         help_msg.append(
             msg.locale.t(
-                "core.message.help.legacy.more_information",
+                "core.message.module.list.prompt",
                 prefix=msg.prefixes[0]))
         if Config('help_url'):
             help_msg.append(
                 msg.locale.t(
                     "core.message.help.more_information.document",
                     url=Config('help_url')))
-        if Config('donate_url'):
-            help_msg.append(
-                msg.locale.t(
-                    "core.message.help.more_information.donate",
-                    url=Config('donate_url')))
         await msg.finish('\n'.join(help_msg))

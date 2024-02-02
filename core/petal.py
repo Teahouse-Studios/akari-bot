@@ -88,7 +88,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int):
     :param amount: 增加的花瓣数量。
     :returns: 增加花瓣的提示消息。
     '''
-    if Config('openai_api_key') and Config('enable_get_petal'):
+    if Config('enable_petal') and Config('enable_get_petal'):
         limit = Config('gained_petal_limit', 10)
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
@@ -124,7 +124,7 @@ async def lost_petal(msg: Bot.MessageSession, amount):
     :param amount: 减少的花瓣数量。
     :returns: 减少花瓣的提示消息。
     '''
-    if Config('openai_api_key') and Config('enable_get_petal'):
+    if Config('enable_petal') and Config('enable_get_petal'):
         limit = Config('lost_petal_limit', 5)
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:

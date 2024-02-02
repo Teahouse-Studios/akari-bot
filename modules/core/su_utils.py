@@ -523,7 +523,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("failed"))
 
 
-if Config('openai_api_key'):
+if Config('enable_petal'):
     petal = module('petal', base=True, alias='petals')
 
     @petal.command()

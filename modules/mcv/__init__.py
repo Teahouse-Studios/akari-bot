@@ -4,9 +4,8 @@ from .mcv import mcv, mcbv, mcdv, mcev, mclgv
 
 m = module(
     bind_prefix='mcv',
-    alias='m',
     developers=['OasisAkari', 'Dianliang233'],
-    recommend_modules=['mcbv', 'mcdv'])
+    recommend_modules=['mcbv'])
 
 
 @m.command('{{mcv.help.mcv}}')
@@ -16,7 +15,8 @@ async def mcv_loader(msg: Bot.MessageSession):
 
 mb = module(
     bind_prefix='mcbv',
-    developers=['OasisAkari', 'Dianliang233'])
+    developers=['OasisAkari', 'Dianliang233'],
+    recommend_modules=['mcv'])
 
 
 @mb.command('{{mcv.help.mcbv}}')

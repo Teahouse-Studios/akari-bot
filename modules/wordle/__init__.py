@@ -217,10 +217,12 @@ async def _(msg: Bot.MessageSession):
             await wait.send_message([BImage(board_image.image)])
 
     play_state[msg.target.target_id]['active'] = False
+    attempt = board.get_trials() - 1
     g_msg = msg.locale.t('wordle.message.finish', answer=board.word)
     if board.board[-1] == board.word:
-        g_msg = msg.locale.t('wordle.message.finish.success', attempt=board.get_trials() - 1)
-        if reward := await gained_petal(msg, 1):
+        g_msg = msg.locale.t('wordle.message.finish.success', attempt=attempt)
+        petal = 2 if attempt <= 3 else 1
+        if reward := await gained_petal(msg, petal):
             g_msg += '\n' + reward
     qc.reset()
     await msg.finish([BImage(board_image.image), Plain(g_msg)], quote=False)
