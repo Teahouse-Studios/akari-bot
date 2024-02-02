@@ -43,10 +43,10 @@ async def _(msg: Bot.MessageSession):
     target_data = BotDBUtil.TargetInfo(msg)
     use_bot_account = target_data.options.get('use_bot_account')
     if use_bot_account:
-    target_data.edit_option('use_bot_account', False)
+        target_data.edit_option('use_bot_account', False)
         await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.disable"))
     else:
-    target_data.edit_option('use_bot_account', True)
+        target_data.edit_option('use_bot_account', True)
         await msg.finish(msg.locale.t("wiki.message.wiki_bot.toggle.enable"))
 
 
