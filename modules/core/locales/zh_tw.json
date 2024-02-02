@@ -109,6 +109,7 @@
     "core.message.module.enable.not_found": "失敗：「${module}」模組不存在。",
     "core.message.module.enable.qqchannel_global.success": "成功：為所有文字頻道啟用「${module}」模組。",
     "core.message.module.enable.success": "成功：啟用模組「${module}」。",
+    "core.message.module.list.prompt": "使用「${prefix}help <對應模組名>」檢視詳細資訊。",
     "core.message.module.load.failed": "載入模組失敗。",
     "core.message.module.load.not_found": "失敗：此模組已載入或不存在。",
     "core.message.module.load.success": "成功載入模組：${module}",
