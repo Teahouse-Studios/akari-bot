@@ -13,7 +13,7 @@ hitokoto = module(
 
 
 @hitokoto.handle()
-@hitokoto.handle('[<msg_type>] {{hitokoto.help.type}}')
+@hitokoto.handle('<msg_type> {{hitokoto.help.type}}')
 async def _(msg: Bot.MessageSession, msg_type: str = None):
     url = f'https://v1.hitokoto.cn/'
     if msg_type:
