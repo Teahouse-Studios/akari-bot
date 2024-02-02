@@ -109,5 +109,9 @@
     "wiki.message.wiki_audit.remove.success": "Successfully removed from ${list_name}:",
     "wiki.message.wiki_audit.untrust": "Note: This wiki is not currently in the Whitelist, and the returned content will be restricted when querying this wiki.",
     "wiki.message.wiki_audit.untrust.address": "If you need to remove restrictions, please apply for Whitelist here: \n${url}",
+    "wiki.message.wiki_bot.login.failed": "Login failed: ${detail}",
+    "wiki.message.wiki_bot.login.success": "Login success.",
+    "wiki.message.wiki_bot.toggle.disable": "Disabled to use wiki bot account.",
+    "wiki.message.wiki_bot.toggle.enable": "Enabled to use wiki bot account.",
     "wiki.message.wiki_inline.flies": "This page includes the following files: ${file}"
 }

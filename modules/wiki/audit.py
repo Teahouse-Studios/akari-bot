@@ -3,19 +3,15 @@ from datetime import datetime
 from config import Config
 from core.builtins import Bot, Plain, Image
 from core.component import module
-from core.logger import Logger
 from core.utils.image_table import image_table_render, ImageTable
-from database import BotDBUtil
-from modules.wiki.utils.bot import BotAccount, LoginFailed
 from modules.wiki.utils.dbutils import Audit
-from modules.wiki.utils.dbutils import BotAccount as BotAccountDB
 from modules.wiki.utils.wikilib import WikiLib
-
-aud = module('wiki_audit', required_superuser=True,
-             alias='wau')
 
 
 if Config('enable_urlmanager'):
+    aud = module('wiki_audit', required_superuser=True,
+             alias='wau')
+
     @aud.command(['trust <apiLink>', 'block <apiLink>'])
     async def _(msg: Bot.MessageSession):
         date = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
@@ -118,51 +114,3 @@ if Config('enable_urlmanager'):
             for bl in block_list:
                 wikis.append(f'{bl[0]} ({bl[1]})')
             await msg.finish('\n'.join(wikis))
-
-
-@aud.handle('bot add <apiLink> <account> <password>')
-async def _(msg: Bot.MessageSession):
-    api_link = msg.parsed_msg['<apiLink>']
-    account = msg.parsed_msg['<account>']
-    password = msg.parsed_msg['<password>']
-    check = await WikiLib(api_link).check_wiki_available()
-    if check.available:
-        try:
-            login = await BotAccount._login(check.value.api, account, password)
-            BotAccountDB.add(check.value.api, account, password)
-            BotAccount.cookies[check.value.api] = login
-            await msg.finish('Login success')
-        except LoginFailed as e:
-            Logger.error(f'Login failed: {e}')
-            await msg.finish(f'Login failed: {e}')
-    else:
-        result = msg.locale.t('wiki.message.error.query') + \
-            ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
-        await msg.finish(result)
-
-
-@aud.handle('bot remove <apiLink>')
-async def _(msg: Bot.MessageSession):
-    api_link = msg.parsed_msg['<apiLink>']
-    BotAccountDB.remove(api_link)
-    await msg.finish(msg.locale.t("success"))
-
-
-@aud.handle('bot use')
-async def _(msg: Bot.MessageSession):
-    target_data = BotDBUtil.TargetInfo(msg)
-    target_data.edit_option('use_bot_account', True)
-    await msg.finish(msg.locale.t("success"))
-
-
-@aud.handle('bot unuse')
-async def _(msg: Bot.MessageSession):
-    target_data = BotDBUtil.TargetInfo(msg)
-    target_data.edit_option('use_bot_account', False)
-    await msg.finish(msg.locale.t("success"))
-
-
-@aud.hook('login_wiki_bots')
-async def _(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
-    Logger.debug('Received login_wiki_bots hook: ' + str(ctx.args['cookies']))
-    BotAccount.cookies.update(ctx.args['cookies'])
