@@ -5,8 +5,8 @@ unsafe_word_list = [
 ]
 
 unsafe_prompt_list = [
-    "where am i",
-    "where i am",
+    "am i",
+    "i am",
 ]
 
 
