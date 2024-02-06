@@ -19,9 +19,10 @@ def calc(expr):
 
 
 def check_valid(expr):
-    operators = ['+', '-', '*', '/', '(', ')', '\\']
+    operators = ['+', '-', '*', '/']
+    other_symbols = ['(', ')', '\\']
     numbers = [str(i) for i in range(1, 14)]
-    valid_chars = numbers + operators
+    valid_chars = numbers + operators + other_symbols
     valid_chars_set = set(valid_chars)
 
     i = 0
@@ -33,11 +34,14 @@ def check_valid(expr):
                 i += 1
             num_numbers += 1
         elif char in valid_chars_set:
+            if char in operators and i + 1 < len(expr) and expr[i + 1] in operators:
+                return False
             i += 1
             if i < len(expr) and expr[i] == ' ':
-                i += 1
-                if i < len(expr) and expr[i] == ' ':
-                    return False
+                while i < len(expr) and expr[i] == ' ':
+                    i += 1
+                    if i < len(expr) and expr[i] in operators:
+                        return False
             continue
         elif char == ' ':
             i += 1

@@ -120,7 +120,7 @@ class WordleBoardImage:
     background_color: str
     cell_size = 50
     margin = 10
-    outline_width = 3
+    outline_width = 2
     rows = 6
     columns = 5
     green_color = (107, 169, 100)
