@@ -38,9 +38,10 @@ def check_valid(expr):
                 return False
             i += 1
             if i < len(expr) and expr[i] == ' ':
-                i += 1
-                if i < len(expr) and expr[i] == ' ':
-                    return False
+                while i < len(expr) and expr[i] == ' ':
+                    i += 1
+                    if i < len(expr) and expr[i] in operators:
+                        return False
             continue
         elif char == ' ':
             i += 1
