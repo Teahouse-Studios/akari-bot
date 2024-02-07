@@ -496,7 +496,7 @@ async def modules_help(msg: Bot.MessageSession, legacy):
     module_list = ModulesManager.return_modules_list(
         target_from=msg.target.target_from)
     legacy_help = True
-    help_msg = [msg.locale.t("core.message.module.list.prompt")]
+    help_msg = [msg.locale.t("core.message.module.list.prompt", prefix=msg.prefixes[0])]
     if Config('help_url'):
         help_msg.append(msg.locale.t(
                        "core.message.help.more_information.document",

@@ -4,7 +4,7 @@ import traceback
 import aiohttp
 import ujson as json
 
-from core.builtins import ErrorMessage
+from core.builtins import ErrorMessage, Plain
 from core.logger import Logger
 from core.utils.http import get_url
 
