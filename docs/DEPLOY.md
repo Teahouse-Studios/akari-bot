@@ -23,7 +23,7 @@
 
 1. 一台可运行 Python 的服务器或主机（电脑、树莓派、安装了 Termux 的手机、etc...）。
 
-2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.8 皆可部署。
+2. 主机已安装并可运行 [Python 3 环境](https://www.python.org/) ，版本大于 3.9 皆可部署。
 
 3. 对应你需要运行的平台所需要的必要内容（环境、token 等）。
 
