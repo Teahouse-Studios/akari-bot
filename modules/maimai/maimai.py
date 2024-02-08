@@ -27,7 +27,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     result_set = []
     if constant <= 0:
         await msg.finish(msg.locale.t('maimai.message.level_invalid'))
-    elif constant_max:
+    if constant_max:
         if constant > constant_max:
             data = (await total_list.get()).filter(ds=(constant_max, constant))
             s = msg.locale.t(

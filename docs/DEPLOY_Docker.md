@@ -152,7 +152,7 @@ docker pull silianz/akari-bot:dev-docker
 
 5. 安装 JRE 17（Java Runtime Environment 17），请善用搜索引擎查找安装方法。
 
-6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（原作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
 
 7. 删除与 go-cqhttp 同一目录下的 `data` 文件夹和 `device.json` 文件。
 
@@ -167,7 +167,7 @@ docker pull silianz/akari-bot:dev-docker
     例：`--basePath=txlib\8.9.73`
 
     > 在选择版本时，应当遵从以下原则：
-    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。Code45 了应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
+    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生了 Code45 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 9. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
 
@@ -298,8 +298,8 @@ pip3 install matrix-nio[e2e] ; PIP
 3. 于 `package.json` 同级目录中，创建 `.env` 文件，并于内填写以下字段：
 
     ```conf
-    CHROMIUM_PATH="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
-    FC_SERVER_PORT=15551 # 填写服务运行的端口
+    CHROMIUM_PATH = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" # 填写 chrome.exe 的绝对路径
+    FC_SERVER_PORT = 15551 # 填写服务运行的端口
     ```
 
     > 在填写好配置文件之后，请删除所有配置文件中的注释，否则程序无法正确读取配置。
