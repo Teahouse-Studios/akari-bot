@@ -6,7 +6,7 @@ from core.logger import logger
 
 ncmusic = module('ncmusic',
                  developers=['bugungu', 'DoroWolf'],
-                 desc='{ncmusic.help.desc}', 
+                 desc='{ncmusic.help.desc}',
                  support_languages=['zh_cn'])
 
 
@@ -32,8 +32,8 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 f"{' / '.join(artist['name'] for artist in song['artists'])}",
                 f"{song['album']['name']}" + (f" ({' / '.join(song['album']['transNames'])})" if 'transNames' in song['album'] else ''),
                 f"{song['id']}"
-            ] for i, song in enumerate(songs, start=1)
-        ]
+                ] for i, song in enumerate(songs, start=1)
+                ]
 
         tables = ImageTable(data, [
             msg.locale.t('ncmusic.message.search.table.header.id'),
@@ -41,7 +41,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             msg.locale.t('ncmusic.message.search.table.header.artists'),
             msg.locale.t('ncmusic.message.search.table.header.album'),
             'ID'
-            ])
+        ])
 
         img = await image_table_render(tables)
         if img:
@@ -51,7 +51,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             if song_count > 10:
                 song_count = 10
                 send_msg.append(Plain(msg.locale.t("message.collapse", amount="10")))
-        
+
         if song_count == 1:
             send_msg.append(Plain(msg.locale.t('ncmusic.message.search.confirm')))
             query = await msg.wait_confirm(send_msg, delete=False)
@@ -105,7 +105,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
             send_msg += '\n' + msg.locale.t('ncmusic.message.search.prompt')
             query = await msg.wait_reply(send_msg)
             query = query.as_display(text_only=True)
-        
+
             if query.isdigit():
                 query = int(query)
                 if query > song_count:
@@ -116,7 +116,7 @@ async def search(msg: Bot.MessageSession, keyword: str):
                 await msg.finish(msg.locale.t('ncmusic.message.search.invalid.non_digital'))
 
         await info(msg, sid)
-        
+
 
 @ncmusic.handle('info <sid> {{ncmusic.help.info}}')
 async def info(msg: Bot.MessageSession, sid: str):
@@ -134,7 +134,7 @@ async def info(msg: Bot.MessageSession, sid: str):
                                 artists=artist,
                                 album=info['al']['name'],
                                 album_id=info['al']['id'])
-                                
+
         await msg.finish([Image(info['al']['picUrl']), Url(song_url), Plain(send_msg)])
     else:
         await msg.finish(msg.locale.t('ncmusic.message.info.not_found'))

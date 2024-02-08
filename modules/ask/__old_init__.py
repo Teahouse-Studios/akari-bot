@@ -79,7 +79,7 @@ if Config('enable_langsmith'):
 
             if msg.target.target_from != 'TEST|Console' and not is_superuser:
                 qc.reset()
-                
+
             await msg.finish(chain)
         else:
             await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))

@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
-@arc.command('rank free {{arcaea.help.rank.free}}', 
+@arc.command('rank free {{arcaea.help.rank.free}}',
              'rank paid {{arcaea.help.rank.paid}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('free', False):

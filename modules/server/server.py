@@ -4,9 +4,10 @@ import traceback
 import aiohttp
 import ujson as json
 
-from core.builtins import ErrorMessage
+from core.builtins import ErrorMessage, Plain
 from core.logger import Logger
 from core.utils.http import get_url
+
 
 async def server(msg, address, raw=False, showplayer=False, mode='JE'):
     match_object = re.match(r'(.*)[\s:](.*)', address, re.M | re.I)
@@ -24,7 +25,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
     if mode == 'JE':
         try:
             url = f'http://motd.wd-api.com/v1/java?host={serip}&port={port1}'
-            jemotd = await get_url(url, 200)
+            jemotd = await get_url(url, 200, logging_err_resp=False)
             jejson = json.loads(jemotd)
         except ValueError:
             return ''
@@ -72,7 +73,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
     if mode == 'BE':
         try:
             url = f'http://motd.wd-api.com/v1/bedrock?host={serip}&port={port2}'
-            bemotd = await get_url(url, 200)
+            bemotd = await get_url(url, 200, logging_err_resp=False)
             bejson = json.loads(bemotd)
         except ValueError:
             return ''

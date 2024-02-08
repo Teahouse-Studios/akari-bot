@@ -211,7 +211,7 @@ async def svg_render(file_path: str, use_local=True):
 
     pic = False
 
-    d = {'content': html_template.replace('${content}', svg_content), 'element': '.botbox'}
+    d = {'content': html_template.replace('${content}', svg_content), 'element': '.botbox', 'counttime': False}
 
     html_ = json.dumps(d)
 

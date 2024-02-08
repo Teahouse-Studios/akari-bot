@@ -108,7 +108,7 @@ class BotDBUtil:
             return self.query.muted
 
         @property
-        def options(self):
+        def options(self) -> dict:
             if not self.query:
                 return {}
             return json.loads(self.query.options)

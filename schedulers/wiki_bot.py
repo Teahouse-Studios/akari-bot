@@ -10,5 +10,5 @@ from modules.wiki.utils.bot import BotAccount
 async def login_bots():
     Logger.info('Start login wiki bot account...')
     await BotAccount.login()
-    await JobQueue.trigger_hook_all('wiki_audit.login_wiki_bots', cookies=BotAccount.cookies)
+    await JobQueue.trigger_hook_all('wiki_bot.login_wiki_bots', cookies=BotAccount.cookies)
     Logger.info('Successfully login wiki bot account.')

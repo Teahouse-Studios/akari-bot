@@ -347,17 +347,17 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                                   'ts': datetime.now().timestamp()}
                     else:
-                        await msg.send_message(msg.locale.t("error.prompt.noreport", err_msg=e))
+                        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=e))
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
                     err_msg = msg.locale.tl_str(str(e))
-                    await msg.send_message(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
+                    await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                 except Exception as e:
                     tb = traceback.format_exc()
                     Logger.error(tb)
-                    errmsg = msg.locale.t('error.prompt', err_msg=str(e))
+                    errmsg = msg.locale.t('error.prompt', detail=str(e))
                     if Config('bug_report_url'):
                         errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
                     await msg.send_message(errmsg)
@@ -457,7 +457,7 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                         except NoReportException as e:
                             Logger.error(traceback.format_exc())
                             err_msg = msg.locale.tl_str(str(e))
-                            await msg.send_message(msg.locale.t("error.prompt.noreport", err_msg=err_msg))
+                            await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:
                             if enable_tos and Config('tos_warning_counts', 5) >= 1:
@@ -465,14 +465,15 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                                           'ts': datetime.now().timestamp()}
                             else:
-                                await msg.send_message(msg.locale.t("error.prompt.noreport", err_msg=e))
+                                await msg.send_message(msg.locale.t("error.prompt.noreport", detail=str(e)))
 
                         except Exception as e:
                             tb = traceback.format_exc()
                             Logger.error(tb)
-                            errmsg = msg.locale.t('error.prompt', err_msg=str(e))
+                            errmsg = msg.locale.t('error.prompt', detail=str(e))
                             if Config('bug_report_url'):
-                                errmsg += '\n' + msg.locale.t('error.prompt.address', url=str(Url(Config('bug_report_url'))))
+                                errmsg += '\n' + msg.locale.t('error.prompt.address',
+                                                              url=str(Url(Config('bug_report_url'))))
                             await msg.send_message(errmsg)
                             if bug_report_targets:
                                 for target in bug_report_targets:

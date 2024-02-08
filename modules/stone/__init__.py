@@ -7,6 +7,7 @@ from core.petal import gained_petal
 
 stone = module('stone', developers=['OasisAkari'], desc='{stone.help.desc}')
 
+
 @stone.command()
 @stone.regex(r'打水漂')
 async def _(msg: Bot.MessageSession):

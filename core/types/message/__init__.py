@@ -87,7 +87,7 @@ class MessageSession:
         self.tmp = {}
 
     async def send_message(self,
-                           message_chain,
+                           message_chain: MessageChain,
                            quote=True,
                            disable_secret_check=False,
                            allow_split_image=True,
@@ -104,11 +104,11 @@ class MessageSession:
         raise NotImplementedError
 
     async def finish(self,
-                     message_chain=None,
-                     quote=True,
-                     disable_secret_check=False,
-                     allow_split_image=True,
-                     callback: Awaitable = None):
+                     message_chain: MessageChain = None,
+                     quote: bool = True,
+                     disable_secret_check: bool = False,
+                     allow_split_image: bool = True,
+                     callback: Union[Awaitable, None] = None):
         """
         用于向消息发送者回复消息并终结会话（模块后续代码不再执行）。
         :param message_chain: 消息链，若传入str则自动创建一条带有Plain元素的消息链

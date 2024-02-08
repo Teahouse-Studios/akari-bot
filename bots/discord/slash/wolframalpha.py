@@ -6,6 +6,7 @@ from bots.discord.slash_parser import slash_parser
 
 wolframalpha = client.create_group("wolframalpha", "Use WolframAlpha.")
 
+
 @wolframalpha.command(name="query", description="Input a question or formula to search for WolframAlpha.")
 @discord.option(name="query", description="Enter what you want to calculate.")
 async def query(ctx: discord.ApplicationContext, query: str):

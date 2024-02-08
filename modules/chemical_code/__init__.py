@@ -235,7 +235,7 @@ async def chemical_code(msg: Bot.MessageSession, id=None, random_mode=True, capt
                     msg.locale.t('chemical_code.message.timeup', answer=play_state[msg.target.target_id]["answer"]))
 
             else:
-                await asyncio.sleep(1)  # 防冲突
+                await msg.sleep(1)  # 防冲突
                 await timer(start)
 
     if not captcha_mode:

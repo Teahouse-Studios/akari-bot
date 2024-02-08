@@ -14,14 +14,15 @@ def calc(expr):
     expr = expr.replace("\\", "")
     try:
         return simple_eval(expr)
-    except BaseException:
+    except Exception:
         return None
 
 
-def is_valid(expr):
-    operators = ['+', '-', '*', '/', '(', ')', '\\']
+def check_valid(expr):
+    operators = ['+', '-', '*', '/']
+    other_symbols = ['(', ')', '\\']
     numbers = [str(i) for i in range(1, 14)]
-    valid_chars = numbers + operators
+    valid_chars = numbers + operators + other_symbols
     valid_chars_set = set(valid_chars)
 
     i = 0
@@ -33,11 +34,14 @@ def is_valid(expr):
                 i += 1
             num_numbers += 1
         elif char in valid_chars_set:
+            if char in operators and i + 1 < len(expr) and expr[i + 1] in operators:
+                return False
             i += 1
             if i < len(expr) and expr[i] == ' ':
-                i += 1
-                if i < len(expr) and expr[i] == ' ':
-                    return False
+                while i < len(expr) and expr[i] == ' ':
+                    i += 1
+                    if i < len(expr) and expr[i] in operators:
+                        return False
             continue
         elif char == ' ':
             i += 1
@@ -58,18 +62,30 @@ async def find_solution(numbers):
     for perm in perms:
         for expr in exprs:  # 穷举就完事了
             exp = '(({}{}{}){}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '({}{}{}){}({}{}{})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '{}{}({}{}({}{}{}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return exp
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
             exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return exp
-    return False
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
+    return None
 
 
 def contains_all_numbers(expr, numbers):
@@ -122,9 +138,12 @@ async def _(msg: Bot.MessageSession):
             if use_markdown:
                 send.replace('*', '\*')
             await answer.finish(send)
-        elif is_valid(expr):
+        elif check_valid(expr):
             result = calc(expr)
-            if result == 24 and contains_all_numbers(expr, numbers):
+            if not result:
+                await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
+            elif (result == 24 or 0 < 24 - result < 1e-13 ) \
+                and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
@@ -132,7 +151,7 @@ async def _(msg: Bot.MessageSession):
             else:
                 await answer.finish(msg.locale.t('twenty_four.message.incorrect'))
         else:
-            await answer.finish(msg.locale.t('twenty_four.message.incorrect.error'))
+            await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
 
 
 @tf.command('stop {{game.help.stop}}')

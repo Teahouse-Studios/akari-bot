@@ -17,6 +17,7 @@ default_locale = Config('locale', 'zh_cn')
 # We might change this behavior in the future and read them on demand as
 # locale files get too large
 
+
 class LocaleNode:
     """本地化树节点"""
     value: str
