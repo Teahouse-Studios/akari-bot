@@ -34,7 +34,7 @@
     "maimai.help.scorelist": "查看使用者在對應等級的分數列表。",
     "maimai.help.search": "依據歌名（或一部分）搜尋歌曲。",
     "maimai.help.song": "查詢歌曲或譜面資訊，ID 需要加入前綴「id」，空白用下橫線取代。",
-    "maimai.help.unbind": "解除綁定使用者。",
+    "maimai.help.unbind": "解除繫結使用者。",
     "maimai.message.alias": "${title} 的別名：",
     "maimai.message.alias.alias_not_found": "未找到符合要求的別名。",
     "maimai.message.alias.file_not_found": "未找到別名檔案，請使用「${prefix}maimai update」初始化檔案。",
@@ -78,8 +78,8 @@
     "maimai.message.song.prompt": "以下是可能的結果：",
     "maimai.message.song.sd": "${diff} ${level} (${ds})\nTAP：${tap}\nHOLD：${hold}\nSLIDE：${slide}\nBREAK：${brk}\n譜師：${charter}",
     "maimai.message.too_much": "結果過多（${length} 條），請縮小搜尋範圍。",
-    "maimai.message.unbind.success": "解除綁定成功。",
+    "maimai.message.unbind.success": "解除繫結成功。",
     "maimai.message.user_not_found": "未找到此使用者，請確認此使用者的名稱和查分器中的名稱相同。",
     "maimai.message.user_unbound": "未綁定使用者，請使用「${prefix}maimai bind」綁定一個使用者。",
-    "maimai.message.user_unbound.qq": "未綁定使用者，請前往查分器並綁綁定你的 QQ 號。\n查分器網址：https://www.diving-fish.com/maimaidx/prober"
+    "maimai.message.user_unbound.qq": "未綁定使用者，請前往查分器並綁定你的 QQ 號。\n查分器網址：https://www.diving-fish.com/maimaidx/prober"
 }
