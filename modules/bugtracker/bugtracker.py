@@ -56,6 +56,7 @@ async def make_screenshot(page_link, use_local=True):
 async def bugtracker_get(session, mojira_id: str, nolink=False):
     data = {}
     id_ = mojira_id.upper()
+    get_json = None
     try:
         json_url = 'https://bugs.mojang.com/rest/api/2/issue/' + id_
         get_json = await get_url(json_url, 200)
