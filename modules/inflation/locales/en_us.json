@@ -6,5 +6,5 @@
     "inflation.message.from_year_no_data": "The start year specified is in this dataset, but a data for this country/region is missing.",
     "inflation.message.to_year_not_found": "The end year specified is out of range of this dataset.",
     "inflation.message.to_year_no_data": "The end year specified is in this dataset, but a data for this country/region is missing.",
-    "inflation.message.result": "In ${country_or_region_name}, ${price} units of currency in ${from_year} is equivalent to ${result} units of currency in ${to_year}."r}."
+    "inflation.message.result": "In ${country_or_region_name}, ${price} units of currency in ${from_year} is equivalent to ${result} units of currency in ${to_year}."
 }
