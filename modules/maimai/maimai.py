@@ -27,7 +27,7 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
     result_set = []
     if constant <= 0:
         await msg.finish(msg.locale.t('maimai.message.level_invalid'))
-    if constant_max:
+    elif constant_max:
         if constant > constant_max:
             data = (await total_list.get()).filter(ds=(constant_max, constant))
             s = msg.locale.t(
@@ -44,14 +44,14 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         data = (await total_list.get()).filter(ds=constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
 
-        for music in sorted(data, key=lambda i: int(i['id'])):
-            for i in music.diff:
-                result_set.append((music['id'],
-                                   music['title'],
-                                   music['ds'][i],
-                                   diff_label[i],
-                                   music['level'][i],
-                                   music['type']))
+    for music in sorted(data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'],
+                               music['title'],
+                               music['ds'][i],
+                               diff_label[i],
+                               music['level'][i],
+                               music['type']))
 
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
