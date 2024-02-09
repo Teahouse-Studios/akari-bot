@@ -1,19 +1,16 @@
-import os
 import re
-import shutil
 import traceback
 import urllib.parse
 
 from bs4 import BeautifulSoup as bs
 
-from core.builtins import Plain, Image, MessageSession
-from core.utils.http import get_url, download_to_cache
+from core.builtins import Plain, MessageSession
+from core.utils.http import get_url
 from modules.wiki.utils.wikilib import WikiLib
-from .tpg import tpg
 from modules.wiki.utils.time import strptime2ts
 
 
-async def get_user_info(msg: MessageSession, wikiurl, username, pic=False):
+async def get_user_info(msg: MessageSession, wikiurl, username):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
         return [Plain(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))]
@@ -22,8 +19,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username, pic=False):
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
             return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
-                                       match_interwiki.group(2),
-                                       pic)
+                                       match_interwiki.group(2))
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
@@ -99,47 +95,6 @@ async def get_user_info(msg: MessageSession, wikiurl, username, pic=False):
         data['blocked_reason'] = base_user_info['blockreason']
         data['blocked_reason'] = data['blocked_reason'] if data['blocked_reason'] else msg.locale.t(
             'unknown')
-
-    if pic:
-        assets_path = os.path.abspath('./assets/')
-        icon_path = os.path.join(assets_path, 'favicon')
-        if not os.path.exists(icon_path):
-            os.makedirs(icon_path)
-        site_icon = os.path.join(icon_path, urllib.parse.urlparse(wiki.wiki_info.api).netloc)
-        if not os.path.exists(site_icon):
-            os.makedirs(site_icon)
-        if 'Wiki.png' not in os.listdir(site_icon):
-            query_wiki = await wiki.parse_page_info('File:Wiki.png')
-            file = query_wiki.file
-            get_file = await download_to_cache(file)
-            shutil.copy(get_file, os.path.join(site_icon, 'Wiki.png'))
-        bantype = None
-        blocked_by = data.get('blocked_by', False)
-        blocked_reason = data.get('blocked_reason', False)
-        if blocked_by and not blocked_reason:
-            bantype = 'YN'
-        elif blocked_by and blocked_reason:
-            bantype = 'Y'
-        image = tpg(msg,
-                    favicon=os.path.join(site_icon, 'Wiki.png'),
-                    wikiname=wiki.wiki_info.name,
-                    username=data['username'] if 'username' in data else '?',
-                    gender=data['gender'] if 'gender' in data else '?',
-                    registertime=data['registration_time'] if 'registration_time' in data else '?',
-                    contributionwikis=data['edited_wiki_count'] if 'edited_wiki_count' in data else '?',
-                    createcount=data['created_page_count'] if 'created_page_count' in data else '?',
-                    editcount=data['edited_count'] if 'edited_count' in data else '?',
-                    deletecount=data['deleted_count'] if 'deleted_count' in data else '?',
-                    patrolcount=data['patrolled_count'] if 'patrolled_count' in data else '?',
-                    sitetop=data['site_rank'] if 'site_rank' in data else '?',
-                    globaltop=data['global_rank'] if 'global_rank' in data else '?',
-                    wikipoint=data['wikipoints'] if 'wikipoints' in data else '?',
-                    blockbyuser=data['blocked_by'] if 'blocked_by' in data else '?',
-                    blocktimestamp1=data['blocked_time'] if 'blocked_time' in data else '?',
-                    blocktimestamp2=data['blocked_expires'] if 'blocked_expires' in data else '?',
-                    blockreason=data['blocked_reason'] if 'blocked_reason' in data else '?',
-                    bantype=bantype)
-        return [Plain(data['url']), Image(image)]
 
     else:
         msgs = []
