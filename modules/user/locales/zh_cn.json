@@ -1,7 +1,7 @@
 {
     "user.help.desc": "获取一个 MediaWiki 用户的信息。",
     "user.message.blocked": "${user} 正在被封禁中！",
-    "user.message.blocked.detail": "被 ${blocked_by} 封禁，时间从 ${blocked_time} 到 ${expire_time}",
+    "user.message.blocked.detail": "被 ${blocked_by} 封禁，时间从 ${blocked_time} 到 ${blocked_expires}",
     "user.message.blocked.reason": "理由：",
     "user.message.blocked.time.infinity": "无限期",
     "user.message.created_page_count": "创建数：",
