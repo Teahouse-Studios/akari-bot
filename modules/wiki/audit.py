@@ -58,7 +58,7 @@ if Config('enable_urlmanager'):
             audit = Audit(apilink)
             msg_list = []
             if audit.inAllowList:
-                msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.allowlist') + , api=apilink))
+                msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.allowlist', api=apilink))
             if audit.inBlockList:
                 msg_list.append(msg.locale.t('wiki.message.wiki_audit.query.blocklist', api=apilink))
             if msg_list:
