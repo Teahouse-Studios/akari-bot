@@ -1,5 +1,6 @@
 {
     "user.help.desc": "Get information about a MediaWiki user.",
+    "user.help.option.r": "Get extra information from Gamepedia site.",
     "user.message.blocked": "${user} is being blocked!",
     "user.message.blocked.detail": "Blocked by ${blocked_by}. Time from ${blocked_time} to ${blocked_expires}",
     "user.message.blocked.reason": "Reason: ",

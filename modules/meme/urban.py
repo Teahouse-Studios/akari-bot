@@ -1,5 +1,3 @@
-import traceback
-
 import ujson as json
 
 from config import CFG
@@ -41,7 +39,6 @@ async def urban(term: str, locale: Locale):
             link = data[0]['permalink']
             return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.result", result=count)}\n{word}\n{definition}\nExample: {example}\n{str(Url(link))}'
     except Exception:
-        traceback.print_exc()
         return f'[{locale.t("meme.message.urban")}] {locale.t("meme.message.error")}'
 
 

@@ -1,5 +1,6 @@
 {
     "user.help.desc": "获取一个 MediaWiki 用户的信息。",
+    "user.help.option.r": "获取来自 Gamepedia 网站的更多信息。",
     "user.message.blocked": "${user} 正在被封禁中！",
     "user.message.blocked.detail": "被 ${blocked_by} 封禁，时间从 ${blocked_time} 到 ${blocked_expires}",
     "user.message.blocked.reason": "理由：",

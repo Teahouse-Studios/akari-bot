@@ -1,5 +1,3 @@
-import traceback
-
 import ujson as json
 
 from core.logger import Logger
@@ -32,5 +30,4 @@ async def nbnhhsh(term: str, locale: Locale):
         else:
             return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t("meme.message.not_found")}'
     except Exception:
-        traceback.print_exc()
         return f'[{locale.t("meme.message.nbnhhsh")}] {locale.t("meme.message.error")}'
