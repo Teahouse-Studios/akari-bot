@@ -81,10 +81,8 @@ async def _(msg: Bot.MessageSession, score: int, rating: float):
 p = module('ptt', developers=['OasisAkari'])
 
 
-@p.command('<potential> {{ptt.help}}')
-async def pttimg(msg: Bot.MessageSession):
-    ptt = msg.parsed_msg['<potential>']
-    # ptt
+@p.command('<ptt> {{ptt.help}}')
+async def pttimg(msg: Bot.MessageSession, ptt: str):
     if ptt == '--':
         ptt = -1
     else:

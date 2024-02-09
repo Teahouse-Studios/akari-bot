@@ -27,32 +27,32 @@ wiki = module('wiki',
               developers=['OasisAkari'])
 
 
-@wiki.command('<PageName> [-l <lang>] {{wiki.help}}',
+@wiki.command('<pagename> [-l <lang>] {{wiki.help}}',
               options_desc={'-l': '{wiki.help.option.l}'})
-async def _(msg: Bot.MessageSession, PageName: str):
+async def _(msg: Bot.MessageSession, pagename: str):
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
     else:
         lang = None
-    await query_pages(msg, PageName, lang=lang)
+    await query_pages(msg, pagename, lang=lang)
 
 
-@wiki.command('id <PageID> [-l <lang>] {{wiki.help.id}}',
+@wiki.command('id <pageid> [-l <lang>] {{wiki.help.id}}',
               options_desc={'-l': '{wiki.help.option.l}'})
-async def _(msg: Bot.MessageSession, PageID: str):
+async def _(msg: Bot.MessageSession, pageid: str):
     iw = None
-    if match_iw := re.match(r'(.*?):(.*)', PageID):
+    if match_iw := re.match(r'(.*?):(.*)', pageid):
         iw = match_iw.group(1)
-        PageID = match_iw.group(2)
-    if not PageID.isdigit():
+        pageid = match_iw.group(2)
+    if not pageid.isdigit():
         await msg.finish(msg.locale.t('wiki.message.id.invalid'))
     get_lang = msg.parsed_msg.get('-l', False)
     if get_lang:
         lang = get_lang['<lang>']
     else:
         lang = None
-    await query_pages(msg, pageid=PageID, iw=iw, lang=lang)
+    await query_pages(msg, pageid=pageid, iw=iw, lang=lang)
 
 
 async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Union[str, list, tuple] = None,

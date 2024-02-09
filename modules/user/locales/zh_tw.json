@@ -1,7 +1,6 @@
 {
     "user.help.desc": "取得一個 MediaWiki 使用者的資訊。",
-    "user.help.option.p": "以圖像形式生成。",
-    "user.message.blocked": "正在被封禁中！",
+    "user.message.blocked": "${user} 正在被封禁中！",
     "user.message.blocked.blocked_by": "被 ${blocked_by} 封禁，",
     "user.message.blocked.blocked_expires": "到",
     "user.message.blocked.blocked_reason": "，理由：",

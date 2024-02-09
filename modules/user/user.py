@@ -150,14 +150,14 @@ async def get_user_info(msg: MessageSession, wikiurl, username):
             msgs.append(msg.locale.t('user.message.global_home') + global_home)
 
         if blocked_by := data.get('blocked_by', False):
-            msgs.append(user + msg.locale.t('user.message.user.blocked'))
+            msgs.append(msg.locale.t('user.message.blocked', user=user))
             msgs.append(
-                msg.locale.t('user.message.user.blocked.blocked_by', blocked_by=blocked_by) + (
-                    msg.locale.t('user.message.user.blocked.blocked_time') + data[
+                msg.locale.t('user.message.blocked.blocked_by', blocked_by=blocked_by)
+                + (msg.locale.t('user.message.blocked.blocked_time') + data[
                         'blocked_time'] if 'blocked_time' in data else '')
-                + (msg.locale.t('user.message.user.blocked.blocked_expires') + data[
+                + (msg.locale.t('user.message.blocked.blocked_expires') + data[
                     'blocked_expires'] if 'blocked_expires' in data else '')
-                + (msg.locale.t('user.message.user.blocked.blocked_reason') + data[
+                + (msg.locale.t('user.message.blocked.blocked_reason') + data[
                     'blocked_reason'] if 'blocked_reason' in data else ''))
 
         if url := data.get('url', False):

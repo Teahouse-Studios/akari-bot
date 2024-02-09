@@ -6,9 +6,9 @@ from core.utils.http import get_url
 from modules.github.utils import dirty_check, darkCheck
 
 
-async def search(msg: Bot.MessageSession):
+async def search(msg: Bot.MessageSession, keyword: str):
     try:
-        result = await get_url('https://api.github.com/search/repositories?q=' + msg.parsed_msg['<query>'], 200,
+        result = await get_url('https://api.github.com/search/repositories?q=' + keyword, 200,
                                fmt='json')
         if result['total_count'] == 0:
             message = msg.locale.t("github.message.search.none")

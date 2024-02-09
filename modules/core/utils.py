@@ -64,8 +64,8 @@ admin = module('admin', base=True, required_admin=True, desc='{core.help.admin.d
 
 
 @admin.command([
-    'add <UserID> {{core.help.admin.add}}',
-    'remove <UserID> {{core.help.admin.remove}}',
+    'add <user> {{core.help.admin.add}}',
+    'remove <user> {{core.help.admin.remove}}',
     'list {{core.help.admin.list}}'])
 async def config_gu(msg: Bot.MessageSession):
     if 'list' in msg.parsed_msg:
@@ -73,7 +73,7 @@ async def config_gu(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t("core.message.admin.list") + '\n'.join(msg.custom_admins))
         else:
             await msg.finish(msg.locale.t("core.message.admin.list.none"))
-    user = msg.parsed_msg['<UserID>']
+    user = msg.parsed_msg['<user>']
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t('core.message.admin.invalid', target=msg.target.sender_from, prefix=msg.prefixes[0]))
     if 'add' in msg.parsed_msg:
@@ -92,10 +92,9 @@ async def config_gu(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("core.message.admin.remove.success", user=user))
 
 
-@admin.command('ban <UserID> {{core.help.admin.ban}}',
-               'unban <UserID> {{core.help.admin.unban}}')
-async def config_ban(msg: Bot.MessageSession):
-    user = msg.parsed_msg['<UserID>']
+@admin.command('ban <user> {{core.help.admin.ban}}',
+               'unban <user> {{core.help.admin.unban}}')
+async def config_ban(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t('core.message.admin.invalid', prefix=msg.prefixes[0]))
     if user == msg.target.sender_id:
@@ -129,9 +128,8 @@ async def _(msg: Bot.MessageSession):
     await msg.finish(res)
 
 
-@locale.command('<lang> {{core.help.locale.set}}', required_admin=True)
-async def config_gu(msg: Bot.MessageSession):
-    lang = msg.parsed_msg['<lang>']
+@locale.command('[<lang>] {{core.help.locale.set}}', required_admin=True)
+async def config_gu(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales() and BotDBUtil.TargetInfo(msg.target.target_id).edit('locale', lang):
         await msg.finish(Locale(lang).t("success"))
     else:
@@ -242,10 +240,10 @@ token = module('token', base=True)
 
 
 @token.command('<code> {{core.help.token}}')
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, code: str):
     await msg.finish(jwt.encode({
         'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24 * 7),  # 7 days
         'iat': datetime.utcnow(),
         'senderId': msg.target.sender_id,
-        'code': msg.parsed_msg['<code>']
+        'code': code
     }, bytes(jwt_secret, 'utf-8'), algorithm='HS256'))
