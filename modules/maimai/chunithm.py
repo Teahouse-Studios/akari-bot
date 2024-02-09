@@ -39,13 +39,13 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         data = (await total_list.get()).filter(ds=constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
 
-        for music in sorted(data, key=lambda i: int(i['id'])):
-            for i in music.diff:
-                result_set.append((music['id'],
-                                   music['title'],
-                                   music['ds'][i],
-                                   diff_label[i],
-                                   music['level'][i]))
+    for music in sorted(data, key=lambda i: int(i['id'])):
+        for i in music.diff:
+            result_set.append((music['id'],
+                               music['title'],
+                               music['ds'][i],
+                               diff_label[i],
+                               music['level'][i]))
 
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]} {elem[3]} {elem[4]} ({elem[2]})\n"

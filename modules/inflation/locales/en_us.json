@@ -1,7 +1,7 @@
 {
     "inflation.help.desc": "Inflation calculations.",
     "inflation.help.adjust": "Adjust a price for inflation.",
-    "inflation.message.country_not_found": "Country/region not found. Please make sure you have entered the correct country找不到国家。请确认输入了正确的国家名或三位字母代码。",
+    "inflation.message.country_not_found": "Country/region not found. Please make sure you have entered the correct country code.",
     "inflation.message.from_year_not_found": "The start year specified is out of range of this dataset.",
     "inflation.message.from_year_no_data": "The start year specified is in this dataset, but a data for this country/region is missing.",
     "inflation.message.to_year_not_found": "The end year specified is out of range of this dataset.",

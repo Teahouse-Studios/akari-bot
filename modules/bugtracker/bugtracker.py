@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import aiohttp
 import ujson as json
@@ -62,6 +63,8 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
     except ValueError as e:
         if str(e).startswith('401'):
             await session.finish(session.locale.t("bugtracker.message.get_failed"))
+        else:
+            traceback.print_exc()
     if mojira_id not in spx_cache:
         get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
         if get_spx:

@@ -5,7 +5,7 @@
     "wordle.message.finish": "Game over. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.finish.success": "Congratulations! You complete the game in ${attempt} turn(s).",
     "wordle.message.not_a_word": "This is not a valid word.",
-    "wordle.message.start": "The game has started. You will guess a 5-letter word by testing up to 6 words.\nGreen indicates the letter is in the word and is in its place; yellow indicates the letter is in the word but it is not at its current location; gray indicates the letter is not in the word.",
+    "wordle.message.start": "The game has started. You will guess a 5-letter word by testing up to 6 words.\nGreen indicates the letter is in the word and is in its place; yellow indicates the letter is in the word, but it is not at its current location; gray indicates the letter is not in the word.",
     "wordle.message.stop": "Stopped. The answer is: ${answer}.\nWord lookup: https://dictionary.cambridge.org/dictionary/english/${answer}",
     "wordle.message.theme.disable": "Dark theme disabled.",
     "wordle.message.theme.enable": "Dark theme enabled."

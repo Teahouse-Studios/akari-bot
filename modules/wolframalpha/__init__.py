@@ -1,4 +1,5 @@
 import os
+import traceback
 import urllib.parse
 from PIL import Image
 
@@ -41,6 +42,8 @@ async def _(msg: Bot.MessageSession, query: str):
     except ValueError as e:
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
+        else:
+            traceback.print_exc()
 
 
 @w.handle('ask <question> {{wolframalpha.help.ask}}')
@@ -57,3 +60,5 @@ async def _(msg: Bot.MessageSession, question: str):
     except ValueError as e:
         if str(e).startswith('501'):
             await msg.finish(msg.locale.t('wolframalpha.message.incomprehensible'))
+        else:
+            traceback.print_exc()

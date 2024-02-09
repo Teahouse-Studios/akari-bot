@@ -68,4 +68,5 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        traceback.print_exc()
+        else:
+            traceback.print_exc()

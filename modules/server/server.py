@@ -4,7 +4,6 @@ import traceback
 import aiohttp
 import ujson as json
 
-from core.builtins import ErrorMessage, Plain
 from core.logger import Logger
 from core.utils.http import get_url
 
@@ -65,7 +64,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             servers.append(serip + ':' + port1)
         except Exception:
             traceback.print_exc()
-            servers.append(Plain(ErrorMessage(msg.locale.t('server.message.error'))))
+            servers.append(msg.locale.t('server.message.error'))
         if raw:
             return '\n'.join(servers)
         return re.sub(r'§\w', "", '\n'.join(servers))
@@ -95,7 +94,7 @@ async def server(msg, address, raw=False, showplayer=False, mode='JE'):
             servers.append(serip + ':' + port2)
         except Exception:
             traceback.print_exc()
-            servers.append(Plain(ErrorMessage(msg.locale.t('server.message.error'))))
+            servers.append(msg.locale.t('server.message.error'))
         if raw:
             return '\n'.join(servers)
         return re.sub(r'§\w', "", '\n'.join(servers))
