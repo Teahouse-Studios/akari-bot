@@ -5,6 +5,7 @@
     "user.message.blocked.blocked_expires": "到",
     "user.message.blocked.blocked_reason": "，理由：",
     "user.message.blocked.blocked_time": "时间从",
+    "user.message.blocked.time.infinity": "無限期",
     "user.message.created_page_count": "创建数：",
     "user.message.deleted_count": "删除数：",
     "user.message.edited_count": "编辑数：",

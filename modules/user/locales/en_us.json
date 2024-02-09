@@ -5,6 +5,7 @@
     "user.message.blocked.blocked_expires": "to",
     "user.message.blocked.blocked_reason": ", Reason: ",
     "user.message.blocked.blocked_time": "Time from ",
+    "user.message.blocked.time.infinity": "Infinity",
     "user.message.created_page_count": "Created count: ",
     "user.message.deleted_count": "Deleted count: ",
     "user.message.edited_count": "Edited count: ",

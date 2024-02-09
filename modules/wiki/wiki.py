@@ -38,8 +38,7 @@ async def _(msg: Bot.MessageSession, pagename: str):
     await query_pages(msg, pagename, lang=lang)
 
 
-@wiki.command('id <pageid> [-l <lang>] {{wiki.help.id}}',
-              options_desc={'-l': '{wiki.help.option.l}'})
+@wiki.command('id <pageid> [-l <lang>] {{wiki.help.id}}')
 async def _(msg: Bot.MessageSession, pageid: str):
     iw = None
     if match_iw := re.match(r'(.*?):(.*)', pageid):
