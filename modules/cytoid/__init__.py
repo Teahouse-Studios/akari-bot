@@ -10,24 +10,23 @@ ctd = module('cytoid', desc='{cytoid.help.desc}',
              developers=['OasisAkari'], alias='ctd')
 
 
-@ctd.handle('profile [<UserID>] {{cytoid.help.profile}}')
+@ctd.handle('profile [<username>] {{cytoid.help.profile}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg['profile']:
         await cytoid_profile(msg)
 
 
-@ctd.handle('b30 [<UserID>] {{cytoid.help.b30}}',
-            'r30 [<UserID>] {{cytoid.help.r30}}')
-async def _(msg: Bot.MessageSession):
+@ctd.handle('b30 [<username>] {{cytoid.help.b30}}',
+            'r30 [<username>] {{cytoid.help.r30}}')
+async def _(msg: Bot.MessageSession, username: str = None):
     if 'b30' in msg.parsed_msg:
         query = 'b30'
     elif 'r30' in msg.parsed_msg:
         query = 'r30'
     else:
         return
-    pat = msg.parsed_msg.get('<UserID>', False)
-    if pat:
-        query_id = pat
+    if username:
+        query_id = username
     else:
         query_id = CytoidBindInfoManager(msg).get_bind_username()
         if not query_id:
@@ -54,8 +53,8 @@ async def _(msg: Bot.MessageSession):
 
 
 @ctd.handle('bind <username> {{cytoid.help.bind}}')
-async def _(msg: Bot.MessageSession):
-    code: str = msg.parsed_msg['<username>'].lower()
+async def _(msg: Bot.MessageSession, username: str):
+    code: str = username.lower()
     getcode = await get_profile_name(code)
     if getcode:
         bind = CytoidBindInfoManager(msg).set_bind_info(username=getcode[0])

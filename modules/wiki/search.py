@@ -9,9 +9,9 @@ from modules.wiki.utils.wikilib import WikiLib
 from .wiki import wiki, query_pages
 
 
-@wiki.command('search <PageName> {{wiki.help.search}}')
-async def _(msg: Bot.MessageSession):
-    await search_pages(msg, msg.parsed_msg['<PageName>'])
+@wiki.command('search <pagename> {{wiki.help.search}}')
+async def _(msg: Bot.MessageSession, pagename: str):
+    await search_pages(msg, pagename)
 
 
 async def search_pages(msg: Bot.MessageSession, title: Union[str, list, tuple], use_prefix=True):
