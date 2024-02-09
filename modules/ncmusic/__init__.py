@@ -10,8 +10,7 @@ ncmusic = module('ncmusic',
                  support_languages=['zh_cn'])
 
 
-@ncmusic.handle(['search <keyword> {{ncmusic.help.search}}',
-                 'search legacy <keyword> {{ncmusic.help.search.legacy}}'])
+@ncmusic.handle('search [legacy] <keyword> {{ncmusic.help.search}}')
 async def search(msg: Bot.MessageSession, keyword: str):
     url = f"https://ncmusic.akari-bot.top/search?keywords={keyword}"
     result = await get_url(url, 200, fmt='json')

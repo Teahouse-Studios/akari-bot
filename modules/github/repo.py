@@ -7,9 +7,9 @@ from core.utils.http import get_url, download_to_cache
 from modules.github.utils import time_diff, dirty_check, darkCheck
 
 
-async def repo(msg: Bot.MessageSession):
+async def repo(msg: Bot.MessageSession, name: str):
     try:
-        result = await get_url('https://api.github.com/repos/' + msg.parsed_msg['<name>'], 200, fmt='json')
+        result = await get_url('https://api.github.com/repos/' + name, 200, fmt='json')
         rlicense = 'Unknown'
         if 'license' in result and result['license']:
             if 'spdx_id' in result['license']:
@@ -68,4 +68,5 @@ Created {time_diff(result['created_at'])} ago | Updated {time_diff(result['updat
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t("github.message.repo.not_found"))
-        traceback.print_exc()
+        else:
+            traceback.print_exc()

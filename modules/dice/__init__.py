@@ -16,7 +16,7 @@ dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon'], desc='{
                   'N': '{dice.help.option.N}',
                   'dc': '{dice.help.option.dc}'
               })
-async def _(msg: Bot.MessageSession, dices, dc='0'):
+async def _(msg: Bot.MessageSession, dices: str, dc: str = '0'):
     times = '1'
     if 'x' in dices:
         times = dices.partition('x')[0]

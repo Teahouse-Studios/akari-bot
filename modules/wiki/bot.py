@@ -10,12 +10,9 @@ wb = module('wiki_bot', required_superuser=True,
              alias='wbot')
 
 
-@wb.handle('login <apiLink> <account> <password>')
-async def _(msg: Bot.MessageSession):
-    api_link = msg.parsed_msg['<apiLink>']
-    account = msg.parsed_msg['<account>']
-    password = msg.parsed_msg['<password>']
-    check = await WikiLib(api_link).check_wiki_available()
+@wb.handle('login <apilink> <account> <password>')
+async def _(msg: Bot.MessageSession, apilink: str, account: str, password: str):
+    check = await WikiLib(apilink).check_wiki_available()
     if check.available:
         try:
             login = await BotAccount._login(check.value.api, account, password)
@@ -31,10 +28,9 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(result)
 
 
-@wb.handle('logout <apiLink>')
-async def _(msg: Bot.MessageSession):
-    api_link = msg.parsed_msg['<apiLink>']
-    BotAccountDB.remove(api_link)
+@wb.handle('logout <apilink>')
+async def _(msg: Bot.MessageSession, apilink: str):
+    BotAccountDB.remove(apilink)
     await msg.finish(msg.locale.t("success"))
 
 

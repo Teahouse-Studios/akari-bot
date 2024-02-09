@@ -125,6 +125,8 @@ async def get_record(msg, payload):
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
+        else:
+            traceback.print_exc()
     if data:
         return data
 
@@ -147,5 +149,7 @@ async def get_plate(msg, payload):
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
+        else:
+            traceback.print_exc()
     if data:
         return data
