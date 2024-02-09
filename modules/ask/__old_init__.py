@@ -82,7 +82,7 @@ if Config('enable_langsmith'):
 
             await msg.finish(chain)
         else:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=60))
 
     def parse_markdown(md: str):
         regex = r'(```[\s\S]*?\n```|\$[\s\S]*?\$|[^\n]+)'

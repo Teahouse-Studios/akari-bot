@@ -16,16 +16,16 @@ dice = module('dice', alias=['rd', 'roll'], developers=['Light-Beacon'], desc='{
                   'N': '{dice.help.option.N}',
                   'dc': '{dice.help.option.dc}'
               })
-async def _(msg: Bot.MessageSession, dices: str, dc: str = '0'):
-    times = '1'
+async def _(msg: Bot.MessageSession, dices: str, dc: int = 0):
+
     if 'x' in dices:
         times = dices.partition('x')[0]
         dices = dices.partition('x')[2]
+    else:
+        times = '1'
     if not times.isdigit():
         await msg.finish(msg.locale.t('dice.message.N.invalid') + times)
-    if not dc.isdigit():
-        await msg.finish(msg.locale.t('dice.message.dc.invalid') + dc)
-    await msg.finish(await GenerateMessage(msg, dices, int(times), int(dc)))
+    await msg.finish(await GenerateMessage(msg, dices, int(times), dc))
 
 
 @dice.regex(r"[扔投掷擲丢]([0-9]*)?[个個]([0-9]*面)?骰子?([0-9]*次)?", desc="{dice.help.regex.desc}")

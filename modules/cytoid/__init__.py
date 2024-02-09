@@ -47,7 +47,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
             elif 'text' in img:
                 await msg.finish(img['text'])
         else:
-            res = msg.locale.t('message.cooldown', time=int(c), cd_time='150') + \
+            res = msg.locale.t('message.cooldown', time=int(c), cd_time=150) + \
                 msg.locale.t('cytoid.message.b30.cooldown')
             await msg.finish(res)
 

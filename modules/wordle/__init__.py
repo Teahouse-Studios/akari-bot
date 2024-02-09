@@ -185,7 +185,7 @@ async def _(msg: Bot.MessageSession):
     if not msg.target.target_from == 'TEST|Console' and not msg.check_super_user():
         c = qc.check(150)
         if c != 0:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='150'))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=150))
 
     board = WordleBoard.from_random_word()
     board_image = WordleBoardImage(wordle_board=board, dark_theme=msg.data.options.get('wordle_dark_theme'))
