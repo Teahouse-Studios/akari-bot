@@ -26,9 +26,9 @@ if Config('enable_urlmanager'):
                 res = Audit(apilink).add_to_BlockList(date)
                 list_name = msg.locale.t('wiki.message.wiki_audit.list_name.blocklist')
             if not res:
-                await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.failed', list_name=list_name, api=apilink)
+                await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.failed', list_name=list_name, api=apilink))
             else:
-                await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.success', list_name=list_name, api=apilink)
+                await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.success', list_name=list_name, api=apilink))
         else:
             result = msg.locale.t('wiki.message.error.add') + \
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
@@ -40,15 +40,15 @@ if Config('enable_urlmanager'):
         if msg.parsed_msg.get('distrust', False):
             res = Audit(apilink).remove_from_AllowList()  # 已关闭的站点无法验证有效性
             if not res:
-                await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed.other', api=apilink)
+                await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed.other', api=apilink))
             list_name = msg.locale.t('wiki.message.wiki_audit.list_name.allowlist')
         else:
             res = Audit(apilink).remove_from_BlockList()
             list_name = msg.locale.t('wiki.message.wiki_audit.list_name.blocklist')
         if not res:
-            await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed', list_name=list_name, api=apilink)
+            await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed', list_name=list_name, api=apilink))
         else:
-            await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name, api=apilink)
+            await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name, api=apilink))
 
     @aud.command('query <apilink>')
     async def _(msg: Bot.MessageSession, apilink: str):
