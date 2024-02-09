@@ -5,13 +5,14 @@ import urllib.parse
 from bs4 import BeautifulSoup as bs
 
 from core.builtins import Plain, MessageSession
+from core.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.utils.http import get_url
 from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.time import strptime2ts
 
 
-async def get_user_info(msg: MessageSession, wikiurl, username):
+async def get_user_info(msg: MessageSession, wikiurl, username, gp_mode=False):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
         return [Plain(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))]
@@ -20,7 +21,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username):
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
             return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
-                                       match_interwiki.group(2))
+                                       match_interwiki.group(2), gp_mode)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
@@ -61,7 +62,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username):
         data['gender'] = msg.locale.t('unknown')
     # if one day LGBTers...
 
-    try:
+    if gp_mode:
         gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath), 200, logging_err_resp=False),
                         'html.parser')
         dd = gp_clawler.find('div', class_='section stats').find_all('dd')
@@ -75,8 +76,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username):
         data['friends_count'] = dd[7].text
         data['wikipoints'] = gp_clawler.find('div', class_='score').text
         data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
-    except ValueError:
-        pass
+
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
@@ -161,5 +161,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username):
     if url := data.get('url', False):
         msgs.append(url)
 
-    if msgs:
-        return [Plain('\n'.join(msgs))]
+    res = '\n'.join(msgs)
+    if await check_bool(res):
+        await msg.finish(rickroll(msg))
+    await msg.finish(res)

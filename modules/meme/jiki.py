@@ -1,5 +1,3 @@
-import traceback
-
 from bs4 import BeautifulSoup
 
 from config import CFG
@@ -40,5 +38,4 @@ async def jiki(term: str, locale: Locale):
         count = str(result) if results < 15 else '15+'
         return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.result", result=count)}{title}\n{content}\n{str(Url(link))}'
     except Exception:
-        traceback.print_exc()
         return f'[{locale.t("meme.message.jiki")}] {locale.t("meme.message.error")}'

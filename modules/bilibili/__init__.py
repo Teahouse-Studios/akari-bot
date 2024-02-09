@@ -13,7 +13,7 @@ bili = module('bilibili', alias='bili', developers=['DoroWolf'],
 
 @bili.command('<bid> [-i] {{bilibili.help}}',
               options_desc={'-i': '{bilibili.help.option.i}'})
-async def _(msg: Bot.MessageSession, bid: str, get_detail=False):
+async def _(msg: Bot.MessageSession, bid: str, get_detail = False):
     if msg.parsed_msg.get('-i', False):
         get_detail = True
     if bid[:2].upper() == "BV":

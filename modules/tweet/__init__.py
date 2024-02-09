@@ -16,7 +16,6 @@ web_render_local = CFG.get_url('web_render_local')
 t = module('tweet',
            developers=['Dianliang233'],
            desc='{tweet.help.desc}',
-           exclude_from=['QQ', 'QQ|Group', 'Kook'],
            alias=['x']
            )
 
