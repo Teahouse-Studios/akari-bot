@@ -10,7 +10,7 @@ import ujson as json
 import core.utils.html2text as html2text
 from config import Config, CFG
 from core.builtins import Url
-from core.dirty_check import check_bool
+from core.dirty_check import check
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.i18n import Locale, default_locale
@@ -774,8 +774,10 @@ class WikiLib:
                 checklist.append(page_info.before_title)
             if page_info.desc:
                 checklist.append(page_info.desc)
-            if not await check_bool(*checklist):
-                ban = True
+            chk = await check(*checklist)
+            for x in chk:
+                if not x['status']:
+                    ban = True
         if ban:
             page_info.status = False
             page_info.title = page_info.before_title = None
