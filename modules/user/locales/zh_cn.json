@@ -16,7 +16,7 @@
     "user.message.global_home": "注册 Wiki：",
     "user.message.global_rank": "全站排名：",
     "user.message.global_users_groups": "全域用户组：",
-    "user.message.not_found": "没有找到此用户。",
+    "user.message.not_found": "未找到用户。",
     "user.message.patrolled_count": "巡查数：",
     "user.message.registration_time": "注册时间：",
     "user.message.site_rank": "本站排名：",
