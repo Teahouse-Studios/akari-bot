@@ -28,7 +28,7 @@ if Config('enable_urlmanager'):
             if not res:
                 await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.failed', list_name=list_name, api=apilink))
             else:
-                await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.success', list_name=list_name + apilink))
+                await msg.finish(msg.locale.t('wiki.message.wiki_audit.add.success', list_name=list_name) + apilink)
         else:
             result = msg.locale.t('wiki.message.error.add') + \
                 ('\n' + msg.locale.t('wiki.message.error.info') + check.message if check.message != '' else '')
@@ -48,7 +48,7 @@ if Config('enable_urlmanager'):
         if not res:
             await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.failed', list_name=list_name, api=apilink))
         else:
-            await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + apilink))
+            await msg.finish(msg.locale.t('wiki.message.wiki_audit.remove.success', list_name=list_name) + apilink)
 
     @aud.command('query <apilink>')
     async def _(msg: Bot.MessageSession, apilink: str):
