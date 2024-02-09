@@ -76,7 +76,7 @@ async def _(msg: Bot.MessageSession):
         qc = CoolDown('fish', msg, all=True)
         c = qc.check(30)
         if c != 0:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=30))
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
 
     async def generate_fish(msg: Bot.MessageSession):

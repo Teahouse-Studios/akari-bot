@@ -94,4 +94,4 @@ async def _(msg: Bot.MessageSession):
         output = output.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
         await msg.finish(output)
     else:
-        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=60))

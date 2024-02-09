@@ -212,21 +212,19 @@ async def _(msg: Bot.MessageSession, user: str):
 
 
 @ae.command('warn <user> [<count>]')
-async def _(msg: Bot.MessageSession, user: str, count: str = 1):
-    count = int(count)
+async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     warn_count = await warn_user(user, count)
-    await msg.finish(msg.locale.t("core.message.abuse.warn.success", user=user, counts=count, warn_counts=warn_count))
+    await msg.finish(msg.locale.t("core.message.abuse.warn.success", user=user, count=count, warn_count=warn_count))
 
 
 @ae.command('revoke <user> [<count>]')
-async def _(msg: Bot.MessageSession, user: str, count: str = 1):
-    count = 0 - int(count)
+async def _(msg: Bot.MessageSession, user: str, count: int = 1):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
-    warn_count = await warn_user(user, count)
-    await msg.finish(msg.locale.t("core.message.abuse.revoke.success", user=user, counts=count, warn_counts=warn_count))
+    warn_count = await warn_user(user, -count)
+    await msg.finish(msg.locale.t("core.message.abuse.revoke.success", user=user, count=count, warn_count=warn_count))
 
 
 @ae.command('clear <user>')
