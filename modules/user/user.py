@@ -155,7 +155,7 @@ async def get_user_info(msg: MessageSession, wikiurl, username):
         msgs.append(msg.locale.t('user.message.blocked.detail',
                                   blocked_by=blocked_by,
                                   blocked_time=data['blocked_time'],
-                                  blocked_expires=data['blocked_expires'])
+                                  blocked_expires=data['blocked_expires']))
         msgs.append(msg.locale.t('user.message.blocked.reason') + data['blocked_reason'])
 
     if url := data.get('url', False):
