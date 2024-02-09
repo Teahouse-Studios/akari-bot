@@ -2,7 +2,6 @@
     "ncmusic.help.desc": "网易云音乐相关工具。",
     "ncmusic.help.info": "获取音乐详细信息。",
     "ncmusic.help.search": "搜索网易云音乐。",
-    "ncmusic.help.search.legacy": "搜索网易云音乐。（旧版）",
     "ncmusic.message.info": "歌名：${name}（${id}）\n歌手：${artists}\n专辑名：${album}（${album_id}）",
     "ncmusic.message.info.not_found": "未找到对应的音乐。",
     "ncmusic.message.search.confirm": "是否查看音乐详细信息？",
