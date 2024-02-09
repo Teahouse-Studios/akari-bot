@@ -8,7 +8,8 @@ from .user import get_user_info
 usr = module('user',
               developers=['OasisAkari'],
               recommend_modules='wiki',
-              options_desc={'-r': '{user.help.option.r}')
+              options_desc={'-r': '{user.help.option.r}'}
+            )
 
 
 @usr.command('<username> [-r] {{user.help.desc}}')
