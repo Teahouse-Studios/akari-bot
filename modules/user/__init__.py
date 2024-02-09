@@ -7,12 +7,12 @@ from .user import get_user_info
 
 usr = module('user',
               developers=['OasisAkari'],
-              recommend_modules='wiki'}
+              recommend_modules='wiki'
             )
 
 
 @usr.command('<username> [-r] {{user.help.desc}}',
-              options_desc={'-r': '{user.help.option.r}')
+              options_desc={'-r': '{user.help.option.r}'})
 async def user(msg: Bot.MessageSession, username: str, gp_mode = False):
     if msg.parsed_msg.get('-r', False):
         gp_mode = True
