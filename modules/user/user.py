@@ -15,12 +15,12 @@ from modules.wiki.utils.time import strptime2ts
 async def get_user_info(msg: MessageSession, wikiurl, username, profile=False):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
-        return [Plain(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))]
+        await msg.finish(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))
     await wiki.fixup_wiki_info()
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
-            return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
+            await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
                                        match_interwiki.group(2), profile)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
