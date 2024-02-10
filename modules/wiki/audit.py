@@ -10,7 +10,7 @@ from modules.wiki.utils.wikilib import WikiLib
 
 if Config('enable_urlmanager'):
     aud = module('wiki_audit', required_superuser=True,
-             alias='wau')
+                 alias='wau')
 
     @aud.command(['trust <apilink>',
                   'block <apilink>'])
@@ -18,7 +18,7 @@ if Config('enable_urlmanager'):
         date = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
         check = await WikiLib(apilink).check_wiki_available()
         if check.available:
-            apilink = check.value.apilink
+            apilink = check.value.api
             if msg.parsed_msg.get('trust', False):
                 res = Audit(apilink).add_to_AllowList(date)
                 list_name = msg.locale.t('wiki.message.wiki_audit.list_name.allowlist')
@@ -54,7 +54,7 @@ if Config('enable_urlmanager'):
     async def _(msg: Bot.MessageSession, apilink: str):
         check = await WikiLib(apilink).check_wiki_available()
         if check.available:
-            apilink = check.value.apilink
+            apilink = check.value.api
             audit = Audit(apilink)
             msg_list = []
             if audit.inAllowList:
