@@ -63,20 +63,22 @@ async def get_user_info(msg: MessageSession, wikiurl, username, profile=False):
     # if one day LGBTers...
 
     if profile:
-        gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath), 200, logging_err_resp=False),
-                        'html.parser')
-        dd = gp_clawler.find('div', class_='section stats').find_all('dd')
-        data['edited_wiki_count'] = dd[0].text
-        data['created_page_count'] = dd[1].text
-        data['edited_count'] = dd[2].text
-        data['deleted_count'] = dd[3].text
-        data['patrolled_count'] = dd[4].text
-        data['site_rank'] = dd[5].text
-        data['global_rank'] = dd[6].text
-        data['friends_count'] = dd[7].text
-        data['wikipoints'] = gp_clawler.find('div', class_='score').text
-        data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
-
+        try:
+            gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath), 200, logging_err_resp=False),
+                            'html.parser')
+            dd = gp_clawler.find('div', class_='section stats').find_all('dd')
+            data['edited_wiki_count'] = dd[0].text
+            data['created_page_count'] = dd[1].text
+            data['edited_count'] = dd[2].text
+            data['deleted_count'] = dd[3].text
+            data['patrolled_count'] = dd[4].text
+            data['site_rank'] = dd[5].text
+            data['global_rank'] = dd[6].text
+            data['friends_count'] = dd[7].text
+            data['wikipoints'] = gp_clawler.find('div', class_='score').text
+            data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
+        except ValueError:
+            pass
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
