@@ -15,7 +15,7 @@ from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
 from core.logger import Logger
-from core.parser.message import remove_temp_ban
+from core.parser.message import check_temp_ban, remove_temp_ban
 from core.tos import pardon_user, warn_user
 from core.utils.cache import random_cache_path
 from core.utils.info import Info
@@ -166,7 +166,8 @@ async def _(msg: Bot.MessageSession):
 set_ = module('set', required_superuser=True, base=True)
 
 
-@set_.command('modules <target> <modules> ...')
+@set_.command('module enable <target> <modules> ...',
+              'module disable <target> <modules> ...')
 async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
@@ -177,12 +178,18 @@ async def _(msg: Bot.MessageSession, target: str):
             await msg.finish()
     modules = [m for m in [msg.parsed_msg['<modules>']] + msg.parsed_msg.get('...', [])
                if m in ModulesManager.return_modules_list(msg.target.target_from)]
-    target_data.enable(modules)
-    await msg.finish(msg.locale.t("core.message.set.module.success") + ", ".join(modules))
+    if 'enable' in msg.parsed_msg: 
+        target_data.enable(modules)
+        await msg.finish(msg.locale.t("core.message.set.module.enable.success") + ", ".join(modules))
+    if 'disable' in msg.parsed_msg: 
+        target_data.disable(modules)
+        await msg.finish(msg.locale.t("core.message.set.module.disable.success") + ", ".join(modules))
 
 
-@set_.command('option <target> <k> <v>')
-async def _(msg: Bot.MessageSession, target: str, k: str, v: str):
+@set_.command('option get <target> [<k>]',
+              'option edit <target> <k> <v>',
+              'option remove <target> <k>')
+async def _(msg: Bot.MessageSession, target: str):
     if not target.startswith(f'{msg.target.target_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     target_data = BotDBUtil.TargetInfo(target)
@@ -190,14 +197,36 @@ async def _(msg: Bot.MessageSession, target: str, k: str, v: str):
         confirm = await msg.wait_confirm(msg.locale.t("core.message.set.confirm.init"), append_instruction=False)
         if not confirm:
             await msg.finish()
-    if v.startswith(('[', '{')):
-        v = json.loads(v)
-    elif v.upper() == 'TRUE':
-        v = True
-    elif v.upper() == 'FALSE':
-        v = False
-    target_data.edit_option(k, v)
-    await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
+    if 'get' in msg.parsed_msg:
+        k = msg.parsed_msg.get('<k>', None)
+        await msg.finish(str(target_data.get_option(k)))
+    elif 'edit' in msg.parsed_msg:
+        k = msg.parsed_msg.get('<k>')
+        v = msg.parsed_msg.get('<v>')
+        if v.startswith(('[', '{')):
+            v = json.loads(v)
+        elif v.upper() == 'TRUE':
+            v = True
+        elif v.upper() == 'FALSE':
+            v = False
+        target_data.edit_option(k, v)
+        await msg.finish(msg.locale.t("core.message.set.option.edit.success", key=k, value=v))
+    elif 'remove' in msg.parsed_msg:
+        k = msg.parsed_msg.get('<k>')
+        target_data.remove_option(k)
+        await msg.finish(msg.locale.t("success"))
+
+
+if Bot.client_name == 'QQ':
+    post_whitelist = module('post_whitelist', required_superuser=True, base=True)
+
+    @post_whitelist.command('<group_id>')
+    async def _(msg: Bot.MessageSession, group_id: str):
+        target_data = BotDBUtil.TargetInfo(group_id)
+        k = 'in_post_whitelist'
+        v = not target_data.options.get(k, False)
+        target_data.edit_option(k, v)
+        await msg.finish(msg.locale.t("core.message.set.option.edit.success", key=k, value=v))
 
 
 ae = module('abuse', alias='ae', required_superuser=True, base=True)
@@ -205,11 +234,18 @@ ae = module('abuse', alias='ae', required_superuser=True, base=True)
 
 @ae.command('check <user>')
 async def _(msg: Bot.MessageSession, user: str):
+    stat = ''
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     warns = BotDBUtil.SenderInfo(user).query.warns
-    await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns))
-
+    temp_banned_time = await check_temp_ban(msg.target.sender_id)
+    is_banned = BotDBUtil.SenderInfo(user).query.isInBlockList
+    if temp_banned_time:
+        stat += '\n' + msg.locale.t("core.message.abuse.check.tempbanned", ban_time=temp_banned_time)
+    if is_banned:
+        stat += '\n' + msg.locale.t("core.message.abuse.check.banned")
+    await msg.finish(msg.locale.t("core.message.abuse.check.warns", user=user, warns=warns) + stat)
+    
 
 @ae.command('warn <user> [<count>]')
 async def _(msg: Bot.MessageSession, user: str, count: int = 1):
@@ -544,17 +580,6 @@ if Config('enable_petal'):
             msg.data.clear_petal()
             await msg.finish(msg.locale.t('core.message.petal.clear.self'))
 
-
-if Bot.client_name == 'QQ':
-    post_whitelist = module('post_whitelist', required_superuser=True, base=True)
-
-    @post_whitelist.command('<group_id>')
-    async def _(msg: Bot.MessageSession, group_id: str):
-        target_data = BotDBUtil.TargetInfo(group_id)
-        k = 'in_post_whitelist'
-        v = not target_data.options.get(k, False)
-        target_data.edit_option(k, v)
-        await msg.finish(msg.locale.t("core.message.set.help.option.success", k=k, v=v))
 
     lagrange = module('lagrange', required_superuser=True, base=True)
 
