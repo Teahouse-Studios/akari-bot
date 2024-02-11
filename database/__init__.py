@@ -139,6 +139,7 @@ class BotDBUtil:
                 options = self.options.copy()
                 if k in options:
                     options.pop(k)
+                options = json.dumps(options)
                 self.query.options = options
                 session.commit()
             return True
