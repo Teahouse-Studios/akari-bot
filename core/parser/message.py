@@ -29,17 +29,17 @@ counter_all = {}  # 命令使用次数计数（使用所有命令）
 temp_ban_counter = {}  # 临时封禁计数
 
 
-async def check_temp_ban(msg: Bot.MessageSession):
-    is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
+async def check_temp_ban(target):
+    is_temp_banned = temp_ban_counter.get(target)
     if is_temp_banned:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
         return int(TOS_TEMPBAN_TIME - ban_time)
     else:
         return False
 
-async def remove_temp_ban(msg: Bot.MessageSession):
-    if await check_temp_ban(msg.target.sender_id):
-        del temp_ban_counter[msg.target.sender_id]
+async def remove_temp_ban(target):
+    if await check_temp_ban(target):
+        del temp_ban_counter[target]
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
