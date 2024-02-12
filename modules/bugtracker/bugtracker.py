@@ -14,7 +14,7 @@ web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
-font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
+font = ImageFont.truetype(f'{assets_path}/Noto Sans CJK DemiLight.otf', 15)
 
 spx_cache = {}
 
