@@ -5,7 +5,6 @@ import aiohttp
 
 from core.builtins import Bot
 from core.component import module
-from core.logger import Logger
 from .bili_api import get_video_info
 
 bili = module('bilibili', alias='bili', developers=['DoroWolf'],
