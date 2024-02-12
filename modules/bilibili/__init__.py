@@ -45,7 +45,7 @@ async def _(msg: Bot.MessageSession):
     mode="A",
     desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
-    video = msg.matched_msg[0][1]
+    video = msg.matched_msg[0]
     query = await parse_shorturl(f"https://b23.tv/{video}")
     if not query:
         return
