@@ -12,16 +12,16 @@ from modules.wiki.utils.wikilib import WikiLib
 from modules.wiki.utils.time import strptime2ts
 
 
-async def get_user_info(msg: MessageSession, wikiurl, username, gp_mode=False):
+async def get_user_info(msg: MessageSession, wikiurl, username, profile=False):
     wiki = WikiLib(wikiurl)
     if not await wiki.check_wiki_available():
-        return [Plain(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))]
+        await msg.finish(msg.locale.t('user.message.wiki_unavailable', wikiurl=wikiurl))
     await wiki.fixup_wiki_info()
     match_interwiki = re.match(r'(.*?):(.*)', username)
     if match_interwiki:
         if match_interwiki.group(1) in wiki.wiki_info.interwiki:
-            return await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
-                                       match_interwiki.group(2), gp_mode)
+            await get_user_info(msg, wiki.wiki_info.interwiki[match_interwiki.group(1)],
+                                       match_interwiki.group(2), profile)
     data = {}
     base_user_info = (await wiki.get_json(action='query', list='users', ususers=username,
                                           usprop='groups|blockinfo|registration|editcount|gender'))['query']['users'][0]
@@ -62,21 +62,23 @@ async def get_user_info(msg: MessageSession, wikiurl, username, gp_mode=False):
         data['gender'] = msg.locale.t('unknown')
     # if one day LGBTers...
 
-    if gp_mode:
-        gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath), 200, logging_err_resp=False),
-                        'html.parser')
-        dd = gp_clawler.find('div', class_='section stats').find_all('dd')
-        data['edited_wiki_count'] = dd[0].text
-        data['created_page_count'] = dd[1].text
-        data['edited_count'] = dd[2].text
-        data['deleted_count'] = dd[3].text
-        data['patrolled_count'] = dd[4].text
-        data['site_rank'] = dd[5].text
-        data['global_rank'] = dd[6].text
-        data['friends_count'] = dd[7].text
-        data['wikipoints'] = gp_clawler.find('div', class_='score').text
-        data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
-
+    if profile:
+        try:
+            gp_clawler = bs(await get_url(re.sub(r'\$1', 'UserProfile:' + username, wiki.wiki_info.articlepath), 200, logging_err_resp=False),
+                            'html.parser')
+            dd = gp_clawler.find('div', class_='section stats').find_all('dd')
+            data['edited_wiki_count'] = dd[0].text
+            data['created_page_count'] = dd[1].text
+            data['edited_count'] = dd[2].text
+            data['deleted_count'] = dd[3].text
+            data['patrolled_count'] = dd[4].text
+            data['site_rank'] = dd[5].text
+            data['global_rank'] = dd[6].text
+            data['friends_count'] = dd[7].text
+            data['wikipoints'] = gp_clawler.find('div', class_='score').text
+            data['url'] = re.sub(r'\$1', urllib.parse.quote('UserProfile:' + username), wiki.wiki_info.articlepath)
+        except ValueError:
+            pass
     if 'blockedby' in base_user_info:
         data['blocked_by'] = base_user_info['blockedby']
         data['blocked_time'] = base_user_info['blockedtimestamp']
