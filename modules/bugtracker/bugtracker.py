@@ -54,7 +54,7 @@ async def make_screenshot(page_link, use_local=True):
         return False
 
 
-async def bugtracker_get(session, mojira_id: str, nolink=False):
+async def bugtracker_get(session, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
     try:
@@ -146,7 +146,7 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
             msglist.append("Fixed Version: " + fixversion)
         if version := data.get("version", False):
             msglist.append(version)
-        if (link := data.get("link", False)) and not nolink:
+        if (link := data.get("link", False)):
             msglist.append(str(Url(link)))
             issue_link = link
     msg = '\n'.join(msglist)

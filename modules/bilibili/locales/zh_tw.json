@@ -4,7 +4,7 @@
     "bilibili.help.option.i": "取得詳細資訊。",
     "bilibili.help.regex.av": "傳送 AV 號取得影片資訊。",
     "bilibili.help.regex.bv": "傳送 BV 號取得影片資訊。",
-    "bilibili.help.regex.url": "傳送 URL 取得影片資訊。",
+    "bilibili.help.regex.url": "傳送短 URL 取得影片資訊。",
     "bilibili.message": "標題：${title}\n類型：${tname}\nUP主：${owner}\n日期：${time}",
     "bilibili.message.detail": "標題：${title}${pages} | 類型：${tname}\nUP 主：${owner} | 追隨者：${fans}\n簡介：${desc}\n觀看：${view} | 彈幕：${danmaku} | 留言：${reply}\n喜歡：${like} | 投幣：${coin} | 收藏：${favorite} | 分享：${share}\n日期：${time}",
     "bilibili.message.error.rejected": "發生錯誤：由於觸發嗶哩嗶哩安全風控策略，此次訪問請求已被拒絕，請稍後重試。\n如果錯誤持續存在，請聯絡開發人員解決問題。",
