@@ -41,8 +41,8 @@ async def _(msg: Bot.MessageSession):
 
 
 @bili.regex(
-    re.compile(r"https?://(?:www\.|m\.)?bilibili\.com(?:/video|)/(av\d+|BV[A-Za-z0-9]{10})(?:/.*?|)$"
-               r"https?://(?:www\.)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)$"),
+    re.compile(r"https?://(?:www\.|m\.)?bilibili\.com(?:/video|)/(av\d+|BV[A-Za-z0-9]{10})(?:/.*?|)|"
+               r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)"),
     mode="A",
     desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
