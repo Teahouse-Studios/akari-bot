@@ -22,7 +22,7 @@ async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
                     await msg.finish()
 
 
-@bug.regex(=r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)', mode='A', flags=re.I,
+@bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)', mode='A', flags=re.I,
            desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
     msg_list = []
