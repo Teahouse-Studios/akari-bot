@@ -5,7 +5,6 @@ import aiohttp
 
 from core.builtins import Bot
 from core.component import module
-from core.logger import Logger
 from .bili_api import get_video_info
 
 bili = module('bilibili', alias='bili', developers=['DoroWolf'],
@@ -45,7 +44,7 @@ async def _(msg: Bot.MessageSession):
     mode="A",
     desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
-    video = msg.matched_msg[0][1]
+    video = msg.matched_msg[0]
     query = await parse_shorturl(f"https://b23.tv/{video}")
     if not query:
         return

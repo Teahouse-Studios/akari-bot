@@ -1,6 +1,6 @@
 import re
 
-from core.builtins import Bot, Image, Plain
+from core.builtins import Bot, Image
 from core.component import module
 from .bugtracker import bugtracker_get, make_screenshot
 
