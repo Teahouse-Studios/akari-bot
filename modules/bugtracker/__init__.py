@@ -22,7 +22,7 @@ async def bugtracker(msg: Bot.MessageSession, mojiraid: str):
                     await msg.finish()
 
 
-@bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)', mode='A', flags=re.I,
+@bug.regex(r'((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)', mode='A', flags=re.I,
            desc='{bugtracker.help.regex.desc}')
 async def regex_bugtracker(msg: Bot.MessageSession):
     msg_list = []
@@ -39,8 +39,8 @@ async def regex_bugtracker(msg: Bot.MessageSession):
             await msg.finish()
 
 
-@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*)'
-                      r'|projects/.*?/issues/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d*))', flags=re.I),
+@bug.regex(re.compile(r'https?://bugs\.mojang\.com/(?:browse/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+)'
+                      r'|projects/.*?/issues/((?:BDS|MCPE|MCD|MCL|MCLG|REALMS|MC|WEB)-\d+))', flags=re.I),
            mode='A', desc='{bugtracker.help.regex.url}')
 async def _(msg: Bot.MessageSession):
     msg_list = []
