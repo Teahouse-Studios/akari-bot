@@ -12,7 +12,7 @@ headers = {
 }
 
 
-async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, nolink=False):
+async def get_video_info(msg: Bot.MessageSession, query, get_detail=False):
     try:
         url = f'https://api.bilibili.com/x/web-interface/view/detail{query}'
         res = await get_url(url, 200, headers=headers, fmt='json')
@@ -30,6 +30,7 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, nolin
     view = res['data']['View']
     stat = view['stat']
 
+    video_url = f"https://www.bilibili.com/video/{view['bvid']}"
     pic = view['pic']
     title = view['title']
     tname = view['tname']
@@ -61,11 +62,8 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail=False, nolin
                               reply=stat_reply,
                               like=stat_like, coin=stat_coin, favorite=stat_favorite, share=stat_share,
                               desc=desc, time=time)
-    if nolink:
-        await msg.finish([Image(pic), Plain(output)])                  
-    else:
-        video_url = f"https://www.bilibili.com/video/{view['bvid']}"
-        await msg.finish([Image(pic), Url(video_url), Plain(output)])
+    
+    await msg.finish([Image(pic), Url(video_url), Plain(output)])
 
 
 def format_num(number):

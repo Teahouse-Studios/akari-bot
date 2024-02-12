@@ -41,23 +41,15 @@ async def _(msg: Bot.MessageSession):
 
 
 @bili.regex(
-    re.compile(r"https?://(?:www\.|m\.)?bilibili\.com(?:/video|)/(av\d+|BV[A-Za-z0-9]{10})(?:/.*?|)|"
-               r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)"),
+    re.compile(r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/([A-Za-z0-9]{7})(?:/.*?|)"),
     mode="A",
     desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
-    Logger.debug(str(msg.matched_msg))
     video = msg.matched_msg[0]
-    if video[:2] == "BV":
-        query = f"?bvid={video}"
-    elif video[:2] == "av":
-        query = f"?aid={video[2:]}"
-    else:
-        query = await parse_shorturl(f"https://b23.tv/{video}")
-        if not query:
-            return
-
-    await get_video_info(msg, query, nolink=True)
+    query = await parse_shorturl(f"https://b23.tv/{video}")
+    if not query:
+        return
+    await get_video_info(msg, query)
 
 
 async def parse_shorturl(shorturl):
