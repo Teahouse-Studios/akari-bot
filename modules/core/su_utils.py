@@ -238,7 +238,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if not user.startswith(f'{msg.target.sender_from}|'):
         await msg.finish(msg.locale.t("core.message.set.invalid"))
     warns = BotDBUtil.SenderInfo(user).query.warns
-    temp_banned_time = await check_temp_ban(msg.target.sender_id)
+    temp_banned_time = await check_temp_ban(user)
     is_banned = BotDBUtil.SenderInfo(user).query.isInBlockList
     if temp_banned_time:
         stat += '\n' + msg.locale.t("core.message.abuse.check.tempbanned", ban_time=temp_banned_time)
