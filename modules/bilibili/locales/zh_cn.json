@@ -4,7 +4,6 @@
     "bilibili.help.option.i": "获取详细信息。",
     "bilibili.help.regex.av": "发送 AV 号获取视频信息。",
     "bilibili.help.regex.bv": "发送 BV 号获取视频信息。",
-    "bilibili.help.regex.shorturl": "发送 URL 短连接获取视频信息。",
     "bilibili.help.regex.url": "发送 URL 获取视频信息。",
     "bilibili.message": "标题：${title}\n类型：${tname}\nUP主：${owner}\n日期：${time}",
     "bilibili.message.detail": "标题：${title}${pages} | 类型：${tname}\nUP主：${owner} | 粉丝：${fans}\n简介：${desc}\n观看：${view} | 弹幕：${danmaku} | 评论：${reply}\n喜欢：${like} | 投币：${coin} | 收藏：${favorite} | 分享：${share}\n日期：${time}",

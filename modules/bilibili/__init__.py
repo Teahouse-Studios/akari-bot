@@ -5,6 +5,7 @@ import aiohttp
 
 from core.builtins import Bot
 from core.component import module
+from core.logger import Logger
 from .bili_api import get_video_info
 
 bili = module('bilibili', alias='bili', developers=['DoroWolf'],
@@ -27,38 +28,26 @@ async def _(msg: Bot.MessageSession, bid: str, get_detail = False):
         await msg.finish(msg.locale.t('message.cooldown', time=int(res), cd_time=30))
 
 
-@bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='M', desc="{bilibili.help.regex.av}")
+@bili.regex(re.compile(r"av(\d+)", flags=re.I), mode='A', desc="{bilibili.help.regex.av}")
 async def _(msg: Bot.MessageSession):
-    query = f"?aid={msg.matched_msg.groups()[0]}"
+    query = f"?aid={msg.matched_msg[0]}"
     await get_video_info(msg, query)
 
 
-@bili.regex(re.compile(r"BV[a-zA-Z0-9]{10}"), mode='M', desc="{bilibili.help.regex.bv}")
+@bili.regex(re.compile(r"BV[a-zA-Z0-9]{10}"), mode='A', desc="{bilibili.help.regex.bv}")
 async def _(msg: Bot.MessageSession):
-    query = f"?bvid={msg.matched_msg.group()}"
+    query = f"?bvid={msg.matched_msg[0]}"
     await get_video_info(msg, query)
 
 
 @bili.regex(
-    re.compile(r"https?://(?:www\.|m\.)?bilibili\.com(?:/video|)/(av\d+|BV[A-Za-z0-9]{10})(?:/.*?|)$"),
-    mode="M",
+    re.compile(r"https?://(?:www\.|m\.)?bilibili\.com(?:/video|)/(av\d+|BV[A-Za-z0-9]{10})(?:/.*?|)$"
+               r"https?://(?:www\.)?(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)$"),
+    mode="A",
     desc="{bilibili.help.regex.url}")
 async def _(msg: Bot.MessageSession):
-    video = msg.matched_msg.group(1)
-    if video[:2] == "BV":
-        query = f"?bvid={video}"
-    else:
-        query = f"?aid={video[2:]}"
-
-    await get_video_info(msg, query)
-
-
-@bili.regex(
-    re.compile(r"https?://(?:bili(?:22|33|2233)\.cn|b23\.tv)/(av\d+|BV[A-Za-z0-9]{10}|[A-Za-z0-9]{7})(?:/.*?|)$"),
-    mode="M",
-    desc="{bilibili.help.regex.shorturl}")
-async def _(msg: Bot.MessageSession):
-    video = msg.matched_msg.groups()[0]
+    Logger.debug(str(msg.matched_msg))
+    video = msg.matched_msg[0]
     if video[:2] == "BV":
         query = f"?bvid={video}"
     elif video[:2] == "av":
@@ -68,7 +57,7 @@ async def _(msg: Bot.MessageSession):
         if not query:
             return
 
-    await get_video_info(msg, query)
+    await get_video_info(msg, query, nolink=True)
 
 
 async def parse_shorturl(shorturl):

@@ -62,7 +62,7 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
         get_json = await get_url(json_url, 200)
     except ValueError as e:
         if str(e).startswith('401'):
-            await session.finish(session.locale.t("bugtracker.message.get_failed"))
+            return session.locale.t("bugtracker.message.get_failed"), None
         else:
             traceback.print_exc()
     if mojira_id not in spx_cache:
