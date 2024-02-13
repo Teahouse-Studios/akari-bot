@@ -79,7 +79,7 @@
     "core.message.help.legacy.base": "基础命令：",
     "core.message.help.legacy.external": "模块扩展命令：",
     "core.message.help.legacy.more_information": "使用“${prefix}help <对应模块名>”查看详细信息。\n使用“${prefix}module list”查看所有的可用模块。",
-    "core.message.help.more_information": "本框架由akari-bot驱动。本自搭建版本仅供已授权的群聊使用，Bot生成内容与本bot开发者、服务器所有人无关，亦不代表开发者或自搭建版本运维方立场。\n本分支项目维护代码地址：https://github.com/TopRealm/akari-bot，欢迎贡献模块。",
+    "core.message.help.more_information": "此处展示的帮助文档仅展示已开启的模块，若需要查看全部模块的帮助文档，请使用“${prefix}module list”。",
     "core.message.help.more_information.document": "你也可以通过查阅在线文档获取帮助：\n${url}",
     "core.message.help.more_information.donate": "若你有经济实力，欢迎给孩子们在爱发电上打钱：\n${url}",
     "core.message.help.not_found": "此模块可能不存在，请检查输入。",
