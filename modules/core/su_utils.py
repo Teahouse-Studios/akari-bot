@@ -371,9 +371,7 @@ if Info.subprocess:
             restart()
         else:
             await msg.finish()
-
-
-if Info.subprocess:
+            
     upds = module('update&restart', required_superuser=True, alias='u&r', base=True)
 
     @upds.command()
