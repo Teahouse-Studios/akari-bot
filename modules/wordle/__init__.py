@@ -210,7 +210,7 @@ async def _(msg: Bot.MessageSession):
             continue
         board.add_word(word)
         board_image.update_board()
-        msg.sleep(1)  # 防冲突
+        await msg.sleep(1)  # 防冲突
 
         if not board.is_game_over() and board.get_trials() <= 6:
             Logger.info(f'{word} != {board.word}, attempt {board.get_trials() - 1}')

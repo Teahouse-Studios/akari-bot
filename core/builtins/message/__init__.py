@@ -66,24 +66,24 @@ class MessageSession(MessageSessionT):
 
     async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
                                 append_instruction=True) -> MessageSessionT:
-        sent = None
+        send = None
         ExecutionLockList.remove(self)
         if message_chain:
             message_chain = MessageChain(message_chain)
             if append_instruction:
                 message_chain.append(Plain(self.locale.t("message.wait.confirm.prompt.type2")))
-            sent = await self.send_message(message_chain, quote)
+            send = await self.send_message(message_chain, quote)
         flag = asyncio.Event()
         MessageTaskManager.add_task(self, flag, timeout=timeout)
         try:
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
             if message_chain and delete:
-                await sent.delete()
+                await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if delete and sent:
-            await sent.delete()
+        if message_chain and delete:
+            await send.delete()
         if result:
             return result
         else:
@@ -107,9 +107,7 @@ class MessageSession(MessageSessionT):
                 await send.delete()
             raise WaitCancelException
         result = MessageTaskManager.get_result(self)
-        if delete and send:
-            if message_chain and delete:
-                await send.delete()
+        if message_chain and delete:
             await send.delete()
         if result:
             return result
