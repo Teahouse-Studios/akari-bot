@@ -1,5 +1,5 @@
 {
-    "bilibili.help": "输入视频编号获得相应信息。",
+    "bilibili.help": "发送视频编号获得相应信息。",
     "bilibili.help.desc": "哔哩哔哩视频相关工具。",
     "bilibili.help.option.i": "获取详细信息。",
     "bilibili.help.regex.av": "发送 AV 号获取视频信息。",
