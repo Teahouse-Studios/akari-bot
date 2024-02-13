@@ -13,7 +13,7 @@ from core.component import module
 
 c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}')
 
-font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 40)
+font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 40)
 
 with open(os.path.dirname(os.path.abspath(__file__)) + '/material_colors.json', 'r', encoding='utf-8') as f:
     material_colors = material_colors_names_to_hex = json.load(f)
