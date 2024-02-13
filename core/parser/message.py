@@ -26,13 +26,29 @@ TOS_TEMPBAN_TIME = Config('tos_temp_ban_time', 300)
 counter_same = {}  # 命令使用次数计数（重复使用单一命令）
 counter_all = {}  # 命令使用次数计数（使用所有命令）
 
-temp_ban_counter = {}  # 临时限制计数
+temp_ban_counter = {}  # 临时封禁计数
 
 
-async def remove_temp_ban(msg: Bot.MessageSession):
-    is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
+async def check_temp_ban(target):
+    is_temp_banned = temp_ban_counter.get(target)
     if is_temp_banned:
-        del temp_ban_counter[msg.target.sender_id]
+        ban_time = datetime.now().timestamp() - is_temp_banned['ts']
+        return int(TOS_TEMPBAN_TIME - ban_time)
+    else:
+        return False
+
+async def remove_temp_ban(target):
+    if await check_temp_ban(target):
+        del temp_ban_counter[target]
+
+
+async def tos_abuse_warning(msg: Bot.MessageSession, e):
+    if enable_tos and Config('tos_warning_counts', 5) >= 1:
+        await warn_target(msg, str(e))
+        temp_ban_counter[msg.target.sender_id] = {'count': 1,
+                                                  'ts': datetime.now().timestamp()}
+    else:
+        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=e))
 
 
 async def tos_msg_counter(msg: Bot.MessageSession, command: str):
@@ -63,10 +79,10 @@ async def temp_ban_check(msg: Bot.MessageSession):
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
                 is_temp_banned['count'] += 1
-                return await msg.finish(msg.locale.t("tos.tempbanned", ban_time=str(int(TOS_TEMPBAN_TIME - ban_time))))
+                await msg.finish(msg.locale.t("tos.tempbanned", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             elif is_temp_banned['count'] <= 5:
                 is_temp_banned['count'] += 1
-                return await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=str(int(TOS_TEMPBAN_TIME - ban_time))))
+                await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
                 raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
 
@@ -335,19 +351,18 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                     Logger.info(f'Successfully finished session from {identify_str}, returns: {str(e)}. '
                                 f'Times take up: {str(time_used)}')
                     if (msg.target.target_from != 'QQ|Guild' or command_first_word != 'module') and enable_tos:
-                        await tos_msg_counter(msg, msg.trigger_msg)
+                        try:
+                            await tos_msg_counter(msg, msg.trigger_msg)
+                        except AbuseWarning as e:
+                            await tos_abuse_warning(msg, e)
                     else:
                         Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
                     if enable_analytics:
                         BotDBUtil.Analytics(msg).add(msg.trigger_msg, command_first_word, 'normal')
-
+                                
+                        
                 except AbuseWarning as e:
-                    if enable_tos and Config('tos_warning_counts', 5) >= 1:
-                        await warn_target(msg, str(e))
-                        temp_ban_counter[msg.target.sender_id] = {'count': 1,
-                                                                  'ts': datetime.now().timestamp()}
-                    else:
-                        await msg.send_message(msg.locale.t("error.prompt.noreport", detail=e))
+                    await tos_abuse_warning(msg, e)
 
                 except NoReportException as e:
                     Logger.error(traceback.format_exc())
@@ -449,23 +464,22 @@ async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, p
                                 BotDBUtil.Analytics(msg).add(msg.trigger_msg, m, 'regex')
 
                             if enable_tos and rfunc.show_typing:
-                                await tos_msg_counter(msg, msg.trigger_msg)
+                                try:
+                                    await tos_msg_counter(msg, msg.trigger_msg)
+                                except AbuseWarning as e:
+                                    await tos_abuse_warning(msg, e)
                             else:
                                 Logger.debug(f'Tos is disabled, check the configuration if it is not work as expected.')
 
                             continue
+
                         except NoReportException as e:
                             Logger.error(traceback.format_exc())
                             err_msg = msg.locale.tl_str(str(e))
                             await msg.send_message(msg.locale.t("error.prompt.noreport", detail=err_msg))
 
                         except AbuseWarning as e:
-                            if enable_tos and Config('tos_warning_counts', 5) >= 1:
-                                await warn_target(msg, str(e))
-                                temp_ban_counter[msg.target.sender_id] = {'count': 1,
-                                                                          'ts': datetime.now().timestamp()}
-                            else:
-                                await msg.send_message(msg.locale.t("error.prompt.noreport", detail=str(e)))
+                            await tos_abuse_warning(msg, e)
 
                         except Exception as e:
                             tb = traceback.format_exc()

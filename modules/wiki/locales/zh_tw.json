@@ -85,7 +85,7 @@
     "wiki.message.utils.wikilib.get_failed.forbidden": "伺服器拒絕了機器人的請求。",
     "wiki.message.utils.wikilib.get_failed.moegirl": "萌娘百科的 API 接口不穩定，請稍後再試或直接訪問網站。",
     "wiki.message.utils.wikilib.get_failed.no_http_or_https_headers": "所給的連結沒有指明協議頭（連結應以「http://」或「https://」開頭）。",
-    "wiki.message.utils.wikilib.get_failed.not_a_mediawiki": "此站点也许不是一个有效的 Mediawiki：",
+    "wiki.message.utils.wikilib.get_failed.not_a_mediawiki": "此網站也許不是一個有效的 Mediawiki：",
     "wiki.message.utils.wikilib.get_failed.timeout": "嘗試建立連結逾時。",
     "wiki.message.utils.wikilib.no_textextracts": "警告：此 Wiki 沒有啟用 TextExtracts 擴充功能，返回的頁面預覽內容將為未處理的原始 Wikitext 文本。",
     "wiki.message.wiki_audit.add.failed": "失敗，${api} 已存在於${list_name}中。",
