@@ -16,13 +16,13 @@
     "user.message.global_edited_count": "Global Edited Count: ",
     "user.message.global_home": "Register Wiki: ",
     "user.message.global_rank": "Global Rank: ",
-    "user.message.global_users_groups": "Global user group: ",
+    "user.message.global_users_groups": "Global User Group: ",
     "user.message.not_found": "User not found.",
     "user.message.patrolled_count": "Patrolled Count: ",
     "user.message.registration_time": "Registration Time: ",
     "user.message.site_rank": "Site Rank: ",
     "user.message.username": "User: ",
-    "user.message.users_groups": "User group: ",
+    "user.message.users_groups": "User Group: ",
     "user.message.wiki_unavailable": "${wikiurl} is unavailable.",
     "user.message.wikipoints": "Wikipoints: "
 }
