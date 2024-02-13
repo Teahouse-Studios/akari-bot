@@ -17,7 +17,7 @@
     "error.message.chain.unsafe": "訊息中含有不安全的內容，已被阻止。",
     "error.message.limited": "訊息傳送失敗，可能被風控，請稍後再試。",
     "error.message.limited.msg2img": "訊息被風控，嘗試使用圖片傳送：",
-    "error.message.paused": "群訊息傳送被伺服器攔截，已暫停群訊息傳送，使用「${prefix}resume」恢復傳送。",
+    "error.message.paused": "傳送群訊息被伺服器攔截，已暫停傳送群訊息，使用「${prefix}resume」恢復傳送。",
     "error.message.report": "執行「${module}」時發生了以下錯誤，請及時處理：",
     "error.message.timeout": "發生錯誤：訊息傳送逾時，請稍後重試指令或嘗試等待傳回結果。",
     "error.module.helpdoc.invalid": "「${module}」模組的說明資訊有誤，請聯絡開發人員處理。",
