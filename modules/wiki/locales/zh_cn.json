@@ -33,7 +33,7 @@
     "wiki.message.error.info": "详细信息：",
     "wiki.message.error.query": "发生错误：无法查询此 Wiki。",
     "wiki.message.error.set": "发生错误：无法设置此 Wiki。",
-    "wiki.message.error.unable_to_render_section": "（章节渲染失败，请联系开发者检查原因）",
+    "wiki.message.error.unable_to_render_section": "发生错误：章节渲染失败，请联系开发者检查原因。",
     "wiki.message.fandom.disable": "已关闭 Fandom 全局 Interwiki 查询。",
     "wiki.message.fandom.enable": "已开启 Fandom 全局 Interwiki 查询。",
     "wiki.message.flies": "此页面包括以下文件：\n",
