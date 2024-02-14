@@ -358,7 +358,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     section_msg_list.append(Image(get_section))
                                 else:
                                     section_msg_list.append(Plain(
-                                        session.locale.t("wiki.message.error.unable_to_render_section")))
+                                        session.locale.t("wiki.message.error.render_section")))
                             else:
                                 get_section = await generate_screenshot_v1(i[ii]['url'], ii, headers,
                                                                            section=i[ii]['section'])
@@ -366,7 +366,7 @@ async def query_pages(session: Union[Bot.MessageSession, QueryInfo], title: Unio
                                     section_msg_list.append(Image(get_section))
                                 else:
                                     section_msg_list.append(Plain(
-                                        session.locale.t("wiki.message.error.unable_to_render_section")))
+                                        session.locale.t("wiki.message.error.render_section")))
                 if section_msg_list:
                     await session.send_message(section_msg_list, quote=False)
 
