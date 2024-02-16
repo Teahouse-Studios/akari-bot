@@ -196,7 +196,7 @@ async def config_modules(msg: Bot.MessageSession):
                 else:
                     extra_reload_modules = ModulesManager.search_related_module(module_, False)
                     if modules_[module_].base:
-                        if Config('enable_reload_base'):
+                        if Config('allow_reload_base'):
                             confirm = await msg.wait_confirm(msg.locale.t("core.message.module.reload.base.confirm"),
                                                              append_instruction=False)
                             if confirm:
