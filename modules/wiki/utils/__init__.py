@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Bot
 from core.component import module
+from core.logger import Logger
 from modules.wiki.utils.dbutils import WikiTargetInfo, Audit
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 from .ab import ab
@@ -60,15 +61,15 @@ async def ab_loader(msg: Bot.MessageSession):
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
         try:
             res = await ab(msg, start_wiki)
             await msg.finish(res)
         except Exception:
-            traceback.print_exc()
-            await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+            Logger.error(traceback.format_exc())
+            await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
 @ab.command('{{wiki.help.ab}}',
@@ -81,8 +82,8 @@ async def ab_loader(msg: Bot.MessageSession):
         res = await ab(msg, start_wiki)
         await msg.finish(res)
     except Exception:
-        traceback.print_exc()
-        await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
 n = module('newbie', developers=['OasisAkari'], recommend_modules='wiki')
@@ -97,5 +98,5 @@ async def newbie_loader(msg: Bot.MessageSession):
         res = await newbie(msg, start_wiki)
         await msg.finish(res)
     except Exception:
-        traceback.print_exc()
-        await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
