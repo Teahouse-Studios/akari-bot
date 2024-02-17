@@ -9,9 +9,9 @@ aiofile==3.8.8 ; python_full_version >= "3.9.0" and python_version < "4" \
 aiofiles==23.2.1 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
     --hash=sha256:19297512c647d4b27a2cf7c34caa7e405c0d60b5560618a29a9fe027b18b0107 \
     --hash=sha256:84ec2218d8419404abcb9f0c02df3f34c6e0a68ed41072acfb1cef5cbc29051a
-aiogram==2.25.2 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
-    --hash=sha256:960b0a1a7238d515f7ab335cbbbc115a1b89579fdf2cb1cb4852a227346acb78 \
-    --hash=sha256:c4bc59b8c455c36e4f4de4a3f4ba79812717bbdb7a146552b5248ba6533afb31
+aiogram==3.4.1; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
+    --hash=sha256:32ba2f6b0ca5488eae03e794a24c779234e909e882445394ef691b357d809aa8 \
+    --hash=sha256:5e403945d41001a1810aa8f470ed31fb24a8cb2cde7b16363d1fcd20a757ff68
 aiohttp-socks==0.7.1 ; python_full_version >= "3.9.0" and python_full_version < "4.0.0" \
     --hash=sha256:2215cac4891ef3fa14b7d600ed343ed0f0a670c23b10e4142aa862b3db20341a \
     --hash=sha256:94bcff5ef73611c6c6231c2ffc1be4af1599abec90dbd2fdbbd63233ec2fb0ff
