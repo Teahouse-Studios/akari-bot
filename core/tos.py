@@ -6,6 +6,9 @@ WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
 async def warn_target(msg: Bot.MessageSession, reason=None):
+    is_superuser = msg.check_super_user()
+    if is_superuser:
+        return None
     if WARNING_COUNTS >= 1:
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
