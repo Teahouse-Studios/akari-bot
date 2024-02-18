@@ -15,7 +15,7 @@ if Config('enable_urlmanager'):
     @aud.command(['trust <apilink>',
                   'block <apilink>'])
     async def _(msg: Bot.MessageSession, apilink: str):
-        date = msg.ts2strftime(datetime.now().timestamp(), timezone=False)
+        date = datetime.now()
         check = await WikiLib(apilink).check_wiki_available()
         if check.available:
             apilink = check.value.api
