@@ -71,7 +71,7 @@ async def update_assets():
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
 
-        with open(os.path.join(ca, 'PhigrosLibrary-master', 'difficulty.tsv'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(ca, 'PhigrosLibrary-main', 'difficulty.tsv'), 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
                 data[row['Name'].lower()] = {'EZ': row['EZ'], 'HD': row['HD'], 'IN': row['IN']}
