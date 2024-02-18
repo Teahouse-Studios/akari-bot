@@ -14,7 +14,6 @@ web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
-font = ImageFont.truetype(f'{assets_path}/Hack-Regular.ttf', 15)
 
 spx_cache = {}
 
