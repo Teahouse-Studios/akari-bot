@@ -295,6 +295,21 @@ async def _(msg: Bot.MessageSession, user: str):
         await msg.finish(msg.locale.t("core.message.abuse.unban.success", user=user))
 
 
+res = module('reset', required_superuser=True, base=True)
+
+@res.command()
+async def reset(msg: Bot.MessageSession):
+    confirm = await msg.wait_confirm(msg.locale.t("core.message.confirm"), append_instruction=False)
+    if confirm:
+        pull_repo_result = os.popen('git reset --hard origin/master', 'r').read()[:-1]
+        if pull_repo_result != '':
+            await msg.finish(pull_repo_result)
+        else:
+            await msg.finish(msg.locale.t("core.message.update.failed"))
+    else:
+        await msg.finish()
+
+
 upd = module('update', required_superuser=True, base=True)
 
 
