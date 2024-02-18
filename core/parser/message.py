@@ -74,7 +74,9 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
 async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
     is_superuser = msg.check_super_user()
-    if is_temp_banned and not is_superuser:
+    if is_superuser:
+        await remove_temp_ban(msg.target.sender_id)
+    if is_temp_banned:
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
