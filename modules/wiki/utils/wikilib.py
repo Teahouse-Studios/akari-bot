@@ -747,7 +747,7 @@ class WikiLib:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t:
-                            if not before_page_info.args:
+                            if before_page_info.args is not None:  # 修改这个地方会影响站点自带interwiki跳转，改为if args会影响页面，if not args会影响段落
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link:
