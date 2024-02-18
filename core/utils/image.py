@@ -35,6 +35,11 @@ async def image_split(i: Image) -> List[Image]:
     return i_list
 
 
+def get_fontsize(font, text):
+    left, top, right, bottom = font.getbbox(text)
+    return right - left, bottom - top
+
+
 save_source = True
 
 
@@ -102,8 +107,8 @@ async def msgchain2image(message_chain: Union[List, MessageChain], msg: MessageS
                 data = await fi.read()
                 try:
                     ftt = ft.match(data)
-                    lst.append(
-                        f'<img src="data:{ftt.mime};base64,{(base64.encodebytes(data)).decode("utf-8")}" width="720" />')
+                    lst.append(f'<img src="data:{ftt.mime};base64,{
+                        (base64.encodebytes(data)).decode("utf-8")}" width="720" />')
                 except TypeError:
                     traceback.print_exc()
         if isinstance(m, Voice):
