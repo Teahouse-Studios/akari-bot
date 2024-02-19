@@ -2,8 +2,7 @@ from core.builtins import Bot
 from core.component import module
 from .mcv import mcv, mcbv, mcdv, mcev, mclgv
 
-m = module(
-    bind_prefix='mcv',
+m = module('mcv',
     developers=['OasisAkari', 'Dianliang233'],
     recommend_modules=['mcbv'])
 
@@ -13,8 +12,7 @@ async def mcv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcv(msg))
 
 
-mb = module(
-    bind_prefix='mcbv',
+mb = module('mcbv',
     developers=['OasisAkari', 'Dianliang233'],
     recommend_modules=['mcv'])
 
@@ -24,9 +22,9 @@ async def mcbv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcbv(msg))
 
 
-md = module(
-    bind_prefix='mcdv',
-    developers=['OasisAkari', 'Dianliang233'])
+md = module('mcdv',
+    developers=['OasisAkari', 'Dianliang233'],
+    hide=True)
 
 
 @md.command('{{mcv.help.mcdv}}')
@@ -34,9 +32,9 @@ async def mcdv_loader(msg: Bot.MessageSession):
     await msg.finish(await mcdv(msg))
 
 
-me = module(
-    bind_prefix='mcev',
-    developers=['OasisAkari', 'Dianliang233'])
+me = module('mcev',
+    developers=['OasisAkari', 'Dianliang233'],
+    hide=True)
 
 
 @me.command('{{mcv.help.mcev}}')
@@ -44,9 +42,9 @@ async def mcev_loader(msg: Bot.MessageSession):
     await msg.finish(await mcev(msg))
 
 
-mlg = module(
-    bind_prefix='mclgv',
-    developers=['OasisAkari', 'Dianliang233'])
+mlg = module('mclgv',
+    developers=['OasisAkari', 'Dianliang233'],
+    hide=True)
 
 
 @mlg.command('{{mcv.help.mclgv}}')
