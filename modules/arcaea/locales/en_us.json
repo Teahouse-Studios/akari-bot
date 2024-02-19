@@ -7,7 +7,6 @@
     "arcaea.help.rank.paid": "View the current rank of the paid packs.",
     "arcaea.message.download": "Current latest version is ${version}.\nDownload: ${url}",
     "arcaea.message.get_failed": "Failed to fetch.",
-    "arcaea.message.sb616": "According to Arcaea TOS 3.2.6, this command cannot be used.\nYou also agree not to do any of the following:\n... 6. collect any information through “harvesting” or “scraping” about the service or regarding any user, including yourself, who uses the Services;\nhttps://arcaea.lowiro.com/en/terms_of_service",
     "ptt.help": "Generate a Potential image of Arcaea.",
     "ptt.message.invalid": "Potential must be a number greater than 0.00 and less than 99.99."
 }
