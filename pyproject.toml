@@ -61,7 +61,8 @@ python-whois = "^0.8.0"
 pandas = "^2.2.0"
 future = {git = "https://github.com/nsoranzo/python-future", rev = "python312-imp-module_past"}
 fastapi = "^0.109.2"
-
+enkanetwork-py = "^1.4.5"
+pydantic = "1.10.0"
 
 [tool.poetry.group.dev.dependencies]
 autopep8 = "^2.0.2"
