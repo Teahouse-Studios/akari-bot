@@ -1356,9 +1356,9 @@ pint==0.23 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
 platformdirs==4.2.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:0614df2a2f37e1a662acbd8e2b25b92ccf8632929bc6d43467e17fe89c75e068 \
     --hash=sha256:ef0cc731df711022c174543cb70a9b5bd22e5a9337c8624ef2c2ceb8ddad8768
-pre-commit==3.6.1 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
-    --hash=sha256:9fe989afcf095d2c4796ce7c553cf28d4d4a9b9346de3cda079bcf40748454a4 \
-    --hash=sha256:c90961d8aa706f75d60935aba09469a6b0bcb8345f127c3fbee4bdc5f114cf4b
+pre-commit==3.6.2; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:ba637c2d7a670c10daedc059f5c49b5bd0aadbccfcd7ec15592cf9665117532c \
+    --hash=sha256:c3ef34f463045c88658c5b99f38c1e297abdcc0ff13f98d3370055fbbfabc67e
 priority==2.0.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:6f8eefce5f3ad59baf2c080a664037bb4725cd0a790d53d59ab4059288faf6aa \
     --hash=sha256:c965d54f1b8d0d0b19479db3924c7c36cf672dbf2aec92d43fbdaf4492ba18c0
