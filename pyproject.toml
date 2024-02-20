@@ -60,6 +60,7 @@ pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 python-whois = "^0.8.0"
 pandas = "^2.2.0"
 future = {git = "https://github.com/nsoranzo/python-future", rev = "python312-imp-module_past"}
+fastapi = "^0.109.2"
 
 
 [tool.poetry.group.dev.dependencies]

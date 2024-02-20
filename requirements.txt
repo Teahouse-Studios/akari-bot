@@ -488,6 +488,9 @@ distro==1.9.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0
 duckduckgo-search==3.9.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:3636df4c5eec383c1c02f89c9693b6c5bbaeda38952e467a2fa930132f632ed4 \
     --hash=sha256:4d07a02647da58f1e46e35f11719265f0ce06eed60e2c9c2b00b1105b9084d07
+fastapi==0.109.2 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:2c9bab24667293b501cad8dd388c05240c850b58ec5876ee3283c47d6e1e3a4d \
+    --hash=sha256:f3817eac96fe4f65a2ebb4baa000f394e55f5fccdaf7f75250804bc58f354f73
 feedparser==6.0.11 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:0be7ee7b395572b19ebeb1d6aafb0028dee11169f1c934e0ed67d54992f4ad45 \
     --hash=sha256:c9d0407b64c6f2a065d0ebb292c2b35c01050cc0dc33757461aaabdc4c4184d5
@@ -1924,6 +1927,9 @@ sqlalchemy==2.0.27 ; python_full_version >= "3.12.0" and python_version < "4.0" 
     --hash=sha256:fa67d821c1fd268a5a87922ef4940442513b4e6c377553506b9db3b83beebbd8 \
     --hash=sha256:fd8aafda7cdff03b905d4426b714601c0978725a19efc39f5f207b86d188ba01 \
     --hash=sha256:ff2f1b7c963961d41403b650842dc2039175b906ab2093635d8319bef0b7d620
+starlette==0.36.3 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
+    --hash=sha256:13d429aa93a61dc40bf503e8c801db1f1bca3dc706b10ef2434a36123568f044 \
+    --hash=sha256:90a671733cfb35771d8cc605e0b679d23b992f8dcfad48cc60b38cb29aeb7080
 tabulate==0.9.0 ; python_full_version >= "3.12.0" and python_full_version < "4.0.0" \
     --hash=sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c \
     --hash=sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f
