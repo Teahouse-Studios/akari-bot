@@ -17,7 +17,7 @@ identifys = []
 async def check_crowdin():
     first = not identifys
     randstr = 'abcdefghijklmnopqrstuvwxyz'
-    random_string = random.sample(randstr, 10)
+    random_string = ''.join(random.sample(randstr, 16))
     headers = {'cookie': f'csrf_token={random_string}', 'x-csrf-token': random_string}
     url = f"https://crowdin.com/backend/project_actions/activity_stream?date_from=&date_to=&user_id=0&project_id=3579&language_id=0&type=0&translation_id=0&after_build=0&before_build=0&request=1"
     try:
