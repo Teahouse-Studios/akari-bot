@@ -3,6 +3,7 @@ import traceback
 from typing import List, Union
 
 from bots.aiogram.client import dp, bot, token
+from aiogram.types import FSInputFile
 from bots.aiogram.info import client_name
 from config import Config
 from core.builtins import Bot, Plain, Image, Voice, MessageSession as MessageSessionT, ErrorMessage, MessageTaskManager
@@ -58,33 +59,30 @@ class MessageSession(MessageSessionT):
                 if allow_split_image:
                     split = await image_split(x)
                     for xs in split:
-                        with open(await xs.get(), 'rb') as image:
-                            send_ = await bot.send_photo(self.session.target, image,
-                                                         reply_to_message_id=self.session.message.message_id
-                                                         if quote
-                                                         and count == 0
-                                                         and self.session.message else None)
-                            Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}')
-                            send.append(send_)
-                            count += 1
-                else:
-                    with open(await x.get(), 'rb') as image:
-                        send_ = await bot.send_photo(self.session.target, image,
+                        send_ = await bot.send_photo(self.session.target, FSInputFile(await xs.get()),
                                                      reply_to_message_id=self.session.message.message_id
                                                      if quote
                                                      and count == 0
                                                      and self.session.message else None)
-                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
+                        Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(xs.__dict__)}')
                         send.append(send_)
                         count += 1
-            elif isinstance(x, Voice):
-                with open(x.path, 'rb') as voice:
-                    send_ = await bot.send_audio(self.session.target, voice,
-                                                 reply_to_message_id=self.session.message.message_id if quote
-                                                 and count == 0 and self.session.message else None)
-                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
+                else:
+                    send_ = await bot.send_photo(self.session.target, FSInputFile(await x.get()),
+                                                 reply_to_message_id=self.session.message.message_id
+                                                 if quote
+                                                 and count == 0
+                                                 and self.session.message else None)
+                    Logger.info(f'[Bot] -> [{self.target.target_id}]: Image: {str(x.__dict__)}')
                     send.append(send_)
                     count += 1
+            elif isinstance(x, Voice):
+                send_ = await bot.send_audio(self.session.target, FSInputFile(x.path),
+                                             reply_to_message_id=self.session.message.message_id if quote
+                                             and count == 0 and self.session.message else None)
+                Logger.info(f'[Bot] -> [{self.target.target_id}]: Voice: {str(x.__dict__)}')
+                send.append(send_)
+                count += 1
 
         msg_ids = []
         for x in send:
