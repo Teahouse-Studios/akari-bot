@@ -56,7 +56,7 @@ async def check_crowdin():
                                 identify = f'{detail["title"]}: {html2text(detail["content"])}'.strip()
                                 identify_.append(identify)
                             identify = "\n".join(identify_)
-                            if not first and CrowdinActivityRecords.check(identify):
+                            if not first and not CrowdinActivityRecords.check(identify):
                                 await JobQueue.trigger_hook_all('mc_crowdin', message=[Plain(m + identify).to_dict()])
     except Exception:
         if Config('debug'):
