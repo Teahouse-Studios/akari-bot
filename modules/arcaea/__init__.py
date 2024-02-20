@@ -15,12 +15,6 @@ arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
 
 
-@arc.command('b30')
-async def _(msg: Bot.MessageSession):
-    await msg.send_message([Plain(msg.locale.t("arcaea.message.sb616")),
-                            BImage(os.path.abspath('./assets/arcaea/noc.jpg'))])
-
-
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
     resp = await get_url('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,

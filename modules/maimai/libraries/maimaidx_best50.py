@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import ErrorMessage
 from core.utils.http import post_url
+from core.utils.image import get_fontsize
 from .maimaidx_music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
@@ -349,8 +350,8 @@ class DrawBest(object):
         font2 = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 14, encoding='utf-8')
         playCountInfo = f'SD: {self.sdRating} + DX: {self.dxRating} = {self.playerRating}'
         shougouImgW, shougouImgH = shougouImg.size
-        playCountInfoW, playCountInfoH = shougouDraw.textsize(playCountInfo, font2)
-        textPos = ((shougouImgW - playCountInfoW - font2.getoffset(playCountInfo)[0]) / 2, 5)
+        playCountInfoW, playCountInfoH = get_fontsize(font2, playCountInfo)
+        textPos = ((shougouImgW - playCountInfoW) / 2, 5)
         shougouDraw.text((textPos[0] - 1, textPos[1]), playCountInfo, 'black', font2)
         shougouDraw.text((textPos[0] + 1, textPos[1]), playCountInfo, 'black', font2)
         shougouDraw.text((textPos[0], textPos[1] - 1), playCountInfo, 'black', font2)

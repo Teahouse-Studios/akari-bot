@@ -43,7 +43,7 @@ async def remove_temp_ban(target):
 
 
 async def tos_abuse_warning(msg: Bot.MessageSession, e):
-    if enable_tos and Config('tos_warning_counts', 5) >= 1:
+    if enable_tos and Config('tos_warning_counts', 5) >= 1 and not msg.check_super_user():
         await warn_target(msg, str(e))
         temp_ban_counter[msg.target.sender_id] = {'count': 1,
                                                   'ts': datetime.now().timestamp()}
@@ -73,10 +73,10 @@ async def tos_msg_counter(msg: Bot.MessageSession, command: str):
 
 async def temp_ban_check(msg: Bot.MessageSession):
     is_temp_banned = temp_ban_counter.get(msg.target.sender_id)
-    is_superuser = msg.check_super_user()
-    if is_superuser:
-        await remove_temp_ban(msg.target.sender_id)
     if is_temp_banned:
+        if msg.check_super_user():
+            await remove_temp_ban(msg.target.sender_id)
+            return None
         ban_time = datetime.now().timestamp() - is_temp_banned['ts']
         if ban_time < TOS_TEMPBAN_TIME:
             if is_temp_banned['count'] < 2:
@@ -86,7 +86,7 @@ async def temp_ban_check(msg: Bot.MessageSession):
                 is_temp_banned['count'] += 1
                 await msg.finish(msg.locale.t("tos.tempbanned.warning", ban_time=int(TOS_TEMPBAN_TIME - ban_time)))
             else:
-                raise AbuseWarning(msg.locale.t("tos.reason.bypass"))
+                raise AbuseWarning(msg.locale.t("tos.reason.ignore"))
 
 
 async def parser(msg: Bot.MessageSession, require_enable_modules: bool = True, prefix: list = None,
