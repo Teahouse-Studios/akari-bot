@@ -50,7 +50,7 @@ async def check_crowdin():
                                 identify_.append(identify)
                             identify = "\n".join(identify_)
                             if not first and identify not in identifys:
-                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Plain(m + '\n' + identify).to_dict()])
+                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Plain(m + identify).to_dict()])
                             identifys.append(identify)
     except Exception:
         if Config('debug'):
