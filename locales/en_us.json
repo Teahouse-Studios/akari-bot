@@ -64,7 +64,7 @@
     "time.time.format": "%H:%M:%S",
     "time.time.nosec.format": "%H:%M",
     "tos.appeal": "For objections, please go to ${issue_url} and create an issue.",
-    "tos.banned": "Note:\nYour account has been blocked since the number of warnings you have triggered exceeds the limit.\nYour request will be ignored after this message.",
+    "tos.banned": "Your account has been blocked since the number of warnings you have triggered exceeds the limit. Your request will be ignored after this message.",
     "tos.reason": "Reason: ",
     "tos.reason.abuse": "Too many command usages within a period of time.",
     "tos.reason.cooldown": "Too many usages of the same command within a period of time.",

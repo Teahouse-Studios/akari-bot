@@ -64,7 +64,7 @@
     "time.time.format": "%H:%M:%S",
     "time.time.nosec.format": "%H:%M",
     "tos.appeal": "如果你有任何異義，請至 ${issue_url} 發起問題。",
-    "tos.banned": "提示：\n由於你觸發的警告次數超過限度，我們已封鎖你的帳戶。\n在此訊息後將不再回應你的請求。",
+    "tos.banned": "由於你觸發的警告次數超過限度，我們已封鎖你的帳戶。在此訊息後將不再回應你的請求。",
     "tos.reason": "原因：",
     "tos.reason.abuse": "一段時間內使用指令的次數過多。",
     "tos.reason.cooldown": "一段時間內使用相同指令的次數過多。",
