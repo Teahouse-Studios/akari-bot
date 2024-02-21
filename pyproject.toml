@@ -77,3 +77,6 @@ aggressive = 3
 
 [tool.pyright]
 reportUndefinedVariable = 'error'
+
+[tool.poetry.extras]
+runtime = ["future"]
