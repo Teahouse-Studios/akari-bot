@@ -14,6 +14,7 @@ from core.utils.http import get_url
 first = True
 
 filter_words = ['Chinese', 'Mojang']
+base_url = 'https://crowdin.com/'
 
 
 @Scheduler.scheduled_job(IntervalTrigger(seconds=60 if not Config('slower_schedule') else 180))
@@ -31,7 +32,7 @@ async def check_crowdin():
             if 'error' in get_json:
                 raise Exception(get_json['msg'])
             for act in get_json['activity']:
-                m = html2text(act["message"])
+                m = html2text(act["message"], baseurl=base_url).strip()
                 if not any(x in m for x in filter_words):
                     continue
                 if act['count'] == 1:
@@ -53,11 +54,15 @@ async def check_crowdin():
                             if not isinstance(get_detail_json['activity'][detail_num], list):
                                 continue
                             for detail in get_detail_json['activity'][detail_num]:
-                                identify = f'{detail["title"]}: {html2text(detail["content"])}'.strip()
+                                identify = f'{
+                                    detail["title"]}: {
+                                    html2text(
+                                        detail["content"],
+                                        baseurl=base_url)}'.strip()
                                 identify_.append(identify)
                             identify = "\n".join(identify_)
                             if not first and not CrowdinActivityRecords.check(identify):
-                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Plain(m + identify).to_dict()])
+                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Plain(m + '\n' + identify).to_dict()])
     except Exception:
         if Config('debug'):
             Logger.error(traceback.format_exc())
