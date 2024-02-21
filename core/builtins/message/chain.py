@@ -49,7 +49,9 @@ class MessageChain(MessageChainT):
                         self.value.append(
                             Embed(e['data']['title'], e['data']['description'], e['data']['url'],
                                   e['data']['timestamp'],
-                                  e['data']['color'], Image(e['data']['image']), Image(e['data']['thumbnail']),
+                                  e['data']['color'],
+                                  Image(e['data']['image']) if e['data']['image'] else None,
+                                  Image(e['data']['thumbnail']) if e['data']['thumbnail'] else None,
                                   e['data']['author'], e['data']['footer'], e['data']['fields']))
                     elif e['type'] == 'url':
                         self.value.append(Url(e['data']['url']))

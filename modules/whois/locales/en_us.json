@@ -12,6 +12,6 @@
     "whois.message.postal_code": "Postcode: ",
     "whois.message.referral_url": "Referrer URL: ",
     "whois.message.registrar": "Registrar: ",
-    "whois.message.updated_date": "Updated date: ",
+    "whois.message.updated_date": "Updated Date: ",
     "whois.message.whois_server": "WHOIS Servers: "
 }

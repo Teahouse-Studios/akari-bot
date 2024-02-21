@@ -6,6 +6,8 @@ WARNING_COUNTS = Config('tos_warning_counts', 5)
 
 
 async def warn_target(msg: Bot.MessageSession, reason=None):
+    if msg.check_super_user():
+        return None
     if WARNING_COUNTS >= 1:
         current_warns = int(msg.target.sender_info.query.warns) + 1
         msg.target.sender_info.edit('warns', current_warns)
@@ -19,12 +21,14 @@ async def warn_target(msg: Bot.MessageSession, reason=None):
                     current_warns=current_warns,
                     warn_counts=WARNING_COUNTS))
         if current_warns <= 2 and Config('issue_url'):
-            warn_template.append(msg.locale.t('tos.warning.appeal', issue_url=Config('issue_url')))
+            warn_template.append(msg.locale.t('tos.appeal', issue_url=Config('issue_url')))
         if current_warns == WARNING_COUNTS:
             warn_template.append(msg.locale.t('tos.warning.last'))
         if current_warns > WARNING_COUNTS:
             msg.target.sender_info.edit('isInBlockList', True)
-            return None
+            warn_template.append(msg.locale.t('tos.banned'))
+            if Config('issue_url'):
+                warn_template.append(msg.locale.t('tos.appeal', issue_url=Config('issue_url')))
         await msg.send_message('\n'.join(warn_template))
 
 

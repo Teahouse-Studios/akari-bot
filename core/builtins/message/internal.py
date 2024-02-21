@@ -250,7 +250,15 @@ class Embed(EmbedT):
         self.thumbnail = thumbnail
         self.author = author
         self.footer = footer
-        self.fields = fields
+        self.fields = []
+        if fields:
+            for f in fields:
+                if isinstance(f, EmbedField):
+                    self.fields.append(f)
+                elif isinstance(f, dict):
+                    self.fields.append(EmbedField(f['data']['name'], f['data']['value'], f['data']['inline']))
+                else:
+                    raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
     def to_message_chain(self):
         text_lst = []
@@ -282,9 +290,9 @@ class Embed(EmbedT):
 
     def __repr__(self):
         return f'Embed(title="{self.title}", description="{self.description}", url="{self.url}", ' \
-               f'timestamp={self.timestamp}, color={self.color}, image={self.image.__repr__()}, ' \
-               f'thumbnail={self.thumbnail.__repr__()}, author="{self.author}", footer="{self.footer}", ' \
-               f'fields={self.fields})'
+            f'timestamp={self.timestamp}, color={self.color}, image={self.image.__repr__()}, ' \
+            f'thumbnail={self.thumbnail.__repr__()}, author="{self.author}", footer="{self.footer}", ' \
+            f'fields={self.fields})'
 
     def to_dict(self):
         return {
@@ -299,7 +307,7 @@ class Embed(EmbedT):
                 'thumbnail': self.thumbnail,
                 'author': self.author,
                 'footer': self.footer,
-                'fields': self.fields}}
+                'fields': [f.to_dict() for f in self.fields]}}
 
 
 __all__ = ["Plain", "Image", "Voice", "Embed", "EmbedField", "Url", "ErrorMessage", "FormattedTime", "I18NContext"]

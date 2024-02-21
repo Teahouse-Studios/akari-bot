@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Union
 
 from PIL import Image
@@ -29,7 +30,7 @@ class MessageSession(MessageSessionT):
         forward = False
         delete = True
         wait = True
-
+        
     async def send_message(self, message_chain, quote=True, disable_secret_check=False,
                            allow_split_image=True, callback=None) -> FinishedSession:
         message_chain = MessageChain(message_chain)
@@ -52,24 +53,26 @@ class MessageSession(MessageSessionT):
         if Config('no_confirm'):
             return True
         if message_chain:
+            if append_instruction:
+                print(self.locale.t("message.wait.confirm.prompt.type1"))
             send = await self.send_message(message_chain)
-            print(self.locale.t("message.wait.confirm.prompt.type1"))
 
         c = await aioconsole.ainput('Confirm: ')
-        print(c)
         if message_chain and delete:
             await send.delete()
         if c in confirm_command:
             return True
-
         return False
 
-    async def wait_anyone(self, message_chain=None, quote=True, delete=True, timeout=120):
+    async def wait_next_message(self, message_chain=None, quote=True, delete=False, timeout=120,
+                                append_instruction=True):
         send = None
         if message_chain:
+            if append_instruction:
+                print(self.locale.t("message.wait.confirm.prompt.type2"))
             send = await self.send_message(message_chain)
+            
         c = await aioconsole.ainput('Confirm: ')
-        print(c)
         if message_chain and delete:
             await send.delete()
         self.session.message = c
@@ -80,8 +83,10 @@ class MessageSession(MessageSessionT):
         message_chain = MessageChain(message_chain)
         if append_instruction:
             message_chain.append(Plain(self.locale.t("message.reply.prompt")))
-        send = await self.send_message(message_chain, quote)
+        send = await self.send_message(message_chain)
         c = await aioconsole.ainput('Reply: ')
+        if message_chain and delete:
+            await send.delete()
         return MessageSession(target=MsgInfo(target_id='TEST|Console|0',
                                              sender_id='TEST|0',
                                              sender_name='',
@@ -89,6 +94,16 @@ class MessageSession(MessageSessionT):
                                              sender_from='TEST', client_name='TEST', message_id=0,
                                              reply_id=None),
                               session=Session(message=c, target='TEST|Console|0', sender='TEST|0'))
+                              
+    async def wait_anyone(self, message_chain=None, quote=True, delete=False, timeout=120):
+        send = None
+        if message_chain:
+            send = await self.send_message(message_chain)
+        c = await aioconsole.ainput('Confirm: ')
+        if message_chain and delete:
+            await send.delete()
+        self.session.message = c
+        return self
 
     def as_display(self, text_only=False):
         return self.session.message
@@ -114,10 +129,11 @@ class MessageSession(MessageSessionT):
         return True
 
     async def sleep(self, s):
-        print("(Tried to sleep for %d seconds, skip.)" % s)
+        await asyncio.sleep(s)
 
     sendMessage = send_message
     waitConfirm = wait_confirm
+    waitNextMessage = wait_next_message
     waitReply = wait_reply
     waitAnyone = wait_anyone
     asDisplay = as_display

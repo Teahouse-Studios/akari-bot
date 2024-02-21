@@ -51,7 +51,7 @@ def load_modules():
                     continue
                 modules = 'modules.' + fun_file
                 importlib.import_module(modules)
-                Logger.debug(f'Successfully loaded modules. {fun_file}!')
+                Logger.debug(f'Successfully loaded modules.{fun_file}!')
         except Exception:
             tb = traceback.format_exc()
             errmsg = f'Failed to load modules.{fun_file}: \n{tb}'

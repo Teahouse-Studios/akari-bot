@@ -1,4 +1,4 @@
-from core.builtins import Bot, Image, Plain, command_prefix, I18NContext
+from core.builtins import Bot, Image, Plain, command_prefix, I18NContext, MessageChain
 from core.component import module
 from core.logger import Logger
 from core.utils.i18n import Locale
@@ -11,11 +11,11 @@ weekly_rss = module('weekly_rss',
 
 @weekly_rss.hook()
 async def weekly_rss(fetch: Bot.FetchTarget, ctx: Bot.ModuleHookContext):
-    weekly_cn = ctx.args['weekly_cn']
-    weekly_tw = ctx.args['weekly_tw']
+    weekly_cn = MessageChain(ctx.args['weekly_cn'])
+    weekly_tw = MessageChain(ctx.args['weekly_tw'])
     if Bot.FetchTarget.name == 'QQ':
-        weekly_cn = [Plain(Locale('zh_cn').t('weekly_rss.message', prefix=command_prefix[0]))] + weekly_cn
-        weekly_tw = [Plain(Locale('zh_tw').t('weekly_rss.message', prefix=command_prefix[0]))] + weekly_tw
+        weekly_cn = [Plain(Locale('zh_cn').t('weekly_rss.message', prefix=command_prefix[0]))] + weekly_cn.as_sendable()
+        weekly_tw = [Plain(Locale('zh_tw').t('weekly_rss.message', prefix=command_prefix[0]))] + weekly_tw.as_sendable()
         weekly_cn = Image(await msgchain2image(weekly_cn))
         weekly_tw = Image(await msgchain2image(weekly_tw))
     post_msg = {'zh_cn': weekly_cn, 'zh_tw': weekly_tw, 'fallback': weekly_cn}

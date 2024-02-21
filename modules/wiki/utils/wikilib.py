@@ -562,7 +562,7 @@ class WikiLib:
                             elif len(split_title) > 1 and split_title[
                                     0].lower() in self.wiki_info.namespacealiases and not _search:
                                 rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
-                                          + ':'.join(split_title[1:]) + page_info.args
+                                    + ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle, _search=True)
                             if reparse:
                                 page_info.before_title = page_info.title
@@ -747,13 +747,13 @@ class WikiLib:
                         page_info.before_title = before_page_info.title
                         t = page_info.title
                         if t:
-                            if not before_page_info.args:
+                            if before_page_info.args:
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
                                 if page_info.link:
                                     page_info.link += before_page_info.args
                             else:
-                                page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
+                                page_info.link = page_info.info.script + f'?curid={page_info.id}'
                             if _tried == 0:
                                 if lang and page_info.status:
                                     page_info.before_title = page_info.title
