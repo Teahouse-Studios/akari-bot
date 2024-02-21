@@ -23,12 +23,12 @@ enable_analytics = Config('enable_analytics')
 async def convert_embed(embed: Embed):
     if isinstance(embed, Embed):
         files = []
-        embeds = discord.Embed(title=embed.title if embed.title else discord.Embed.Empty,
-                               description=embed.description if embed.description else discord.Embed.Empty,
-                               color=embed.color if embed.color else discord.Embed.Empty,
-                               url=embed.url if embed.url else discord.Embed.Empty,
+        embeds = discord.Embed(title=embed.title if embed.title else None,
+                               description=embed.description if embed.description else None,
+                               color=embed.color if embed.color else None,
+                               url=embed.url if embed.url else None,
                                timestamp=datetime.datetime.fromtimestamp(
-                                   embed.timestamp) if embed.timestamp else discord.Embed.Empty, )
+                                   embed.timestamp) if embed.timestamp else None, )
         if embed.image:
             upload = discord.File(await embed.image.get(), filename="image.png")
             files.append(upload)
