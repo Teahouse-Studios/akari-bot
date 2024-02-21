@@ -34,10 +34,10 @@ async def check_crowdin():
                 raise Exception(get_json['msg'])
             for act in get_json['activity']:
                 m = html2text(act["message"], baseurl=base_url).strip()
-                # Replace newline characters in url
-                match_url = re.search(r'(https?://[^\s]+)', m)
-                if match_url:
-                    m = m.replace(match_url.group(0), match_url.group(0).replace('\n', ''))
+                # Replace newline characters in urls
+                match = re.findall(r'\[.*?]\(.*?\)', m)
+                for i in match:
+                    m = m.replace(i, i.replace('\n', ''))
                 if not any(x in m for x in filter_words):
                     continue
                 if act['count'] == 1:
@@ -66,10 +66,9 @@ async def check_crowdin():
                                     content = '👎'
                                 else:
                                     content = html2text(content, baseurl=base_url).strip()
-                                    match_url = re.search(r'(https?://[^\s]+)', content)
-                                    if match_url:
-                                        content = content.replace(match_url.group(
-                                            0), match_url.group(0).replace('\n', ''))
+                                    match = re.findall(r'\[.*?]\(.*?\)', content)
+                                    for i in match:
+                                        content = content.replace(i, i.replace('\n', ''))
                                 identify = {detail['title']: content}
                                 identify_.update(identify)
                             identify = f'{act["user_id"]}{str(act['timestamp'])}{m}{
