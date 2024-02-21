@@ -75,7 +75,7 @@ async def check_crowdin():
                                 "\n".join(f'{i}: {identify_[i]}' for i in identify_)}'
 
                             if not first and not CrowdinActivityRecords.check(identify):
-                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Embed(title='New Crowdin Updates', description=m, fields=[EmbedField(name=k, value=v) for k, v in identify_.items()]).to_dict()])
+                                await JobQueue.trigger_hook_all('mc_crowdin', message=[Embed(title='New Crowdin Updates', description=m, fields=[EmbedField(name=k, value=v, inline=True) for k, v in identify_.items()]).to_dict()])
     except Exception:
         if Config('debug'):
             Logger.error(traceback.format_exc())
