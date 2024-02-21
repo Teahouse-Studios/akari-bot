@@ -256,7 +256,7 @@ class Embed(EmbedT):
                 if isinstance(f, EmbedField):
                     self.fields.append(f)
                 elif isinstance(f, dict):
-                    self.fields.append(EmbedField(**f))
+                    self.fields.append(EmbedField(f['data']['name'], f['data']['value'], f['data']['inline']))
                 else:
                     raise TypeError(f"Invalid type {type(f)} for EmbedField")
 
