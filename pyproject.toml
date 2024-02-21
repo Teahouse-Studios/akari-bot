@@ -12,9 +12,6 @@ authors = [
 license = "AGPL-3.0"
 readme = "README.md"
 
-[[tool.poetry.source]]
-name = "aliyun"
-url = "https://mirrors.aliyun.com/pypi/simple/"
 
 [tool.poetry.dependencies]
 python = "^3.12.0"
