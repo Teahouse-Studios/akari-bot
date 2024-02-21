@@ -35,7 +35,7 @@ async def check_crowdin():
             for act in get_json['activity']:
                 m = html2text(act["message"], baseurl=base_url).strip()
                 # Replace newline characters in urls
-                match = re.findall(r'\[.*?]\(.*?\)', m)
+                match = re.findall(r'(\[.*?]\(.*?\))', m, re.M)
                 for i in match:
                     m = m.replace(i, i.replace('\n', ''))
                 if not any(x in m for x in filter_words):
@@ -66,7 +66,7 @@ async def check_crowdin():
                                     content = '👎'
                                 else:
                                     content = html2text(content, baseurl=base_url).strip()
-                                    match = re.findall(r'\[.*?]\(.*?\)', content)
+                                    match = re.findall(r'(\[.*?]\(.*?\))', content, re.M)
                                     for i in match:
                                         content = content.replace(i, i.replace('\n', ''))
                                 identify = {detail['title']: content}
