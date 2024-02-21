@@ -53,9 +53,11 @@ pycryptodome = "^3.18.0"
 langconv = "^0.2.0"
 toml = "^0.10.2"
 khl-py = "^0.3.16"
+matrix-nio = "^0.21.2"
 attrs = "^23.1.0"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
+python-whois = "^0.8.0"
 pandas = "^2.2.0"
 fastapi = "^0.109.2"
 
@@ -75,4 +77,3 @@ aggressive = 3
 
 [tool.pyright]
 reportUndefinedVariable = 'error'
-
