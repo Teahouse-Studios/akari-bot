@@ -14,7 +14,7 @@ from core.utils.http import get_url
 
 first = True
 
-filter_words = ['Chinese', 'Mojang']
+filter_words = ['Mojang']
 base_url = 'https://crowdin.com/'
 
 
