@@ -28,7 +28,6 @@ async def check_crowdin():
     try:
         get_json: dict = await get_url(url, 200, attempt=1, headers=headers,
                                        fmt='json')
-        Logger.info(get_json)
         if get_json:
             if 'error' in get_json:
                 raise Exception(get_json['msg'])
@@ -52,7 +51,6 @@ async def check_crowdin():
                         act["project_id"]}&language_id=0&after_build=0&before_build=0"
                     get_detail_json: dict = await get_url(detail_url, 200, attempt=1, headers=headers,
                                                           fmt='json')
-                    Logger.info(get_detail_json)
                     if get_detail_json:
                         for detail_num in get_detail_json['activity']:
                             identify_ = {}
