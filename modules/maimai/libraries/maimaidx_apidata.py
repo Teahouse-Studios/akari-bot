@@ -61,7 +61,7 @@ async def get_info(msg: Bot.MessageSession, music: Music, desc = None, *details)
         await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
         cover = Image(img)
     except BaseException:
-        cover = Image("https://www.diving-fish.com/covers/00000.png"
+        cover = Image("https://www.diving-fish.com/covers/00000.png")
     if details:
         list(details)
     return Embed(title=info, description=desc, image=cover, fields=details)
