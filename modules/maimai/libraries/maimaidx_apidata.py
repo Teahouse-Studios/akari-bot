@@ -54,7 +54,7 @@ async def update_covers():
     return True
 
 
-async def get_info(msg: Bot.MessageSession, music: Music, desc = None, details: list):
+async def get_info(msg: Bot.MessageSession, music: Music, desc, details: list):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"

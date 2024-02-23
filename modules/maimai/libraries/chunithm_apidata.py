@@ -7,7 +7,7 @@ from core.utils.http import post_url
 from .chunithm_music import Music
 
 
-async def get_info(msg: Bot.MessageSession, music: Music, desc = None, details: list):
+async def get_info(msg: Bot.MessageSession, music: Music, desc, details: list):
     info = [Plain(f"{music.id}\u200B. {music.title}")]
     # 此处未来会添加图片
     return Embed(title=info, description=desc, fields=details)
