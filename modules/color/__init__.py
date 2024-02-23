@@ -102,7 +102,7 @@ async def _(msg: Bot.MessageSession, color: str = None, use_embed = False):
         anchor='mm',
         align='center',
         spacing=20)
-    await msg.finish(Embed(color=hex(int(color_hex[1:], 16)),
+    await msg.finish(Embed(color=int(color_hex[1:], 16),
                                image=BImage(img),
                                fields=[EmbedField('HEX', color_hex, inline=True),
                                        EmbedField('RGB', color_rgb, inline=True),
