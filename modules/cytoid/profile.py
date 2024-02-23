@@ -69,11 +69,11 @@ async def cytoid_profile(msg: Bot.MessageSession):
     if nick:
         res.append(EmbedField('Nickname', nick))
     res.update([EmbedField('Basic Exp', basic_exp),
-                EmbedField('Level Exp', level_exp)
-                EmbedField('Total Exp', total_exp)
-                EmbedField('Level', current_level)
-                EmbedField('Next Level Exp', next_level_exp)
-                EmbedField('Rating', rating)
+                EmbedField('Level Exp', level_exp),
+                EmbedField('Total Exp', total_exp),
+                EmbedField('Level', current_level),
+                EmbedField('Next Level Exp', next_level_exp),
+                EmbedField('Rating', rating),
                 EmbedField('Grade', '|'.join(grade_t))])
 
     await msg.finish(Embed(title='Cytoid Profile',

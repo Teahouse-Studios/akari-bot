@@ -64,7 +64,7 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(Embed(fields=[
                          EmbedField(msg.locale.t('core.message.analytics.embed.counts', first_record=first_record.timestamp), get_counts),
                          EmbedField(msg.locale.t('core.message.analytics.embed.counts.today'), get_counts_today),
-                         ])
+                         ]))
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
