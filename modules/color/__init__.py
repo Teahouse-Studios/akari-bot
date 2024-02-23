@@ -8,7 +8,7 @@ import ujson as json
 import webcolors
 from PIL import Image, ImageDraw, ImageFont
 
-from core.builtins import Bot, Image as BImage
+from core.builtins import Bot, Embed, EmbedField, Image as BImage
 from core.component import module
 
 c = module('color', alias='colour', developers=['Dianliang233'], desc='{color.help.desc}')
