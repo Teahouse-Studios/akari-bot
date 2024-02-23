@@ -33,9 +33,7 @@ started_time = datetime.now()
 
 @ping.command('{{core.help.ping}}')
 async def _(msg: Bot.MessageSession):
-    checkpermisson = msg.check_super_user()
-    result = "Pong!"
-    if checkpermisson:
+    if msg.check_super_user():
         timediff = str(datetime.now() - started_time)
         boot_start = msg.ts2strftime(psutil.boot_time())
         cpu_usage = psutil.cpu_percent()
@@ -45,19 +43,22 @@ async def _(msg: Bot.MessageSession):
         swap_percent = psutil.swap_memory().percent
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
-        result += '\n' + msg.locale.t("core.message.ping.detail",
-                                      system_boot_time=boot_start,
-                                      bot_running_time=timediff,
-                                      python_version=platform.python_version(),
-                                      cpu_brand=get_cpu_info()['brand_raw'],
-                                      cpu_usage=cpu_usage,
-                                      ram=ram,
-                                      ram_percent=ram_percent,
-                                      swap=swap,
-                                      swap_percent=swap_percent,
-                                      disk_space=disk,
-                                      disk_space_total=disk_total)
-    await msg.finish(result)
+        await msg.finish(Embed(title='Pong!',
+                               color=0x00ff00,
+                               timestamp=datetime.now().timestamp(),
+                               fields=[
+                                    EmbedField(msg.locale.t('core.message.ping.system_boot_time'), boot_start, inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.bot_running_time'), timediff, inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.python_version'), platform.python_version(), inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.cpu_brand'), get_cpu_info()['brand_raw'], inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.cpu_usage'), f'{cpu_usage}%', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.ram'), f'{ram}M', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.ram_percent'), f'{ram_percent}%', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.swap'), f'{swap}M', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.swap_percent'), f'{swap_percent}%', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.disk_space'), f'{disk}G/${disk_total}G', inline=True),
+                            ]))
+    await msg.finish("Pong!")
 
 
 admin = module('admin', base=True, required_admin=True, desc='{core.help.admin.desc}')
