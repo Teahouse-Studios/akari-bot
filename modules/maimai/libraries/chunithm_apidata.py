@@ -2,15 +2,17 @@ import traceback
 
 import ujson as json
 
-from core.builtins import Bot, Embed, Plain
+from core.builtins import Bot, Plain
 from core.utils.http import post_url
 from .chunithm_music import Music
 
 
-async def get_info(msg: Bot.MessageSession, music: Music, desc, details: list):
+async def get_info(msg: Bot.MessageSession, music: Music, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}")]
     # 此处未来会添加图片
-    return Embed(title=info, description=desc, fields=details)
+    if details:
+        info.extend(details)
+    return info
 
 
 async def get_record(msg, payload):

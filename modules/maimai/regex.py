@@ -1,6 +1,6 @@
 import re
 
-from core.builtins import Bot, EmbedField, Plain, Image as BImage
+from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_music import TotalList
@@ -38,14 +38,12 @@ async def _(msg: Bot.MessageSession):
     if not music:
         await msg.finish(msg.locale.t("maimai.message.music_not_found"))
 
-    res = [
-           EmbedField(msg.locale.t("maimai.message.song.embed.artist"), music['basic_info']['artist']),
-           EmbedField(msg.locale.t("maimai.message.song.embed.genre"), music['basic_info']['genre']),
-           EmbedField(msg.locale.t("maimai.message.song.embed.bpm"), music['basic_info']['bpm']),
-           EmbedField(msg.locale.t("maimai.message.song.embed.version"), music['basic_info']['from']),
-           EmbedField(msg.locale.t("maimai.message.song.embed.level"), '/'.join((str(ds) for ds in music['ds']))),
-          ]
-    await msg.finish(await get_info(msg, music, None, res))
+    await msg.finish(await get_info(msg, music, Plain(msg.locale.t("maimai.message.song",
+                                                                   artist=music['basic_info']['artist'],
+                                                                   genre=music['basic_info']['genre'],
+                                                                   bpm=music['basic_info']['bpm'],
+                                                                   version=music['basic_info']['from'],
+                                                                   level='/'.join((str(ds) for ds in music['ds']))))))
 
 
 @mai_regex.regex(re.compile(r"(?:id)?(\d+)\s?有什(?:么别|麼別)名", flags=re.I), desc='{maimai.help.maimai_regex.alias}')
@@ -86,7 +84,7 @@ async def _(msg: Bot.MessageSession):
                 await msg.finish(msg.locale.t("maimai.message.music_not_found"))
             else:
                 music = music_data.random()
-                await msg.finish(await get_info(msg, music, f"\n{'/'.join(str(ds) for ds in music.ds)}"))
+                await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
         except ValueError:
             await msg.finish(msg.locale.t("maimai.message.random.failed"))
 

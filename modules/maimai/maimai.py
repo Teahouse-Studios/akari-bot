@@ -1,6 +1,6 @@
 import traceback
 
-from core.builtins import Bot, EmbedField, Plain, Image as BImage
+from core.builtins import Bot, Plain, Image as BImage
 from core.component import module
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
@@ -242,32 +242,38 @@ async def _(msg: Bot.MessageSession, id_or_alias: str, diff: str = None):
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
         if len(chart['notes']) == 4:
-            res = [
-                   EmbedField('TAP', chart['notes'][0]),
-                   EmbedField('HOLD', chart['notes'][1]),
-                   EmbedField('SLIDE', chart['notes'][2]),
-                   EmbedField('BREAK', chart['notes'][3]),
-                   EmbedField(msg.locale.t("maimai.message.song.embed.charter"), chart['charter']),
-                  ]
+            res = msg.locale.t(
+                "maimai.message.song.sd",
+                diff=diff_label[diff_index],
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                brk=chart['notes'][3],
+                charter=chart['charter'])
         else:
-            res = [
-                   EmbedField('TAP', chart['notes'][0]),
-                   EmbedField('HOLD', chart['notes'][1]),
-                   EmbedField('SLIDE', chart['notes'][2]),
-                   EmbedField('TOUCH', chart['notes'][3]),
-                   EmbedField('BREAK', chart['notes'][4]),
-                   EmbedField(msg.locale.t("maimai.message.song.embed.charter"), chart['charter'])
-                  ]
-        await msg.finish(await get_info(msg, music, f"{diff_label[diff_index]} {level} ({ds})", res))
+            res = msg.locale.t(
+                "maimai.message.song.dx",
+                diff=diff_label[diff_index],
+                level=level,
+                ds=ds,
+                tap=chart['notes'][0],
+                hold=chart['notes'][1],
+                slide=chart['notes'][2],
+                touch=chart['notes'][3],
+                brk=chart['notes'][4],
+                charter=chart['charter'])
+        await msg.finish(await get_info(msg, music, Plain(res)))
     else:
-        res = [
-               EmbedField(msg.locale.t("maimai.message.song.embed.artist"), music['basic_info']['artist']),
-               EmbedField(msg.locale.t("maimai.message.song.embed.genre"), music['basic_info']['genre']),
-               EmbedField(msg.locale.t("maimai.message.song.embed.bpm"), music['basic_info']['bpm']),
-               EmbedField(msg.locale.t("maimai.message.song.embed.version"), music['basic_info']['from']),
-               EmbedField(msg.locale.t("maimai.message.song.embed.level"), '/'.join((str(ds) for ds in music['ds']))),
-              ]
-        await msg.finish(await get_info(msg, music, None, res))
+        res = msg.locale.t(
+            "maimai.message.song",
+            artist=music['basic_info']['artist'],
+            genre=music['basic_info']['genre'],
+            bpm=music['basic_info']['bpm'],
+            version=music['basic_info']['from'],
+            level='/'.join((str(ds) for ds in music['ds'])))
+        await msg.finish(await get_info(msg, music, Plain(res)))
 
 
 @mai.command('random <diff+level> [<dx_type>] {{maimai.help.random.filter}}')
@@ -304,8 +310,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             await msg.finish(msg.locale.t("maimai.message.music_not_found"))
         else:
             music = music_data.random()
-            detail = [EmbedField(msg.locale.t("maimai.message.song.embed.version"), music['basic_info']['from'])]
-            await msg.finish(await get_info(msg, music, f"{'/'.join(str(ds) for ds in music.ds)}"))
+            await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
         await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
@@ -313,7 +318,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
 @mai.command('random {{maimai.help.random}}')
 async def _(msg: Bot.MessageSession):
     music = (await total_list.get()).random()
-    await msg.finish(await get_info(msg, music, f"{'/'.join(str(ds) for ds in music.ds)}"))
+    await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
 
 
 @mai.command('scoreline <sid> <diff> <score> {{maimai.help.scoreline}}')
