@@ -56,7 +56,7 @@ async def _(msg: Bot.MessageSession):
                                     EmbedField(msg.locale.t('core.message.ping.ram_percent'), f'{ram_percent}%', inline=True),
                                     EmbedField(msg.locale.t('core.message.ping.swap'), f'{swap}M', inline=True),
                                     EmbedField(msg.locale.t('core.message.ping.swap_percent'), f'{swap_percent}%', inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.disk_space'), f'{disk}G/${disk_total}G', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.disk_space'), f'{disk}G/{disk_total}G', inline=True),
                             ]))
     await msg.finish("Pong!")
 

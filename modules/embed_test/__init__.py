@@ -1,6 +1,6 @@
 import datetime
 
-from core.builtins import Bot, Embed, Image, EmbedField
+from core.builtins import Bot, Embed, EmbedField, Image
 from core.component import module
 
 t = module('embed_test', required_superuser=True)
