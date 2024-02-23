@@ -21,11 +21,7 @@ ver = module('version', base=True)
 @ver.command('{{core.help.version}}')
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
-        if msg.target.sender_from in ['Discord|Client']:
-            commit = f"`{Info.version[0:6]}`"
-        else:
-            commit = Info.version[0:6]
-        await msg.finish(Embed(fields=[EmbedField(msg.locale.t('core.message.version'), commit)]))
+        await msg.finish(msg.locale.t('core.message.version'), commit=Info.version[0:6])
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 

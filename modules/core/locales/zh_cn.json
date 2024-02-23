@@ -181,7 +181,7 @@
     "core.message.setup.typing.enable": "已开启输入提示。",
     "core.message.superuser.invalid": "ID 格式错误，格式应为“${target}|<用户 ID>”。",
     "core.message.update.failed": "尝试从 GitHub 获取更新失败。",
-    "core.message.version": "当前机器人版本号",
+    "core.message.version": "当前机器人版本号：${commit}",
     "core.message.version.unknown": "无法获取版本号。此实例可能没有使用 Git 进行部署。",
     "core.message.whoami.admin": "（你拥有本对话的管理员权限）",
     "core.message.whoami.botadmin": "（你拥有本对话的机器人管理员权限）",

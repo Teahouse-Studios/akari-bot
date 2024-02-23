@@ -1,4 +1,4 @@
-from core.builtins import Bot, Plain, Image as BImage
+from core.builtins import Bot, EmbedField, Image as BImage, Plain
 from core.component import module
 from core.utils.image import msgchain2image
 from .dbutils import DivingProberBindInfoManager
@@ -159,23 +159,20 @@ async def _(msg: Bot.MessageSession, song: str, diff: str = None):
         chart = music['charts'][diff_index]
         ds = music['ds'][diff_index]
         level = music['level'][diff_index]
-        res = msg.locale.t(
-            "chunithm.message.song.diff",
-            diff=diff_label[diff_index],
-            level=level,
-            ds=ds,
-            combo=chart['combo'],
-            charter=chart['charter'])
-        await msg.finish(await get_info(msg, music, Plain(res)))
+        res = [
+               EmbedField(msg.locale.t("chunithm.message.song.embed.combo"), chart['combo']),
+               EmbedField(msg.locale.t("maimai.message.song.embed.charter"), chart['charter']),
+              ]
+        await msg.finish(await get_info(msg, music, f"{diff_label[diff_index]} {level} ({ds})", res))
     else:
-        res = msg.locale.t(
-            "chunithm.message.song",
-            artist=music['basic_info']['artist'],
-            genre=music['basic_info']['genre'],
-            bpm=music['basic_info']['bpm'],
-            version=music['basic_info']['from'],
-            level='/'.join((str(ds) for ds in music['ds'])))
-        await msg.finish(await get_info(msg, music, Plain(res)))
+        res = [
+               EmbedField(msg.locale.t("maimai.message.song.embed.artist"), music['basic_info']['artist']),
+               EmbedField(msg.locale.t("maimai.message.song.embed.genre"), music['basic_info']['genre']),
+               EmbedField(msg.locale.t("maimai.message.song.embed.bpm"), music['basic_info']['bpm']),
+               EmbedField(msg.locale.t("maimai.message.song.embed.version"), music['basic_info']['from']),
+               EmbedField(msg.locale.t("maimai.message.song.embed.level"), '/'.join((str(ds) for ds in music['ds']))),
+              ]
+        await msg.finish(await get_info(msg, music, None, res))
 
 
 @chu.command('random [<diff+level>] {{maimai.help.random}}')

@@ -87,7 +87,7 @@ async def query_song_info(msg, query, username):
         payload = {'username': username}
 
     output = await get_player_score(msg, payload, sid)
-    await msg.finish(await get_info(msg, music, Plain(output)))
+    await msg.finish(await get_info(msg, music, output))
 
 
 @mai.command('plate <plate> [<username>] {{maimai.help.plate}}')

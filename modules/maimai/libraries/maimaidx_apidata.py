@@ -4,7 +4,7 @@ import traceback
 import ujson as json
 
 from config import Config
-from core.builtins import Bot, Plain, Image
+from core.builtins import Bot, Embed, Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
 from core.utils.http import get_url, post_url, download_to_cache
@@ -54,17 +54,17 @@ async def update_covers():
     return True
 
 
-async def get_info(msg: Bot.MessageSession, music: Music, *details):
+async def get_info(msg: Bot.MessageSession, music: Music, desc = None, *details):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
         await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
-        info.append(Image(img))
+        cover = Image(img)
     except BaseException:
-        info.append(Image("https://www.diving-fish.com/covers/00000.png"))
+        cover = Image("https://www.diving-fish.com/covers/00000.png"
     if details:
-        info.extend(details)
-    return info
+        list(details)
+    return Embed(title=info, description=desc, image=cover, fields=details)
 
 
 async def get_alias(msg, sid):

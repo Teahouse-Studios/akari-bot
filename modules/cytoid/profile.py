@@ -2,7 +2,7 @@ import traceback
 
 import ujson as json
 
-from core.builtins import Bot, Embed, EmbedField, Image, Plain
+from core.builtins import Bot, Image, Plain
 from core.utils.http import get_url
 from .dbutils import CytoidBindInfoManager
 
@@ -64,19 +64,14 @@ async def cytoid_profile(msg: Bot.MessageSession):
     f = grade.get('F')
     if f:
         grade_t.append(f'F: {f}')
-
-    res = [EmbedField('UID', uid)]
-    if nick:
-        res.append(EmbedField('Nickname', nick))
-    res.extend([EmbedField('Basic Exp', basic_exp),
-                EmbedField('Level Exp', level_exp),
-                EmbedField('Total Exp', total_exp),
-                EmbedField('Level', current_level),
-                EmbedField('Next Level Exp', next_level_exp),
-                EmbedField('Rating', rating),
-                EmbedField('Grade', '|'.join(grade_t))])
-
-    await msg.finish(Embed(title='Cytoid Profile',
-                           url=profile_url,
-                           image=Image(avatar),
-                           fields=res))
+    text = f'UID: {uid}\n' + \
+           (f'Nickname: {nick}\n' if nick else '') + \
+           f'BasicExp: {basic_exp}\n' + \
+           f'LevelExp: {level_exp}\n' + \
+           f'TotalExp: {total_exp}\n' + \
+           f'CurrentLevel: {current_level}\n' + \
+           f'NextLevelExp: {next_level_exp}\n' + \
+           f'Rating: {rating}\n' + \
+           f'Grade: {", ".join(grade_t)}'
+    message_chain = [Image(path=avatar), Plain(text)]
+    await msg.finish(message_chain)
