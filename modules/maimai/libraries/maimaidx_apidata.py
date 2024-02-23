@@ -54,7 +54,7 @@ async def update_covers():
     return True
 
 
-async def get_info(msg: Bot.MessageSession, music: Music, desc = None, *details):
+async def get_info(msg: Bot.MessageSession, music: Music, desc = None, details: list):
     info = [Plain(f"{music.id}\u200B. {music.title}{' (DX)' if music['type'] == 'DX' else ''}")]
     try:
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
@@ -62,8 +62,6 @@ async def get_info(msg: Bot.MessageSession, music: Music, desc = None, *details)
         cover = Image(img)
     except BaseException:
         cover = Image("https://www.diving-fish.com/covers/00000.png")
-    if details:
-        list(details)
     return Embed(title=info, description=desc, image=cover, fields=details)
 
 

@@ -1,6 +1,6 @@
 import re
 
-from core.builtins import Bot, Plain, Image as BImage
+from core.builtins import Bot, EmbedField, Plain, Image as BImage
 from core.component import module
 from .libraries.maimaidx_apidata import get_alias, get_info, search_by_alias
 from .libraries.maimaidx_music import TotalList
