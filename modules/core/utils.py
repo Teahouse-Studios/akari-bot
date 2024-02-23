@@ -46,16 +46,16 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(Embed(title='Pong!',
                                color=0x00ff00,
                                fields=[
-                                    EmbedField(msg.locale.t('core.message.ping.system_boot_time'), boot_start, inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.bot_running_time'), timediff, inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.python_version'), platform.python_version(), inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.cpu_brand'), get_cpu_info()['brand_raw'], inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.cpu_usage'), f'{cpu_usage}%', inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.ram'), f'{ram}M', inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.ram_percent'), f'{ram_percent}%', inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.swap'), f'{swap}M', inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.swap_percent'), f'{swap_percent}%', inline=True),
-                                    EmbedField(msg.locale.t('core.message.ping.disk_space'), f'{disk}G/{disk_total}G', inline=True),
+                                    EmbedField(msg.locale.t('core.message.ping.system_boot_time'), boot_start),
+                                    EmbedField(msg.locale.t('core.message.ping.bot_running_time'), timediff),
+                                    EmbedField(msg.locale.t('core.message.ping.python_version'), platform.python_version()),
+                                    EmbedField(msg.locale.t('core.message.ping.cpu_brand'), get_cpu_info()['brand_raw']),
+                                    EmbedField(msg.locale.t('core.message.ping.cpu_usage'), f'{cpu_usage}%'),
+                                    EmbedField(msg.locale.t('core.message.ping.ram'), f'{ram}M'),
+                                    EmbedField(msg.locale.t('core.message.ping.ram_percent'), f'{ram_percent}%'),
+                                    EmbedField(msg.locale.t('core.message.ping.swap'), f'{swap}M'),
+                                    EmbedField(msg.locale.t('core.message.ping.swap_percent'), f'{swap_percent}%'),
+                                    EmbedField(msg.locale.t('core.message.ping.disk_space'), f'{disk}G/{disk_total}G'),
                             ]))
     await msg.finish("Pong!")
 
