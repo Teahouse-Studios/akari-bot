@@ -1,9 +1,9 @@
 {
     "color.help": "Provide color information. Support for Hex, RGB, HSL color code, or name in CSS and Material Design.",
     "color.help.desc": "Get color information.",
-    "color.message.css": "CSS color name: ",
-    "color.message.css.approximate": "Approximate CSS color name: ",
+    "color.message.css": "CSS color name",
+    "color.message.css.approximate": "Approximate CSS color name",
     "color.message.invalid": "Unrecognized color format.",
-    "color.message.md": "Material Design color name: ",
-    "color.message.md.approximate": "Approximate Material Design color name: "
+    "color.message.md": "Material Design color name",
+    "color.message.md.approximate": "Approximate Material Design color name"
 }

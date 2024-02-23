@@ -9,6 +9,7 @@
     "bilibili.message.detail": "标题：${title}${pages} | 类型：${tname}\nUP主：${owner} | 粉丝：${fans}\n简介：${desc}\n观看：${view} | 弹幕：${danmaku} | 评论：${reply}\n喜欢：${like} | 投币：${coin} | 收藏：${favorite} | 分享：${share}\n日期：${time}",
     "bilibili.message.embed.coin": "投币",
     "bilibili.message.embed.danmaku": "弹幕",
+    "bilibili.message.embed.fans": "粉丝",
     "bilibili.message.embed.favorite": "收藏",
     "bilibili.message.embed.like": "喜欢",
     "bilibili.message.embed.reply": "评论",

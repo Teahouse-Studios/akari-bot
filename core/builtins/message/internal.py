@@ -235,7 +235,7 @@ class Embed(EmbedT):
                  description: str = None,
                  url: str = None,
                  timestamp: float = datetime.now().timestamp(),
-                 color: int = 0x0000ff,
+                 color: int = 0x0091ff,
                  image: Image = None,
                  thumbnail: Image = None,
                  author: str = None,
