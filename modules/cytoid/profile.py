@@ -68,7 +68,7 @@ async def cytoid_profile(msg: Bot.MessageSession):
     res = [EmbedField('UID', uid)]
     if nick:
         res.append(EmbedField('Nickname', nick))
-    res.update([EmbedField('Basic Exp', basic_exp),
+    res.extend([EmbedField('Basic Exp', basic_exp),
                 EmbedField('Level Exp', level_exp),
                 EmbedField('Total Exp', total_exp),
                 EmbedField('Level', current_level),
