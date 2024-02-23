@@ -10,7 +10,7 @@ import ujson as json
 from dateutil.relativedelta import relativedelta
 
 from config import Config, CFG
-from core.builtins import Bot, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
+from core.builtins import Bot, Embed, EmbedField, PrivateAssets, Image, Plain, ExecutionLockList, Temp, MessageTaskManager
 from core.component import module
 from core.exceptions import NoReportException, TestException
 from core.loader import ModulesManager
@@ -61,8 +61,10 @@ async def _(msg: Bot.MessageSession):
         old = datetime.now().replace(hour=0, minute=0, second=0)
         get_counts_today = BotDBUtil.Analytics.get_count_by_times(new, old)
 
-        await msg.finish(msg.locale.t("core.message.analytics.counts", first_record=first_record.timestamp,
-                                      counts=get_counts, counts_today=get_counts_today))
+        await msg.finish(Embed(fields=[
+                         EmbedField(msg.locale.t('core.message.analytics.embed.counts', first_record=first_record.timestamp), get_counts),
+                         EmbedField(msg.locale.t('core.message.analytics.embed.counts.today'), get_counts_today),
+                         ])
     else:
         await msg.finish(msg.locale.t("core.message.analytics.disabled"))
 
@@ -75,9 +77,9 @@ async def _(msg: Bot.MessageSession):
         if '<module>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<module>']
         if not module_:
-            result = msg.locale.t("core.message.analytics.days.total", first_record=first_record.timestamp)
+            result = msg.locale.t("core.message.analytics.embed.days.total", first_record=first_record.timestamp)
         else:
-            result = msg.locale.t("core.message.analytics.days", module=module_,
+            result = msg.locale.t("core.message.analytics.embed.days", module=module_,
                                   first_record=first_record.timestamp)
         data_ = {}
         for d in range(30):
@@ -102,7 +104,7 @@ async def _(msg: Bot.MessageSession):
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish([Plain(result), Image(path)])
+        await msg.finish(Embed(title=result, image=Image(path)))
 
 
 @ana.command('year [<module>]')
@@ -113,9 +115,9 @@ async def _(msg: Bot.MessageSession):
         if '<module>' in msg.parsed_msg:
             module_ = msg.parsed_msg['<module>']
         if not module_:
-            result = msg.locale.t("core.message.analytics.year.total", first_record=first_record.timestamp)
+            result = msg.locale.t("core.message.analytics.embed.year.total", first_record=first_record.timestamp)
         else:
-            result = msg.locale.t("core.message.analytics.year", module=module_,
+            result = msg.locale.t("core.message.analytics.embed.year", module=module_,
                                   first_record=first_record.timestamp)
         data_ = {}
         for d in range(12):
@@ -142,7 +144,7 @@ async def _(msg: Bot.MessageSession):
         path = random_cache_path() + '.png'
         plt.savefig(path)
         plt.close()
-        await msg.finish([Plain(result), Image(path)])
+        await msg.finish(Embed(title=result, image=Image(path)))
 
 
 purge = module('purge', required_superuser=True, base=True)
@@ -321,10 +323,10 @@ async def update_bot(msg: Bot.MessageSession):
     if confirm:
         pull_repo_result = pull_repo()
         if pull_repo_result:
-            await msg.send_message(pull_repo_result)
+            await msg.send_message(Embed(description=pull_repo_result))
         else:
             await msg.send_message(msg.locale.t("core.message.update.failed"))
-        await msg.finish(update_dependencies())
+        await msg.finish(Embed(description=update_dependencies()))
     else:
         await msg.finish()
 
@@ -383,8 +385,8 @@ if Info.subprocess:
             write_version_cache(msg)
             pull_repo_result = pull_repo()
             if pull_repo_result != '':
-                await msg.send_message(pull_repo_result)
-                await msg.send_message(update_dependencies())
+                await msg.send_message(Embed(description=pull_repo_result))
+                await msg.send_message(Embed(description=update_dependencies()))
             else:
                 Logger.warn(f'Failed to get Git repository result.')
                 await msg.send_message(msg.locale.t("core.message.update.failed"))

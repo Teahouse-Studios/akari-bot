@@ -21,7 +21,11 @@ ver = module('version', base=True)
 @ver.command('{{core.help.version}}')
 async def bot_version(msg: Bot.MessageSession):
     if Info.version:
-        await msg.finish(msg.locale.t('core.message.version', commit=Info.version[0:6]))
+        if msg.target.sender_from in ['Discord|Client']:
+            commit = f"`{Info.version[0:6]}`"
+        else:
+            commit = Info.version[0:6]
+        await msg.finish(Embed(fields=[EmbedField(msg.locale.t('core.message.version'), commit)]))
     else:
         await msg.finish(msg.locale.t('core.message.version.unknown'))
 
@@ -45,16 +49,16 @@ async def _(msg: Bot.MessageSession):
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
         await msg.finish(Embed(title='Pong!',
                                fields=[
-                                    EmbedField(msg.locale.t('core.message.ping.system_boot_time'), boot_start),
-                                    EmbedField(msg.locale.t('core.message.ping.bot_running_time'), timediff),
-                                    EmbedField(msg.locale.t('core.message.ping.python_version'), platform.python_version()),
-                                    EmbedField(msg.locale.t('core.message.ping.cpu_brand'), get_cpu_info()['brand_raw']),
-                                    EmbedField(msg.locale.t('core.message.ping.cpu_usage'), f'{cpu_usage}%'),
-                                    EmbedField(msg.locale.t('core.message.ping.ram'), f'{ram}M'),
-                                    EmbedField(msg.locale.t('core.message.ping.ram_percent'), f'{ram_percent}%'),
-                                    EmbedField(msg.locale.t('core.message.ping.swap'), f'{swap}M'),
-                                    EmbedField(msg.locale.t('core.message.ping.swap_percent'), f'{swap_percent}%'),
-                                    EmbedField(msg.locale.t('core.message.ping.disk_space'), f'{disk}G/{disk_total}G'),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.system_boot_time'), boot_start),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.bot_running_time'), timediff),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.python_version'), platform.python_version()),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.cpu_brand'), get_cpu_info()['brand_raw']),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.cpu_usage'), f'{cpu_usage}%'),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.ram'), f'{ram}M'),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.ram_percent'), f'{ram_percent}%'),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.swap'), f'{swap}M'),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.swap_percent'), f'{swap_percent}%'),
+                                    EmbedField(msg.locale.t('core.message.ping.embed.disk_space'), f'{disk}G/{disk_total}G'),
                             ]))
     await msg.finish("Pong!")
 
@@ -152,6 +156,8 @@ whoami = module('whoami', base=True)
 
 @whoami.command('{{core.help.whoami}}')
 async def _(msg: Bot.MessageSession):
+    fields = [EmbedField(msg.locale.t('core.message.whoami.embed.sender'), msg.target.sender_id),
+              EmbedField(msg.locale.t('core.message.whoami.embed.target'), msg.target.target_id)]
     perm = ''
     if await msg.check_native_permission():
         perm += '\n' + msg.locale.t("core.message.whoami.admin")
@@ -159,8 +165,9 @@ async def _(msg: Bot.MessageSession):
         perm += '\n' + msg.locale.t("core.message.whoami.botadmin")
     if msg.check_super_user():
         perm += '\n' + msg.locale.t("core.message.whoami.superuser")
-    await msg.finish(
-        msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + perm)
+    if perm:
+        fields.append(EmbedField(msg.locale.t('core.message.whoami.embed.permission'), perm))
+    await msg.finish(Embed(fields=fields))
 
 
 setup = module('setup', base=True, desc='{core.help.setup.desc}', alias='toggle')

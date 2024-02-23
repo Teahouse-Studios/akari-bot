@@ -78,20 +78,20 @@ async def _(msg: Bot.MessageSession, color: str = None, use_embed = False):
     css_color_name = ''
     css_color_name_short = ''
     if css_color_name_raw[1]:
-        css_color_name = f'\n{msg.locale.t("color.message.css")}{msg.locale.t("message.colon")}'
+        css_color_name = f'\n{msg.locale.t("color.message.embed.css")}'
         if css_color_name_raw[0] != 'black' and css_color_name_raw[0] != 'white':
             css_color_name_short = f'{css_color_name_raw[0]}\n'
     elif css_color_name_raw[0]:
-        css_color_name = f'\n{msg.locale.t("color.message.css.approximate")}{msg.locale.t("message.colon")}'
+        css_color_name = f'\n{msg.locale.t("color.message.embed.css.approximate")}'
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ''
     material_color_name_short = ''
     if material_color_name_raw[1]:
-        material_color_name = f'\n{msg.locale.t("color.message.md")}{msg.locale.t("message.colon")}'
+        material_color_name = f'\n{msg.locale.t("color.message.embed.md")}'
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0]:
-        material_color_name = f'\n{msg.locale.t("color.message.md.approximate")}{msg.locale.t("message.colon")}'
+        material_color_name = f'\n{msg.locale.t("color.message.embed.md.approximate")}'
 
     draw.multiline_text(
         (250,
