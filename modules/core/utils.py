@@ -44,7 +44,6 @@ async def _(msg: Bot.MessageSession):
         disk = int(psutil.disk_usage('/').used / (1024 * 1024 * 1024))
         disk_total = int(psutil.disk_usage('/').total / (1024 * 1024 * 1024))
         await msg.finish(Embed(title='Pong!',
-                               color=0x00ff00,
                                fields=[
                                     EmbedField(msg.locale.t('core.message.ping.system_boot_time'), boot_start),
                                     EmbedField(msg.locale.t('core.message.ping.bot_running_time'), timediff),

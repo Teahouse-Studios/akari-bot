@@ -270,10 +270,7 @@ class Embed(EmbedT):
             text_lst.append(self.url)
         if self.fields:
             for f in self.fields:
-                if f.inline:
-                    text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
-                else:
-                    text_lst.append(f"{f.name}{msg.locale.t('message.colon')}\n{f.value}")
+                text_lst.append(f"{f.name}{msg.locale.t('message.colon')}{f.value}")
         if self.author:
             text_lst.append(msg.locale.t('message.embed.author') + self.author)
         if self.footer:

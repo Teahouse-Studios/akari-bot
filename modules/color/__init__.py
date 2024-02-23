@@ -102,19 +102,13 @@ async def _(msg: Bot.MessageSession, color: str = None, use_embed = False):
         anchor='mm',
         align='center',
         spacing=20)
-    if use_embed:
-        await msg.finish(Embed(color=hex(int(color_hex[1:], 16)),
+    await msg.finish(Embed(color=hex(int(color_hex[1:], 16)),
                                image=BImage(img),
                                fields=[EmbedField('HEX', color_hex, inline=True),
                                        EmbedField('RGB', color_rgb, inline=True),
                                        EmbedField('HSL', color_hsl, inline=True),
                                        EmbedField(css_color_name, css_color_name_raw[0]),
                                        EmbedField(material_color_name, material_color_name_raw[0])]))
-    else:
-        await msg.finish([
-            f'HEX{msg.locale.t(message.colon)}{color_hex}\nRGB{msg.locale.t(message.colon)}{color_rgb}\nHSL{msg.locale.t(message.colon)}{color_hsl}{css_color_name}{css_color_name_raw[0]}{material_color_name}{material_color_name_raw[0]}',
-            BImage(img)
-            ])
 
 
 def get_luminance(color: webcolors.HTML5SimpleColor):
