@@ -14,5 +14,5 @@ async def _(session: Bot.MessageSession):
                                      author='oasisakari',
                                      footer='Test',
                                      image=Image('https://avatars.githubusercontent.com/u/68471503?s=200&v=4'),
-                                     fields=[EmbedField('oaoa', 'aaaaa', inline=True),
+                                     fields=[EmbedField('oaoa', 'aaaaa'),
                                              EmbedField('oaoa', 'aaaaa', inline=True)]))

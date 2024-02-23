@@ -130,7 +130,7 @@ class Embed:
         """
         raise NotImplementedError
 
-    def to_message_chain(self):
+    def to_message_chain(self, msg):
         """
         将Embed转换为消息链。
         """
