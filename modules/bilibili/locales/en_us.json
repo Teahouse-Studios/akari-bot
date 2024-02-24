@@ -6,7 +6,7 @@
     "bilibili.help.regex.bv": "Send BV ID for video info.",
     "bilibili.help.regex.url": "Send short URL for video info.",
     "bilibili.message.embed.coin": "Coin",
-    "bilibili.message.embed.danmaku": "Danmuku",
+    "bilibili.message.embed.danmaku": "Danmaku",
     "bilibili.message.embed.fans": "Fans",
     "bilibili.message.embed.favorite": "Favorite",
     "bilibili.message.embed.like": "Like",
