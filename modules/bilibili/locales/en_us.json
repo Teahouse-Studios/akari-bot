@@ -8,7 +8,7 @@
     "bilibili.message": "Title: ${title}\nCategory: ${tname}\nUploader: ${owner}\nDate: ${time}",
     "bilibili.message.detail": "Title: ${title}${pages} | Category: ${tname}\nUploader: ${owner} | Fans: ${fans}\nDescription: ${desc}\nView: ${view} | Danmuku: ${danmaku} | Comments: ${reply}\nLike: ${like} | Coin: ${coin} | Favorite: ${favorite} | Share: ${share}\nDate: ${time}",
     "bilibili.message.embed.coin": "Coin",
-    "bilibili.message.embed.danmaku": "Danmuku",
+    "bilibili.message.embed.danmaku": "Danmaku",
     "bilibili.message.embed.fans": "Fans",
     "bilibili.message.embed.favorite": "Favorite",
     "bilibili.message.embed.like": "Like",
