@@ -150,25 +150,28 @@ async def _(msg: Bot.MessageSession):
                                         await msg.send_message(Image(get_infobox), quote=False)
                             if get_page.invalid_section and wiki_.wiki_info.in_allowlist and web_render:
                                 i_msg_lst = []
-                                session_data = [[str(i + 1), get_page.sections[i]] for i in
-                                                range(len(get_page.sections))]
-                                i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section')))
-                                i_msg_lst.append(Image(await
-                                                       image_table_render(
-                                                           ImageTable(session_data,
-                                                                      ['ID',
-                                                                       msg.locale.t('wiki.message.section')]))))
+                                if get_page.sections:
+                                    session_data = [[str(i + 1), get_page.sections[i]] for i in
+                                                    range(len(get_page.sections))]
+                                    i_msg_lst.append(Plain(msg.locale.t('wiki.message.invalid_section')))
+                                    i_msg_lst.append(Image(await
+                                                           image_table_render(
+                                                               ImageTable(session_data,
+                                                                          ['ID',
+                                                                           msg.locale.t('wiki.message.section')]))))
 
-                                async def _callback(msg: Bot.MessageSession):
-                                    display = msg.as_display(text_only=True)
-                                    if display.isdigit():
-                                        display = int(display)
-                                        if display <= len(get_page.sections):
-                                            get_page.selected_section = display - 1
-                                            await query_pages(msg, title=get_page.title + '#' +
-                                                              get_page.sections[display - 1])
+                                    async def _callback(msg: Bot.MessageSession):
+                                        display = msg.as_display(text_only=True)
+                                        if display.isdigit():
+                                            display = int(display)
+                                            if display <= len(get_page.sections):
+                                                get_page.selected_section = display - 1
+                                                await query_pages(msg, title=get_page.title + '#' +
+                                                                  get_page.sections[display - 1])
 
-                                await msg.send_message(i_msg_lst, callback=_callback)
+                                    await msg.send_message(i_msg_lst, callback=_callback)
+                                else:
+                                    await msg.send_message(Plain(msg.locale.t('wiki.message.invalid_section.prompt')))
                 if len(query_list) == 1 and img_send:
                     return
                 if msg.Feature.image:
