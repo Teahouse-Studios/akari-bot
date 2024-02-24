@@ -125,7 +125,7 @@ class MessageChain(MessageChainT):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
-                value += x.to_message_chain()
+                value += x.to_message_chain(msg)
             elif isinstance(x, Plain):
                 if x.text != '':
                     value.append(x)
@@ -149,7 +149,7 @@ class MessageChain(MessageChainT):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
-                value += x.to_message_chain().to_list()
+                value += x.to_message_chain(msg).to_list()
             elif isinstance(x, Plain):
                 if x.text != '':
                     value.append(x.to_dict())
