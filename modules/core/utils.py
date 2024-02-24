@@ -159,8 +159,6 @@ async def _(msg: Bot.MessageSession):
         perm += '\n' + msg.locale.t("core.message.whoami.botadmin")
     if msg.check_super_user():
         perm += '\n' + msg.locale.t("core.message.whoami.superuser")
-    if perm:
-        fields.append(EmbedField(msg.locale.t('core.message.whoami.embed.permission'), perm))
     await msg.finish(
         msg.locale.t('core.message.whoami', senderid=msg.target.sender_id, targetid=msg.target.target_id) + perm)
 
