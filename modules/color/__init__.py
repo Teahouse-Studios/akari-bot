@@ -26,9 +26,7 @@ css_hex_to_names = {**webcolors.CSS3_HEX_TO_NAMES, '#663399': 'rebeccapurple'}
 
 @c.command()
 @c.command('<color> {{color.help}}')
-async def _(msg: Bot.MessageSession, color: str = None, use_embed = False):
-    if msg.target.sender_from in ['Discord|Client']:
-        use_embed = True
+async def _(msg: Bot.MessageSession, color: str = None):
     if not color:
         color = webcolors.HTML5SimpleColor(*(np.random.randint(0, 256, 3)))
     elif css_names_to_hex.get(color):
@@ -78,20 +76,20 @@ async def _(msg: Bot.MessageSession, color: str = None, use_embed = False):
     css_color_name = ''
     css_color_name_short = ''
     if css_color_name_raw[1]:
-        css_color_name = f'\n{msg.locale.t("color.message.embed.css")}'
+        css_color_name = msg.locale.t("color.message.embed.css")
         if css_color_name_raw[0] != 'black' and css_color_name_raw[0] != 'white':
             css_color_name_short = f'{css_color_name_raw[0]}\n'
     elif css_color_name_raw[0]:
-        css_color_name = f'\n{msg.locale.t("color.message.embed.css.approximate")}'
+        css_color_name = msg.locale.t("color.message.embed.css.approximate")
 
     material_color_name_raw = get_color_name(color, material_colors_hex_to_names)
     material_color_name = ''
     material_color_name_short = ''
     if material_color_name_raw[1]:
-        material_color_name = f'\n{msg.locale.t("color.message.embed.md")}'
+        material_color_name = msg.locale.t("color.message.embed.md")
         material_color_name_short = f'{material_color_name_raw[0]}\n'
     elif material_color_name_raw[0]:
-        material_color_name = f'\n{msg.locale.t("color.message.embed.md.approximate")}'
+        material_color_name = msg.locale.t("color.message.embed.md.approximate")
 
     draw.multiline_text(
         (250,

@@ -1,8 +1,6 @@
 import traceback
-from datetime import datetime
 
 from core.builtins import Bot, Embed, EmbedField, Image, Plain, Url
-from core.utils.cooldown import CoolDown
 from core.utils.http import get_url
 
 DESC_LENGTH = 100
@@ -58,10 +56,13 @@ async def get_video_info(msg: Bot.MessageSession, query, get_detail = False, use
     fans = format_num(res['data']['Card']['card']['fans'])
 
     if use_embed:
-        await msg.finish(Embed(title=f'{title}{pages}', description=desc,
-                               url=video_url, author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
+        await msg.finish(Embed(title=f'{title}{pages}',
+                               description=desc,
+                               url=video_url,
+                               author=f"{owner}{msg.locale.t('message.brackets', msg=fans)}",
                                footer='Bilibili',
-                               image=Image(pic), thumbnail=Image(avatar),
+                               image=Image(pic),
+                               thumbnail=Image(avatar),
                                fields=[EmbedField(msg.locale.t('bilibili.message.embed.type'), tname),
                                        EmbedField(msg.locale.t('bilibili.message.embed.view'), stat_view, inline=True),
                                        EmbedField(msg.locale.t('bilibili.message.embed.danmaku'), stat_danmaku, inline=True),
