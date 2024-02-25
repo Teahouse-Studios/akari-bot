@@ -30,13 +30,8 @@
 
 输入下面的指令拉取镜像。
 
-> 注意：目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64。
-
-```sh
-docker pull bakabaka9/akari-bot:latest
-```
-
-> 该镜像的作者长期未更新，建议使用以下镜像
+> [!IMPORTANT]
+> 目前小可的 Docker 镜像支持的架构仅为 arm64 和 amd64。
 
 ```sh
 docker pull silianz/akari-bot:dev-docker
@@ -48,6 +43,7 @@ docker pull silianz/akari-bot:dev-docker
 
 进入 `config` 文件夹，将 `config.toml.example` 重命名为 `config.toml`，然后开始配置你所需要的内容。
 
+> [!IMPORTANT]
 > 由于目前配置文件后缀改为 `toml`，与 `cfg` 不同的是，请在填写好必要的字段后，请删除所有配置文件中留空的字段，否则程序无法正常运行。若你拥有旧版 `cfg` 文件，机器人会自动帮你转换为 `toml` 格式。
 
 ### 配置数据库
@@ -66,7 +62,8 @@ docker pull silianz/akari-bot:dev-docker
 
 #### SQLite
 
-如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
+> [!NOTE]
+> 如果你不希望为了部署一个机器人而去研究如何安装数据库（或购买某服务商的数据库服务）的话，使用 SQLite 就是最佳选择。缺点是可能会遇到锁表问题（极小概率发生），以及将来运维失误（误删除 db 且没有备份）导致原先用户数据损毁的情况。
 
 如果你选择 SQLite，只需要将字段内容填写为以下格式即可。无需再关注数据库搭建等问题：
 
@@ -78,10 +75,43 @@ docker pull silianz/akari-bot:dev-docker
 
 ### 配置平台机器人
 
-#### QQ
+#### QQ（OpenShamrock）
+
+我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [OpenShamrock](https://github.com/whitechi73/OpenShamrock) 客户端。
+
+使用该方案需要一定的安卓（Android）的使用基础，如果看不懂下面的文档的，请转到 [QQ（go-cqhttp）](#qqgo-cqhttp) 并使用 go-cqhttp 来配置 QQ 平台。
+
+1. 尝试根据 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/guide/getting-started.html) 完成 OpenShamrock 的初步安装。
+
+2. 安装完后，请在小可机器人的配置文件 `config.toml` 填写以下字段：
+
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+
+    `qq_account = 2314163511` - 填写机器人的 QQ 号。
+
+    接下来，请配置 OpenShamrock 的以下选项：
+
+    **接口信息：**
+
+    -   被动 WebSocket 地址：`ws://127.0.0.1:11451/ws/` - 此处填写先前的 IP 地址和端口，注意不要删去后面的 /ws/。
+
+    **功能设置：**
+
+    -   消息格式为 CQ 码：开启
+    -   被动 WebSocket：开启
+
+3. 强制杀死 QQ 进程并重新启动 QQ 来应用 OpenShamrock 配置文件。
+
+> [!NOTE]
+> 若在安装和配置中遇到问题，请参阅 [OpenShamrock 官方文档](https://whitechi73.github.io/OpenShamrock/)。
+
+:::
+
+#### QQ（go-cqhttp）
 
 我们在这里使用了 [aiocqhttp](https://github.com/nonebot/aiocqhttp) 来对接 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 客户端。
 
+> [!NOTE]
 > 根据 go-cqhttp 官方仓库的消息：[QQ Bot 的未来以及迁移建议](https://github.com/Mrs4s/go-cqhttp/issues/2471)，开发者已无力继续维护此项目。
 
 一个新注册的 QQ 账号仅需完成基础配置部分即可，为了避免在机器人使用后期时遇到 Code45 等问题，我们建议按照进阶配置来配置签名服务器。
@@ -112,11 +142,19 @@ docker pull silianz/akari-bot:dev-docker
 4. 此时将提示：
 
     ```
-    [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在
-    [INFO]: 默认配置文件已生成,请编辑 config.yml 后重启程序.
+    [WARNING]: 尝试加载配置文件 config.yml 失败: 文件不存在。
+    [INFO]: 默认配置文件已生成，请编辑 config.yml 后重启程序。
     ```
 
     程序将会自动在存放 go-cqhttp 文件夹的目录下生成一个默认配置文件 `config.yml`。
+
+    请填写好配置文件中的 QQ 账号和密码。
+
+5. 请在小可机器人的配置文件 `config.toml` 填写以下字段：
+
+    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
+
+    `qq_account = 2314163511` - 填写机器人的 QQ 号。
 
     接下来，请配置 go-cqhttp 的 `config.yml` 文件中的对应的连接方式。
 
@@ -138,38 +176,32 @@ docker pull silianz/akari-bot:dev-docker
     ...
     ```
 
-    请在小可机器人的配置文件 `config.toml` 填写以下字段：
-
-    `qq_host = "127.0.0.1:11451"` - 将会在填写的 IP 地址和端口中开启一个 Websocket 服务器，用于 go-cqhttp 反向连接。
-
-    `qq_account = 2314163511` - 填写机器人的 QQ 号。
-
+    > [!NOTE]
     > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
 
 ##### 进阶配置（配置签名服务器）
 
 由于 QQ 风控机制的加强，go-cqhttp 若出现 Code45 报错情况时，请参照以下步骤配置签名服务器：
 
-5. 安装 JRE 17（Java Runtime Environment 17），请善用搜索引擎查找安装方法。
+6. 安装 JRE 17（Java Runtime Environment 17），请善用搜索引擎查找安装方法。
 
-6. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（原作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
+7. 在 ~~[unidbg-fetch-qsign](https://github.com/fuqiuluo/unidbg-fetch-qsign)~~（原作者已删库，请自行在 GitHub 上搜索有关 `qsign` 的仓库）的 Release 界面中下载最新版本的 unidbg-fetch-qsign 并解压到一个提前准备好的文件夹中。
 
-7. 删除与 go-cqhttp 同一目录下的 `data` 文件夹和 `device.json` 文件。
+8. 删除与 go-cqhttp 同级目录下的 `data` 文件夹和 `device.json` 文件。
 
-8. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
+9. 在存放 unidbg-fetch-qsign 的文件夹中，运行以下命令：
 
     ```sh
-    bin\unidbg-fetch-qsign --basePath=txlib\<你要使用的版本>
+    bin/unidbg-fetch-qsign --basePath=txlib/<你要使用的版本>
     ```
 
     请替换 `<你要使用的版本>` 字段为在存放 unidbg-fetch-qsign 的文件夹 `txlib` 文件夹存在的版本。
 
-    例：`--basePath=txlib\8.9.73`
+    例：`--basePath=txlib/8.9.73`
 
+    > [!IMPORTANT]
     > 在选择版本时，应当遵从以下原则：
-    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生了 Code45 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
-
-9. 按照先前步骤配置 go-cqhttp 的 `config.yml` 文件。
+    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 10. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
 
@@ -178,7 +210,7 @@ docker pull silianz/akari-bot:dev-docker
       # 数据包的签名服务器列表，第一个作为主签名服务器，后续作为备用
       sign-servers:
         - url: 'http://127.0.0.1:8080'  # 主签名服务器地址， 必填
-          key: '114514'  # 签名服务器所需要的apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
+          key: '114514'  # 签名服务器所需要的 apikey, 如果签名服务器的版本在1.1.0及以下则此项无效
           authorization: '-'   # authorization 内容, 依服务端设置，如 'Bearer xxxx'
         ...
       ...
@@ -192,10 +224,12 @@ docker pull silianz/akari-bot:dev-docker
 13. 在与 go-cqhttp 同一目录下的 `device.json` 文件夹中，并修改以下字段：
 
     ```json
-    "protocol": 1,
+    {
+        "protocol": 1,
+    }
     ```
 
-14. 重启 go-cqhttp 完成最终配置。
+14. 重启 go-cqhttp 来应用最终配置。
 
 #### Discord
 
@@ -233,7 +267,9 @@ docker pull silianz/akari-bot:dev-docker
 
 `matrix_token =` - 填写机器人任意设备的 Access Token。
 
+> [!IMPORTANT]
 > 不推荐使用其他客户端获取 Access Token，这样容易导致 olm 会话非常混乱。
+>
 > 如果（不怕死）使用客户端获取 Access Token，不要使用客户端的退出登录功能，推荐通过浏览器隐私模式登陆并获取 Token。
 
 使用以下命令进行密码登录：
@@ -281,8 +317,10 @@ pip3 install matrix-nio[e2e] ; PIP
 
 根据 go-cqhttp 的文档，iPad / Android Pad / Android Phone 协议支持处理 QQ 频道消息，可以在其生成的 `device.json` 中寻找 `"protocol":6,` 字段，将本处的数值修改为 1（Android Phone）、5（iPad）或 6（Android Pad）任意一个均可调用本功能。
 
-> 注意：QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
+> [!WARNING]
+> QQ 频道消息的处理仍然处于测试阶段，由于 go-cqhttp 对频道消息支持的不完善，频道内消息无法撤回，且频道列表不会自动刷新（加入新频道需要手动重启一次 gocqhttp）。
 
+> [!NOTE]
 > 关于 go-cqhttp 选用以上方式登录时出现的的 Code45 或其他登录问题，请根据 go-cqhttp 官方 [Issue](https://github.com/Mrs4s/go-cqhttp) 对照解决，或选用除以上协议外的其他协议。
 
 #### Webrender
