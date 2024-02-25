@@ -10,8 +10,11 @@ total_list = TotalList()
 
 
 mai_regex = module('maimai_regex',
-                   desc='{maimai.help.maimai_regex.desc}', recommend_modules=['maimai'],
-                   alias='mai_regex', developers=['DoroWolf'], support_languages=['zh_cn', 'zh_tw'])
+                   desc='{maimai.help.maimai_regex.desc}',
+                   recommend_modules=['maimai'],
+                   alias='mai_regex',
+                   developers=['DoroWolf'],
+                   support_languages=['zh_cn', 'zh_tw'])
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?是什[么麼]歌"), desc='{maimai.help.maimai_regex.song}')
@@ -83,7 +86,7 @@ async def _(msg: Bot.MessageSession):
                 music = music_data.random()
                 await msg.finish(await get_info(msg, music, Plain(f"\n{'/'.join(str(ds) for ds in music.ds)}")))
         except ValueError:
-            await msg.finish(msg.locale.t("maimai.message.random.error"))
+            await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
 @mai_regex.regex(re.compile(r"(.+)\s?段位[认認]定列?表"), desc='{maimai.help.maimai_regex.grade}')

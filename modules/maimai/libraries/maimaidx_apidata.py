@@ -3,6 +3,7 @@ import shutil
 import traceback
 import ujson as json
 
+from config import Config
 from core.builtins import Bot, Plain, Image
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -16,13 +17,14 @@ total_list = TotalList()
 async def update_alias():
     try:
         url = "https://download.fanyu.site/maimai/alias.json"
-        data = await get_url(url, 200, fmt='json')
-    
+        data = await get_url(url, 200, fmt='json', logging_err_resp=False)
+
         file_path = os.path.join(assets_path, "mai_alias.json")
         with open(file_path, 'w') as file:
             json.dump(data, file)
-    except:
-        Logger.error(traceback.format_exc())
+    except Exception:
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
         return False
     return True
 
@@ -31,7 +33,7 @@ async def update_covers():
     try:
         cover_dir = f"{assets_path}/static/mai/cover"
         url = f"https://www.diving-fish.com/maibot/static.zip"
-        download_file = await download_to_cache(url, timeout=60)
+        download_file = await download_to_cache(url, timeout=60, logging_err_resp=False)
 
         Logger.info('Maimai covers download completed.')
         ca = random_cache_path()
@@ -39,12 +41,13 @@ async def update_covers():
 
         if os.path.exists(cover_dir):
             shutil.rmtree(cover_dir)
-        
+
         static_cover_dir = os.path.join(ca, 'mai/cover')
         if os.path.exists(static_cover_dir):
             shutil.move(static_cover_dir, cover_dir)
-    except:
-        Logger.error(traceback.format_exc())
+    except Exception:
+        if Config('debug'):
+            Logger.error(traceback.format_exc())
         return False
 
     os.remove(download_file)
@@ -57,7 +60,7 @@ async def get_info(msg: Bot.MessageSession, music: Music, *details):
         img = f"https://www.diving-fish.com/covers/{get_cover_len5_id(music.id)}.png"
         await get_url(img, 200, attempt=1, fmt='read', logging_err_resp=False)
         info.append(Image(img))
-    except:
+    except BaseException:
         info.append(Image("https://www.diving-fish.com/covers/00000.png"))
     if details:
         info.extend(details)
@@ -74,8 +77,8 @@ async def get_alias(msg, sid):
 
     result = []
     if sid in data:
-        result = data[sid] # 此处的列表是歌曲别名列表
-    
+        result = data[sid]  # 此处的列表是歌曲别名列表
+
     return result
 
 
@@ -99,8 +102,8 @@ async def search_by_alias(msg, input_):
         if input_ in aliases:
             if sid in result:
                 result.remove(sid)
-            result.append(sid) # 此处的列表是歌曲 ID 列表
-    
+            result.append(sid)  # 此处的列表是歌曲 ID 列表
+
     return result
 
 
@@ -123,7 +126,7 @@ async def get_record(msg, payload):
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
         else:
-            Logger.error(traceback.format_exc())
+            traceback.print_exc()
     if data:
         return data
 
@@ -146,5 +149,7 @@ async def get_plate(msg, payload):
                 await msg.finish(msg.locale.t("maimai.message.forbidden.eula"))
             else:
                 await msg.finish(msg.locale.t("maimai.message.forbidden"))
+        else:
+            traceback.print_exc()
     if data:
         return data

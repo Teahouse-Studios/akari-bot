@@ -19,6 +19,7 @@ from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.html2text import html2text
 from core.utils.text import parse_time_string
+from core.utils.image import get_fontsize
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
@@ -147,7 +148,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
                 mask = Image.new('L', bigsize, 0)
                 draw = ImageDraw.Draw(mask)
                 draw.ellipse((0, 0) + bigsize, fill=255)
-                mask = mask.resize(im.size, Image.ANTIALIAS)
+                mask = mask.resize(im.size, Image.Resampling.LANCZOS)
                 im.putalpha(mask)
                 output = ImageOps.fit(im, mask.size, centering=(0.5, 0.5))
                 output.putalpha(mask)
@@ -158,14 +159,15 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
 
         font4 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Regular.ttf'), 35)
         drawtext = ImageDraw.Draw(b30img)
-        get_name_width = font4.getsize(nick)[0]
+        get_name_width = get_fontsize(font4, nick)[0]
         get_img_width = b30img.width
         drawtext.text((get_img_width - get_name_width - 150, 30), nick, '#ffffff', font=font4)
 
         font5 = ImageFont.truetype(os.path.abspath('./assets/Noto Sans CJK DemiLight.otf'), 20)
         level_text = f'{msg.locale.t("cytoid.message.b30.level")} {profile_level}'
-        level_text_width = font5.getsize(level_text)[0]
-        level_text_height = font5.getsize(level_text)[1]
+        level_text_size = get_fontsize(font5, level_text)
+        level_text_width = level_text_size[0]
+        level_text_height = level_text_size[1]
         img_level = Image.new("RGBA", (level_text_width + 20, 40), '#050a1a')
         drawtext_level = ImageDraw.Draw(img_level)
         drawtext_level.text(((img_level.width - level_text_width) / 2, (img_level.height - level_text_height) / 2),
@@ -173,8 +175,9 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         b30img.alpha_composite(img_level, (1825 - img_level.width - 20, 85))
         font6 = ImageFont.truetype(os.path.abspath('./assets/Nunito-Light.ttf'), 20)
         rating_text = f'Rating {str(round(float(profile_rating), 2))}'
-        rating_text_width = font6.getsize(rating_text)[0]
-        rating_text_height = font6.getsize(rating_text)[1]
+        rating_text_size = get_fontsize(font6, rating_text)
+        rating_text_width = rating_text_size[0]
+        rating_text_height = rating_text_size[1]
         img_rating = Image.new("RGBA", (rating_text_width + 20, 40), '#050a1a')
         drawtext_level = ImageDraw.Draw(img_rating)
         drawtext_level.text(((img_rating.width - rating_text_width) / 2, (img_rating.height - rating_text_height) / 2),
@@ -309,13 +312,13 @@ async def make_songcard(coverpath, chart_type, difficulty, chart_name, score, ac
         f'Acc: {round(acc, 4)}  Perfect: {details["perfect"]} Great: {details["great"]} Good: {details["good"]}'
         f'\nRating: {round(rt, 4)}  Bad: {details["bad"]} Miss: {details["miss"]}', font=font2)
     playtime = f'{playtime} #{rank}'
-    playtime_width = font3.getsize(playtime)[0]
+    playtime_width = get_fontsize(font3, playtime)[0]
     songimg_width = 384
     drawtext.text((songimg_width - playtime_width - 15, 205), playtime, '#ffffff', font=font3)
     type_ = str(difficulty)
     type_text = Image.new('RGBA', (32, 32))
     draw_typetext = ImageDraw.Draw(type_text)
-    draw_typetext.text(((32 - font3.getsize(type_)[0] - font.getoffset(type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
+    draw_typetext.text(((32 - get_fontsize(font3, type_)[0]) / 2, 0), type_, "#ffffff", font=font3)
     img.alpha_composite(type_text, (23, 29))
     Logger.debug('Image generated: ' + str(rank))
     return {int(rank): img}

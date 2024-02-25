@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from core.builtins import ErrorMessage
 from core.utils.http import post_url
+from core.utils.image import get_fontsize
 from .maimaidx_music import get_cover_len5_id, TotalList
 
 total_list = TotalList()
@@ -18,8 +19,8 @@ diffs = 'Basic Advanced Expert Master Re:Master'.split(' ')
 
 
 class ChartInfo(object):
-    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int, 
-    scoreId: int, title: str, ds: float, lv: str):
+    def __init__(self, idNum: str, diff: int, tp: str, achievement: float, ra: int, comboId: int, syncId: int,
+                 scoreId: int, title: str, ds: float, lv: str):
         self.idNum = idNum
         self.diff = diff
         self.tp = tp
@@ -215,7 +216,7 @@ class DrawBest(object):
         comboPic = ' FC FCp AP APp'.split(' ')
         syncPic = ' FS FSp FSD FSDp'.split(' ')
         imgDraw = ImageDraw.Draw(img)
-        titleFontName = 'assets/SourceHanSansCN-Normal.ttf'
+        titleFontName = 'assets/Noto Sans CJK DemiLight.otf'
         for num in range(0, len(sdBest)):
             i = num // 7
             j = num % 7
@@ -253,7 +254,7 @@ class DrawBest(object):
                     'RGBA')
                 syncImg = self._resizePic(syncImg, 0.45)
                 temp.paste(syncImg, (86, 62), syncImg.split()[3])
-            font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 12, encoding='utf-8')
+            font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 12, encoding='utf-8')
             tempDraw.text((7, 64), f'{chartInfo.ds} -> {computeRa(chartInfo.ds, chartInfo.achievement)}', 'white',
                           font)
             tempDraw.text((105, 64), f'#{num + 1}', 'white', font)
@@ -307,7 +308,7 @@ class DrawBest(object):
                     'RGBA')
                 syncImg = self._resizePic(syncImg, 0.45)
                 temp.paste(syncImg, (86, 62), syncImg.split()[3])
-            font = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 12, encoding='utf-8')
+            font = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 12, encoding='utf-8')
             tempDraw.text((7, 64), f'{chartInfo.ds} -> {chartInfo.ra}', 'white', font)
             tempDraw.text((105, 64), f'#{num + 1}', 'white', font)
 
@@ -337,7 +338,7 @@ class DrawBest(object):
         namePlateImg = Image.open(self.pic_dir + 'UI_TST_PlateMask.png').convert('RGBA')
         namePlateImg = namePlateImg.resize((285, 40))
         namePlateDraw = ImageDraw.Draw(namePlateImg)
-        font1 = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 28, encoding='unic')
+        font1 = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 28, encoding='unic')
         namePlateDraw.text((12, 4), ' '.join(list(self.userName)), 'black', font1)
         nameDxImg = Image.open(self.pic_dir + 'UI_CMN_Name_DX.png').convert('RGBA')
         nameDxImg = self._resizePic(nameDxImg, 0.9)
@@ -346,11 +347,11 @@ class DrawBest(object):
 
         shougouImg = Image.open(self.pic_dir + 'UI_CMN_Shougou_Rainbow.png').convert('RGBA')
         shougouDraw = ImageDraw.Draw(shougouImg)
-        font2 = ImageFont.truetype('assets/SourceHanSansCN-Normal.ttf', 14, encoding='utf-8')
+        font2 = ImageFont.truetype('assets/Noto Sans CJK DemiLight.otf', 14, encoding='utf-8')
         playCountInfo = f'SD: {self.sdRating} + DX: {self.dxRating} = {self.playerRating}'
         shougouImgW, shougouImgH = shougouImg.size
-        playCountInfoW, playCountInfoH = shougouDraw.textsize(playCountInfo, font2)
-        textPos = ((shougouImgW - playCountInfoW - font2.getoffset(playCountInfo)[0]) / 2, 5)
+        playCountInfoW, playCountInfoH = get_fontsize(font2, playCountInfo)
+        textPos = ((shougouImgW - playCountInfoW) / 2, 5)
         shougouDraw.text((textPos[0] - 1, textPos[1]), playCountInfo, 'black', font2)
         shougouDraw.text((textPos[0] + 1, textPos[1]), playCountInfo, 'black', font2)
         shougouDraw.text((textPos[0], textPos[1] - 1), playCountInfo, 'black', font2)

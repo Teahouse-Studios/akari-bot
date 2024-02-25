@@ -8,61 +8,61 @@ test = module('test')
 
 
 @test.command()
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> ~test
     #  <<< Hello World!
-    await session.send_message('Hello World!')
+    await msg.send_message('Hello World!')
 
 
 @test.command('say <word>')
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> ~test say Hello World!
     #  <<< Hello World!
-    await session.finish(session.parsed_msg['<word>'])
+    await msg.finish(msg.parsed_msg['<word>'])
 
 
 @test.command('reply')
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> ~test reply
     #  <<< Reply me!
     #  >>> Hello World! >> [Reply me!]
     #  <<< Hello World!
-    s = await session.wait_reply('Send a word')
+    s = await msg.wait_reply('Send a word')
     await s.send_message(s.as_display())
 
 
 @test.command('confirm')
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> ~test confirm
     #  <<< Are you sure?
     #  >>> Yes
     #  <<< OK!
-    s = await session.wait_confirm('Are you sure?')
+    s = await msg.wait_confirm('Are you sure?')
     if s:
         await s.send_message('OK!')
 
 
 @test.command('image')
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> ~test image
     #  <<< A picture: Image(url='https://http.cat/100.jpg')
-    await session.send_message([Plain('A picture:'), Image('https://http.cat/100.jpg')])
+    await msg.send_message([Plain('A picture:'), Image('https://http.cat/100.jpg')])
 
 
 @test.regex(re.compile(r'\{\{(.*)}}'), mode='M')  # re.match
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> {{Hello World!}}
     #  <<< Hello World!
-    await session.finish(session.matched_msg.group(1))
+    await msg.finish(msg.matched_msg.group(1))
 
 
 @test.regex(re.compile(r'\[\[(.*)]]'), mode='A')  # re.findall
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> [[Hello]] [[World]]
     #  <<< Hello
     #  <<< World
-    await session.send_message(session.matched_msg[0])
-    await session.finish(session.matched_msg[1])
+    await msg.send_message(msg.matched_msg[0])
+    await msg.finish(msg.matched_msg[1])
 
 
 @test.schedule(IntervalTrigger(seconds=30))
@@ -72,17 +72,17 @@ async def _():
 
 
 @test.handle('test')  # all in one handler, including command, regex and schedule
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> ~test test
     #  <<< Hello World!
-    await session.finish('Hello World!')
+    await msg.finish('Hello World!')
 
 
 @test.handle(re.compile(r'<(.*)>'), mode='A')  # re.findall
-async def _(session: Bot.MessageSession):
+async def _(msg: Bot.MessageSession):
     #  >>> <Hello World!>
     #  <<< Hello World!
-    await session.finish(session.matched_msg[0])
+    await msg.finish(msg.matched_msg[0])
 
 
 @test.handle(IntervalTrigger(seconds=60))

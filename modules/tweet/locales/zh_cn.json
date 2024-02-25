@@ -1,7 +1,7 @@
 {
     "tweet.help": "通过推文 ID 或链接获取推文摘要图片。（P.S. 我们没有付 $200 月费）",
     "tweet.help.desc": "获取推文摘要。",
-    "tweet.message.error": "发生错误：无法识别推文 ID，请检查输入。",
+    "tweet.message.invalid": "无法识别推文 ID，请检查输入。",
     "tweet.message.not_found": "未找到推文。",
     "tweet.message.tombstone": "获取推文时出错："
 }

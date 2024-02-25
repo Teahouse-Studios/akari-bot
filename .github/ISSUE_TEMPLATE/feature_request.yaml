@@ -47,7 +47,7 @@ body:
     id: other
     attributes:
       label: 备注
-      description: 您还想告诉我们什么？
+      description: 还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false

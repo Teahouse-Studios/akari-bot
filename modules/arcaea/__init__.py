@@ -15,16 +15,10 @@ arc = module('arcaea', developers=['OasisAkari'], desc='{arcaea.help.desc}',
              alias=['a', 'arc'])
 
 
-@arc.command('b30')
-async def _(msg: Bot.MessageSession):
-    await msg.send_message([Plain(msg.locale.t("arcaea.message.sb616")),
-                            BImage(os.path.abspath('./assets/arcaea/noc.jpg'))])
-
-
 @arc.command('download {{arcaea.help.download}}')
 async def _(msg: Bot.MessageSession):
     resp = await get_url('https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/', 200,
-                         fmt='json', request_private_ip=True)
+                         fmt='json')
     if resp:
         await msg.finish([Plain(msg.locale.t("arcaea.message.download", version=resp["value"]["version"],
                                              url=resp['value']['url']))])
@@ -35,7 +29,7 @@ async def _(msg: Bot.MessageSession):
 @arc.command('random {{arcaea.help.random}}')
 async def _(msg: Bot.MessageSession):
     resp = await get_url('https://webapi.lowiro.com/webapi/song/showcase/',
-                         200, fmt='json', request_private_ip=True)
+                         200, fmt='json')
     if resp:
         value = resp["value"][0]
         image = f'{assets_path}/jacket/{value["song_id"]}.jpg'
@@ -47,15 +41,15 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(msg.locale.t("arcaea.message.get_failed"))
 
 
-@arc.command('rank free {{arcaea.help.rank.free}}', 
+@arc.command('rank free {{arcaea.help.rank.free}}',
              'rank paid {{arcaea.help.rank.paid}}')
 async def _(msg: Bot.MessageSession):
     if msg.parsed_msg.get('free', False):
         resp = await get_url('https://webapi.lowiro.com/webapi/song/rank/free/',
-                             200, fmt='json', request_private_ip=True)
+                             200, fmt='json')
     else:
         resp = await get_url('https://webapi.lowiro.com/webapi/song/rank/paid/',
-                             200, fmt='json', request_private_ip=True)
+                             200, fmt='json')
     if resp:
         r = []
         rank = 0
@@ -81,17 +75,15 @@ async def _(msg: Bot.MessageSession, score: int, rating: float):
 p = module('ptt', developers=['OasisAkari'])
 
 
-@p.command('<potential> {{ptt.help}}')
-async def pttimg(msg: Bot.MessageSession):
-    ptt = msg.parsed_msg['<potential>']
-    # ptt
+@p.command('<ptt> {{ptt.help}}')
+async def pttimg(msg: Bot.MessageSession, ptt: str):
     if ptt == '--':
         ptt = -1
     else:
         try:
             ptt = float(ptt)
         except ValueError:
-            await msg.finish(msg.locale.t('ptt.message.error.invalid'))
+            await msg.finish(msg.locale.t('ptt.message.invalid'))
     if ptt >= 13.00:
         pttimg = 7
     elif ptt >= 12.50:
@@ -144,7 +136,7 @@ async def pttimg(msg: Bot.MessageSession):
         drawptt = ImageDraw.Draw(pttimg)
         drawptt.text((0, 0), ptt, 'white', font=font1, stroke_width=3, stroke_fill='#52495d')
     else:
-        return await msg.finish(msg.locale.t('ptt.message.error.invalid'))
+        return await msg.finish(msg.locale.t('ptt.message.invalid'))
     pttimg_width, pttimg_height = pttimg.size
     ptttext.alpha_composite(pttimg,
                             (int((ptttext_width - pttimg_width) / 2), int((ptttext_height - pttimg_height) / 2) - 11))

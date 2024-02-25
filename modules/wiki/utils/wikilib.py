@@ -257,7 +257,8 @@ class WikiLib:
                 return WikiStatus(available=False, value=False, message=self.locale.t(
                     "wiki.message.utils.wikilib.get_failed.timeout"))
             except Exception as e:
-                Logger.debug(traceback.format_exc())
+                if Config('debug'):
+                    Logger.error(traceback.format_exc())
                 if e.args == (403,):
                     message = self.locale.t("wiki.message.utils.wikilib.get_failed.forbidden")
                 elif not re.match(r'^(https?://).*', self.url):
@@ -280,7 +281,8 @@ class WikiLib:
                                                     meta='siteinfo',
                                                     siprop='general|namespaces|namespacealiases|interwikimap|extensions')
         except Exception as e:
-            Logger.debug(traceback.format_exc())
+            if Config('debug'):
+                Logger.error(traceback.format_exc())
             message = self.locale.t("wiki.message.utils.wikilib.get_failed.api") + str(e)
             if self.url.find('moegirl.org.cn') != -1:
                 message += '\n' + self.locale.t("wiki.message.utils.wikilib.get_failed.moegirl")
@@ -560,7 +562,7 @@ class WikiLib:
                             elif len(split_title) > 1 and split_title[
                                     0].lower() in self.wiki_info.namespacealiases and not _search:
                                 rstitle = f'{self.wiki_info.namespacealiases[split_title[0].lower()]}:' \
-                                          + ':'.join(split_title[1:]) + page_info.args
+                                    + ':'.join(split_title[1:]) + page_info.args
                                 reparse = await self.parse_page_info(rstitle, _search=True)
                             if reparse:
                                 page_info.before_title = page_info.title
@@ -580,7 +582,6 @@ class WikiLib:
                                 invalid_namespace = False
 
                                 async def search_something(srwhat):
-                                    Logger.debug(traceback.format_exc())
                                     try:
                                         research = await self.research_page(page_info.title, namespace, srwhat=srwhat)
                                         if srwhat == 'text':
@@ -590,7 +591,8 @@ class WikiLib:
                                             invalid_namespace = research[1]
                                         return research
                                     except Exception:
-                                        Logger.debug(traceback.format_exc())
+                                        if Config('debug'):
+                                            Logger.error(traceback.format_exc())
                                         return None, False
 
                                 searches = []
@@ -751,7 +753,7 @@ class WikiLib:
                                 if page_info.link:
                                     page_info.link += before_page_info.args
                             else:
-                                page_info.link = self.wiki_info.script + f'?curid={page_info.id}'
+                                page_info.link = page_info.info.script + f'?curid={page_info.id}'
                             if _tried == 0:
                                 if lang and page_info.status:
                                     page_info.before_title = page_info.title

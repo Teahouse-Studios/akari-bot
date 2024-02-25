@@ -32,8 +32,8 @@ async def get_petal_exchange_rate():
             exchange_rate = data['conversion_rate']
             petal_value = exchange_rate * CNY_TO_PETAL
             return {"exchange_rate": exchange_rate, "exchanged_petal": petal_value}
-    except Exception:
-        Logger.error(traceback.format_exc())
+    except ValueError:
+        return None
 
 
 async def load_or_refresh_cache():
@@ -54,29 +54,45 @@ async def load_or_refresh_cache():
 
 
 async def count_petal(msg: Bot.MessageSession, tokens: int, gpt4: bool = False):
+    '''计算并减少使用功能时消耗的花瓣数量。
+
+    :param msg: 消息会话。
+    :param tokens: 使用功能时花费的token数量。
+    :param gpt4: 是否以GPT-4的开销计算。
+    :returns: 消耗的花瓣数量，保留两位小数。
+    '''
     Logger.info(f'{tokens} tokens have been consumed while calling AI.')
-    petal_exchange_rate = await load_or_refresh_cache()
-    if gpt4:
-        price = tokens / ONE_K * PRICE_PER_1K_TOKEN_GPT_4
-    else:
-        price = tokens / ONE_K * PRICE_PER_1K_TOKEN
-    if petal_exchange_rate:
-        petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
-    else:
-        Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
-        petal = price * USD_TO_CNY * CNY_TO_PETAL
+    if Config('enable_petal'):
+        petal_exchange_rate = await load_or_refresh_cache()
+        if gpt4:
+            price = tokens / ONE_K * PRICE_PER_1K_TOKEN_GPT_4
+        else:
+            price = tokens / ONE_K * PRICE_PER_1K_TOKEN
+        if petal_exchange_rate:
+            petal = price * Decimal(petal_exchange_rate).quantize(Decimal('0.00'))
+        else:
+            Logger.warn(f'Unable to obtain real-time exchange rate, use {USD_TO_CNY} to calculate petals.')
+            petal = price * USD_TO_CNY * CNY_TO_PETAL
 
-    if Config('db_path').startswith('sqlite'):
-        amount = petal.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
-        msg.data.modify_petal(-int(amount))
+        if Config('db_path').startswith('sqlite'):
+            amount = petal.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+            msg.data.modify_petal(-int(amount))
+        else:
+            msg.data.modify_petal(-petal)
+        return round(petal, 2)
     else:
-        msg.data.modify_petal(petal)
-    return round(petal, 2)
+        return 0
 
 
-async def gained_petal(msg: Bot.MessageSession, amount):
-    if Config('openai_api_key') and Config('enable_get_petal'):
-        limit = Config('petal_gained_limit', 10)
+async def gained_petal(msg: Bot.MessageSession, amount: int):
+    '''增加花瓣。
+
+    :param msg: 消息会话。
+    :param amount: 增加的花瓣数量。
+    :returns: 增加花瓣的提示消息。
+    '''
+    if Config('enable_petal') and Config('enable_get_petal'):
+        limit = Config('gained_petal_limit', 10)
         p = get_stored_list(msg.target.client_name, 'gainedpetal')
         if not p:
             p = [{}]
@@ -95,8 +111,11 @@ async def gained_petal(msg: Bot.MessageSession, amount):
                 msg.data.modify_petal(amount)
                 update_stored_list(msg.target.client_name, 'gainedpetal', p)
             else:
-                if p[msg.target.target_id]['amount'] + amount > limit:
-                    return msg.locale.t('petal.message.gained.limit')
+                if limit > 0:
+                    if p[msg.target.target_id]['amount'] >= limit:
+                        return msg.locale.t('petal.message.gained.limit')
+                    elif p[msg.target.target_id]['amount'] + amount > limit:
+                        amount = limit - p[msg.target.target_id]['amount']
                 p[msg.target.target_id]['amount'] += amount
                 p = [p]
                 update_stored_list(msg.target.client_name, 'gainedpetal', p)
@@ -105,8 +124,14 @@ async def gained_petal(msg: Bot.MessageSession, amount):
 
 
 async def lost_petal(msg: Bot.MessageSession, amount):
-    if Config('openai_api_key') and Config('enable_get_petal'):
-        limit = Config('petal_lost_limit', 5)
+    '''减少花瓣。
+
+    :param msg: 消息会话。
+    :param amount: 减少的花瓣数量。
+    :returns: 减少花瓣的提示消息。
+    '''
+    if Config('enable_petal') and Config('enable_get_petal'):
+        limit = Config('lost_petal_limit', 5)
         p = get_stored_list(msg.target.client_name, 'lostpetal')
         if not p:
             p = [{}]
@@ -125,8 +150,11 @@ async def lost_petal(msg: Bot.MessageSession, amount):
                 msg.data.modify_petal(-amount)
                 update_stored_list(msg.target.client_name, 'lostpetal', p)
             else:
-                if p[msg.target.target_id]['amount'] + amount > limit:
-                    return msg.locale.t('petal.message.lost.limit')
+                if limit > 0:
+                    if p[msg.target.target_id]['amount'] > limit:
+                        return msg.locale.t('petal.message.lost.limit')
+                    elif p[msg.target.target_id]['amount'] + amount > limit:
+                        amount = limit - p[msg.target.target_id]['amount']
                 p[msg.target.target_id]['amount'] += amount
                 p = [p]
                 update_stored_list(msg.target.client_name, 'lostpetal', p)

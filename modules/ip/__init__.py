@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 from core.builtins import Bot
 from core.component import module
+from core.logger import Logger
 from core.utils.http import get_url
 
 ip = module('ip', developers=['Dianliang233'])
@@ -15,9 +16,9 @@ async def _(msg: Bot.MessageSession, ip_address: str):
     try:
         ipaddress.ip_address(ip_address)
     except BaseException:
-        await msg.finish(msg.locale.t('ip.message.error.unknown'))
+        await msg.finish(msg.locale.t('ip.message.invalid'))
     res = await check_ip(ip_address)
-    await msg.finish(await format_ip(msg, res))
+    await msg.finish(await format_ip(msg, res), disable_secret_check=True)
 
 
 async def check_ip(ip: str):
@@ -82,11 +83,16 @@ async def check_ip(ip: str):
     }
     if not skip_geoip:
         data = json.loads(await get_url('https://api.ip.sb/geoip/' + ip))
-        reverse = socket.getnameinfo((ip, 0), 0)
-        res['reverse'] = reverse[0]
         for key in res:
             if key in data:
                 res[key] = data[key]
+
+        try:
+            reverse = socket.getnameinfo((ip, 0), 0)
+            res['reverse'] = reverse[0]
+        except BaseException:
+            Logger.warn("Unable to fetch reverse DNS.")
+
     return res
 
 

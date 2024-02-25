@@ -15,8 +15,11 @@ diff_label = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:MASTER']
 
 
 mai = module('maimai',
-             recommend_modules='maimai_regex', developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
-             alias='mai', support_languages=['zh_cn'], desc='{maimai.help.desc}')
+             recommend_modules='maimai_regex',
+             developers=['mai-bot', 'OasisAkari', 'DoroWolf'],
+             alias='mai',
+             support_languages=['zh_cn'],
+             desc='{maimai.help.desc}')
 
 
 @mai.command('base <constant> [<constant_max>] {{maimai.help.base}}')
@@ -26,25 +29,29 @@ async def _(msg: Bot.MessageSession, constant: float, constant_max: float = None
         await msg.finish(msg.locale.t('maimai.message.level_invalid'))
     elif constant_max:
         if constant > constant_max:
-            await msg.finish(msg.locale.t('error.range.invalid'))
-            
-        data = (await total_list.get()).filter(ds=(constant, constant_max))
-        s = msg.locale.t(
-            "maimai.message.base.range", constant=round(
-                constant, 1), constant_max=round(
-                constant_max, 1)) + "\n"
+            data = (await total_list.get()).filter(ds=(constant_max, constant))
+            s = msg.locale.t(
+                "maimai.message.base.range", constant=round(
+                    constant_max, 1), constant_max=round(
+                    constant, 1)) + "\n"
+        else:
+            data = (await total_list.get()).filter(ds=(constant, constant_max))
+            s = msg.locale.t(
+                "maimai.message.base.range", constant=round(
+                    constant, 1), constant_max=round(
+                    constant_max, 1)) + "\n"
     else:
         data = (await total_list.get()).filter(ds=constant)
         s = msg.locale.t("maimai.message.base", constant=round(constant, 1)) + "\n"
-        
+
     for music in sorted(data, key=lambda i: int(i['id'])):
         for i in music.diff:
             result_set.append((music['id'],
-                                music['title'],
-                                music['ds'][i], 
-                                diff_label[i],
-                                music['level'][i],
-                                music['type']))
+                               music['title'],
+                               music['ds'][i],
+                               diff_label[i],
+                               music['level'][i],
+                               music['type']))
 
     for elem in result_set:
         s += f"{elem[0]}\u200B. {elem[1]}{' (DX)' if elem[5] == 'DX' else ''} {elem[3]} {elem[4]} ({elem[2]})\n"
@@ -70,9 +77,9 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
         for i in music.diff:
             result_set.append((music['id'],
                                music['title'],
-                               music['ds'][i], 
-                               diff_label[i], 
-                               music['level'][i], 
+                               music['ds'][i],
+                               diff_label[i],
+                               music['level'][i],
                                music['type']))
 
     total_pages = (len(result_set) + SONGS_PER_PAGE - 1) // SONGS_PER_PAGE
@@ -101,7 +108,7 @@ async def _(msg: Bot.MessageSession, level: str, page: str = None):
 async def _(msg: Bot.MessageSession, page: str = None):
     result_set = []
     data = (await total_list.get()).new()
-    
+
     for music in sorted(data, key=lambda i: int(i['id'])):
         result_set.append((music['id'],
                            music['title'],
@@ -157,7 +164,7 @@ async def _(msg: Bot.MessageSession, sid: str):
         if sid[:2].lower() == "id":
             sid = sid[2:]
         else:
-            await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+            await msg.finish(msg.locale.t('maimai.message.id_invalid'))
 
     music = (await total_list.get()).by_id(sid)
     if not music:
@@ -197,7 +204,7 @@ async def _(msg: Bot.MessageSession, username: str = None):
         try:
             img = await generate(msg, payload)
             beta = False
-        except:
+        except BaseException:
             traceback.print_exc()
     if beta:
         img = await generate_best50_text(msg, payload)
@@ -305,7 +312,7 @@ async def _(msg: Bot.MessageSession, dx_type: str = None):
             music = music_data.random()
             await msg.finish(await get_info(msg, music, Plain(f"{'/'.join(str(ds) for ds in music.ds)}")))
     except (ValueError, TypeError):
-        await msg.finish(msg.locale.t("maimai.message.random.error"))
+        await msg.finish(msg.locale.t("maimai.message.random.failed"))
 
 
 @mai.command('random {{maimai.help.random}}')
@@ -321,7 +328,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
             if sid[:2].lower() == "id":
                 sid = sid[2:]
             else:
-                await msg.finish(msg.locale.t('maimai.message.error.non_digital'))
+                await msg.finish(msg.locale.t('maimai.message.id_invalid'))
         diff_index = get_diff(diff)
         music = (await total_list.get()).by_id(sid)
         chart = music['charts'][diff_index]
@@ -354,7 +361,7 @@ async def _(msg: Bot.MessageSession, diff: str, sid: str, score: float):
               b2t_2000_great=b2t_2000_great,
               b2t_2000_great_prop=b2t_2000_great_prop)}''')
     except ValueError:
-        await msg.finish(msg.locale.t('maimai.message.scoreline.error', prefix=msg.prefixes[0]))
+        await msg.finish(msg.locale.t('maimai.message.scoreline.failed', prefix=msg.prefixes[0]))
 
 
 @mai.command('rating <base> <score> {{maimai.help.rating}}')

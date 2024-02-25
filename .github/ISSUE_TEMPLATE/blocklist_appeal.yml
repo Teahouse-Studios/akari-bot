@@ -8,15 +8,15 @@ body:
   - type: markdown
     attributes:
       value: |
-        感谢您使用小可。为了保护服务的稳定性，小可会自动对可能对服务造成威胁的行为发出警告，并在警告超过一定次数后封禁用户，无视其发出的任何消息。
+        感谢使用小可。为了保护服务的稳定性，小可会自动对可能对服务造成威胁的行为发出警告，并在警告超过一定次数后封禁用户，无视其发出的任何消息。
         
-        然而，由于小可自动警告系统可能出现的故障，您的行为可能会被误判并造成封禁。如果您遭遇了此类情形，我们感到非常抱歉。您可以在下方表格中提交一些有助于机器人管理员判断的证据，并申请解封。
+        然而，由于小可自动警告系统可能出现的故障，你的行为可能会被误判并造成封禁。如果你遭遇了此类情形，我们感到非常抱歉。你可以在下方表格中提交一些有助于机器人管理员判断的证据，并申请解封。
         
         **我们恕不接受任何因使用不当或故意滥用而造成的警告或封禁。**
         
-        另请注意，我们可能会要求您提交更多信息。因此，请关注您的 GitHub 绑定邮箱通知。若您未在 24 小时内回复我们的要求，我们将关闭您的申请，不过您还可以再次提交。
+        另请注意，我们可能会要求你提交更多信息。因此，请关注你的 GitHub 绑定邮箱通知。若未在 24 小时内回复我们的要求，我们将关闭此次申请，不过你还可以再次提交。
         
-        若您仍然继续滥用此功能，我们不会再接受您发送的任何申请。
+        若你仍然继续滥用此功能，我们不会再接受你发送的任何申请。
   - type: checkboxes
     id: preflight
     attributes:
@@ -30,20 +30,20 @@ body:
   - type: markdown
     attributes:
       value: |
-        请您特别注意：
-        - 您不得在使用本服务时利用提供的功能或漏洞，直接或间接地诱导小可发送违反法律法规、欺诈、虚假或产生误导的信息。
+        请你特别注意：
+        - 你不得在使用本服务时利用提供的功能或漏洞，直接或间接地诱导小可发送违反法律法规、欺诈、虚假或产生误导的信息。
         - 无论小可是否处于运行状态，都不得对小可进行言论攻击、滥用服务以及无故禁言、踢出等不友善行为。
           - 我们会根据实际情况自行裁定不友善行为，并不限于此处列出的类型。
         - 不得利用漏洞或使用相关工具对服务器进行攻击，如发现应及时向我们报告。
-        - 您不得规避本服务的任何访问或可用性限制。不得侵犯他人的权利。
-        - 您不得帮助他人违反这些规则。
+        - 你不得规避本服务的任何访问或可用性限制。不得侵犯他人的权利。
+        - 你不得帮助他人违反这些规则。
         
-        若您的确触犯了以上行为，我们不会接受您的申请。
+        若你的确触犯了以上行为，我们不会接受你的申请。
   - type: dropdown
     id: platform
     attributes:
       label: 聊天平台
-      description: 您的账号所在平台。
+      description: 你的账号所在平台。
       options:
         - QQ 群
         - QQ 频道
@@ -54,7 +54,7 @@ body:
     id: user-id
     attributes:
       label: 用户 ID
-      description: 您的 QQ 号/Telegram ID/Discord handle。
+      description: 你的 QQ 号/Telegram ID/Discord handle。
       placeholder: e.g. QQ 10000/TG @Example/DC Example#1234
     validations:
       required: true
@@ -62,7 +62,7 @@ body:
     id: group-id
     attributes:
       label: 群组 ID
-      description: 您的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
+      description: 你的群组的 QQ 群号/Telegram 群名称（或邀请链接）/Discord 服务器 ID（需要开启开发者模式）/Discord 服务器邀请链接。
       placeholder: e.g. QQ 1000000/TG <https://t.me/example>/DC 12345678910111213/DC <https://discord.gg/exAmpl3>
     validations:
       required: true
@@ -70,7 +70,7 @@ body:
     id: count
     attributes:
       label: 警告次数
-      description: 您受到的警告次数。
+      description: 你受到的警告次数。
       placeholder: 
     validations:
       required: true
@@ -78,14 +78,14 @@ body:
     id: evidence
     attributes:
       label: 证据
-      description: 请附上机器人发出警告时的完整聊天记录。聊天记录需要包含完整的上下文，不得伪造或断章取义。请注意：您提供的聊天记录将会被我们二次检查。
+      description: 请附上机器人发出警告时的完整聊天记录。聊天记录需要包含完整的上下文，不得伪造或断章取义。请注意：你提供的聊天记录将会被我们二次检查。
     validations:
       required: true
   - type: textarea
     id: other
     attributes:
       label: 备注
-      description: 您还想告诉我们什么？
+      description: 还想告诉我们什么？
       placeholder: 什么都可以哦，没有就算了吧。
     validations:
       required: false

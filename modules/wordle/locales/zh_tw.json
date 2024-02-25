@@ -1,0 +1,12 @@
+{
+    "wordle.help": "開始新遊戲。",
+    "wordle.help.desc": "玩 Wordle。",
+    "wordle.help.theme": "設定是否使用深色主題。",
+    "wordle.message.finish": "遊戲結束，答案為：${answer}。\n查詢辭典：https://dictionary.cambridge.org/dictionary/english/${answer}",
+    "wordle.message.finish.success": "祝賀！你在 ${attempt} 回合內完成了遊戲。",
+    "wordle.message.not_a_word": "這不是一個有效的單詞。",
+    "wordle.message.start": "遊戲開始，你需要猜一個由 5 個字母組成的單詞，你有 6 次機會。\n綠色表示字母和位置都正確，黃色代表字母正確但位置不正確，灰色代表單詞中沒有這個字母。",
+    "wordle.message.stop": "已停止，答案为：${answer}。\n查詢辭典：https://dictionary.cambridge.org/dictionary/english/${answer}",
+    "wordle.message.theme.disable": "已禁用深色主題。",
+    "wordle.message.theme.enable": "已啟用深色主題。"
+}

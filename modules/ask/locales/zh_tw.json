@@ -2,6 +2,6 @@
     "ask.help": "透過 ChatGPT 回答問題。",
     "ask.help.desc": "有問題為什麽不問小可呢？",
     "ask.help.regex": "問：<question>？ 透過 ChatGPT 回答問題。",
-    "ask.message.rate_limit_exceeded": "您已被速率限制，請在 20 秒後重試。",
+    "ask.message.rate_limit_exceeded": "你已被速率限制，請在 20 秒後重試。",
     "ask.message.text2img.error": "（發生錯誤：無法正確將以下內容轉換為圖片，嘗試原文輸出：\n${text}）"
 }

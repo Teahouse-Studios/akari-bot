@@ -1,3 +1,5 @@
+import traceback
+
 import ujson as json
 
 from core.builtins import Bot, Image, Plain
@@ -15,11 +17,12 @@ async def cytoid_profile(msg: Bot.MessageSession):
             await msg.finish(msg.locale.t('cytoid.message.user_unbound', prefix=msg.prefixes[0]))
     profile_url = 'http://services.cytoid.io/profile/' + query_id
     try:
-        profile = json.loads(await get_url(profile_url, status_code=200))
+        profile = json.loads(await get_url(profile_url, 200))
     except ValueError as e:
         if str(e).startswith('404'):
             await msg.finish(msg.locale.t('cytoid.message.user_not_found'))
-        raise e
+        else:
+            traceback.print_exc()
     uid = profile['user']['uid']
     nick = profile['user']['name']
     avatar = profile['user']['avatar']['large']

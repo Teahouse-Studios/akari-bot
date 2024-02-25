@@ -10,82 +10,93 @@ from core.petal import gained_petal, lost_petal
 no_solution = ['无解', '無解', 'none', 'n/a']
 
 
-def calc(expression):
+def calc(expr):
+    expr = expr.replace("\\", "")
     try:
-        return simple_eval(expression)
-    except BaseException:
+        return simple_eval(expr)
+    except Exception:
         return None
 
 
-def is_valid(expression):
-    operators = ['+', '-', '*', '/', '(', ')']
+def check_valid(expr):
+    operators = ['+', '-', '*', '/']
+    other_symbols = ['(', ')', '\\']
     numbers = [str(i) for i in range(1, 14)]
-    valid_chars = numbers + operators
+    valid_chars = numbers + operators + other_symbols
     valid_chars_set = set(valid_chars)
 
     i = 0
     num_numbers = 0
-    while i < len(expression):
-        char = expression[i]
-
+    while i < len(expr):
+        char = expr[i]
         if char.isdigit():
-            while i < len(expression) and expression[i].isdigit():
+            while i < len(expr) and expr[i].isdigit():
                 i += 1
             num_numbers += 1
-
         elif char in valid_chars_set:
+            if char in operators and i + 1 < len(expr) and expr[i + 1] in operators:
+                return False
             i += 1
-            if i < len(expression) and expression[i] == ' ':
-                i += 1
-                if i < len(expression) and expression[i] == ' ':
-                    return False
+            if i < len(expr) and expr[i] == ' ':
+                while i < len(expr) and expr[i] == ' ':
+                    i += 1
+                    if i < len(expr) and expr[i] in operators:
+                        return False
             continue
-
         elif char == ' ':
             i += 1
-            if i < len(expression) and expression[i] == ' ':
+            if i < len(expr):
                 return False
-
         else:
             return False
-
     if num_numbers > 9:
         return False
-
     return True
 
 
-async def has_solution(numbers):
-    permutations = list(itertools.permutations(numbers))
+async def find_solution(numbers):
+    perms = list(itertools.permutations(numbers))
     operators = ['+', '-', '*', '/']
-    expressions = list(itertools.product(operators, repeat=3))
+    exprs = list(itertools.product(operators, repeat=4))
 
-    for perm in permutations:
-        for expr in expressions:  # 穷举就完事了
-            exp = '((( {} {} {} ) {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return True
-            exp = '(( {} {} {} ) {} ( {} {} {} ))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return True
-            exp = '( {} {} ( {} {} ( {} {} {} )))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return True
-            exp = '( {} {} ( {} {} {} ) {} {} )'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
-            if calc(exp) == 24:
-                return True
-    return False
+    for perm in perms:
+        for expr in exprs:  # 穷举就完事了
+            exp = '(({}{}{}){}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
+            exp = '({}{}{}){}({}{}{})'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
+            exp = '{}{}({}{}({}{}{}))'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
+            exp = '{}{}({}{}{}){}{}'.format(perm[0], expr[0], perm[1], expr[1], perm[2], expr[2], perm[3])
+            try:
+                if (calc(exp) == 24 or 0 < 24 - calc(exp) < 1e-13):
+                    return exp
+            except:
+                pass
+    return None
 
 
-def contains_all_numbers(expression, numbers):
+def contains_all_numbers(expr, numbers):
     used_numbers = [str(num) for num in numbers]
     i = 0
-    while i < len(expression):
-        char = expression[i]
+    while i < len(expr):
+        char = expr[i]
         if char.isdigit():
             number = char
-            while i + 1 < len(expression) and expression[i + 1].isdigit():
-                number += expression[i + 1]
+            while i + 1 < len(expr) and expr[i + 1].isdigit():
+                number += expr[i + 1]
                 i += 1
             if number in used_numbers:
                 used_numbers.remove(number)
@@ -100,39 +111,46 @@ play_state = {}
 
 
 @tf.command('{{twenty_four.help}}')
-async def _(msg: Bot.MessageSession):
+async def _(msg: Bot.MessageSession, use_markdown = False):
+    if msg.target.sender_from in ['Discord|Client', 'Kook|User']:
+        use_markdown = True
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
         await msg.finish(msg.locale.t('game.message.running'))
     play_state.update({msg.target.target_id: {'active': True}})
 
     numbers = [random.randint(1, 13) for _ in range(4)]
-    has_solution_flag = await has_solution(numbers)
+    solution = await find_solution(numbers)
 
     answer = await msg.wait_next_message(msg.locale.t('twenty_four.message', numbers=numbers), timeout=3600, append_instruction=False)
-    expression = answer.as_display(text_only=True)
+    expr = answer.as_display(text_only=True)
     if play_state[msg.target.target_id]['active']:
-        if expression.lower() in no_solution:
-            if has_solution_flag:
-                send = msg.locale.t('twenty_four.message.incorrect.have_solution')
+        play_state[msg.target.target_id]['active'] = False
+        if expr.lower() in no_solution:
+            if solution:
+                send = msg.locale.t('twenty_four.message.incorrect.have_solution', solution=solution)
                 if g_msg := (g_msg := await lost_petal(msg, 1)):
                     send += '\n' + g_msg
             else:
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
-            await answer.send_message(send)
-        elif is_valid(expression):
-            result = calc(expression)
-            if result == 24 and contains_all_numbers(expression, numbers):
+            if use_markdown:
+                send.replace('*', '\*')
+            await answer.finish(send)
+        elif check_valid(expr):
+            result = calc(expr)
+            if not result:
+                await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
+            elif (result == 24 or 0 < 24 - result < 1e-13 ) \
+                and contains_all_numbers(expr, numbers):
                 send = msg.locale.t('twenty_four.message.correct')
                 if (g_msg := await gained_petal(msg, 2)):
                     send += '\n' + g_msg
-                await answer.send_message(send)
+                await answer.finish(send)
             else:
-                await answer.send_message(msg.locale.t('twenty_four.message.incorrect'))
+                await answer.finish(msg.locale.t('twenty_four.message.incorrect'))
         else:
-            await answer.send_message(msg.locale.t('twenty_four.message.incorrect.error'))
-        play_state[msg.target.target_id]['active'] = False
+            await answer.finish(msg.locale.t('twenty_four.message.incorrect.invalid'))
 
 
 @tf.command('stop {{game.help.stop}}')
@@ -141,8 +159,8 @@ async def s(msg: Bot.MessageSession):
     if state:
         if state['active']:
             play_state[msg.target.target_id]['active'] = False
-            await msg.send_message(msg.locale.t('game.message.stop'))
+            await msg.finish(msg.locale.t('game.message.stop'))
         else:
-            await msg.send_message(msg.locale.t('game.message.stop.none'))
+            await msg.finish(msg.locale.t('game.message.stop.none'))
     else:
-        await msg.send_message(msg.locale.t('game.message.stop.none'))
+        await msg.finish(msg.locale.t('game.message.stop.none'))

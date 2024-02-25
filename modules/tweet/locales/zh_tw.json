@@ -1,7 +1,7 @@
 {
     "tweet.help": "透過推文 ID 或連結取得推文摘要圖片。（P.S. 我們沒有付 $200 月費）",
     "tweet.help.desc": "取得推文摘要。",
-    "tweet.message.error": "發生錯誤：無法辨識推文 ID，請校對輸入。",
+    "tweet.message.invalid": "無法辨識推文 ID，請校對輸入。",
     "tweet.message.not_found": "未找到推文。",
     "tweet.message.tombstone": "取得推文時出錯："
 }

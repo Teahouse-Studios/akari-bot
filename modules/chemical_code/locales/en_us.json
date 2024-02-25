@@ -6,7 +6,7 @@
     "chemical_code.message": "Please answer the chemical formula of this compound within ${times} minutes. (Alphabetical order except C, H. e.g. CHBrClF)",
     "chemical_code.message.captcha": "Please answer the chemical formula of this compound. (Alphabetical order except C, H. e.g. CHBrClF)",
     "chemical_code.message.correct": "Correct.",
-    "chemical_code.message.csid.invalid": "An error occurred: Invalid ID. ID must be numeric.",
+    "chemical_code.message.csid.invalid": "Invalid ID. ID must be a number.",
     "chemical_code.message.error": "An error occurred: Failed to start. Maybe caused by request database timed out, or the ID is invalid.",
     "chemical_code.message.incorrect": "Incorrect. The correct answer is ${answer}.",
     "chemical_code.message.incorrect.remind1": "Hint: Incorrect. Please Try again.",

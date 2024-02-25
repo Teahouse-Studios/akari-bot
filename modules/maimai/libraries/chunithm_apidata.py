@@ -1,4 +1,5 @@
 import traceback
+
 import ujson as json
 
 from core.builtins import Bot, Plain
@@ -33,6 +34,6 @@ async def get_record(msg, payload):
             else:
                 await msg.finish(msg.locale.t("chunithm.message.forbidden"))
         else:
-            Logger.error(traceback.format_exc())
+            traceback.print_exc()
     if data:
         return data

@@ -49,12 +49,14 @@ class MessageChain(MessageChainT):
                         self.value.append(
                             Embed(e['data']['title'], e['data']['description'], e['data']['url'],
                                   e['data']['timestamp'],
-                                  e['data']['color'], Image(e['data']['image']), Image(e['data']['thumbnail']),
+                                  e['data']['color'],
+                                  Image(e['data']['image']) if e['data']['image'] else None,
+                                  Image(e['data']['thumbnail']) if e['data']['thumbnail'] else None,
                                   e['data']['author'], e['data']['footer'], e['data']['fields']))
                     elif e['type'] == 'url':
                         self.value.append(Url(e['data']['url']))
                     elif e['type'] == 'formatted_time':
-                        self.value.append(FormattedTime(e['data']['timestamp'], e['data']['date'], e['data']['iso'], 
+                        self.value.append(FormattedTime(e['data']['timestamp'], e['data']['date'], e['data']['iso'],
                                                         e['data']['time'], e['data']['seconds'], e['data']['timezone']))
                     elif e['type'] == 'i18n':
                         self.value.append(I18NContext(e['data']['key'], **e['data']['kwargs']))
@@ -123,7 +125,7 @@ class MessageChain(MessageChainT):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
-                value += x.to_message_chain()
+                value += x.to_message_chain(msg)
             elif isinstance(x, Plain):
                 if x.text != '':
                     value.append(x)
@@ -147,7 +149,7 @@ class MessageChain(MessageChainT):
         value = []
         for x in self.value:
             if isinstance(x, Embed) and not embed:
-                value += x.to_message_chain().to_list()
+                value += x.to_message_chain(msg).to_list()
             elif isinstance(x, Plain):
                 if x.text != '':
                     value.append(x.to_dict())

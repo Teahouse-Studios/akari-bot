@@ -1,4 +1,5 @@
 import os
+import traceback
 
 import aiohttp
 import ujson as json
@@ -13,7 +14,6 @@ web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 elements = ['div#descriptionmodule']
 assets_path = os.path.abspath('./assets/')
-font = ImageFont.truetype(f'{assets_path}/SourceHanSansCN-Normal.ttf', 15)
 
 spx_cache = {}
 
@@ -53,7 +53,7 @@ async def make_screenshot(page_link, use_local=True):
         return False
 
 
-async def bugtracker_get(session, mojira_id: str, nolink=False):
+async def bugtracker_get(session, mojira_id: str):
     data = {}
     id_ = mojira_id.upper()
     try:
@@ -61,7 +61,9 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
         get_json = await get_url(json_url, 200)
     except ValueError as e:
         if str(e).startswith('401'):
-            await session.finish(session.locale.t("bugtracker.message.get_failed"))
+            return session.locale.t("bugtracker.message.get_failed"), None
+        else:
+            traceback.print_exc()
     if mojira_id not in spx_cache:
         get_spx = await get_url('https://bugs.guangyaostore.com/translations', 200)
         if get_spx:
@@ -143,7 +145,7 @@ async def bugtracker_get(session, mojira_id: str, nolink=False):
             msglist.append("Fixed Version: " + fixversion)
         if version := data.get("version", False):
             msglist.append(version)
-        if (link := data.get("link", False)) and not nolink:
+        if (link := data.get("link", False)):
             msglist.append(str(Url(link)))
             issue_link = link
     msg = '\n'.join(msglist)

@@ -2,6 +2,7 @@ import traceback
 
 from core.builtins import Bot
 from core.component import module
+from core.logger import Logger
 from modules.wiki.utils.dbutils import WikiTargetInfo, Audit
 from modules.wiki.utils.wikilib import WikiLib, WhatAreUDoingError, PageInfo, InvalidWikiError, QueryInfo
 from .ab import ab
@@ -12,9 +13,8 @@ from .rc_qq import rc_qq
 
 rc_ = module('rc', developers=['OasisAkari'], recommend_modules='wiki')
 
-
-@rc_.command(['{{wiki.help.rc}}',
-              'legacy {{wiki.help.rc.legacy}}'],
+@rc_.command(available_for=['QQ', 'QQ|Group'])
+@rc_.command('[legacy] {{wiki.help.rc}}', 
              available_for=['QQ', 'QQ|Group'])
 async def rc_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -44,11 +44,11 @@ async def rc_loader(msg: Bot.MessageSession):
     await msg.finish(res)
 
 
-a = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
+ab_ = module('ab', developers=['OasisAkari'], recommend_modules='wiki')
 
 
-@a.command(['{{wiki.help.ab}}',
-            'legacy {{wiki.help.ab.legacy}}'],
+@ab_.command(available_for=['QQ', 'QQ|Group'])
+@ab_.command('[legacy] {{wiki.help.ab}}',
            available_for=['QQ', 'QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -61,18 +61,18 @@ async def ab_loader(msg: Bot.MessageSession):
             await msg.fake_forward_msg(nodelist)
             legacy = False
         except Exception:
-            traceback.print_exc()
+            Logger.error(traceback.format_exc())
             await msg.send_message(msg.locale.t('wiki.message.rollback'))
     if legacy:
         try:
             res = await ab(msg, start_wiki)
             await msg.finish(res)
         except Exception:
-            traceback.print_exc()
-            await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+            Logger.error(traceback.format_exc())
+            await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
-@a.command('{{wiki.help.ab}}',
+@ab_.command('{{wiki.help.ab}}',
            exclude_from=['QQ', 'QQ|Group'])
 async def ab_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
@@ -82,14 +82,14 @@ async def ab_loader(msg: Bot.MessageSession):
         res = await ab(msg, start_wiki)
         await msg.finish(res)
     except Exception:
-        traceback.print_exc()
-        await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))
 
 
-n = module('newbie', developers=['OasisAkari'], recommend_modules='wiki')
+new = module('newbie', developers=['OasisAkari'], recommend_modules='wiki')
 
 
-@n.command('{{wiki.help.newbie}}')
+@new.command('{{wiki.help.newbie}}')
 async def newbie_loader(msg: Bot.MessageSession):
     start_wiki = WikiTargetInfo(msg).get_start_wiki()
     if not start_wiki:
@@ -98,5 +98,5 @@ async def newbie_loader(msg: Bot.MessageSession):
         res = await newbie(msg, start_wiki)
         await msg.finish(res)
     except Exception:
-        traceback.print_exc()
-        await msg.send_message(msg.locale.t('wiki.message.error.fetch_log'))
+        Logger.error(traceback.format_exc())
+        await msg.finish(msg.locale.t('wiki.message.error.fetch_log'))

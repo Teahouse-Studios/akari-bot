@@ -1,7 +1,7 @@
 {
     "calc.help.desc": "Safely evaluate Python ast expressions.",
-    "calc.help.option.bin": "转换为二进制：bin(268) -> 0b100001100",
-    "calc.help.option.bool": "转换为布尔值：bool(1) -> True",
+    "calc.help.option.bin": "Convert to Binary: bin(268) -> 0b100001100",
+    "calc.help.option.bool": "Convert to Boolean: bool(1) -> True",
     "calc.help.option.complex": "Convert to Complex Number: complex(1) -> (1 + 0j)",
     "calc.help.option.divide": "Division: 6 / 3 -> 2",
     "calc.help.option.equal": "Equal to: 1 == 1 -> True",
@@ -23,7 +23,7 @@
     "calc.help.option.power": "x to the power of y (y must not be over 4e+6 due to performance limits): 2 ** 3 -> 8",
     "calc.help.option.rand": "0 与 1 之间的随机浮点数：rand() -> 0.5789015836448923",
     "calc.help.option.randint": "小于 x 的随机整数：randint(6) -> 5",
-    "calc.help.option.str": "转换为字符串：str(1) -> \"1\"",
+    "calc.help.option.str": "Convert to String: str(1) -> \"1\"",
     "calc.help.option.xor": "Bitwise xor: 1 ^ 1 -> 0",
     "calc.message.invalid": "Invalid expression: ${expr}",
     "calc.message.running_time": "Calculating time: ${time}ms / 10000ms. ",

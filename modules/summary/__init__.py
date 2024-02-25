@@ -4,7 +4,7 @@ import re
 from config import Config
 from core.builtins import Bot
 from core.component import module
-from core.dirty_check import check_bool, rickroll
+from core.dirty_check import check, check_bool, rickroll
 from core.exceptions import ConfigValueError
 from core.logger import Logger
 from core.petal import count_petal
@@ -25,7 +25,7 @@ async def _(msg: Bot.MessageSession):
     is_superuser = msg.check_super_user()
     if not Config('openai_api_key'):
         raise ConfigValueError(msg.locale.t('error.config.secret.not_found'))
-    if not is_superuser and msg.data.petal <= 0:  # refuse
+    if Config('enable_petal') and not is_superuser and msg.data.petal <= 0:  # refuse
         await msg.finish(msg.locale.t('core.message.petal.no_petals'))
 
     qc = CoolDown('call_openai', msg)
@@ -83,10 +83,15 @@ async def _(msg: Bot.MessageSession):
         if petal != 0:
             output = f"{output}\n{msg.locale.t('petal.message.cost', count=petal)}"
         await wait_msg.delete()
-        if await check_bool(output):
-            await msg.finish(f"{rickroll(msg)}\n{msg.locale.t('petal.message.cost', count=petal)}")
+
         if msg.target.target_from != 'TEST|Console' and not is_superuser:
             qc.reset()
-        await msg.finish(output, disable_secret_check=True)
+
+        output = await check(output)
+        for m in output:
+            output = m['content']
+        output = output.replace("<吃掉了>", msg.locale.t("check.redacted"))
+        output = output.replace("<全部吃掉了>", msg.locale.t("check.redacted.all"))
+        await msg.finish(output)
     else:
-        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='60'))
+        await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=60))

@@ -1,6 +1,7 @@
 import ujson as json
 from PIL import Image
 
+from core.logger import Logger
 from core.utils.http import get_url, download_to_cache
 
 
@@ -33,7 +34,8 @@ async def uuid_to_skin_and_cape(uuid):
             path = 'cache/' + uuid + '_fixed.png'
             cape.save(path)
         return {'render': render, 'skin': skin, 'cape': path}
-    except:
+    except BaseException:
+        Logger.warn("Unable to render player module, skip.")
         return None
 
 __all__ = ['uuid_to_name', 'name_to_uuid', 'uuid_to_skin_and_cape']

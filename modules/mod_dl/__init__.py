@@ -1,6 +1,5 @@
 import asyncio
 import re
-import traceback
 
 from config import Config
 from core.builtins import Bot
@@ -61,16 +60,13 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
         if ver:
             url += f'&gameVersion={ver}'
         results = []
-        try:
-            resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-            if resp:
-                if not enable_mirror:  # 没提供 pagination
-                    if resp["pagination"]["resultCount"] == 0:
-                        return None
-                for mod in resp["data"]:
-                    results.append(("curseforge", mod["name"], mod["id"], None))
-        except Exception:
-            traceback.print_exc()
+        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+        if resp:
+            if not enable_mirror:  # 没提供 pagination
+                if resp["pagination"]["resultCount"] == 0:
+                    return None
+            for mod in resp["data"]:
+                results.append(("curseforge", mod["name"], mod["id"], None))
         return results
 
     async def get_modrinth_project_version(project_id: str, ver: str):
@@ -105,12 +101,9 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
             }
             url = f'https://api.curseforge.com/v1/mods/{modid}/files?gameVersion={ver}'
 
-        try:
-            resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
-            if resp:
-                return resp["data"][0]
-        except Exception:
-            traceback.print_exc()
+        resp = await get_url(url, 200, fmt="json", timeout=5, attempt=3, headers=headers)
+        if resp:
+            return resp["data"][0]
 
     # 搜索 Mod
     result = await asyncio.gather(*(search_modrinth(mod_name, ver), search_curseforge(mod_name, ver)))
@@ -163,6 +156,8 @@ async def main(msg: Bot.MessageSession, mod_name: str, version: str = None):
                     if version_info:
                         await msg.finish(
                             f'{" ".join(version_info["loaders"])}\n{msg.locale.t("mod_dl.message.download_url")}{version_info["files"][0]["url"]}\n{msg.locale.t("mod_dl.message.filename")}{version_info["files"][0]["filename"]}')
+                else:
+                    await msg.finish()
             elif ver not in mod_info[3]:
                 await msg.finish(msg.locale.t("mod_dl.message.version.not_found"))
             elif ver in mod_info[3]:

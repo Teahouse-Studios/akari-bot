@@ -1,8 +1,9 @@
-import json
-import re
 import datetime
+import re
+import traceback
 
 from google_play_scraper import app as google_play_scraper
+import ujson as json
 
 from core.builtins import ErrorMessage
 from core.logger import Logger

@@ -13,12 +13,11 @@ web_render = CFG.get_url('web_render')
 web_render_local = CFG.get_url('web_render_local')
 
 
-t = module('tweet', 
-           developers=['Dianliang233'], 
-           desc='{tweet.help.desc}', 
-           exclude_from=['QQ', 'QQ|Group', 'Kook'],
+t = module('tweet',
+           developers=['Dianliang233'],
+           desc='{tweet.help.desc}',
            alias=['x']
-          )
+           )
 
 
 @t.handle('<tweet> {{tweet.help}}')
@@ -30,7 +29,7 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
         if match:
             tweet_id = match.group(1)
         else:
-            await msg.finish(msg.locale.t('tweet.message.error'))
+            await msg.finish(msg.locale.t('tweet.message.invalid'))
 
     if not web_render_local:
         if not web_render:
@@ -38,7 +37,7 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
             await msg.finish(msg.locale.t("error.config.webrender.invalid"))
         use_local = False
 
-    res = await get_url(f'https://react-tweet.vercel.app/api/tweet/{tweet_id}')
+    res = await get_url(f'https://react-tweet.vercel.app/api/tweet/{tweet_id}', 200)
     res_json = json.loads(res)
     if not res_json['data']:
         await msg.finish(msg.locale.t('tweet.message.not_found'))
@@ -81,7 +80,7 @@ async def _(msg: Bot.MessageSession, tweet: str, use_local=True):
                 display: none;
             }
         '''
-            
+
         pic = await download_to_cache((web_render_local if use_local else web_render) + 'element_screenshot', method='POST', headers={
             'Content-Type': 'application/json',
         }, post_data=json.dumps(

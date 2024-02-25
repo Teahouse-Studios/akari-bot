@@ -64,12 +64,12 @@ async def message_handler(event: Event):
         else:
             return
     reply_id = None
-    match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
+    match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
     if match_reply:
         reply_id = int(match_reply.group(1))
 
     prefix = None
-    if match_at := re.match(r'^\[CQ:at,qq=(.*?)](.*)', event.message):
+    if match_at := re.match(r'^\[CQ:at,qq=(\d+).*\](.*)', event.message):
         if match_at.group(1) == qq_account:
             event.message = match_at.group(2)
             if event.message in ['', ' ']:
@@ -114,7 +114,7 @@ async def _(event):
     if tiny_id == GuildAccountInfo.tiny_id:
         return
     reply_id = None
-    match_reply = re.match(r'^\[CQ:reply,id=(.*?)].*', event.message)
+    match_reply = re.match(r'^\[CQ:reply,id=(-?\d+).*\].*', event.message)
     if match_reply:
         reply_id = int(match_reply.group(1))
     target_id = f'QQ|Guild|{str(event.guild_id)}|{str(event.channel_id)}'

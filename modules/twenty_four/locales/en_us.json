@@ -3,7 +3,7 @@
     "twenty_four.help.desc": "24 puzzle game.",
     "twenty_four.message": "Given combination of numbers: ${numbers}\nEnter an expression so that the result as 24. (If no solution, enter \"N/A\")",
     "twenty_four.message.correct": "Correct.",
-    "twenty_four.message.incorrect.have_solution": "Incorrect: Solution exists.",
-    "twenty_four.message.incorrect.error": "Incorrect: Invalid expression.",
+    "twenty_four.message.incorrect.have_solution": "Incorrect: Solution exists.\nOne set of solutions: ${solution}",
+    "twenty_four.message.incorrect.invalid": "Incorrect: Invalid expression.",
     "twenty_four.message.incorrect": "Incorrect."
 }

@@ -55,7 +55,7 @@ async def start_check_news(use_local=True):
         use_local = False
     try:
         get = (web_render_local if use_local else web_render) + 'source?url=' + url
-        getpage = await get_url(get, 200, attempt=1, logging_err_resp=False)
+        getpage = await get_url(get, 200, attempt=1, request_private_ip=True, logging_err_resp=False)
         if getpage:
             alist = get_stored_list('scheduler', 'mcnews')
             o_json = json.loads(getpage)
@@ -88,7 +88,7 @@ async def feedback_news():
     for section in sections:
         try:
             alist = get_stored_list('scheduler', 'mcfeedbacknews')
-            get = await get_url(section['url'], 200, attempt=1, logging_err_resp=False)
+            get = await get_url(section['url'], 200, attempt=1, request_private_ip=True, logging_err_resp=False)
             res = json.loads(get)
             articles = []
             for i in res['articles']:

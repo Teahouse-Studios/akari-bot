@@ -35,7 +35,7 @@
 
 ~~QQ 频道的测试版支持也请在上方链接申请。~~
 
-你也可以加入我们的 QQ 用户交流群：[738829671](http://qm.qq.com/cgi-bin/qm/qr?k=nXkV2SUP_WWlCuSzzpnKJK_uYkG7n1im)
+你也可以加入我们的 QQ 公共实例测试群：[738829671](http://qm.qq.com/cgi-bin/qm/qr?k=nXkV2SUP_WWlCuSzzpnKJK_uYkG7n1im)
 
 我们正在进行 QQ 频道官方机器人入驻，未来可能会成为官方认证的机器人。
 
@@ -65,7 +65,7 @@
 
 ### 贡献
 
-如您想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)。
+如你想为我们编写新的模块，可以看看[这里](https://bot.teahouse.team/wiki/%E6%96%B0%E5%BB%BA%E6%A8%A1%E5%9D%97%E6%8C%87%E5%8D%97)。
 
 ## 许可
 

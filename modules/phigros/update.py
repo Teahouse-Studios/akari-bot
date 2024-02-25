@@ -40,7 +40,10 @@ async def update_assets():
     try:
         update = await get_url(json_url, 200)
     except TimeoutError:
-        update = await get_url(json_url_mirror, 200)
+        try:
+            update = await get_url(json_url_mirror, 200)
+        except BaseException:
+            return False
     update_json = json.loads(update)
     for song in update_json:
         diff = {}
@@ -68,14 +71,16 @@ async def update_assets():
         ca = random_cache_path()
         shutil.unpack_archive(download_file, ca)
 
-        with open(os.path.join(ca, 'PhigrosLibrary-master', 'difficulty.csv'), 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
+        with open(os.path.join(ca, 'PhigrosLibrary-main', 'difficulty.tsv'), 'r', encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter='\t')
             for row in reader:
                 data[row[0].lower()] = {'EZ': row[1], 'HD': row[2], 'IN': row[3]}
                 if len(row) > 4:
                     data[row[0].lower()]['AT'] = row[4]
 
         os.remove(download_file)
+    else:
+        return False
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(json.dumps(data, indent=4, ensure_ascii=False))
     shutil.move(file_path, rating_path)

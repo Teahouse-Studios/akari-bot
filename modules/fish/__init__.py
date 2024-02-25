@@ -76,7 +76,7 @@ async def _(msg: Bot.MessageSession):
         qc = CoolDown('fish', msg, all=True)
         c = qc.check(30)
         if c != 0:
-            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time='30'))
+            await msg.finish(msg.locale.t('message.cooldown', time=int(c), cd_time=30))
     play_state.update({msg.target.target_id: {'active': True, 'hooked': False}})
 
     async def generate_fish(msg: Bot.MessageSession):
@@ -141,7 +141,7 @@ async def _(msg: Bot.MessageSession):
                         await msg.send_message(f'.' * wait_repeat, quote=False)
                     wait_time -= 0.25
 
-                await asyncio.sleep(0.25)
+                await msg.sleep(0.25)
 
                 await timer(start, wait_time, hooked_time, wait_repeat, hook_repeat)  # 重新调用计时器函数
 
@@ -154,7 +154,7 @@ async def _(msg: Bot.MessageSession):
 @fish.regex(r'^(?:收杆|收)$')
 async def _(msg: Bot.MessageSession):
     if msg.target.target_id in play_state and play_state[msg.target.target_id]['active']:
-        return await finish_fish(msg)
+        await finish_fish(msg)
     else:
         rand_result = random.randint(1, 100)
         if Config('enable_get_petal') or rand_result < 90:

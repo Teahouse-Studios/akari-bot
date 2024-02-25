@@ -30,6 +30,7 @@ async def _(msg: Bot.MessageSession, domain: str):
     res = await get_whois(msg, domain)
     output = await msg.finish(res)
 
+
 async def get_whois(msg, domain):
     try:
         info = whois(domain)
@@ -66,7 +67,6 @@ async def get_whois(msg, domain):
 
     if expiration_date:  # 此时间为UTC时间
         expiration_date = (process(expiration_date) + parse_time_string(Config('timezone_offset', '+8'))).timestamp()
-
 
     if name_servers:
         name_servers_list = list(set([i.lower() for i in name_servers]))
