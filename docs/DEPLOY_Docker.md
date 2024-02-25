@@ -183,8 +183,8 @@ docker pull silianz/akari-bot:dev-docker
     ...
     ```
 
-    > [!NOTE]
-    > 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
+> [!NOTE]
+> 若在配置中遇到问题，请参阅 [go-cqhttp 官方文档](https://docs.go-cqhttp.org/)。
 
 ##### 进阶配置（配置签名服务器）
 
@@ -206,9 +206,9 @@ docker pull silianz/akari-bot:dev-docker
 
     例：`--basePath=txlib/8.9.73`
 
-    > [!IMPORTANT]
-    > 在选择版本时，应当遵从以下原则：
-    > 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45[^3] 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
+> [!IMPORTANT]
+> 在选择版本时，应当遵从以下原则：
+> 升级版本应当**一个一个版本**升，以后冻结了可能就没机会回退版本了。发生 Code45[^3] 应当先尝试删除 go-cqhttp 的 `device.json` 文件和 `data\cache` 文件夹并重新登录，而不是第一时间升级版本。
 
 10. 接下来，请配置 go-cqhttp 的 `config.yml` 文件中的签名服务器：
 
